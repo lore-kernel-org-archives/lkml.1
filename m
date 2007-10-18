@@ -1,30 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbXJRFgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760466AbXJRFhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbXJRFgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 01:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbXJRFgr
+	id S1760466AbXJRFhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 01:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXJRFhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 01:36:47 -0400
-Received: from rtr.ca ([76.10.145.34]:4699 "EHLO mail.rtr.ca"
+	Thu, 18 Oct 2007 01:37:46 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:50439 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753943AbXJRFgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 01:36:46 -0400
-Message-ID: <4716F0EC.9020100@rtr.ca>
-Date: Thu, 18 Oct 2007 01:36:44 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1751273AbXJRFhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 01:37:46 -0400
+Date: Thu, 18 Oct 2007 14:37:41 +0900
+From: Simon Horman <horms@verge.net.au>
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Cc: Don Zickus <dzickus@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>,
+       kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
+Message-ID: <20071018053739.GA31244@verge.net.au>
+References: <20070822210838oomichi@mail.jp.nec.com> <20070822211339oomichi@mail.jp.nec.com> <20071017023305.GC6709@verge.net.au> <47159AA3.10305@mxs.nes.nec.co.jp>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.23-git12 - Kernel oops at blk_rq_map_sg+0x270/0x4e0
-References: <4716F066.5030408@linux.vnet.ibm.com>
-In-Reply-To: <4716F066.5030408@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47159AA3.10305@mxs.nes.nec.co.jp>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Try this patch and report back again:
+On Wed, Oct 17, 2007 at 02:16:19PM +0900, Ken'ichi Ohmichi wrote:
+> 
+> Hi Simon,
+> 
+> Simon Horman wrote:
+> > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
+> >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
+> >> The patch is for kexec-tools-testing-20070330.
+> >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
+> >> kexec command gets the address and size of the vmcoreinfo data from
+> >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
+> >> ELF header of /proc/vmcore. When the second kernel is booting, the
+> >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
+> >> segment into /proc/vmcore.
+> > 
+> > Sorry for the long delay, I completely missed this patch.
+> > 
+> > The kexec-tools change seems ok to me. What is the status of
+> > the kernel portion of the change?
+> 
+> The kernel portion is merged into linux-2.6.23-mm1.
+> According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
+> "The infamous misc.  Will re-review and will merge basically all of them".
+> 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.0/0313.html
+> 
+> 
+> > Do you still want the kexec-tools portion applied?
+> 
+> Yes, I hope so.
 
-    http://lkml.org/lkml/2007/10/17/269 
-
+Thanks, applied :-)
