@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbXJRBss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbXJRBte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763921AbXJRBss (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 21:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbXJRBsj
+	id S1764637AbXJRBte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 21:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760087AbXJRBt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 21:48:39 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50161 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754949AbXJRBsj (ORCPT
+	Wed, 17 Oct 2007 21:49:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47992
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759363AbXJRBtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 21:48:39 -0400
-Date: Wed, 17 Oct 2007 19:48:36 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-mm1 - build failure with advansys
-Message-ID: <20071018014836.GC14883@parisc-linux.org>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47104D26.7050206@linux.vnet.ibm.com> <20071012235242.9d7daf05.akpm@linux-foundation.org> <18198.41946.697397.255427@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18198.41946.697397.255427@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 17 Oct 2007 21:49:25 -0400
+Date: Wed, 17 Oct 2007 18:49:24 -0700 (PDT)
+Message-Id: <20071017.184924.104034442.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org>
+	<20071017.181907.63126798.davem@davemloft.net>
+	<alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 10:07:54AM +1000, Paul Mackerras wrote:
-> The correct fix is to make advansys depend on CONFIG_VIRT_TO_BUS, or
-> alternatively fix advansys.c properly by making it use the interfaces
-> described in Documentation/DMA-mapping.txt (or the equivalent scsi
-> helpers).
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 17 Oct 2007 18:36:34 -0700 (PDT)
 
-If you look at the git logs, you'll notice there's some progress towards
-this.  It's already the case for the narrow boards.  I have a patch to
-rip it all out for the wide boards, but there's clearly a bug because it
-crashes my parisc machine.  Works fine on x86 though.  I can't work on
-it this week because I'm travelling and the parisc machine with remote
-power died on me last week.
+> Although I also wonder whether we want one global per-arch 
+> ARCH_HAS_SG_CHAIN
 
-I think I already suggested a temporary CONFIG_VIRT_TO_BUS dependency to
-akpm last week.
+It's there because the DMA mapping support code for a platform has to
+be converted to handle these chains and audited to make sure the
+conversion is right.  Some platforms, such as sparc64, took a lot of
+work to get right :-)
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Once that macro is set, the block device driver has to support it too,
+and there are knobs all the way down to the scsi host driver to
+indicate this.
+
+The idea is that all of this mess gets deleted in the end, it was
+meant to be a safe transition scheme.
+
