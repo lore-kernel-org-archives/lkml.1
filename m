@@ -1,78 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763041AbXJRKAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762502AbXJRKFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763041AbXJRKAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXJRKAA
+	id S1762502AbXJRKFD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbXJRKEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:00:00 -0400
-Received: from s1.mailresponder.info ([193.24.237.10]:2936 "EHLO
-	s1.mailresponder.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755641AbXJRJ77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:59:59 -0400
-Subject: Re: Inquiry data and emulated SG devices
-From: Mathieu Fluhr <mfluhr@nero.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <4716B786.80804@garzik.org>
-References: <fa.PgEHbZ0E5ogcX8bZwvrUeZB+eJs@ifi.uio.no>
-	 <4716B56A.1090501@shaw.ca>  <4716B786.80804@garzik.org>
-Content-Type: text/plain
-Organization: Nero AG
-Date: Thu, 18 Oct 2007 11:59:15 +0200
-Message-Id: <1192701555.3247.28.camel@de-c-l-110.nero-de.internal>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 06:04:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55015 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754973AbXJRKEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:04:52 -0400
+Message-ID: <47172FB1.5020704@garzik.org>
+Date: Thu, 18 Oct 2007 06:04:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <20071018070706.GA7435@elte.hu> <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org> <20071018091706.GO5063@kernel.dk> <4717281B.6070301@garzik.org> <20071018094128.GP5063@kernel.dk>
+In-Reply-To: <20071018094128.GP5063@kernel.dk>
+Content-Type: multipart/mixed;
+ boundary="------------040001080203010904020601"
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 21:31 -0400, Jeff Garzik wrote:
-> Robert Hancock wrote:
-> > This doesn't seem a very reliable way to identify an IDE device, as all
-> > that 0 means is that the device does not claim conformance to any
-> > standard. I would think it would be legitimate for an IDE device to put
-> > a value like 5 in there as well, if it complies with SPC-4..
+This is a multi-part message in MIME format.
+--------------040001080203010904020601
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Jens Axboe wrote:
+> That should work as well. WRT ata_sg_is_last(), if we go ahead with my
+> recent sg chaining updates, we can keep the test as it would be a single
+> conditional and not require any looping.
 > 
-> Via the this-doesnt-really-matter-but-it-should-be-noted department:
-> 
-> According to the latest on t10.org, MMC retroactively permitted SCSI 
-> version to be zero, for MMC-compliant USB and ATAPI devices.
-> 
+> Let me know when you have tested this!
 
-Quoting to the latest MtFuji draft (Section 17.7.1):
- "The ANSI Version field shall contain a non-zero value to comply with 
-  this version of the Specification for a SCSI logical unit or zero for
-  an ATAPI logical unit."
+The patch I attached to the last email got both sata_mv test boxes 
+working reliably (so far).
 
+I worked up a patch that kills ata_sg_is_last() (plus the 
+max_phys_segments sata_mv fix), see attached.  I'm thinking this is what 
+I like to see in upstream.
 
-> > In the case of libata though, that appears to be due to this code in
-> > drivers/ata/libata-scsi.c:
-> > 
-> >     /* ATAPI devices typically report zero for their SCSI version,
-> >      * and sometimes deviate from the spec WRT response data
-> >      * format.  If SCSI version is reported as zero like normal,
-> >      * then we make the following fixups:  1) Fake MMC-5 version,
-> >      * to indicate to the Linux scsi midlayer this is a modern
-> >      * device.  2) Ensure response data format / ATAPI information
-> >      * are always correct.
-> >      */
-> >             if (buf[2] == 0) {
-> >                 buf[2] = 0x5;
-> >                 buf[3] = 0x32;
-> >             }
-> > 
+Of course, this doesn't explain why ata_sg_is_last() was broken, but 
+since it's working _and_ slightly more efficient, I don't really care :)
 
-This explain a lot... But (Sorry I am not a scsi mid-layer expert) why
-faking what the device outputs?
-
->From the application side, every device is then saw as real SCSI
-devices. So from the developer point of view, this is really bad as
-afterwards you have no way to optimize your code regarding the original
-hardware architecture.
+	Jeff
 
 
-	Mathieu
 
+--------------040001080203010904020601
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+diff --git a/drivers/ata/pdc_adma.c b/drivers/ata/pdc_adma.c
+index 8d1b03d..199f7e1 100644
+--- a/drivers/ata/pdc_adma.c
++++ b/drivers/ata/pdc_adma.c
+@@ -318,7 +318,7 @@ static int adma_fill_sg(struct ata_queued_cmd *qc)
+ 	struct scatterlist *sg;
+ 	struct ata_port *ap = qc->ap;
+ 	struct adma_port_priv *pp = ap->private_data;
+-	u8  *buf = pp->pkt;
++	u8  *buf = pp->pkt, *last_buf = NULL;
+ 	int i = (2 + buf[3]) * 8;
+ 	u8 pFLAGS = pORD | ((qc->tf.flags & ATA_TFLAG_WRITE) ? pDIRO : 0);
+ 
+@@ -334,8 +334,7 @@ static int adma_fill_sg(struct ata_queued_cmd *qc)
+ 		*(__le32 *)(buf + i) = cpu_to_le32(len);
+ 		i += 4;
+ 
+-		if (ata_sg_is_last(sg, qc))
+-			pFLAGS |= pEND;
++		last_buf = &buf[i];
+ 		buf[i++] = pFLAGS;
+ 		buf[i++] = qc->dev->dma_mode & 0xf;
+ 		buf[i++] = 0;	/* pPKLW */
+@@ -348,6 +347,10 @@ static int adma_fill_sg(struct ata_queued_cmd *qc)
+ 		VPRINTK("PRD[%u] = (0x%lX, 0x%X)\n", i/4,
+ 					(unsigned long)addr, len);
+ 	}
++
++	if (likely(last_buf))
++		*last_buf |= pEND;
++
+ 	return i;
+ }
+ 
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index 4df8311..7f1b13e 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -421,7 +421,6 @@ static void mv_error_handler(struct ata_port *ap);
+ static void mv_post_int_cmd(struct ata_queued_cmd *qc);
+ static void mv_eh_freeze(struct ata_port *ap);
+ static void mv_eh_thaw(struct ata_port *ap);
+-static int mv_slave_config(struct scsi_device *sdev);
+ static int mv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
+ 
+ static void mv5_phy_errata(struct mv_host_priv *hpriv, void __iomem *mmio,
+@@ -459,7 +458,7 @@ static struct scsi_host_template mv5_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= mv_slave_config,
++	.slave_configure	= ata_scsi_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
+ };
+@@ -477,7 +476,7 @@ static struct scsi_host_template mv6_sht = {
+ 	.use_clustering		= 1,
+ 	.proc_name		= DRV_NAME,
+ 	.dma_boundary		= MV_DMA_BOUNDARY,
+-	.slave_configure	= mv_slave_config,
++	.slave_configure	= ata_scsi_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
+ };
+@@ -756,17 +755,6 @@ static void mv_irq_clear(struct ata_port *ap)
+ {
+ }
+ 
+-static int mv_slave_config(struct scsi_device *sdev)
+-{
+-	int rc = ata_scsi_slave_config(sdev);
+-	if (rc)
+-		return rc;
+-
+-	blk_queue_max_phys_segments(sdev->request_queue, MV_MAX_SG_CT / 2);
+-
+-	return 0;	/* scsi layer doesn't check return value, sigh */
+-}
+-
+ static void mv_set_edma_ptrs(void __iomem *port_mmio,
+ 			     struct mv_host_priv *hpriv,
+ 			     struct mv_port_priv *pp)
+@@ -1138,7 +1126,7 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
+ {
+ 	struct mv_port_priv *pp = qc->ap->private_data;
+ 	struct scatterlist *sg;
+-	struct mv_sg *mv_sg;
++	struct mv_sg *mv_sg, *last_sg = NULL;
+ 
+ 	mv_sg = pp->sg_tbl;
+ 	ata_for_each_sg(sg, qc) {
+@@ -1159,13 +1147,13 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
+ 			sg_len -= len;
+ 			addr += len;
+ 
+-			if (!sg_len && ata_sg_is_last(sg, qc))
+-				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
+-
++			last_sg = mv_sg;
+ 			mv_sg++;
+ 		}
+-
+ 	}
++
++	if (likely(last_sg))
++		last_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
+ }
+ 
+ static inline void mv_crqb_pack_cmd(__le16 *cmdw, u8 data, u8 addr, unsigned last)
+diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
+index b061927..26ebffc 100644
+--- a/drivers/ata/sata_sil24.c
++++ b/drivers/ata/sata_sil24.c
+@@ -796,16 +796,19 @@ static inline void sil24_fill_sg(struct ata_queued_cmd *qc,
+ 				 struct sil24_sge *sge)
+ {
+ 	struct scatterlist *sg;
++	struct sil24_sge *last_sge = NULL;
+ 
+ 	ata_for_each_sg(sg, qc) {
+ 		sge->addr = cpu_to_le64(sg_dma_address(sg));
+ 		sge->cnt = cpu_to_le32(sg_dma_len(sg));
+-		if (ata_sg_is_last(sg, qc))
+-			sge->flags = cpu_to_le32(SGE_TRM);
+-		else
+-			sge->flags = 0;
++		sge->flags = 0;
++
++		last_sge = sge;
+ 		sge++;
+ 	}
++
++	if (likely(last_sge))
++		last_sge->flags = cpu_to_le32(SGE_TRM);
+ }
+ 
+ static int sil24_qc_defer(struct ata_queued_cmd *qc)
+diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+index b41dfb5..c316a0b 100644
+--- a/drivers/scsi/ipr.c
++++ b/drivers/scsi/ipr.c
+@@ -5134,6 +5134,7 @@ static void ipr_build_ata_ioadl(struct ipr_cmnd *ipr_cmd,
+ 	u32 ioadl_flags = 0;
+ 	struct ipr_ioarcb *ioarcb = &ipr_cmd->ioarcb;
+ 	struct ipr_ioadl_desc *ioadl = ipr_cmd->ioadl;
++	struct ipr_ioadl_desc *last_ioadl = NULL;
+ 	int len = qc->nbytes + qc->pad_len;
+ 	struct scatterlist *sg;
+ 
+@@ -5156,11 +5157,13 @@ static void ipr_build_ata_ioadl(struct ipr_cmnd *ipr_cmd,
+ 	ata_for_each_sg(sg, qc) {
+ 		ioadl->flags_and_data_len = cpu_to_be32(ioadl_flags | sg_dma_len(sg));
+ 		ioadl->address = cpu_to_be32(sg_dma_address(sg));
+-		if (ata_sg_is_last(sg, qc))
+-			ioadl->flags_and_data_len |= cpu_to_be32(IPR_IOADL_FLAGS_LAST);
+-		else
+-			ioadl++;
++
++		last_ioadl = ioadl;
++		ioadl++;
+ 	}
++
++	if (likely(last_ioadl))
++		last_ioadl->flags_and_data_len |= cpu_to_be32(IPR_IOADL_FLAGS_LAST);
+ }
+ 
+ /**
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 377e6d4..bc3b6fc 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -1037,18 +1037,6 @@ extern void ata_port_pbar_desc(struct ata_port *ap, int bar, ssize_t offset,
+ /*
+  * qc helpers
+  */
+-static inline int
+-ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+-{
+-	if (sg == &qc->pad_sgent)
+-		return 1;
+-	if (qc->pad_len)
+-		return 0;
+-	if (qc->n_iter == qc->n_elem)
+-		return 1;
+-	return 0;
+-}
+-
+ static inline struct scatterlist *
+ ata_qc_first_sg(struct ata_queued_cmd *qc)
+ {
+
+--------------040001080203010904020601--
