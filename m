@@ -1,36 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762108AbXJRFKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXJRFYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762108AbXJRFKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 01:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXJRFKi
+	id S1761408AbXJRFYQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 01:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbXJRFX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 01:10:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38220 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbXJRFKg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 01:10:36 -0400
-Date: Thu, 18 Oct 2007 06:10:31 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version 8 (2.6.23) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071018051031.GN8181@ftp.linux.org.uk>
-References: <47158CE4.30706@schaufler-ca.com> <20071018045705.GM8181@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Thu, 18 Oct 2007 01:23:59 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36468 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbXJRFX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 01:23:58 -0400
+Date: Wed, 17 Oct 2007 22:21:11 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, sds@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, morgan@kernel.org,
+       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, kaigai@kaigai.gr.jp,
+       casey@schaufler-ca.com
+Subject: Re: [RFC] [PATCH 2/2] capabilities: implement 64-bit capabilities
+Message-ID: <20071018052111.GQ3906@sequoia.sous-sol.org>
+References: <20071016022730.GA8925@sergelap.austin.ibm.com> <20071016023100.GA10698@sergelap.austin.ibm.com> <1192544299.8702.78.camel@moss-spartans.epoch.ncsc.mil> <20071016214159.GB13294@sergelap.austin.ibm.com> <20071017180002.33fe4986.akpm@linux-foundation.org> <20071018025920.GA5067@vino.hallyn.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071018045705.GM8181@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20071018025920.GA5067@vino.hallyn.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 05:57:05AM +0100, Al Viro wrote:
-> On Tue, Oct 16, 2007 at 09:17:40PM -0700, Casey Schaufler wrote:
+* Serge E. Hallyn (serge@hallyn.com) wrote:
+> I guess now that I've written this out, it seems pretty clear
+> that capget64() and capget64() are the way to go.  Any objections?
 
-> Think what happens if CPU1 adds to list and CPU2 sees write to smk_known
-> *before* it sees write to ->smk_next.  We see a single-element list and
-> we'll be lucky if that single entry won't be FUBAR.
+How is capget64() different from capget() that supports 2 different
+header->versions (I thought that was the whole point of the versioned,
+rather opaque interface)?  I don't object to a new syscall, but I don't
+see why it's required to avoid breaking libcap.
 
-While we are at it, what protects smack_cipso_count?
+thanks,
+-chris
