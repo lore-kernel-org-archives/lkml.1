@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbXJRJu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763979AbXJRJvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763549AbXJRJu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbXJRJuN
+	id S1763979AbXJRJvJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbXJRJuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:50:13 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:40040 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1755347AbXJRJuM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:50:12 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 05:50:11 EDT
-Message-ID: <471728F7.6020809@dev.rtsoft.ru>
-Date: Thu, 18 Oct 2007 13:35:51 +0400
-From: Dmitry Antipov <antipov@dev.rtsoft.ru>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
+	Thu, 18 Oct 2007 05:50:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51549 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760989AbXJRJux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 05:50:53 -0400
+Date: Thu, 18 Oct 2007 11:50:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] -EINVAL if no fasync op for file
-Content-Type: multipart/mixed;
- boundary="------------040703020206030006080805"
+Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] snd: fix build bug with CONFIG_SND_HDA_CODEC_SIGMATEL=y &&
+	!CONFIG_SND_HDA_GENERIC
+Message-ID: <20071018095042.GA21361@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.7
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_05,UPPERCASE_25_50 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0167]
+	0.4 UPPERCASE_25_50        message body is 25-50% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040703020206030006080805
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-This patch proposes an additional error checking performed within setfl().
+fix build bug introduced with the recent sound merge:
 
-As a result, fcntl (fd, F_SETFL, O_ASYNC) will return -1 and set errno
-to -EINVAL if filp->f_op->fasync is NULL for file specified by fd. This
-is possible, for example, if fd is a descriptor returned by inotify_init().
+-------------->
+Subject: snd: fix build bug with CONFIG_SND_HDA_CODEC_SIGMATEL=y && !CONFIG_SND_HDA_GENERIC
+From: Ingo Molnar <mingo@elte.hu>
 
+randconfig build testing found this build bug:
 
-Dmitry
+ sound/built-in.o: In function `patch_stac9872':
+ patch_sigmatel.c:(.text+0x6d6e7): undefined reference to `snd_hda_parse_generic_codec'
 
+patch_sigmatel.c depends on SND_HDA_GENERIC, for snd_hda_parse_generic_codec().
 
---------------040703020206030006080805
-Content-Type: text/x-patch;
- name="2.6.23-fcntl-fasync-check.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.6.23-fcntl-fasync-check.patch"
+to make it selectable, reorder SND_HDA_CODEC_SIGMATEL to after
+SND_HDA_GENERIC.
 
-Signed-off-by: Dmitry Antipov <antipov@dev.rtsoft.ru>
+with this fixed, the kernel builds fine.
 
---- .orig-2.6.23/fs/fcntl.c	2007-10-17 15:26:06.000000000 +0400
-+++ 2.6.23/fs/fcntl.c	2007-10-17 15:25:27.000000000 +0400
-@@ -240,6 +240,9 @@
- 			error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
- 			if (error < 0)
- 				goto out;
-+		} else {
-+			error = -EINVAL;
-+			goto out;
- 		}
- 	}
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ sound/pci/Kconfig |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+Index: linux/sound/pci/Kconfig
+===================================================================
+--- linux.orig/sound/pci/Kconfig
++++ linux/sound/pci/Kconfig
+@@ -525,14 +525,6 @@ config SND_HDA_CODEC_ANALOG
+ 	  Say Y here to include Analog Device HD-audio codec support in
+ 	  snd-hda-intel driver, such as AD1986A.
  
-
---------------040703020206030006080805--
+-config SND_HDA_CODEC_SIGMATEL
+-	bool "Build IDT/Sigmatel HD-audio codec support"
+-	depends on SND_HDA_INTEL
+-	default y
+-	help
+-	  Say Y here to include IDT (Sigmatel) HD-audio codec support in
+-	  snd-hda-intel driver, such as STAC9200.
+-
+ config SND_HDA_CODEC_VIA
+ 	bool "Build VIA HD-audio codec support"
+ 	depends on SND_HDA_INTEL
+@@ -581,6 +573,15 @@ config SND_HDA_GENERIC
+ 	  Say Y here to enable the generic HD-audio codec parser
+ 	  in snd-hda-intel driver.
+ 
++config SND_HDA_CODEC_SIGMATEL
++	bool "Build IDT/Sigmatel HD-audio codec support"
++	depends on SND_HDA_INTEL
++	select SND_HDA_GENERIC
++	default y
++	help
++	  Say Y here to include IDT (Sigmatel) HD-audio codec support in
++	  snd-hda-intel driver, such as STAC9200.
++
+ config SND_HDA_POWER_SAVE
+ 	bool "Aggressive power-saving on HD-audio"
+ 	depends on SND_HDA_INTEL && EXPERIMENTAL
