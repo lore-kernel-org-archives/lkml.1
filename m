@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763979AbXJRJvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbXJRJ7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763979AbXJRJvJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbXJRJuz
+	id S1762730AbXJRJ7C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:59:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbXJRJ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:50:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51549 "EHLO mx2.mail.elte.hu"
+	Thu, 18 Oct 2007 05:58:52 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47073 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760989AbXJRJux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:50:53 -0400
-Date: Thu, 18 Oct 2007 11:50:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] snd: fix build bug with CONFIG_SND_HDA_CODEC_SIGMATEL=y &&
-	!CONFIG_SND_HDA_GENERIC
-Message-ID: <20071018095042.GA21361@elte.hu>
-MIME-Version: 1.0
+	id S1755641AbXJRJ6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 05:58:51 -0400
+Date: Thu, 18 Oct 2007 12:00:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kbuild <linux-kbuild@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+Subject: kbuild mailing list has moved
+Message-ID: <20071018100019.GA18671@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.7
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_05,UPPERCASE_25_50 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0167]
-	0.4 UPPERCASE_25_50        message body is 25-50% uppercase
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The vger postmasters has created linux-kbuild on my request.
 
-fix build bug introduced with the recent sound merge:
+The old list at sourceforge had a few issues:
+- it was subscriber-only
+- it were relying on moderation
 
--------------->
-Subject: snd: fix build bug with CONFIG_SND_HDA_CODEC_SIGMATEL=y && !CONFIG_SND_HDA_GENERIC
-From: Ingo Molnar <mingo@elte.hu>
+And I could see several mails did not get to the list lately
+so I decided this was a good time for a new list.
 
-randconfig build testing found this build bug:
+I already requested marc.info to archieve the new list -
+and I dunno where else the old list was archieved but we
+ought to update.
 
- sound/built-in.o: In function `patch_stac9872':
- patch_sigmatel.c:(.text+0x6d6e7): undefined reference to `snd_hda_parse_generic_codec'
+I have no access to the list of subscribers on the old list
+so people will have to subscribe manually.
 
-patch_sigmatel.c depends on SND_HDA_GENERIC, for snd_hda_parse_generic_codec().
+How to subscribe:
 
-to make it selectable, reorder SND_HDA_CODEC_SIGMATEL to after
-SND_HDA_GENERIC.
+send a mail to: majordomo@vger.kernel.org
+containing following text:
+subscribe linux-kbuild
 
-with this fixed, the kernel builds fine.
+See also http://vger.kernel.org/vger-lists.html
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- sound/pci/Kconfig |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+Below is a patch to update MAINTAINERS in the kernel.
+Note that I expect the list to cover both pure kbuild
+but also kconfig stuff.
 
-Index: linux/sound/pci/Kconfig
-===================================================================
---- linux.orig/sound/pci/Kconfig
-+++ linux/sound/pci/Kconfig
-@@ -525,14 +525,6 @@ config SND_HDA_CODEC_ANALOG
- 	  Say Y here to include Analog Device HD-audio codec support in
- 	  snd-hda-intel driver, such as AD1986A.
+	Sam
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 10deabe..f978c60 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2178,7 +2178,7 @@ S:	Maintained
+ KCONFIG
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+-L:	kbuild-devel@lists.sourceforge.net
++L:	linux-kbuild@vger.kernel.org
+ S:	Maintained
  
--config SND_HDA_CODEC_SIGMATEL
--	bool "Build IDT/Sigmatel HD-audio codec support"
--	depends on SND_HDA_INTEL
--	default y
--	help
--	  Say Y here to include IDT (Sigmatel) HD-audio codec support in
--	  snd-hda-intel driver, such as STAC9200.
--
- config SND_HDA_CODEC_VIA
- 	bool "Build VIA HD-audio codec support"
- 	depends on SND_HDA_INTEL
-@@ -581,6 +573,15 @@ config SND_HDA_GENERIC
- 	  Say Y here to enable the generic HD-audio codec parser
- 	  in snd-hda-intel driver.
+ KDUMP
+@@ -2207,6 +2207,7 @@ KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
+ P:	Sam Ravnborg
+ M:	sam@ravnborg.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
++L:	linux-kbuild@vger.kernel.org
+ S:	Maintained
  
-+config SND_HDA_CODEC_SIGMATEL
-+	bool "Build IDT/Sigmatel HD-audio codec support"
-+	depends on SND_HDA_INTEL
-+	select SND_HDA_GENERIC
-+	default y
-+	help
-+	  Say Y here to include IDT (Sigmatel) HD-audio codec support in
-+	  snd-hda-intel driver, such as STAC9200.
-+
- config SND_HDA_POWER_SAVE
- 	bool "Aggressive power-saving on HD-audio"
- 	depends on SND_HDA_INTEL && EXPERIMENTAL
+ KERNEL JANITORS
