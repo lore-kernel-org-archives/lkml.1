@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765005AbXJRWMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765502AbXJRWQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765005AbXJRWMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765567AbXJRWLq
+	id S1765502AbXJRWQa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbXJRWQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:11:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56175 "EHLO mx1.redhat.com"
+	Thu, 18 Oct 2007 18:16:23 -0400
+Received: from www.tglx.de ([62.245.132.106]:40701 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765413AbXJRWLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:11:45 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
+	id S1757135AbXJRWQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:16:22 -0400
+Date: Fri, 19 Oct 2007 00:15:47 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       tony.luck@intel.com, Doug Chapman <dchapman@redhat.com>
-Subject: [PATCH] ia64 vDSO vs --build-id
-X-Zippy-Says: Yow!  I'm out of work...I could go into shock absorbers...or SCUBA GEAR!!
-Message-Id: <20071018221108.638644D04E2@magilla.localdomain>
-Date: Thu, 18 Oct 2007 15:11:08 -0700 (PDT)
+cc: Samuel Ortiz <sameo@openedhand.com>, linux-kernel@vger.kernel.org,
+       Paul Sokolovsky <pmiscml@gmail.com>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
+In-Reply-To: <20071018150544.6852d5c9.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0710190013420.22770@localhost.localdomain>
+References: <20071018091239.GA11360@caravaggio> <20071018150544.6852d5c9.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When gcc uses --build-id by default, the gate.lds.S linker script runs afoul
-of the new note section and produces a bad DSO image.  This fixes it.
+On Thu, 18 Oct 2007, Andrew Morton wrote:
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/version.h>
+> > +#include <linux/irq.h>
+> 
+> Please see the large comment at the top of linux/irq.h.  I believe this
+> driver will fial to compile on at least arm.
+> 
+> We really should fix this.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+drivers are fine with: #include <linux/interrupt.h>
 
---- a/arch/ia64/kernel/gate.lds.S
-+++ b/arch/ia64/kernel/gate.lds.S
-@@ -20,6 +20,8 @@ SECTIONS
- 	.gnu.version_d		: { *(.gnu.version_d) }
- 	.gnu.version_r		: { *(.gnu.version_r) }
- 
-+	.note			: { *(.note*) }		:readable	:note
-+
- 	.dynamic		: { *(.dynamic) }	:readable	:dynamic
- 
- 	/*
-@@ -83,6 +85,7 @@ PHDRS
- 	epc		PT_LOAD	FILEHDR PHDRS	FLAGS(1);	/* PF_X */
- #endif
- 	dynamic		PT_DYNAMIC		FLAGS(4);	/* PF_R */
-+	note		PT_NOTE			FLAGS(4);	/* PF_R */
- 	unwind		PT_IA_64_UNWIND;
- }
- 
+If they need linux/irq.h, then they do probably something really
+nasty.
+
+   	tglx
