@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbXJRG0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbXJRG0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760692AbXJRG0K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 02:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXJRGZy
+	id S1761463AbXJRG0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 02:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXJRG0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 02:25:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44822
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750969AbXJRGZx (ORCPT
+	Thu, 18 Oct 2007 02:26:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55588 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756367AbXJRGZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 02:25:53 -0400
-Date: Wed, 17 Oct 2007 23:26:05 -0700 (PDT)
-Message-Id: <20071017.232605.74748149.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFA] sch_generic: fix carrier-on bug?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071016215555.GA4732@havoc.gtf.org>
-References: <20071016215555.GA4732@havoc.gtf.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 02:25:59 -0400
+Date: Wed, 17 Oct 2007 23:25:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [Patch](memory hotplug) Make kmem_cache_node for SLUB on memory
+ online to avoid panic(take 3)
+In-Reply-To: <20071017204651.aefcece7.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0710172321550.11401@schroedinger.engr.sgi.com>
+References: <20071018122345.514F.Y-GOTO@jp.fujitsu.com>
+ <20071017204651.aefcece7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 16 Oct 2007 17:55:55 -0400
+On Wed, 17 Oct 2007, Andrew Morton wrote:
 
-> While looking at a net driver with the following construct,
+> > +#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
 > 
-> 	if (!netif_carrier_ok(dev))
-> 		netif_carrier_on(dev);
-> 
-> it stuck me that the netif_carrier_ok() check was redundant, since
-> netif_carrier_on() checks bit __LINK_STATE_NOCARRIER anyway.  This is
-> the same reason why netif_queue_stopped() need not be called prior to
-> netif_wake_queue().
-> 
-> This is true, but there is however an unwanted side effect from assuming
-> that netif_carrier_on() can be called multiple times:  it touches the
-> watchdog, regardless of pre-existing carrier state.
-> 
-> The fix:  move watchdog-up inside the bit-cleared code path.
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> hm.  There should be no linkage between memory hotpluggability and
+> NUMA, surely?
 
-I see no problems with this patch, I'll apply it, thanks!
+NUMA support in the slab allocators requires allocation of per node 
+structures. The per node structures are folded into the global structure 
+for non NUMA.
+
+> > +			/*
+> > +			 * if n->nr_slabs > 0, slabs still exist on the node
+> > +			 * that is going down. We were unable to free them,
+> > +			 * and offline_pages() function shoudn't call this
+> > +			 * callback. So, we must fail.
+> > +			 */
+> > +			BUG_ON(atomic_read(&n->nr_slabs));
+> 
+> Expereince tells us that WARN_ON is preferred for newly added code ;)
+
+It would be bad to just zap a per node array while there is still data in 
+there. This will cause later failures when an attempt is made to free the 
+objects that now have no per node structure anymore.
+
+> > +  		/*
+> > +		 * XXX: kmem_cache_alloc_node will fallback to other nodes
+> > +		 *      since memory is not yet available from the node that
+> > +		 *      is brought up.
+> > +  		 */
+> > +		n = kmem_cache_alloc(kmalloc_caches, GFP_KERNEL);
+> > +		if (!n)
+> > +			return -ENOMEM;
+> 
+> err, we forgot slub_lock.  I'll fix that.
+
+Right.
+
+> So that's slub.  Does slab already have this functionality or are you
+> not bothering to maintain slab in this area?
+
+Slab brings up a per node structure when the corresponding cpu is brought 
+up. That was sufficient as long as we did not have any memoryless nodes. 
+Now we may have to fix some things over there as well.
+
