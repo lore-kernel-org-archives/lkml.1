@@ -1,121 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764810AbXJRVLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764553AbXJRVM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764810AbXJRVLs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 17:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbXJRVLh
+	id S1764553AbXJRVM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 17:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbXJRVMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 17:11:37 -0400
-Received: from smtpout1.l-3com.com ([128.170.207.211]:7994 "EHLO
-	smtpout1.L-3com.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762985AbXJRVLg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 17:11:36 -0400
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 17:11:36 EDT
-X-IronPort-AV: E=Sophos;i="4.21,297,1188799200"; 
-   d="scan'208";a="108485711"
-From: Jason.V.Mock@L-3Com.com
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Kernel Oops in NFS
-Date: Thu, 18 Oct 2007 16:01:52 -0500
-Message-ID: <F31FEAB987B7C2469181758C14265CFA040BBB7A@gvlexch03.is.l-3com.com>
-In-Reply-To: <F31FEAB987B7C2469181758C14265CFA040BBB64@gvlexch03.is.l-3com.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Kernel Oops in NFS
-Thread-Index: AcgLSwxixhUOkFQSQmOTIG2FX0iecQGfq9+A
-References: <F31FEAB987B7C2469181758C14265CFA040BBB64@gvlexch03.is.l-3com.com>
-To: "Mock, JV Jason @ IS" <Jason.V.Mock@L-3Com.com>,
-       <nfs@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-Cc: "Kile, SE Scott @ IS" <scott.kile@L-3Com.com>
+	Thu, 18 Oct 2007 17:12:49 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56134 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755118AbXJRVMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 17:12:47 -0400
+Date: Thu, 18 Oct 2007 23:14:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Finn Thain <fthain@telegraphics.com.au>, Rob Landley <rob@landley.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
+Message-ID: <20071018211420.GA23397@uranus.ravnborg.org>
+References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710111707270.3729@anakin> <Pine.LNX.4.64.0710120211130.4083@loopy.telegraphics.com.au> <200710111614.39879.rob@landley.net> <Pine.LNX.4.64.0710120849480.11634@anakin> <Pine.LNX.4.64.0710121731110.17887@loopy.telegraphics.com.au> <Pine.LNX.4.64.0710121046020.7335@anakin> <20071012102124.GA18959@uranus.ravnborg.org> <Pine.LNX.4.64.0710152217150.16889@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710152217150.16889@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We've come across an Oops, in what appears to NFS.
 > 
-> 2.6.22.6 vanilla + realtime-lsm
-> RHEL4 over PXE/NFS_ROOT
-> 
-> 
-> Oct  9 14:26:13 WS15 gdm(pam_unix)[6038]: session opened for 
-> user mockj by (uid=0) Oct  9 14:26:48 WS15 gconfd 
-> (mockj-7583): starting (version 2.8.1), pid
-> 7583 user 'mockj'
-> Oct  9 14:26:48 WS15 kernel: BUG: unable to handle kernel 
-> NULL pointer dereference at virtual address 00000004 Oct  9 
-> 14:26:48 WS15 kernel:  printing eip:
-> Oct  9 14:26:48 WS15 kernel: c01a9fb8
-> Oct  9 14:26:48 WS15 kernel: *pde = c691d067 Oct  9 14:26:48 
-> WS15 kernel: Oops: 0000 [#1] Oct  9 14:26:48 WS15 kernel: 
-> PREEMPT SMP Oct  9 14:26:48 WS15 kernel: Modules linked in: 
-> lm85 w83781d hwmon_vid hwmon ipv6 parport_pc lp parport 
-> autofs4 tulip dm_mirror dm_mod button battery ac mct_u232 
-> usbserial uhci_hcd ehci_hcd nvidia(P) e7xxx_edac edac_mc 
-> rng_core i2c_i801 i2c_core aic79xx scsi_transport_spi 
-> ata_piix libata scsi_mod snd_intel8x0 snd_ac97_codec ac97_bus 
-> snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc 
-> snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq 
-> snd_timer snd_seq_device snd soundcore realtime commoncap
-> Oct  9 14:26:48 WS15 kernel: CPU:    0
-> Oct  9 14:26:48 WS15 kernel: EIP:    0060:[<c01a9fb8>]    Tainted: P
-> VLI
-> Oct  9 14:26:48 WS15 kernel: EFLAGS: 00210246   (2.6.22-6.0.WSsmp #1)
-> Oct  9 14:26:48 WS15 kernel: EIP is at nfs_lookup+0x11b/0x26a
-> Oct  9 14:26:48 WS15 kernel: eax: 00000000   ebx: c0367600   ecx:
-> 00000000   edx: 00000000
-> Oct  9 14:26:48 WS15 kernel: esi: 00000000   edi: 00000000   ebp:
-> 00000000   esp: f63b5d44
-> Oct  9 14:26:48 WS15 kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033
-> ss: 0068
-> Oct  9 14:26:48 WS15 kernel: Process gconfd-2 (pid: 7583, 
-> ti=f63b4000 task=f6273070 task.ti=f63b4000) Oct  9 14:26:48 
-> WS15 kernel: Stack: f63b5d60 f63b5d98 f63b5d9c 7fffffff
-> f63b5ed8 f63ef118 f63f5e8c f63b0002 
-> Oct  9 14:26:48 WS15 kernel:        f63db21c 00000000 
-> c014843e 00000000
-> 0000000e 00000001 00000001 000081c0 
-> Oct  9 14:26:48 WS15 kernel:        00000002 00001459 
-> 000000c9 00000271
-> 00000000 00002000 00000008 00000000
-> Oct  9 14:26:48 WS15 kernel: Call Trace:
-> Oct  9 14:26:48 WS15 kernel:  [<c014843e>] 
-> write_cache_pages+0x235/0x285 Oct  9 14:26:48 WS15 kernel:  
-> [<c01b4332>] nfs_flush_one+0x0/0xe5 Oct  9 14:26:48 WS15 
-> kernel:  [<c01488c5>] mapping_tagged+0x2b/0x32 Oct  9 
-> 14:26:48 WS15 kernel:  [<c016e227>] d_alloc+0x15e/0x166 Oct  
-> 9 14:26:48 WS15 kernel:  [<c0166663>] 
-> lookup_one_len+0xc5/0xe0 Oct  9 14:26:48 WS15 kernel:  
-> [<c01aabba>] nfs_sillyrename+0x12b/0x253 Oct  9 14:26:48 WS15 
-> kernel:  [<c01aba09>] nfs_permission+0x0/0x147 Oct  9 
-> 14:26:48 WS15 kernel:  [<c01aae6e>] nfs_unlink+0x81/0xfc Oct  
-> 9 14:26:48 WS15 kernel:  [<c01667f4>] may_delete+0x55/0x10a 
-> Oct  9 14:26:48 WS15 kernel:  [<c0167a82>] 
-> vfs_unlink+0xa1/0xc5 Oct  9 14:26:48 WS15 kernel:  
-> [<c0167b3b>] do_unlinkat+0x95/0xf5 Oct  9 14:26:48 WS15 
-> kernel:  [<c0105a67>] do_syscall_trace+0x15c/0x19d Oct  9 
-> 14:26:48 WS15 kernel:  [<c0103136>] syscall_call+0x7/0xb Oct  
-> 9 14:26:48 WS15 kernel:  [<c0350000>] 
-> cache_make_upcall+0x40/0x129 Oct  9 14:26:48 WS15 kernel:  
-> ======================= Oct  9 14:26:48 WS15 kernel: Code: 24 
-> 14 8b 00 83 c2 20 8b 58 38 8d 44
-> 24 1c 89 04 24 8b 44 24 18 ff 53 20 83 f8 fe 0f 84 93 00 00 
-> 00 85 c0 89
-> c5 0f 88 3d 01 00 00 <8b> 76 04 8b 54 24 18 89 74 24 10 8b 82 
-> a4 00 00 00 8b 54 24 64 Oct  9 14:26:48 WS15 kernel: EIP: 
-> [<c01a9fb8>] nfs_lookup+0x11b/0x26a SS:ESP 0068:f63b5d4
-> 
-> We haven't seen any negative side-effects other than users 
-> seeing this in Kwrited quite often.  We've yet to update to 
-> 2.6.22.9, however we've examined the change logs and patches 
-> associated with NFS between then and now, and don't see 
-> anything appropriate for the errors we're receiving.  Let me 
-> know if you need anything else for this...
+> Anyway, here's a try to make it autodetect m68k-linux-gnu-gcc and
+> m68k-linux-gcc. Perhaps it can be generalized in kbuild, to allow
+> arch/*/Makefile to set a list of possible cross-compiler prefixes?
 
-I was just checking to see if there's anything that I'm missing here, in
-regards to never hearing a single thing back about this.
+Here is my first try.
+We only touch CROSS_COMPILE is empty and building for another arch.
 
-- Jason Mock
+I can obviously move crossgcc part of this to core kbuild.
+Any better name?
+
+	Sam
+
+
+diff --git a/arch/m68k/Makefile b/arch/m68k/Makefile
+index 4a1bd44..6465bbe 100644
+--- a/arch/m68k/Makefile
++++ b/arch/m68k/Makefile
+@@ -13,17 +13,26 @@
+ # Copyright (C) 1994 by Hamish Macdonald
+ #
+ 
+-# test for cross compiling
+-COMPILE_ARCH = $(shell uname -m)
++# usage:
++# CROSS_COMPILE := $(call crossgcc, foo bar /usr/bin/)
++# CROSS_COMPILE will be assinged the first prefix that point
++# to a gcc in the path
++crossgcc =  $(word 1, $(foreach c,$(1),                               \
++		$(shell set -e;                                       \
++		if (which $(strip $(c))$(CC)) > /dev/null 2>&1 ; then \
++			echo $(c);                                    \
++		fi)))
++
++ifneq ($(SUBARCH),$(ARCH))
++        ifeq ($(CROSS_COMPILE),)
++                CROSS_COMPILE := $(call crossgcc, m68k-linux-gnu-)
++        endif
++endif
+ 
+ # override top level makefile
+ AS += -m68020
+ LDFLAGS := -m m68kelf
+ LDFLAGS_MODULE += -T $(srctree)/arch/m68k/kernel/module.lds
+-ifneq ($(COMPILE_ARCH),$(ARCH))
+-	# prefix for cross-compiling binaries
+-	CROSS_COMPILE = m68k-linux-gnu-
+-endif
+ 
+ ifdef CONFIG_SUN3
+ LDFLAGS_vmlinux = -N
