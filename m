@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933380AbXJROpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbXJROq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933380AbXJROpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXJROpi
+	id S933978AbXJROq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762654AbXJROqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:45:38 -0400
-Received: from h155.mvista.com ([63.81.120.155]:43549 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751396AbXJROph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:45:37 -0400
-Message-ID: <4717719C.703@ru.mvista.com>
-Date: Thu, 18 Oct 2007 18:45:48 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 18 Oct 2007 10:46:15 -0400
+Received: from lixom.net ([66.141.50.11]:48927 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755973AbXJROqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:46:15 -0400
+Date: Thu, 18 Oct 2007 09:52:38 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Tejun Heo <htejun@gmail.com>, Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071018145238.GA5565@lixom.net>
+References: <20071018070706.GA7435@elte.hu> <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org> <20071018091706.GO5063@kernel.dk> <4717281B.6070301@garzik.org> <20071018094128.GP5063@kernel.dk> <47172FB1.5020704@garzik.org> <20071018100959.GQ5063@kernel.dk> <471738A6.2020201@garzik.org>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-In-Reply-To: <200705172142.26739.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471738A6.2020201@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Add PowerPC decrementer clock event driver.
+On Thu, Oct 18, 2007 at 06:42:46AM -0400, Jeff Garzik wrote:
+> Jens Axboe wrote:
+>> On Thu, Oct 18 2007, Jeff Garzik wrote:
+>>> Jens Axboe wrote:
+>>>> That should work as well. WRT ata_sg_is_last(), if we go ahead with my
+>>>> recent sg chaining updates, we can keep the test as it would be a single
+>>>> conditional and not require any looping.
+>>>> Let me know when you have tested this!
+>>> The patch I attached to the last email got both sata_mv test boxes 
+>>> working reliably (so far).
+>>>
+>>> I worked up a patch that kills ata_sg_is_last() (plus the 
+>>> max_phys_segments sata_mv fix), see attached.  I'm thinking this is what 
+>>> I like to see in upstream.
+>> Great!
+>>> Of course, this doesn't explain why ata_sg_is_last() was broken, but 
+>>> since it's working _and_ slightly more efficient, I don't really care :)
+>> Tomo and I agreed to kill sg_last() a few days ago anyways, so this is
+>> perfectly fine with me.
+>
+> Yep, the [attached] patch that kills ata_sg_is_last() is working here on 
+> both machines that were previously croaking.
+>
+> It would be nice to get pdc_adma, sata_sil24 and ipr it-works test done, 
+> but IMO the patch is pretty straightforward and should be OK.
 
-> Every effort has been made to support the different implementations of the
-> decrementer: the classic one (with 970 series variation), 40x and Book E
-> specific ones.
+Tested-by: Olof Johansson <olof@lixom.net>
 
-> I had to make CONFIG_GENERIC_CLOCKEVENTS option selectable for the
-> compatibility reasons -- this option is not compatible with the PPC64
-> deterministic time accounting.
+Looks ok on SATA_SIL24 and SATA_MV here on PPC (together with Jens' latest
+patch). Both barfed before.
 
-> Thanks to Daniel Walker and Thomas Gleixner for the suggestions they made...
 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Thanks!
 
-> Index: linux-2.6/arch/powerpc/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/Kconfig
-> +++ linux-2.6/arch/powerpc/Kconfig
-> @@ -317,7 +317,7 @@ config PPC_STD_MMU_32
->  
->  config VIRT_CPU_ACCOUNTING
->  	bool "Deterministic task and CPU time accounting"
-> -	depends on PPC64
-> +	depends on PPC64 && !GENERIC_CLOCKEVENTS
->  	default y
->  	help
->  	  Select this option to enable more accurate task and CPU time
-
-    Thomas, that part of the ppc-clockevents.patch (part of the -rt patch) is 
-now broken, it makes CONFIG_MAX_ZONEORDER dependent on 
-!CONFIG_GENERIC_CLOCKEVENTS -- this is probably due to patch's fuzzy logic.
-Do I need to send a patch to fix this?
-
-WBR, Sergei
+-Olof
