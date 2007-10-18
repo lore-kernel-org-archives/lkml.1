@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXJRN2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764635AbXJRNbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbXJRN2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 09:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbXJRN2Y
+	id S1764635AbXJRNbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 09:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757776AbXJRNb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 09:28:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55350 "EHLO pasmtpA.tele.dk"
+	Thu, 18 Oct 2007 09:31:29 -0400
+Received: from rtr.ca ([76.10.145.34]:3417 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537AbXJRN2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 09:28:24 -0400
-Date: Thu, 18 Oct 2007 15:29:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, zippel@linux-m68k.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Allow kconfig to accept overrides
-Message-ID: <20071018132955.GB20259@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr> <47107ED2.6040509@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr> <4710CF9F.6080207@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131609170.3348@fbirervta.pbzchgretzou.qr> <4710F17C.8080100@oracle.com> <Pine.LNX.4.64.0710131836150.3348@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710131836150.3348@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+	id S1757613AbXJRNb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 09:31:28 -0400
+Message-ID: <4717602E.2080903@rtr.ca>
+Date: Thu, 18 Oct 2007 09:31:26 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: kristen.c.accardi@intel.com, greg@kroah.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 1/3] pciehp: hotplug: deal with pre-inserted
+ ExpressCards
+References: <4716CB9D.6080503@rtr.ca> <4716D3C0.20808@rtr.ca> <47174069.9000108@jp.fujitsu.com>
+In-Reply-To: <47174069.9000108@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 13, 2007 at 06:36:29PM +0200, Jan Engelhardt wrote:
+Kenji Kaneshige wrote:
+> Hi Mark,
 > 
-> On Oct 13 2007 09:25, Randy Dunlap wrote:
-> > Jan Engelhardt wrote:
-> >> On Oct 13 2007 16:01, Stefan Richter wrote:
-> >> > > .config:176:warning: override: reassigning to symbol PREEMPT_VOLUNTARY
-> >> > > .config:176:warning: override: PREEMPT_VOLUNTARY turns state choice
-> >
-> > .config:176:warning: override: PREEMPT_VOLUNTARY modifies state choice
-> >
-> > "turns" is just odd there.
-> 
-> Yeah, I've put in
-> 	("override: %s changes choice state", sym->name);
-> this morning.
-Care to send me the updated patch.
+> I still don't understand what the problems is very much.
 
-Thanks,
-	Sam
+If a PCIe ExpressCard34 is inserted into the slot *before*
+I modprobe pciehp (with pciehp_force=1), then the card is not
+detected nor enabled.  The patch provided here fixes that.
+
+> Could you give me answers against the following questions?
+> 
+>  (1) Did you try "echo 1 > /sys/bus/pci/slots/XXX/power"?
+>      (XXX is the slot number to which your card had been inserted)
+>  (2) If the answer against (1) is yes, did "echo 1 > ..." work?
+
+
+After 1. inserting the card, and then 2. modprobing pciehp,
+the value of /sys/bus/pci/slots/XXX/power is already "1".
+
+But, yes, doing "echo 1" into it does trigger card detection
+and things work afterwards.  This doesn't really help,
+because it doesn't happen automatically, unless the kernel patch
+is applied.
+
+>  (6) I think your slot is surprise removable. Is it correct?
+
+Yes, it's an externally accessible ExpressCard slot on a notebook,
+which is intended to be fully hotpluggable by surprise or otherwise.
+
+Cheers
+
+
