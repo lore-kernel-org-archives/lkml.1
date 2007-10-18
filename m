@@ -1,68 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbXJRJO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763355AbXJRJQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762970AbXJRJO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758127AbXJRJOs
+	id S1763355AbXJRJQM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXJRJP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:14:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51035 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756223AbXJRJOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:14:47 -0400
-Message-ID: <471723F0.7050002@garzik.org>
-Date: Thu, 18 Oct 2007 05:14:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 18 Oct 2007 05:15:57 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:52720 "EHLO
+	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755525AbXJRJP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 05:15:56 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Benny Halevy <bhalevy@panasas.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <20071017172932.GI15552@kernel.dk>	 <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk>	 <20071017190901.GA13780@elte.hu>	 <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org>	 <20071017193542.GA15552@kernel.dk> <20071018070706.GA7435@elte.hu>	 <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk>	 <471720FE.4090004@garzik.org> <bd58e4af0710180210tcc0d31ep9d05a0f2e9d6df29@mail.gmail.com>
-In-Reply-To: <bd58e4af0710180210tcc0d31ep9d05a0f2e9d6df29@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: [patch] PCI: disable MSI on more ATI NorthBridges
+Date: Thu, 18 Oct 2007 17:14:36 +0800
+Message-ID: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] PCI: disable MSI on more ATI NorthBridges
+Thread-Index: AcgRZ03q+e8QbKDsTOCx0eCcyylAZA==
+From: "Shane Huang" <Shane.Huang@amd.com>
+To: gregkh@suse.de, htejun@gmail.com
+cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       "Su, Henry" <Henry.Su@amd.com>, "Yang, Libin" <Libin.Yang@amd.com>,
+       "Shane Huang" <Shane.Huang@amd.com>
+X-OriginalArrivalTime: 18 Oct 2007 09:14:39.0699 (UTC)
+ FILETIME=[4FBA9230:01C81167]
+X-WSS-ID: 6B09FB991DW2250908-01-01
+Content-Type: multipart/mixed;
+ boundary="----_=_NextPart_001_01C81167.4D677A74"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy wrote:
-> 
-> 
-> On 10/18/07, *Jeff Garzik* <jeff@garzik.org <mailto:jeff@garzik.org>> wrote:
-> 
->     Jens Axboe wrote:
->      > index 4df8311..b858183 100644
->      > --- a/drivers/ata/sata_mv.c
->      > +++ b/drivers/ata/sata_mv.c
->      > @@ -1139,6 +1139,7 @@ static void mv_fill_sg(struct
->     ata_queued_cmd *qc)
->      >       struct mv_port_priv *pp = qc->ap->private_data;
->      >       struct scatterlist *sg;
->      >       struct mv_sg *mv_sg;
->      > +     int end_marked = 0;
->      >
->      >       mv_sg = pp->sg_tbl;
->      >       ata_for_each_sg(sg, qc) {
->      > @@ -1159,13 +1160,15 @@ static void mv_fill_sg(struct
->     ata_queued_cmd *qc)
->      >                       sg_len -= len;
->      >                       addr += len;
->      >
->      > -                     if (!sg_len && ata_sg_is_last(sg, qc))
->      > +                     if (!sg_len && ata_sg_is_last(sg, qc)) { 
-> 
-> 
-> I'm not sure, but shouldn't that be || rather than &&?
+This is a multi-part message in MIME format.
 
-sg_len is zero at the end of each scatterlist entry, so we need to test 
-the additional ata_sg_is_last() condition to determine if we are really 
-at the end of the PRD table.
+------_=_NextPart_001_01C81167.4D677A74
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-	Jeff
+More ATI North Bridges like RS780 can't do MSI like its predecessors
+in linux. Disable MSIs on them.
 
+Signed-off-by: Shane Huang <shane.huang@amd.com>
+
+Since there is some word wrapping problem with my mail client MS outlook
+if I copy the patch into the text, so I'll have to attach the patch as
+an attachment. Please check it.
+
+
+Thanks
+Best Regards
+Shane
+
+
+------_=_NextPart_001_01C81167.4D677A74
+Content-Type: application/octet-stream;
+ name=ATI_NBs_MSI_disable.patch
+Content-Transfer-Encoding: base64
+Content-Description: ATI_NBs_MSI_disable.patch
+Content-Disposition: attachment;
+ filename=ATI_NBs_MSI_disable.patch
+
+ZGlmZiAtcnVOIGxpbnV4LTIuNi4yM19vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jIGxpbnV4LTIu
+Ni4yMy9kcml2ZXJzL3BjaS9xdWlya3MuYwotLS0gbGludXgtMi42LjIzX29yaWcvZHJpdmVycy9w
+Y2kvcXVpcmtzLmMJMjAwNy0xMC0xMCAwNDozMTozOC4wMDAwMDAwMDAgKzA4MDAKKysrIGxpbnV4
+LTIuNi4yMy9kcml2ZXJzL3BjaS9xdWlya3MuYwkyMDA3LTEwLTE4IDE2OjUxOjMwLjAwMDAwMDAw
+MCArMDgwMApAQCAtMTY2Miw4ICsxNjYyLDE4IEBACiBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQ
+Q0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlM0MDBfMjAwLCBxdWlya19kaXNh
+YmxlX2FsbF9tc2kpOwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEks
+IFBDSV9ERVZJQ0VfSURfQVRJX1JTNDgwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwogREVDTEFS
+RV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JE
+NTgwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
+X1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JENzkwLCBxdWlya19kaXNhYmxlX2Fs
+bF9tc2kpOwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9E
+RVZJQ0VfSURfQVRJX1JYNzkwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwogREVDTEFSRV9QQ0lf
+RklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JTNjkwLCBx
+dWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRP
+Ul9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JTNjkwX0FMVCwgcXVpcmtfZGlzYWJsZV9hbGxf
+bXNpKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVW
+SUNFX0lEX0FUSV9SUzc0MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsKK0RFQ0xBUkVfUENJX0ZJ
+WFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVWSUNFX0lEX0FUSV9SUzc0MF9BTFQs
+IHF1aXJrX2Rpc2FibGVfYWxsX21zaSk7CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVO
+RE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlM3ODAsIHF1aXJrX2Rpc2FibGVfYWxsX21z
+aSk7CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklD
+RV9JRF9BVElfUlM3ODBfQUxULCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lf
+RklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JEODkwUywg
+cXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5E
+T1JfSURfQVRJLCBQQ0lfREVWSUNFX0lEX0FUSV9SRDg5MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNp
+KTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVWSUNF
+X0lEX0FUSV9SRDg3MFMsIHF1aXJrX2Rpc2FibGVfYWxsX21zaSk7CitERUNMQVJFX1BDSV9GSVhV
+UF9GSU5BTChQQ0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlg4ODAsIHF1aXJr
+X2Rpc2FibGVfYWxsX21zaSk7CiBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lE
+X1ZJQSwgUENJX0RFVklDRV9JRF9WSUFfVlQzMzUxLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwog
+CiAvKiBEaXNhYmxlIE1TSSBvbiBjaGlwc2V0cyB0aGF0IGFyZSBrbm93biB0byBub3Qgc3VwcG9y
+dCBpdCAqLwpkaWZmIC1ydU4gbGludXgtMi42LjIzX29yaWcvaW5jbHVkZS9saW51eC9wY2lfaWRz
+LmggbGludXgtMi42LjIzL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjNf
+b3JpZy9pbmNsdWRlL2xpbnV4L3BjaV9pZHMuaAkyMDA3LTEwLTEwIDA0OjMxOjM4LjAwMDAwMDAw
+MCArMDgwMAorKysgbGludXgtMi42LjIzL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCTIwMDctMTAt
+MTggMTY6NDE6NTcuMDAwMDAwMDAwICswODAwCkBAIC0zNjEsOCArMzYxLDE4IEBACiAjZGVmaW5l
+IFBDSV9ERVZJQ0VfSURfQVRJX1JTNDAwXzIwMCAgICAgMHg1YTMzCiAjZGVmaW5lIFBDSV9ERVZJ
+Q0VfSURfQVRJX1JTNDgwICAgICAgICAgMHg1OTUwCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJ
+X1JENTgwCQkweDU5NTIKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9BVElfUkQ3OTAJCTB4NTk1Ngog
+I2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SWDc5MAkJMHg1OTU3CiAjZGVmaW5lIFBDSV9ERVZJ
+Q0VfSURfQVRJX1JTNjkwCQkweDc5MTAKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9BVElfUlM2OTBf
+QUxUCTB4NzkxMQorI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SUzc0MAkJMHg3OTYwCisjZGVm
+aW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JTNzQwX0FMVAkweDc5NjEKKyNkZWZpbmUgUENJX0RFVklD
+RV9JRF9BVElfUlM3ODAJCTB4OTYwMAorI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SUzc4MF9B
+TFQJMHg5NjAxCisjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JEODkwUwkweDVhMTAKKyNkZWZp
+bmUgUENJX0RFVklDRV9JRF9BVElfUkQ4OTAJCTB4NWExMQorI2RlZmluZSBQQ0lfREVWSUNFX0lE
+X0FUSV9SRDg3MFMJMHg1YTEyCisjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JYODgwCQkweDVh
+MTMKIC8qIEFUSSBJWFAgQ2hpcHNldCAqLwogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9JWFAy
+MDBfSURFCTB4NDM0OQogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9JWFAyMDBfU01CVVMJMHg0
+MzUzCg==
+
+------_=_NextPart_001_01C81167.4D677A74--
 
 
