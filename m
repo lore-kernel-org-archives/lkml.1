@@ -1,127 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXJRIGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761839AbXJRISx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762243AbXJRIGp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 04:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXJRIGb
+	id S1761839AbXJRISx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 04:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXJRISk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 04:06:31 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:59841 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbXJRIG2 (ORCPT
+	Thu, 18 Oct 2007 04:18:40 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50419
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbXJRISi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 04:06:28 -0400
-Date: Thu, 18 Oct 2007 13:36:22 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Takenori Nagano <t-nagano@ah.jp.nec.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
-       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
-       Keith Owens <kaos@ocs.com.au>, kdb@oss.sgi.com
-Subject: Re: [PATCH 0/2] add new notifier function ,take2
-Message-ID: <20071018080621.GB8779@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <471700F4.1080200@ah.jp.nec.com> <20071018000651.35b26e42.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 18 Oct 2007 04:18:38 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: David Miller <davem@davemloft.net>
+Subject: Re: [2.6 patch] esp_scsi.c: remove __dev{init,exit}
+Date: Thu, 18 Oct 2007 03:18:01 -0500
+User-Agent: KMail/1.9.6
+Cc: bunk@kernel.org, James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1192109439.3352.11.camel@localhost.localdomain> <200710111747.03119.rob@landley.net> <20071011.144928.45188136.davem@davemloft.net>
+In-Reply-To: <20071011.144928.45188136.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071018000651.35b26e42.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200710180318.01463.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 12:06:51AM -0700, Andrew Morton wrote:
-> On Thu, 18 Oct 2007 15:45:08 +0900 Takenori Nagano <t-nagano@ah.jp.nec.com> wrote:
-> 
-> > Hi,
-> > 
-> > A big thanks to everybody who read and replied to first version. I have tried to
-> > incorporate reviewer's comments and suggestions.
-> > 
-> > changelog take1 -> take2
-> > 
-> > - Rebased 2.6.23
-> > - comment updated
-> > - renamed the notifiner name "tunable_notifier" to "tunable_atomic_notifier"
-> > - fixed typo
-> > 
-> > 
-> > These patches add new notifier function and implement it to panic_notifier_list.
-> > We used the hardcoded notifier chain so far, but it was not flexible. New
-> > notifier is very flexible, because user can change a list of order by debugfs.
-> > 
-> > Thanks,
-> > 
-> > Example)
-> > 
-> > # cd /sys/kernel/debug/
-> > # ls
-> > kprobes  pktcdvd
-> > # insmod ipmi_msghandler.ko
-> > # ls
-> > kprobes  panic_notifier_list  pktcdvd
-> > # cd panic_notifier_list/
-> > # ls
-> > ipmi_msghandler
-> > # insmod ipmi_watchdog.ko
-> > # ls
-> > ipmi_msghandler  ipmi_wdog
-> > # cat ipmi_msghandler/priority
-> > 200
-> > # cat ipmi_wdog/priority
-> > 150
-> > #
-> > Kernel panic - not syncing: panic
-> > ipmi_msghandler : notifier calls panic_event().
-> > ipmi_watchdog : notifier calls wdog_panic_handler().
-> > 
-> > .....(reboot)
-> > 
-> > # cat ipmi_msghandler/priority
-> > 200
-> > # cat ipmi_wdog/priority
-> > 150
-> > # echo 300 > ipmi_wdog/priority
-> > #
-> > Kernel panic - not syncing: panic
-> > ipmi_watchdog : notifier calls wdog_panic_handler().
-> > ipmi_msghandler : notifier calls panic_event().
-> 
-> I can sort-of see what this is doing.  Runtime-definable management of
-> which notifier functions will be called on a panic?  Or maybe I
-> misunderstood.
-> 
-> But even if I did understand, I don't understand why Linux needs this
-> feature - what are the use cases, what is the value to our users?
-> 
-> Can you please flesh that information out a bit more?
-> 
+On Thursday 11 October 2007 4:49:28 pm David Miller wrote:
+> From: Rob Landley <rob@landley.net>
+> Date: Thu, 11 Oct 2007 17:47:02 -0500
+>
+> > On Thursday 11 October 2007 10:35:20 am Adrian Bunk wrote:
+> > > Since scsi_esp_{,un}register() are EXPORT_SYMBOL'ed, these functions
+> > > (and the functions they use) can't be __dev{init,exit}.
+> > >
+> > > Based on a bug report by Rob Landley.
+> > >
+> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> >
+> > Acked-by: Rob Landley <rob@landley.net>
+>
+> I'm fine with this fix too.
+>
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-Hi Andrew,
+Did this already go to the -stable guys for 2.6.23.2?
 
-Takenori wants to make kdb and kdump co-exist. Currently after panic()
-panic_notifier_list is not executed if kdump is configured. Before list
-is executed, system will boot into second kernel to capture the dump. Hence
-if even if kdb was registered on panic_notifier_list, it will never get
-a chance to run.
-
-One of the ideas was to put all the RAS tools on panic_notifier_list, export
-the list to user space and let user determine the order in which these
-should be called. That's why this patchset is there.
-
-This does bring in some reliability concerns for kdump as now there is
-additional dependency on notifier infrastructure after panic.
-
-Eric, had suggested that kdb can put a break point on panic() to handle
-the co-existence issue and no need to bring in additional dependencies in
-panic path.
-
-I agree with the idea of kdb putting a break point in panic. If there are
-more tools down the line who run into co-existence issue with kdump, then
-we can re-visit this idea.
-
-Thanks
-Vivek
-
-
-> The patches are somewhat wordwrapped - please check your email client
-> configuration, thanks.
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
