@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933013AbXJRPmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932643AbXJRPoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933013AbXJRPmh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 11:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbXJRPma
+	id S932643AbXJRPoI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 11:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbXJRPnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 11:42:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:10437 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbXJRPm3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 11:42:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Vu488b38GQcsXsXijb7+7Vx8hsU7fVKWkBtS6uwzR9wIEo8pSi1jlc59Iyg0SowfJiU0j5POsCR/hWO2/xnUK+2N5cyaEwTIuK9Fwa6Q8ar6KTXi5TxBnDSPynE6M/jROnal0As4C+q1oRQ3zvgoZiY68uur1NJCn7M3oXx5cK0=
-Message-ID: <c565abbb0710180842u74894da3q490710c5a4571b6d@mail.gmail.com>
-Date: Thu, 18 Oct 2007 16:42:24 +0100
-From: "Matthew Faulkner" <matthew.faulkner@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Network Throughput Problem...
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 11:43:53 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:49796 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757153AbXJRPnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 11:43:52 -0400
+Date: Thu, 18 Oct 2007 19:48:19 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Andy Fleming <afleming@freescale.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] flush_work_sync vs. flush_scheduled_work Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
+Message-ID: <20071018154819.GA425@tv-sign.ru>
+References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <20071018063157.GA1694@ff.dom.local> <20071018070531.GA2065@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071018070531.GA2065@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all
+On 10/18, Jarek Poplawski wrote:
+>
+> +/**
+> + * flush_work_sync - block until a work_struct's callback has terminated
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Hmm...
 
-I'm using netperf to perform TCP throughput tests via the localhost
-interface. This is being done on a SMP machine. I'm forcing the
-netperf server and client to run on the same core. However, for any
-packet sizes below 523 the throughput is much lower compared to the
-throughput when the packet sizes are greater than 524.
+> + * Similar to cancel_work_sync() but will only busy wait (without cancel)
+> + * if the work is queued.
 
-Recv   Send    Send                          Utilization       Service Demand
-Socket Socket  Message  Elapsed              Send     Recv     Send    Recv
-Size   Size    Size     Time     Throughput  local    remote   local   remote
-bytes  bytes   bytes    secs.    MBytes  /s  % S      % S      us/KB   us/KB
- 65536  65536    523    30.01        81.49   50.00    50.00    11.984  11.984
- 65536  65536    524    30.01       460.61   49.99    49.99    2.120   2.120
+Yes, it won't block, but will spin in busy-wait loop until all other works
+scheduled before this work are finished. Not good. After that it really
+blocks waiting for this work to complete.
 
-The chances are i'm being stupid and there is an obvious reason for
-this, but when i put  the server and client on different cores i don't
-see this effect.
+And I am a bit confused. We can't use flush_workqueue() because some of the
+queued work_structs may take rtnl_lock, yes? But in that case we can't use
+the new flush_work_sync() helper as well, no?
 
-Any help explaining this will be greatly appreciated.
+If we can't just cancel the work, can't we do something like
+
+	if (cancel_work_sync(w))
+		w->func(w);
+
+instead?
+
+> +void flush_work_sync(struct work_struct *work)
+> +{
+> +	int ret;
+> +
+> +	do {
+> +		ret = work_pending(work);
+> +		wait_on_work(work);
+> +		if (ret)
+> +			cpu_relax();
+> +	} while (ret);
+> +}
+
+If we really the new helper, perhaps we can make it a bit better?
+
+1. Modify insert_work() to take the "struct list_head *at" parameter instead
+   of "int tail". I think this patch will also cleanup the code a bit, and
+   shrink a couple of bytes from .text
+
+2. flush_work_sync() inserts a barrier right after this work and blocks.
+   We still need some retry logic to handle the queueing is in progress
+   of course, but we won't spin waiting for the other works.
+
+What do you think?
+
+Oleg.
+
