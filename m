@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbXJRKTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762976AbXJRKdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764283AbXJRKTx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761271AbXJRKTp
+	id S1762976AbXJRKdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbXJRKdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:19:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57896
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758842AbXJRKTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:19:44 -0400
-Date: Thu, 18 Oct 2007 03:19:57 -0700 (PDT)
-Message-Id: <20071018.031957.104033396.davem@davemloft.net>
-To: Shane.Huang@amd.com
-Cc: gregkh@suse.de, htejun@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, Henry.Su@amd.com,
-       Libin.Yang@amd.com
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
-References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Oct 2007 06:33:43 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:30831 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755726AbXJRKdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:33:42 -0400
+Message-ID: <4717367C.1040902@sw.ru>
+Date: Thu, 18 Oct 2007 14:33:32 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, devel@openvz.org
+Subject: Re: How Inactive may be much greather than cached?
+References: <4716FC04.6070107@sw.ru> <200710181627.27827.nickpiggin@yahoo.com.au> <471707BD.4000203@sw.ru> <200710181727.01128.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710181727.01128.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Shane Huang" <Shane.Huang@amd.com>
-Date: Thu, 18 Oct 2007 17:14:36 +0800
-
-> More ATI North Bridges like RS780 can't do MSI like its predecessors
-> in linux. Disable MSIs on them.
+Nick Piggin wrote:
+> Some filesystems, including I believe, ext3 with data=ordered,
+> can leave orphaned pages around after they have been truncated
+> out of the pagecache. These pages get left on the LRU and vmscan
+> reclaims them pretty easily.
 > 
-> Signed-off-by: Shane Huang <shane.huang@amd.com>
+> Try ext3 data=writeback, or even ext2.
 
-Can we get some detail as to why these north bridges have to have MSI
-disabled completely?  I can't believe that all 6 of these ATI
-controllers which will now be listed in the quirk table cannot use MSI
-at all.
+thanks, data=writeback helps.
 
-I've discovered several cases where it was a buggy device or a driver
-bug that caused someone to erroneously submit patches that disable MSI
-completely for the bridge they were behind.
-
-I don't want that to happen any more.  One way to prevent that is to
-have a full detailed justification for the MSI disabling in the
-changelog or in the comments for the MSI quirk.
-
-Thank you.
+Resume: ext3 with data=ordered gets bh with data and moves it to journal
+transaction. If transaction handled immediately, ext3 frees bh on this page, and
+then frees this page.
+However if journal delays processing of this transaction, ext3 cannot free bh
+that is still busy. Later jbd layer decrements bh counter but it makes nothing
+with data page that is not freed and stays inactive.
