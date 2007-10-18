@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbXJRFiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759119AbXJRFqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761164AbXJRFiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 01:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760701AbXJRFh6
+	id S1759119AbXJRFqF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 01:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXJRFpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 01:37:58 -0400
-Received: from rtr.ca ([76.10.145.34]:4732 "EHLO mail.rtr.ca"
+	Thu, 18 Oct 2007 01:45:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48237 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760633AbXJRFh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 01:37:57 -0400
-Message-ID: <4716F134.2060002@rtr.ca>
-Date: Thu, 18 Oct 2007 01:37:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1751579AbXJRFpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 01:45:53 -0400
+Message-ID: <4716F2FC.70400@garzik.org>
+Date: Thu, 18 Oct 2007 01:45:32 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.23-git12: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+To: Mark Lord <lkml@rtr.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       jens.axboe@oracle.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716EE37.9010701@rtr.ca> <4716F061.50103@rtr.ca>
+In-Reply-To: <4716F061.50103@rtr.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+> Mark Lord wrote:
+>> Linus Torvalds wrote:
+>>>
+>>> On Wed, 17 Oct 2007, Mark Lord wrote:
+>>>> It would be good to have something soon-ish.
+>>>> This "dead at boot time" issue is impacting the general ability to test
+>>>> patches against latest -git in time for the current merge window.
+>>>
+>>> In the meantime, does the patch I sent out help people?
+>>
+>> Your patch from this posting http://lkml.org/lkml/2007/10/17/285
+>> does not seem to make much difference here.
+>>
+>> It still crashes at exactly the same place.
+> 
+> 
+> However, Jens's patch from that same thread:
+> 
+>     http://lkml.org/lkml/2007/10/17/269
+> 
+> ..allowed me to boot and post this followup message from -git12
+> 
+> Jeff: try that one.
 
-usb 5-1: new high speed USB device using ehci_hcd and address 2
-usb 5-1: configuration #1 chosen from 1 choice
-hub 5-1:1.0: USB hub found
-hub 5-1:1.0: 4 ports detected
-sysfs: duplicate filename 'bInterfaceNumber' can not be created
-WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
- [sysfs_add_one+159/224] sysfs_add_one+0x9f/0xe0
-hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x010f000c
- [sysfs_add_file+79/144] sysfs_add_file+0x4f/0x90
-b44: eth0: Link is up at 100 Mbps, full duplex.
-b44: eth0: Flow control is off for TX and off for RX.
- [sysfs_create_group+103/256] sysfs_create_group+0x67/0x100
- [klist_add_tail+30/80] klist_add_tail+0x1e/0x50
- [device_add+61/1472] device_add+0x3d/0x5c0
- [<f88a3adc>] usb_create_sysfs_intf_files+0x2c/0xb0 [usbcore]
- [<f889f701>] usb_set_configuration+0x391/0x5d0 [usbcore]
- [<f88a7c16>] generic_probe+0x76/0xb0 [usbcore]
- [<f88a1343>] usb_probe_device+0x33/0x40 [usbcore]
- [driver_probe_device+142/400] driver_probe_device+0x8e/0x190
- [klist_next+93/160] klist_next+0x5d/0xa0
- [bus_for_each_drv+68/112] bus_for_each_drv+0x44/0x70
- [device_attach+125/144] device_attach+0x7d/0x90
- [__device_attach+0/16] __device_attach+0x0/0x10
- [bus_attach_device+77/160] bus_attach_device+0x4d/0xa0
- [bus_add_device+300/352] bus_add_device+0x12c/0x160
- [device_add+1155/1472] device_add+0x483/0x5c0
- [<f889a274>] usb_new_device+0x54/0xa0 [usbcore]
- [<f889ab9a>] hub_thread+0x45a/0xca0 [usbcore]
- [schedule+460/1680] schedule+0x1cc/0x690
- [autoremove_wake_function+0/80] autoremove_wake_function+0x0/0x50
- [<f889a740>] hub_thread+0x0/0xca0 [usbcore]
- [kthread+66/112] kthread+0x42/0x70
- [kthread+0/112] kthread+0x0/0x70
- [kernel_thread_helper+7/24] kernel_thread_helper+0x7/0x18
- =======================
-NET: Registered protocol family 17
+That's already in my upstream kernel, here.  commits
+ba951841ceb7fa5b06ad48caa5270cc2ae17941e and 
+a3bec5c5aea0da263111c4d8f8eabc1f8560d7bf.
+
+sata_mv and sata_nv still reliably poop themselves here, whereas its 
+rock solid with 2.6.23.1.  Sounds like different issues from yours, as I 
+see a stream of SATA errors on the bad kernels, errors which are often a 
+symptom of something whacked in the DMA engine (misprogramming causes 
+the silicon to generate bogus FIS's, which the device then chokes on)
+
+	Jeff
+
+
