@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbXJRA31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbXJRA3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763321AbXJRA31 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762742AbXJRA3A
+	id S1763665AbXJRA3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762827AbXJRA3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:29:00 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:50570 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762658AbXJRA26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:28:58 -0400
-Date: Wed, 17 Oct 2007 18:27:56 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Problem:  CPU sleep when calling a function in another object for
- the first time.
-In-reply-to: <fa.tipEk8FmQyQBLuKMUWoW6rAg1Yc@ifi.uio.no>
-To: John Marconi <john.marconi@utstar.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4716A88C.2050204@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.tipEk8FmQyQBLuKMUWoW6rAg1Yc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 17 Oct 2007 20:29:33 -0400
+Received: from main.gmane.org ([80.91.229.2]:38967 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762022AbXJRA3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:29:31 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Flynn's Original Paper about Computer Organization
+Date: Wed, 17 Oct 2007 20:38:01 -0400
+Message-ID: <4716AAE9.2060001@tmr.com>
+References: <40378e40710151152q5d96a51r88e8f27f69836d6c@mail.gmail.com> <20071015203344.0c956f8a@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-70-109-100-63.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20071015203344.0c956f8a@the-village.bc.nu>
+Cc: linux-smp@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Marconi wrote:
-> Hello,
+Alan Cox wrote:
+> On Mon, 15 Oct 2007 20:52:50 +0200
+> "Mohamed Bamakhrama" <bamakhrama@gmail.com> wrote:
 > 
-> I have been seeing a problem in which one of my CPUs goes to sleep for
-> 40ms in the middle of running a user-space program.  The problem occurs
-> when I have a function in object file X call another function in object
-> file Y.  If I add a gettimeofday right before the function call occurs,
-> and then also right at the beginning of the called function, I see a
-> 40ms delay.  This only occurs on the first call to any function in file
-> Y.  Once a function in file Y is called, all other calls to functions in
-> this file are immediate.
+>> Hi all,
+>> I am looking for Michael Flynn original paper about computer
+>> organization in which Flynn devised the so-called "Flynn Taxonomy". I
+>> tried Google, IEEE Xplore, ACM, Yahoo but in vain. I would be very
+>> grateful if someone can post a scanned version of the manuscript.
 > 
-> I have added a kernel profiler to the timer interrupt of this CPU - and
-> find that during this 40ms period, the CPU is in r4k_wait - which looks
-> like cpu_idle is running.  It almost seems like file Y is being loaded
-> into memory to be used.
+> You may find the following useful
 > 
-> The program in question is using pthreads and each thread is on a
-> separate CPU.  Each CPU is dedicated to running a single thread and
-> nothing else.  The files X and Y are two object files linked into a
-> single ELF binary.  The kernel version is 2.6.14 and this is a MIPS
-> based processor.
+> 	http://en.wikipedia.org/Wiki/Copyright
 > 
-> Does anyone have any ideas why this delay might be occurring?
+> Please don't ask on this list for people to abuse copyright law. 
+> 
+His request is off-topic, and "post" would be a violation, but he is 
+allowed a personal copy under "fair use" doctrine unless the law has 
+changed recently.
 
-Binaries get loaded into memory on demand, so it's quite possible that 
-that part of the executable hasn't been loaded until something calls a 
-function within it.
+US copyright is unique, things on which copyright has expired were 
+re-protected when the law changed, making copying which was legal when 
+done a crime after the fact. I'm not sure British law using 400 year old 
+precedents is better, just more predictable.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
