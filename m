@@ -1,123 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763355AbXJRJQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbXJRJQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763355AbXJRJQM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXJRJP5
+	id S1763557AbXJRJQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760867AbXJRJQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:15:57 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:52720 "EHLO
-	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755525AbXJRJP4 (ORCPT
+	Thu, 18 Oct 2007 05:16:49 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41259 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755554AbXJRJQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:15:56 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: [patch] PCI: disable MSI on more ATI NorthBridges
-Date: Thu, 18 Oct 2007 17:14:36 +0800
-Message-ID: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] PCI: disable MSI on more ATI NorthBridges
-Thread-Index: AcgRZ03q+e8QbKDsTOCx0eCcyylAZA==
-From: "Shane Huang" <Shane.Huang@amd.com>
-To: gregkh@suse.de, htejun@gmail.com
-cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Su, Henry" <Henry.Su@amd.com>, "Yang, Libin" <Libin.Yang@amd.com>,
-       "Shane Huang" <Shane.Huang@amd.com>
-X-OriginalArrivalTime: 18 Oct 2007 09:14:39.0699 (UTC)
- FILETIME=[4FBA9230:01C81167]
-X-WSS-ID: 6B09FB991DW2250908-01-01
-Content-Type: multipart/mixed;
- boundary="----_=_NextPart_001_01C81167.4D677A74"
+	Thu, 18 Oct 2007 05:16:48 -0400
+To: Simon Horman <horms@verge.net.au>
+Cc: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
+       Don Zickus <dzickus@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>,
+       kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
+Reply-To: tachibana@mxm.nes.nec.co.jp
+In-reply-to: <20071018053739.GA31244@verge.net.au>
+Message-Id: <20071018181407tachibana@mail.jp.nec.com>
+References: <20071018053739.GA31244@verge.net.au>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:5W0000
+From: tachibana@mxm.nes.nec.co.jp
+Date: Thu, 18 Oct 2007 18:14:07 +0900
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C81167.4D677A74
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Hi Simon,
 
-More ATI North Bridges like RS780 can't do MSI like its predecessors
-in linux. Disable MSIs on them.
+On Thu, 18 Oct 2007 14:37:41 +0900, Simon Horman <horms@verge.net.au> wrote:
+> On Wed, Oct 17, 2007 at 02:16:19PM +0900, Ken'ichi Ohmichi wrote:
+> > 
+> > Hi Simon,
+> > 
+> > Simon Horman wrote:
+> > > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
+> > >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
+> > >> The patch is for kexec-tools-testing-20070330.
+> > >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
+> > >> kexec command gets the address and size of the vmcoreinfo data from
+> > >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
+> > >> ELF header of /proc/vmcore. When the second kernel is booting, the
+> > >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
+> > >> segment into /proc/vmcore.
+> > > 
+> > > Sorry for the long delay, I completely missed this patch.
+> > > 
+> > > The kexec-tools change seems ok to me. What is the status of
+> > > the kernel portion of the change?
+> > 
+> > The kernel portion is merged into linux-2.6.23-mm1.
+> > According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
+> > "The infamous misc.  Will re-review and will merge basically all of them".
+> > 
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/0710.0/0313.html
+> > 
+> > 
+> > > Do you still want the kexec-tools portion applied?
+> > 
+> > Yes, I hope so.
+> 
+> Thanks, applied :-)
 
-Signed-off-by: Shane Huang <shane.huang@amd.com>
+Thank you for applying ;-)
 
-Since there is some word wrapping problem with my mail client MS outlook
-if I copy the patch into the text, so I'll have to attach the patch as
-an attachment. Please check it.
+But it has the compatibility problem that the kexec command fails on
+kernels which don't have /sys/kernel/vmcoreinfo:
+
+ # ls /sys/kernel/
+ debug  kexec_crash_loaded  kexec_loaded  security  uevent_helper 
+ uevent_seqnum
+ #
+ (There is not /sys/kernel/vmcoreinfo.)
+
+ #
+ # kexec -p --args-linux vmlinuz --initrd=initrd.img
+ Could not open "/sys/kernel/vmcoreinfo": No such file or directory
+ #
+
+To fix the problem, could you please apply the attached patch ?
+The fixed part is the same as the patch in the following mail.
+
+To: kexec-ml <kexec@lists.infradead.org>
+Subject: [PATCH 2/2] [kexec-tools] Pass vmcoreinfo's address and size #2
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Date: Fri, 7 Sep 2007 18:10:02 +0900
 
 
 Thanks
-Best Regards
-Shane
+tachibana
 
-
-------_=_NextPart_001_01C81167.4D677A74
-Content-Type: application/octet-stream;
- name=ATI_NBs_MSI_disable.patch
-Content-Transfer-Encoding: base64
-Content-Description: ATI_NBs_MSI_disable.patch
-Content-Disposition: attachment;
- filename=ATI_NBs_MSI_disable.patch
-
-ZGlmZiAtcnVOIGxpbnV4LTIuNi4yM19vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jIGxpbnV4LTIu
-Ni4yMy9kcml2ZXJzL3BjaS9xdWlya3MuYwotLS0gbGludXgtMi42LjIzX29yaWcvZHJpdmVycy9w
-Y2kvcXVpcmtzLmMJMjAwNy0xMC0xMCAwNDozMTozOC4wMDAwMDAwMDAgKzA4MDAKKysrIGxpbnV4
-LTIuNi4yMy9kcml2ZXJzL3BjaS9xdWlya3MuYwkyMDA3LTEwLTE4IDE2OjUxOjMwLjAwMDAwMDAw
-MCArMDgwMApAQCAtMTY2Miw4ICsxNjYyLDE4IEBACiBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQ
-Q0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlM0MDBfMjAwLCBxdWlya19kaXNh
-YmxlX2FsbF9tc2kpOwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEks
-IFBDSV9ERVZJQ0VfSURfQVRJX1JTNDgwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwogREVDTEFS
-RV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JE
-NTgwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
-X1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JENzkwLCBxdWlya19kaXNhYmxlX2Fs
-bF9tc2kpOwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9E
-RVZJQ0VfSURfQVRJX1JYNzkwLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwogREVDTEFSRV9QQ0lf
-RklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JTNjkwLCBx
-dWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRP
-Ul9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JTNjkwX0FMVCwgcXVpcmtfZGlzYWJsZV9hbGxf
-bXNpKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVW
-SUNFX0lEX0FUSV9SUzc0MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsKK0RFQ0xBUkVfUENJX0ZJ
-WFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVWSUNFX0lEX0FUSV9SUzc0MF9BTFQs
-IHF1aXJrX2Rpc2FibGVfYWxsX21zaSk7CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVO
-RE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlM3ODAsIHF1aXJrX2Rpc2FibGVfYWxsX21z
-aSk7CitERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklD
-RV9JRF9BVElfUlM3ODBfQUxULCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOworREVDTEFSRV9QQ0lf
-RklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JEODkwUywg
-cXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5E
-T1JfSURfQVRJLCBQQ0lfREVWSUNFX0lEX0FUSV9SRDg5MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNp
-KTsKK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVWSUNF
-X0lEX0FUSV9SRDg3MFMsIHF1aXJrX2Rpc2FibGVfYWxsX21zaSk7CitERUNMQVJFX1BDSV9GSVhV
-UF9GSU5BTChQQ0lfVkVORE9SX0lEX0FUSSwgUENJX0RFVklDRV9JRF9BVElfUlg4ODAsIHF1aXJr
-X2Rpc2FibGVfYWxsX21zaSk7CiBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lE
-X1ZJQSwgUENJX0RFVklDRV9JRF9WSUFfVlQzMzUxLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwog
-CiAvKiBEaXNhYmxlIE1TSSBvbiBjaGlwc2V0cyB0aGF0IGFyZSBrbm93biB0byBub3Qgc3VwcG9y
-dCBpdCAqLwpkaWZmIC1ydU4gbGludXgtMi42LjIzX29yaWcvaW5jbHVkZS9saW51eC9wY2lfaWRz
-LmggbGludXgtMi42LjIzL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjNf
-b3JpZy9pbmNsdWRlL2xpbnV4L3BjaV9pZHMuaAkyMDA3LTEwLTEwIDA0OjMxOjM4LjAwMDAwMDAw
-MCArMDgwMAorKysgbGludXgtMi42LjIzL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCTIwMDctMTAt
-MTggMTY6NDE6NTcuMDAwMDAwMDAwICswODAwCkBAIC0zNjEsOCArMzYxLDE4IEBACiAjZGVmaW5l
-IFBDSV9ERVZJQ0VfSURfQVRJX1JTNDAwXzIwMCAgICAgMHg1YTMzCiAjZGVmaW5lIFBDSV9ERVZJ
-Q0VfSURfQVRJX1JTNDgwICAgICAgICAgMHg1OTUwCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJ
-X1JENTgwCQkweDU5NTIKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9BVElfUkQ3OTAJCTB4NTk1Ngog
-I2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SWDc5MAkJMHg1OTU3CiAjZGVmaW5lIFBDSV9ERVZJ
-Q0VfSURfQVRJX1JTNjkwCQkweDc5MTAKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9BVElfUlM2OTBf
-QUxUCTB4NzkxMQorI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SUzc0MAkJMHg3OTYwCisjZGVm
-aW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JTNzQwX0FMVAkweDc5NjEKKyNkZWZpbmUgUENJX0RFVklD
-RV9JRF9BVElfUlM3ODAJCTB4OTYwMAorI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9SUzc4MF9B
-TFQJMHg5NjAxCisjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JEODkwUwkweDVhMTAKKyNkZWZp
-bmUgUENJX0RFVklDRV9JRF9BVElfUkQ4OTAJCTB4NWExMQorI2RlZmluZSBQQ0lfREVWSUNFX0lE
-X0FUSV9SRDg3MFMJMHg1YTEyCisjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JYODgwCQkweDVh
-MTMKIC8qIEFUSSBJWFAgQ2hpcHNldCAqLwogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9JWFAy
-MDBfSURFCTB4NDM0OQogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0FUSV9JWFAyMDBfU01CVVMJMHg0
-MzUzCg==
-
-------_=_NextPart_001_01C81167.4D677A74--
-
+---
+diff -rpuN a/kexec/crashdump.c b/kexec/crashdump.c
+--- a/kexec/crashdump.c	2007-10-18 15:20:56.000000000 +0900
++++ b/kexec/crashdump.c	2007-10-18 15:22:21.000000000 +0900
+@@ -122,12 +122,8 @@ int get_kernel_vmcoreinfo(uint64_t *addr
+ 	*len = 0;
+ 
+ 	sprintf(kdump_info, "/sys/kernel/vmcoreinfo");
+-	fp = fopen(kdump_info, "r");
+-	if (!fp) {
+-		die("Could not open \"%s\": %s\n", kdump_info,
+-		    strerror(errno));
+-		return -1;
+-	}
++	if (!(fp = fopen(kdump_info, "r")))
++		return 0;
+ 
+ 	if (!fgets(line, sizeof(line), fp))
+ 		die("Cannot parse %s: %s\n", kdump_info, strerror(errno));
+_
 
