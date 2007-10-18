@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXJROCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764143AbXJRODJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933313AbXJROCg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765924AbXJROCX
+	id S1764143AbXJRODJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765878AbXJROC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:02:23 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:37006 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765858AbXJROCW (ORCPT
+	Thu, 18 Oct 2007 10:02:26 -0400
+Received: from smtp1.int-evry.fr ([157.159.10.44]:45386 "EHLO
+	smtp1.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765985AbXJROCY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:02:22 -0400
-Message-ID: <47176768.8070804@tiscali.nl>
-Date: Thu, 18 Oct 2007 16:02:16 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 18 Oct 2007 10:02:24 -0400
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4 resend] pci.h : Add PCI identifiers for the RDC devices
+Date: Thu, 18 Oct 2007 15:57:55 +0200
+User-Agent: KMail/1.9.7
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+References: <200710181551.28720.florian.fainelli@telecomint.eu>
+In-Reply-To: <200710181551.28720.florian.fainelli@telecomint.eu>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: peterz@infradead.org, viro@ftp.linux.org.uk
-Subject: [PATCH 4/4 returns] fix not-and/or errors
-References: <47161243.6060007@tiscali.nl> <47161451.9010309@tiscali.nl>
-In-Reply-To: <47161451.9010309@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710181557.56041.florian.fainelli@telecomint.eu>
+X-int-MailScanner-Information: Please contact the ISP for more information
+X-int-MailScanner: Found to be clean
+X-int-MailScanner-SpamCheck: 
+X-int-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Thanks for comments, here a second version with previously covered commits removed
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/arm/mach-pxa/mfp.c b/arch/arm/mach-pxa/mfp.c
-index 5cd3cad..7229319 100644
---- a/arch/arm/mach-pxa/mfp.c
-+++ b/arch/arm/mach-pxa/mfp.c
-@@ -199,7 +199,7 @@ void pxa3xx_mfp_set_edge(int mfp, int edge)
- 
- 	mfpr_val &= ~MFPR_EDGE_MASK;
- 	mfpr_val |= (edge & 0x3u) << MFPR_ERE_OFFSET;
--	mfpr_val |= (!edge & 0x1) << MFPR_EC_OFFSET;
-+	mfpr_val |= (!(edge & 0x1)) << MFPR_EC_OFFSET;
- 
- 	mfpr_writel(mfpr_off, mfpr_val);
- 	mfpr_sync();
-diff --git a/arch/sh/drivers/dma/dma-sh.c b/arch/sh/drivers/dma/dma-sh.c
-index 958bac1..e8f9c85 100644
---- a/arch/sh/drivers/dma/dma-sh.c
-+++ b/arch/sh/drivers/dma/dma-sh.c
-@@ -89,7 +89,7 @@ static irqreturn_t dma_tei(int irq, void *dev_id)
- 
- static int sh_dmac_request_dma(struct dma_channel *chan)
- {
--	if (unlikely(!chan->flags & DMA_TEI_CAPABLE))
-+	if (unlikely(!(chan->flags & DMA_TEI_CAPABLE)))
- 		return 0;
- 
- 	return request_irq(get_dmte_irq(chan->chan), dma_tei,
-diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
-index d915fec..1db2055 100644
---- a/drivers/acpi/asus_acpi.c
-+++ b/drivers/acpi/asus_acpi.c
-@@ -596,7 +596,7 @@ write_led(const char __user * buffer, unsigned long count,
- 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
- 
- 	if (invert)		/* invert target value */
--		led_out = !led_out & 0x1;
-+		led_out = !led_out;
- 
- 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
- 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 9b2c0f7..3762ce2 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -420,8 +420,7 @@ static int acpi_battery_update(struct acpi_battery *battery,
- 		result = acpi_battery_get_status(battery);
- 		if (result)
- 			goto end;
--		if ((!battery->flags.battery_present_prev & acpi_battery_present(battery))
--		    || (battery->flags.battery_present_prev & !acpi_battery_present(battery))) {
-+		if (battery->flags.battery_present_prev != acpi_battery_present(battery)) {
- 			result = acpi_battery_init_update(battery);
- 			if (result)
- 				goto end;
-@@ -448,10 +447,7 @@ static void acpi_battery_notify_update(struct acpi_battery *battery)
- 		return;
- 	}
- 
--	if ((!battery->flags.battery_present_prev &
--	     acpi_battery_present(battery)) ||
--	    (battery->flags.battery_present_prev &
--	     !acpi_battery_present(battery))) {
-+	if (battery->flags.battery_present_prev != acpi_battery_present(battery)) {
- 		battery->flags.init_update = 1;
- 	} else {
- 		battery->flags.update[ACPI_BATTERY_INFO] = 1;
+I forgot to remove the attachment on this one, sorry.
 
+This patch defines the PCI identifiers found in
+the RDC R-321x System-on-Chip.
+
+Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+---
+ include/linux/pci_ids.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+---
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 2aaf1c1..c5a0f5b 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2097,6 +2097,13 @@
+ #define PCI_DEVICE_ID_HERC_WIN		0x5732
+ #define PCI_DEVICE_ID_HERC_UNI		0x5832
+ 
++#define PCI_VENDOR_ID_RDC		0x17f3
++#define PCI_DEVICE_ID_RDC_R6020		0x6020
++#define PCI_DEVICE_ID_RDC_R6030		0x6030
++#define PCI_DEVICE_ID_RDC_R6040		0x6040
++#define PCI_DEVICE_ID_RDC_R6060		0x6060
++#define PCI_DEVICE_ID_RDC_R6061		0x6061
++
+ #define PCI_VENDOR_ID_SITECOM		0x182d
+ #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
