@@ -1,345 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764762AbXJRWIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765779AbXJRWIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764762AbXJRWIK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXJRWHz
+	id S1765779AbXJRWIl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbXJRWIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:07:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44194 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752870AbXJRWHx (ORCPT
+	Thu, 18 Oct 2007 18:08:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:42138 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756482AbXJRWIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:07:53 -0400
-Date: Thu, 18 Oct 2007 15:05:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org, Paul Sokolovsky <pmiscml@gmail.com>,
-       Ben Dooks <ben@trinity.fluff.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
-Message-Id: <20071018150544.6852d5c9.akpm@linux-foundation.org>
-In-Reply-To: <20071018091239.GA11360@caravaggio>
-References: <20071018091239.GA11360@caravaggio>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Oct 2007 18:08:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WPW0Qk6Zi8kRUXTrpSnauc8rp1jRppo4ITljj4PMytJ8JT9pNj/pIYX0UcXzJqpA7dRVbckGrEDYxRs/vaJxG6uYo6ob8kBfm8VQAquPZwNwkxqn3UVRVOWQMaO1oN401xWjhK2qQGh6DZineWOolvt6vl0YifpwZK7Opy1vXRk=
+Message-ID: <4717D958.8030900@gmail.com>
+Date: Fri, 19 Oct 2007 00:08:24 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Ferenc Wagner <wferi@niif.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RocketPort Linux driver errors on module reload
+References: <bububu786234897832@pripojeni.net> <87k5pozgb5.fsf@tac.ki.iif.hu>	<4713BAD0.9020606@gmail.com> <87myujsdpr.fsf@szonett.ki.iif.hu>	<4af2d03a0710161419n3727dbfev10b1319599d30b49@mail.gmail.com> <87ve94ccnl.fsf@tac.ki.iif.hu>
+In-Reply-To: <87ve94ccnl.fsf@tac.ki.iif.hu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 11:12:41 +0200
-Samuel Ortiz <sameo@openedhand.com> wrote:
-
-> Hi,
+On 10/18/2007 11:53 PM, Ferenc Wagner wrote:
+> "Jiri Slaby" <jirislaby@gmail.com> writes:
 > 
-> This is a patch for the Compaq ASIC3 multi function chip, found in many PDAs
-> (iPAQs, HTCs...).
-> It is a simplified version of Paul Sokolovsky's first proposal [1]. With this
-> code, it is basically a GPIO and IRQ expander. My plan is to add more
-> features once this patch gets reviewed and accepted.
+>> On 10/16/07, Wagner Ferenc <wferi@niif.hu> wrote:
+>>
+>>> Jiri Slaby <jirislaby@gmail.com> writes:
+>>>
+>>>> Are you willing to test to-pci-probing patches (i.e. patches which
+>>>> converts the driver to the model introduced in linux 2.4)?
+>>> Well yes.  We've got a copule of such cards, which raises some
+>>> interest in a proper driver.  Just send the patches with some
+>>> instructions along, or point me to a git branch if you prefer.
+>> Maybe the git with stand-alone module would be better...
 > 
-> [1] http://lkml.org/lkml/2007/5/1/46
+> Sorry, I don't understand this suggestion.  I don't read LKML, please
+> don't suppose any prior knowledge of the jargon used here...  Do you
+> mean I should use the bleeding edge git source of the kernel?  Not
+> something I'm eager to do, but can do, actually.  And would you send
+> me patches separately on top of that?
+
+I meant the creating of a git repository with only the module would be the
+easiest possible and most comfortable way for you :). Otherwise I can post you a
+patch serie.
+
+>>>> If not, I'll only increment the counter on modprobe and decrement it
+>>>> on rmmod, since it would be a safe (in the meaning of not changing
+>>>> that much code) way of fixing the problem.
+>>> And what are the drawbacks of this simple solution?
+>> Nothing, but it's not the proper way -- just a safe fallback. But you
+>> can still say no :).
 > 
-> Signed-off-by: Samuel Ortiz <sameo@openedhand.com>
+> I expected an improper way to have some disadvantages at least. :)
 
-You're not a big fan of checkpatch, I see.
+Yes, if you have pci hotpluggable motherboard :). Pci probing (the new method)
+allows you adding/probing pci devices on the fly, not only when the module is
+loading.
 
-total: 76 errors, 69 warnings, 1054 lines checked
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
+> Anyway, I can tolerate some glitches during the porting of this
+> module, resulting in interruptions of the serial devices, but leaving
+> the rest of the system mostly stable; it's a production system after
+> all.  If the changes are more threatening, I'll use another system for
+> the tests.  In short: suggest a method and let's give a chance for the
+> proper solution.  Just please enclose some risk assessment.
 
-> 
-> Index: linux-2.6-htc/drivers/mfd/asic3.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6-htc/drivers/mfd/asic3.c	2007-10-18 11:07:09.000000000 +0200
-> @@ -0,0 +1,572 @@
-> +/*
-> + * driver/mfd/asic3.c
-> + *
-> + * Compaq ASIC3 support.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Copyright 2001 Compaq Computer Corporation.
-> + * Copyright 2004-2005 Phil Blundell
-> + * Copyright 2007 OpenedHand Ltd.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/version.h>
-> +#include <linux/irq.h>
+I did such switches in drivers several times yet, but I can't assure you, that I
+won't make any mistake, but this driver seems not to need too many changes.
+Maybe functionality regressions would occur rather than instability of system.
 
-Please see the large comment at the top of linux/irq.h.  I believe this
-driver will fial to compile on at least arm.
+Anyway I would rather wait for the changes from comtrol to not break their
+upcoming patches (if they post them in some short term) and then do these changes.
 
-We really should fix this.
-
-> +#include <linux/io.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <linux/mfd/asic3.h>
-> +
-> +static inline void asic3_write_register(struct asic3 *asic,
-> +				 unsigned int reg, u32 value)
-> +{
-> +	iowrite16(value, (unsigned long)asic->mapping +
-> +		  (reg >> (2 - asic->bus_shift)));
-> +}
-> +
-> +static inline u32 asic3_read_register(struct asic3 *asic,
-> +			       unsigned int reg)
-> +{
-> +	return ioread16((unsigned long)asic->mapping +
-> +			(reg >> (2 - asic->bus_shift)));
-> +}
-
-You'd get faster code if that "2 - asic->bus_shift" was cached in struct
-asic3 rather than recalculated each time.
-
-> +/* IRQs */
-> +#define MAX_ASIC_ISR_LOOPS    20
-> +#define ASIC3_GPIO_Base_INCR \
-> +	(ASIC3_GPIO_B_Base - ASIC3_GPIO_A_Base)
-> +
-> +static inline void asic3_irq_flip_edge(struct asic3 *asic,
-> +				       u32 base, int bit)
-> +{
-> +	u16 edge;
-> +
-> +	spin_lock(&asic->lock);
-> +	edge = asic3_read_register(asic,
-> +				   base + ASIC3_GPIO_EdgeTrigger);
-> +	edge ^= bit;
-> +	asic3_write_register(asic,
-> +			     base + ASIC3_GPIO_EdgeTrigger, edge);
-> +	spin_unlock(&asic->lock);
-> +}
-
-Too large to be inlined.  If it has only one callsite (it does) then the
-compiler will inline it.  If it has more than one callsite then we didn't
-want it inlined anyway.
-
-> +static void asic3_irq_demux(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	int iter, i;
-> +	struct asic3 *asic;
-> +
-> +	desc->chip->ack(irq);
-
-hm, so this delves into the innards of the IRQ management.  Does it work OK
-with and without CONFIG_GENERIC_HARDIRQS?  If not, some Kconfig work will
-be needed.
-
-> +	asic = desc->handler_data;
-> +
-> +	for (iter = 0 ; iter < MAX_ASIC_ISR_LOOPS; iter++) {
-> +		u32 status;
-> +		int bank;
-> +
-> +		spin_lock(&asic->lock);
-> +		status = asic3_read_register(asic,
-> +					     ASIC3_OFFSET(INTR, PIntStat));
-> +		spin_unlock(&asic->lock);
-> +
-> +		/* Check all ten register bits */
-> +		if ((status & 0x3ff) == 0)
-> +			break;
-> +
-> +		/* Handle GPIO IRQs */
-> +		for (bank = 0; bank < ASIC3_NUM_GPIO_BANKS; bank++) {
-> +			if (status & (1 << bank)) {
-> +				unsigned long base, istat;
-> +
-> +				base = ASIC3_GPIO_A_Base
-> +				       + bank * ASIC3_GPIO_Base_INCR;
-> +
-> +				spin_lock(&asic->lock);
-> +				istat = asic3_read_register(asic,
-> +							    base +
-> +							    ASIC3_GPIO_IntStatus);
-> +				/* Clearing IntStatus */
-> +				asic3_write_register(asic,
-> +						     base +
-> +						     ASIC3_GPIO_IntStatus, 0);
-> +				spin_unlock(&asic->lock);
-> +
-> +				for (i = 0; i < ASIC3_GPIOS_PER_BANK; i++) {
-> +					int bit = (1 << i);
-> +					unsigned int irqnr;
-> +					if (!(istat & bit))
-> +						continue;
-
-Most people prefer a blank line between end-of-definitions and start-of-code.
-
-> +					irqnr = asic->irq_base +
-> +						(ASIC3_GPIOS_PER_BANK * bank) + i;
-> +					desc = irq_desc + irqnr;
-> +					desc->handle_irq(irqnr, desc);
-> +					if (asic->irq_bothedge[bank] & bit) {
-> +						asic3_irq_flip_edge(asic, base,
-> +								    bit);
-> +					}
-> +				}
-> +			}
-> +		}
-> +
-> +		/* Handle remaining IRQs in the status register */
-> +		for (i = ASIC3_NUM_GPIOS; i < ASIC3_NR_IRQS; i++) {
-> +			/* They start at bit 4 and go up */
-> +			if (status & (1 << (i - ASIC3_NUM_GPIOS + 4))) {
-> +				desc = irq_desc +  + i;
-> +				desc->handle_irq(asic->irq_base + i,
-> +						 desc);
-> +			}
-> +		}
-> +	}
-> +
-> +	if (iter >= MAX_ASIC_ISR_LOOPS)
-> +		printk(KERN_ERR "%s: interrupt processing overrun\n",
-> +		       __FUNCTION__);
-> +}
->
-> ...
->
-> +static void asic3_mask_gpio_irq(unsigned int irq)
-> +{
-> +	struct asic3 *asic = get_irq_chip_data(irq);
-> +	u32 val, bank, index;
-> +
-> +	bank = asic3_irq_to_bank(asic, irq);
-> +	index = asic3_irq_to_index(asic, irq);
-> +
-> +	spin_lock(&asic->lock);
-> +	val = asic3_read_register(asic, bank + ASIC3_GPIO_Mask);
-> +	val |= 1 << index;
-> +	asic3_write_register(asic, bank + ASIC3_GPIO_Mask, val);
-> +	spin_unlock(&asic->lock);
-> +}
-> +
-> +static void asic3_mask_irq(unsigned int irq)
-> +{
-> +	struct asic3 *asic = get_irq_chip_data(irq);
-> +	int regval;
-> +
-> +	spin_lock(&asic->lock);
-> +	regval = asic3_read_register(asic,
-> +				     ASIC3_INTR_Base +
-> +				     ASIC3_INTR_IntMask);
-> +
-> +	regval &= ~(ASIC3_INTMASK_MASK0 <<
-> +		    (irq - (asic->irq_base + ASIC3_NUM_GPIOS)));
-> +
-> +	asic3_write_register(asic,
-> +			     ASIC3_INTR_Base +
-> +			     ASIC3_INTR_IntMask,
-> +			     regval);
-> +	spin_unlock(&asic->lock);
-> +}
-> +
-> +static void asic3_unmask_gpio_irq(unsigned int irq)
-> +{
-> +	struct asic3 *asic = get_irq_chip_data(irq);
-> +	u32 val, bank, index;
-> +
-> +	bank = asic3_irq_to_bank(asic, irq);
-> +	index = asic3_irq_to_index(asic, irq);
-> +
-> +	spin_lock(&asic->lock);
-> +	val = asic3_read_register(asic, bank + ASIC3_GPIO_Mask);
-> +	val &= ~(1 << index);
-> +	asic3_write_register(asic, bank + ASIC3_GPIO_Mask, val);
-> +	spin_unlock(&asic->lock);
-> +}
-
-Am wondering about the handling of asic->lock.  As it is taken from hard
-interrupts, it is a bug to take it with local interrupts enabled.  afacit
-that is what this code is doing and is hence deadlockable.  But I didn't
-look very hard.
-
-Has this code been exercised with lockdep enabled?
-
-> +static void asic3_unmask_irq(unsigned int irq)
-> +{
-> +	struct asic3 *asic = get_irq_chip_data(irq);
-> +	int regval;
-> +
-> +	spin_lock(&asic->lock);
-> +	regval = asic3_read_register(asic,
-> +				     ASIC3_INTR_Base +
-> +				     ASIC3_INTR_IntMask);
-> +
-> +	regval |= (ASIC3_INTMASK_MASK0 <<
-> +		   (irq - (asic->irq_base + ASIC3_NUM_GPIOS)));
-> +
-> +	asic3_write_register(asic,
-> +			     ASIC3_INTR_Base +
-> +			     ASIC3_INTR_IntMask,
-> +			     regval);
-> +	spin_unlock(&asic->lock);
-> +}
->
-> ...
->
-> +static inline void asic3_set_gpio(struct asic3 *asic, unsigned int base,
-> +				  unsigned int function, u32 bits, u32 val)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&asic->lock, flags);
-> +	val |= (asic3_read_register(asic, base + function) & ~bits);
-> +
-> +	asic3_write_register(asic, base + function, val);
-> +	spin_unlock_irqrestore(&asic->lock, flags);
-> +}
-
-OK, there you go.  Maybe I was wrong about that lock.
-
-This looks rather large for inlining too, btw.
-
-> +#define asic3_get_gpio_a(asic, function) asic3_get_gpio(asic, ASIC3_GPIO_A_Base, ASIC3_GPIO_##function)
-> +#define asic3_get_gpio_b(asic, function) asic3_get_gpio(asic, ASIC3_GPIO_B_Base, ASIC3_GPIO_##function)
-> +#define asic3_get_gpio_c(asic, function) asic3_get_gpio(asic, ASIC3_GPIO_C_Base, ASIC3_GPIO_##function)
-> +#define asic3_get_gpio_d(asic, function) asic3_get_gpio(asic, ASIC3_GPIO_D_Base, ASIC3_GPIO_##function)
-> +
-> +#define asic3_set_gpio_a(asic, function, bits, val) asic3_set_gpio(asic, ASIC3_GPIO_A_Base, ASIC3_GPIO_##function, bits, val)
-> +#define asic3_set_gpio_b(asic, function, bits, val) asic3_set_gpio(asic, ASIC3_GPIO_B_Base, ASIC3_GPIO_##function, bits, val)
-> +#define asic3_set_gpio_c(asic, function, bits, val) asic3_set_gpio(asic, ASIC3_GPIO_C_Base, ASIC3_GPIO_##function, bits, val)
-> +#define asic3_set_gpio_d(asic, function, bits, val) asic3_set_gpio(asic, ASIC3_GPIO_D_Base, ASIC3_GPIO_##function, bits, val)
-> +
-> +#define asic3_set_gpio_banks(asic, function, bits, pdata, field) \
-> +	asic3_set_gpio_a((asic), function, (bits), (pdata)->gpio_a.field); \
-> +	asic3_set_gpio_b((asic), function, (bits), (pdata)->gpio_b.field); \
-> +	asic3_set_gpio_c((asic), function, (bits), (pdata)->gpio_c.field); \
-> +	asic3_set_gpio_d((asic), function, (bits), (pdata)->gpio_d.field);
-
-whee.
-
-> +int asic3_gpio_get_value(struct asic3 *asic, unsigned gpio)
-> +{
-> +	u32 mask = ASIC3_GPIO_bit(gpio);
-> +
-> +	switch (gpio >> 4) {
-> +	case ASIC3_GPIO_BANK_A:
-> +		return asic3_get_gpio_a(asic, Status) & mask;
-> +	case ASIC3_GPIO_BANK_B:
-> +		return asic3_get_gpio_b(asic, Status) & mask;
-> +	case ASIC3_GPIO_BANK_C:
-> +		return asic3_get_gpio_c(asic, Status) & mask;
-> +	case ASIC3_GPIO_BANK_D:
-> +		return asic3_get_gpio_d(asic, Status) & mask;
-> +	default:
-> +		printk(KERN_ERR "%s: invalid GPIO value 0x%x",
-> +		       __FUNCTION__, gpio);
-> +		return -EINVAL;
-> +	}
-> +}
-> +EXPORT_SYMBOL(asic3_gpio_get_value);
-> ...
-> +EXPORT_SYMBOL(asic3_gpio_set_value);
-
-To what are these exported?
-
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
