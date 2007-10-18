@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764737AbXJRBAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbXJRBGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764737AbXJRBAz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 21:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760501AbXJRBAq
+	id S933279AbXJRBGG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 21:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbXJRBFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 21:00:46 -0400
-Received: from mga09.intel.com ([134.134.136.24]:60187 "EHLO mga09.intel.com"
+	Wed, 17 Oct 2007 21:05:55 -0400
+Received: from mga02.intel.com ([134.134.136.20]:10008 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758006AbXJRBAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 21:00:46 -0400
+	id S1758258AbXJRBFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 21:05:54 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,291,1188802800"; 
-   d="scan'208";a="176989968"
+X-IronPort-AV: E=Sophos;i="4.21,292,1188802800"; 
+   d="scan'208";a="249652260"
 From: Shannon Nelson <shannon.nelson@intel.com>
-Subject: [PATCH 1/5] I/OAT: cleanup pci issues
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
+Subject: [PATCH] I/OAT: Add completion callback for async_tx interface use
+	(take 2)
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Cc: shannon.nelson@intel.com, dan.j.williams@intel.com, davem@davemloft.net
-Date: Wed, 17 Oct 2007 18:00:23 -0700
-Message-ID: <20071018010023.32161.15960.stgit@localhost.localdomain>
+Date: Wed, 17 Oct 2007 18:04:11 -0700
+Message-ID: <20071018010411.32210.82661.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,121 +26,73 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reorder the pci release actions
-    Letting go of the resources in the right order helps get rid of
-    occasional kernel complaints.
+The async_tx interface includes a completion callback.  This adds support
+for using that callback, including using interrupts on completion.
 
-Fix the pci_driver object name [Randy Dunlap]
-    Rename the struct pci_driver data so that false section mismatch
-    warnings won't be produced.
+This second try does better at defining the callback prototype.
 
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
+
+Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 ---
 
- drivers/dma/ioat.c     |   23 ++++++-----------------
- drivers/dma/ioat_dma.c |    5 ++++-
- 2 files changed, 10 insertions(+), 18 deletions(-)
+ drivers/dma/ioat_dma.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/dma/ioat.c b/drivers/dma/ioat.c
-index f7276bf..54fdeb7 100644
---- a/drivers/dma/ioat.c
-+++ b/drivers/dma/ioat.c
-@@ -55,9 +55,7 @@ struct ioat_device {
- 
- static int __devinit ioat_probe(struct pci_dev *pdev,
- 				const struct pci_device_id *id);
--#ifdef IOAT_DMA_REMOVE
- static void __devexit ioat_remove(struct pci_dev *pdev);
--#endif
- 
- static int ioat_dca_enabled = 1;
- module_param(ioat_dca_enabled, int, 0644);
-@@ -100,14 +98,12 @@ static void ioat_shutdown_functionality(struct pci_dev *pdev)
- 
- }
- 
--static struct pci_driver ioat_pci_drv = {
-+static struct pci_driver ioat_pci_driver = {
- 	.name		= "ioatdma",
- 	.id_table	= ioat_pci_tbl,
- 	.probe		= ioat_probe,
- 	.shutdown	= ioat_shutdown_functionality,
--#ifdef IOAT_DMA_REMOVE
- 	.remove		= __devexit_p(ioat_remove),
--#endif
- };
- 
- static int __devinit ioat_probe(struct pci_dev *pdev,
-@@ -122,7 +118,7 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_enable_device;
- 
--	err = pci_request_regions(pdev, ioat_pci_drv.name);
-+	err = pci_request_regions(pdev, ioat_pci_driver.name);
- 	if (err)
- 		goto err_request_regions;
- 
-@@ -176,13 +172,11 @@ err_enable_device:
- 	return err;
- }
- 
--#ifdef IOAT_DMA_REMOVE
- /*
-  * It is unsafe to remove this module: if removed while a requested
-  * dma is outstanding, esp. from tcp, it is possible to hang while
-- * waiting for something that will never finish, thus hanging at
-- * least one cpu.  However, if you're feeling lucky and need to do
-- * some testing, this usually works just fine.
-+ * waiting for something that will never finish.  However, if you're
-+ * feeling lucky, this usually works just fine.
-  */
- static void __devexit ioat_remove(struct pci_dev *pdev)
- {
-@@ -191,21 +185,16 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
- 	ioat_shutdown_functionality(pdev);
- 
- 	kfree(device);
--
--	iounmap(device->iobase);
--	pci_release_regions(pdev);
--	pci_disable_device(pdev);
- }
--#endif
- 
- static int __init ioat_init_module(void)
- {
--	return pci_register_driver(&ioat_pci_drv);
-+	return pci_register_driver(&ioat_pci_driver);
- }
- module_init(ioat_init_module);
- 
- static void __exit ioat_exit_module(void)
- {
--	pci_unregister_driver(&ioat_pci_drv);
-+	pci_unregister_driver(&ioat_pci_driver);
- }
- module_exit(ioat_exit_module);
 diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 66c5bb5..59d4344 100644
+index 117ac38..517bfa1 100644
 --- a/drivers/dma/ioat_dma.c
 +++ b/drivers/dma/ioat_dma.c
-@@ -931,7 +931,6 @@ err_completion_pool:
- err_dma_pool:
- 	kfree(device);
- err_kzalloc:
--	iounmap(iobase);
- 	dev_err(&device->pdev->dev,
- 		"ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
- 	return NULL;
-@@ -949,6 +948,10 @@ void ioat_dma_remove(struct ioatdma_device *device)
- 	pci_pool_destroy(device->dma_pool);
- 	pci_pool_destroy(device->completion_pool);
+@@ -212,6 +212,18 @@ static dma_cookie_t ioat_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	} while (len && (new = ioat_dma_get_next_descriptor(ioat_chan)));
  
-+	iounmap(device->reg_base);
-+	pci_release_regions(device->pdev);
-+	pci_disable_device(device->pdev);
+ 	hw->ctl = IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
++	if (new->async_tx.callback) {
++		hw->ctl |= IOAT_DMA_DESCRIPTOR_CTL_INT_GN;
++		if (first != new) {
++			/* move callback into to last desc */
++			new->async_tx.callback = first->async_tx.callback;
++			new->async_tx.callback_param
++					= first->async_tx.callback_param;
++			first->async_tx.callback = NULL;
++			first->async_tx.callback_param = NULL;
++		}
++	}
 +
- 	list_for_each_entry_safe(chan, _chan,
- 				 &device->common.channels, device_node) {
- 		ioat_chan = to_ioat_chan(chan);
+ 	new->tx_cnt = desc_count;
+ 	new->async_tx.ack = orig_ack; /* client is in control of this ack */
+ 
+@@ -516,6 +528,11 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan)
+ 					pci_unmap_addr(desc, src),
+ 					pci_unmap_len(desc, len),
+ 					PCI_DMA_TODEVICE);
++			if (desc->async_tx.callback) {
++				desc->async_tx.callback(
++						desc->async_tx.callback_param);
++				desc->async_tx.callback = NULL;
++			}
+ 		}
+ 
+ 		if (desc->async_tx.phys != phys_complete) {
+@@ -637,6 +654,12 @@ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
+  */
+ #define IOAT_TEST_SIZE 2000
+ 
++static void ioat_dma_test_callback(void *dma_async_param)
++{
++	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(%p)\n",
++		dma_async_param);
++}
++
+ /**
+  * ioat_dma_self_test - Perform a IOAT transaction to verify the HW works.
+  * @device: device to be tested
+@@ -691,6 +714,8 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 	addr = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
+ 			DMA_FROM_DEVICE);
+ 	ioat_set_dest(addr, tx, 0);
++	tx->callback = ioat_dma_test_callback;
++	tx->callback_param = (void *)0x8086;
+ 	cookie = ioat_tx_submit(tx);
+ 	if (cookie < 0) {
+ 		dev_err(&device->pdev->dev,
