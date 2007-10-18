@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763250AbXJRNHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbXJRNN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763250AbXJRNHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 09:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbXJRNHf
+	id S1762929AbXJRNN4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 09:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXJRNNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 09:07:35 -0400
-Received: from dtp.xs4all.nl ([80.126.206.180]:40521 "HELO abra2.bitwizard.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757184AbXJRNHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 09:07:34 -0400
-Date: Thu, 18 Oct 2007 15:00:49 +0200
-From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Rob Landley <rob@landley.net>,
-       Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@suse.de>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Message-ID: <20071018130048.GA25084@bitwizard.nl>
-References: <200710112011.22000.rob@landley.net> <200710161659.28826.nickpiggin@yahoo.com.au> <m1lka3ishi.fsf@ebiederm.dsl.xmission.com> <200710161734.15880.nickpiggin@yahoo.com.au>
+	Thu, 18 Oct 2007 09:13:48 -0400
+Received: from rtr.ca ([76.10.145.34]:2804 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706AbXJRNNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 09:13:48 -0400
+Message-ID: <47175C0A.5020907@rtr.ca>
+Date: Thu, 18 Oct 2007 09:13:46 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710161734.15880.nickpiggin@yahoo.com.au>
-Organization: BitWizard.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca> <4716E19F.1090201@garzik.org> <20071018070538.GD5063@kernel.dk>
+In-Reply-To: <20071018070538.GD5063@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 05:34:15PM +1000, Nick Piggin wrote:
-> > It's a hard call.  The I/O time for 1MB of contiguous disk data
-> > is about the I/O time of 512 bytes of contiguous disk data.
+Jens Axboe wrote:
+> On Thu, Oct 18 2007, Jeff Garzik wrote:
+>> Mark Lord wrote:
+>>> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
+>>> Screen photo is at http://rtr.ca/recent/2.6.23-git12-crash.jpg,
+>>> but the top was cut off (isn't there a new config option or patch
+>>> to do double-columns or scrollback or something ???.
+>> Is this a sata_mv box?  If so, could you try this patch?
 > 
-> And if you're thrashing, then by definition you need to throw
-> out 1MB of your working set in order to read it in.
+> If anything, that shrinks the size of the resulting request. Did this
+> patch make any difference to you?
 
-Right. But you need a differential hit rate of only a few percent on
-that 1020 extra kb of data you swapped in versus the 1Mb of data you
-swapped out for this to be advantageous.
+Not a sata_mv box, so no point here.
 
-With "differential hit rate" I mean the chances of getting a hit on
-the 1Mb of data just paged in, minus the chances of getting a hit on
-the 1Mb of data just paged out. 
-
-With a little luck that 1Mb that is paged out didn't get used for
-quite a while, while there is a hint that the 1Mb you're paging in
-is active, as one of its sub-pages just got a hit.
-
-So... IMHO, it would be useful to implement something that pages out
-chunks of memory larger than a single hardware page. This would reduce
-the size of the memory management tables (*), as well as improve disk
-throughput if things DO come to paging....
-
-This should of course be configurable. Some workloads are better off
-with a virtual page size of 8k, some with 128k. some with 1M.
-
-As far as I can see, the "page-cluster" parameter defines how many
-pages at a time are selected for page-out at a time. This increases
-the page-out efficiency. Improving the page-in efficiency is also
-useful: It is the other half of hte equation.
-
-	Roger. 
-
-
-(*) If the kernel starts working with a 1Mb virtual page size, you
-need a 256 times smaller mapping table between processes and memory or
-swap. Of course, the hardware doesn't support this (actually, it does
-for 1Mb virtual pages), so you'll have to create 256 page table
-entries for the hardware instead of just one.
-
-
-
--- 
-** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-*-- BitWizard writes Linux device drivers for any device you may have! --*
-Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
-Does it sit on the couch all day? Is it unemployed? Please be specific! 
-Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
+ata_piix.
