@@ -1,88 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbXJRKiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbXJRKih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763420AbXJRKiF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbXJRKht
+	id S1764035AbXJRKih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761907AbXJRKiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:37:49 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:47542 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756228AbXJRKhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:37:47 -0400
-Subject: Re: s390x: getting ipv6 bugs on mainline since 2.6.23-git3
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Patrick McHardy <kaber@trash.net>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <47172AD5.2030009@trash.net>
-References: <20071018093556.GT21136@shadowen.org>
-	 <47172AD5.2030009@trash.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Thu, 18 Oct 2007 12:37:44 +0200
-Message-Id: <1192703864.13572.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
+	Thu, 18 Oct 2007 06:38:23 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:28274 "EHLO
+	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758182AbXJRKiW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:38:22 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: RE: [patch] PCI: disable MSI on more ATI NorthBridges
+Date: Thu, 18 Oct 2007 18:37:59 +0800
+Message-ID: <5CAB7B5D6F8AB84AA868A46B47A507055D8C67@sshaexmb1.amd.com>
+In-Reply-To: <20071018.031957.104033396.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] PCI: disable MSI on more ATI NorthBridges
+Thread-Index: AcgRcHotFPpVyrc3Tl6R26hf0ZqIQgAALaZw
+From: "Shane Huang" <Shane.Huang@amd.com>
+To: "David Miller" <davem@davemloft.net>
+cc: gregkh@suse.de, htejun@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, "Su, Henry" <Henry.Su@amd.com>,
+       "Yang, Libin" <Libin.Yang@amd.com>, "Shane Huang" <Shane.Huang@amd.com>
+X-OriginalArrivalTime: 18 Oct 2007 10:38:03.0362 (UTC)
+ FILETIME=[F624F420:01C81172]
+X-WSS-ID: 6B09E8070602261184-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Miller:
 
-On Thu, 2007-10-18 at 11:43 +0200, Patrick McHardy wrote:
-> Andy Whitcroft wrote:
-> > Seems we are getting some kind of bug out of our s390x partition (lnxabat1)
-> > when booting latest mainline releases, specifically since 2.6.23-git3.
-> > 
-> > Kernel BUG at 0000000000000002 Ýverbose debug info unavailable?
-> > illegal operation: 0001 Ý#1?
-> Which network driver are you using? Please post the output of
-> "ip link list <dev>".
+Thank you for your response.
 
-This is a bug in the qeth driver. It has been introduced by this commit:
+The reason why MSIs of these northbridges do not work is still under
+further debug, we are NOT able to tell its hardware issue or software
+issue at this  time. But enablement of them will lead to the OS
+installation failure in many distributions like openSUSE, Ubuntu etc:
+https://bugzilla.novell.com/show_bug.cgi?id=302016
 
-commit 3b04ddde02cf1b6f14f2697da5c20eca5715017f
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Tue Oct 9 01:40:57 2007 -0700
+So we have to disable them firstly before we find out the root cause,
+maybe they are just workarounds.
 
-    [NET]: Move hardware header operations out of netdevice.
+If you guys know much more about this MSI problem, don't hesitate to
+tell us, we can debug on some of the hardware platforms.
 
-    Since hardware header operations are part of the protocol class
-    not the device instance, make them into a separate object and
-    save memory.
+BTW, There already some disablements to some ATI NB MSIs in the kernel,
+the reasons are similar.
 
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-I've hacked up a fix for it. The real fix will be done by our networking
-people.
+Thanks
+Shane
 
--- 
-blue skies,
-  Martin.
 
-"Reality continues to ruin my life." - Calvin.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Thursday, October 18, 2007 6:20 PM
+> To: Shane Huang
+> Cc: gregkh@suse.de; htejun@gmail.com; linux-kernel@vger.kernel.org;
+linux-pci@atrey.karlin.mff.cuni.cz; Su, Henry; Yang, Libin
+> Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+> 
+> From: "Shane Huang" <Shane.Huang@amd.com>
+> Date: Thu, 18 Oct 2007 17:14:36 +0800
+> 
+> > More ATI North Bridges like RS780 can't do MSI like its predecessors
+> > in linux. Disable MSIs on them.
+> >
+> > Signed-off-by: Shane Huang <shane.huang@amd.com>
+> 
+> Can we get some detail as to why these north bridges have to have MSI
+> disabled completely?  I can't believe that all 6 of these ATI
+> controllers which will now be listed in the quirk table cannot use MSI
+> at all.
+> 
+> I've discovered several cases where it was a buggy device or a driver
+> bug that caused someone to erroneously submit patches that disable MSI
+> completely for the bridge they were behind.
+> 
+> I don't want that to happen any more.  One way to prevent that is to
+> have a full detailed justification for the MSI disabling in the
+> changelog or in the comments for the MSI quirk.
+> 
+> Thank you.
+> 
 
----
-
- drivers/s390/net/qeth_main.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff -urpN linux-2.6/drivers/s390/net/qeth_main.c linux-2.6-patched/drivers/s390/net/qeth_main.c
---- linux-2.6/drivers/s390/net/qeth_main.c	2007-10-17 15:05:36.000000000 +0200
-+++ linux-2.6-patched/drivers/s390/net/qeth_main.c	2007-10-17 15:05:46.000000000 +0200
-@@ -6643,7 +6643,8 @@ qeth_netdev_init(struct net_device *dev)
- 	dev->vlan_rx_kill_vid = qeth_vlan_rx_kill_vid;
- 	dev->vlan_rx_add_vid = qeth_vlan_rx_add_vid;
- #endif
--	dev->header_ops = &qeth_null_ops;
-+	if (qeth_get_netdev_flags(card) & IFF_NOARP)
-+		dev->header_ops = &qeth_null_ops;
- 
- #ifdef CONFIG_QETH_IPV6
- 	/*IPv6 address autoconfiguration stuff*/
 
 
