@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbXJRUky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbXJRUlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762572AbXJRUky (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbXJRUks
+	id S1763573AbXJRUlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXJRUlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:40:48 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47721 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756676AbXJRUkr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:40:47 -0400
-Message-ID: <4717C43D.6030204@keyaccess.nl>
-Date: Thu, 18 Oct 2007 22:38:21 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 18 Oct 2007 16:41:17 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27654 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758288AbXJRUlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:41:16 -0400
+Date: Thu, 18 Oct 2007 22:41:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
+Subject: Re: libata crash
+Message-ID: <20071018204111.GN10674@kernel.dk>
+References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk> <20071018195903.GA29567@elte.hu>
 MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo@kvack.org>
-CC: linux-kernel@vger.kernel.org, riel@redhat.com, drepper@redhat.com
-Subject: Re: OOM notifications
-References: <20071018202504.GA2854@dmt>
-In-Reply-To: <20071018202504.GA2854@dmt>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018195903.GA29567@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/18/2007 10:25 PM, Marcelo Tosatti wrote:
-
-> AIX contains the SIGDANGER signal to notify applications to free up some
-> unused cached memory:
+On Thu, Oct 18 2007, Ingo Molnar wrote:
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
+> > I'll see if I can spend some time tonight chopping the patch into 
+> > digestable pieces, unfortunately I'll be away the next three days. And 
+> > it would be nice to get this thing merged asap.
 > 
-> There have been a few discussions on implementing such an idea on Linux,
-> but nothing concrete has been achieved.
+> and make sure it builds:
 > 
-> On the kernel side Rik suggested two notification points: "about to
-> swap" (for desktop scenarios) and "about to OOM" (for embedded-like
-> scenarios).
-> 
-> With that assumption in mind it would be necessary to either have two
-> special devices for notification, or somehow indicate both events
-> through the same file descriptor.
-> 
-> Comments are more than welcome.
+> drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
+> drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
+> drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
+> drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
+> drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
+> drivers/scsi/in2000.c: In function 'in2000_queuecommand':
+> drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
+> drivers/scsi/in2000.c: In function 'transfer_bytes':
+> drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
 
-Given the desktop/embedded distinction you made, do you need both scenarios 
-active at the same time? If not, it seems something like a
+Oops, wonder why they were missed in the allyes/modconfig. Fixed now,
+thanks!
 
-	echo -n <level> >/proc/sys/vm/danger
+-- 
+Jens Axboe
 
-could do with just one sigdanger notification point? (with <level> suitably 
-defined as or in terms of the used threshold value).
-
-Rene.
