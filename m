@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbXJRC57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764626AbXJRC7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764881AbXJRC57 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764255AbXJRC5g
+	id S1764626AbXJRC7h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760746AbXJRC71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:57:36 -0400
-Received: from rtr.ca ([76.10.145.34]:2173 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764221AbXJRC5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:57:35 -0400
-Message-ID: <4716CB9D.6080503@rtr.ca>
-Date: Wed, 17 Oct 2007 22:57:33 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 17 Oct 2007 22:59:27 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:33502 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760869AbXJRC7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 22:59:25 -0400
+X-YMail-OSG: 6yWZ74IVM1lWi3Cj8JQiz._ylYZiW4bbO2k23s9KV3Pfaqt_wAjWFEUYoc2xF3TabQJq.zKevw--
+Date: Wed, 17 Oct 2007 21:59:20 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, sds@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, morgan@kernel.org,
+       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, kaigai@kaigai.gr.jp,
+       casey@schaufler-ca.com
+Subject: Re: [RFC] [PATCH 2/2] capabilities: implement 64-bit capabilities
+Message-ID: <20071018025920.GA5067@vino.hallyn.com>
+References: <20071016022730.GA8925@sergelap.austin.ibm.com> <20071016023100.GA10698@sergelap.austin.ibm.com> <1192544299.8702.78.camel@moss-spartans.epoch.ncsc.mil> <20071016214159.GB13294@sergelap.austin.ibm.com> <20071017180002.33fe4986.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: kristen.c.accardi@intel.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: [PATCH 0/3] Fix two PEIe hotplug issues
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017180002.33fe4986.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks
-(and others?) in conjunction with the modparam of pciehp_force=1.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Tue, 16 Oct 2007 16:41:59 -0500
+> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> 
+> > To properly test this the libcap code will need to be updated first,
+> > which I'm looking at now...
+> 
+> This seems fairly significant.  I asusme that this patch won't break
+> presently-deployed libcap?
 
-The PCIe Hotplug driver has two issues when used on Dell notebooks
-which lack ACPI BIOS support for PCIe hotplug:
+It will break libcap.  And I'm not sure of the right way to address it.
+So I was hoping to hear some ideas from Andrew Morgan, Chris Wright, and
+Kaigai.
 
-1. The driver does not recognise cards that were inserted 
-   prior to the driver being modprobe'd.
+We can introduce new capget64() and capset64() calls, and have
+capget() return -EINVAL or -EAGAIN if a high bit would be needed to
+accurately get the task's capabilities.
 
-2. The driver stops functioning after a suspend/resume (RAM) cycle,
-   and needs to be rmmod'd and modprobe'd to get it working again.
+Or we can require a new libcap, since capget and capset aren't
+required for most day-to-day function anyway.
 
-This patch series addresses those issues, resulting in a completely
-functional PCIe Hotplug driver for Dell notebooks, and possibly others
-as well which may lack ACPI BIOS support for this.
-Note that pciehp_force=1 is (still) required.
+I guess now that I've written this out, it seems pretty clear
+that capget64() and capget64() are the way to go.  Any objections?
 
-There are three patches in this series:
-
-	01_pciehp_handle_preinserted_card.patch
-		-- fixes problem number 1 (above).
-
-	02_pciehp_split_pcie_init.patch
-		-- preparation for the resume patch.
-
-	03_pciehp_resume_reinit_hardware.patch
-		-- fixes problem number 2 (above).
-
-diffstat summary for the three patches combined:
- drivers/pci/hotplug/pciehp.h      |    3
- drivers/pci/hotplug/pciehp_core.c |   23 +++
- drivers/pci/hotplug/pciehp_ctrl.c |    2
- drivers/pci/hotplug/pciehp_hpc.c  |  185 +++++++++++++++-------------
- 4 files changed, 130 insertions(+), 83 deletions(-)
-
-Cheers
---
-Mark Lord <mlord@pobox.com>
+thanks,
+-serge
