@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965399AbXJRW2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXJRWi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965399AbXJRW2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934587AbXJRW1f
+	id S1763666AbXJRWi3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXJRWiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:27:35 -0400
-Received: from lixom.net ([66.141.50.11]:41373 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933968AbXJRW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:27:34 -0400
-Date: Thu, 18 Oct 2007 17:34:00 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, paulus@ozlabs.org, lethal@linux-sh.org,
-       kyle@parisc-linux.org, grundler@parisc-linux.org
-Subject: Re: [PATCH 1/2] bug.h: Introduce HAVE_ARCH_WARN
-Message-ID: <20071018223400.GA25281@lixom.net>
-References: <20071011171211.GB10877@lixom.net> <20071018151752.09147de5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018151752.09147de5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 18 Oct 2007 18:38:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57244 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753703AbXJRWiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:38:19 -0400
+Date: Thu, 18 Oct 2007 15:37:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: ak@suse.de, bwalle@suse.de, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org, vgoyal@in.ibm.com
+Subject: Re: [patch 1/3] Add BSS to resource tree
+Message-Id: <20071018153751.c9c458c8.akpm@linux-foundation.org>
+In-Reply-To: <20071018221813.GA23801@uranus.ravnborg.org>
+References: <20071018111535.356215664@strauss.suse.de>
+	<20071018111535.883533731@strauss.suse.de>
+	<20071018142642.5b3f6ba4.akpm@linux-foundation.org>
+	<20071018214836.GA3459@bingen.suse.de>
+	<20071018215827.GB23708@uranus.ravnborg.org>
+	<20071018220048.GB3459@bingen.suse.de>
+	<20071018221813.GA23801@uranus.ravnborg.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 03:17:52PM -0700, Andrew Morton wrote:
-> On Thu, 11 Oct 2007 12:12:11 -0500
-> Olof Johansson <olof@lixom.net> wrote:
-> 
-> > HAVE_ARCH_WARN is used to determine if an arch already has a __WARN()
-> > macro, or if a generic one is needed.
-> > 
-> > With this, some of the arch-specific WARN_ON() implementations can be
-> > made common instead (see follow-up patch for powerpc).
-> > 
-> 
-> Those HAVE_ARCH_foo things are unpleasant.
-[...]
-> Can't we just do #ifndef __WARN?
+On Fri, 19 Oct 2007 00:18:13 +0200
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Yep, good idea. I'll respin.
+> And I recall that extern char sym[] is considered correct by binutils 
+> people - but I'm not 100% sure and google did not give me an appropriate hit.
+
+An ancient memory tells me that these things are traditionally
+declared as plain old int:
+
+extern int start;
+extern int edata;
+
+etc.
+
+However
+http://techpubs.sgi.com/library/tpl/cgi-bin/getdoc.cgi?coll=0650&db=man&fname=/usr/share/catman/p_man/cat3/standard/_rt_symbol_table_size.z
+disagrees with me.
+
+http://www.psych.upenn.edu/~saul/parasite/man/man3/end.3.html agrees with me
+
+http://docsrv.sco.com:507/en/man/html.S/end.S.html agrees with me
+
+http://www.rocketaware.com/man/man3/end.3.htm agrees with me
+
+http://bama.ua.edu/cgi-bin/man-cgi?etext+3C agrees with me
 
 
--Olof
