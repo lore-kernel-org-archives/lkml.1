@@ -1,160 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbXJRAmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbXJRAo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763589AbXJRAmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760048AbXJRAmc
+	id S1763573AbXJRAo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760222AbXJRAot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:42:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:11012 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757503AbXJRAmb (ORCPT
+	Wed, 17 Oct 2007 20:44:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43895 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760134AbXJRAos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:42:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Do/ono6n0/oADDt882WlGCoodv2dZYwIlSjq/BPrr4T1MyQjDheYAeNc3NSMk3pwwXNEY7B8gPiL2/79nNff5wfn4nGRBA1k4uiQGPCW182c5UzKtN5vpXwtzY13p4b3BtENmY3wf+zj93s51z4f0IyyBlE61+TWxUvuY7rB1XY=
-Message-ID: <86802c440710171742h7c7cb97ew8f054c51304a31d6@mail.gmail.com>
-Date: Wed, 17 Oct 2007 17:42:30 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Manfred Spraul" <manfred@colorfullife.com>
-Subject: Re: [PATCH] forcedeth msi bugfix
-Cc: jgarzik@pobox.com, AAbdulla@nvidia.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200710171952.l9HJqXgq027920@colorfullife.mysite.adiungo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Oct 2007 20:44:48 -0400
+Date: Wed, 17 Oct 2007 17:44:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Shannon Nelson <shannon.nelson@intel.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       shannon.nelson@intel.com, dan.j.williams@intel.com,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH 5/5] I/OAT: Add completion callback for async_tx
+ interface use
+Message-Id: <20071017174438.f0d6fe2e.akpm@linux-foundation.org>
+In-Reply-To: <20071018001439.31147.52329.stgit@localhost.localdomain>
+References: <20071018001416.31147.86176.stgit@localhost.localdomain>
+	<20071018001439.31147.52329.stgit@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200710171952.l9HJqXgq027920@colorfullife.mysite.adiungo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/17/07, Manfred Spraul <manfred@colorfullife.com> wrote:
-> pci_enable_msi() replaces the INTx irq number in pci_dev->irq with the
-> new MSI irq number.
-> The forcedeth driver did not update the copy in netdevice->irq and
-> parts of the driver used the stale copy.
-> See bugzilla.kernel.org, bug 9047.
->
-> The patch
-> - updates netdevice->irq
-> - replaces all accesses to netdevice->irq with pci_dev->irq.
->
-> The patch is against 2.6.23.1. IMHO suitable for both 2.6.23 and 2.6.24
->
-> Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
->
-> --- 2.6/drivers/net/forcedeth.c 2007-10-17 21:36:36.000000000 +0200
-> +++ build-2.6/drivers/net/forcedeth.c   2007-10-17 21:54:58.000000000 +0200
-> @@ -128,7 +128,7 @@
->  #else
->  #define DRIVERNAPI
->  #endif
-> -#define FORCEDETH_VERSION              "0.60"
-> +#define FORCEDETH_VERSION              "0.61"
->  #define DRV_NAME                       "forcedeth"
->
->  #include <linux/module.h>
-> @@ -988,7 +988,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                         enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       enable_irq(dev->irq);
-> +                       enable_irq(np->pci_dev->irq);
->         } else {
->                 enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
->                 enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-> @@ -1004,7 +1004,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                         disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       disable_irq(dev->irq);
-> +                       disable_irq(np->pci_dev->irq);
->         } else {
->                 disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
->                 disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
-> @@ -1601,7 +1601,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                         disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       disable_irq(dev->irq);
-> +                       disable_irq(np->pci_dev->irq);
->         } else {
->                 disable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
->         }
-> @@ -1619,7 +1619,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                         enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       enable_irq(dev->irq);
-> +                       enable_irq(np->pci_dev->irq);
->         } else {
->                 enable_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
->         }
-> @@ -3557,10 +3557,12 @@
->         if (ret != 0 && np->msi_flags & NV_MSI_CAPABLE) {
->                 if ((ret = pci_enable_msi(np->pci_dev)) == 0) {
->                         np->msi_flags |= NV_MSI_ENABLED;
+On Wed, 17 Oct 2007 17:14:39 -0700
+Shannon Nelson <shannon.nelson@intel.com> wrote:
 
-> +                       dev->irq = np->pci_dev->irq;
+> +	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(0x%04llx)\n",
+> +		(u64)dma_async_param);
 
-move to after request_irq?
+Generates a warning on 32-bit:
 
->                         if (request_irq(np->pci_dev->irq, handler, IRQF_SHARED, dev->name, dev) != 0) {
->                                 printk(KERN_INFO "forcedeth: request_irq failed %d\n", ret);
->                                 pci_disable_msi(np->pci_dev);
->                                 np->msi_flags &= ~NV_MSI_ENABLED;
-> +                               dev->irq = np->pci_dev->irq;
->                                 goto out_err;
->                         }
+drivers/dma/ioat_dma.c: In function 'ioat_dma_test_callback':
+drivers/dma/ioat_dma.c:660: warning: cast from pointer to integer of different size
 
-put
- +                       dev->irq = np->pci_dev->irq;
-here instead
+and we can never ever print u64's anwyay: we dont' know what type the arch
+uses to implement them.  The usual fix is to cast to unsigned long long,
+but in this case %p will work nicely, no?
 
->
-> @@ -3623,7 +3625,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                         disable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       disable_irq_lockdep(dev->irq);
-> +                       disable_irq_lockdep(np->pci_dev->irq);
->                 mask = np->irqmask;
->         } else {
->                 if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
-> @@ -3641,6 +3643,8 @@
->         }
->         np->nic_poll_irq = 0;
->
-> +       /* disable_irq() contains synchronize_irq, thus no irq handler can run now */
-> +
->         if (np->recover_error) {
->                 np->recover_error = 0;
->                 printk(KERN_INFO "forcedeth: MAC in recoverable error state\n");
-> @@ -3677,7 +3681,6 @@
->                 }
->         }
->
-> -       /* FIXME: Do we need synchronize_irq(dev->irq) here? */
->
->         writel(mask, base + NvRegIrqMask);
->         pci_push(base);
-> @@ -3690,7 +3693,7 @@
->                 if (np->msi_flags & NV_MSI_X_ENABLED)
->                        enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_ALL].vector);
->                 else
-> -                       enable_irq_lockdep(dev->irq);
-> +                       enable_irq_lockdep(np->pci_dev->irq);
->         } else {
->                 if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
->                         nv_nic_irq_rx(0, dev);
-> @@ -4943,7 +4946,7 @@
->         np->in_shutdown = 1;
->         spin_unlock_irq(&np->lock);
->         netif_poll_disable(dev);
-> -       synchronize_irq(dev->irq);
-> +       synchronize_irq(np->pci_dev->irq);
-that is in nv_close, how about if is MSI-X.
+> +	tx->callback = (void *)ioat_dma_test_callback;
 
-YH
+and when I remove this cast I get
+
+drivers/dma/ioat_dma.c: In function 'ioat_dma_self_test':
+drivers/dma/ioat_dma.c:718: warning: assignment from incompatible pointer type
+
+because ioat_dma_test_callback isn't void-returning.  Something is wrong
+here.  I assume that ioat_dma_test_callback() should just be
+void-returning?
+
+
+
+diff -puN drivers/dma/ioat_dma.c~i-oat-add-completion-callback-for-async_tx-interface-use-fix drivers/dma/ioat_dma.c
+--- a/drivers/dma/ioat_dma.c~i-oat-add-completion-callback-for-async_tx-interface-use-fix
++++ a/drivers/dma/ioat_dma.c
+@@ -654,11 +654,10 @@ static void ioat_dma_start_null_desc(str
+  */
+ #define IOAT_TEST_SIZE 2000
+ 
+-static dma_async_tx_callback ioat_dma_test_callback(void *dma_async_param)
++static void ioat_dma_test_callback(void *dma_async_param)
+ {
+-	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(0x%04llx)\n",
+-		(u64)dma_async_param);
+-	return 0;
++	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(0x%p)\n",
++			dma_async_param);
+ }
+ 
+ /**
+@@ -715,7 +714,7 @@ static int ioat_dma_self_test(struct ioa
+ 	addr = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
+ 			DMA_FROM_DEVICE);
+ 	ioat_set_dest(addr, tx, 0);
+-	tx->callback = (void *)ioat_dma_test_callback;
++	tx->callback = ioat_dma_test_callback;
+ 	tx->callback_param = (void *)0x8086;
+ 	cookie = ioat_tx_submit(tx);
+ 	if (cookie < 0) {
+_
+
