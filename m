@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765979AbXJROPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933733AbXJROPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765979AbXJROPV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXJROPH
+	id S933733AbXJROPo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933338AbXJROP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:15:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23381 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758190AbXJROPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:15:06 -0400
-Date: Thu, 18 Oct 2007 16:14:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018141426.GQ5063@kernel.dk>
-References: <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <20071018125840.GF5063@kernel.dk> <20071018133200.GH5063@kernel.dk> <471764CB.5020906@rtr.ca> <20071018135810.GM5063@kernel.dk> <4717695B.5020806@rtr.ca> <47176A18.204@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47176A18.204@rtr.ca>
+	Thu, 18 Oct 2007 10:15:26 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:59003 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933029AbXJROPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:15:23 -0400
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Subject: [PATCH] Fix a build error when BLOCK=n
+Date: Thu, 18 Oct 2007 09:06:03 -0500
+Message-Id: <1192716363-31661-1-git-send-email-Emilian.Medve@Freescale.com>
+X-Mailer: git-send-email 1.5.3.GIT
+X-Brightmail-Tracker: AAAAAQAAAAQ=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Mark Lord wrote:
-> Mark Lord wrote:
->>> On Thu, Oct 18 2007, Mark Lord wrote:
->>>> > Jens wrote:
->>>>> >> OK, I think that covers every arch out there. I haven't been able to
->>>>> >> compile any of them, but it's mostly search'n replace operations. I 
->>>>> hope
->>>>> >> nothing is missing linux/scatterlist.h includes...
->>>> >
->>>> > Patch fails on drivers/scsi/scsi_lib.c.
->>>> >
->>>> > I replaced that part of the patch with this updated portion instead:
->>>
->>> Hmm, what are you applying against? Must be a clean tree, throw away any
->>> patches that you already applied in this thread.
->>>
->>> Updated below.
->> I'll re-pull everything fresh again from kernel.org and rebuild
->> with the "updated below" patch you posted.  Thanks.
->
-> Okay, fresh pull of everything from kernel.org,
-> and now your latest patch does apply cleanly to -git13.
->
-> Something weird (at this end).
+mm/filemap.c: In function '__filemap_fdatawrite_range':
+mm/filemap.c:200: error: implicit declaration of function 'mapping_cap_writeback_dirty'
 
-Thanks for confirming, I did double check that my HEAD was uptodate -
-and it is.
+This happens when we don't use/have any block devices and a NFS root filesystem
+is used
 
+mapping_cap_writeback_dirty() is defined in linux/backing-dev.h which used to be
+provided in mm/filemap.c by linux/blkdev.h until commit
+f5ff8422bbdd59f8c1f699df248e1b7a11073027
+
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
+
+Also removed some trailing whitespaces
+
+This is against Linus' tree: d85714d81cc0408daddb68c10f7fd69eafe7c213
+
+linux-2.6> scripts/checkpatch.pl 0001-Fix-a-build-error-when-BLOCK-n.patch 
+Your patch has no obvious style problems and is ready for submission.
+
+ mm/filemap.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 79f24a9..6f1643d 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -27,6 +27,7 @@
+ #include <linux/writeback.h>
+ #include <linux/pagevec.h>
+ #include <linux/blkdev.h>
++#include <linux/backing-dev.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
+ #include <linux/cpuset.h>
+@@ -537,7 +538,7 @@ void fastcall unlock_page(struct page *page)
+ 	smp_mb__before_clear_bit();
+ 	if (!TestClearPageLocked(page))
+ 		BUG();
+-	smp_mb__after_clear_bit(); 
++	smp_mb__after_clear_bit();
+ 	wake_up_page(page, PG_locked);
+ }
+ EXPORT_SYMBOL(unlock_page);
+@@ -1249,7 +1250,7 @@ asmlinkage ssize_t sys_readahead(int fd, loff_t offset, size_t count)
+ static int fastcall page_cache_read(struct file * file, pgoff_t offset)
+ {
+ 	struct address_space *mapping = file->f_mapping;
+-	struct page *page; 
++	struct page *page;
+ 	int ret;
+ 
+ 	do {
+@@ -1266,7 +1267,7 @@ static int fastcall page_cache_read(struct file * file, pgoff_t offset)
+ 		page_cache_release(page);
+ 
+ 	} while (ret == AOP_TRUNCATED_PAGE);
+-		
++
+ 	return ret;
+ }
+ 
+@@ -2302,7 +2303,7 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+ 						OSYNC_METADATA|OSYNC_DATA);
+ 		}
+   	}
+-	
++
+ 	/*
+ 	 * If we get here for O_DIRECT writes then we must have fallen through
+ 	 * to buffered writes (block instantiation inside i_size).  So we sync
 -- 
-Jens Axboe
+1.5.3.GIT
 
