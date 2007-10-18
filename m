@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763436AbXJRC2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764033AbXJRC3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763436AbXJRC2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbXJRC2N
+	id S1764033AbXJRC3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbXJRC3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:28:13 -0400
-Received: from rtr.ca ([76.10.145.34]:2020 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756678AbXJRC2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:28:12 -0400
-Message-ID: <4716C4B9.4070003@rtr.ca>
-Date: Wed, 17 Oct 2007 22:28:09 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       pcihpd-discuss@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH 4/4] Fix PCIe hotplug for non-ACPI ExpressCard slots (version
- 2)
-References: <4714C0A6.1030204@rtr.ca>	<4714D700.7060008@rtr.ca>	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>	<47150565.5090102@rtr.ca>	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>	<47150982.6050102@rtr.ca>	<471509FE.7080505@rtr.ca>	<47151191.40406@rtr.ca>	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>	<4715217D.2000803@rtr.ca>	<20071016214143.GC21815@kroah.com>	<471533AF.60100@rtr.ca>	<47156B14.2080608@rtr.ca>	<47156B40.4060006@rtr.ca>	<47156B62.3070807@rtr.ca>	<47156B7B.8010800@rtr.ca>	<47156B92.7070501@rtr.ca> <20071017170106.5d9e0a9f.kristen.c.accardi@intel.com>
-In-Reply-To: <20071017170106.5d9e0a9f.kristen.c.accardi@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 17 Oct 2007 22:29:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59580
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759154AbXJRC3H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 22:29:07 -0400
+Date: Wed, 17 Oct 2007 19:29:06 -0700 (PDT)
+Message-Id: <20071017.192906.112623207.davem@davemloft.net>
+To: chardin@2wire.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pfkey: sending an SADB_GET responds with an SADB_GET
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <C33BCE5A.25D04%chardin@2wire.com>
+References: <C33BCE5A.25D04%chardin@2wire.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> On Tue, 16 Oct 2007 21:55:30 -0400
-> Mark Lord <lkml@rtr.ca> wrote:
-> 
->> Make use of the previously split out pcie_init_enable_events() function
->> to reinitialize the hotplug hardware on resume from suspend,
->> but only when pciehp_force==1.  Otherwise behaviour is unmodified.
-> 
-> OK - definitely in this case the right thing to do is not use this code
-> unless you are forcing pciehp, thanks.
+From: Charles Hardin <chardin@2wire.com>
+Date: Wed, 17 Oct 2007 14:36:10 -0700
 
-Yeah, that was Ted's suggestion, and it makes sense.
+> Kernel needs to respond to an SADB_GET with the same message type to conform
+> to the RFC 2367 Section 3.1.5
 
-> I think I'd be careful when you rename this patch - non-ACPI
-> ExpressCard slots is not what you want to say, as this fix is very
-> specific for your machine.
+I can't apply this:
 
+1) We need you to provide an appropriate Signed-off-by: line
+   in the changelog of your patch.
 
-No, from reading through the driver it seems that any machine
-that lacks ACPI BIOS support for PCIe slots will suffer from
-the exact same problems.
+2) Your email client corrupted the patch, changing tabs into spaces,
+   and adding newline breaks to long lines.
 
-That's a large class of machines, not just my tiny little individual
-one here (of which *millions* have been manufactured and sold).
-
-But, whatever.
+Please resubmit with these two errors corrected, thank you.
