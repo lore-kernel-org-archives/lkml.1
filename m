@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760466AbXJRFhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbXJRFiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760466AbXJRFhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 01:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXJRFhq
+	id S1761164AbXJRFiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 01:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760701AbXJRFh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 01:37:46 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:50439 "EHLO koto.vergenet.net"
+	Thu, 18 Oct 2007 01:37:58 -0400
+Received: from rtr.ca ([76.10.145.34]:4732 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbXJRFhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 01:37:46 -0400
-Date: Thu, 18 Oct 2007 14:37:41 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: Don Zickus <dzickus@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>,
-       kexec-ml <kexec@lists.infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
-Message-ID: <20071018053739.GA31244@verge.net.au>
-References: <20070822210838oomichi@mail.jp.nec.com> <20070822211339oomichi@mail.jp.nec.com> <20071017023305.GC6709@verge.net.au> <47159AA3.10305@mxs.nes.nec.co.jp>
+	id S1760633AbXJRFh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 01:37:57 -0400
+Message-ID: <4716F134.2060002@rtr.ca>
+Date: Thu, 18 Oct 2007 01:37:56 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47159AA3.10305@mxs.nes.nec.co.jp>
-User-Agent: mutt-ng/devel-r804 (Debian)
+To: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-git12: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 02:16:19PM +0900, Ken'ichi Ohmichi wrote:
-> 
-> Hi Simon,
-> 
-> Simon Horman wrote:
-> > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
-> >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
-> >> The patch is for kexec-tools-testing-20070330.
-> >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
-> >> kexec command gets the address and size of the vmcoreinfo data from
-> >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
-> >> ELF header of /proc/vmcore. When the second kernel is booting, the
-> >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
-> >> segment into /proc/vmcore.
-> > 
-> > Sorry for the long delay, I completely missed this patch.
-> > 
-> > The kexec-tools change seems ok to me. What is the status of
-> > the kernel portion of the change?
-> 
-> The kernel portion is merged into linux-2.6.23-mm1.
-> According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
-> "The infamous misc.  Will re-review and will merge basically all of them".
-> 
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.0/0313.html
-> 
-> 
-> > Do you still want the kexec-tools portion applied?
-> 
-> Yes, I hope so.
 
-Thanks, applied :-)
+usb 5-1: new high speed USB device using ehci_hcd and address 2
+usb 5-1: configuration #1 chosen from 1 choice
+hub 5-1:1.0: USB hub found
+hub 5-1:1.0: 4 ports detected
+sysfs: duplicate filename 'bInterfaceNumber' can not be created
+WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+ [sysfs_add_one+159/224] sysfs_add_one+0x9f/0xe0
+hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x010f000c
+ [sysfs_add_file+79/144] sysfs_add_file+0x4f/0x90
+b44: eth0: Link is up at 100 Mbps, full duplex.
+b44: eth0: Flow control is off for TX and off for RX.
+ [sysfs_create_group+103/256] sysfs_create_group+0x67/0x100
+ [klist_add_tail+30/80] klist_add_tail+0x1e/0x50
+ [device_add+61/1472] device_add+0x3d/0x5c0
+ [<f88a3adc>] usb_create_sysfs_intf_files+0x2c/0xb0 [usbcore]
+ [<f889f701>] usb_set_configuration+0x391/0x5d0 [usbcore]
+ [<f88a7c16>] generic_probe+0x76/0xb0 [usbcore]
+ [<f88a1343>] usb_probe_device+0x33/0x40 [usbcore]
+ [driver_probe_device+142/400] driver_probe_device+0x8e/0x190
+ [klist_next+93/160] klist_next+0x5d/0xa0
+ [bus_for_each_drv+68/112] bus_for_each_drv+0x44/0x70
+ [device_attach+125/144] device_attach+0x7d/0x90
+ [__device_attach+0/16] __device_attach+0x0/0x10
+ [bus_attach_device+77/160] bus_attach_device+0x4d/0xa0
+ [bus_add_device+300/352] bus_add_device+0x12c/0x160
+ [device_add+1155/1472] device_add+0x483/0x5c0
+ [<f889a274>] usb_new_device+0x54/0xa0 [usbcore]
+ [<f889ab9a>] hub_thread+0x45a/0xca0 [usbcore]
+ [schedule+460/1680] schedule+0x1cc/0x690
+ [autoremove_wake_function+0/80] autoremove_wake_function+0x0/0x50
+ [<f889a740>] hub_thread+0x0/0xca0 [usbcore]
+ [kthread+66/112] kthread+0x42/0x70
+ [kthread+0/112] kthread+0x0/0x70
+ [kernel_thread_helper+7/24] kernel_thread_helper+0x7/0x18
+ =======================
+NET: Registered protocol family 17
