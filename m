@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764264AbXJRMju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbXJRMmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764264AbXJRMju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 08:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761688AbXJRMjl
+	id S1763776AbXJRMmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 08:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbXJRMml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 08:39:41 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:19879 "EHLO kernel.dk"
+	Thu, 18 Oct 2007 08:42:41 -0400
+Received: from il.qumranet.com ([82.166.9.18]:60564 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763735AbXJRMjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 08:39:40 -0400
-Date: Thu, 18 Oct 2007 14:39:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018123902.GD5063@kernel.dk>
-References: <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <20071018.053636.21618957.davem@davemloft.net>
+	id S1756906AbXJRMml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 08:42:41 -0400
+Message-ID: <47175495.6060706@qumranet.com>
+Date: Thu, 18 Oct 2007 14:41:57 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018.053636.21618957.davem@davemloft.net>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Laurent Vivier <Laurent.Vivier@bull.net>, linux-kernel@vger.kernel.org,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: Use virtual cpu accounting if available for guest times.
+References: <47135D1B.1060004@bull.net> <11926264852739-git-send-email-Laurent.Vivier@bull.net> <200710181439.10390.borntraeger@de.ibm.com>
+In-Reply-To: <200710181439.10390.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Thu, 18 Oct 2007 14:15:47 +0200
-> 
-> > On Thu, Oct 18 2007, Jens Axboe wrote:
-> > > On Thu, Oct 18 2007, David Miller wrote:
-> > > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > > Date: Thu, 18 Oct 2007 13:57:02 +0200
-> > > > 
-> > > > > Thanks a lot, Dave! The patch is a monster right now, I'll work on
-> > > > > splitting it into a 3-step process. Any arch help is greatly
-> > > > > appreciated.
-> > > > 
-> > > > I have some other bits that my compile hit, such as some things in the
-> > > > crypto layer.
-> > > 
-> > > Yeah, I have tons of that so far. I hope to have an allyesconfig
-> > > compiling pretty soonish, will send that out then.
-> > 
-> > OK here goes, this compiles with allyesconfig on x86-64. Not too bad,
-> > the scsi/ drivers were by far the worst.
-> 
-> It build cleanly here on sparc64 too.
+Christian Borntraeger wrote:
+> ppc and s390 offer the possibility to track process times precisely
+> by looking at cpu timer on every context switch, irq, softirq etc.
+> We can use that infrastructure as well for guest time accounting.
+> We need to account the used time before we change the state. 
+> This patch adds a call to account_system_vtime to kvm_guest_enter
+> and kvm_guest exit. If CONFIG_VIRT_CPU_ACCOUNTING is not set,
+> account_system_vtime is defined in hardirq.h as an empty function,
+> which means this patch does not change the behaviour on other
+> platforms.
+>
+> I compile tested this patch on x86 and function tested the patch on
+> s390.
+>
+> Avi, please apply.
+>
+>   
 
-Super
-
-> It's late and I'm about to hit bed so I'm too chicken to do a test
-> boot it right now :-)
-
-Don't boot it Dave, odds are that something will break and you'll then
-be stuck debugging that since you can't relax and sleep until it's
-working :-)
+Done.  Thanks!
 
 -- 
-Jens Axboe
+error compiling committee.c: too many arguments to function
 
