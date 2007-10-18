@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXJRTzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763545AbXJRT7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbXJRTzT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbXJRTzG
+	id S1763545AbXJRT7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXJRT7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:55:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54439 "EHLO mx1.redhat.com"
+	Thu, 18 Oct 2007 15:59:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56857 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753090AbXJRTzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:55:04 -0400
+	id S1755942AbXJRT7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:59:24 -0400
+Date: Thu, 18 Oct 2007 21:59:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
+Subject: Re: libata crash
+Message-ID: <20071018195903.GA29567@elte.hu>
+References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Doug Chapman <dchapman@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: [PATCH] ia64: check-segrel.lds vs --build-id
-X-Fcc: ~/Mail/linus
-Emacs: if it payed rent for disk space, you'd be rich.
-Message-Id: <20071018195453.A34D64D04E2@magilla.localdomain>
-Date: Thu, 18 Oct 2007 12:54:53 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20071018193236.GJ10674@kernel.dk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some versions of ld with --build-id support will crash when using the flag
-with a linker script that discards notes.  This bites ia64's check-segrel.lds.
-The bug is easy to avoid.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+> I'll see if I can spend some time tonight chopping the patch into 
+> digestable pieces, unfortunately I'll be away the next three days. And 
+> it would be nice to get this thing merged asap.
 
---- a/arch/ia64/scripts/check-segrel.lds
-+++ b/arch/ia64/scripts/check-segrel.lds
-@@ -1,6 +1,7 @@
- SECTIONS {
- 	. = SIZEOF_HEADERS;
- 	.rodata : { *(.rodata) } :ro
-+	.note : { *(.note*) }
- 	. = 0xa0000;
- 	.data : { *(.data) } :dat
- 	/DISCARD/ : { *(*) }
+and make sure it builds:
 
+drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
+drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
+drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
+drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
+drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
+drivers/scsi/in2000.c: In function 'in2000_queuecommand':
+drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
+drivers/scsi/in2000.c: In function 'transfer_bytes':
+drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
+
+;-)
+
+	Ingo
