@@ -1,57 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762530AbXJRCsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXJRC5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762530AbXJRCsH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760073AbXJRCrz
+	id S1762034AbXJRC5D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760410AbXJRC4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:47:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34983 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759996AbXJRCry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:47:54 -0400
-Date: Thu, 18 Oct 2007 04:49:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: torvalds@osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       V9FS Developers <v9fs-developer@lists.sourceforge.net>
-Subject: Re: [GIT PULL] 9p patches for 2.6.24 merge window
-Message-ID: <20071018024927.GA16138@uranus.ravnborg.org>
-References: <a4e6962a0710171434l5ff6cecfib1e8b231b8b610b6@mail.gmail.com> <20071017213906.GB13250@uranus.ravnborg.org> <a4e6962a0710171619r60bea067u5255657381b2d0a9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4e6962a0710171619r60bea067u5255657381b2d0a9@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 17 Oct 2007 22:56:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51500 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758430AbXJRC4w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 22:56:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:to:subject:cc:message-id:date:from;
+	b=WVmLsLUoTT3ve7rOB4mwpvNgZ2P5RUoC2G4xDkHfv1e3WIrYMysHSL0s3gJzMB5uo
+	PVHgGHfqDVYjTyKprX2Ig==
+To: akpm@linux-foundation.org, pj@sgi.com
+Subject: [PATCH] Simplify /proc/cgroups
+Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Message-Id: <20071018025636.ADCDE3D6261@localhost>
+Date: Wed, 17 Oct 2007 19:56:36 -0700 (PDT)
+From: menage@google.com (Paul Menage)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 06:19:53PM -0500, Eric Van Hensbergen wrote:
-> On 10/17/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > On Wed, Oct 17, 2007 at 04:34:02PM -0500, Eric Van Hensbergen wrote:
-> > > Linus, please pull from the 'for-linus' branch of:
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git/ for-linus
-> > >
-> > > This tree contains the following:
-> > >
-> > > Latchesar Ionkov(3):
-> > >   attach-per-user support
-> > >   rename uid and gid parameters
-> > >   define session flags
-> > >
-> > > Eric Van Hensbergen(4)
-> > >   remove sysctl code
-> > >   fix bad kconfig cross-dependency
-> > >   soften invalidationin loose mode
-> > >   make transports dynamic
-> >
-> > Could you please tag your patches with 9p: or [9p] so it
-> > is obvious that they belong to this subsystem.
-> > When browsing head-commits and other places this is a great help.
-> >
-> 
-> They should be so tagged, I just stripped it in my pull email summary.
+This patch simplifies /proc/cgroups by removing pointers and some
+debugging information, and simply presenting a list of subsystems,
+which hierarchy they are part of (if any) and the number of cgroups
+created for that subsystem. Hierarchy id is determined by the bitmask
+of subsystem ids attached to that hierarchy.
 
-OK - thanks.
+Signed-off-by: Paul Menage <menage@google.com>
 
-	Sam
+---
+
+Several people have commented that /proc/cgroups is too confusing or
+contains strange information. Here's an attempt to simplify it. New
+typical output looks like:
+
+#subsys_name	hierarchy	num_cgroups
+cpuset	1	2
+cpuacct	10	1
+debug	0	1
+ns	10	1
+memory	0	1
+cpu	0	1
+
+Maybe there should be more tabs so that the columns line up better?
+But then it'll be out of line if people create subsystems with longer
+names ...
+
+ kernel/cgroup.c | 25 ++++---------------------
+ 1 file changed, 4 insertions(+), 21 deletions(-)
+
+Index: container-2.6.23-mm1/kernel/cgroup.c
+===================================================================
+--- container-2.6.23-mm1.orig/kernel/cgroup.c
++++ container-2.6.23-mm1/kernel/cgroup.c
+@@ -2403,31 +2403,14 @@ static int proc_cgroupstats_show(struct 
+ 	int i;
+ 	struct cgroupfs_root *root;
+ 
++	seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\n");
+ 	mutex_lock(&cgroup_mutex);
+-	seq_puts(m, "Hierarchies:\n");
+-	for_each_root(root) {
+-		struct cgroup_subsys *ss;
+-		int first = 1;
+-		seq_printf(m, "%p: bits=%lx cgroups=%d (", root,
+-			   root->subsys_bits, root->number_of_cgroups);
+-		for_each_subsys(root, ss) {
+-			seq_printf(m, "%s%s", first ? "" : ", ", ss->name);
+-			first = false;
+-		}
+-		seq_putc(m, ')');
+-		if (root->sb) {
+-			seq_printf(m, " s_active=%d",
+-				   atomic_read(&root->sb->s_active));
+-		}
+-		seq_putc(m, '\n');
+-	}
+-	seq_puts(m, "Subsystems:\n");
+ 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+ 		struct cgroup_subsys *ss = subsys[i];
+-		seq_printf(m, "%d: name=%s hierarchy=%p\n",
+-			   i, ss->name, ss->root);
++		seq_printf(m, "%s\t%d\t%d\n",
++			   ss->name, ss->root->subsys_bits,
++			   ss->root->number_of_cgroups);
+ 	}
+-	seq_printf(m, "Control Group groups: %d\n", css_set_count);
+ 	mutex_unlock(&cgroup_mutex);
+ 	return 0;
+ }
