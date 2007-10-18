@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbXJRWSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXJRWTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932790AbXJRWSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760581AbXJRWSI
+	id S933305AbXJRWTS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbXJRWTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:18:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59323 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758088AbXJRWSH (ORCPT
+	Thu, 18 Oct 2007 18:19:06 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:38962 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758162AbXJRWTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:18:07 -0400
-Date: Thu, 18 Oct 2007 15:17:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, paulus@ozlabs.org, lethal@linux-sh.org,
-       kyle@parisc-linux.org, grundler@parisc-linux.org
-Subject: Re: [PATCH 1/2] bug.h: Introduce HAVE_ARCH_WARN
-Message-Id: <20071018151752.09147de5.akpm@linux-foundation.org>
-In-Reply-To: <20071011171211.GB10877@lixom.net>
-References: <20071011171211.GB10877@lixom.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Oct 2007 18:19:05 -0400
+Message-ID: <4717DB45.8000604@keyaccess.nl>
+Date: Fri, 19 Oct 2007 00:16:37 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+Subject: Re: OOM notifications
+References: <20071018202504.GA2854@dmt>	<4717C43D.6030204@keyaccess.nl>	<20071018165238.0537eaa6@bree.surriel.com>	<4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com> <4717D7B6.40102@keyaccess.nl>
+In-Reply-To: <4717D7B6.40102@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Oct 2007 12:12:11 -0500
-Olof Johansson <olof@lixom.net> wrote:
-
-> HAVE_ARCH_WARN is used to determine if an arch already has a __WARN()
-> macro, or if a generic one is needed.
+On 10/19/2007 12:01 AM, Rene Herman wrote:
+> On 10/18/2007 11:18 PM, Rik van Riel wrote:
 > 
-> With this, some of the arch-specific WARN_ON() implementations can be
-> made common instead (see follow-up patch for powerpc).
+>> On Thu, 18 Oct 2007 23:06:52 +0200
+>> Rene Herman <rene.herman@keyaccess.nl> wrote:
+>>
+>>> They don't -- that's why I asked if you need both scenario's active
+>>> at the same time. SIGDANGER would just be SIGPLEASEFREEALLYOUCAN with
+>>> the operator deciding through setting the level at which point
+>>> applications get it.
+>>>
+>>> Or put differently; what's the additional value of notifying an
+>>> application that the system is about to go balistic when you've
+>>> already asked it to free all it could earlier? SIGSEEDAMNITITOLDYOUSO?
+>>
+>> The first threshold - "we are about to swap" - means the application
+>> frees memory that it can.  Eg. free()d memory that glibc has not yet
+>> given back to the kernel, or JVM running the garbage collector, or ...
+>>
+>> The second threshold - "we are out of memory" - means that the first
+>> approach has failed and the system needs to do something else. On an
+>> embedded system, I would expect some application to exit or maybe
+>> restart itself.
 > 
-
-Those HAVE_ARCH_foo things are unpleasant.
-
+> That first threshold sounds fine yes. To me, the second mostly sounds 
+> like a job for SIGTERM though.
 > 
-> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-> index d56fedb..c6b8386 100644
-> --- a/include/asm-generic/bug.h
-> +++ b/include/asm-generic/bug.h
-> @@ -31,14 +31,19 @@ struct bug_entry {
->  #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
->  #endif
->  
-> +#ifndef HAVE_ARCH_WARN
-> +#define __WARN() do {							\
-> +	printk("WARNING: at %s:%d %s()\n", __FILE__,			\
-> +		__LINE__, __FUNCTION__);				\
-> +	dump_stack();							\
-> +} while (0)
-> +#endif
+> The OOM killer could after it selected the task for killing first try a 
+> TERM on it to give a chance to exit gracefully and only when that 
+> doesn't help make it eligible for killing on a second round through the 
+> badness calculation.
+> 
+> You could moreover _never_ make a task eligible for killing before it 
+> received a SIGTERM, thereby guaranteeing that everyone got the SIGTERM 
+> before killing anything, and it seems SIGTERM would be a more focussed 
+> version of SIGDANGER2 then.
 
-Can't we just do #ifndef __WARN?
+Well, no, that "guarantee" is fairly badly formulated but I mean "before 
+everyone got a SIGTERM" ofcourse. That is, first do the same selection as 
+now but don't send KILL but TERM and mark the task as having received a TERM 
+already and make it not eligible anymore. Only when there are no TERM 
+eligible tasks anymore, start sending KILL.
+
+> Would at least forego any need for multiplexing the DANGER signal.
+
+Rene.
