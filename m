@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764369AbXJRKSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbXJRKTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764369AbXJRKSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbXJRKSd
+	id S1764283AbXJRKTx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761271AbXJRKTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:18:33 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:43955 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1764226AbXJRKSb (ORCPT
+	Thu, 18 Oct 2007 06:19:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57896
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758842AbXJRKTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:18:31 -0400
-Message-ID: <4717312B.5050408@dev.rtsoft.ru>
-Date: Thu, 18 Oct 2007 14:10:51 +0400
-From: Dmitry Antipov <antipov@dev.rtsoft.ru>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] SIGIO-driven I/O with inotify queues
-Content-Type: multipart/mixed;
- boundary="------------030402080509010801060507"
+	Thu, 18 Oct 2007 06:19:44 -0400
+Date: Thu, 18 Oct 2007 03:19:57 -0700 (PDT)
+Message-Id: <20071018.031957.104033396.davem@davemloft.net>
+To: Shane.Huang@amd.com
+Cc: gregkh@suse.de, htejun@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, Henry.Su@amd.com,
+       Libin.Yang@amd.com
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
+References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030402080509010801060507
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: "Shane Huang" <Shane.Huang@amd.com>
+Date: Thu, 18 Oct 2007 17:14:36 +0800
 
-This patch proposes SIGIO-driven I/O for descriptors returned by
-inotify_init(). The thing may be enabled by convenient
-fcntl (fd, F_SETFL, O_ASYNC) call.
+> More ATI North Bridges like RS780 can't do MSI like its predecessors
+> in linux. Disable MSIs on them.
+> 
+> Signed-off-by: Shane Huang <shane.huang@amd.com>
 
-Dmitry
+Can we get some detail as to why these north bridges have to have MSI
+disabled completely?  I can't believe that all 6 of these ATI
+controllers which will now be listed in the quirk table cannot use MSI
+at all.
 
+I've discovered several cases where it was a buggy device or a driver
+bug that caused someone to erroneously submit patches that disable MSI
+completely for the bridge they were behind.
 
---------------030402080509010801060507
-Content-Type: text/x-patch;
- name="2.6.23-inotify-fasync.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.6.23-inotify-fasync.patch"
+I don't want that to happen any more.  One way to prevent that is to
+have a full detailed justification for the MSI disabling in the
+changelog or in the comments for the MSI quirk.
 
-Signed-off-by: Dmitry Antipov <antipov@dev.rtsoft.ru>
-
-diff -ur -X /tmp/dontdiff .orig-2.6.23/fs/inotify_user.c 2.6.23/fs/inotify_user.c
---- .orig-2.6.23/fs/inotify_user.c	2007-10-10 00:31:38.000000000 +0400
-+++ 2.6.23/fs/inotify_user.c	2007-10-18 14:06:38.000000000 +0400
-@@ -78,6 +78,7 @@
- 	atomic_t		count;		/* reference count */
- 	struct user_struct	*user;		/* user who opened this dev */
- 	struct inotify_handle	*ih;		/* inotify handle */
-+	struct fasync_struct    *fa;            /* async notification */
- 	unsigned int		queue_size;	/* size of the queue (bytes) */
- 	unsigned int		event_count;	/* number of pending events */
- 	unsigned int		max_events;	/* maximum number of events */
-@@ -301,6 +302,7 @@
- 	dev->queue_size += sizeof(struct inotify_event) + kevent->event.len;
- 	list_add_tail(&kevent->list, &dev->events);
- 	wake_up_interruptible(&dev->wq);
-+	kill_fasync(&dev->fa, SIGIO, POLL_IN);
- 
- out:
- 	mutex_unlock(&dev->ev_mutex);
-@@ -489,6 +491,13 @@
- 	return ret;
- }
- 
-+static int inotify_fasync(int fd, struct file *file, int on)
-+{
-+	struct inotify_device *dev = file->private_data;
-+
-+	return fasync_helper(fd, file, on, &dev->fa) >= 0 ? 0 : -EIO;
-+}
-+
- static int inotify_release(struct inode *ignored, struct file *file)
- {
- 	struct inotify_device *dev = file->private_data;
-@@ -501,6 +510,9 @@
- 		inotify_dev_event_dequeue(dev);
- 	mutex_unlock(&dev->ev_mutex);
- 
-+	if (file->f_flags & FASYNC)
-+		inotify_fasync(-1, file, 0);
-+
- 	/* free this device: the put matching the get in inotify_init() */
- 	put_inotify_dev(dev);
- 
-@@ -529,6 +541,7 @@
- static const struct file_operations inotify_fops = {
- 	.poll           = inotify_poll,
- 	.read           = inotify_read,
-+	.fasync         = inotify_fasync,
- 	.release        = inotify_release,
- 	.unlocked_ioctl = inotify_ioctl,
- 	.compat_ioctl	= inotify_ioctl,
-@@ -576,6 +589,7 @@
- 		goto out_free_dev;
- 	}
- 	dev->ih = ih;
-+	dev->fa = NULL;
- 
- 	filp->f_op = &inotify_fops;
- 	filp->f_path.mnt = mntget(inotify_mnt);
-
---------------030402080509010801060507--
+Thank you.
