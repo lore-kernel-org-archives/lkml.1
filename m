@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbXJRBwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbXJRBxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbXJRBwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 21:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764296AbXJRBwV
+	id S932954AbXJRBxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 21:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760784AbXJRBxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 21:52:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:42435 "EHLO
+	Wed, 17 Oct 2007 21:53:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:45351 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764020AbXJRBwU (ORCPT
+	with ESMTP id S1760336AbXJRBxi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 21:52:20 -0400
+	Wed, 17 Oct 2007 21:53:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VrgLMZV7GqTd2ihrwTd3de8WkNv/se0sZy4GQ7OW3lOSE6Yc8hRt+Xiw2fdQtSUh3omrCXCztHBDgUPs7J68iMIVEyxaOAQPClEjklWstPQnDndPYsNEXrptjSz/BRk1lFPJqQIIdkEkyt68Wlh3LMvdUTMzE7YyhUZLyLCZFlU=
+        b=hWrLKYQDKdMuIbnDcbi2V8Dx3ttTcgVqLziXQVL5LiCwAAZsKpdcfPcCzpOMM4HcDFSzFaWjoku07H0moVMnFcInLhaHho8glRdcW3/Q/mWkAqpS7VIRuAZ2XPWM/1Hv9/IyXaoUgWSOBDW+49TsI6aUjU2KZGTKqSmsl7riLSw=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: Thomas Meyer <thomas@m3y3r.de>
 Subject: Re: hda-intel: no soundcard with current linus' git tree
-Date: Thu, 18 Oct 2007 03:51:50 +0200
+Date: Thu, 18 Oct 2007 03:53:08 +0200
 User-Agent: KMail/1.9.6
 Cc: Takashi Iwai <tiwai@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        alsa-devel@alsa-project.org
-References: <471538C2.80806@m3y3r.de> <s5h8x622kui.wl%tiwai@suse.de> <471651C4.20907@m3y3r.de>
-In-Reply-To: <471651C4.20907@m3y3r.de>
+References: <471538C2.80806@m3y3r.de> <471651C4.20907@m3y3r.de> <200710180351.50618.maximlevitsky@gmail.com>
+In-Reply-To: <200710180351.50618.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-Message-Id: <200710180351.50618.maximlevitsky@gmail.com>
+Message-Id: <200710180353.08638.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>From 0824b077b75c19253b45c5a455775c331acd54ee Mon Sep 17 00:00:00 2001
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Thu, 18 Oct 2007 03:35:37 +0200
+Subject: [PATCH] [HDA] [STAC] Since there is now a master volume control,
+don't call the headphone output "Master", it isn't strictly correct anyway
 
-I understand why this happens.
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ pci/hda/patch_sigmatel.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-Your sound card has a single "headphone" output, and since it is single, it is called "Master"
-the stac you have also has a real master volume control, that controls all the DACs, not just the headphones.
+diff --git a/pci/hda/patch_sigmatel.c b/pci/hda/patch_sigmatel.c
+index 6dffa54..7f157a6 100644
+--- a/pci/hda/patch_sigmatel.c
++++ b/pci/hda/patch_sigmatel.c
+@@ -1907,12 +1907,7 @@ static int stac92xx_auto_create_hp_ctls(struct hda_codec *codec,
+ 			return err;
+ 	}
+ 	if (spec->multiout.hp_nid) {
+-		const char *pfx;
+-		if (old_num_dacs == spec->multiout.num_dacs)
+-			pfx = "Master";
+-		else
+-			pfx = "Headphone";
+-		err = create_controls(spec, pfx, spec->multiout.hp_nid, 3);
++		err = create_controls(spec, "Headphone", spec->multiout.hp_nid, 3);
+ 		if (err < 0)
+ 			return err;
+ 	}
+-- 
+1.5.3.4
 
-I added support for it, thus two controls collided.
-
-The  following patch will rename the "Master" output to "Headphone"
-Note that on the stac 9205/9204, the only one that has no master volume (the volume knob)
-but has a "Master Volume" amplifier widget, this will probably rename the "Master Volume" to
-Headphones.
-
-This chip is quite different, thus I think this should be handled in its patch function.
-I see what I can do later.
-Meanwhile the rename from "Master" to Headphones" is the only regression.
-
-Best regards,
-	Maxim Levitsky
-
-PS: I reply to this mail with the patch.
