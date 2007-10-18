@@ -1,143 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbXJRRwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765399AbXJRR5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933345AbXJRRwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758410AbXJRRwO
+	id S1765399AbXJRR5Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbXJRR5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:52:14 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60033 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757509AbXJRRwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:52:12 -0400
-Date: Thu, 18 Oct 2007 19:52:11 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de
-Subject: [PATCH] [ISDN]Fix random hard freeze with AVM T1 cards
-Message-ID: <20071018175210.GC12773@pingi.kke.suse.de>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
+	Thu, 18 Oct 2007 13:57:04 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39275 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758571AbXJRR5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 13:57:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19MOV4Rhr1MHb30phw0A3m9LFbJzMiAaooTABdeVI
+	t4SFeG9ur/HkjA
+Subject: [bisected][mismerge?] Re: [microcode] 2.6.23.git pulled this
+	morning oopses loading P4 microcode
+From: Mike Galbraith <efault@gmx.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+In-Reply-To: <1192681533.7147.5.camel@Homer.simpson.net>
+References: <1192681533.7147.5.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 19:56:38 +0200
+Message-Id: <1192730198.7182.18.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fix the hard freeze debuged for AVM C4 cards
-for the AVM T1 cards.
+On Thu, 2007-10-18 at 06:25 +0200, Mike Galbraith wrote:
+> Greetings,
+> 
+> Freshly pulled tree oopes per $subject.
+> 
+> [  114.714335] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000031
+> [  114.732810] printing eip: c03332ff *pde = 00000000 
+> [  114.747614] Oops: 0000 [#1] PREEMPT SMP 
+> [  114.761320] Modules linked in: microcode snd_seq edd button battery ac ip6t_REJECT xt_tcpudp ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter ip6table_mangle nf_conntrack_ipv4 nf_conntrack ip_tables ip6table_filter ip6_tables x_tables nls_iso8859_1 nls_cp437 nls_utf8 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_mpu401 snd_timer snd_mpu401_uart snd_rawmidi prism54 snd_page_alloc snd_seq_device snd soundcore intel_agp agpgart i2c_i801 fan thermal processor
+> [  114.781462] CPU:    0
+> [  114.781464] EIP:    0060:[<c03332ff>]    Not tainted VLI
+> [  114.781468] EFLAGS: 00010293   (2.6.23-smp-git #13)
+> [  114.781478] EIP is at misc_register+0x53/0x14f
+> [  114.781483] eax: 00000025   ebx: f8bff858   ecx: f8bff900   edx: 00000031
+> [  114.781490] esi: 000000b8   edi: f8bff864   ebp: c2e0de88   esp: c2e0de68
+> [  114.781496] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [  114.781502] Process modprobe (pid: 6115, ti=c2e0d000 task=c2efa070 task.ti=c2e0d000)
+> [  114.781508] Stack: c1cb4070 f8bff900 c2e0de88 c014818c f8bff900 f8bff900 f8bff900 00000029 
+> [  114.781521]        c2e0de9c f8bac011 c01368e6 ffffffff f8bff900 c2e0dfb0 c0149dfa 00000000 
+> [  114.781533]        00000000 00002000 c04d4060 c2e0ded0 c2e0df58 f8be0058 f8be0054 f8bff948 
+> [  114.781545] Call Trace:
+> [  114.781548]  [<c010514a>] show_trace_log_lvl+0x1a/0x30
+> [  114.781558]  [<c0105205>] show_stack_log_lvl+0xa5/0xca
+> [  114.781564]  [<c0105426>] show_registers+0x1fc/0x33d
+> [  114.781571]  [<c010567d>] die+0x116/0x239
+> [  114.781577]  [<c011d008>] do_page_fault+0x2dc/0x5c4
+> [  114.781585]  [<c04c0662>] error_code+0x72/0x78
+> [  114.781594]  [<f8bac011>] microcode_init+0x11/0xbb [microcode]
+> [  114.781604]  [<c0149dfa>] sys_init_module+0xef/0x19bb
+> [  114.781612]  [<c01041ba>] syscall_call+0x7/0xb
+> [  114.781618]  =======================
+> [  114.781621] Code: 0c 0f 18 02 90 81 3d 60 d5 61 c0 60 d5 61 c0 0f 84 fb 00 00 00 8b 33 39 30 75 0d e9 a9 00 00 00 39 30 0f 84 a1 00 00 00 8d 42 f4 <8b> 50 0c 0f 18 02 90 3d 54 d5 61 c0 75 e7 81 fe ff 00 00 00 0f 
+> [  114.781677] EIP: [<c03332ff>] misc_register+0x53/0x14f SS:ESP 0068:c2e0de68
+> 
+> (gdb) list *misc_register+0x53
+> 0xc03332ff is in misc_register (drivers/char/misc.c:194).
+> 189             int err = 0;
+> 190
+> 191             INIT_LIST_HEAD(&misc->list);
+> 192
+> 193             mutex_lock(&misc_mtx);
+> 194             list_for_each_entry(c, &misc_list, list) {
+> 195                     if (c->minor == misc->minor) {
+> 196                             mutex_unlock(&misc_mtx);
+> 197                             return -EBUSY;
+> 198                     }
+> 
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
----
- drivers/isdn/hardware/avm/t1isa.c |   28 ++++++++++++----------------
- 1 files changed, 12 insertions(+), 16 deletions(-)
+The winner of a very long git bisect session:
 
-diff --git a/drivers/isdn/hardware/avm/t1isa.c b/drivers/isdn/hardware/avm/t1isa.c
-index c925020..6130724 100644
---- a/drivers/isdn/hardware/avm/t1isa.c
-+++ b/drivers/isdn/hardware/avm/t1isa.c
-@@ -180,8 +180,8 @@ static irqreturn_t t1isa_interrupt(int interrupt, void *devptr)
- 
- 			ApplId = (unsigned) b1_get_word(card->port);
- 			MsgLen = t1_get_slice(card->port, card->msgbuf);
--			spin_unlock_irqrestore(&card->lock, flags);
- 			if (!(skb = alloc_skb(MsgLen, GFP_ATOMIC))) {
-+				spin_unlock_irqrestore(&card->lock, flags);
- 				printk(KERN_ERR "%s: incoming packet dropped\n",
- 						card->name);
- 			} else {
-@@ -190,7 +190,7 @@ static irqreturn_t t1isa_interrupt(int interrupt, void *devptr)
- 					capilib_data_b3_conf(&cinfo->ncci_head, ApplId,
- 							     CAPIMSG_NCCI(skb->data),
- 							     CAPIMSG_MSGID(skb->data));
--
-+				spin_unlock_irqrestore(&card->lock, flags);
- 				capi_ctr_handle_message(ctrl, ApplId, skb);
- 			}
- 			break;
-@@ -200,21 +200,17 @@ static irqreturn_t t1isa_interrupt(int interrupt, void *devptr)
- 			ApplId = b1_get_word(card->port);
- 			NCCI = b1_get_word(card->port);
- 			WindowSize = b1_get_word(card->port);
--			spin_unlock_irqrestore(&card->lock, flags);
--
- 			capilib_new_ncci(&cinfo->ncci_head, ApplId, NCCI, WindowSize);
--
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			break;
- 
- 		case RECEIVE_FREE_NCCI:
- 
- 			ApplId = b1_get_word(card->port);
- 			NCCI = b1_get_word(card->port);
--			spin_unlock_irqrestore(&card->lock, flags);
--
- 			if (NCCI != 0xffffffff)
- 				capilib_free_ncci(&cinfo->ncci_head, ApplId, NCCI);
--
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			break;
- 
- 		case RECEIVE_START:
-@@ -333,13 +329,16 @@ static void t1isa_reset_ctr(struct capi_ctr *ctrl)
- 	avmctrl_info *cinfo = (avmctrl_info *)(ctrl->driverdata);
- 	avmcard *card = cinfo->card;
- 	unsigned int port = card->port;
-+	unsigned long flags;
- 
- 	t1_disable_irq(port);
- 	b1_reset(port);
- 	b1_reset(port);
- 
- 	memset(cinfo->version, 0, sizeof(cinfo->version));
-+	spin_lock_irqsave(&card->lock, flags);
- 	capilib_release(&cinfo->ncci_head);
-+	spin_unlock_irqrestore(&card->lock, flags);
- 	capi_ctr_reseted(ctrl);
- }
- 
-@@ -466,29 +465,26 @@ static u16 t1isa_send_message(struct capi_ctr *ctrl, struct sk_buff *skb)
- 	u8 subcmd = CAPIMSG_SUBCOMMAND(skb->data);
- 	u16 dlen, retval;
- 
-+	spin_lock_irqsave(&card->lock, flags);
- 	if (CAPICMD(cmd, subcmd) == CAPI_DATA_B3_REQ) {
- 		retval = capilib_data_b3_req(&cinfo->ncci_head,
- 					     CAPIMSG_APPID(skb->data),
- 					     CAPIMSG_NCCI(skb->data),
- 					     CAPIMSG_MSGID(skb->data));
--		if (retval != CAPI_NOERROR) 
-+		if (retval != CAPI_NOERROR) {
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			return retval;
--
-+		}
- 		dlen = CAPIMSG_DATALEN(skb->data);
- 
--		spin_lock_irqsave(&card->lock, flags);
- 		b1_put_byte(port, SEND_DATA_B3_REQ);
- 		t1_put_slice(port, skb->data, len);
- 		t1_put_slice(port, skb->data + len, dlen);
--		spin_unlock_irqrestore(&card->lock, flags);
- 	} else {
--
--		spin_lock_irqsave(&card->lock, flags);
- 		b1_put_byte(port, SEND_MESSAGE);
- 		t1_put_slice(port, skb->data, len);
--		spin_unlock_irqrestore(&card->lock, flags);
- 	}
--
-+	spin_unlock_irqrestore(&card->lock, flags);
- 	dev_kfree_skb_any(skb);
- 	return CAPI_NOERROR;
- }
+04c71976500352d02f60616d2b960267d8c5fe24 is first bad commit
+commit 04c71976500352d02f60616d2b960267d8c5fe24
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Tue Oct 16 23:27:04 2007 -0700
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+    unicode diacritics support
+
+
+Attempting to revert with git:
+
+root@Homer: git revert 04c71976500352d02f60616d2b960267d8c5fe24
+Auto-merged drivers/char/keyboard.c
+Auto-merged drivers/char/vt_ioctl.c
+CONFLICT (delete/modify): drivers/tc/lk201-map.c_shipped deleted in HEAD and modified in 04c7197... unicode diacritics support. Version 04c7197... unicode diacritics support of drivers/tc/lk201-map.c_shipped left in tree.
+Automatic revert failed.  After resolving the conflicts,
+mark the corrected paths with 'git-add <paths>'
+and commit the result.
+
+I reverted it manually in my working tree, ignoring a couple of bogus
+rejects and the missing lk201-map.c_shipped which is _created_ in the
+git tree by the attempt to revert, and now have a working kernel.  The
+oops on microcode driver load is gone, as is the freeze on shutdown when
+scripts attempt to set hardware clock, nmi_watchdog firing when I poke
+SysRq-T, and the inability to login via serial console reported in
+thread:
+
+http://groups.google.com/group/fa.linux.kernel/msg/1b08c2f15894aaf7
+
+	-Mike
+
