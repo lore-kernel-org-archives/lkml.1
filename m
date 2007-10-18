@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbXJRWJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933199AbXJRWK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765466AbXJRWJh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761690AbXJRWJJ
+	id S933199AbXJRWK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbXJRWKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:09:09 -0400
-Received: from home.nigel.suspend2.net ([203.171.70.205]:43278 "EHLO
-	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757998AbXJRWJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:09:07 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm] Freezer: Do not allow freezing processes to clear TIF_SIGPENDING
-Date: Fri, 19 Oct 2007 08:09:02 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200710190022.36145.rjw@sisk.pl>
-In-Reply-To: <200710190022.36145.rjw@sisk.pl>
+	Thu, 18 Oct 2007 18:10:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56124 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757810AbXJRWKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:10:19 -0400
+Message-ID: <4717D9BF.4010508@redhat.com>
+Date: Thu, 18 Oct 2007 15:10:07 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710190809.03042.nigel@nigel.suspend2.net>
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Rik van Riel <riel@redhat.com>, Marcelo Tosatti <marcelo@kvack.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: OOM notifications
+References: <20071018202504.GA2854@dmt>	<4717C43D.6030204@keyaccess.nl>	<20071018165238.0537eaa6@bree.surriel.com>	<4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com> <4717D7B6.40102@keyaccess.nl>
+In-Reply-To: <4717D7B6.40102@keyaccess.nl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Friday 19 October 2007 08:22:35 Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
-> to prevent them from racing with the freezer (like mysqld does, for 
-example).
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Rene Herman wrote:
+> That first threshold sounds fine yes. To me, the second mostly sounds
+> like a job for SIGTERM though.
 
-Acked-by: Nigel Cunningham <nigel@suspend2.net>
+I agree.  Applications shouldn't be expected to be yet more complicated
+and have different levels of low memory handling.  You might want to
+give a process a second shot at handling SIGDANGER but after that's it's
+all about preparation for a shutdown.
 
-> ---
->  kernel/signal.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23-mm1/kernel/signal.c
-> ===================================================================
-> --- linux-2.6.23-mm1.orig/kernel/signal.c
-> +++ linux-2.6.23-mm1/kernel/signal.c
-> @@ -124,7 +124,7 @@ void recalc_sigpending_and_wake(struct t
->  
->  void recalc_sigpending(void)
->  {
-> -	if (!recalc_sigpending_tsk(current))
-> +	if (!recalc_sigpending_tsk(current) && !freezing(current))
->  		clear_thread_flag(TIF_SIGPENDING);
->  
->  }
-> 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-
-
--- 
-Nigel, Michelle, Alisdair and ____________ Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
+iD8DBQFHF9m/2ijCOnn/RHQRAhwjAKC38y1OLv0mE5sWHY31CwJ2ZaoAXwCglDTO
+05pmpe8jMVhwM0nlCHqZyaQ=
+=5DvG
+-----END PGP SIGNATURE-----
