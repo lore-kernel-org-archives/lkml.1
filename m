@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764802AbXJRRsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765629AbXJRRtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764802AbXJRRsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbXJRRsb
+	id S1765629AbXJRRtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbXJRRtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:48:31 -0400
-Received: from ns.suse.de ([195.135.220.2]:37898 "EHLO mx1.suse.de"
+	Thu, 18 Oct 2007 13:49:32 -0400
+Received: from thunk.org ([69.25.196.29]:59332 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbXJRRsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:48:30 -0400
-Date: Thu, 18 Oct 2007 19:48:28 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de
-Subject: [PATCH] [ISDN]Fix random hard freeze with AVM c4 card part 2
-Message-ID: <20071018174828.GA12773@pingi.kke.suse.de>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
-Mime-Version: 1.0
+	id S1758153AbXJRRtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 13:49:31 -0400
+Date: Thu, 18 Oct 2007 13:49:25 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [PATCH 0/3] Fix two PEIe hotplug issues
+Message-ID: <20071018174925.GB4927@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Mark Lord <lkml@rtr.ca>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+	pcihpd-discuss@lists.sourceforge.net
+References: <4716CB9D.6080503@rtr.ca> <4716CE79.7040201@rtr.ca> <20071018091347.4b94faf8.kristen.c.accardi@intel.com> <4717928D.6070703@rtr.ca> <20071018100614.435fe88c.kristen.c.accardi@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071018100614.435fe88c.kristen.c.accardi@intel.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One call was missing in the previous patch.
+On Thu, Oct 18, 2007 at 10:06:14AM -0700, Kristen Carlson Accardi wrote:
+> No, it actually does violate the spec.  Feel free to read it yourself.
+> We are not supposed to do Native PCIe without first successfully executing
+> OSC.  Period.  If you do, you are violating the spec.
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
----
- drivers/isdn/hardware/avm/c4.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+To be fair, we have violated the spec before in order to get crappy
+hardware or to work around crappy ACPI implementations.
+acpi_sleep=s3_bios for example violates the spec, but yet it is the
+only way to get certain laptops to suspend/resume correctly.  
 
-diff --git a/drivers/isdn/hardware/avm/c4.c b/drivers/isdn/hardware/avm/c4.c
-index 4c6ef91..d69c05e 100644
---- a/drivers/isdn/hardware/avm/c4.c
-+++ b/drivers/isdn/hardware/avm/c4.c
-@@ -678,7 +678,9 @@ static irqreturn_t c4_handle_interrupt(avmcard *card)
-                 for (i=0; i < card->nr_controllers; i++) {
- 			avmctrl_info *cinfo = &card->ctrlinfo[i];
- 			memset(cinfo->version, 0, sizeof(cinfo->version));
-+			spin_lock_irqsave(&card->lock, flags);
- 			capilib_release(&cinfo->ncci_head);
-+			spin_unlock_irqrestore(&card->lock, flags);
- 			capi_ctr_reseted(&cinfo->capi_ctrl);
- 		}
- 		card->nlogcontr = 0;
+The question to ask is whether violating the spec will lead to (a) a
+potential system hang/crash, (b) data corruption, (c) physical harm to
+the device/laptop.
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Regards,
+
+						- Ted
