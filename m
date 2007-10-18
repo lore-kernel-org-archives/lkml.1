@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXJREd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXJRElT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765536AbXJREd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 00:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXJREdD
+	id S1762984AbXJRElT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 00:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbXJRElL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 00:33:03 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50618 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752584AbXJREdB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 00:33:01 -0400
-Date: Wed, 17 Oct 2007 21:32:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own
- mappings.
-Message-Id: <20071017213216.b2d0c4bd.akpm@linux-foundation.org>
-In-Reply-To: <m1tzopaxa1.fsf_-_@ebiederm.dsl.xmission.com>
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710160956.58061.borntraeger@de.ibm.com>
-	<200710171814.01717.borntraeger@de.ibm.com>
-	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
-	<1192648456.15717.7.camel@think.oraclecorp.com>
-	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
-	<1192654481.15717.16.camel@think.oraclecorp.com>
-	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
-	<1192661889.15717.27.camel@think.oraclecorp.com>
-	<m16415cocs.fsf@ebiederm.dsl.xmission.com>
-	<1192665785.15717.34.camel@think.oraclecorp.com>
-	<m1tzopaxa1.fsf_-_@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Oct 2007 00:41:11 -0400
+Received: from rtr.ca ([76.10.145.34]:3451 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbXJRElK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 00:41:10 -0400
+Message-ID: <4716E3E2.4030908@rtr.ca>
+Date: Thu, 18 Oct 2007 00:41:06 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       jens.axboe@oracle.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca> <4716E19F.1090201@garzik.org>
+In-Reply-To: <4716E19F.1090201@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 21:59:02 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
-
-> If filesystems care at all they want absolute control over the buffer
-> cache.  Controlling which buffers are dirty and when.  Because we
-> keep the buffer cache in the page cache for the block device we have
-> not quite been giving filesystems that control leading to really weird
-> bugs.
+Jeff Garzik wrote:
+> Mark Lord wrote:
+>> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
+>>
+>> Screen photo is at http://rtr.ca/recent/2.6.23-git12-crash.jpg,
+>> but the top was cut off (isn't there a new config option or patch
+>> to do double-columns or scrollback or something ???.
 > 
-> In addition this tieing of the implemetation of block device caching
-> and the buffer cache has resulted in a much more complicated and
-> limited implementation then necessary.  Block devices for example
-> don't need buffer_heads, and it is perfectly reasonable to cache
-> block devices in high memory.
-> 
-> To start untangling the worst of this mess this patch introduces a
-> second block device inode for the buffer cache.  All buffer cache
-> operations are diverted to that use the new bd_metadata_inode, which
-> keeps the weirdness of the metadata requirements isolated in their
-> own little world.
-
-I don't think we little angels want to tread here.  There are so many
-weirdo things out there which will break if we bust the coherence between
-the fs and /dev/hda1.  Online resize, online fs checkers, various local
-tools which people have hacked up to look at metadata in a live fs,
-direct-io access to the underlying fs, heaven knows how many boot loader
-installers, etc.  Cerainly I couldn't enumerate tham all.
-
-The mere thought of all this scares the crap out of me.
+> Is this a sata_mv box?  If so, could you try this patch?
 
 
-I don't actually see what the conceptual problem is with the existing
-implementation.  The buffer_head is a finer-grained view onto the
-blockdev's pagecache: it provides additional states and additional locking
-against a finer-grained section of the page.   It works well.
+No.. it's a pretty ordinary ata_piix machine, with no serial ports either.
 
-Yeah, the highmem thing is a bit of a problem (but waning in importance). 
-But we can fix that by teaching individual filesystems about kmap and then
-tweak the blockdev's caching policy with mapping_set_gfp_mask() at mount
-time.  If anyone cares, which they don't.
+Cheers
