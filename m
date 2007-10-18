@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXJRWjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbXJRWoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933161AbXJRWjc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbXJRWjW
+	id S1764175AbXJRWoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbXJRWoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:39:22 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35701 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759428AbXJRWjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:39:21 -0400
-X-Sasl-enc: mg0a51MhpZFkcvl/JFV8YYtfqsn1gH/8lAb5nhq3FEA/ 1192747159
-Date: Thu, 18 Oct 2007 20:39:15 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [PATCH] Map volume and brightness events on thinkpads
-Message-ID: <20071018223915.GA4483@khazad-dum.debian.net>
-References: <20071016184606.GB25181@srcf.ucam.org> <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org> <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com> <alpine.LFD.0.999.0710161325570.6887@woody.linux-foundation.org> <d120d5000710170857i3f534544pe9cab0ca6c1b0aa4@mail.gmail.com> <20071017162827.GA9778@srcf.ucam.org> <20071017173532.GB2974@khazad-dum.debian.net> <d120d5000710171159p617115d9w862aadf266c2470c@mail.gmail.com> <20071017204250.GA13377@khazad-dum.debian.net> <d120d5000710180737yeba5445tdb3b302ed6f7a802@mail.gmail.com>
+	Thu, 18 Oct 2007 18:44:22 -0400
+Received: from smtp.petamem.com ([77.37.2.35]:46717 "EHLO smtp.petamem.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751816AbXJRWoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:44:22 -0400
+X-Greylist: delayed 2084 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 18:44:22 EDT
+Date: Fri, 19 Oct 2007 00:05:10 +0200
+From: Richard Jelinek <rj@petamem.com>
+To: linux-kernel@vger.kernel.org
+Subject: kswapd0 inefficient?
+Message-ID: <20071018220510.GA22288@petamem.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d120d5000710180737yeba5445tdb3b302ed6f7a802@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007, Dmitry Torokhov wrote:
-> On 10/17/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > Still, I was
-> > thinking about it, and a doubt came to mind: would it cause problems for a
-> > bitmap to share the function for EV_foo and EV_foo notifications?
-> 
-> Not sure if I follow... Are you talking about bringing KEY_*_NOTIFY
-> into EV_KEY "namespace"? Could you elaborate?
+Hello guys,
 
-Suppose we define a "EV_* is a notify event" bit to set in the event type
-field of an input event.
+I'm not subscribed to this list, so if you find this question valid
+enough to answer it, please cc me. Thanks.
 
-Now, any type of event can be a notify event or a normal event, depending on
-wether this bit is set.
+This is what the top-output looks like on my machine after having
+copied about 550GB of data from a twofish256 crypted disk to a raid
+array:
+--------------
+Mem:   8178452k total,  8132180k used,    46272k free,  2743480k buffers
+Swap:        0k total,        0k used,        0k free,  4563032k cached
 
-However, the input layer keeps track of which events of a given type can be
-sent by an input device using bitmaps, for every type of event.  And this
-bitmap now would mean "input device may issue a normal event or a notify
-event", not just "input device may issue a normal event".
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 5954 root       0 -20     0    0    0 R   62  0.0  96:42.61 loop0
+ 6014 root      18   0 23744  19m  484 R   20  0.2  25:45.31 cp
+  255 root      10  -5     0    0    0 S    8  0.0  10:21.82 kswapd0
+ 6011 root      10  -5     0    0    0 D    6  0.0   4:15.66 kjournald
+...yadda yadda...
+--------------
 
-I am not sure if that would cause trouble?
+And what do we see here? We see loop0 and cp eating up some
+time. That's ok for me considered the work they do. kjournald is also
+ok for me, but I ask myself: why the heck has kswapd0 crunched 10+
+minutes of CPU time?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I mean what does kswapd0 do?
+http://www.linuxforums.org/forum/linux-kernel/65380-what-does-kswapd0-do.html
+
+And I have no swap - right? So it should just shut up - IMHO. Or am I
+missing something?
+
+
+kind regards,
+ Marcel
