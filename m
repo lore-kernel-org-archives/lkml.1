@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbXJRUwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXJRUwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761280AbXJRUwM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbXJRUv6
+	id S1764138AbXJRUwd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762451AbXJRUwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:51:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52557 "EHLO mx3.mail.elte.hu"
+	Thu, 18 Oct 2007 16:52:23 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43063 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754497AbXJRUv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:51:57 -0400
-Date: Thu, 18 Oct 2007 22:51:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-Message-ID: <20071018205147.GA1382@elte.hu>
-References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu> <20071018192521.GC21136@shadowen.org> <20071018193929.GA22031@elte.hu> <4717BBD0.7070504@qumranet.com>
+	id S1762485AbXJRUwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:52:22 -0400
+Message-ID: <4717C776.5020809@garzik.org>
+Date: Thu, 18 Oct 2007 16:52:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4717BBD0.7070504@qumranet.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
+Subject: Re: libata crash
+References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk> <20071018195903.GA29567@elte.hu> <20071018204111.GN10674@kernel.dk>
+In-Reply-To: <20071018204111.GN10674@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Avi Kivity <avi@qumranet.com> wrote:
-
-> >> 	if (foo)
-> >> 		bar();
-> >> 		baz();
-> >> 	one();
-> >>     
-> >
-> > detecting that would be awesome - it's often the sign of a real bug 
-> > because the intent is often to have bar() and baz() in the conditional 
-> > block.
+Jens Axboe wrote:
+> On Thu, Oct 18 2007, Ingo Molnar wrote:
+>> * Jens Axboe <jens.axboe@oracle.com> wrote:
+>>
+>>> I'll see if I can spend some time tonight chopping the patch into 
+>>> digestable pieces, unfortunately I'll be away the next three days. And 
+>>> it would be nice to get this thing merged asap.
+>> and make sure it builds:
+>>
+>> drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
+>> drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
+>> drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
+>> drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
+>> drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
+>> drivers/scsi/in2000.c: In function 'in2000_queuecommand':
+>> drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
+>> drivers/scsi/in2000.c: In function 'transfer_bytes':
+>> drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
 > 
-> This is more useful operating on an entire file, so the script can see 
-> all the context.
+> Oops, wonder why they were missed in the allyes/modconfig. Fixed now,
+> thanks!
 
-there's "checkpatch --file" for complete files, so it can see the full 
-context if the user passes it in.
+Building on x86-64, I'm betting?  :)
 
-	Ingo
+I fell victim to the same thing a few days ago, missing some compile 
+breakage that only appeared with
+
+     make ARCH=i386 allmodconfig && make ARCH=i386 -sj9
+
+Though am I alone in dreaming of a kernel.org service that would permit 
+all-arch build testing of a git URL?
+
+Regards,
+
+	Jeff
+
+
+
