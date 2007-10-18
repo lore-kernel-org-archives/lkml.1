@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935126AbXJRXxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934154AbXJSANU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935126AbXJRXxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934443AbXJRXxR
+	id S934154AbXJSANU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 20:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbXJSANM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:53:17 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53035 "EHLO gate.crashing.org"
+	Thu, 18 Oct 2007 20:13:12 -0400
+Received: from smtp20.orange.fr ([80.12.242.27]:23620 "EHLO smtp20.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934384AbXJRXxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:53:15 -0400
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-	 <1192745137.7367.40.camel@pasglop>
-	 <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	 <1192749449.7367.51.camel@pasglop>
-	 <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 09:52:33 +1000
-Message-Id: <1192751553.7367.57.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	id S1754134AbXJSANL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 20:13:11 -0400
+X-Greylist: delayed 1838 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 20:13:11 EDT
+X-ME-UUID: 20071018234228809.C58FF1C0008A@mwinf2011.orange.fr
+Date: Fri, 19 Oct 2007 01:42:28 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Paul Sokolovsky <pmiscml@gmail.com>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
+Message-ID: <20071018234227.GB19183@caravaggio>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20071018091239.GA11360@caravaggio> <20071018150544.6852d5c9.akpm@linux-foundation.org> <alpine.LFD.0.9999.0710190013420.22770@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0710190013420.22770@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> So how about something like this (untested! not necessarily very well 
-> thought through either!)
+On Fri, Oct 19, 2007 at 12:15:47AM +0200, Thomas Gleixner wrote:
+> On Thu, 18 Oct 2007, Andrew Morton wrote:
+> > > +
+> > > +#include <linux/module.h>
+> > > +#include <linux/version.h>
+> > > +#include <linux/irq.h>
+> > 
+> > Please see the large comment at the top of linux/irq.h.  I believe this
+> > driver will fial to compile on at least arm.
+> > 
+> > We really should fix this.
 > 
-> Basic notion: the only thing that serializes the IRQ_INPROGRESS flag is 
-> the descriptor lock. And we don't have to (or even want to!) hold it while 
-> waiting for the thing, but we want to *have*held*it* in between whatever 
-> we're synchronizing with.
+> drivers are fine with: #include <linux/interrupt.h>
 > 
-> The internal irq handler functions already held the lock when they did 
-> whatever they need to serialize - and they are possibly performance 
-> critical too - so they use the "internal" function that doesn't get the 
-> lock unnecessarily again.
+> If they need linux/irq.h, then they do probably something really
+> nasty.
+The asic3 adds irqs to a board, through GPIOs. Is that a valid case ?
 
-That may do the trick as the read can't cross the spin_lock (it can
-cross spin_unlock but not lock). Advantage over adding a barrier to
-handle_IRQ_event() is that it keeps the overhead to the slow path
-(synchronize_irq).
+Cheers,
+Samuel.
 
-Note that I didn't actually experience a problem here. I just came upon
-that by accident while thinking about a similar issue I have with
-napi_synchronize().
-
-Looks good to me on a first glance (unfortunately a bit ugly but heh).
-
-Ben.
-
+ 
+>    	tglx
 
