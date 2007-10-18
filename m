@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbXJRODm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXJROFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932790AbXJRODm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764761AbXJRODa
+	id S932896AbXJROFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbXJROFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:03:30 -0400
-Received: from rtr.ca ([76.10.145.34]:4473 "EHLO mail.rtr.ca"
+	Thu, 18 Oct 2007 10:05:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:19508 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757679AbXJROD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:03:28 -0400
-Message-ID: <471767AE.1040203@rtr.ca>
-Date: Thu, 18 Oct 2007 10:03:26 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+	id S1757488AbXJROFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:05:07 -0400
+Date: Thu, 18 Oct 2007 16:04:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       tomof@acm.org
 Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <20071018082145.GK5063@kernel.dk> <20071018.045505.106265100.davem@davemloft.net> <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <20071018125840.GF5063@kernel.dk> <20071018133200.GH5063@kernel.dk> <471764CB.5020906@rtr.ca> <20071018135810.GM5063@kernel.dk>
-In-Reply-To: <20071018135810.GM5063@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071018140427.GN5063@kernel.dk>
+References: <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca> <4716E19F.1090201@garzik.org> <20071018070538.GD5063@kernel.dk> <47175C0A.5020907@rtr.ca> <20071018132351.GG5063@kernel.dk> <47176062.5020105@rtr.ca> <20071018133401.GI5063@kernel.dk> <471766D7.3030800@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471766D7.3030800@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Oct 18 2007, Mark Lord wrote:
->> Jens wrote:
->>> OK, I think that covers every arch out there. I haven't been able to
->>> compile any of them, but it's mostly search'n replace operations. I hope
->>> nothing is missing linux/scatterlist.h includes...
->> Patch fails on drivers/scsi/scsi_lib.c.
->>
->> I replaced that part of the patch with this updated portion instead:
-> 
-> Hmm, what are you applying against? Must be a clean tree, throw away any
-> patches that you already applied in this thread.
+On Thu, Oct 18 2007, Mark Lord wrote:
+> Jens Axboe wrote:
+>> On Thu, Oct 18 2007, Mark Lord wrote:
+>>> Jens Axboe wrote:
+>>>> On Thu, Oct 18 2007, Mark Lord wrote:
+>>>>> Jens Axboe wrote:
+>>>>>> On Thu, Oct 18 2007, Jeff Garzik wrote:
+>>>>>>> Mark Lord wrote:
+>>>>>>>> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
+>>>>>>>> Screen photo is at http://rtr.ca/recent/2.6.23-git12-crash.jpg,
+>>>>>>>> but the top was cut off (isn't there a new config option or patch
+>>>>>>>> to do double-columns or scrollback or something ???.
+>>>>>>> Is this a sata_mv box?  If so, could you try this patch?
+>>>>>> If anything, that shrinks the size of the resulting request. Did this
+>>>>>> patch make any difference to you?
+>>>>> Not a sata_mv box, so no point here.
+>>>> Can you try the big patch I just posted?
+>>> I'll hunt for it and try it, but your earlier little patch already works 
+>>> fine.
+>
+> I found the latest rev, and it failed to apply cleanly on -git12 or -git13
+> due to scsi_lib.c. After fixing that portion (replacement chunk below),
+> I'm now running with -git12, with the sg list debug option enabled (no 
+> messages).
+>
+> Looks okay so far
 
+OK, thanks a lot for testing!
 
-Squeaky-clean linux-2.6.23 + patch-2.6.23-git13 + your patch.
-Fails on scsi_lib.c.
+-- 
+Jens Axboe
 
--ml
