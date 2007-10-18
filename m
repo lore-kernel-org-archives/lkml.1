@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbXJRQTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbXJRQ1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933932AbXJRQTi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765536AbXJRQTW
+	id S1763251AbXJRQ1z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbXJRQ1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:19:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38002 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933103AbXJRQTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:19:20 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX1+bVjt/nWGbXv7SxQANGJTnbTBk/WpLNCtHukaodR
-	nk9iy7OP1oCLi3
-From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
-To: alsa-devel@alsa-project.org
-Subject: Re: [alsa-devel] hda-intel: no soundcard with current linus' =?iso-8859-1?q?git=09tree?=
-Date: Thu, 18 Oct 2007 18:19:25 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <471538C2.80806@m3y3r.de> <200710181705.18265.dl9pf@gmx.de> <s5hzlygzdu1.wl%tiwai@suse.de>
-In-Reply-To: <s5hzlygzdu1.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 18 Oct 2007 12:27:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:48046 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052AbXJRQ1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 12:27:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,296,1188802800"; 
+   d="scan'208";a="250208547"
+Date: Thu, 18 Oct 2007 09:13:47 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, greg@kroah.com,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [PATCH 0/3] Fix two PEIe hotplug issues
+Message-Id: <20071018091347.4b94faf8.kristen.c.accardi@intel.com>
+In-Reply-To: <4716CE79.7040201@rtr.ca>
+References: <4716CB9D.6080503@rtr.ca>
+	<4716CE79.7040201@rtr.ca>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710181819.25496.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Oct 2007 23:09:45 -0400
+Mark Lord <lkml@rtr.ca> wrote:
 
-Tried you patch. Now the card works even without any model selected. Also the 
-speakers sound "better" now :D . Bass is nearly too loud.
+> Mark Lord wrote:
+> > Fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks
+> > (and others?) in conjunction with the modparam of pciehp_force=1.
+> 
+> 
+> To make things simpler for distro people, I'm contemplating another patch
+> in this series, to allow something like:  pciehp_force=2
+> 
+> This would then *try* the ACPI BIOS calls, and only fall back to pcie_force=1
+> if the BIOS support fails.  This would be an ideal default for most desktop/notebook
+> distros to consider using.
+> 
+> Without this, they don't have any good choice:  use the defaults, and things fail
+> on the most popular brand of machines in the marketplace.  Use pciehp_force=1,
+> and they may break (?) on other brands.
+> 
+> So a hybrid of the two seems best.  Pity it couldn't be the default behaviour, though.
+> Or could it?  We're early enough in the 2.6.24 cycle for it..
+> 
+> Opinions?
+> 
 
-Tnx for looking into this!
-Just on question: is it possible to mute the main speakers when headphones get 
-plugged in ? Atm the internal speakers stay on.
+NAK!  Absolutely no way will I take a patch that does this.  
+I've been actually having philosophical issues with
+even having pciehp_force as a module parameter at all.  As I said before,
+using pciehp_force violates the PCI spec.  Vendors often deliberately 
+do not support OSC due to hardware errata.  Users who use this option risk
+breaking their laptop.  I was thinking actually that we should make it
+more difficult to use this option, like make it a compile time option,
+or perhaps rename it to this_could_seriously_break_your_hardware_dont_use.
 
-Best regards
-Jan-Simon
+Probably we shouldn't have the functionality in the driver at all, but
+I don't really want to take it out all together, because it's handy for those
+of us who work on early hardware, where we can ask the BIOS people why
+they didn't implement OSC, and then consciously force it knowing exactly
+what we are doing and the potential consequences.  But, maybe we should
+consider the possibility that we should remove the code so as to really
+really prevent distros from using this option.
+
