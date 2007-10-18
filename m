@@ -1,73 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762760AbXJRLOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763284AbXJRLPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762760AbXJRLOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 07:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbXJRLOL
+	id S1763284AbXJRLPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbXJRLPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 07:14:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57241 "EHLO mx2.mail.elte.hu"
+	Thu, 18 Oct 2007 07:15:33 -0400
+Received: from ns.suse.de ([195.135.220.2]:34921 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755398AbXJRLOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 07:14:09 -0400
-Date: Thu, 18 Oct 2007 13:13:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: latest checkpatch
-Message-ID: <20071018111352.GA17039@elte.hu>
-References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org>
+	id S1755794AbXJRLPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 07:15:33 -0400
+Date: Thu, 18 Oct 2007 13:15:30 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
+Message-ID: <20071018111530.GA10028@suse.de>
+Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
+	linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+References: <20071016162857.635479952@strauss.suse.de> <20071016162858.545617122@strauss.suse.de> <20071017110550.GB17565@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017163916.GO21136@shadowen.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071017110550.GB17565@in.ibm.com>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Vivek Goyal <vgoyal@in.ibm.com> [2007-10-17 13:05]:
+> 
+> 
+> I think we should unreserve the chunks of memory we have reserved so
+> far (Memory reserved from sidx to i), in case of error.
 
-latest checkpatch.pl works really well on sched.c.
+True. Next version is coming.
 
-there's only one problem left, this bogus false positive warning 
-reappeared:
 
-  WARNING: braces {} are not necessary for single statement blocks
-  #5710: FILE: sched.c:5710:
-  +       if (parent->groups == parent->groups->next) {
-  +               pflags &= ~(SD_LOAD_BALANCE |
-  +                               SD_BALANCE_NEWIDLE |
-  +                               SD_BALANCE_FORK |
-  +                               SD_BALANCE_EXEC |
-  +                               SD_SHARE_CPUPOWER |
-  +                               SD_SHARE_PKG_RESOURCES);
-  +       }
-
-(there's another place in sched.c that trips this up too.)
-
-i think it has been pointed out numerous times that it is perfectly fine 
-to use curly braces for multi-line single-statement blocks. That 
-includes simple cases like this too:
-
-	if (x) {
-		/* do y() */
-		y();
-	}
-
-it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
-wants to make any noise about such constructs it should warn about the 
-_lack_ of curly braces in every multi-line condition block _except_ the 
-only safe single-line statement:
-
-	if (x)
-		y();
-
-thanks,
-
-	Ingo
+Thanks,
+   Bernhard
