@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933692AbXJRQBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbXJRQC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933692AbXJRQBH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbXJRQAz
+	id S933374AbXJRQC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbXJRQCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:00:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34930 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757005AbXJRQAy (ORCPT
+	Thu, 18 Oct 2007 12:02:49 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:13742 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756464AbXJRQCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:00:54 -0400
-Date: Thu, 18 Oct 2007 17:00:50 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Wessel <jason.wessel@windriver.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 0/21] KGDB: Request to merge KGDB
-Message-ID: <20071018160050.GA18508@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-References: <4713B238.4030409@windriver.com> <20071017212025.d8a52694.akpm@linux-foundation.org> <20071018152310.GA7299@linux-sh.org> <20071018152552.GA13985@infradead.org> <20071018155429.GA16244@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018155429.GA16244@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 18 Oct 2007 12:02:48 -0400
+Message-ID: <47178308.9030903@panasas.com>
+Date: Thu, 18 Oct 2007 18:00:08 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Use relative symbolic links for bzImge in x86 ARCHs
+References: <4715F2E5.6000104@panasas.com> <20071017191633.GB11837@uranus.ravnborg.org> <47177C28.5010609@panasas.com> <20071018155459.GA20698@uranus.ravnborg.org>
+In-Reply-To: <20071018155459.GA20698@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Oct 2007 16:00:09.0284 (UTC) FILETIME=[F54AA040:01C8119F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 04:54:29PM +0100, Russell King wrote:
-> What would be good is if some effort could be made by the utrace-
-> interested parties to make the transition to utrace much less painful.
-> For instance, I quite like the getregs/setregs abstractions, and it
-> looks like these *could* be self-contained in a single patch.  It
-> would be nice if we could move architectures over to this one a time.
-> Once that's in, that's one chunk of utrace merged.
+On Thu, Oct 18 2007 at 17:54 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
+> Hi Benny.
+> 
+>> use relative paths in the symlink to bzImage
+>> to make it NFS export safe.
+>>
+>> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+> 
+> Your patch looks perfect - but you are a few hours too late.
+> 
+> See:
+> http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-x86.git;a=commit;h=a0075a509bd955ff6fc6e071efabb926e14bf19c
+> 
+> This is in the mm branch awaiting some more testing
+> before Thomas push it to Linus.
+> 
+> 	Sam
+NP,
+as long as it's fixed I'm happy
 
-Alexey Dobriyan had some patches to implement regsets, and these were
-posted here on lkml.
+Tested-by: Boaz Harrosh <bharrosh@panasas.com>
+
+Thanks
