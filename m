@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbXJRMga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXJRMjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762755AbXJRMga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 08:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbXJRMgX
+	id S1763481AbXJRMjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 08:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbXJRMjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 08:36:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56501
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756643AbXJRMgW (ORCPT
+	Thu, 18 Oct 2007 08:39:16 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:31951 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757373AbXJRMjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 08:36:22 -0400
-Date: Thu, 18 Oct 2007 05:36:36 -0700 (PDT)
-Message-Id: <20071018.053636.21618957.davem@davemloft.net>
-To: jens.axboe@oracle.com
-Cc: torvalds@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071018121547.GY5063@kernel.dk>
-References: <20071018.050554.115911163.davem@davemloft.net>
-	<20071018120950.GX5063@kernel.dk>
-	<20071018121547.GY5063@kernel.dk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Oct 2007 08:39:15 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Subject: Use virtual cpu accounting if available for guest times.
+Date: Thu, 18 Oct 2007 14:39:10 +0200
+User-Agent: KMail/1.9.7
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>, linux-kernel@vger.kernel.org,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+References: <47135D1B.1060004@bull.net> <11926264852739-git-send-email-Laurent.Vivier@bull.net>
+In-Reply-To: <11926264852739-git-send-email-Laurent.Vivier@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710181439.10390.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Date: Thu, 18 Oct 2007 14:15:47 +0200
+Avi,
 
-> On Thu, Oct 18 2007, Jens Axboe wrote:
-> > On Thu, Oct 18 2007, David Miller wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Date: Thu, 18 Oct 2007 13:57:02 +0200
-> > > 
-> > > > Thanks a lot, Dave! The patch is a monster right now, I'll work on
-> > > > splitting it into a 3-step process. Any arch help is greatly
-> > > > appreciated.
-> > > 
-> > > I have some other bits that my compile hit, such as some things in the
-> > > crypto layer.
-> > 
-> > Yeah, I have tons of that so far. I hope to have an allyesconfig
-> > compiling pretty soonish, will send that out then.
-> 
-> OK here goes, this compiles with allyesconfig on x86-64. Not too bad,
-> the scsi/ drivers were by far the worst.
+ppc and s390 offer the possibility to track process times precisely
+by looking at cpu timer on every context switch, irq, softirq etc.
+We can use that infrastructure as well for guest time accounting.
+We need to account the used time before we change the state. 
+This patch adds a call to account_system_vtime to kvm_guest_enter
+and kvm_guest exit. If CONFIG_VIRT_CPU_ACCOUNTING is not set,
+account_system_vtime is defined in hardirq.h as an empty function,
+which means this patch does not change the behaviour on other
+platforms.
 
-It build cleanly here on sparc64 too.
+I compile tested this patch on x86 and function tested the patch on
+s390.
 
-It's late and I'm about to hit bed so I'm too chicken to do a test
-boot it right now :-)
+Avi, please apply.
 
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+
+---
+ drivers/kvm/kvm.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: kvm/drivers/kvm/kvm.h
+===================================================================
+--- kvm.orig/drivers/kvm/kvm.h
++++ kvm/drivers/kvm/kvm.h
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/types.h>
++#include <linux/hardirq.h>
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
+@@ -669,11 +670,13 @@ __init void kvm_arch_init(void);
+ 
+ static inline void kvm_guest_enter(void)
+ {
++	account_system_vtime(current);
+ 	current->flags |= PF_VCPU;
+ }
+ 
+ static inline void kvm_guest_exit(void)
+ {
++	account_system_vtime(current);
+ 	current->flags &= ~PF_VCPU;
+ }
+ 
