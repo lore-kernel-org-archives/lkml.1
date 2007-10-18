@@ -1,46 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763117AbXJRHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbXJRHlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763117AbXJRHbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 03:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbXJRHbI
+	id S932691AbXJRHlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 03:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761388AbXJRHlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 03:31:08 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:21694 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760902AbXJRHbG (ORCPT
+	Thu, 18 Oct 2007 03:41:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60613 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761334AbXJRHlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 03:31:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=X782dsUmOZg6/8PFWmdiPkL2ssxKMDOtLJSB2g0cXsS/Aont0x6qORgDa58hBmAvsIo55xfWYMPQqzJncx5hS90Ct23B16wxIhOIT/44jh19Zpoj+1DOiRK05yWiue780szrGtCtaL/5XfbY5mz4V5bTl/G7GciuqBrHewn9b0E=  ;
-X-YMail-OSG: pfxJCBcVM1ni3ffmPjdsX2qTM.53u2BQpwRW_t877oFKfqDooDrTP8ByPe9qc6KcCYlUzbSIsg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Andrew A. Razdolsky" <rand@kipt.kharkov.ua>
-Subject: Re: Kernel 2.6.21.6:"swapper: page allocation failure. order:1, mode:0x20"
-Date: Thu, 18 Oct 2007 17:30:38 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <4716FA23.3050704@kipt.kharkov.ua>
-In-Reply-To: <4716FA23.3050704@kipt.kharkov.ua>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 18 Oct 2007 03:41:32 -0400
+Date: Thu, 18 Oct 2007 00:06:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>, kdb@oss.sgi.com
+Subject: Re: [PATCH 0/2] add new notifier function ,take2
+Message-Id: <20071018000651.35b26e42.akpm@linux-foundation.org>
+In-Reply-To: <471700F4.1080200@ah.jp.nec.com>
+References: <471700F4.1080200@ah.jp.nec.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710181730.38968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 October 2007 16:16, Andrew A. Razdolsky wrote:
-> Hello!
->
-> In attachments i did pick all info i know about this failure.
+On Thu, 18 Oct 2007 15:45:08 +0900 Takenori Nagano <t-nagano@ah.jp.nec.com> wrote:
 
-Hi,
+> Hi,
+> 
+> A big thanks to everybody who read and replied to first version. I have tried to
+> incorporate reviewer's comments and suggestions.
+> 
+> changelog take1 -> take2
+> 
+> - Rebased 2.6.23
+> - comment updated
+> - renamed the notifiner name "tunable_notifier" to "tunable_atomic_notifier"
+> - fixed typo
+> 
+> 
+> These patches add new notifier function and implement it to panic_notifier_list.
+> We used the hardcoded notifier chain so far, but it was not flexible. New
+> notifier is very flexible, because user can change a list of order by debugfs.
+> 
+> Thanks,
+> 
+> Example)
+> 
+> # cd /sys/kernel/debug/
+> # ls
+> kprobes  pktcdvd
+> # insmod ipmi_msghandler.ko
+> # ls
+> kprobes  panic_notifier_list  pktcdvd
+> # cd panic_notifier_list/
+> # ls
+> ipmi_msghandler
+> # insmod ipmi_watchdog.ko
+> # ls
+> ipmi_msghandler  ipmi_wdog
+> # cat ipmi_msghandler/priority
+> 200
+> # cat ipmi_wdog/priority
+> 150
+> #
+> Kernel panic - not syncing: panic
+> ipmi_msghandler : notifier calls panic_event().
+> ipmi_watchdog : notifier calls wdog_panic_handler().
+> 
+> .....(reboot)
+> 
+> # cat ipmi_msghandler/priority
+> 200
+> # cat ipmi_wdog/priority
+> 150
+> # echo 300 > ipmi_wdog/priority
+> #
+> Kernel panic - not syncing: panic
+> ipmi_watchdog : notifier calls wdog_panic_handler().
+> ipmi_msghandler : notifier calls panic_event().
 
-Does this actually cause problems for your system? Occasional
-page allocation failures from interrupt context are expected.
+I can sort-of see what this is doing.  Runtime-definable management of
+which notifier functions will be called on a panic?  Or maybe I
+misunderstood.
 
-If you are getting a lot of these messages, you can try
-increasing /proc/sys/vm/min_free_kbytes until they go away.
+But even if I did understand, I don't understand why Linux needs this
+feature - what are the use cases, what is the value to our users?
+
+Can you please flesh that information out a bit more?
+
+The patches are somewhat wordwrapped - please check your email client
+configuration, thanks.
