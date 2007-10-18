@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765858AbXJRQOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764404AbXJRQSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765858AbXJRQOE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXJRQNz
+	id S1764404AbXJRQSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbXJRQSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:13:55 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:37385 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbXJRQNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:13:54 -0400
-Date: Thu, 18 Oct 2007 21:55:13 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, pbadari@us.ibm.com,
-       dhaval@linux.vnet.ibm.com
-Subject: Buggy idle time reported in /proc/uptime for SMP systems?
-Message-ID: <20071018162513.GA19214@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
+	Thu, 18 Oct 2007 12:18:45 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42940 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757229AbXJRQSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 12:18:44 -0400
+Date: Thu, 18 Oct 2007 17:18:27 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] serial: do not call ->pm() on initialization for console port
+Message-ID: <20071018161827.GB16244@flint.arm.linux.org.uk>
+References: <20071019.011355.39154656.anemo@mba.ocn.ne.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071019.011355.39154656.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The idle time reported in /proc/uptime (2nd field) seems to be the idle
-time of only CPU0. Shouldn't it reflect the total idle time on a SMP system? 
-Do folks agree that it is a bug that needs to be fixed? If so, will send
-a patch ...
+On Fri, Oct 19, 2007 at 01:13:55AM +0900, Atsushi Nemoto wrote:
+> This commit in current git tree broke serial console for serial_txx9 driver.
+> 
+> > commit 97d97224ff361e08777fb33e0fd193ca877dac28
+> > Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
+> > Date:   Sat Sep 1 21:25:09 2007 +0100
+> > 
+> >     [SERIAL] Fix console initialisation ordering
+> 
+> The serial_txx9 driver initialize its port entirely on its ->pm()
+> method if new state was 0.  With the commit, serial_core calls ->pm()
+> even if the port was used for console.
 
-Fyi, I see patches submitted to fix this way back in 2001
-[http://lkml.org/lkml/2001/3/17/55], but don't think they made in ..
+This'll break some of the ARM drivers, and although I investigated
+this a month or so ago, I've completely forgotten the details.
+
+> Attached patch fixes this problem.  Is this a right way?
+> If not, I will fix the serial_txx9 driver to skip the initialization in
+> ->pm() if oldstate was -1.
+
+I'll have to investigate further to refresh myself with what's going
+on here, but your patch looks wrong.
 
 -- 
-Regards,
-vatsa
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
