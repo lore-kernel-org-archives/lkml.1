@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXJRElT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762454AbXJRErS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762984AbXJRElT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 00:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbXJRElL
+	id S1762454AbXJRErS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 00:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXJRErE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 00:41:11 -0400
-Received: from rtr.ca ([76.10.145.34]:3451 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbXJRElK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 00:41:10 -0400
-Message-ID: <4716E3E2.4030908@rtr.ca>
-Date: Thu, 18 Oct 2007 00:41:06 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+	Thu, 18 Oct 2007 00:47:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51841 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752038AbXJRErD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 00:47:03 -0400
+Date: Wed, 17 Oct 2007 21:45:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
        jens.axboe@oracle.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk, tomof@acm.org
 Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca> <4716E19F.1090201@garzik.org>
-In-Reply-To: <4716E19F.1090201@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4716DE82.2050006@rtr.ca>
+Message-ID: <alpine.LFD.0.999.0710172142210.26902@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org>
+ <20071018080048O.fujita.tomonori@lab.ntt.co.jp>
+ <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org>
+ <20071017.181907.63126798.davem@davemloft.net>
+ <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org>
+ <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org>
+ <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Mark Lord wrote:
->> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
->>
->> Screen photo is at http://rtr.ca/recent/2.6.23-git12-crash.jpg,
->> but the top was cut off (isn't there a new config option or patch
->> to do double-columns or scrollback or something ???.
+
+
+On Thu, 18 Oct 2007, Mark Lord wrote:
 > 
-> Is this a sata_mv box?  If so, could you try this patch?
+> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
 
+Ok, I think your picture cut off the last hex digits on the right, but 
+what I can make out of the disassembly, I have to admit that it looks 
+very much like it might be exactly the same thing Ingo was seeing.
 
-No.. it's a pretty ordinary ata_piix machine, with no serial ports either.
+The disassembly is a bit scrambled, but the particular instruction that 
+oopses for you is
 
-Cheers
+	mov    0x10(%ebx),%eax
+
+and the instructions around it do seem to bear some similarity to the 
+whole "sg_next()" thing, ie I see a 
+
+	test   $0x1,%al
+
+and a
+
+	lea    0x10(%ebx),%eax
+
+around there too.
+
+If you cut down the number of entries printed for the call trace (which 
+involves editing the source code, no nice config options, I'm afraid), you 
+could get the rest of it..
+
+		Linus
