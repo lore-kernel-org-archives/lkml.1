@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765460AbXJRP0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765845AbXJRP0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765460AbXJRP0J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 11:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763957AbXJRPZr
+	id S1765845AbXJRP0f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 11:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764428AbXJRPZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 11:25:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35405 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763954AbXJRPZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 11:25:45 -0400
-Date: Thu, 18 Oct 2007 08:25:01 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [RFC] remove netpoll receive code
-Message-ID: <20071018082501.2f7023fd@freepuppy.rosehill>
-In-Reply-To: <20071018000244.2513c564.akpm@linux-foundation.org>
-References: <20071017132131.1992bedd@freepuppy.rosehill>
-	<20071017.232838.41634977.davem@davemloft.net>
-	<20071018000244.2513c564.akpm@linux-foundation.org>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 11:25:54 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:24573 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764277AbXJRPZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 11:25:52 -0400
+Date: Thu, 18 Oct 2007 17:25:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Olof Johansson <olof@lixom.net>
+Cc: Benny Halevy <bhalevy@panasas.com>, David Miller <davem@davemloft.net>,
+       torvalds@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071018152547.GB10674@kernel.dk>
+References: <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <4717587E.6090301@panasas.com> <20071018135605.GL5063@kernel.dk> <20071018140550.GO5063@kernel.dk> <47176AB9.2070000@panasas.com> <20071018143836.GA10674@kernel.dk> <20071018145810.GB5565@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018145810.GB5565@lixom.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 00:02:44 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, Oct 18 2007, Olof Johansson wrote:
+> On Thu, Oct 18, 2007 at 04:38:36PM +0200, Jens Axboe wrote:
+> > On Thu, Oct 18 2007, Benny Halevy wrote:
+> > > On Oct. 18, 2007, 16:05 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > On Thu, Oct 18 2007, Jens Axboe wrote:
+> > > >> On Thu, Oct 18 2007, Benny Halevy wrote:
+> > > >>>>  	return sg;
+> > > >>>>  }
+> > > >>>> @@ -83,6 +96,9 @@ static inline struct scatterlist *sg_last(struct scatterlist *sgl,
+> > > >>>>  		ret = sg;
+> > > >>>>  
+> > > >>>>  #endif
+> > > >>>> +#ifdef CONFIG_DEBUG_SG
+> > > >>>> +	BUG_ON(sgl[0].sg_magic != SG_MAGIC);
+> > > >>> can it also do BUG_ON(!sg_is_last(sg))?
+> > > >> That would make sense, definitely. I'll add that.
+> > > > 
+> > > >         BUG_ON(!sg_is_last(ret));
+> > > > 
+> > > > it should be, not sg. That's what I merged.
+> > > > 
+> > > right. of course.
+> > 
+> > OK, that found something interesting - mapping a request may shrink it,
+> > so we need to update the end marker to move it earlier in the list.
+> > Basically just a
+> > 
+> >         if (sg)
+> >                 __sg_mark_end(sg);
+> > 
+> > at the bottom of blk_rq_map_sg(). Updated patch below, booted on other
+> > machines now as well without incident.
+> 
+> PPC needs this. I'm guessing other arches might too. Otherwise seems to boot
+> and work well (with Jeff's sata patch).
 
-> On Wed, 17 Oct 2007 23:28:38 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Stephen Hemminger <shemminger@linux-foundation.org>
-> > Date: Wed, 17 Oct 2007 13:21:31 -0700
-> > 
-> > > I propose that we take out all the whole netpoll rx path. If/when
-> > > kgdb gets submitted a better and alternative receive path can be
-> > > added.
-> > 
-> > I would like to kill the RX side handling of netpoll too,
-> > but I don't think that's reasonable as kgdb is actively
-> > being pushed for 2.6.25 inclusion.
-> > 
-> > Andrew is likely to add it to his -mm tree soon and therefore kgdb
-> > will need to work properly now.
-> 
-> git-kgdb.patch has been in there for ages - maybe a year.  Although I
-> disabled it a week or so ago due to the sheer number of rejects.  Will
-> bring it back when things settle down a bit.
-> 
-> > The RX netpoll thing has a long precedence, it's been in the tree for
-> > a long time, so we are in some ways stuck with it until we have a
-> > complete replacement facility.  That means we can't yank it out first
-> > and implement the replacement later.
+Oh duh, indeed I didn't add that to the archs when converting. Thanks
+for the patch, I'll update the rest as well.
 
-How about I work on a better/alternative receive path for kgdb that
-can be applied after kgdb is included.  Kgdb could actually be useful
-for me :-)
+And thanks a lot for boot testing it!
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Jens Axboe
+
