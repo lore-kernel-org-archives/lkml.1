@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933548AbXJROST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765709AbXJROUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933548AbXJROST (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760264AbXJROSI
+	id S1765709AbXJROUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbXJROUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:18:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36852 "EHLO mx1.redhat.com"
+	Thu, 18 Oct 2007 10:20:46 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10139 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758194AbXJROSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:18:07 -0400
-Date: Thu, 18 Oct 2007 10:17:15 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Vasily Averin <vvs@sw.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: Re: How Inactive may be much greather than cached?
-Message-ID: <20071018101715.13c92b6e@bree.surriel.com>
-In-Reply-To: <200710181727.01128.nickpiggin@yahoo.com.au>
-References: <4716FC04.6070107@sw.ru>
-	<200710181627.27827.nickpiggin@yahoo.com.au>
-	<471707BD.4000203@sw.ru>
-	<200710181727.01128.nickpiggin@yahoo.com.au>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757488AbXJROUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:20:46 -0400
+Date: Thu, 18 Oct 2007 16:20:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] Fix a build error when BLOCK=n
+Message-ID: <20071018142006.GR5063@kernel.dk>
+References: <1192716363-31661-1-git-send-email-Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1192716363-31661-1-git-send-email-Emilian.Medve@Freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 17:27:00 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Thu, Oct 18 2007, Emil Medve wrote:
+> mm/filemap.c: In function '__filemap_fdatawrite_range':
+> mm/filemap.c:200: error: implicit declaration of function 'mapping_cap_writeback_dirty'
+> 
+> This happens when we don't use/have any block devices and a NFS root filesystem
+> is used
+> 
+> mapping_cap_writeback_dirty() is defined in linux/backing-dev.h which used to be
+> provided in mm/filemap.c by linux/blkdev.h until commit
+> f5ff8422bbdd59f8c1f699df248e1b7a11073027
+> 
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+> 
+> Also removed some trailing whitespaces
 
-> Some filesystems, including I believe, ext3 with data=ordered,
-> can leave orphaned pages around after they have been truncated
-> out of the pagecache. These pages get left on the LRU and vmscan
-> reclaims them pretty easily.
+Don't include the whitespace cleanup with this change, send it
+seperately. For the include fix:
 
-How can the VM recognize those pages?  Are they part of
-the buffer cache, part of the page cache, or different?
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-I think it would make sense to at least try to rotate
-those pages to the end of the LRU so kswapd can get rid
-of them quickly.
 
 -- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+Jens Axboe
+
