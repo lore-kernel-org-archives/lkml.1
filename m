@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764973AbXJRNvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764507AbXJRNyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764973AbXJRNvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 09:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761772AbXJRNvL
+	id S1764507AbXJRNyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 09:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756540AbXJRNyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 09:51:11 -0400
-Received: from rtr.ca ([76.10.145.34]:1086 "EHLO mail.rtr.ca"
+	Thu, 18 Oct 2007 09:54:37 -0400
+Received: from mx1.minet.net ([157.159.40.25]:57517 "EHLO mx1.minet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757635AbXJRNvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 09:51:09 -0400
-Message-ID: <471764CB.5020906@rtr.ca>
-Date: Thu, 18 Oct 2007 09:51:07 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1753620AbXJRNyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 09:54:36 -0400
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+Date: Thu, 18 Oct 2007 15:51:28 +0200
+Subject: [PATCH 2/4 resend] pci.h : Add PCI identifiers for the RDC devices
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <20071018082145.GK5063@kernel.dk> <20071018.045505.106265100.davem@davemloft.net> <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <20071018125840.GF5063@kernel.dk> <20071018133200.GH5063@kernel.dk>
-In-Reply-To: <20071018133200.GH5063@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Length: 1911
+To: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Message-Id: <200710181551.28720.florian.fainelli@telecomint.eu>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_gT2FHhNpyAP8/ZK"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens wrote:
-> OK, I think that covers every arch out there. I haven't been able to
-> compile any of them, but it's mostly search'n replace operations. I hope
-> nothing is missing linux/scatterlist.h includes...
+This is a multi-part message in MIME format.
+--Boundary-00=_gT2FHhNpyAP8/ZK
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Patch fails on drivers/scsi/scsi_lib.c.
+This patch defines the PCI identifiers found in
+the RDC R-321x System-on-Chip.
 
-I replaced that part of the patch with this updated portion instead:
-
-
-
---- a/drivers/scsi/scsi_lib.c	2007-10-18 09:35:28.000000000 -0400
-+++ b/drivers/scsi/scsi_lib.c	2007-10-18 09:46:47.000000000 -0400
-@@ -295,7 +295,7 @@
- 	int i, err, nr_vecs = 0;
+Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+---
+ include/linux/pci_ids.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+---
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 2aaf1c1..c5a0f5b 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2097,6 +2097,13 @@
+ #define PCI_DEVICE_ID_HERC_WIN		0x5732
+ #define PCI_DEVICE_ID_HERC_UNI		0x5832
  
- 	for_each_sg(sgl, sg, nsegs, i) {
--		page = sg->page;
-+		page = sg_page(sg);
- 		off = sg->offset;
- 		len = sg->length;
-  		data_len += len;
-@@ -764,6 +764,8 @@
- 		if (unlikely(!sgl))
- 			goto enomem;
- 
-+		sg_init_table(sgl, sgp->size);
++#define PCI_VENDOR_ID_RDC		0x17f3
++#define PCI_DEVICE_ID_RDC_R6020		0x6020
++#define PCI_DEVICE_ID_RDC_R6030		0x6030
++#define PCI_DEVICE_ID_RDC_R6040		0x6040
++#define PCI_DEVICE_ID_RDC_R6060		0x6060
++#define PCI_DEVICE_ID_RDC_R6061		0x6061
 +
- 		/*
- 		 * first loop through, set initial index and return value
- 		 */
-@@ -779,6 +781,13 @@
- 			sg_chain(prev, SCSI_MAX_SG_SEGMENTS, sgl);
+ #define PCI_VENDOR_ID_SITECOM		0x182d
+ #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
+
+--Boundary-00=_gT2FHhNpyAP8/ZK
+Content-Type: text/plain;
+  charset="utf-8";
+  name="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="f39865158a37041d0e7a8d4e5666c6f753fd6477.diff"
+
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 2aaf1c1..c5a0f5b 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2097,6 +2097,13 @@
+ #define PCI_DEVICE_ID_HERC_WIN		0x5732
+ #define PCI_DEVICE_ID_HERC_UNI		0x5832
  
- 		/*
-+		 * if we have nothing left, mark the last segment as
-+		 * end-of-list
-+		 */
-+		if (!left)
-+			sg_mark_end(sgl, this);
++#define PCI_VENDOR_ID_RDC		0x17f3
++#define PCI_DEVICE_ID_RDC_R6020		0x6020
++#define PCI_DEVICE_ID_RDC_R6030		0x6030
++#define PCI_DEVICE_ID_RDC_R6040		0x6040
++#define PCI_DEVICE_ID_RDC_R6060		0x6060
++#define PCI_DEVICE_ID_RDC_R6061		0x6061
 +
-+		/*
- 		 * don't allow subsequent mempool allocs to sleep, it would
- 		 * violate the mempool principle.
- 		 */
-@@ -2351,7 +2360,7 @@
- 	*offset = *offset - len_complete + sg->offset;
+ #define PCI_VENDOR_ID_SITECOM		0x182d
+ #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
  
- 	/* Assumption: contiguous pages can be accessed as "page + i" */
--	page = nth_page(sg->page, (*offset >> PAGE_SHIFT));
-+	page = nth_page(sg_page(sg), (*offset >> PAGE_SHIFT));
- 	*offset &= ~PAGE_MASK;
- 
- 	/* Bytes in this sg-entry from *offset to the end of the page */
+
+--Boundary-00=_gT2FHhNpyAP8/ZK--
+
+
+
