@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbXJREcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXJREd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762641AbXJREcp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 00:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbXJREcg
+	id S1765536AbXJREd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 00:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXJREdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 00:32:36 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40587 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbXJREcf (ORCPT
+	Thu, 18 Oct 2007 00:33:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50618 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752584AbXJREdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 00:32:35 -0400
-Date: Thu, 18 Oct 2007 10:02:37 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       akpm@linux-foundation.org, ak@suse.de
-Subject: Re: [patch 2/3] Introduce BOOTMEM_EXCLUSIVE
-Message-ID: <20071018043237.GA8779@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20071016162857.635479952@strauss.suse.de> <20071016162858.545617122@strauss.suse.de> <20071017110550.GB17565@in.ibm.com> <20071017113651.GA6963@suse.de>
+	Thu, 18 Oct 2007 00:33:01 -0400
+Date: Wed, 17 Oct 2007 21:32:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own
+ mappings.
+Message-Id: <20071017213216.b2d0c4bd.akpm@linux-foundation.org>
+In-Reply-To: <m1tzopaxa1.fsf_-_@ebiederm.dsl.xmission.com>
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<1192648456.15717.7.camel@think.oraclecorp.com>
+	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+	<1192654481.15717.16.camel@think.oraclecorp.com>
+	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+	<1192661889.15717.27.camel@think.oraclecorp.com>
+	<m16415cocs.fsf@ebiederm.dsl.xmission.com>
+	<1192665785.15717.34.camel@think.oraclecorp.com>
+	<m1tzopaxa1.fsf_-_@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071017113651.GA6963@suse.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 01:36:51PM +0200, Bernhard Walle wrote:
-[..]
-> > > +static int __init reserve_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
-> > > +					unsigned long size, int flags)
-> > >  {
-> > >  	unsigned long sidx, eidx;
-> > >  	unsigned long i;
-> > > @@ -133,7 +133,11 @@ static void __init reserve_bootmem_core(
-> > >  #ifdef CONFIG_DEBUG_BOOTMEM
-> > >  			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
-> > >  #endif
-> > > +			if (flags & BOOTMEM_EXCLUSIVE)
-> > > +				return -EBUSY;
-> > 
-> > I think we should unreserve the chunks of memory we have reserved so
-> > far (Memory reserved from sidx to i), in case of error.
-> 
-> Unfortunately, that's not possible without using a lock (or counters
-> instead of a bitmap) any more. If we just do
-> 
-> 	for (i--; i >= sidx; i--)
-> 		clear_bit(i, bdata->node_bootmem_map);
-> 
-> then another thread of execution could reserve the memory (without
-> BOOTMEM_EXCLUSIVE) in between -- and the code would free the memory
-> which is already reserved.
-> 
-> I think that could be modelled with a rwlock, not changing the default
-> case where BOOTMEM_EXCLUSIVE is not specified.
+On Wed, 17 Oct 2007 21:59:02 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-SMP initialization takes place after bootmem allocator has retired. That
-would mean only one thread will be using bootmem allocator. Hence I think
-unreserving memory without any kind of locking should be safe.
+> If filesystems care at all they want absolute control over the buffer
+> cache.  Controlling which buffers are dirty and when.  Because we
+> keep the buffer cache in the page cache for the block device we have
+> not quite been giving filesystems that control leading to really weird
+> bugs.
+> 
+> In addition this tieing of the implemetation of block device caching
+> and the buffer cache has resulted in a much more complicated and
+> limited implementation then necessary.  Block devices for example
+> don't need buffer_heads, and it is perfectly reasonable to cache
+> block devices in high memory.
+> 
+> To start untangling the worst of this mess this patch introduces a
+> second block device inode for the buffer cache.  All buffer cache
+> operations are diverted to that use the new bd_metadata_inode, which
+> keeps the weirdness of the metadata requirements isolated in their
+> own little world.
 
-Thanks
-Vivek
+I don't think we little angels want to tread here.  There are so many
+weirdo things out there which will break if we bust the coherence between
+the fs and /dev/hda1.  Online resize, online fs checkers, various local
+tools which people have hacked up to look at metadata in a live fs,
+direct-io access to the underlying fs, heaven knows how many boot loader
+installers, etc.  Cerainly I couldn't enumerate tham all.
+
+The mere thought of all this scares the crap out of me.
+
+
+I don't actually see what the conceptual problem is with the existing
+implementation.  The buffer_head is a finer-grained view onto the
+blockdev's pagecache: it provides additional states and additional locking
+against a finer-grained section of the page.   It works well.
+
+Yeah, the highmem thing is a bit of a problem (but waning in importance). 
+But we can fix that by teaching individual filesystems about kmap and then
+tweak the blockdev's caching policy with mapping_set_gfp_mask() at mount
+time.  If anyone cares, which they don't.
