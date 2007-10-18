@@ -1,260 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbXJRDYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765634AbXJRD0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbXJRDYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 23:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933354AbXJRDYZ
+	id S1765634AbXJRD0F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 23:26:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXJRDZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 23:24:25 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41171 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933168AbXJRDYX (ORCPT
+	Wed, 17 Oct 2007 23:25:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49368 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761388AbXJRDZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 23:24:23 -0400
-Date: Thu, 18 Oct 2007 12:23:34 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [Patch 002/002](memory hotplug) rearrange patch for notifier of memory hotplug
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20071018120343.5146.Y-GOTO@jp.fujitsu.com>
-References: <20071018120343.5146.Y-GOTO@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071018122210.514D.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 17 Oct 2007 23:25:52 -0400
+Date: Wed, 17 Oct 2007 20:20:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, sds@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, morgan@kernel.org,
+       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, kaigai@kaigai.gr.jp,
+       casey@schaufler-ca.com
+Subject: Re: [RFC] [PATCH 2/2] capabilities: implement 64-bit capabilities
+Message-Id: <20071017202014.6738cbb7.akpm@linux-foundation.org>
+In-Reply-To: <20071018025920.GA5067@vino.hallyn.com>
+References: <20071016022730.GA8925@sergelap.austin.ibm.com>
+	<20071016023100.GA10698@sergelap.austin.ibm.com>
+	<1192544299.8702.78.camel@moss-spartans.epoch.ncsc.mil>
+	<20071016214159.GB13294@sergelap.austin.ibm.com>
+	<20071017180002.33fe4986.akpm@linux-foundation.org>
+	<20071018025920.GA5067@vino.hallyn.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Oct 2007 21:59:20 -0500 "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-Current memory notifier has some defects yet. (Fortunately, nothing uses it.)
-This patch is to fix and rearrange for them.
+> Quoting Andrew Morton (akpm@linux-foundation.org):
+> > On Tue, 16 Oct 2007 16:41:59 -0500
+> > "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > 
+> > > To properly test this the libcap code will need to be updated first,
+> > > which I'm looking at now...
+> > 
+> > This seems fairly significant.  I asusme that this patch won't break
+> > presently-deployed libcap?
+> 
+> It will break libcap.
 
-  - Add information of start_pfn, nr_pages, and node id if node status is
-    changes from/to memoryless node for callback functions.
-    Callbacks can't do anything without those information.
-  - Add notification going-online status.
-    It is necessary for creating per node structure before the node's
-    pages are available.
-  - Move GOING_OFFLINE status notification after page isolation.
-    It is good place for return memory like cache for callback,
-    because returned page is not used again.
-  - Make CANCEL events for rollingback when error occurs.
-  - Delete MEM_MAPPING_INVALID notification. It will be not used.
-  - Fix compile error of (un)register_memory_notifier().
+yikes, dropped!
 
+>  And I'm not sure of the right way to address it.
+> So I was hoping to hear some ideas from Andrew Morgan, Chris Wright, and
+> Kaigai.
+> 
+> We can introduce new capget64() and capset64() calls, and have
+> capget() return -EINVAL or -EAGAIN if a high bit would be needed to
+> accurately get the task's capabilities.
+> 
+> Or we can require a new libcap, since capget and capset aren't
+> required for most day-to-day function anyway.
+> 
+> I guess now that I've written this out, it seems pretty clear
+> that capget64() and capget64() are the way to go.  Any objections?
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-
----
- drivers/base/memory.c  |    9 +--------
- include/linux/memory.h |   27 +++++++++++++++------------
- mm/memory_hotplug.c    |   48 +++++++++++++++++++++++++++++++++++++++++++++---
- 3 files changed, 61 insertions(+), 23 deletions(-)
-
-Index: current/drivers/base/memory.c
-===================================================================
---- current.orig/drivers/base/memory.c	2007-10-17 21:17:54.000000000 +0900
-+++ current/drivers/base/memory.c	2007-10-17 21:21:30.000000000 +0900
-@@ -137,7 +137,7 @@ static ssize_t show_mem_state(struct sys
- 	return len;
- }
- 
--static inline int memory_notify(unsigned long val, void *v)
-+int memory_notify(unsigned long val, void *v)
- {
- 	return blocking_notifier_call_chain(&memory_chain, val, v);
- }
-@@ -183,7 +183,6 @@ memory_block_action(struct memory_block 
- 			break;
- 		case MEM_OFFLINE:
- 			mem->state = MEM_GOING_OFFLINE;
--			memory_notify(MEM_GOING_OFFLINE, NULL);
- 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
- 			ret = remove_memory(start_paddr,
- 					    PAGES_PER_SECTION << PAGE_SHIFT);
-@@ -191,7 +190,6 @@ memory_block_action(struct memory_block 
- 				mem->state = old_state;
- 				break;
- 			}
--			memory_notify(MEM_MAPPING_INVALID, NULL);
- 			break;
- 		default:
- 			printk(KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
-@@ -199,11 +197,6 @@ memory_block_action(struct memory_block 
- 			WARN_ON(1);
- 			ret = -EINVAL;
- 	}
--	/*
--	 * For now, only notify on successful memory operations
--	 */
--	if (!ret)
--		memory_notify(action, NULL);
- 
- 	return ret;
- }
-Index: current/include/linux/memory.h
-===================================================================
---- current.orig/include/linux/memory.h	2007-10-17 21:17:54.000000000 +0900
-+++ current/include/linux/memory.h	2007-10-17 21:21:30.000000000 +0900
-@@ -41,18 +41,15 @@ struct memory_block {
- #define	MEM_ONLINE		(1<<0) /* exposed to userspace */
- #define	MEM_GOING_OFFLINE	(1<<1) /* exposed to userspace */
- #define	MEM_OFFLINE		(1<<2) /* exposed to userspace */
-+#define	MEM_GOING_ONLINE	(1<<3)
-+#define	MEM_CANCEL_ONLINE	(1<<4)
-+#define	MEM_CANCEL_OFFLINE	(1<<5)
- 
--/*
-- * All of these states are currently kernel-internal for notifying
-- * kernel components and architectures.
-- *
-- * For MEM_MAPPING_INVALID, all notifier chains with priority >0
-- * are called before pfn_to_page() becomes invalid.  The priority=0
-- * entry is reserved for the function that actually makes
-- * pfn_to_page() stop working.  Any notifiers that want to be called
-- * after that should have priority <0.
-- */
--#define	MEM_MAPPING_INVALID	(1<<3)
-+struct memory_notify {
-+	unsigned long start_pfn;
-+	unsigned long nr_pages;
-+	int status_change_nid;
-+};
- 
- struct notifier_block;
- struct mem_section;
-@@ -69,12 +66,18 @@ static inline int register_memory_notifi
- static inline void unregister_memory_notifier(struct notifier_block *nb)
- {
- }
-+static inline int memory_notify(unsigned long val, void *v)
-+{
-+	return 0;
-+}
- #else
-+extern int register_memory_notifier(struct notifier_block *nb);
-+extern void unregister_memory_notifier(struct notifier_block *nb);
- extern int register_new_memory(struct mem_section *);
- extern int unregister_memory_section(struct mem_section *);
- extern int memory_dev_init(void);
- extern int remove_memory_block(unsigned long, struct mem_section *, int);
--
-+extern int memory_notify(unsigned long val, void *v);
- #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
- 
- 
-Index: current/mm/memory_hotplug.c
-===================================================================
---- current.orig/mm/memory_hotplug.c	2007-10-17 21:17:54.000000000 +0900
-+++ current/mm/memory_hotplug.c	2007-10-17 21:21:30.000000000 +0900
-@@ -187,7 +187,24 @@ int online_pages(unsigned long pfn, unsi
- 	unsigned long onlined_pages = 0;
- 	struct zone *zone;
- 	int need_zonelists_rebuild = 0;
-+	int nid;
-+	int ret;
-+	struct memory_notify arg;
-+
-+	arg.start_pfn = pfn;
-+	arg.nr_pages = nr_pages;
-+	arg.status_change_nid = -1;
-+
-+	nid = page_to_nid(pfn_to_page(pfn));
-+	if (node_present_pages(nid) == 0)
-+		arg.status_change_nid = nid;
- 
-+	ret = memory_notify(MEM_GOING_ONLINE, &arg);
-+	ret = notifier_to_errno(ret);
-+	if (ret) {
-+		memory_notify(MEM_CANCEL_ONLINE, &arg);
-+		return ret;
-+	}
- 	/*
- 	 * This doesn't need a lock to do pfn_to_page().
- 	 * The section can't be removed here because of the
-@@ -222,6 +239,10 @@ int online_pages(unsigned long pfn, unsi
- 		build_all_zonelists();
- 	vm_total_pages = nr_free_pagecache_pages();
- 	writeback_set_ratelimit();
-+
-+	if (onlined_pages)
-+		memory_notify(MEM_ONLINE, &arg);
-+
- 	return 0;
- }
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-@@ -467,8 +488,9 @@ int offline_pages(unsigned long start_pf
- {
- 	unsigned long pfn, nr_pages, expire;
- 	long offlined_pages;
--	int ret, drain, retry_max;
-+	int ret, drain, retry_max, node;
- 	struct zone *zone;
-+	struct memory_notify arg;
- 
- 	BUG_ON(start_pfn >= end_pfn);
- 	/* at least, alignment against pageblock is necessary */
-@@ -480,11 +502,27 @@ int offline_pages(unsigned long start_pf
- 	   we assume this for now. .*/
- 	if (!test_pages_in_a_zone(start_pfn, end_pfn))
- 		return -EINVAL;
-+
-+	zone = page_zone(pfn_to_page(start_pfn));
-+	node = zone_to_nid(zone);
-+	nr_pages = end_pfn - start_pfn;
-+
- 	/* set above range as isolated */
- 	ret = start_isolate_page_range(start_pfn, end_pfn);
- 	if (ret)
- 		return ret;
--	nr_pages = end_pfn - start_pfn;
-+
-+	arg.start_pfn = start_pfn;
-+	arg.nr_pages = nr_pages;
-+	arg.status_change_nid = -1;
-+	if (nr_pages >= node_present_pages(node))
-+		arg.status_change_nid = node;
-+
-+	ret = memory_notify(MEM_GOING_OFFLINE, &arg);
-+	ret = notifier_to_errno(ret);
-+	if (ret)
-+		goto failed_removal;
-+
- 	pfn = start_pfn;
- 	expire = jiffies + timeout;
- 	drain = 0;
-@@ -539,20 +577,24 @@ repeat:
- 	/* reset pagetype flags */
- 	start_isolate_page_range(start_pfn, end_pfn);
- 	/* removal success */
--	zone = page_zone(pfn_to_page(start_pfn));
- 	zone->present_pages -= offlined_pages;
- 	zone->zone_pgdat->node_present_pages -= offlined_pages;
- 	totalram_pages -= offlined_pages;
- 	num_physpages -= offlined_pages;
-+
- 	vm_total_pages = nr_free_pagecache_pages();
- 	writeback_set_ratelimit();
-+
-+	memory_notify(MEM_OFFLINE, &arg);
- 	return 0;
- 
- failed_removal:
- 	printk(KERN_INFO "memory offlining %lx to %lx failed\n",
- 		start_pfn, end_pfn);
-+	memory_notify(MEM_CANCEL_OFFLINE, &arg);
- 	/* pushback to free area */
- 	undo_isolate_page_range(start_pfn, end_pfn);
-+
- 	return ret;
- }
- #else
-
--- 
-Yasunori Goto 
-
-
+Sounds sane.  New syscalls are cheap and it's clear separation.
