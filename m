@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762942AbXJRHLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbXJRHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762942AbXJRHLX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 03:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXJRHLK
+	id S1762601AbXJRHOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 03:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXJRHON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 03:11:10 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15980 "EHLO kernel.dk"
+	Thu, 18 Oct 2007 03:14:13 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:24271 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755101AbXJRHLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 03:11:08 -0400
-Date: Thu, 18 Oct 2007 09:10:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018071033.GF5063@kernel.dk>
-References: <20071017172158.GH15552@kernel.dk> <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <20071018070706.GA7435@elte.hu>
+	id S1755171AbXJRHOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 03:14:12 -0400
+Message-ID: <471707BD.4000203@sw.ru>
+Date: Thu, 18 Oct 2007 11:14:05 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018070706.GA7435@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, devel@openvz.org
+Subject: Re: How Inactive may be much greather than cached?
+References: <4716FC04.6070107@sw.ru> <200710181627.27827.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710181627.27827.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Ingo Molnar wrote:
+Nick Piggin wrote:
+> Hi,
 > 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thursday 18 October 2007 16:24, Vasily Averin wrote:
+>> Hi all,
+>>
+>> could anybody explain how "inactive" may be much greater than "cached"?
+>> stress test (http://weather.ou.edu/~apw/projects/stress/) that writes into
+>> removed files in cycle puts the node to the following state:
+>>
+>> MemTotal: 16401648 kB
+>> MemFree: 636644 kB
+>> Buffers: 1122556 kB
+>> Cached: 362880 kB
+>> SwapCached: 700 kB
+>> Active: 1604180 kB
+>> Inactive: 13609828 kB
+>>
+>> At the first glance memory should be freed on file closing, nobody refers
+>> to file and ext3_delete_inode() truncates inode. We can see that memory is
+>> go away from "cached", however could somebody explain why it become
+>> "invalid" instead be freed? Who holds the references to these pages?
 > 
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -39,7 +39,7 @@
-> >   * (unless chaining is used). Should ideally fit inside a single page, to
-> >   * avoid a higher order allocation.
-> >   */
-> > -#define SCSI_MAX_SG_SEGMENTS	128
-> > +#define SCSI_MAX_SG_SEGMENTS	129
-> 
-> this one finally made the trick and it's booting fine now, without any 
-> crashes!
+> Buffers, swap cache, and anonymous.
 
-Super, that validates the theory the theory that Linus put forth. So the
-bug is clear now, this morning I'll work on proper sg looping.
+But buffers and swap cache are low (1.1 Gb and 700kB in this example) and
+anonymous should go away when process finished.
 
--- 
-Jens Axboe
+
 
