@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761919AbXJRCMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbXJRCSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761919AbXJRCMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXJRCMd
+	id S1761677AbXJRCSs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXJRCSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:12:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42494 "EHLO
+	Wed, 17 Oct 2007 22:18:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44639 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753625AbXJRCMc (ORCPT
+	by vger.kernel.org with ESMTP id S1750780AbXJRCSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:12:32 -0400
-Date: Wed, 17 Oct 2007 19:12:20 -0700 (PDT)
+	Wed, 17 Oct 2007 22:18:40 -0400
+Date: Wed, 17 Oct 2007 19:18:36 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-In-Reply-To: <1192670742.12879.5.camel@pasglop>
-Message-ID: <alpine.LFD.0.999.0710171906150.26902@woody.linux-foundation.org>
-References: <1192670742.12879.5.camel@pasglop>
+To: Thomas Fricaccia <thomas_fricacci@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: LSM conversion to static interface
+In-Reply-To: <167451.96128.qm@web38607.mail.mud.yahoo.com>
+Message-ID: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
+References: <167451.96128.qm@web38607.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 18 Oct 2007, Benjamin Herrenschmidt wrote:
->  
-> +	smp_mb();
->  	while (desc->status & IRQ_INPROGRESS)
->  		cpu_relax();
+On Wed, 17 Oct 2007, Thomas Fricaccia wrote:
+> 
+> But then I noticed that, while the LSM would remain in existence, it was 
+> being closed to out-of-tree security frameworks.  Yikes!  Since then, 
+> I've been following the rush to put SMACK, TOMOYO and AppArmor 
+> "in-tree".
 
-So, what exactly does it protect against? At a minimum, this needs a 
-comment in the changelog, and probably preferably in the source code too.
+Yeah, it did come up. Andrew, when he sent it on to me, said that the SuSE 
+people were ok with it (AppArmor), but I'm with you - I applied it, but 
+I'm also perfectly willing to unapply it if there actually are valid 
+out-of-tree users that people push for not merging.
 
-The thing is, synchronize_irq() can only protect against interrupts that 
-are *already*running* on another CPU, and the caller must have made sure 
-that no new interrupts are coming in (or at least that whatever new 
-interrupts that come in will not pick up a certain piece of data). 
+So Í don't think this is settled in any way - please keep discussing, and 
+bringing it up. I'm definitely not in the camp that thinks that LSM needs 
+to be "controlled", but on the other hand, I'm also not going to undo that 
+commit unless there are good real arguments for undoing it (not just 
+theoretical ones).
 
-So I can imagine that the smb_mb() is there so that the caller - who has 
-cleared some list or done something like that - will have any preceding 
-writes that it did be serialized with actually checking the old state of 
-"desc->status".
+For example, I do kind of see the point that a "real" security model might 
+want to be compiled-in, and not something you override from a module. Of 
+course, I'm personally trying to not use any modules at all, so I'm just 
+odd and contrary, so whatever..
 
-Fair enough - I can see that a smp_mb() is useful. But I think it needs 
-documenting as such, and preferably with an example of how this actually 
-happened in the first place (do you have one?)
-
-The synchronize_irq() users that are really fundamental (ie the irq 
-datastructures themselves) all should use the irq descriptor spinlock, and 
-should *not* be needing any of this, since they would have serialized with 
-whoever actually set the IRQ_INPROGRESS bit in the first place.
-
-So in *that* sense, I think the memory barrier is useless, and I can't 
-make up my mind whether it's good or bad. Which is why I'd really like to 
-have an example scenario spelled out where it makes a difference..
-
-Ok?
+Real usage scenarios with LSM modules, please speak up!
 
 		Linus
