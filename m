@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXJRTV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbXJRTYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933332AbXJRTV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933529AbXJRTUz
+	id S933176AbXJRTYA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758007AbXJRTXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:20:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34934 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933499AbXJRTUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:20:54 -0400
-Message-ID: <4717B1FC.6040907@garzik.org>
-Date: Thu, 18 Oct 2007 15:20:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 18 Oct 2007 15:23:52 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42235 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752993AbXJRTXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:23:51 -0400
+Date: Thu, 18 Oct 2007 15:23:49 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: BUG in: Driver core: convert block from raw kobjects to core devices
+Message-ID: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, David Miller <davem@davemloft.net>,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <20071018082145.GK5063@kernel.dk> <alpine.LFD.0.999.0710180952070.26902@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710180952070.26902@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Very few drivers should care so much about the *page* itself (or the 
-> offset). That's something that the generic allocation code etc cares 
-> about, but the driver is almost bound to care mostly about the actual DMA 
-> address, so adding that helper function that abstracts the sg access would 
-> be helpful in hiding some of the cruft?
+This patch (as1004) fixes a refcounting bug in the development version
+of the block-device core.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Kay, you have got to start testing your patches better!  Finding and
+fixing refcount errors is _not_ one of my favorite ways to pass the
+time.  For example, you could see what happens when you insert and
+unplug a USB flash disk a few times.
+
+Greg, you'll probably want to just fold this in with Kay's 
+block-device.patch.
+
+Alan Stern
 
 
-FWIW libata cares about both.  When doing DMA, it cares about the DMA 
-address.  When doing PIO, it cares about the actual page, because it 
-does a kmap before sending the data through a 16-bit/32-bit data FIFO.
-
-	Jeff
-
+Index: usb-2.6/fs/partitions/check.c
+===================================================================
+--- usb-2.6.orig/fs/partitions/check.c
++++ usb-2.6/fs/partitions/check.c
+@@ -516,5 +516,4 @@ void del_gendisk(struct gendisk *disk)
+ 	sysfs_remove_link(&block_depr, disk->dev.bus_id);
+ #endif
+ 	device_del(&disk->dev);
+-	put_device(&disk->dev);
+ }
 
