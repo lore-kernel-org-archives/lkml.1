@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934208AbXJRT0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbXJRT1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934208AbXJRT0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbXJRT0b
+	id S933297AbXJRT1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbXJRT0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:26:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:51190 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756636AbXJRT0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:26:30 -0400
-Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
-	devices
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Thu, 18 Oct 2007 21:27:41 +0200
-Message-Id: <1192735661.2271.2.camel@lov.site>
+	Thu, 18 Oct 2007 15:26:54 -0400
+Received: from mail.queued.net ([207.210.101.209]:1619 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757558AbXJRT0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:26:53 -0400
+Date: Thu, 18 Oct 2007 15:26:51 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: linux-kernel@vger.kernel.org
+Cc: "Jordan Crouse" <jordan.crouse@amd.com>, info-linux@geode.amd.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] GEODE: use symbolic constant in cs5536 reboot fixup
+Message-ID: <20071018152651.4d218be9@ephemeral>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+01Q1ANwXFcBqDMAW7SzzyqxgIUm9OsMVPjrb
- 0LgkW6+kbwwUYD5wQe33yR6kBtUkgvvYhalRTeislXCr0+f9R1
- dtd1gtxcg1FTEX+b0Y0Wj6p7Pzgn9an
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-18 at 15:23 -0400, Alan Stern wrote:
-> This patch (as1004) fixes a refcounting bug in the development version
-> of the block-device core.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> ---
-> 
-> Kay, you have got to start testing your patches better!
+Simple cosmetic update for the cs5536 reboot fixup; define the MSR that's used
+for rebooting in geode.h, and use the define.
 
-That leaves references around for SCSI target devices. There must be a
-bug somewhere else, if the patch isn't correct.
+Signed-off-by: Andres Salomon <dilinger@debian.org>
 
-> Finding and
-> fixing refcount errors is _not_ one of my favorite ways to pass the
-> time.  For example, you could see what happens when you insert and
-> unplug a USB flash disk a few times.
-
-What do you see with the original version?
-
-Kay
-
+diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
+index 8b30b26..1a07bbe 100644
+--- a/arch/x86/kernel/reboot_fixups_32.c
++++ b/arch/x86/kernel/reboot_fixups_32.c
+@@ -12,6 +12,7 @@
+ #include <linux/interrupt.h>
+ #include <asm/reboot_fixups.h>
+ #include <asm/msr.h>
++#include <asm/geode.h>
+ 
+ static void cs5530a_warm_reset(struct pci_dev *dev)
+ {
+@@ -24,11 +25,8 @@ static void cs5530a_warm_reset(struct pci_dev *dev)
+ 
+ static void cs5536_warm_reset(struct pci_dev *dev)
+ {
+-	/*
+-	 * 6.6.2.12 Soft Reset (DIVIL_SOFT_RESET)
+-	 * writing 1 to the LSB of this MSR causes a hard reset.
+-	 */
+-	wrmsrl(0x51400017, 1ULL);
++	/* writing 1 to the LSB of this MSR causes a hard reset */
++	wrmsrl(MSR_DIVIL_SOFT_RESET, 1ULL);
+ 	udelay(50); /* shouldn't get here but be safe and spin a while */
+ }
+ 
+diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
+index d948988..771af33 100644
+--- a/include/asm-x86/geode.h
++++ b/include/asm-x86/geode.h
+@@ -38,6 +38,8 @@ extern int geode_get_dev_base(unsigned int dev);
+ #define MSR_LBAR_ACPI		0x5140000E
+ #define MSR_LBAR_PMS		0x5140000F
+ 
++#define MSR_DIVIL_SOFT_RESET	0x51400017
++
+ #define MSR_PIC_YSEL_LOW	0x51400020
+ #define MSR_PIC_YSEL_HIGH	0x51400021
+ #define MSR_PIC_ZSEL_LOW	0x51400022
