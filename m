@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXJRWI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbXJRWJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXJRWI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761184AbXJRWId
+	id S1765466AbXJRWJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761690AbXJRWJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:08:33 -0400
-Received: from ik-out-1112.google.com ([66.249.90.180]:10502 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757998AbXJRWIc (ORCPT
+	Thu, 18 Oct 2007 18:09:09 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:43278 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757998AbXJRWJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:08:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ikMvztnxk6kmPKQJfcHvCUYlksz2YnygJfCqsJGJqpixFk8VeiYBwLb3MFuimfJTI/2qaaJ65sxQC4dxvCCXW38HbpHDr4C8X30CFsPF58tERf0tcSFBlkwXQSU2i6ZtvMxfkWyyp+ZE/+dJHq/9bCJWipaE54cd7daGpOnTIwo=
-Message-ID: <4717D95B.3080102@gmail.com>
-Date: Fri, 19 Oct 2007 00:08:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 18 Oct 2007 18:09:07 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] Freezer: Do not allow freezing processes to clear TIF_SIGPENDING
+Date: Fri, 19 Oct 2007 08:09:02 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200710190022.36145.rjw@sisk.pl>
+In-Reply-To: <200710190022.36145.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Nick Thompson <Nick.Thompson@comtrol.com>
-CC: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Ferenc Wagner <wferi@niif.hu>
-Subject: Re: RocketPort Linux driver errors on module reload
-References: <B1F576FE19C55C43B8D2E31F061B50C062C3EF@exchange.comtrol.com>
-In-Reply-To: <B1F576FE19C55C43B8D2E31F061B50C062C3EF@exchange.comtrol.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710190809.03042.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/17/2007 09:48 PM, Nick Thompson wrote:
->  Thanks a lot for the feedback, it's very much appreciated. Like I said, there is an active project here at Comtrol to get 3.08 beta up to Linux kernel coding standards, once that gets somewhere near done, a patch will be forthcoming.
+Hi.
 
-And the last question, when do you expect/estimate this would happen?
+On Friday 19 October 2007 08:22:35 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
+> to prevent them from racing with the freezer (like mysqld does, for 
+example).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-thanks,
+Acked-by: Nigel Cunningham <nigel@suspend2.net>
+
+> ---
+>  kernel/signal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23-mm1/kernel/signal.c
+> ===================================================================
+> --- linux-2.6.23-mm1.orig/kernel/signal.c
+> +++ linux-2.6.23-mm1/kernel/signal.c
+> @@ -124,7 +124,7 @@ void recalc_sigpending_and_wake(struct t
+>  
+>  void recalc_sigpending(void)
+>  {
+> -	if (!recalc_sigpending_tsk(current))
+> +	if (!recalc_sigpending_tsk(current) && !freezing(current))
+>  		clear_thread_flag(TIF_SIGPENDING);
+>  
+>  }
+> 
+
+
+
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Nigel, Michelle, Alisdair and ____________ Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
