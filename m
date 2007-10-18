@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbXJRCSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbXJRCV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761677AbXJRCSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXJRCSk
+	id S1762680AbXJRCV0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXJRCVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:18:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44639 "EHLO
+	Wed, 17 Oct 2007 22:21:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33412 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750780AbXJRCSk (ORCPT
+	by vger.kernel.org with ESMTP id S1750780AbXJRCVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:18:40 -0400
-Date: Wed, 17 Oct 2007 19:18:36 -0700 (PDT)
+	Wed, 17 Oct 2007 22:21:18 -0400
+Date: Wed, 17 Oct 2007 19:21:06 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Fricaccia <thomas_fricacci@yahoo.com>
-cc: linux-kernel@vger.kernel.org
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: Thomas Fricaccia <thomas_fricacci@yahoo.com>, linux-kernel@vger.kernel.org
 Subject: Re: LSM conversion to static interface
-In-Reply-To: <167451.96128.qm@web38607.mail.mud.yahoo.com>
-Message-ID: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com>
+In-Reply-To: <900019.22422.qm@web36607.mail.mud.yahoo.com>
+Message-ID: <alpine.LFD.0.999.0710171919240.26902@woody.linux-foundation.org>
+References: <900019.22422.qm@web36607.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 17 Oct 2007, Thomas Fricaccia wrote:
+On Wed, 17 Oct 2007, Casey Schaufler wrote:
 > 
-> But then I noticed that, while the LSM would remain in existence, it was 
-> being closed to out-of-tree security frameworks.  Yikes!  Since then, 
-> I've been following the rush to put SMACK, TOMOYO and AppArmor 
-> "in-tree".
+> The in-tree vs out-of-tree discussion is independent of LSM.
 
-Yeah, it did come up. Andrew, when he sent it on to me, said that the SuSE 
-people were ok with it (AppArmor), but I'm with you - I applied it, but 
-I'm also perfectly willing to unapply it if there actually are valid 
-out-of-tree users that people push for not merging.
+Indeed. I think there is certainly likely to be some small overlap, but I 
+*think* they are largely independent issues - "do we want choice in 
+securitu models" (a very emphatic YES as far as I'm concerned) vs "do we 
+necessarily want to do them as out-of-tree modules" (I'd like people who 
+actually *do* things like that to educate us on why and what they are 
+doing).
 
-So Í don't think this is settled in any way - please keep discussing, and 
-bringing it up. I'm definitely not in the camp that thinks that LSM needs 
-to be "controlled", but on the other hand, I'm also not going to undo that 
-commit unless there are good real arguments for undoing it (not just 
-theoretical ones).
-
-For example, I do kind of see the point that a "real" security model might 
-want to be compiled-in, and not something you override from a module. Of 
-course, I'm personally trying to not use any modules at all, so I'm just 
-odd and contrary, so whatever..
-
-Real usage scenarios with LSM modules, please speak up!
+Hmm?
 
 		Linus
