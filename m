@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763856AbXJRNYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXJRN2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763856AbXJRNYj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 09:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbXJRNYa
+	id S1763664AbXJRN2b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 09:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbXJRN2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 09:24:30 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1173 "EHLO kernel.dk"
+	Thu, 18 Oct 2007 09:28:24 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55350 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757218AbXJRNYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 09:24:30 -0400
-Date: Thu, 18 Oct 2007 15:23:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018132351.GG5063@kernel.dk>
-References: <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716DB9A.2060809@rtr.ca> <4716DE82.2050006@rtr.ca> <4716E19F.1090201@garzik.org> <20071018070538.GD5063@kernel.dk> <47175C0A.5020907@rtr.ca>
-MIME-Version: 1.0
+	id S1754537AbXJRN2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 09:28:24 -0400
+Date: Thu, 18 Oct 2007 15:29:55 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Allow kconfig to accept overrides
+Message-ID: <20071018132955.GB20259@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0710122341530.16098@fbirervta.pbzchgretzou.qr> <20071012155708.d8abd06d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0710130127420.31913@fbirervta.pbzchgretzou.qr> <47107ED2.6040509@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131338330.31913@fbirervta.pbzchgretzou.qr> <4710CF9F.6080207@s5r6.in-berlin.de> <Pine.LNX.4.64.0710131609170.3348@fbirervta.pbzchgretzou.qr> <4710F17C.8080100@oracle.com> <Pine.LNX.4.64.0710131836150.3348@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47175C0A.5020907@rtr.ca>
+In-Reply-To: <Pine.LNX.4.64.0710131836150.3348@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Mark Lord wrote:
-> Jens Axboe wrote:
->> On Thu, Oct 18 2007, Jeff Garzik wrote:
->>> Mark Lord wrote:
->>>> Okay, mine is dying with EIP at blk_rq_map_sg+0xcb/0x160.
->>>> Screen photo is at http://rtr.ca/recent/2.6.23-git12-crash.jpg,
->>>> but the top was cut off (isn't there a new config option or patch
->>>> to do double-columns or scrollback or something ???.
->>> Is this a sata_mv box?  If so, could you try this patch?
->> If anything, that shrinks the size of the resulting request. Did this
->> patch make any difference to you?
->
-> Not a sata_mv box, so no point here.
+On Sat, Oct 13, 2007 at 06:36:29PM +0200, Jan Engelhardt wrote:
+> 
+> On Oct 13 2007 09:25, Randy Dunlap wrote:
+> > Jan Engelhardt wrote:
+> >> On Oct 13 2007 16:01, Stefan Richter wrote:
+> >> > > .config:176:warning: override: reassigning to symbol PREEMPT_VOLUNTARY
+> >> > > .config:176:warning: override: PREEMPT_VOLUNTARY turns state choice
+> >
+> > .config:176:warning: override: PREEMPT_VOLUNTARY modifies state choice
+> >
+> > "turns" is just odd there.
+> 
+> Yeah, I've put in
+> 	("override: %s changes choice state", sym->name);
+> this morning.
+Care to send me the updated patch.
 
-Can you try the big patch I just posted?
-
--- 
-Jens Axboe
-
+Thanks,
+	Sam
