@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbXJRBp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbXJRBss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbXJRBp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 21:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXJRBpV
+	id S1763921AbXJRBss (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 21:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbXJRBsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 21:45:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48573 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760964AbXJRBpT (ORCPT
+	Wed, 17 Oct 2007 21:48:39 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50161 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754949AbXJRBsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 21:45:19 -0400
-Date: Wed, 17 Oct 2007 18:45:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-Id: <20071017184512.a1c647b2.akpm@linux-foundation.org>
-In-Reply-To: <1192670742.12879.5.camel@pasglop>
-References: <1192670742.12879.5.camel@pasglop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 21:48:39 -0400
+Date: Wed, 17 Oct 2007 19:48:36 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-mm1 - build failure with advansys
+Message-ID: <20071018014836.GC14883@parisc-linux.org>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <47104D26.7050206@linux.vnet.ibm.com> <20071012235242.9d7daf05.akpm@linux-foundation.org> <18198.41946.697397.255427@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18198.41946.697397.255427@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 11:25:42 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, Oct 18, 2007 at 10:07:54AM +1000, Paul Mackerras wrote:
+> The correct fix is to make advansys depend on CONFIG_VIRT_TO_BUS, or
+> alternatively fix advansys.c properly by making it use the interfaces
+> described in Documentation/DMA-mapping.txt (or the equivalent scsi
+> helpers).
 
-> synchronize_irq needs at the very least a compiler barrier and a
-> read barrier on SMP,
+If you look at the git logs, you'll notice there's some progress towards
+this.  It's already the case for the narrow boards.  I have a patch to
+rip it all out for the wide boards, but there's clearly a bug because it
+crashes my parisc machine.  Works fine on x86 though.  I can't work on
+it this week because I'm travelling and the parisc machine with remote
+power died on me last week.
 
-Why?
+I think I already suggested a temporary CONFIG_VIRT_TO_BUS dependency to
+akpm last week.
 
-> but there are enough cases around where a
-> write barrier is also needed and it's not a hot path so I prefer
-> using a full smp_mb() here.
-> 
-> It will degrade to a compiler barrier on !SMP.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Index: linux-work/kernel/irq/manage.c
-> ===================================================================
-> --- linux-work.orig/kernel/irq/manage.c	2007-10-18 11:22:16.000000000 +1000
-> +++ linux-work/kernel/irq/manage.c	2007-10-18 11:22:20.000000000 +1000
-> @@ -33,6 +33,7 @@ void synchronize_irq(unsigned int irq)
->  	if (irq >= NR_IRQS)
->  		return;
->  
-> +	smp_mb();
->  	while (desc->status & IRQ_INPROGRESS)
->  		cpu_relax();
->  }
-
-Anyone reading this code is going to ask "wtf is that for".  It needs a
-comment telling them.
-
-
-mb() is the new lock_kernel().  Sigh.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
