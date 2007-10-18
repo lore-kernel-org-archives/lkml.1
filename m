@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765666AbXJROCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXJROCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765666AbXJROCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbXJROCM
+	id S933313AbXJROCg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765924AbXJROCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:02:12 -0400
-Received: from smtp1.int-evry.fr ([157.159.10.44]:57659 "EHLO
-	smtp1.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbXJROCK convert rfc822-to-8bit (ORCPT
+	Thu, 18 Oct 2007 10:02:23 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:37006 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765858AbXJROCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:02:10 -0400
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4 resend] [x86] : Add the RDC machine specific reboot fixup
-Date: Thu, 18 Oct 2007 15:59:00 +0200
-User-Agent: KMail/1.9.7
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-References: <200710181551.39694.florian.fainelli@telecomint.eu>
-In-Reply-To: <200710181551.39694.florian.fainelli@telecomint.eu>
+	Thu, 18 Oct 2007 10:02:22 -0400
+Message-ID: <47176768.8070804@tiscali.nl>
+Date: Thu, 18 Oct 2007 16:02:16 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710181559.00957.florian.fainelli@telecomint.eu>
-X-int-MailScanner-Information: Please contact the ISP for more information
-X-int-MailScanner: Found to be clean
-X-int-MailScanner-SpamCheck: 
-X-int-MailScanner-From: florian.fainelli@telecomint.eu
+To: lkml <linux-kernel@vger.kernel.org>
+CC: peterz@infradead.org, viro@ftp.linux.org.uk
+Subject: [PATCH 4/4 returns] fix not-and/or errors
+References: <47161243.6060007@tiscali.nl> <47161451.9010309@tiscali.nl>
+In-Reply-To: <47161451.9010309@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This one also had the attachment, sorry for the noise.
-
-The RDC R-321x SoC needs a reboot fixup which
-uses its internal hardware watchdog set to
-reset the CPU on next tick.
-
-Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+    Thanks for comments, here a second version with previously covered commits removed
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
- arch/x86/kernel/reboot_fixups_32.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
----
-diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-index 8b30b26..26e23fc 100644
---- a/arch/x86/kernel/reboot_fixups_32.c
-+++ b/arch/x86/kernel/reboot_fixups_32.c
-@@ -32,6 +32,19 @@ static void cs5536_warm_reset(struct pci_dev *dev)
- 	udelay(50); /* shouldn't get here but be safe and spin a while */
- }
+diff --git a/arch/arm/mach-pxa/mfp.c b/arch/arm/mach-pxa/mfp.c
+index 5cd3cad..7229319 100644
+--- a/arch/arm/mach-pxa/mfp.c
++++ b/arch/arm/mach-pxa/mfp.c
+@@ -199,7 +199,7 @@ void pxa3xx_mfp_set_edge(int mfp, int edge)
  
-+static void rdc321x_reset(struct pci_dev *dev)
-+{
-+	unsigned i;
-+	/* Voluntary reset the watchdog timer */
-+	outl(0x80003840, 0xCF8);
-+	/* Generate a CPU reset on next tick */
-+	i = inl(0xCFC);
-+	/* Use the minimum timer resolution */
-+	i |= 0x1600;
-+	outl(i, 0xCFC);
-+	outb(1, 0x92);
-+}
-+
- struct device_fixup {
- 	unsigned int vendor;
- 	unsigned int device;
-@@ -41,6 +54,7 @@ struct device_fixup {
- static struct device_fixup fixups_table[] = {
- { PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_LEGACY, cs5530a_warm_reset },
- { PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, cs5536_warm_reset },
-+{ PCI_VENDOR_ID_RDC, PCI_DEVICE_ID_RDC_R6030, rdc321x_reset },
- };
+ 	mfpr_val &= ~MFPR_EDGE_MASK;
+ 	mfpr_val |= (edge & 0x3u) << MFPR_ERE_OFFSET;
+-	mfpr_val |= (!edge & 0x1) << MFPR_EC_OFFSET;
++	mfpr_val |= (!(edge & 0x1)) << MFPR_EC_OFFSET;
  
- /*
+ 	mfpr_writel(mfpr_off, mfpr_val);
+ 	mfpr_sync();
+diff --git a/arch/sh/drivers/dma/dma-sh.c b/arch/sh/drivers/dma/dma-sh.c
+index 958bac1..e8f9c85 100644
+--- a/arch/sh/drivers/dma/dma-sh.c
++++ b/arch/sh/drivers/dma/dma-sh.c
+@@ -89,7 +89,7 @@ static irqreturn_t dma_tei(int irq, void *dev_id)
+ 
+ static int sh_dmac_request_dma(struct dma_channel *chan)
+ {
+-	if (unlikely(!chan->flags & DMA_TEI_CAPABLE))
++	if (unlikely(!(chan->flags & DMA_TEI_CAPABLE)))
+ 		return 0;
+ 
+ 	return request_irq(get_dmte_irq(chan->chan), dma_tei,
+diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
+index d915fec..1db2055 100644
+--- a/drivers/acpi/asus_acpi.c
++++ b/drivers/acpi/asus_acpi.c
+@@ -596,7 +596,7 @@ write_led(const char __user * buffer, unsigned long count,
+ 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
+ 
+ 	if (invert)		/* invert target value */
+-		led_out = !led_out & 0x1;
++		led_out = !led_out;
+ 
+ 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+ 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 9b2c0f7..3762ce2 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -420,8 +420,7 @@ static int acpi_battery_update(struct acpi_battery *battery,
+ 		result = acpi_battery_get_status(battery);
+ 		if (result)
+ 			goto end;
+-		if ((!battery->flags.battery_present_prev & acpi_battery_present(battery))
+-		    || (battery->flags.battery_present_prev & !acpi_battery_present(battery))) {
++		if (battery->flags.battery_present_prev != acpi_battery_present(battery)) {
+ 			result = acpi_battery_init_update(battery);
+ 			if (result)
+ 				goto end;
+@@ -448,10 +447,7 @@ static void acpi_battery_notify_update(struct acpi_battery *battery)
+ 		return;
+ 	}
+ 
+-	if ((!battery->flags.battery_present_prev &
+-	     acpi_battery_present(battery)) ||
+-	    (battery->flags.battery_present_prev &
+-	     !acpi_battery_present(battery))) {
++	if (battery->flags.battery_present_prev != acpi_battery_present(battery)) {
+ 		battery->flags.init_update = 1;
+ 	} else {
+ 		battery->flags.update[ACPI_BATTERY_INFO] = 1;
+
