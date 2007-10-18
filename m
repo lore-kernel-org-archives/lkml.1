@@ -1,195 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934610AbXJRXwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934913AbXJRXx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934610AbXJRXwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763591AbXJRXwM
+	id S934913AbXJRXx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 19:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762329AbXJRXxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:52:12 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:55750 "EHLO
-	outbound1-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763270AbXJRXwK (ORCPT
+	Thu, 18 Oct 2007 19:53:08 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:20166 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753339AbXJRXxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:52:10 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Thu, 18 Oct 2007 13:36:54 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Andres Salomon" <dilinger@queued.net>
-cc: linux-kernel@vger.kernel.org, info-linux@geode.amd.com,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: GEODE: update GPIO API to support setting multiple GPIOs at
- once
-Message-ID: <20071018193654.GB25591@cosmic.amd.com>
-References: <20071018152708.215c9da1@ephemeral>
+	Thu, 18 Oct 2007 19:53:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=K/MkTrqe0zUuuNHiOqZI79l/zjwnqFdTziZXRw8c7WX/M/hhzkOcrbYUzzOF5ztlE2icB5PU79GrxbTlZd2CaP4RYyATaPOrS6WSCRTrF0AgNcpk8TAjebu24+k1SeePR4NjS+n4JdKcFz+aHZg6VIhAh9JD7oveoyK3jtNLN94=  ;
+X-YMail-OSG: wFx8C1IVM1nbqiP8HGEnVl5yFeKmdELKU3g37Q8MfXRZgrrzDZZ_RZgg3ZWmRpYk1hEQ9x7PAXqPKkX9A1vmjYwDmXgMZ9FXJmzhRz9M6X0X.vHgnf0-
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Richard Jelinek <rj@petamem.com>
+Subject: Re: kswapd0 inefficient?
+Date: Fri, 19 Oct 2007 09:52:38 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20071018220510.GA22288@petamem.com>
+In-Reply-To: <20071018220510.GA22288@petamem.com>
 MIME-Version: 1.0
-In-Reply-To: <20071018152708.215c9da1@ephemeral>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 18 Oct 2007 23:51:24.0715 (UTC)
- FILETIME=[CAC2FFB0:01C811E1]
-X-WSS-ID: 6B092E0A0602334689-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710190952.38553.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/10/07 15:27 -0400, Andres Salomon wrote:
-> The existing Geode GPIO API only allows for updating one GPIO at once.  There
-> are instances where users want to update multiple GPIOs at once.  With the
-> current API, they are given two choices; either ignore the GPIO API:
-> 
->       outl(0xc000, gpio_base + GPIO_OUTPUT_VAL);
->       outl(0xc000, gpio_base + GPIO_OUTPUT_ENABLE);
-> 
-> Alternatively, call each GPIO update separately:
-> 
->       geode_gpio_set(14, GPIO_OUTPUT_VAL);
->       geode_gpio_set(15, GPIO_OUTPUT_VAL);
->       geode_gpio_set(14, GPIO_OUTPUT_ENABLE);
->       geode_gpio_set(15, GPIO_OUTPUT_ENABLE);
-> 
-> Neither are desirable.  This patch changes the GPIO API to allow for setting
-> of multiple GPIOs at once; rather than being passed an integer, we pass
-> a bitmask and provide a translation function.  The above code would now
-> look like this:
-> 
->       geode_gpio_set(geode_gpio(14)|geode_gpio(15), GPIO_OUTPUT_VAL);
->       geode_gpio_set(geode_gpio(14)|geode_gpio(15), GPIO_OUTPUT_ENABLE);
-> 
-> Since there are no upstream users of the GPIO API yet (afaik), best to
-> change this now.  This also adds a bit of sanity checking; it is no
-> longer possible to use a GPIO above 28.
-> 
-> 
-> Note the semantics of geode_gpio_isset() have changed:
-> geode_gpio_isset(geode_gpio(3)|geode_gpio(4), ...)
-> will only return true iff both GPIOs are set. 
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
+On Friday 19 October 2007 08:05, Richard Jelinek wrote:
+> Hello guys,
+>
+> I'm not subscribed to this list, so if you find this question valid
+> enough to answer it, please cc me. Thanks.
+>
+> This is what the top-output looks like on my machine after having
+> copied about 550GB of data from a twofish256 crypted disk to a raid
+> array:
+> --------------
+> Mem:   8178452k total,  8132180k used,    46272k free,  2743480k buffers
+> Swap:        0k total,        0k used,        0k free,  4563032k cached
+>
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  5954 root       0 -20     0    0    0 R   62  0.0  96:42.61 loop0
+>  6014 root      18   0 23744  19m  484 R   20  0.2  25:45.31 cp
+>   255 root      10  -5     0    0    0 S    8  0.0  10:21.82 kswapd0
+>  6011 root      10  -5     0    0    0 D    6  0.0   4:15.66 kjournald
+> ...yadda yadda...
+> --------------
+>
+> And what do we see here? We see loop0 and cp eating up some
+> time. That's ok for me considered the work they do. kjournald is also
+> ok for me, but I ask myself: why the heck has kswapd0 crunched 10+
+> minutes of CPU time?
+>
+> I mean what does kswapd0 do?
+> http://www.linuxforums.org/forum/linux-kernel/65380-what-does-kswapd0-do.ht
+>ml
+>
+> And I have no swap - right? So it should just shut up - IMHO. Or am I
+> missing something?
 
-Acked-by: Jordan Crouse <jordan.crouse@amd.com>
-
-> diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
-> index f12d8c5..9c7f7d3 100644
-> --- a/arch/x86/kernel/geode_32.c
-> +++ b/arch/x86/kernel/geode_32.c
-> @@ -1,6 +1,7 @@
->  /*
->   * AMD Geode southbridge support code
->   * Copyright (C) 2006, Advanced Micro Devices, Inc.
-> + * Copyright (C) 2007, Andres Salomon <dilinger@debian.org>
->   *
->   * This program is free software; you can redistribute it and/or
->   * modify it under the terms of version 2 of the GNU General Public License
-> @@ -51,45 +52,62 @@ EXPORT_SYMBOL_GPL(geode_get_dev_base);
->  
->  /* === GPIO API === */
->  
-> -void geode_gpio_set(unsigned int gpio, unsigned int reg)
-> +void geode_gpio_set(u32 gpio, unsigned int reg)
->  {
->  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
->  
->  	if (!base)
->  		return;
->  
-> -	if (gpio < 16)
-> -		outl(1 << gpio, base + reg);
-> -	else
-> -		outl(1 << (gpio - 16), base + 0x80 + reg);
-> +	/* low bank register */
-> +	if (gpio & 0xFFFF)
-> +		outl(gpio & 0xFFFF, base + reg);
-> +	/* high bank register */
-> +	gpio >>= 16;
-> +	if (gpio)
-> +		outl(gpio, base + 0x80 + reg);
->  }
->  EXPORT_SYMBOL_GPL(geode_gpio_set);
->  
-> -void geode_gpio_clear(unsigned int gpio, unsigned int reg)
-> +void geode_gpio_clear(u32 gpio, unsigned int reg)
->  {
->  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
->  
->  	if (!base)
->  		return;
->  
-> -	if (gpio < 16)
-> -		outl(1 << (gpio + 16), base + reg);
-> -	else
-> -		outl(1 << gpio, base + 0x80 + reg);
-> +	/* low bank register */
-> +	if (gpio & 0xFFFF)
-> +		outl((gpio & 0xFFFF) << 16, base + reg);
-> +	/* high bank register */
-> +	gpio &= (0xFFFF << 16);
-> +	if (gpio)
-> +		outl(gpio, base + 0x80 + reg);
->  }
->  EXPORT_SYMBOL_GPL(geode_gpio_clear);
->  
-> -int geode_gpio_isset(unsigned int gpio, unsigned int reg)
-> +int geode_gpio_isset(u32 gpio, unsigned int reg)
->  {
->  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
-> +	u32 val;
->  
->  	if (!base)
->  		return 0;
->  
-> -	if (gpio < 16)
-> -		return (inl(base + reg) & (1 << gpio)) ? 1 : 0;
-> -	else
-> -		return (inl(base + 0x80 + reg) & (1 << (gpio - 16))) ? 1 : 0;
-> +	/* low bank register */
-> +	if (gpio & 0xFFFF) {
-> +		val = inl(base + reg) & (gpio & 0xFFFF);
-> +		if ((gpio & 0xFFFF) == val)
-> +			return 1;
-> +	}
-> +	/* high bank register */
-> +	gpio >>= 16;
-> +	if (gpio) {
-> +		val = inl(base + 0x80 + reg) & gpio;
-> +		if (gpio == val)
-> +			return 1;
-> +	}
-> +	return 0;
->  }
->  EXPORT_SYMBOL_GPL(geode_gpio_isset);
->  
-> diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-> index d948988..593d3ec 100644
-> --- a/include/asm-x86/geode.h
-> +++ b/include/asm-x86/geode.h
-> @@ -119,9 +119,15 @@ extern int geode_get_dev_base(unsigned int dev);
->  #define GPIO_MAP_Z		0xE8
->  #define GPIO_MAP_W		0xEC
->  
-> -extern void geode_gpio_set(unsigned int, unsigned int);
-> -extern void geode_gpio_clear(unsigned int, unsigned int);
-> -extern int geode_gpio_isset(unsigned int, unsigned int);
-> +static inline u32 geode_gpio(unsigned int nr)
-> +{
-> +	BUG_ON(nr > 28);
-> +	return 1 << nr;
-> +}
-> +
-> +extern void geode_gpio_set(u32, unsigned int);
-> +extern void geode_gpio_clear(u32, unsigned int);
-> +extern int geode_gpio_isset(u32, unsigned int);
->  extern void geode_gpio_setup_event(unsigned int, int, int);
->  extern void geode_gpio_set_irq(unsigned int, unsigned int);
->  
-> 
-> 
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
-
+kswapd also reclaims pagecache, not just anonymous memory. It runs
+in response to memory pressure and if it wasn't around, then all
+your apps requesting memory would have to do basically the same
+amount of work themselves.
