@@ -1,52 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763683AbXJRMum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbXJRMxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763683AbXJRMum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 08:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbXJRMuc
+	id S1764379AbXJRMxb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 08:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761957AbXJRMxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 08:50:32 -0400
-Received: from smtp107.sbc.mail.re2.yahoo.com ([68.142.229.98]:42216 "HELO
-	smtp107.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754255AbXJRMub (ORCPT
+	Thu, 18 Oct 2007 08:53:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52660 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761692AbXJRMxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 08:50:31 -0400
-X-YMail-OSG: 9JMgXtgVM1mVmiXW8TVZ4ONby3wE1ZplJIA0uvVpMQ7b2t9rKicUG8QwhrCnChRFwcJbiY_USA--
-Date: Thu, 18 Oct 2007 07:50:26 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, sds@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, morgan@kernel.org,
-       linux-kernel@vger.kernel.org, kaigai@kaigai.gr.jp,
-       casey@schaufler-ca.com
-Subject: Re: [RFC] [PATCH 2/2] capabilities: implement 64-bit capabilities
-Message-ID: <20071018125026.GA10387@vino.hallyn.com>
-References: <20071016022730.GA8925@sergelap.austin.ibm.com> <20071016023100.GA10698@sergelap.austin.ibm.com> <1192544299.8702.78.camel@moss-spartans.epoch.ncsc.mil> <20071016214159.GB13294@sergelap.austin.ibm.com> <20071017180002.33fe4986.akpm@linux-foundation.org> <20071018025920.GA5067@vino.hallyn.com> <20071018052111.GQ3906@sequoia.sous-sol.org>
+	Thu, 18 Oct 2007 08:53:22 -0400
+Date: Thu, 18 Oct 2007 14:53:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Nevine AbouGhazaleh <nevine@cs.pitt.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: suspend-to-disk using a SAS drive
+Message-ID: <20071018125316.GA22228@elf.ucw.cz>
+References: <46B67B03.1050008@cs.pitt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071018052111.GQ3906@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <46B67B03.1050008@cs.pitt.edu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Chris Wright (chrisw@sous-sol.org):
-> * Serge E. Hallyn (serge@hallyn.com) wrote:
-> > I guess now that I've written this out, it seems pretty clear
-> > that capget64() and capget64() are the way to go.  Any objections?
-> 
-> How is capget64() different from capget() that supports 2 different
-> header->versions (I thought that was the whole point of the versioned,
-> rather opaque interface)?  I don't object to a new syscall, but I don't
-> see why it's required to avoid breaking libcap.
+On Sun 2007-08-05 18:36:03, Nevine AbouGhazaleh wrote:
+> I am trying to suspend-to-disk using the Suspend2 modules. I am using an 
+> SSD drive connected through a SAS bus interface. The SSD acts as a boot 
+> disk.
+> All read and write transactions to the drive works well during normal 
+> operation.  when I hibernate (suspend-to-disk).
+>
+> I get the following errors:
+> ------------------
+> mptbase: ioc0: ERROR ? Invalid IOC facts reply, msgLength=0 offset=6
+> pnp: Failed to activate device 00:09.
+> pnp: Failed to activate device 00:0a.
+> ------------
+>
+> Immediately after these messages, Linux hangs as soon as it starts writing 
+> the image to the drive. showing the following output.
+> ------------------
+> Writing Kernel and process data ...
+> 20%...
+> ------------------
+>
+>
+> When using KDB to trace the problem after the kernel hung.
+>
+> <ps> shows a running process: Ks2io
+>
+> when doing Back Trace for Ks2io wheen the kernel hangs, I get the following 
+> trace
+> --------------------
+> _spin_unlock_irq+0xb
+> thread_return+0x64
+> _raw_spin_lock+ox90
+> __mutex_up_process+0x10
+> wake_up_process+0x10
+> suspend_bio_write_page
+> mutex_lock+0x2a
+> flush_workqueue+0x51
+> kblockd_flush+0x10
+> do_bio_wait+0x1b
+> suspend_bio_write_page
+> suepend_bio_write_page+0x41
+> suspend_compress_write_page+0x137
+> worker_rw_loop
+> worker_rw_loop+0x133
+> worker_rw_loop
+> kthread+0xf5
+> schedule_tail_0x45
+> child_rip+0x45
+> worker_thread
+> kthread
+> child_rip --------------------
+>
+> It seems that the problem is when suspend2 tries to write to the SSD drive.
+> I am not sure whether the problem is with the suspend2 module or the mpt 
+> driver? I am using kernel 2.6.21.1 x86_64 with fedora core 5 x86_64. MPT 
+> driver 3.04
+> Any insights/recommendations will be greatly appreciated.  
 
-Hmm, I guess it *works*, it's just harder to explain the "inconsistent"
-behavior.  Now instead of saying "capget() will fail under certain
-conditions while capget64() will always succeed", capget() will actually
-fail under certain conditions only if you send in a certain header.
-
-Again, once I've written it out, I guess it isn't *so* bad.
-
-thanks,
--serge
+Try latest kernel without suspend2 patch... ... if it hangs at 20% you
+may have a chance that driver already has some suspend/resume support.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
