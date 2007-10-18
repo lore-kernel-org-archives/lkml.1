@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933723AbXJRWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763871AbXJRW0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933723AbXJRWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbXJRWZp
+	id S1763871AbXJRW0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbXJRWZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 18 Oct 2007 18:25:45 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:56684 "EHLO
-	mail-02.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755979AbXJRWZo (ORCPT
+Received: from mail.tor.primus.ca ([216.254.136.21]:35785 "EHLO
+	mail-06.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758065AbXJRWZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 18 Oct 2007 18:25:44 -0400
 From: Matthew Wilcox <matthew@wil.cx>
 To: linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>
-Subject: [PATCH 5/5] Make wait_on_retry_sync_kiocb killable
-Date: Thu, 18 Oct 2007 18:26:02 -0400
-Message-Id: <11927463623950-git-send-email-matthew@wil.cx>
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 1/5] Use wake_up_locked() in eventpoll
+Date: Thu, 18 Oct 2007 18:25:58 -0400
+Message-Id: <11927463621072-git-send-email-matthew@wil.cx>
 X-Mailer: git-send-email 1.4.4.2
 In-Reply-To: <11927463623428-git-send-email-matthew@wil.cx>
 References: <11927463623428-git-send-email-matthew@wil.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use TASK_KILLABLE to allow wait_on_retry_sync_kiocb to return -EINTR.
-All callers then check the return value and break out of their loops.
+Replace the uses of __wake_up_locked with wake_up_locked
 
-Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- fs/read_write.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+ fs/eventpoll.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 124693e..3196a3b 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -218,14 +218,15 @@ Einval:
- 	return -EINVAL;
- }
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index 77b9953..72e4cb4 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -657,8 +657,7 @@ is_linked:
+ 	 * wait list.
+ 	 */
+ 	if (waitqueue_active(&ep->wq))
+-		__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-				 TASK_INTERRUPTIBLE);
++		wake_up_locked(&ep->wq);
+ 	if (waitqueue_active(&ep->poll_wait))
+ 		pwake++;
  
--static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
-+static int wait_on_retry_sync_kiocb(struct kiocb *iocb)
- {
--	set_current_state(TASK_UNINTERRUPTIBLE);
-+	set_current_state(TASK_KILLABLE);
- 	if (!kiocbIsKicked(iocb))
- 		schedule();
- 	else
- 		kiocbClearKicked(iocb);
- 	__set_current_state(TASK_RUNNING);
-+	return fatal_signal_pending(current) ? -EINTR : 0;
- }
+@@ -781,7 +780,7 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
  
- ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
-@@ -242,7 +243,9 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
- 		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
- 		if (ret != -EIOCBRETRY)
- 			break;
--		wait_on_retry_sync_kiocb(&kiocb);
-+		ret = wait_on_retry_sync_kiocb(&kiocb);
-+		if (ret)
-+			break;
+ 		/* Notify waiting tasks that events are available */
+ 		if (waitqueue_active(&ep->wq))
+-			__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
++			wake_up_locked(&ep->wq);
+ 		if (waitqueue_active(&ep->poll_wait))
+ 			pwake++;
  	}
+@@ -855,8 +854,7 @@ static int ep_modify(struct eventpoll *ep, struct epitem *epi, struct epoll_even
  
- 	if (-EIOCBQUEUED == ret)
-@@ -300,7 +303,9 @@ ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, lof
- 		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
- 		if (ret != -EIOCBRETRY)
- 			break;
--		wait_on_retry_sync_kiocb(&kiocb);
-+		ret = wait_on_retry_sync_kiocb(&kiocb);
-+		if (ret)
-+			break;
+ 			/* Notify waiting tasks that events are available */
+ 			if (waitqueue_active(&ep->wq))
+-				__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-						 TASK_INTERRUPTIBLE);
++				wake_up_locked(&ep->wq);
+ 			if (waitqueue_active(&ep->poll_wait))
+ 				pwake++;
+ 		}
+@@ -979,8 +977,7 @@ errxit:
+ 		 * wait list (delayed after we release the lock).
+ 		 */
+ 		if (waitqueue_active(&ep->wq))
+-			__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-					 TASK_INTERRUPTIBLE);
++			wake_up_locked(&ep->wq);
+ 		if (waitqueue_active(&ep->poll_wait))
+ 			pwake++;
  	}
- 
- 	if (-EIOCBQUEUED == ret)
-@@ -466,7 +471,9 @@ ssize_t do_sync_readv_writev(struct file *filp, const struct iovec *iov,
- 		ret = fn(&kiocb, iov, nr_segs, kiocb.ki_pos);
- 		if (ret != -EIOCBRETRY)
- 			break;
--		wait_on_retry_sync_kiocb(&kiocb);
-+		ret = wait_on_retry_sync_kiocb(&kiocb);
-+		if (ret)
-+			break;
- 	}
- 
- 	if (ret == -EIOCBQUEUED)
 -- 
 1.4.4.2
 
