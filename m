@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbXJREUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765078AbXJREVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763340AbXJREUh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 00:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXJREU2
+	id S1765078AbXJREVW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 00:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXJREVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 00:20:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36755 "EHLO
+	Thu, 18 Oct 2007 00:21:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55623 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751067AbXJREU1 (ORCPT
+	by vger.kernel.org with ESMTP id S1751680AbXJREVB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 00:20:27 -0400
-Date: Wed, 17 Oct 2007 21:20:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 0/21] KGDB: Request to merge KGDB
-Message-Id: <20071017212025.d8a52694.akpm@linux-foundation.org>
-In-Reply-To: <4713B238.4030409@windriver.com>
-References: <4713B238.4030409@windriver.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 00:21:01 -0400
+Date: Wed, 17 Oct 2007 21:20:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       jens.axboe@oracle.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+In-Reply-To: <4716DB9A.2060809@rtr.ca>
+Message-ID: <alpine.LFD.0.999.0710172117280.26902@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org>
+ <20071018080048O.fujita.tomonori@lab.ntt.co.jp>
+ <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org>
+ <20071017.181907.63126798.davem@davemloft.net>
+ <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org>
+ <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org>
+ <4716DB9A.2060809@rtr.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007 13:32:24 -0500 Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> This is a request to merge KGDB into the mainline kernel.  
 
-This won't work very well.  There's a lot of review work to be done here,
-and a lot of it by busy architecture maintainers.  Expecting people to do
-all this review and test work late in the merge window when they're all
-madly scrambling to get their bugs^Wpatches into mainline is not reasonable.
-This should all have started a month ago.
+On Thu, 18 Oct 2007, Mark Lord wrote:
+> 
+> Oh.. so this bug is supposed to only bite with DEBUG_PAGEALLOC=y ??
 
-So we're looking at a 2.6.25 merge for this work.  After this round of
-review has settled, please upissue the patches and keep linux-arch (cc'ed
-here) copied on everything, thanks.
+Yeah, this particular one really should only bite you with 
+DEBUG_PAGEALLOC.
 
+The SG code potentially _derefences_ a field past the end of the SG array, 
+but it should be a read, and the result should never be used (it's used to 
+calculate the pointer to past the end of the queue, so if it's used, 
+there's another bug lurking).
+
+> Then something else is broken, perhaps.  I just saw a long traceback 
+> scroll off the top of the screen, with lots of bio_* functions in the 
+> list and assumed it was the same bug.
+> 
+> Mmm.. I'll get out the camera and try it again now..
+
+Please do. I wouldn't be surprised if it's also related to the SG changes, 
+but I don't think it's the exact particular bug that Ingo saw.
+
+		Linus
