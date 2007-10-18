@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbXJRA25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbXJRA31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762639AbXJRA25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759746AbXJRA2n
+	id S1763321AbXJRA31 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762742AbXJRA3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:28:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60271 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759530AbXJRA2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:28:42 -0400
-Message-ID: <4716A8B4.5060406@garzik.org>
-Date: Wed, 17 Oct 2007 20:28:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-CC: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-Subject: Re: [PATCH] vortex_up should initialize "err"
-References: <1192662956.14504.14.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1192662956.14504.14.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Wed, 17 Oct 2007 20:29:00 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:50570 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762658AbXJRA26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:28:58 -0400
+Date: Wed, 17 Oct 2007 18:27:56 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Problem:  CPU sleep when calling a function in another object for
+ the first time.
+In-reply-to: <fa.tipEk8FmQyQBLuKMUWoW6rAg1Yc@ifi.uio.no>
+To: John Marconi <john.marconi@utstar.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <4716A88C.2050204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.tipEk8FmQyQBLuKMUWoW6rAg1Yc@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> Simple compile warning fix. (against 2.6.23-git12)
+John Marconi wrote:
+> Hello,
 > 
-> Thanks,
-> Badari
+> I have been seeing a problem in which one of my CPUs goes to sleep for
+> 40ms in the middle of running a user-space program.  The problem occurs
+> when I have a function in object file X call another function in object
+> file Y.  If I add a gettimeofday right before the function call occurs,
+> and then also right at the beginning of the called function, I see a
+> 40ms delay.  This only occurs on the first call to any function in file
+> Y.  Once a function in file Y is called, all other calls to functions in
+> this file are immediate.
 > 
-> vortex_up() should initialize 'err' for a successful return.
+> I have added a kernel profiler to the timer interrupt of this CPU - and
+> find that during this 40ms period, the CPU is in r4k_wait - which looks
+> like cpu_idle is running.  It almost seems like file Y is being loaded
+> into memory to be used.
 > 
-> drivers/net/3c59x.c: In function `vortex_up':
-> drivers/net/3c59x.c:1494: warning: `err' might be used uninitialized in this function
+> The program in question is using pthreads and each thread is on a
+> separate CPU.  Each CPU is dedicated to running a single thread and
+> nothing else.  The files X and Y are two object files linked into a
+> single ELF binary.  The kernel version is 2.6.14 and this is a MIPS
+> based processor.
+> 
+> Does anyone have any ideas why this delay might be occurring?
 
-applied as an obvious bug fix (Steffen added to CC)
+Binaries get loaded into memory on demand, so it's quite possible that 
+that part of the executable hasn't been loaded until something calls a 
+function within it.
 
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
