@@ -1,118 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbXJRAJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761822AbXJRAOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762402AbXJRAJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759350AbXJRAI6
+	id S1761822AbXJRAOu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbXJRAOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:08:58 -0400
-Received: from mga02.intel.com ([134.134.136.20]:26382 "EHLO mga02.intel.com"
+	Wed, 17 Oct 2007 20:14:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:36098 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758604AbXJRAI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:08:57 -0400
+	id S1757942AbXJRAOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:14:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,291,1188802800"; 
-   d="scan'208";a="249608413"
-Date: Wed, 17 Oct 2007 17:01:06 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       pcihpd-discuss@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>
-Subject: Re: [PATCH 4/4] Fix PCIe hotplug for non-ACPI ExpressCard slots
- (version 2)
-Message-Id: <20071017170106.5d9e0a9f.kristen.c.accardi@intel.com>
-In-Reply-To: <47156B92.7070501@rtr.ca>
-References: <4714C0A6.1030204@rtr.ca>
-	<4714D700.7060008@rtr.ca>
-	<20071016084634.8a0d695a.kristen.c.accardi@intel.com>
-	<47150565.5090102@rtr.ca>
-	<20071016114328.a96e8bcb.kristen.c.accardi@intel.com>
-	<47150982.6050102@rtr.ca>
-	<471509FE.7080505@rtr.ca>
-	<47151191.40406@rtr.ca>
-	<20071016130757.ed2f2ce4.kristen.c.accardi@intel.com>
-	<4715217D.2000803@rtr.ca>
-	<20071016214143.GC21815@kroah.com>
-	<471533AF.60100@rtr.ca>
-	<47156B14.2080608@rtr.ca>
-	<47156B40.4060006@rtr.ca>
-	<47156B62.3070807@rtr.ca>
-	<47156B7B.8010800@rtr.ca>
-	<47156B92.7070501@rtr.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+   d="scan'208";a="300560850"
+From: Shannon Nelson <shannon.nelson@intel.com>
+Subject: [PATCH 1/5] I/OAT: cleanup pci issues
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Cc: shannon.nelson@intel.com, dan.j.williams@intel.com,
+       randy.dunlap@oracle.com
+Date: Wed, 17 Oct 2007 17:14:16 -0700
+Message-ID: <20071018001416.31147.86176.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 21:55:30 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+Reorder the pci release actions
+    Letting go of the resources in the right order helps get rid of
+    occasional kernel complaints.
 
-> Make use of the previously split out pcie_init_enable_events() function
-> to reinitialize the hotplug hardware on resume from suspend,
-> but only when pciehp_force==1.  Otherwise behaviour is unmodified.
+Fix the pci_driver object name [Randy Dunlap]
+    Rename the struct pci_driver data so that false section mismatch
+    warnings won't be produced.
 
-OK - definitely in this case the right thing to do is not use this code
-unless you are forcing pciehp, thanks.
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+---
 
-I think I'd be careful when you rename this patch - non-ACPI
-ExpressCard slots is not what you want to say, as this fix is very
-specific for your machine.  We have no idea if this will fix any other
-problems that occur when people force pciehp - and in many cases this
-either may not be needed, or may not be enough.  I only care about the
-name because I don't want people mislead when they are reading git commits.
+ drivers/dma/ioat.c     |   23 ++++++-----------------
+ drivers/dma/ioat_dma.c |    5 ++++-
+ 2 files changed, 10 insertions(+), 18 deletions(-)
 
-
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> ---
-> --- old/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:17:27.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-16 21:28:36.000000000 -0400
-> @@ -37,7 +37,6 @@
->  #include "pciehp.h"
->  
->  static void interrupt_event_handler(struct work_struct *work);
-> -static int pciehp_disable_slot(struct slot *p_slot);
->  
->  static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
->  {
-> --- old/drivers/pci/hotplug/pciehp.h	2007-10-16 21:17:27.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp.h	2007-10-16 21:28:42.000000000 -0400
-> @@ -162,6 +162,8 @@
->  extern void pciehp_queue_pushbutton_work(struct work_struct *work);
->  int pcie_init(struct controller *ctrl, struct pcie_device *dev);
->  int pciehp_enable_slot(struct slot *p_slot);
-> +int pciehp_disable_slot(struct slot *p_slot);
-> +int pcie_init_enable_events(struct controller *ctrl, struct pcie_device *dev);
->  
->  static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
->  {
-> --- old/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:17:27.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-16 21:30:19.000000000 -0400
-> @@ -512,6 +512,24 @@
->  static int pciehp_resume (struct pcie_device *dev)
->  {
->  	printk("%s ENTRY\n", __FUNCTION__);	
-> +	if (pciehp_force) {
-> +		struct pci_dev *pdev = dev->port;
-> +		struct controller *ctrl = pci_get_drvdata(pdev);
-> +		struct slot *t_slot;
-> +		u8 status;
-> +
-> +		/* reinitialize the chipset's event detection logic */
-> +		pcie_init_enable_events(ctrl, dev);
-> +
-> +		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
-> +
-> +		/* Check if slot is occupied */
-> +		t_slot->hpc_ops->get_adapter_status(t_slot, &status);
-> +		if (status)
-> +			pciehp_enable_slot(t_slot);
-> +		else
-> +			pciehp_disable_slot(t_slot);
-> +	}
->  	return 0;
->  }
->  #endif
-> 
+diff --git a/drivers/dma/ioat.c b/drivers/dma/ioat.c
+index f7276bf..54fdeb7 100644
+--- a/drivers/dma/ioat.c
++++ b/drivers/dma/ioat.c
+@@ -55,9 +55,7 @@ struct ioat_device {
+ 
+ static int __devinit ioat_probe(struct pci_dev *pdev,
+ 				const struct pci_device_id *id);
+-#ifdef IOAT_DMA_REMOVE
+ static void __devexit ioat_remove(struct pci_dev *pdev);
+-#endif
+ 
+ static int ioat_dca_enabled = 1;
+ module_param(ioat_dca_enabled, int, 0644);
+@@ -100,14 +98,12 @@ static void ioat_shutdown_functionality(struct pci_dev *pdev)
+ 
+ }
+ 
+-static struct pci_driver ioat_pci_drv = {
++static struct pci_driver ioat_pci_driver = {
+ 	.name		= "ioatdma",
+ 	.id_table	= ioat_pci_tbl,
+ 	.probe		= ioat_probe,
+ 	.shutdown	= ioat_shutdown_functionality,
+-#ifdef IOAT_DMA_REMOVE
+ 	.remove		= __devexit_p(ioat_remove),
+-#endif
+ };
+ 
+ static int __devinit ioat_probe(struct pci_dev *pdev,
+@@ -122,7 +118,7 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_enable_device;
+ 
+-	err = pci_request_regions(pdev, ioat_pci_drv.name);
++	err = pci_request_regions(pdev, ioat_pci_driver.name);
+ 	if (err)
+ 		goto err_request_regions;
+ 
+@@ -176,13 +172,11 @@ err_enable_device:
+ 	return err;
+ }
+ 
+-#ifdef IOAT_DMA_REMOVE
+ /*
+  * It is unsafe to remove this module: if removed while a requested
+  * dma is outstanding, esp. from tcp, it is possible to hang while
+- * waiting for something that will never finish, thus hanging at
+- * least one cpu.  However, if you're feeling lucky and need to do
+- * some testing, this usually works just fine.
++ * waiting for something that will never finish.  However, if you're
++ * feeling lucky, this usually works just fine.
+  */
+ static void __devexit ioat_remove(struct pci_dev *pdev)
+ {
+@@ -191,21 +185,16 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
+ 	ioat_shutdown_functionality(pdev);
+ 
+ 	kfree(device);
+-
+-	iounmap(device->iobase);
+-	pci_release_regions(pdev);
+-	pci_disable_device(pdev);
+ }
+-#endif
+ 
+ static int __init ioat_init_module(void)
+ {
+-	return pci_register_driver(&ioat_pci_drv);
++	return pci_register_driver(&ioat_pci_driver);
+ }
+ module_init(ioat_init_module);
+ 
+ static void __exit ioat_exit_module(void)
+ {
+-	pci_unregister_driver(&ioat_pci_drv);
++	pci_unregister_driver(&ioat_pci_driver);
+ }
+ module_exit(ioat_exit_module);
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 66c5bb5..59d4344 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -931,7 +931,6 @@ err_completion_pool:
+ err_dma_pool:
+ 	kfree(device);
+ err_kzalloc:
+-	iounmap(iobase);
+ 	dev_err(&device->pdev->dev,
+ 		"ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
+ 	return NULL;
+@@ -949,6 +948,10 @@ void ioat_dma_remove(struct ioatdma_device *device)
+ 	pci_pool_destroy(device->dma_pool);
+ 	pci_pool_destroy(device->completion_pool);
+ 
++	iounmap(device->reg_base);
++	pci_release_regions(device->pdev);
++	pci_disable_device(device->pdev);
++
+ 	list_for_each_entry_safe(chan, _chan,
+ 				 &device->common.channels, device_node) {
+ 		ioat_chan = to_ioat_chan(chan);
