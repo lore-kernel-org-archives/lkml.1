@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762557AbXJRV1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763662AbXJRV12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762557AbXJRV1N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 17:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbXJRV07
+	id S1763662AbXJRV12 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 17:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbXJRV1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 17:26:59 -0400
-Received: from rtr.ca ([76.10.145.34]:3138 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbXJRV06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 17:26:58 -0400
-Message-ID: <4717CFA0.2030901@rtr.ca>
-Date: Thu, 18 Oct 2007 17:26:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [PATCH 0/3] Fix two PEIe hotplug issues
-References: <4716CB9D.6080503@rtr.ca> <4716CE79.7040201@rtr.ca> <20071018091347.4b94faf8.kristen.c.accardi@intel.com> <4717928D.6070703@rtr.ca> <20071018100614.435fe88c.kristen.c.accardi@intel.com> <20071018174925.GB4927@thunk.org>
-In-Reply-To: <20071018174925.GB4927@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 18 Oct 2007 17:27:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40364 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762184AbXJRV1K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 17:27:10 -0400
+Date: Thu, 18 Oct 2007 14:26:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ak@suse.de,
+       vgoyal@in.ibm.com
+Subject: Re: [patch 1/3] Add BSS to resource tree
+Message-Id: <20071018142642.5b3f6ba4.akpm@linux-foundation.org>
+In-Reply-To: <20071018111535.883533731@strauss.suse.de>
+References: <20071018111535.356215664@strauss.suse.de>
+	<20071018111535.883533731@strauss.suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Oct 18, 2007 at 10:06:14AM -0700, Kristen Carlson Accardi wrote:
->> No, it actually does violate the spec.  Feel free to read it yourself.
->> We are not supposed to do Native PCIe without first successfully executing
->> OSC.  Period.  If you do, you are violating the spec.
+On Thu, 18 Oct 2007 13:15:36 +0200
+Bernhard Walle <bwalle@suse.de> wrote:
+
+> This patch adds the BSS to the resource tree just as kernel text and kernel
+> data are in the resource tree. The main reason behind this is to avoid
+> crashkernel reservation in that area.
 > 
-> To be fair, we have violated the spec before in order to get crappy
-> hardware or to work around crappy ACPI implementations.
-> acpi_sleep=s3_bios for example violates the spec, but yet it is the
-> only way to get certain laptops to suspend/resume correctly.  
+> While it's not strictly necessary to have the BSS in the resource tree
+> (the actual collision detection is done in the reserve_bootmem() function
+> before), the usage of the BSS resource should be presented to the user
+> in /proc/iomem just as Kernel data and Kernel code.
+> 
+> Note: The patch currently is only implemented for x86 and ia64 (because
+> efi_initialize_iomem_resources() has the same signature on i386 and
+> ia64).
+> 
+> 
+> ...
+>
+> -extern char _text[], _end[], _etext[];
+> +
+> +static struct resource bss_resource = {
+> +	.name	= "Kernel bss",
+> +	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
+> +};
+> +extern char _text[], _end[], _etext[], _edata[], _bss[];
 
-If we religiously relied upon BIOS support for everything in Linux,
-then SATA drives wouldn't be doing anything more than emulating PATA,
-and we'd still be doing PIO transfers for most PATA drives.
+These should be in a header file.
 
-And ditto for many other areas in the kernel,
-but that's the main one that I know a bit about. 
+> --- a/arch/x86/kernel/e820_64.c
+> +++ b/arch/x86/kernel/e820_64.c
+> @@ -47,7 +47,7 @@ unsigned long end_pfn_map; 
+>   */
+>  static unsigned long __initdata end_user_pfn = MAXMEM>>PAGE_SHIFT;
+>  
+> -extern struct resource code_resource, data_resource;
+> +extern struct resource code_resource, data_resource, bss_resource;
 
-> The question to ask is whether violating the spec will lead to (a) a
-> potential system hang/crash, (b) data corruption, (c) physical harm to
-> the device/laptop.
+As should these.  afaik they're the same on all architectures and even if
+they have different names on some weird arch, an unused declaration won't
+hurt.
 
-So far, after a couple of days of intensive (disk!) I/O over the slot,
-the answers are NO, NO, and NO.
+> --- a/arch/x86/kernel/setup_32.c
+> +++ b/arch/x86/kernel/setup_32.c
+> @@ -73,6 +74,7 @@ int disable_pse __devinitdata = 0;
+>   */
+>  extern struct resource code_resource;
+>  extern struct resource data_resource;
+> +extern struct resource bss_resource;
 
-Cheers
+See, we keep on adding the same thing over and over again.
+
+
+These problems are not introduced by your changes, of course.  But we really
+should degunk this stuff sometime.
+
