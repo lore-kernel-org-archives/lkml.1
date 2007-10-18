@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764671AbXJRSF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762897AbXJRS6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764671AbXJRSF6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 14:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXJRSFv
+	id S1762897AbXJRS6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 14:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbXJRS6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 14:05:51 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28202 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756776AbXJRSFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 14:05:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,296,1188802800"; 
-   d="scan'208";a="250289621"
-Date: Thu, 18 Oct 2007 10:56:01 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [PATCH 0/3] Fix two PEIe hotplug issues
-Message-Id: <20071018105601.27d96f7e.kristen.c.accardi@intel.com>
-In-Reply-To: <20071018174925.GB4927@thunk.org>
-References: <4716CB9D.6080503@rtr.ca>
-	<4716CE79.7040201@rtr.ca>
-	<20071018091347.4b94faf8.kristen.c.accardi@intel.com>
-	<4717928D.6070703@rtr.ca>
-	<20071018100614.435fe88c.kristen.c.accardi@intel.com>
-	<20071018174925.GB4927@thunk.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Thu, 18 Oct 2007 14:58:05 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:31604 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758796AbXJRS6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 14:58:04 -0400
+Date: Thu, 18 Oct 2007 14:57:59 -0400
+From: "George G. Davis" <gdavis@mvista.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Fix hang in posix_locks_deadlock()
+Message-ID: <20071018185759.GU3785@mvista.com>
+References: <20071017185157.GC3785@mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017185157.GC3785@mvista.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 13:49:25 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+On Wed, Oct 17, 2007 at 02:51:57PM -0400, George G. Davis wrote:
+> ---
+> Not sure if this is the correct fix but it does resolve the hangs we're
+> observing in posix_locks_deadlock().
 
-> On Thu, Oct 18, 2007 at 10:06:14AM -0700, Kristen Carlson Accardi wrote:
-> > No, it actually does violate the spec.  Feel free to read it yourself.
-> > We are not supposed to do Native PCIe without first successfully executing
-> > OSC.  Period.  If you do, you are violating the spec.
-> 
-> To be fair, we have violated the spec before in order to get crappy
-> hardware or to work around crappy ACPI implementations.
-> acpi_sleep=s3_bios for example violates the spec, but yet it is the
-> only way to get certain laptops to suspend/resume correctly.  
-> 
-> The question to ask is whether violating the spec will lead to (a) a
-> potential system hang/crash, (b) data corruption, (c) physical harm to
-> the device/laptop.
-> 
-> Regards,
-> 
-> 						- Ted
-> 
+Please disregard the previous patch, it's not quite right - causes occasional
+segfaults and clearly did not retain the posix_same_owner() checks implemented
+in the original code.  Here's a new version which I believe retains the
+intent of the original code:
 
-And the answer is most definitely yes to at least a) and c) on specific
-hardware I know about.
+diff --git a/fs/locks.c b/fs/locks.c
+index 7f9a3ea..e012b27 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -702,14 +702,12 @@ static int posix_locks_deadlock(struct file_lock *caller_fl,
+ {
+ 	struct file_lock *fl;
+ 
+-next_task:
+ 	if (posix_same_owner(caller_fl, block_fl))
+ 		return 1;
+ 	list_for_each_entry(fl, &blocked_list, fl_link) {
+ 		if (posix_same_owner(fl, block_fl)) {
+-			fl = fl->fl_next;
+-			block_fl = fl;
+-			goto next_task;
++			if (posix_same_owner(caller_fl, fl))
++				return 1;
+ 		}
+ 	}
+ 	return 0;
+
+
+I'm not sure about those "fl = fl->fl_next; block_fl = fl;" statements,
+first, the order of those statements seems reversed to me.  Otherwise,
+I think the intent was to advance the "fl" for loop variable to the next
+entry in the list but it doesn't work out that way at all - the for
+loop restarts from the beginning - this is where we get into an
+infinite loop condition.  Whether the test case I posted before is
+valid or not, I reckon it shouldn't be possible for non-root Joe user
+to contrive a test case which can hang the system as we're observing
+with that test case.  The above patch fixes the hang.
+
+Comments greatly appreciated...
+
+-- 
+Regards,
+George
