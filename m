@@ -1,108 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbXJRLUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXJRLUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763776AbXJRLUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 07:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbXJRLUU
+	id S1761665AbXJRLUq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbXJRLUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 07:20:20 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41978 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750731AbXJRLUR (ORCPT
+	Thu, 18 Oct 2007 07:20:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:2636 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754970AbXJRLUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 18 Oct 2007 07:20:17 -0400
-Message-ID: <47174069.9000108@jp.fujitsu.com>
-Date: Thu, 18 Oct 2007 20:15:53 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=Ut3nlp4/XmcO1nyef1Hb6mM6AvnXYqrdaAqmDAqxH0Hhzk+7gDGBW2QhEUZouLEUgUiWo+Es5S/aFPRj37rK71LTB/2nqS3SmPSMsOabpRaw3hTTHzzrFSUmjMPajESgmelOJ0DuDA219KEhVLdQIwzwPIr5lJm7s8VRz6AvMBY=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@steeleye.com>
+Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+Date: Thu, 18 Oct 2007 12:19:34 +0100
+User-Agent: KMail/1.9.1
+Cc: Gabriel C <nix.or.die@googlemail.com>, Hannes Reinecke <hare@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200710141558.27156.vda.linux@googlemail.com> <47125633.3030404@googlemail.com> <471370C4.8000803@googlemail.com>
+In-Reply-To: <471370C4.8000803@googlemail.com>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-Cc: kristen.c.accardi@intel.com, greg@kroah.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [Pcihpd-discuss] [PATCH 1/3] pciehp: hotplug: deal with	pre-inserted
- ExpressCards
-References: <4716CB9D.6080503@rtr.ca> <4716D3C0.20808@rtr.ca>
-In-Reply-To: <4716D3C0.20808@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200710181219.34951.vda.linux@googlemail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+Hi Andrew, James,
 
-I still don't understand what the problems is very much. Could
-you give me answers against the following questions?
-
-  (1) Did you try "echo 1 > /sys/bus/pci/slots/XXX/power"?
-      (XXX is the slot number to which your card had been inserted)
-  (2) If the answer against (1) is yes, did "echo 1 > ..." work?
-  (3) If the answer against (1) is no, could you try that?
-  (4) If the "echo 1 > ..." works, does it solve your problem?
-  (5) If the "echo 1 > ..." doesn't work, could you give me the
-      output of "cat /sys/bus/pci/slots/XXX/*"?
-  (6) I think your slot is surprise removable. Is it correct?
-
-Thanks,
-Kenji Kaneshige
-
-
-> (repost to conform with akpm's subject line conventions)
+On Monday 15 October 2007 14:53, Gabriel C wrote:
+> >> Compile tested and applies cleanly to 2.6.23.
+> >> I don't have this hardware anymore and cannot run test these patches.
+> > 
+> > I can test these patches on an aic7892 controller later on today if you want.
 > 
-> One of three patches to fix PCIe Hotplug so that it works with ExpressCard slots
-> on Dell notebooks (and others?) in conjunction with modparam of pciehp_force=1.
+> Works fine for me tested on :
 > 
-> Fix pciehp_probe() to deal with ExpressCard cards
-> that were inserted prior to the driver being loaded.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> ---
-> --- a/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-17 22:30:19.000000000 -0400
-> +++ b/drivers/pci/hotplug/pciehp_ctrl.c	2007-10-17 22:29:59.000000000 -0400
-> @@ -37,7 +37,6 @@
->  #include "pciehp.h"
->  
->  static void interrupt_event_handler(struct work_struct *work);
-> -static int pciehp_enable_slot(struct slot *p_slot);
->  static int pciehp_disable_slot(struct slot *p_slot);
->  
->  static int queue_interrupt_event(struct slot *p_slot, u32 event_type)
-> --- git12/drivers/pci/hotplug/pciehp.h	2007-10-17 22:30:19.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp.h	2007-10-17 22:29:59.000000000 -0400
-> @@ -161,6 +161,7 @@
->  extern int pciehp_unconfigure_device(struct slot *p_slot);
->  extern void pciehp_queue_pushbutton_work(struct work_struct *work);
->  int pcie_init(struct controller *ctrl, struct pcie_device *dev);
-> +int pciehp_enable_slot(struct slot *p_slot);
->  
->  static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
->  {
-> --- git12/drivers/pci/hotplug/pciehp_core.c	2007-10-17 22:30:19.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_core.c	2007-10-17 22:36:06.000000000 -0400
-> @@ -471,6 +471,11 @@
->  	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
->  
->  	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
-> +	if (value) {
-> +		rc = pciehp_enable_slot(t_slot);
-> +		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
-> +			value = 0;
-> +	}
->  	if ((POWER_CTRL(ctrl->ctrlcap)) && !value) {
->  		rc = t_slot->hpc_ops->power_off_slot(t_slot); /* Power off slot if not occupied*/
->  		if (rc)
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >> http://get.splunk.com/
-> _______________________________________________
-> Pcihpd-discuss mailing list
-> Pcihpd-discuss@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/pcihpd-discuss
-> 
-> 
+> 03:0e.0 SCSI storage controller [0100]: Adaptec AIC-7892P U160/m [9005:008f] (rev 02)
 
+I hope this is enough for these patches to be accepted.
 
+If it is not, please let me know what do I need to do more.
+--
+vda
