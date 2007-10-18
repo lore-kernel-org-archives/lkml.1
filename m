@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762146AbXJRHKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXJRHKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762146AbXJRHKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 03:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXJRHKI
+	id S1762726AbXJRHKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 03:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbXJRHKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 03:10:08 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15974 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbXJRHKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 03:10:06 -0400
-Date: Thu, 18 Oct 2007 09:09:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-Message-ID: <20071018070930.GE5063@kernel.dk>
-References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org> <20071018080048O.fujita.tomonori@lab.ntt.co.jp> <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org> <20071017.181907.63126798.davem@davemloft.net> <alpine.LFD.0.999.0710171834001.26902@woody.linux-foundation.org> <4716D6B1.8010309@rtr.ca> <alpine.LFD.0.999.0710172100420.26902@woody.linux-foundation.org> <4716EE37.9010701@rtr.ca> <4716F061.50103@rtr.ca> <4716F2FC.70400@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4716F2FC.70400@garzik.org>
+	Thu, 18 Oct 2007 03:10:33 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:38575 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762228AbXJRHKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 03:10:31 -0400
+Subject: Re: + reiserfs-fix-up-lockdep-warnings.patch added to -mm tree
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: akpm@linux-foundation.org
+Cc: jeffm@suse.com, hch@lst.de, mason@suse.com, vs@namesys.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200710172211.l9HMBnCr010855@imap1.linux-foundation.org>
+References: <200710172211.l9HMBnCr010855@imap1.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dBFNV3VczgtiShL98nDu"
+Date: Thu, 18 Oct 2007 09:10:25 +0200
+Message-Id: <1192691425.27435.159.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Jeff Garzik wrote:
-> Mark Lord wrote:
->> Mark Lord wrote:
->>> Linus Torvalds wrote:
->>>>
->>>> On Wed, 17 Oct 2007, Mark Lord wrote:
->>>>> It would be good to have something soon-ish.
->>>>> This "dead at boot time" issue is impacting the general ability to test
->>>>> patches against latest -git in time for the current merge window.
->>>>
->>>> In the meantime, does the patch I sent out help people?
->>>
->>> Your patch from this posting http://lkml.org/lkml/2007/10/17/285
->>> does not seem to make much difference here.
->>>
->>> It still crashes at exactly the same place.
->> However, Jens's patch from that same thread:
->>     http://lkml.org/lkml/2007/10/17/269
->> ..allowed me to boot and post this followup message from -git12
->> Jeff: try that one.
->
-> That's already in my upstream kernel, here.  commits
-> ba951841ceb7fa5b06ad48caa5270cc2ae17941e and 
-> a3bec5c5aea0da263111c4d8f8eabc1f8560d7bf.
->
-> sata_mv and sata_nv still reliably poop themselves here, whereas its rock 
-> solid with 2.6.23.1.  Sounds like different issues from yours, as I see a 
-> stream of SATA errors on the bad kernels, errors which are often a symptom 
-> of something whacked in the DMA engine (misprogramming causes the silicon 
-> to generate bogus FIS's, which the device then chokes on)
 
-Do you know if this poop involves the segment padding that sometimes
-goes on in libata?
+--=-dBFNV3VczgtiShL98nDu
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Jens Axboe
+On Wed, 2007-10-17 at 15:11 -0700, akpm@linux-foundation.org wrote:
+
+> Subject: reiserfs: fix up lockdep warnings
+> From: Jeff Mahoney <jeffm@suse.com>
+>=20
+> Add I_MUTEX_XATTR annotations to the inode locking in the reiserfs xattr =
+code.
+>=20
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Chris Mason <mason@suse.com>
+> Cc: "Vladimir V. Saveliev" <vs@namesys.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Yep looks good,
+
+want me to push this through the lockdep tree, or will you forward it?
+
+In which case:
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>=20
+>  fs/reiserfs/xattr.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>=20
+> diff -puN fs/reiserfs/xattr.c~reiserfs-fix-up-lockdep-warnings fs/reiserf=
+s/xattr.c
+> --- a/fs/reiserfs/xattr.c~reiserfs-fix-up-lockdep-warnings
+> +++ a/fs/reiserfs/xattr.c
+> @@ -484,7 +484,7 @@ reiserfs_xattr_set(struct inode *inode,=20
+>  	/* Resize it so we're ok to write there */
+>  	newattrs.ia_size =3D buffer_size;
+>  	newattrs.ia_valid =3D ATTR_SIZE | ATTR_CTIME;
+> -	mutex_lock(&xinode->i_mutex);
+> +	mutex_lock_nested(&xinode->i_mutex, I_MUTEX_XATTR);
+>  	err =3D notify_change(fp->f_path.dentry, &newattrs);
+>  	if (err)
+>  		goto out_filp;
+> @@ -1223,7 +1223,8 @@ int reiserfs_xattr_init(struct super_blo
+>  		if (!IS_ERR(dentry)) {
+>  			if (!(mount_flags & MS_RDONLY) && !dentry->d_inode) {
+>  				struct inode *inode =3D dentry->d_parent->d_inode;
+> -				mutex_lock(&inode->i_mutex);
+> +				mutex_lock_nested(&inode->i_mutex,
+> +				                  I_MUTEX_XATTR);
+>  				err =3D inode->i_op->mkdir(inode, dentry, 0700);
+>  				mutex_unlock(&inode->i_mutex);
+>  				if (err) {
+
+
+--=-dBFNV3VczgtiShL98nDu
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHFwbhXA2jU0ANEf4RAjNAAJ9eI2zE237nPLxACod4eBMSuROV4wCdEwDq
+4Q8juFe8tkAJITLqsP4nut8=
+=TmJv
+-----END PGP SIGNATURE-----
+
+--=-dBFNV3VczgtiShL98nDu--
 
