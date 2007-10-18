@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765557AbXJRK55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbXJRLBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765557AbXJRK55 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762147AbXJRK5k
+	id S1763735AbXJRLBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXJRLBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:57:40 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:60225 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762394AbXJRK5h (ORCPT
+	Thu, 18 Oct 2007 07:01:23 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:48501 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754973AbXJRLBW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:57:37 -0400
-Subject: Re: Inquiry data and emulated SG devices
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Mathieu Fluhr <mfluhr@nero.com>,
-       LKML <linux-kernel@vger.kernel.org>, ide <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <4716B786.80804@garzik.org>
-References: <fa.PgEHbZ0E5ogcX8bZwvrUeZB+eJs@ifi.uio.no>
-	 <4716B56A.1090501@shaw.ca>  <4716B786.80804@garzik.org>
-Content-Type: text/plain
-Date: Thu, 18 Oct 2007 06:57:35 -0400
-Message-Id: <1192705055.13229.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Thu, 18 Oct 2007 07:01:22 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [2.6 patch] USB rio500.c: fix check-after-use
+Date: Thu, 18 Oct 2007 13:01:29 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Adrian Bunk <bunk@kernel.org>, miquel@df.uba.ar, greg@kroah.com,
+       rio500-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20071018105307.GN3778@stusta.de>
+In-Reply-To: <20071018105307.GN3778@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710181301.29880.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 21:31 -0400, Jeff Garzik wrote:
-> Robert Hancock wrote:
-> > This doesn't seem a very reliable way to identify an IDE device, as all
-> > that 0 means is that the device does not claim conformance to any
-> > standard. I would think it would be legitimate for an IDE device to put
-> > a value like 5 in there as well, if it complies with SPC-4..
+Am Donnerstag 18 Oktober 2007 schrieb Adrian Bunk:
+> The Coverity checker spotted that we have already oops'ed if "dev"
+> was NULL in these places.
 > 
-> Via the this-doesnt-really-matter-but-it-should-be-noted department:
-> 
-> According to the latest on t10.org, MMC retroactively permitted SCSI 
-> version to be zero, for MMC-compliant USB and ATAPI devices.
-> 
-> 
-> > In the case of libata though, that appears to be due to this code in
-> > drivers/ata/libata-scsi.c:
-> > 
-> >     /* ATAPI devices typically report zero for their SCSI version,
-> >      * and sometimes deviate from the spec WRT response data
-> >      * format.  If SCSI version is reported as zero like normal,
-> >      * then we make the following fixups:  1) Fake MMC-5 version,
-> >      * to indicate to the Linux scsi midlayer this is a modern
-> >      * device.  2) Ensure response data format / ATAPI information
-> >      * are always correct.
-> >      */
-> >             if (buf[2] == 0) {
-> >                 buf[2] = 0x5;
-> >                 buf[3] = 0x32;
-> >             }
-> > 
-> > This technically seems to go against what the SCSI/ATA Translation (SAT)
-> > spec says regarding INQUIRY on ATAPI devices: "the SATL shall use the
-> > ATA PACKET Command feature set to pass all INQUIRY commands and
-> > parameter data to the ATAPI device without altering the INQUIRY
-> > commands or the parameter data." However, it might realistically be
-> > needed if the SCSI layer in the kernel has problems with a device
-> > indicating it supports no SCSI version..
-> 
-> The above tweak is entirely software->software communication...  as the 
-> comment you quoted notes, it's just a signal to the SCSI midlayer.
-> 
-> At the moment, the SCSI midlayer assumes any device that reports scsi 
-> version as less than 2 is forced to SCSI version 2.  Ultimately that's 
-> incorrect behavior for all ATAPI devices (and later MMC revisions).
+> Since "dev" being NULL isn't possible at these places this patch removes 
+> the NULL checks.
 
-Actually, no we don't.  SCSI level 0 means "no compliant standard
-specified".  We're quite careful if we see this not to do anything that
-might upset the device ... SCSI level 0 is a fairly usual thing to see
-on USB devices, which is why we process it differently.
+Looking good.
 
-> At the time, libata simply worked around this SCSI buglet in its own 
-> code, since that was easier than auditing all SCSI code paths to ensure 
-> new ATAPI/USB MMC logic does not break ancient devices.
-> 
-> But if someone is motivated enough to revisit this...
-
-Like I said, it should all be fixed ... if you try it.
-
-James
-
-
+	Regards
+		Oliver
