@@ -1,64 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXJRG3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762565AbXJRG3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbXJRG3L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 02:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbXJRG2x
+	id S1762565AbXJRG3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 02:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXJRG3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 02:28:53 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:35508 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756364AbXJRG2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 02:28:52 -0400
-Date: Thu, 18 Oct 2007 08:31:57 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Maciej W\. Rozycki" <macro@linux-mips.org>
-Cc: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071018063157.GA1694@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local>
+	Thu, 18 Oct 2007 02:29:15 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:57902 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761698AbXJRG3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 02:29:13 -0400
+Date: Thu, 18 Oct 2007 00:29:06 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: david@lang.hm
+Cc: "Theodore Ts'o" <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 update
+Message-ID: <20071018062906.GP8122@schatzie.adilger.int>
+Mail-Followup-To: david@lang.hm, Theodore Ts'o <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1Ii0UI-0007TW-IM@closure.thunk.org> <Pine.LNX.4.64.0710162149470.1538@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017085809.GA1658@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <Pine.LNX.4.64.0710162149470.1538@asgard.lang.hm>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 17, 2007 at 10:58:09AM +0200, Jarek Poplawski wrote:
-...
-> 8) phy_stop_interrupts(): I'm not sure this additional call from
-> DEBUG_SHIRQ should be so dangerous, eg.:
+On Oct 16, 2007  21:51 -0700, david@lang.hm wrote:
+> On Wed, 17 Oct 2007, Theodore Ts'o wrote:
+> >It has a number random cleanups and bug fixes, and two new features.
+> >The first is uninitialized block groups, which allows fast mke2fs
+> >operations plus as well as speeding up e2fsck by allowing it to skip
+> >parts of the inode tables that haven't been used yet.
 > 
-> 	/*
-> 	 * status == PHY_HALTED &&
-> 	 * interrupts are stopped after phy_stop()
-> 	 */
-> 	if (cancel_work_sync(...))
-> 		enable_irq();
-> 
-> 	free_irq(...);
-> 	/*
-> 	 * possible schedule_work() from DEBUG_SHIRQ only,
-> 	 * but proper check for PHY_HALTED is done;
-> 	 * so, let's flush after this too:
-> 	 */
-> 	cancel_work_sync();
+> nice feature, is there any work on a tool to go through a well-used 
+> filesystem and mark unused block groups as uninitialized? (I would guess 
+> that such a tool may want to move files to make this so)
 
-After rethinking, it looks like this last cancel should be useless.
-So, if phy_interrupt() schedules only if !PHY_HALTED and phy_change()
-does enable_irq() with no exeptions, it seems phy_interrupt() even
-without lock must see PHY_HALTED state before this free_irq() with
-possible DEBUG_SHIRQ call, then maybe only this safety:
+Yes, just set the feature flag via tune2fs and then run e2fsck on it.
+The second e2fsck shown below is just a demonstration of the speedup.
 
-	WARN_ON(work_pending(&phydev->phy_queue));
+    # tune2fs -O uninit_groups /dev/foo
+    tune2fs 1.39.cfs9 (7-Apr-2007)
+
+    Please run e2fsck on the filesystem.
+
+    # time e2fsck -fy /dev/foo
+    e2fsck 1.39.cfs9 (7-Apr-2007)
+    Group descriptor 0 checksum is invalid.  Fix? yes
+
+    {repeats for all groups}
+
+    Pass 1: Checking inodes, blocks, and sizes
+    Pass 2: Checking directory structure
+    Pass 3: Checking directory connectivity
+    Pass 4: Checking reference counts
+    Pass 5: Checking group summary information
+    lustre-OST0000: 9099/1640160 files (0.4% non-contiguous), 221996/6554520
+    blocks
+
+    real    0m17.273s
+    user    0m4.930s
+    sys     0m1.749s
+
+    # time e2fsck -fy /dev/hda3
+    e2fsck 1.39.cfs9 (7-Apr-2007)
+    Pass 1: Checking inodes, blocks, and sizes
+    Pass 2: Checking directory structure
+    Pass 3: Checking directory connectivity
+    Pass 4: Checking reference counts
+    Pass 5: Checking group summary information
+    lustre-OST0000: 9099/1640160 files (0.4% non-contiguous), 221996/6554520
+    blocks
+
+    real    0m2.412s
+    user    0m0.604s
+    sys     0m0.077s
 
 
-Btw, I've read this was considered and not liked, but IMHO, if this
-really has to be like this, creating phy's own workqueue seems to be
-resonable, at the very least to reduce latencies to other users of
-this irq.
+The caveats are:
+(a) this is a read-only feature, so you can't mount such a filesystem r/w
+    on an older kernel.  You can disable it with "tune2fs -O ^uninit_groups"
+    and run a full e2fsck on it again.
+(b) I don't think there is an official e2fsprogs release with support for this
+    feature yet (it's in the pipe, however).
+(c) The actual speedup depends on how full the filesystem is, but since ext*
+    usually has way too many inodes, it is generally pretty good.
 
-Jarek P.
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
