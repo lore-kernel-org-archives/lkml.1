@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765502AbXJRWQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762364AbXJRWQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765502AbXJRWQa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbXJRWQX
+	id S1762364AbXJRWQw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763545AbXJRWQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:16:23 -0400
-Received: from www.tglx.de ([62.245.132.106]:40701 "EHLO www.tglx.de"
+	Thu, 18 Oct 2007 18:16:42 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:36647 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757135AbXJRWQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:16:22 -0400
-Date: Fri, 19 Oct 2007 00:15:47 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Samuel Ortiz <sameo@openedhand.com>, linux-kernel@vger.kernel.org,
-       Paul Sokolovsky <pmiscml@gmail.com>, Ben Dooks <ben@trinity.fluff.org>
-Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
-In-Reply-To: <20071018150544.6852d5c9.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0710190013420.22770@localhost.localdomain>
-References: <20071018091239.GA11360@caravaggio> <20071018150544.6852d5c9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1760323AbXJRWQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:16:41 -0400
+Date: Fri, 19 Oct 2007 00:18:13 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Bernhard Walle <bwalle@suse.de>,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       vgoyal@in.ibm.com
+Subject: Re: [patch 1/3] Add BSS to resource tree
+Message-ID: <20071018221813.GA23801@uranus.ravnborg.org>
+References: <20071018111535.356215664@strauss.suse.de> <20071018111535.883533731@strauss.suse.de> <20071018142642.5b3f6ba4.akpm@linux-foundation.org> <20071018214836.GA3459@bingen.suse.de> <20071018215827.GB23708@uranus.ravnborg.org> <20071018220048.GB3459@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018220048.GB3459@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007, Andrew Morton wrote:
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/version.h>
-> > +#include <linux/irq.h>
+On Fri, Oct 19, 2007 at 12:00:48AM +0200, Andi Kleen wrote:
+> On Thu, Oct 18, 2007 at 11:58:27PM +0200, Sam Ravnborg wrote:
+> > On Thu, Oct 18, 2007 at 11:48:37PM +0200, Andi Kleen wrote:
+> > > > > +extern char _text[], _end[], _etext[], _edata[], _bss[];
+> > > > 
+> > > > These should be in a header file.
+> > > 
+> > > Normally the "no externs in .c" rule doesn't apply to assembler or linker 
+> > > script defined labels. That's because the point of the header file is to 
+> > > type check them, but there is nothing to type check here.
+> > 
+> > For linker generated symbols we have sections.h for this purpose.
+> > The above symbols are all available if we do an:
+> > #include <asm/sections.h>
+> > 
+> > This is the right fix in this case.
 > 
-> Please see the large comment at the top of linux/irq.h.  I believe this
-> driver will fial to compile on at least arm.
-> 
-> We really should fix this.
+> The problem is that they're often the wrong type here. E.g. wrong signedness 
+> etc. I ran into problems in the past where using this required ugly casts.
 
-drivers are fine with: #include <linux/interrupt.h>
+But then we should fix them instead of working around the problem - no?
 
-If they need linux/irq.h, then they do probably something really
-nasty.
+Grepping for _text shows that there are plenty of different ways to declare
+that symbol extern - this does not look correct.
 
-   	tglx
+And I recall that extern char sym[] is considered correct by binutils 
+people - but I'm not 100% sure and google did not give me an appropriate hit.
+
+	Sam
