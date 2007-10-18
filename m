@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbXJRT23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934426AbXJRT30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766016AbXJRT23 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761665AbXJRT2I
+	id S934426AbXJRT30 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbXJRT3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:28:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48986 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759116AbXJRT2G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:28:06 -0400
-Date: Thu, 18 Oct 2007 12:27:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
-	devices
-Message-ID: <20071018192741.GA18786@kroah.com>
-References: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
+	Thu, 18 Oct 2007 15:29:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51093 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756011AbXJRT3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:29:16 -0400
+Date: Thu, 18 Oct 2007 21:28:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
+Subject: Re: libata crash
+Message-ID: <20071018192839.GA17247@elte.hu>
+References: <20071018164745.GD10674@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071018164745.GD10674@kernel.dk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 03:23:49PM -0400, Alan Stern wrote:
-> This patch (as1004) fixes a refcounting bug in the development version
-> of the block-device core.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> ---
-> 
-> Kay, you have got to start testing your patches better!  Finding and
-> fixing refcount errors is _not_ one of my favorite ways to pass the
-> time.  For example, you could see what happens when you insert and
-> unplug a USB flash disk a few times.
-> 
-> Greg, you'll probably want to just fold this in with Kay's 
-> block-device.patch.
-> 
-> Alan Stern
-> 
-> 
-> Index: usb-2.6/fs/partitions/check.c
-> ===================================================================
-> --- usb-2.6.orig/fs/partitions/check.c
-> +++ usb-2.6/fs/partitions/check.c
-> @@ -516,5 +516,4 @@ void del_gendisk(struct gendisk *disk)
->  	sysfs_remove_link(&block_depr, disk->dev.bus_id);
->  #endif
->  	device_del(&disk->dev);
-> -	put_device(&disk->dev);
->  }
 
-Are we sure this is correct?  Kay and I spent a lot of time (well, Kay
-did all the work) a few weeks ago trying to track down a bug in this
-area, and this was the solution from what I remember.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Kay, thoughts?
+> Hi Ingo,
+> 
+> Can you try this rolled up patch against current -git and see if it 
+> works for you?
 
-thanks,
+update: booted up a couple of times with your patch (with 
+DEBUG_PAGEALLOC enabled) and it's working all fine, no crashes. So i 
+think you nailed it!
 
-greg k-h
+	Ingo
