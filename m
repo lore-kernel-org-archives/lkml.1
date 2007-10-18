@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbXJRUCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760330AbXJRUIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887AbXJRUCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXJRUC2
+	id S1760330AbXJRUIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXJRUIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:02:28 -0400
-Received: from il.qumranet.com ([82.166.9.18]:47302 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757484AbXJRUC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:02:27 -0400
-Message-ID: <4717BBD0.7070504@qumranet.com>
-Date: Thu, 18 Oct 2007 22:02:24 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 18 Oct 2007 16:08:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54745 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750911AbXJRUIO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:08:14 -0400
+Date: Thu, 18 Oct 2007 16:08:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
+ devices
+In-Reply-To: <1192735661.2271.2.camel@lov.site>
+Message-ID: <Pine.LNX.4.44L0.0710181549040.2779-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu> <20071018192521.GC21136@shadowen.org> <20071018193929.GA22031@elte.hu>
-In-Reply-To: <20071018193929.GA22031@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 18 Oct 2007 22:02:24 +0200 (IST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andy Whitcroft <apw@shadowen.org> wrote:
->
->   
->>> it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
->>> wants to make any noise about such constructs it should warn about 
->>> the _lack_ of curly braces in every multi-line condition block 
->>> _except_ the only safe single-line statement:
->>>
->>> 	if (x)
->>> 		y();
->>>       
->> Indeed.  We should probabally do more on the indentation checks in
->> general.  The current direct check for:
->>
->> 	if (foo);
->> 		bar();
->>
->> Could probabally be generalised to look for this kind of error:
->>
->> 	if (foo)
->> 		bar();
->> 		baz();
->> 	one();
->>     
->
-> detecting that would be awesome - it's often the sign of a real bug 
-> because the intent is often to have bar() and baz() in the conditional 
-> block.
->
->   
+On Thu, 18 Oct 2007, Kay Sievers wrote:
 
-This is more useful operating on an entire file, so the script can see
-all the context.
+> On Thu, 2007-10-18 at 15:23 -0400, Alan Stern wrote:
+> > This patch (as1004) fixes a refcounting bug in the development version
+> > of the block-device core.
+> > 
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> > 
+> > ---
+> > 
+> > Kay, you have got to start testing your patches better!
+> 
+> That leaves references around for SCSI target devices. There must be a
+> bug somewhere else, if the patch isn't correct.
+> 
+> > Finding and
+> > fixing refcount errors is _not_ one of my favorite ways to pass the
+> > time.  For example, you could see what happens when you insert and
+> > unplug a USB flash disk a few times.
+> 
+> What do you see with the original version?
 
-A 'gcc -Windentation-contradicts-codeflow -Werror' would be nice.
+Note that a USB drive is treated as a SCSI device.
 
+With the original code, I see the following sequence of events when 
+add_disk() is first called.  Values in parentheses are 
+atomic_read(disk->dev.kobj.kref.refcount) after each stage runs:
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+	Entry to add_disk		(1)
+	Call to register_disk
+	device_add			(3)
+	CONFIG_SYSFS_DEPRECATED is not set
+	Call disk_sysfs_add_subdirs
+	add disk->holder_dir		(4)
+	add disk->slave_dir		(5)
+	Return to register_disk
+	get_capacity			(5)
+	bdget_disk			(5)
+	blkdev_get (partitions)		(8)
+	blkdev_put			(7)
+	Return to add_disk
+	blk_register_queue		(9)
+
+You can see how many references each stage takes.  Now here's the
+equivalent list for del_gendisk():
+
+	Entry to del_gendisk		(9)
+	invalidate_ and delete_partition loop	(7)
+	invalidate_partition 0		(7)
+	Call unlink_gendisk
+	blk_unregister_queue		(5)
+	Return to del_gendisk
+	unregister disk->holder_dir	(4)
+	unregister disk->slave_dir	(3)
+	CONFIG_SYSFS_DEPRECATED is not set
+	device_del			(1)
+	put_device			(0) -- oops!
+
+Matching things up we have:
+
+	device_add/device_del		2 refs
+	reg/unreg subdirs		2 refs
+	subpartitions			2 refs
+	reg/unreg block queue		2 refs
+
+This accounts for everything in del_gendisk except the final
+put_device.  Evidently it doesn't belong there.  There's no matching 
+get_device in add_disk or register_disk.
+
+Alan Stern
 
