@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765014AbXJRWZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933723AbXJRWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765014AbXJRWZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXJRWZG
+	id S933723AbXJRWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbXJRWZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:25:06 -0400
-Received: from xenotime.net ([66.160.160.81]:52612 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753668AbXJRWZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:25:04 -0400
-Date: Thu, 18 Oct 2007 15:25:02 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-Message-Id: <20071018152502.b2f3a105.rdunlap@xenotime.net>
-In-Reply-To: <4717C8CD.9010300@garzik.org>
-References: <20071015182118.GA4459@shadowen.org>
-	<200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu>
-	<20071017163916.GO21136@shadowen.org>
-	<20071018111352.GA17039@elte.hu>
-	<20071018192521.GC21136@shadowen.org>
-	<20071018193929.GA22031@elte.hu>
-	<4717BBD0.7070504@qumranet.com>
-	<20071018205147.GA1382@elte.hu>
-	<4717C8CD.9010300@garzik.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 18:25:45 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:56684 "EHLO
+	mail-02.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755979AbXJRWZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 18:25:44 -0400
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>
+Subject: [PATCH 5/5] Make wait_on_retry_sync_kiocb killable
+Date: Thu, 18 Oct 2007 18:26:02 -0400
+Message-Id: <11927463623950-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11927463623428-git-send-email-matthew@wil.cx>
+References: <11927463623428-git-send-email-matthew@wil.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 16:57:49 -0400 Jeff Garzik wrote:
+Use TASK_KILLABLE to allow wait_on_retry_sync_kiocb to return -EINTR.
+All callers then check the return value and break out of their loops.
 
-> Ingo Molnar wrote:
-> > there's "checkpatch --file" for complete files, so it can see the full 
-> > context if the user passes it in.
-> 
-> This is new, I guess?
-> 
-> [jgarzik@pretzel linux-2.6]$  scripts/checkpatch.pl --file 
-> drivers/ata/libata-eh.c
-> Unknown option: file
-> 
-> Such an option would be quite useful, but does not appear in upstream.
-> 
-> Also, upstream lacks support for "-h" and "--help" so you get to guess 
-> at the options.
-
-Yep.
-
-Andy has sent latest to akpm, so it could be pushed to Linus as well.
-
-and you can also get latest at
-http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/
-
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
 ---
-~Randy
+ fs/read_write.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 124693e..3196a3b 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -218,14 +218,15 @@ Einval:
+ 	return -EINVAL;
+ }
+ 
+-static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
++static int wait_on_retry_sync_kiocb(struct kiocb *iocb)
+ {
+-	set_current_state(TASK_UNINTERRUPTIBLE);
++	set_current_state(TASK_KILLABLE);
+ 	if (!kiocbIsKicked(iocb))
+ 		schedule();
+ 	else
+ 		kiocbClearKicked(iocb);
+ 	__set_current_state(TASK_RUNNING);
++	return fatal_signal_pending(current) ? -EINTR : 0;
+ }
+ 
+ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+@@ -242,7 +243,9 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
+ 		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+ 		if (ret != -EIOCBRETRY)
+ 			break;
+-		wait_on_retry_sync_kiocb(&kiocb);
++		ret = wait_on_retry_sync_kiocb(&kiocb);
++		if (ret)
++			break;
+ 	}
+ 
+ 	if (-EIOCBQUEUED == ret)
+@@ -300,7 +303,9 @@ ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, lof
+ 		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+ 		if (ret != -EIOCBRETRY)
+ 			break;
+-		wait_on_retry_sync_kiocb(&kiocb);
++		ret = wait_on_retry_sync_kiocb(&kiocb);
++		if (ret)
++			break;
+ 	}
+ 
+ 	if (-EIOCBQUEUED == ret)
+@@ -466,7 +471,9 @@ ssize_t do_sync_readv_writev(struct file *filp, const struct iovec *iov,
+ 		ret = fn(&kiocb, iov, nr_segs, kiocb.ki_pos);
+ 		if (ret != -EIOCBRETRY)
+ 			break;
+-		wait_on_retry_sync_kiocb(&kiocb);
++		ret = wait_on_retry_sync_kiocb(&kiocb);
++		if (ret)
++			break;
+ 	}
+ 
+ 	if (ret == -EIOCBQUEUED)
+-- 
+1.4.4.2
+
