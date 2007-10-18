@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXJRRKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933507AbXJRRKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700AbXJRRKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXJRRKV
+	id S933507AbXJRRKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764183AbXJRRKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:10:21 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58604 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755586AbXJRRKU (ORCPT
+	Thu, 18 Oct 2007 13:10:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45429 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932945AbXJRRKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:10:20 -0400
-Date: Thu, 18 Oct 2007 19:10:19 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: jaroslav.sykora@gmail.com
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/5] Shadow directories
-In-Reply-To: <200710181907.58643.jara@sin.cvut.cz>
-Message-ID: <Pine.LNX.4.64.0710181908240.22233@fbirervta.pbzchgretzou.qr>
-References: <200710181721.09201.jara@sin.cvut.cz>
- <Pine.LNX.4.64.0710181802300.2936@fbirervta.pbzchgretzou.qr>
- <200710181907.58643.jara@sin.cvut.cz>
+	Thu, 18 Oct 2007 13:10:38 -0400
+Date: Thu, 18 Oct 2007 19:10:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Yi Yang <yang.y.yi@gmail.com>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       mj@atrey.karlin.mff.cuni.cz, crutcher+kernel@datastacks.com,
+       schwab@suse.de
+Subject: Re: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef
+	key, try 2
+Message-ID: <20071018171041.GA4510@elf.ucw.cz>
+References: <471628D2.8010903@gmail.com> <18386.1192651748@turing-police.cc.vt.edu> <47176EED.1050801@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47176EED.1050801@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On Oct 18 2007 19:07, Jaroslav Sykora wrote:
->> On Oct 18 2007 17:21, Jaroslav Sykora wrote:
->> >Hello,
->> >
->> >Let's say we have an archive file "hello.zip" with a hello world program source
->> >code. We want to do this:
->> >	cat hello.zip^/hello.c
->> >	gcc hello.zip^/hello.c -o hello
->> >	etc..
->> >
->> >The '^' is an escape character and it tells the computer to treat the file as a directory.
->> 
->> But what you could do is: write a FUSE fs that mirrors the lower content
->> (lofs/fuseloop/however it was named) and expands .zip files as
->> directories are readdir'ed or the zip files stat'ed. That saves us
->> from cluttering up the Linux VFS with such stuff.
+>> 1) He has been told "recreate the problem, hit alt-sysreq-cokebottle,
+>> and send me the results".  He has a mission, and the only feedback he
+>> needs is (a) that he hit cokebottle and not pepsibottle, and (b) the
+>> resulting output.
+>>
+>> 2) He's already read the file in Documentation/ and just needs a reminder.
+>> In this case, the fact it's only 2 or 3 lines and doesn't scroll other 
+>> stuff
+>> out of sight is more important.
+>>   
+> Screen scroll isn't a problem.
 >
->Yes, that's exactly what RheaVFS and AVFS do. Except that they both use an escape
->character because:
->1. without it some programs may break [ http://lwn.net/Articles/100148/ ]
->2. it's very useful to pass additional parameters after the escape char to the server.
+> "SysRq : HELP : loglevel0-8 reBoot Crashdump tErm Full kIll saK showMem
+> Nice powerOff showPc show-all-timers(Q) unRaw Sync showTasks Unmount
+> shoW-blocked-tasks"
 >
->We can start VFS servers (mentioned above) and chroot the whole user session into
->the mount directory of the server. It works but it's very slow, practically unusable.
+> The above help information isn't very user-friendly.
 
-Sounds like a program bug, since NTFS-3G is proof of concept that FUSE
-can be fast.
+Seems perfectly reasonably to me... parhaps "Full" should be replaced
+with "Force-oom"...
 
->If anybody can think of any other solution of the "redirector
->problem", possibly even non-kernel based one, let me know and I'd be
->glad :-)
+>>> In addition, that funtion has a big loop with another big loop
+>>> embedded which is very inefficient, it is intended to skip some hot
+>>>     
+>>
+>> You're optimizing code that hopefully never gets executed, and even if
+>> it does, you have the optimization *backwards*.  If you're worried about
+>> the efficiency, trim it down to output 3 lines - do you realize how many
+>> instructions it takes in the VGA and fb drivers to actually *output* all
+>> these lines? (Seriously - I had a 1.6Ghz P4 laptop, where scrolling the
+>> screen with vga=791 actually ran so slowly that it horqued up the timer
+>> initialization code. *That* was a fun bug to figure out..)
+>>   
+> To remove a bad loop is just a plus fix. That loop is really
+> inefficient.
+
+No, it is not a fix and no, it is not inefficient.
+
+>>> +static char __read_mostly sysrq_hot_key_table[36] = {
+>>> +	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+>>> +	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+>>> +	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+>>> +	'u', 'v', 'w', 'x', 'y', 'z'
+
+This has to go.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
