@@ -1,79 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbXJRBTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXJRBXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763004AbXJRBTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 21:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXJRBTK
+	id S1762832AbXJRBXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 21:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXJRBXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 21:19:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40226
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754358AbXJRBTJ (ORCPT
+	Wed, 17 Oct 2007 21:23:00 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9521 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbXJRBW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 21:19:09 -0400
-Date: Wed, 17 Oct 2007 18:19:07 -0700 (PDT)
-Message-Id: <20071017.181907.63126798.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710171342550.26902@woody.linux-foundation.org>
-	<20071018080048O.fujita.tomonori@lab.ntt.co.jp>
-	<alpine.LFD.0.999.0710171801000.26902@woody.linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Oct 2007 21:22:59 -0400
+Date: Wed, 17 Oct 2007 19:22:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Inquiry data and emulated SG devices
+In-reply-to: <fa.PgEHbZ0E5ogcX8bZwvrUeZB+eJs@ifi.uio.no>
+To: Mathieu Fluhr <mfluhr@nero.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ide <linux-ide@vger.kernel.org>
+Message-id: <4716B56A.1090501@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.PgEHbZ0E5ogcX8bZwvrUeZB+eJs@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 17 Oct 2007 18:07:19 -0700 (PDT)
+(cc-ing linux-ide)
 
-> sg_next() - as it stands now - never actually looks at the SG that its 
-> argument points to: it explicitly *only* looks at the next one.
+Mathieu Fluhr wrote:
+> Hello all,
 > 
-> That's the bug. If sg_next() looked at the actual *current* sg entry, we 
-> wouldn't have any issues to begin with, and that's what I'm arguing we 
-> should do in the longer run (where "longer run" is defined as "when Jens 
-> does it asap").
+> 
+> First of all, let me introduce myself a little bit. I am the responsable
+> for the development of the Nero Linux burning application. So I have
+> access to all the source code of the application.
+> 
+> 
+> Now let's go with the story: It seems that there is a slight problem in
+> the libata (and also the new pata_xxx) interfaces with the data returned
+> by the INQUIRY cmd since every S-ATA or IDE device is assumed to be a
+> SCSI dev.
+> 
+> Normally, the IDE devices (physical type) can be differentied with the
+> format field of the inquiry data, i.e. the last bytes (ANSI version) are
+> set to 0 -> This is done and works great with USB external devices for
+> example.
+> 
+> 
+> The thing is that with S-ATA/IDE devices when using the libata/pata
+> driver, the version field is (always?) set to 5, as any _real_ SCSI
+> device, and thus the physical device type cannot be checked anymore.
 
-What the thing really wants is some kind of indication of state,
-without having to bloat up the scatterlist structure.
+This doesn't seem a very reliable way to identify an IDE device, as all
+that 0 means is that the device does not claim conformance to any
+standard. I would think it would be legitimate for an IDE device to put
+a value like 5 in there as well, if it complies with SPC-4..
 
-I believe that we have enough of a limited set of accessors to
-sg->page that we can more aggressively encode things in the lower
-bits.
+In the case of libata though, that appears to be due to this code in
+drivers/ata/libata-scsi.c:
 
-I'm thinking of encoding the low two bits of sg->page as
-follows:
+	/* ATAPI devices typically report zero for their SCSI version,
+	 * and sometimes deviate from the spec WRT response data
+	 * format.  If SCSI version is reported as zero like normal,
+	 * then we make the following fixups:  1) Fake MMC-5 version,
+	 * to indicate to the Linux scsi midlayer this is a modern
+	 * device.  2) Ensure response data format / ATAPI information
+	 * are always correct.
+	 */
+			if (buf[2] == 0) {
+				buf[2] = 0x5;
+				buf[3] = 0x32;
+			}
 
-1) bits == 0
+This technically seems to go against what the SCSI/ATA Translation (SAT)
+spec says regarding INQUIRY on ATAPI devices: "the SATL shall use the
+ATA PACKET Command feature set to pass all INQUIRY commands and
+parameter data to the ATAPI device without altering the INQUIRY
+commands or the parameter data." However, it might realistically be
+needed if the SCSI layer in the kernel has problems with a device
+indicating it supports no SCSI version..
 
-   then the SG list is linear and sg_next() is sg++
+> 
+> I cannot go so deep in details, but our burn engine is differentiating
+> IDE and read-good-old-SCSI devices and handles them sometimes in a
+> different way, so this differenciation is really important for us.
+> 
+>    -> How can I detect the real physical device type now?
 
-2) bits == 1
+I don't have a great answer off the top of my head..
 
-   the nest SG is an indirect chunk, sg_next() is
-   therefore something like:
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-	next = *((struct scatterlist **)(sg + 1));
 
-3) bits == 2
-
-   this is the last entry in the scatterlist, sg_next() is NULL
-
-So for the cases of ARCH_HAS_SG_CHAIN not being set (ie. back
-compatible), we can do no bit encoding in page->flags and just do
-sg_next() == sg++, as is done now.
-
-When doing SG chaining, in each non-linear chunk we have to allocate
-one more pointer past the end of the scatterlist array (instead of a
-full extra scatterlist entry for the indirect pointer encode).  Next,
-all sg->page accesses have to be guarded to clear the state bits
-out first.
-
-I don't know, maybe it would work, and would make the loop termination
-issues easier to handle properly.
