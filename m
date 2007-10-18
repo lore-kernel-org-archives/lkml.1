@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbXJTJ36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763343AbXJTJa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbXJTJ36 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 05:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbXJTJ3t
+	id S1763343AbXJTJa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 05:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXJTJ3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 05:29:49 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2146 "EHLO spitz.ucw.cz"
+	Sat, 20 Oct 2007 05:29:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2144 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752646AbXJTJ3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752707AbXJTJ3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 20 Oct 2007 05:29:48 -0400
-Date: Thu, 18 Oct 2007 19:52:02 +0000
+Date: Thu, 18 Oct 2007 20:05:31 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Laptop keyboard unusable when ACPI is active was Re: [2.6.22] i8042, ACPI, ipw2100 and issues reported by psmouse.c atkbd.c
-Message-ID: <20071018195202.GA6962@ucw.cz>
-References: <47001841.1000107@users.sourceforge.net> <470DD906.9090504@users.sourceforge.net>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression:  2.6.23-rc9 okay, 2.6.23.1 resume problems
+Message-ID: <20071018200531.GB6962@ucw.cz>
+References: <4712786B.3040009@rtr.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <470DD906.9090504@users.sourceforge.net>
+In-Reply-To: <4712786B.3040009@rtr.ca>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> legolas558@users.sourceforge.net ha scritto:
-> > Kernel: 2.6.22-r5
-> > Kernel option: i8042.nomux=1
-> I am now using kernel 2.6.22-r8 (Gentoo) and the following kernel options:
+> Since upgrading to 2.6.23.1 from 2.6.23-rc9, 
+> resume-from-RAM has been misbehaving here.
 > 
-> i8042.nomux=1 acpi=off
+> It takes much (+5-7 seconds) longer to resume 
+> *sometimes*, but not all/most of the time.
+> And sometimes I get get flashing keyboard LEDs and have 
+> to hold the power button
+> in for a full hard reset.
 > 
-> I have tried kernel 2.6.23-rc9 but the problem is still there.
+> With 2.6.23-rc8/rc9, no such troubles.
+> 
+> Difficult to reproduce, other than perhaps once a day.
+> Anybody want to fess up with a likely candidate?
 
-Try usb keyboard.
+Are there any .config differences between rc8 and .1?
 
-Are you experiencing unusually high latencies in acpi mode?
+Can you try disabling nohz?
 
-Any unusual activity on top?
-
-Try disabling lm_sensors.
-
-Try disabling acpi embedded controller.
-
-Is it smp box?
-
-Try watching keyboard interrupts. Are they lost?
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
