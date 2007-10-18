@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933950AbXJRXwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934610AbXJRXwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933950AbXJRXwR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbXJRXwE
+	id S934610AbXJRXwe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 19:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763591AbXJRXwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:52:04 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:55417 "EHLO
-	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758028AbXJRXwB (ORCPT
+	Thu, 18 Oct 2007 19:52:12 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:55750 "EHLO
+	outbound1-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763270AbXJRXwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:52:01 -0400
+	Thu, 18 Oct 2007 19:52:10 -0400
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
 X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Thu, 18 Oct 2007 13:36:29 -0600
+Date: Thu, 18 Oct 2007 13:36:54 -0600
 From: "Jordan Crouse" <jordan.crouse@amd.com>
 To: "Andres Salomon" <dilinger@queued.net>
 cc: linux-kernel@vger.kernel.org, info-linux@geode.amd.com,
        "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: GEODE: use symbolic constant in cs5536 reboot fixup
-Message-ID: <20071018193629.GA25591@cosmic.amd.com>
-References: <20071018152651.4d218be9@ephemeral>
+Subject: Re: GEODE: update GPIO API to support setting multiple GPIOs at
+ once
+Message-ID: <20071018193654.GB25591@cosmic.amd.com>
+References: <20071018152708.215c9da1@ephemeral>
 MIME-Version: 1.0
-In-Reply-To: <20071018152651.4d218be9@ephemeral>
+In-Reply-To: <20071018152708.215c9da1@ephemeral>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 18 Oct 2007 23:51:24.0981 (UTC)
- FILETIME=[CAEB9650:01C811E1]
-X-WSS-ID: 6B092E0A0602334690-01-01
+X-OriginalArrivalTime: 18 Oct 2007 23:51:24.0715 (UTC)
+ FILETIME=[CAC2FFB0:01C811E1]
+X-WSS-ID: 6B092E0A0602334689-01-01
 Content-Type: text/plain;
  charset=us-ascii
 Content-Disposition: inline
@@ -34,53 +35,155 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/10/07 15:26 -0400, Andres Salomon wrote:
-> Simple cosmetic update for the cs5536 reboot fixup; define the MSR that's used
-> for rebooting in geode.h, and use the define.
+On 18/10/07 15:27 -0400, Andres Salomon wrote:
+> The existing Geode GPIO API only allows for updating one GPIO at once.  There
+> are instances where users want to update multiple GPIOs at once.  With the
+> current API, they are given two choices; either ignore the GPIO API:
+> 
+>       outl(0xc000, gpio_base + GPIO_OUTPUT_VAL);
+>       outl(0xc000, gpio_base + GPIO_OUTPUT_ENABLE);
+> 
+> Alternatively, call each GPIO update separately:
+> 
+>       geode_gpio_set(14, GPIO_OUTPUT_VAL);
+>       geode_gpio_set(15, GPIO_OUTPUT_VAL);
+>       geode_gpio_set(14, GPIO_OUTPUT_ENABLE);
+>       geode_gpio_set(15, GPIO_OUTPUT_ENABLE);
+> 
+> Neither are desirable.  This patch changes the GPIO API to allow for setting
+> of multiple GPIOs at once; rather than being passed an integer, we pass
+> a bitmask and provide a translation function.  The above code would now
+> look like this:
+> 
+>       geode_gpio_set(geode_gpio(14)|geode_gpio(15), GPIO_OUTPUT_VAL);
+>       geode_gpio_set(geode_gpio(14)|geode_gpio(15), GPIO_OUTPUT_ENABLE);
+> 
+> Since there are no upstream users of the GPIO API yet (afaik), best to
+> change this now.  This also adds a bit of sanity checking; it is no
+> longer possible to use a GPIO above 28.
+> 
+> 
+> Note the semantics of geode_gpio_isset() have changed:
+> geode_gpio_isset(geode_gpio(3)|geode_gpio(4), ...)
+> will only return true iff both GPIOs are set. 
 > 
 > Signed-off-by: Andres Salomon <dilinger@debian.org>
 
 Acked-by: Jordan Crouse <jordan.crouse@amd.com>
 
-> diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-> index 8b30b26..1a07bbe 100644
-> --- a/arch/x86/kernel/reboot_fixups_32.c
-> +++ b/arch/x86/kernel/reboot_fixups_32.c
-> @@ -12,6 +12,7 @@
->  #include <linux/interrupt.h>
->  #include <asm/reboot_fixups.h>
->  #include <asm/msr.h>
-> +#include <asm/geode.h>
+> diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
+> index f12d8c5..9c7f7d3 100644
+> --- a/arch/x86/kernel/geode_32.c
+> +++ b/arch/x86/kernel/geode_32.c
+> @@ -1,6 +1,7 @@
+>  /*
+>   * AMD Geode southbridge support code
+>   * Copyright (C) 2006, Advanced Micro Devices, Inc.
+> + * Copyright (C) 2007, Andres Salomon <dilinger@debian.org>
+>   *
+>   * This program is free software; you can redistribute it and/or
+>   * modify it under the terms of version 2 of the GNU General Public License
+> @@ -51,45 +52,62 @@ EXPORT_SYMBOL_GPL(geode_get_dev_base);
 >  
->  static void cs5530a_warm_reset(struct pci_dev *dev)
->  {
-> @@ -24,11 +25,8 @@ static void cs5530a_warm_reset(struct pci_dev *dev)
+>  /* === GPIO API === */
 >  
->  static void cs5536_warm_reset(struct pci_dev *dev)
+> -void geode_gpio_set(unsigned int gpio, unsigned int reg)
+> +void geode_gpio_set(u32 gpio, unsigned int reg)
 >  {
-> -	/*
-> -	 * 6.6.2.12 Soft Reset (DIVIL_SOFT_RESET)
-> -	 * writing 1 to the LSB of this MSR causes a hard reset.
-> -	 */
-> -	wrmsrl(0x51400017, 1ULL);
-> +	/* writing 1 to the LSB of this MSR causes a hard reset */
-> +	wrmsrl(MSR_DIVIL_SOFT_RESET, 1ULL);
->  	udelay(50); /* shouldn't get here but be safe and spin a while */
+>  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
+>  
+>  	if (!base)
+>  		return;
+>  
+> -	if (gpio < 16)
+> -		outl(1 << gpio, base + reg);
+> -	else
+> -		outl(1 << (gpio - 16), base + 0x80 + reg);
+> +	/* low bank register */
+> +	if (gpio & 0xFFFF)
+> +		outl(gpio & 0xFFFF, base + reg);
+> +	/* high bank register */
+> +	gpio >>= 16;
+> +	if (gpio)
+> +		outl(gpio, base + 0x80 + reg);
 >  }
+>  EXPORT_SYMBOL_GPL(geode_gpio_set);
+>  
+> -void geode_gpio_clear(unsigned int gpio, unsigned int reg)
+> +void geode_gpio_clear(u32 gpio, unsigned int reg)
+>  {
+>  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
+>  
+>  	if (!base)
+>  		return;
+>  
+> -	if (gpio < 16)
+> -		outl(1 << (gpio + 16), base + reg);
+> -	else
+> -		outl(1 << gpio, base + 0x80 + reg);
+> +	/* low bank register */
+> +	if (gpio & 0xFFFF)
+> +		outl((gpio & 0xFFFF) << 16, base + reg);
+> +	/* high bank register */
+> +	gpio &= (0xFFFF << 16);
+> +	if (gpio)
+> +		outl(gpio, base + 0x80 + reg);
+>  }
+>  EXPORT_SYMBOL_GPL(geode_gpio_clear);
+>  
+> -int geode_gpio_isset(unsigned int gpio, unsigned int reg)
+> +int geode_gpio_isset(u32 gpio, unsigned int reg)
+>  {
+>  	u32 base = geode_get_dev_base(GEODE_DEV_GPIO);
+> +	u32 val;
+>  
+>  	if (!base)
+>  		return 0;
+>  
+> -	if (gpio < 16)
+> -		return (inl(base + reg) & (1 << gpio)) ? 1 : 0;
+> -	else
+> -		return (inl(base + 0x80 + reg) & (1 << (gpio - 16))) ? 1 : 0;
+> +	/* low bank register */
+> +	if (gpio & 0xFFFF) {
+> +		val = inl(base + reg) & (gpio & 0xFFFF);
+> +		if ((gpio & 0xFFFF) == val)
+> +			return 1;
+> +	}
+> +	/* high bank register */
+> +	gpio >>= 16;
+> +	if (gpio) {
+> +		val = inl(base + 0x80 + reg) & gpio;
+> +		if (gpio == val)
+> +			return 1;
+> +	}
+> +	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(geode_gpio_isset);
 >  
 > diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-> index d948988..771af33 100644
+> index d948988..593d3ec 100644
 > --- a/include/asm-x86/geode.h
 > +++ b/include/asm-x86/geode.h
-> @@ -38,6 +38,8 @@ extern int geode_get_dev_base(unsigned int dev);
->  #define MSR_LBAR_ACPI		0x5140000E
->  #define MSR_LBAR_PMS		0x5140000F
+> @@ -119,9 +119,15 @@ extern int geode_get_dev_base(unsigned int dev);
+>  #define GPIO_MAP_Z		0xE8
+>  #define GPIO_MAP_W		0xEC
 >  
-> +#define MSR_DIVIL_SOFT_RESET	0x51400017
+> -extern void geode_gpio_set(unsigned int, unsigned int);
+> -extern void geode_gpio_clear(unsigned int, unsigned int);
+> -extern int geode_gpio_isset(unsigned int, unsigned int);
+> +static inline u32 geode_gpio(unsigned int nr)
+> +{
+> +	BUG_ON(nr > 28);
+> +	return 1 << nr;
+> +}
 > +
->  #define MSR_PIC_YSEL_LOW	0x51400020
->  #define MSR_PIC_YSEL_HIGH	0x51400021
->  #define MSR_PIC_ZSEL_LOW	0x51400022
+> +extern void geode_gpio_set(u32, unsigned int);
+> +extern void geode_gpio_clear(u32, unsigned int);
+> +extern int geode_gpio_isset(u32, unsigned int);
+>  extern void geode_gpio_setup_event(unsigned int, int, int);
+>  extern void geode_gpio_set_irq(unsigned int, unsigned int);
+>  
 > 
 > 
 
