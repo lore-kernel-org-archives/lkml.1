@@ -1,66 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765634AbXJRD0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932522AbXJRD0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765634AbXJRD0F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 23:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXJRDZx
+	id S932522AbXJRD0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 23:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761590AbXJRD0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 23:25:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49368 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761388AbXJRDZw (ORCPT
+	Wed, 17 Oct 2007 23:26:24 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51061 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755373AbXJRD0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 23:25:52 -0400
-Date: Wed, 17 Oct 2007 20:20:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, sds@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, morgan@kernel.org,
-       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, kaigai@kaigai.gr.jp,
-       casey@schaufler-ca.com
-Subject: Re: [RFC] [PATCH 2/2] capabilities: implement 64-bit capabilities
-Message-Id: <20071017202014.6738cbb7.akpm@linux-foundation.org>
-In-Reply-To: <20071018025920.GA5067@vino.hallyn.com>
-References: <20071016022730.GA8925@sergelap.austin.ibm.com>
-	<20071016023100.GA10698@sergelap.austin.ibm.com>
-	<1192544299.8702.78.camel@moss-spartans.epoch.ncsc.mil>
-	<20071016214159.GB13294@sergelap.austin.ibm.com>
-	<20071017180002.33fe4986.akpm@linux-foundation.org>
-	<20071018025920.GA5067@vino.hallyn.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Oct 2007 23:26:23 -0400
+Date: Thu, 18 Oct 2007 12:25:37 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [Patch](memory hotplug) Make kmem_cache_node for SLUB on memory online to avoid panic(take 3)
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20071018122345.514F.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 21:59:20 -0500 "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-> Quoting Andrew Morton (akpm@linux-foundation.org):
-> > On Tue, 16 Oct 2007 16:41:59 -0500
-> > "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> > 
-> > > To properly test this the libcap code will need to be updated first,
-> > > which I'm looking at now...
-> > 
-> > This seems fairly significant.  I asusme that this patch won't break
-> > presently-deployed libcap?
-> 
-> It will break libcap.
+This patch fixes panic due to access NULL pointer
+of kmem_cache_node at discard_slab() after memory online.
 
-yikes, dropped!
+When memory online is called, kmem_cache_nodes are created for
+all SLUBs for new node whose memory are available.
 
->  And I'm not sure of the right way to address it.
-> So I was hoping to hear some ideas from Andrew Morgan, Chris Wright, and
-> Kaigai.
-> 
-> We can introduce new capget64() and capset64() calls, and have
-> capget() return -EINVAL or -EAGAIN if a high bit would be needed to
-> accurately get the task's capabilities.
-> 
-> Or we can require a new libcap, since capget and capset aren't
-> required for most day-to-day function anyway.
-> 
-> I guess now that I've written this out, it seems pretty clear
-> that capget64() and capget64() are the way to go.  Any objections?
+slab_mem_going_online_callback() is called to make kmem_cache_node()
+in callback of memory online event. If it (or other callbacks) fails,
+then slab_mem_offline_callback() is called for rollback.
 
-Sounds sane.  New syscalls are cheap and it's clear separation.
+In memory offline, slab_mem_going_offline_callback() is called to
+shrink all slub cache, then slab_mem_offline_callback() is called later.
+
+This patch is tested on my ia64 box.
+
+Please apply.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+
+---
+ mm/slub.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
+
+Index: current/mm/slub.c
+===================================================================
+--- current.orig/mm/slub.c	2007-10-17 21:17:53.000000000 +0900
++++ current/mm/slub.c	2007-10-17 22:23:08.000000000 +0900
+@@ -20,6 +20,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
++#include <linux/memory.h>
+ 
+ /*
+  * Lock order:
+@@ -2688,6 +2689,118 @@ int kmem_cache_shrink(struct kmem_cache 
+ }
+ EXPORT_SYMBOL(kmem_cache_shrink);
+ 
++#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
++static int slab_mem_going_offline_callback(void *arg)
++{
++	struct kmem_cache *s;
++
++	down_read(&slub_lock);
++	list_for_each_entry(s, &slab_caches, list)
++		kmem_cache_shrink(s);
++	up_read(&slub_lock);
++
++	return 0;
++}
++
++static void slab_mem_offline_callback(void *arg)
++{
++	struct kmem_cache_node *n;
++	struct kmem_cache *s;
++	struct memory_notify *marg = arg;
++	int offline_node;
++
++	offline_node = marg->status_change_nid;
++
++	/*
++	 * If the node still has available memory. we need kmem_cache_node
++	 * for it yet.
++	 */
++	if (offline_node < 0)
++		return;
++
++	down_read(&slub_lock);
++	list_for_each_entry(s, &slab_caches, list) {
++		n = get_node(s, offline_node);
++		if (n) {
++			/*
++			 * if n->nr_slabs > 0, slabs still exist on the node
++			 * that is going down. We were unable to free them,
++			 * and offline_pages() function shoudn't call this
++			 * callback. So, we must fail.
++			 */
++			BUG_ON(atomic_read(&n->nr_slabs));
++
++			s->node[offline_node] = NULL;
++			kmem_cache_free(kmalloc_caches, n);
++		}
++	}
++	up_read(&slub_lock);
++}
++
++static int slab_mem_going_online_callback(void *arg)
++{
++	struct kmem_cache_node *n;
++	struct kmem_cache *s;
++	struct memory_notify *marg = arg;
++	int nid = marg->status_change_nid;
++
++	/*
++	 * If the node's memory is already available, then kmem_cache_node is
++	 * already created. Nothing to do.
++	 */
++	if (nid < 0)
++		return 0;
++
++	/*
++	 * We are bringing a node online. No memory is availabe yet. We must
++	 * allocate a kmem_cache_node structure in order to bring the node
++	 * online.
++	 */
++	down_read(&slub_lock);
++	list_for_each_entry(s, &slab_caches, list) {
++  		/*
++		 * XXX: kmem_cache_alloc_node will fallback to other nodes
++		 *      since memory is not yet available from the node that
++		 *      is brought up.
++  		 */
++		n = kmem_cache_alloc(kmalloc_caches, GFP_KERNEL);
++		if (!n)
++			return -ENOMEM;
++		init_kmem_cache_node(n);
++		s->node[nid] = n;
++  	}
++	up_read(&slub_lock);
++
++  	return 0;
++}
++
++static int slab_memory_callback(struct notifier_block *self,
++				unsigned long action, void *arg)
++{
++	int ret = 0;
++
++	switch (action) {
++	case MEM_GOING_ONLINE:
++		ret = slab_mem_going_online_callback(arg);
++		break;
++	case MEM_GOING_OFFLINE:
++		ret = slab_mem_going_offline_callback(arg);
++		break;
++	case MEM_OFFLINE:
++	case MEM_CANCEL_ONLINE:
++		slab_mem_offline_callback(arg);
++		break;
++	case MEM_ONLINE:
++	case MEM_CANCEL_OFFLINE:
++		break;
++	}
++
++	ret = notifier_from_errno(ret);
++	return ret;
++}
++
++#endif /* CONFIG_MEMORY_HOTPLUG */
++
+ /********************************************************************
+  *			Basic setup of slabs
+  *******************************************************************/
+@@ -2709,6 +2822,8 @@ void __init kmem_cache_init(void)
+ 		sizeof(struct kmem_cache_node), GFP_KERNEL);
+ 	kmalloc_caches[0].refcount = -1;
+ 	caches++;
++
++	hotplug_memory_notifier(slab_memory_callback, 1);
+ #endif
+ 
+ 	/* Able to allocate the per node structures */
+
+-- 
+Yasunori Goto 
+
+
