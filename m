@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXJROQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933548AbXJROST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbXJROQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763970AbXJROQe
+	id S933548AbXJROST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760264AbXJROSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:16:34 -0400
-Received: from sa12.bezeqint.net ([192.115.104.27]:48558 "EHLO
-	sa12.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764522AbXJROQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:16:33 -0400
-Message-ID: <47176AB9.2070000@panasas.com>
-Date: Thu, 18 Oct 2007 16:16:25 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-References: <20071018082145.GK5063@kernel.dk> <20071018.045505.106265100.davem@davemloft.net> <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <4717587E.6090301@panasas.com> <20071018135605.GL5063@kernel.dk> <20071018140550.GO5063@kernel.dk>
-In-Reply-To: <20071018140550.GO5063@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Oct 2007 10:18:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36852 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758194AbXJROSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:18:07 -0400
+Date: Thu, 18 Oct 2007 10:17:15 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Vasily Averin <vvs@sw.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, devel@openvz.org
+Subject: Re: How Inactive may be much greather than cached?
+Message-ID: <20071018101715.13c92b6e@bree.surriel.com>
+In-Reply-To: <200710181727.01128.nickpiggin@yahoo.com.au>
+References: <4716FC04.6070107@sw.ru>
+	<200710181627.27827.nickpiggin@yahoo.com.au>
+	<471707BD.4000203@sw.ru>
+	<200710181727.01128.nickpiggin@yahoo.com.au>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct. 18, 2007, 16:05 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Thu, Oct 18 2007, Jens Axboe wrote:
->> On Thu, Oct 18 2007, Benny Halevy wrote:
->>>>  	return sg;
->>>>  }
->>>> @@ -83,6 +96,9 @@ static inline struct scatterlist *sg_last(struct scatterlist *sgl,
->>>>  		ret = sg;
->>>>  
->>>>  #endif
->>>> +#ifdef CONFIG_DEBUG_SG
->>>> +	BUG_ON(sgl[0].sg_magic != SG_MAGIC);
->>> can it also do BUG_ON(!sg_is_last(sg))?
->> That would make sense, definitely. I'll add that.
-> 
->         BUG_ON(!sg_is_last(ret));
-> 
-> it should be, not sg. That's what I merged.
-> 
-right. of course.
+On Thu, 18 Oct 2007 17:27:00 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> Some filesystems, including I believe, ext3 with data=ordered,
+> can leave orphaned pages around after they have been truncated
+> out of the pagecache. These pages get left on the LRU and vmscan
+> reclaims them pretty easily.
+
+How can the VM recognize those pages?  Are they part of
+the buffer cache, part of the page cache, or different?
+
+I think it would make sense to at least try to rotate
+those pages to the end of the LRU so kswapd can get rid
+of them quickly.
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
