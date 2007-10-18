@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXJRL6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762181AbXJRL7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765325AbXJRL6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 07:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761685AbXJRL6P
+	id S1762181AbXJRL7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762387AbXJRL7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 07:58:15 -0400
-Received: from h155.mvista.com ([63.81.120.155]:42671 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756553AbXJRL6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 07:58:13 -0400
-Message-ID: <47174A60.7030407@ru.mvista.com>
-Date: Thu, 18 Oct 2007 15:58:24 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linux IDE <linux-ide@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 0/3] ide: Fix use of paired device
-References: <1192668978.21882.719539599813.qpush@grosgo> <47174993.4010108@ru.mvista.com>
-In-Reply-To: <47174993.4010108@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 18 Oct 2007 07:59:10 -0400
+Received: from s1.mailresponder.info ([193.24.237.10]:1740 "EHLO
+	s1.mailresponder.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759258AbXJRL7I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 07:59:08 -0400
+Subject: Re: Inquiry data and emulated SG devices
+From: Mathieu Fluhr <mfluhr@nero.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       LKML <linux-kernel@vger.kernel.org>, ide <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <4717302D.4050107@garzik.org>
+References: <fa.PgEHbZ0E5ogcX8bZwvrUeZB+eJs@ifi.uio.no>
+	 <4716B56A.1090501@shaw.ca>  <4716B786.80804@garzik.org>
+	 <1192701555.3247.28.camel@de-c-l-110.nero-de.internal>
+	 <4717302D.4050107@garzik.org>
+Content-Type: text/plain
+Organization: Nero AG
+Date: Thu, 18 Oct 2007 13:57:30 +0200
+Message-Id: <1192708650.3266.38.camel@de-c-l-110.nero-de.internal>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Thu, 2007-10-18 at 06:06 -0400, Jeff Garzik wrote:
 
->> At least 2 drivers (siimage and cs5535) have a bug where they use
->> the construct:
+> The SCSI midlayer makes a lot of "if scsi version <= 2" choices.  In the 
+> case of ATAPI, we do not want to force ATAPI down the path of ancient 
+> SCSI devices, as this disables some MMC features that modern ATAPI 
+> devices support.
 
->>     ide_drive_t *pair    = &hwif->drives[drive->dn ^ 1];
+If I fully understand your point, if this faking code wasn't present,
+and if the inquiry data was left as it is, all modern ATAPI devices
+would be considered as really old SCSI devices. Am I right?
 
->> To access the other drive in a master/slave pair. This is bogus
->> because drive->dn is not the unit number, but the global drive
->> number, thus can be 2 & 3 for ide1, 4 & 5 for ide2 etc...
+And then why external (FireWire and USB) devices reports the inquiry
+data correctly? After all they are also considered to be SCSI devices...
+ -> But apparently, from what /proc/scsi/scsi outputs, the ANSI SCSI   
+    revision is set to 0 (for both ieee1394 and USB devices). This 
+    seems to be coherent with what the inquiry data buffer outputs.
 
->    Huh? With drive->dn calculated as:
 
->         for (unit = 0; unit < MAX_DRIVES; ++unit) {
->                 ide_drive_t *drive = &hwif->drives[unit];
->                 drive->dn = (hwif->channel ? 2 : 0) + unit;
+Also another question, more from the developer point of view, you have
+to know which real interface is behind a device. You might get
+performance loss if the real type is not known.
 
-> (with MAX_DRIVES always being 2) how comes it may be 4 or 5?!
+For example, I send a BLANK cdb to fully blank a disc, with the 'immed'
+flag not set, so that the requested operation is processed to completion
+prior to returning status.
+- for real SCSI devices, this is not harmfull, as the bus is not blocked
+- for IDE devices, AFAIK, the bus will be blocked until the command
+termination... so for a CD erased a 1x, the bus might be blocked for
+74min.
 
->> Please apply to 2.6.24 if no objection.
 
->    I object. :-)
+Also the SCSI commands that are sent to the device depends from its
+hardware bus type. Not only for the CDB length, but also for MODE
+SENSE/MODE SELECT CDBs in which for example a MODE SENSE (6) would fail
+on an IDE device... even if it is described in the SPC-3 standard.
 
-    Well, actually no objections about the patch itself since it deals with 
-the cases of drive->dn being 2 and 3. But this probably be better to be done 
-all in one patch, or at least in 2 patches (please also update driver version 
-in the heading comment).
+As far as I saw in libata-scsi.c there a SCSI-to-ATAPI and ATAPI-to-SCSI
+translator that automatically transform the command sent... Am I also
+right on this point?
+    
+	Mathieu
 
-MBR, Sergei
