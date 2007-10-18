@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764143AbXJRODJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932790AbXJRODm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764143AbXJRODJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765878AbXJROC0
+	id S932790AbXJRODm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764761AbXJRODa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:02:26 -0400
-Received: from smtp1.int-evry.fr ([157.159.10.44]:45386 "EHLO
-	smtp1.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765985AbXJROCY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:02:24 -0400
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4 resend] pci.h : Add PCI identifiers for the RDC devices
-Date: Thu, 18 Oct 2007 15:57:55 +0200
-User-Agent: KMail/1.9.7
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-References: <200710181551.28720.florian.fainelli@telecomint.eu>
-In-Reply-To: <200710181551.28720.florian.fainelli@telecomint.eu>
+	Thu, 18 Oct 2007 10:03:30 -0400
+Received: from rtr.ca ([76.10.145.34]:4473 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757679AbXJROD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:03:28 -0400
+Message-ID: <471767AE.1040203@rtr.ca>
+Date: Thu, 18 Oct 2007 10:03:26 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710181557.56041.florian.fainelli@telecomint.eu>
-X-int-MailScanner-Information: Please contact the ISP for more information
-X-int-MailScanner: Found to be clean
-X-int-MailScanner-SpamCheck: 
-X-int-MailScanner-From: florian.fainelli@telecomint.eu
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <20071018082145.GK5063@kernel.dk> <20071018.045505.106265100.davem@davemloft.net> <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <20071018125840.GF5063@kernel.dk> <20071018133200.GH5063@kernel.dk> <471764CB.5020906@rtr.ca> <20071018135810.GM5063@kernel.dk>
+In-Reply-To: <20071018135810.GM5063@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot to remove the attachment on this one, sorry.
+Jens Axboe wrote:
+> On Thu, Oct 18 2007, Mark Lord wrote:
+>> Jens wrote:
+>>> OK, I think that covers every arch out there. I haven't been able to
+>>> compile any of them, but it's mostly search'n replace operations. I hope
+>>> nothing is missing linux/scatterlist.h includes...
+>> Patch fails on drivers/scsi/scsi_lib.c.
+>>
+>> I replaced that part of the patch with this updated portion instead:
+> 
+> Hmm, what are you applying against? Must be a clean tree, throw away any
+> patches that you already applied in this thread.
 
-This patch defines the PCI identifiers found in
-the RDC R-321x System-on-Chip.
 
-Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
----
- include/linux/pci_ids.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
----
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 2aaf1c1..c5a0f5b 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2097,6 +2097,13 @@
- #define PCI_DEVICE_ID_HERC_WIN		0x5732
- #define PCI_DEVICE_ID_HERC_UNI		0x5832
- 
-+#define PCI_VENDOR_ID_RDC		0x17f3
-+#define PCI_DEVICE_ID_RDC_R6020		0x6020
-+#define PCI_DEVICE_ID_RDC_R6030		0x6030
-+#define PCI_DEVICE_ID_RDC_R6040		0x6040
-+#define PCI_DEVICE_ID_RDC_R6060		0x6060
-+#define PCI_DEVICE_ID_RDC_R6061		0x6061
-+
- #define PCI_VENDOR_ID_SITECOM		0x182d
- #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
+Squeaky-clean linux-2.6.23 + patch-2.6.23-git13 + your patch.
+Fails on scsi_lib.c.
+
+-ml
