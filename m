@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934136AbXJRTZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934208AbXJRT0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934136AbXJRTZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933520AbXJRTZZ
+	id S934208AbXJRT0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbXJRT0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:25:25 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1717 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933382AbXJRTZX (ORCPT
+	Thu, 18 Oct 2007 15:26:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:51190 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756636AbXJRT0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:25:23 -0400
-Date: Thu, 18 Oct 2007 20:25:21 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-Message-ID: <20071018192521.GC21136@shadowen.org>
-References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018111352.GA17039@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Thu, 18 Oct 2007 15:26:30 -0400
+Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
+	devices
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0710181515560.2779-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 21:27:41 +0200
+Message-Id: <1192735661.2271.2.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+01Q1ANwXFcBqDMAW7SzzyqxgIUm9OsMVPjrb
+ 0LgkW6+kbwwUYD5wQe33yR6kBtUkgvvYhalRTeislXCr0+f9R1
+ dtd1gtxcg1FTEX+b0Y0Wj6p7Pzgn9an
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 01:13:52PM +0200, Ingo Molnar wrote:
+On Thu, 2007-10-18 at 15:23 -0400, Alan Stern wrote:
+> This patch (as1004) fixes a refcounting bug in the development version
+> of the block-device core.
 > 
-> latest checkpatch.pl works really well on sched.c.
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 > 
-> there's only one problem left, this bogus false positive warning 
-> reappeared:
+> ---
 > 
->   WARNING: braces {} are not necessary for single statement blocks
->   #5710: FILE: sched.c:5710:
->   +       if (parent->groups == parent->groups->next) {
->   +               pflags &= ~(SD_LOAD_BALANCE |
->   +                               SD_BALANCE_NEWIDLE |
->   +                               SD_BALANCE_FORK |
->   +                               SD_BALANCE_EXEC |
->   +                               SD_SHARE_CPUPOWER |
->   +                               SD_SHARE_PKG_RESOURCES);
->   +       }
-> 
-> (there's another place in sched.c that trips this up too.)
+> Kay, you have got to start testing your patches better!
 
-It actually never went away, some of the wronger reports went away such
-as counting a commented statement as a single statement.  The check for
-length didn't make the cut for 0.11, as I was still thinking about
-whether we wanted a subjective check on statements over and above the
-"real" check for lines.
+That leaves references around for SCSI target devices. There must be a
+bug somewhere else, if the patch isn't correct.
 
-> i think it has been pointed out numerous times that it is perfectly fine 
-> to use curly braces for multi-line single-statement blocks. That 
-> includes simple cases like this too:
-> 
-> 	if (x) {
-> 		/* do y() */
-> 		y();
-> 	}
+> Finding and
+> fixing refcount errors is _not_ one of my favorite ways to pass the
+> time.  For example, you could see what happens when you insert and
+> unplug a USB flash disk a few times.
 
-Yes and the comment in there actually counts as a statement for counting
-statement purposes.  
+What do you see with the original version?
 
-The plan is to move to counting lines and only winge on exactly one
-line.  I have half a mind to make a subjective check on statements and a
-full check on lines.  But probabally it will just move to lines.
+Kay
 
-> it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
-> wants to make any noise about such constructs it should warn about the 
-> _lack_ of curly braces in every multi-line condition block _except_ the 
-> only safe single-line statement:
-> 
-> 	if (x)
-> 		y();
-
-Indeed.  We should probabally do more on the indentation checks in
-general.  The current direct check for:
-
-	if (foo);
-		bar();
-
-Could probabally be generalised to look for this kind of error:
-
-	if (foo)
-		bar();
-		baz();
-	one();
-
--apw
