@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765483AbXJRXQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbXJRXS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765483AbXJRXQv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbXJRXQn
+	id S932849AbXJRXS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 19:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbXJRXST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:16:43 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60508 "EHLO mx1.suse.de"
+	Thu, 18 Oct 2007 19:18:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55155 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbXJRXQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:16:43 -0400
-To: Avi Kivity <avi@qumranet.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-From: Andi Kleen <andi@firstfloor.org>
-References: <20071015182118.GA4459@shadowen.org>
-	<200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu>
-	<20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu>
-	<20071018192521.GC21136@shadowen.org> <20071018193929.GA22031@elte.hu>
-	<4717BBD0.7070504@qumranet.com>
-Date: Fri, 19 Oct 2007 01:16:41 +0200
-In-Reply-To: <4717BBD0.7070504@qumranet.com> (Avi Kivity's message of "Thu\, 18 Oct 2007 22\:02\:24 +0200")
-Message-ID: <p734pgoau92.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752870AbXJRXSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 19:18:18 -0400
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	 <1192745137.7367.40.camel@pasglop>
+	 <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 09:17:29 +1000
+Message-Id: <1192749449.7367.51.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@qumranet.com> writes:
 
-> This is more useful operating on an entire file, so the script can see
-> all the context.
->
-> A 'gcc -Windentation-contradicts-codeflow -Werror' would be nice.
+On Thu, 2007-10-18 at 15:52 -0700, Linus Torvalds wrote:
+> 
+> On Fri, 19 Oct 2007, Benjamin Herrenschmidt wrote:
+> > 
+> > The barrier would guarantee that ioc->active (and in fact the write to
+> > the chip too above) are globally visible
+> 
+> No, it doesn't really guarantee that.
+> 
+> The thing is, there is no such thing as "globally visible".
+> 
+> There is a "ordering of visibility wrt CPU's", but it's not global, it's 
+> quite potentially per-CPU. So a barrier on one CPU doesn't guarantee 
+> anything at all without a barrier on the *other* CPU.
+> 
+> That said, the interrupt handling itself contains various barriers on the 
+> CPU's that receive interrupts, thanks to the spinlocking. But I do agree 
+> with Herbert that adding a "smb_mb()" is certainly in no way "obviously 
+> correct", because it doesn't talk about what the other side does wrt 
+> barriers and that word in memory.
 
-I had a tool long ago on the Amiga which did exactly that. It double checked
-that the indentation matched the code flow and flagged any differences. 
-It was a dumb tool -- not a full C parser; but worked just fine. I got
-it from some free software floppy disk. Unfortunately I forgot the
-name and was never able to find it again.
+I agree and you can see that in fact, we don't have enough barrier on
+the other side since spin_unlock doesn't prevent subsequent loads from
+crossing a previous store...
 
-These days emacs can do it for me though, but doing it in batch would
-be nicer.
- 
--Andi
+I wonder if that's worth trying to address, adding a barrier in
+handle_IRQ_event for example, or we can continue ignoring the barrier
+and let some drivers do their own fixes in fancy ways.
+
+Ben.
+
+
