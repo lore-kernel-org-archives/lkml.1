@@ -1,130 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbXJRLQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932946AbXJRLQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbXJRLQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 07:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762434AbXJRLPj
+	id S932946AbXJRLQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763380AbXJRLPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 07:15:39 -0400
-Received: from mail.suse.de ([195.135.220.2]:34947 "EHLO mx1.suse.de"
+	Thu, 18 Oct 2007 07:15:42 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60731 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762208AbXJRLPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 07:15:38 -0400
-Message-Id: <20071018111536.623351733@strauss.suse.de>
-References: <20071018111535.356215664@strauss.suse.de>
+	id S1763325AbXJRLPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 07:15:41 -0400
+Message-Id: <20071018111535.356215664@strauss.suse.de>
 User-Agent: quilt/0.46-60
-Date: Thu, 18 Oct 2007 13:15:38 +0200
+Date: Thu, 18 Oct 2007 13:15:35 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
 Cc: akpm@linux-foundation.org, ak@suse.de, vgoyal@in.ibm.com
-Subject: [patch 3/3] Use BOOTMEM_EXCLUSIVE on x86
-Content-Disposition: inline; filename=bootmem-alloc-use-crashkernel
+Subject: [patch 0/3] Protect crashkernel against BSS overlap
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses the BOOTMEM_EXCLUSIVE, introduced in the previous patch,
-to avoid conflicts while reserving the memory for the kdump carpture kernel
-(crashkernel=).
+I observed the problem that even when you choose the default 16M as
+crashkernel base address and the kernel is very big, the reserved area may
+overlap with the kernel BSS. Currently, this is not checked at runtime, so the
+kernel just crashes when you load the panic kernel in the sys_kexec call.
 
-The modification has been tested on i386.
+This three patches check this at runtime. The patches are against current git,
+but with the patches
+
+    extended-crashkernel-command-line.patch
+    extended-crashkernel-command-line-update.patch
+    extended-crashkernel-command-line-comment-fix.patch
+    extended-crashkernel-command-line-improve-error-handling-in-parse_crashkernel_mem.patch
+    use-extended-crashkernel-command-line-on-i386.patch
+    use-extended-crashkernel-command-line-on-i386-update.patch
+    use-extended-crashkernel-command-line-on-x86_64.patch
+    use-extended-crashkernel-command-line-on-x86_64-update.patch
+    use-extended-crashkernel-command-line-on-ia64.patch
+    use-extended-crashkernel-command-line-on-ia64-fix.patch
+    use-extended-crashkernel-command-line-on-ia64-update.patch
+    use-extended-crashkernel-command-line-on-ppc64.patch
+    use-extended-crashkernel-command-line-on-ppc64-update.patch
+    use-extended-crashkernel-command-line-on-sh.patch
+    use-extended-crashkernel-command-line-on-sh-update.patch
+
+from -mm tree applied since they are marked to be merged in 2.6.24.
+
+I know that the implementation of both patches is only x86 (i386 and x86-64),
+but if you agree that it's the way to go, I'll modify the patch for all
+architectures.
+
+Changes compared to last submit:
+
+   1) use BOOTMEM_DEFAULT instead of 0 to improve code readability
+      (suggested by Dave Hansen <haveblue@us.ibm.com>)
+
+   2) unreserve memory that got reserved until we detect a duplicate
+      reservation (discovered by Vivek Goyal <vgoyal@in.ibm.com>)
+
+   3) fix IA64 (didn't compile)
 
 
 Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/x86/kernel/setup_32.c |   28 ++++++++++++++++++----------
- arch/x86/kernel/setup_64.c |   35 +++++++++++++++++++++--------------
- 2 files changed, 39 insertions(+), 24 deletions(-)
-
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -403,18 +403,26 @@ static void __init reserve_crashkernel(v
- 	ret = parse_crashkernel(boot_command_line, total_mem,
- 			&crash_size, &crash_base);
- 	if (ret == 0 && crash_size > 0) {
--		if (crash_base > 0) {
--			printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--					"for crashkernel (System RAM: %ldMB)\n",
--					(unsigned long)(crash_size >> 20),
--					(unsigned long)(crash_base >> 20),
--					(unsigned long)(total_mem >> 20));
--			crashk_res.start = crash_base;
--			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size, BOOTMEM_DEFAULT);
--		} else
-+		if (crash_base <= 0) {
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-+			return;
-+		}
-+
-+		if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+			printk(KERN_INFO "crashkernel reservation failed - "
-+					"memory is in use\n");
-+			return;
-+		}
-+
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(total_mem >> 20));
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size - 1;
- 	}
- }
- #else
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -201,28 +201,35 @@ static inline void copy_edd(void)
- #ifdef CONFIG_KEXEC
- static void __init reserve_crashkernel(void)
- {
--	unsigned long long free_mem;
-+	unsigned long long total_mem;
- 	unsigned long long crash_size, crash_base;
- 	int ret;
- 
--	free_mem = ((unsigned long long)max_low_pfn - min_low_pfn) << PAGE_SHIFT;
-+	total_mem = ((unsigned long long)max_low_pfn - min_low_pfn) << PAGE_SHIFT;
- 
--	ret = parse_crashkernel(boot_command_line, free_mem,
-+	ret = parse_crashkernel(boot_command_line, total_mem,
- 			&crash_size, &crash_base);
- 	if (ret == 0 && crash_size) {
--		if (crash_base > 0) {
--			printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--					"for crashkernel (System RAM: %ldMB)\n",
--					(unsigned long)(crash_size >> 20),
--					(unsigned long)(crash_base >> 20),
--					(unsigned long)(free_mem >> 20));
--			crashk_res.start = crash_base;
--			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
--		} else
-+		if (crash_base <= 0) {
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-+			return;
-+		}
-+
-+		if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+			printk(KERN_INFO "crashkernel reservation failed - "
-+					"memory is in use\n");
-+			return;
-+		}
-+
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(total_mem >> 20));
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size - 1;
- 	}
- }
- #else
 
 -- 
