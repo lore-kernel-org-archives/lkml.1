@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763263AbXJRKfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbXJRKiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763263AbXJRKfi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbXJRKfa
+	id S1763420AbXJRKiF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbXJRKht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:35:30 -0400
-Received: from xsmtp0.ethz.ch ([82.130.70.14]:56034 "EHLO XSMTP0.ethz.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755071AbXJRKf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:35:29 -0400
-X-Greylist: delayed 978 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 06:35:29 EDT
-Message-ID: <4717331D.1080207@debian.org>
-Date: Thu, 18 Oct 2007 12:19:09 +0200
-From: "Giacomo A. Catenazzi" <cate@debian.org>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Kbuild <linux-kbuild@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>, mec.gnu@gmail.com,
-       gnb@users.sourceforge.net
-Subject: Re: [kbuild-devel] kbuild mailing list has moved
-References: <20071018100019.GA18671@uranus.ravnborg.org>
-In-Reply-To: <20071018100019.GA18671@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Oct 2007 10:19:09.0677 (UTC) FILETIME=[526A59D0:01C81170]
+	Thu, 18 Oct 2007 06:37:49 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:47542 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756228AbXJRKhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:37:47 -0400
+Subject: Re: s390x: getting ipv6 bugs on mainline since 2.6.23-git3
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Patrick McHardy <kaber@trash.net>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+In-Reply-To: <47172AD5.2030009@trash.net>
+References: <20071018093556.GT21136@shadowen.org>
+	 <47172AD5.2030009@trash.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: IBM Corporation
+Date: Thu, 18 Oct 2007 12:37:44 +0200
+Message-Id: <1192703864.13572.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added the owner of the old list]
 
-Sam Ravnborg wrote:
-> The vger postmasters has created linux-kbuild on my request.
-> 
-> The old list at sourceforge had a few issues:
-> - it was subscriber-only
-> - it were relying on moderation
+On Thu, 2007-10-18 at 11:43 +0200, Patrick McHardy wrote:
+> Andy Whitcroft wrote:
+> > Seems we are getting some kind of bug out of our s390x partition (lnxabat1)
+> > when booting latest mainline releases, specifically since 2.6.23-git3.
+> > 
+> > Kernel BUG at 0000000000000002 Ýverbose debug info unavailable?
+> > illegal operation: 0001 Ý#1?
+> Which network driver are you using? Please post the output of
+> "ip link list <dev>".
 
-For me it is ok.
-It was subscriber-only because this was a very low traffic
-mailing list (but with daily spam).  BTW, IIRC spam problem
-began only when we moved to sf.net.
+This is a bug in the qeth driver. It has been introduced by this commit:
 
-Anyway, from the beginning there was problem with moderation.
-I think because this list is to much low-traffic, to high
-spam/true message ratio and no more active moderators)
+commit 3b04ddde02cf1b6f14f2697da5c20eca5715017f
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Tue Oct 9 01:40:57 2007 -0700
 
-Considering the nearly inexistent spam in vger, I think it
-is a good move.
+    [NET]: Move hardware header operations out of netdevice.
 
-ciao
-	cate
+    Since hardware header operations are part of the protocol class
+    not the device instance, make them into a separate object and
+    save memory.
+
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+I've hacked up a fix for it. The real fix will be done by our networking
+people.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+---
+
+ drivers/s390/net/qeth_main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -urpN linux-2.6/drivers/s390/net/qeth_main.c linux-2.6-patched/drivers/s390/net/qeth_main.c
+--- linux-2.6/drivers/s390/net/qeth_main.c	2007-10-17 15:05:36.000000000 +0200
++++ linux-2.6-patched/drivers/s390/net/qeth_main.c	2007-10-17 15:05:46.000000000 +0200
+@@ -6643,7 +6643,8 @@ qeth_netdev_init(struct net_device *dev)
+ 	dev->vlan_rx_kill_vid = qeth_vlan_rx_kill_vid;
+ 	dev->vlan_rx_add_vid = qeth_vlan_rx_add_vid;
+ #endif
+-	dev->header_ops = &qeth_null_ops;
++	if (qeth_get_netdev_flags(card) & IFF_NOARP)
++		dev->header_ops = &qeth_null_ops;
+ 
+ #ifdef CONFIG_QETH_IPV6
+ 	/*IPv6 address autoconfiguration stuff*/
+
+
