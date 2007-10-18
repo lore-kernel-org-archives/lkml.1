@@ -1,53 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763259AbXJRHP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763662AbXJRHQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763259AbXJRHP5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 03:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761041AbXJRHPg
+	id S1763662AbXJRHQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 03:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761277AbXJRHQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 03:15:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45678 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759327AbXJRHPb (ORCPT
+	Thu, 18 Oct 2007 03:16:19 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:41990 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761041AbXJRHQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 03:15:31 -0400
-Date: Thu, 18 Oct 2007 00:02:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [RFC] remove netpoll receive code
-Message-Id: <20071018000244.2513c564.akpm@linux-foundation.org>
-In-Reply-To: <20071017.232838.41634977.davem@davemloft.net>
-References: <20071017132131.1992bedd@freepuppy.rosehill>
-	<20071017.232838.41634977.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 18 Oct 2007 03:16:16 -0400
+Subject: Re: [PATCH] isdn/sc: remove unused REQUEST_IRQ and unnecessary
+	header file
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Karsten Keil <kkeil@suse.de>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070825193014.GA2370@pingi.kke.suse.de>
+References: <20070825193014.GA2370@pingi.kke.suse.de>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Thu, 18 Oct 2007 16:16:03 +0900
+Message-Id: <1192691763.20694.5.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 23:28:38 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+Hi Karsten,
 
-> From: Stephen Hemminger <shemminger@linux-foundation.org>
-> Date: Wed, 17 Oct 2007 13:21:31 -0700
-> 
-> > I propose that we take out all the whole netpoll rx path. If/when
-> > kgdb gets submitted a better and alternative receive path can be
-> > added.
-> 
-> I would like to kill the RX side handling of netpoll too,
-> but I don't think that's reasonable as kgdb is actively
-> being pushed for 2.6.25 inclusion.
-> 
-> Andrew is likely to add it to his -mm tree soon and therefore kgdb
-> will need to work properly now.
+What happened to this patch? Should I send it to Andrew or will you take
+it in your tree before pushing it upstream?
 
-git-kgdb.patch has been in there for ages - maybe a year.  Although I
-disabled it a week or so ago due to the sheer number of rejects.  Will
-bring it back when things settle down a bit.
+Thank you in advance.
 
-> The RX netpoll thing has a long precedence, it's been in the tree for
-> a long time, so we are in some ways stuck with it until we have a
-> complete replacement facility.  That means we can't yank it out first
-> and implement the replacement later.
+ - Fernando
+
+On Sat, 2007-08-25 at 21:30 +0200, Karsten Keil wrote:
+> [PATCH] isdn/sc: remove unused REQUEST_IRQ and unnecessary
+> 
+> REQUEST_IRQ is never used, so delete it. In the process get rid of the
+> macro FREE_IRQ which makes the code unnecessarily difficult to read.
+> 
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> Acked-by: Karsten Keil <kkeil@suse.de>
+> ---
+> 
+> diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/debug.h linux-2.6.23-rc3/drivers/isdn/sc/debug.h
+> --- linux-2.6.23-rc3-orig/drivers/isdn/sc/debug.h	2007-07-09 08:32:17.000000000 +0900
+> +++ linux-2.6.23-rc3/drivers/isdn/sc/debug.h	1970-01-01 09:00:00.000000000 +0900
+> @@ -1,19 +0,0 @@
+> -/* $Id: debug.h,v 1.2.8.1 2001/09/23 22:24:59 kai Exp $
+> - *
+> - * Copyright (C) 1996  SpellCaster Telecommunications Inc.
+> - *
+> - * This software may be used and distributed according to the terms
+> - * of the GNU General Public License, incorporated herein by reference.
+> - *
+> - * For more information, please contact gpl-info@spellcast.com or write:
+> - *
+> - *     SpellCaster Telecommunications Inc.
+> - *     5621 Finch Avenue East, Unit #3
+> - *     Scarborough, Ontario  Canada
+> - *     M1B 2T9
+> - *     +1 (416) 297-8565
+> - *     +1 (416) 297-6433 Facsimile
+> - */
+> -
+> -#define REQUEST_IRQ(a,b,c,d,e) request_irq(a,b,c,d,e)
+> -#define FREE_IRQ(a,b) free_irq(a,b)
+> diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/includes.h linux-2.6.23-rc3/drivers/isdn/sc/includes.h
+> --- linux-2.6.23-rc3-orig/drivers/isdn/sc/includes.h	2007-07-09 08:32:17.000000000 +0900
+> +++ linux-2.6.23-rc3/drivers/isdn/sc/includes.h	2007-08-24 20:55:45.000000000 +0900
+> @@ -14,4 +14,3 @@
+>  #include <linux/timer.h>
+>  #include <linux/wait.h>
+>  #include <linux/isdnif.h>
+> -#include "debug.h"
+> diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/init.c linux-2.6.23-rc3/drivers/isdn/sc/init.c
+> --- linux-2.6.23-rc3-orig/drivers/isdn/sc/init.c	2007-07-09 08:32:17.000000000 +0900
+> +++ linux-2.6.23-rc3/drivers/isdn/sc/init.c	2007-08-24 20:31:58.000000000 +0900
+> @@ -404,7 +404,7 @@ static void __exit sc_exit(void)
+>  		/*
+>  		 * Release the IRQ
+>  		 */
+> -		FREE_IRQ(sc_adapter[i]->interrupt, NULL);
+> +		free_irq(sc_adapter[i]->interrupt, NULL);
+>  
+>  		/*
+>  		 * Reset for a clean start
+> 
+
