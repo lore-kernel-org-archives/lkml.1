@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXJRWi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXJRWjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbXJRWi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 18:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXJRWiU
+	id S933161AbXJRWjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 18:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbXJRWjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 18:38:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57244 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753703AbXJRWiT (ORCPT
+	Thu, 18 Oct 2007 18:39:22 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35701 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759428AbXJRWjV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 18:38:19 -0400
-Date: Thu, 18 Oct 2007 15:37:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: ak@suse.de, bwalle@suse.de, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org, vgoyal@in.ibm.com
-Subject: Re: [patch 1/3] Add BSS to resource tree
-Message-Id: <20071018153751.c9c458c8.akpm@linux-foundation.org>
-In-Reply-To: <20071018221813.GA23801@uranus.ravnborg.org>
-References: <20071018111535.356215664@strauss.suse.de>
-	<20071018111535.883533731@strauss.suse.de>
-	<20071018142642.5b3f6ba4.akpm@linux-foundation.org>
-	<20071018214836.GA3459@bingen.suse.de>
-	<20071018215827.GB23708@uranus.ravnborg.org>
-	<20071018220048.GB3459@bingen.suse.de>
-	<20071018221813.GA23801@uranus.ravnborg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Oct 2007 18:39:21 -0400
+X-Sasl-enc: mg0a51MhpZFkcvl/JFV8YYtfqsn1gH/8lAb5nhq3FEA/ 1192747159
+Date: Thu, 18 Oct 2007 20:39:15 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Katz <katzj@redhat.com>, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [PATCH] Map volume and brightness events on thinkpads
+Message-ID: <20071018223915.GA4483@khazad-dum.debian.net>
+References: <20071016184606.GB25181@srcf.ucam.org> <alpine.LFD.0.999.0710161208340.6887@woody.linux-foundation.org> <d120d5000710161312r5676cad8o60e0790a4e8d5256@mail.gmail.com> <alpine.LFD.0.999.0710161325570.6887@woody.linux-foundation.org> <d120d5000710170857i3f534544pe9cab0ca6c1b0aa4@mail.gmail.com> <20071017162827.GA9778@srcf.ucam.org> <20071017173532.GB2974@khazad-dum.debian.net> <d120d5000710171159p617115d9w862aadf266c2470c@mail.gmail.com> <20071017204250.GA13377@khazad-dum.debian.net> <d120d5000710180737yeba5445tdb3b302ed6f7a802@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000710180737yeba5445tdb3b302ed6f7a802@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 00:18:13 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Thu, 18 Oct 2007, Dmitry Torokhov wrote:
+> On 10/17/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> > Still, I was
+> > thinking about it, and a doubt came to mind: would it cause problems for a
+> > bitmap to share the function for EV_foo and EV_foo notifications?
+> 
+> Not sure if I follow... Are you talking about bringing KEY_*_NOTIFY
+> into EV_KEY "namespace"? Could you elaborate?
 
-> And I recall that extern char sym[] is considered correct by binutils 
-> people - but I'm not 100% sure and google did not give me an appropriate hit.
+Suppose we define a "EV_* is a notify event" bit to set in the event type
+field of an input event.
 
-An ancient memory tells me that these things are traditionally
-declared as plain old int:
+Now, any type of event can be a notify event or a normal event, depending on
+wether this bit is set.
 
-extern int start;
-extern int edata;
+However, the input layer keeps track of which events of a given type can be
+sent by an input device using bitmaps, for every type of event.  And this
+bitmap now would mean "input device may issue a normal event or a notify
+event", not just "input device may issue a normal event".
 
-etc.
+I am not sure if that would cause trouble?
 
-However
-http://techpubs.sgi.com/library/tpl/cgi-bin/getdoc.cgi?coll=0650&db=man&fname=/usr/share/catman/p_man/cat3/standard/_rt_symbol_table_size.z
-disagrees with me.
-
-http://www.psych.upenn.edu/~saul/parasite/man/man3/end.3.html agrees with me
-
-http://docsrv.sco.com:507/en/man/html.S/end.S.html agrees with me
-
-http://www.rocketaware.com/man/man3/end.3.htm agrees with me
-
-http://bama.ua.edu/cgi-bin/man-cgi?etext+3C agrees with me
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
