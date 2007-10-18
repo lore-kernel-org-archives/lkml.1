@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762936AbXJRLhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbXJRLkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762936AbXJRLhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 07:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbXJRLhm
+	id S932776AbXJRLkx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 07:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbXJRLkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 07:37:42 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:44830 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755974AbXJRLhl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 07:37:41 -0400
-Date: Thu, 18 Oct 2007 12:37:33 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-In-Reply-To: <20071018063157.GA1694@ff.dom.local>
-Message-ID: <Pine.LNX.4.64N.0710181231350.4701@blysk.ds.pg.gda.pl>
-References: <20071015125301.GC3015@ff.dom.local>
- <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local>
- <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local>
- <20071018063157.GA1694@ff.dom.local>
+	Thu, 18 Oct 2007 07:40:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33371 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756389AbXJRLko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 07:40:44 -0400
+Date: Thu, 18 Oct 2007 13:40:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Tejun Heo <htejun@gmail.com>, Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071018114016.GA30823@elte.hu>
+References: <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org> <20071018091706.GO5063@kernel.dk> <4717281B.6070301@garzik.org> <20071018094128.GP5063@kernel.dk> <47172FB1.5020704@garzik.org> <20071018100959.GQ5063@kernel.dk> <471738A6.2020201@garzik.org> <20071018105438.GB9658@elte.hu> <47173D5A.9050508@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47173D5A.9050508@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007, Jarek Poplawski wrote:
 
-> After rethinking, it looks like this last cancel should be useless.
-> So, if phy_interrupt() schedules only if !PHY_HALTED and phy_change()
-> does enable_irq() with no exeptions, it seems phy_interrupt() even
-> without lock must see PHY_HALTED state before this free_irq() with
-> possible DEBUG_SHIRQ call, then maybe only this safety:
-> 
-> 	WARN_ON(work_pending(&phydev->phy_queue));
+* Jeff Garzik <jeff@garzik.org> wrote:
 
- Good point.
+> I never had to apply the changes you included, to fix problems here.
 
-  Maciej
+perhaps because you are not running a CONFIG_DEBUG_PAGEALLOC=y kernel?
+
+I recently fixed DEBUG_PAGEALLOC (it would crash upon bootup on x86 most 
+of the time on any real hardware - so i doubt people were able to use it 
+all that much). As long as you try Linus' latest -git tree (which has 
+the latest arch/x86 merge) and use the 32-bit x86 kernel it should work 
+fine for you too, and you will probably be able to trigger similar 
+crashes too.
+
+	Ingo
