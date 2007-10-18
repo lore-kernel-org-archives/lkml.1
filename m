@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762976AbXJRKdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763263AbXJRKfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762976AbXJRKdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbXJRKdn
+	id S1763263AbXJRKfi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbXJRKfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:33:43 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:30831 "EHLO relay.sw.ru"
+	Thu, 18 Oct 2007 06:35:30 -0400
+Received: from xsmtp0.ethz.ch ([82.130.70.14]:56034 "EHLO XSMTP0.ethz.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755726AbXJRKdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:33:42 -0400
-Message-ID: <4717367C.1040902@sw.ru>
-Date: Thu, 18 Oct 2007 14:33:32 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	id S1755071AbXJRKf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:35:29 -0400
+X-Greylist: delayed 978 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 06:35:29 EDT
+Message-ID: <4717331D.1080207@debian.org>
+Date: Thu, 18 Oct 2007 12:19:09 +0200
+From: "Giacomo A. Catenazzi" <cate@debian.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: Re: How Inactive may be much greather than cached?
-References: <4716FC04.6070107@sw.ru> <200710181627.27827.nickpiggin@yahoo.com.au> <471707BD.4000203@sw.ru> <200710181727.01128.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710181727.01128.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=KOI8-R
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Kbuild <linux-kbuild@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>, mec.gnu@gmail.com,
+       gnb@users.sourceforge.net
+Subject: Re: [kbuild-devel] kbuild mailing list has moved
+References: <20071018100019.GA18671@uranus.ravnborg.org>
+In-Reply-To: <20071018100019.GA18671@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Oct 2007 10:19:09.0677 (UTC) FILETIME=[526A59D0:01C81170]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Some filesystems, including I believe, ext3 with data=ordered,
-> can leave orphaned pages around after they have been truncated
-> out of the pagecache. These pages get left on the LRU and vmscan
-> reclaims them pretty easily.
+[added the owner of the old list]
+
+Sam Ravnborg wrote:
+> The vger postmasters has created linux-kbuild on my request.
 > 
-> Try ext3 data=writeback, or even ext2.
+> The old list at sourceforge had a few issues:
+> - it was subscriber-only
+> - it were relying on moderation
 
-thanks, data=writeback helps.
+For me it is ok.
+It was subscriber-only because this was a very low traffic
+mailing list (but with daily spam).  BTW, IIRC spam problem
+began only when we moved to sf.net.
 
-Resume: ext3 with data=ordered gets bh with data and moves it to journal
-transaction. If transaction handled immediately, ext3 frees bh on this page, and
-then frees this page.
-However if journal delays processing of this transaction, ext3 cannot free bh
-that is still busy. Later jbd layer decrements bh counter but it makes nothing
-with data page that is not freed and stays inactive.
+Anyway, from the beginning there was problem with moderation.
+I think because this list is to much low-traffic, to high
+spam/true message ratio and no more active moderators)
+
+Considering the nearly inexistent spam in vger, I think it
+is a good move.
+
+ciao
+	cate
