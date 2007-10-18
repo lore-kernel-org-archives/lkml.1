@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbXJRGYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbXJRG0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759466AbXJRGYW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 02:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXJRGYN
+	id S1760692AbXJRG0K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 02:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXJRGZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 02:24:13 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:20310 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbXJRGYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 02:24:12 -0400
-Message-ID: <4716FC04.6070107@sw.ru>
-Date: Thu, 18 Oct 2007 10:24:04 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-CC: devel@openvz.org
-Subject: How Inactive may be much greather than cached?
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=KOI8-R
+	Thu, 18 Oct 2007 02:25:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44822
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750969AbXJRGZx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 02:25:53 -0400
+Date: Wed, 17 Oct 2007 23:26:05 -0700 (PDT)
+Message-Id: <20071017.232605.74748149.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFA] sch_generic: fix carrier-on bug?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071016215555.GA4732@havoc.gtf.org>
+References: <20071016215555.GA4732@havoc.gtf.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 16 Oct 2007 17:55:55 -0400
 
-could anybody explain how "inactive" may be much greater than "cached"?
-stress test (http://weather.ou.edu/~apw/projects/stress/) that writes into
-removed files in cycle puts the node to the following state:
+> While looking at a net driver with the following construct,
+> 
+> 	if (!netif_carrier_ok(dev))
+> 		netif_carrier_on(dev);
+> 
+> it stuck me that the netif_carrier_ok() check was redundant, since
+> netif_carrier_on() checks bit __LINK_STATE_NOCARRIER anyway.  This is
+> the same reason why netif_queue_stopped() need not be called prior to
+> netif_wake_queue().
+> 
+> This is true, but there is however an unwanted side effect from assuming
+> that netif_carrier_on() can be called multiple times:  it touches the
+> watchdog, regardless of pre-existing carrier state.
+> 
+> The fix:  move watchdog-up inside the bit-cleared code path.
+> 
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-MemTotal: 16401648 kB
-MemFree: 636644 kB
-Buffers: 1122556 kB
-Cached: 362880 kB
-SwapCached: 700 kB
-Active: 1604180 kB
-Inactive: 13609828 kB
-
-At the first glance memory should be freed on file closing, nobody refers to
-file and ext3_delete_inode() truncates inode. We can see that memory is go away
-from "cached", however could somebody explain why it become "invalid" instead be
-freed? Who holds the references to these pages?
-
-thank you,
-	Vasily Averin
+I see no problems with this patch, I'll apply it, thanks!
