@@ -1,195 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXJRKyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765114AbXJRK4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbXJRKyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 06:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765086AbXJRKxJ
+	id S1765114AbXJRK4H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 06:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbXJRKzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 06:53:09 -0400
-Received: from sa4.bezeqint.net ([192.115.104.18]:53439 "EHLO sa4.bezeqint.net"
+	Thu, 18 Oct 2007 06:55:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40189 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760482AbXJRKxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 06:53:06 -0400
-Message-ID: <47173B00.3070303@panasas.com>
-Date: Thu, 18 Oct 2007 12:52:48 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1758311AbXJRKzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 06:55:50 -0400
+Date: Thu, 18 Oct 2007 12:54:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Tejun Heo <htejun@gmail.com>, Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Re: [bug] ata subsystem related crash with latest -git
+Message-ID: <20071018105438.GB9658@elte.hu>
+References: <20071018070706.GA7435@elte.hu> <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk> <471720FE.4090004@garzik.org> <20071018091706.GO5063@kernel.dk> <4717281B.6070301@garzik.org> <20071018094128.GP5063@kernel.dk> <47172FB1.5020704@garzik.org> <20071018100959.GQ5063@kernel.dk> <471738A6.2020201@garzik.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] block subsystem related crash with latest -git
-References: <20071017154655.GA13394@elte.hu> <alpine.LFD.0.999.0710170929270.26902@woody.linux-foundation.org> <20071017165949.GF15552@kernel.dk> <20071017170804.GG15552@kernel.dk> <alpine.LFD.0.999.0710171022340.26902@woody.linux-foundation.org> <20071017180042.GP15552@kernel.dk> <alpine.LFD.0.999.0710171114320.26902@woody.linux-foundation.org> <20071017182206.GS15552@kernel.dk>
-In-Reply-To: <20071017182206.GS15552@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471738A6.2020201@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct. 17, 2007, 20:22 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Wed, Oct 17 2007, Linus Torvalds wrote:
->>
->> On Wed, 17 Oct 2007, Jens Axboe wrote:
->>>> So avoiding the "sg_next()" on the last entry is pointless. 
->>> Yeah, I didn't quite understand why if sg was valid, why dereferencing
->>> *(sg + 1)->page would crap out :/
->> Actually, I take that back. If 'sg' is the last entry in a *non*linked 
->> scatter-gather list (ie we don't use the last entry as a link, we actually 
->> use it as a real SG entry), then "sg_next(sg)" will indeed access past the 
->> end of the whole allocated array, and will access one past the end.
->>
->> And with page-alloc debugging, that *will* blow up.
->>
->> So I think your change to use "sg_next()" only when you actually need a 
->> next pointer is the correct one after all.
-> 
-> Thanks, so I'm not totally crazy :-)
-> 
-> Can you just pull:
-> 
->   git://git.kernel.dk/data/git/linux-2.6-block.git for-linus
-> 
-> then so we get those two pieces correct? Then the remaining issue seems
-> to be a new one that is biting Ingo elsewhere, at least we'll all be on
-> the same page then.
-> 
 
-Jens, for_each_sg still calls sg_next on the last entry which will
-dereference a possibly bogus sg->page (for the sg_is_chain(sg)
-condition in sg_next) if the last entry is the last one on the page
-of unchained entry and sg+1 falls over into an uninitialized page.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-How about the following?
-(untested yet.
- sg.c included here as an example for usage out of scatterlist.h)
+> >Tomo and I agreed to kill sg_last() a few days ago anyways, so this 
+> >is perfectly fine with me.
+> 
+> Yep, the [attached] patch that kills ata_sg_is_last() is working here 
+> on both machines that were previously croaking.
+> 
+> It would be nice to get pdc_adma, sata_sil24 and ipr it-works test 
+> done, but IMO the patch is pretty straightforward and should be OK.
 
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 2dc7464..3a27e03 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -30,7 +30,7 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
-        ((struct scatterlist *) ((unsigned long) (sg)->page & ~0x01))
+just a quick question: i have Jens's workarounds applied right now (see 
+patch below). Am i now crash/corruption-safe, or do i need your patch 
+too? And once your patch [and the other sg_*() patches] are upstream i 
+dont need the workaround anymore, correct?
 
- /**
-- * sg_next - return the next scatterlist entry in a list
-+ * sg_next_unsafe - return the next scatterlist entry in a list
-  * @sg:                The current sg entry
-  *
-  * Usually the next entry will be @sg@ + 1, but if this sg element is part
-@@ -41,7 +41,7 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
-  * the current entry, this function will NOT return NULL for an end-of-list.
-  *
-  */
--static inline struct scatterlist *sg_next(struct scatterlist *sg)
-+static inline struct scatterlist *sg_next_unsafe(struct scatterlist *sg)
- {
-        sg++;
+	Ingo
 
-@@ -51,11 +51,27 @@ static inline struct scatterlist *sg_next(struct scatterlist *sg)
-        return sg;
+---
+ block/ll_rw_blk.c         |    2 +-
+ drivers/ata/libata-core.c |    2 +-
+ drivers/scsi/scsi_lib.c   |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux/block/ll_rw_blk.c
+===================================================================
+--- linux.orig/block/ll_rw_blk.c
++++ linux/block/ll_rw_blk.c
+@@ -631,7 +631,7 @@ void blk_queue_max_phys_segments(struct 
+ 		printk("%s: set to minimum %d\n", __FUNCTION__, max_segments);
+ 	}
+ 
+-	q->max_phys_segments = max_segments;
++	q->max_phys_segments = max_segments - 1;
  }
-
-+/**
-+ * sg_next - return the next scatterlist entry in a list
-+ * @sg:                The current sg entry
-+ * @next:      Index of next sg entry
-+ * @nr:                Number of sg entries in the list
-+ *
-+ * Note that the caller must ensure that there are further entries after
-+ * the current entry, this function will NOT return NULL for an end-of-list.
-+ *
-+ */
-+static inline struct scatterlist *sg_next(struct scatterlist *sg,
-+                                          int next, int nr)
-+{
-+       return next < nr ? sg_next_unsafe(sg) : NULL;
-+}
-+
- /*
-  * Loop over each sg element, following the pointer to a new list if necessary
+ 
+ EXPORT_SYMBOL(blk_queue_max_phys_segments);
+Index: linux/drivers/ata/libata-core.c
+===================================================================
+--- linux.orig/drivers/ata/libata-core.c
++++ linux/drivers/ata/libata-core.c
+@@ -4664,7 +4664,7 @@ static int ata_sg_setup(struct ata_queue
+ {
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg = qc->__sg;
+-	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
++	struct scatterlist *lsg = &qc->__sg[qc->n_elem - 1];
+ 	int n_elem, pre_n_elem, dir, trim_sg = 0;
+ 
+ 	VPRINTK("ENTER, ata%u\n", ap->print_id);
+Index: linux/drivers/scsi/scsi_lib.c
+===================================================================
+--- linux.orig/drivers/scsi/scsi_lib.c
++++ linux/drivers/scsi/scsi_lib.c
+@@ -39,7 +39,7 @@
+  * (unless chaining is used). Should ideally fit inside a single page, to
+  * avoid a higher order allocation.
   */
- #define for_each_sg(sglist, sg, nr, __i)       \
--       for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
-+       for (__i = 0, sg = (sglist); sg; sg = sg_next(sg, ++__i, nr))
-
- /**
-  * sg_last - return the last scatterlist entry in a list
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index 7238b2d..57cc1dd 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1165,7 +1165,7 @@ sg_vma_nopage(struct vm_area_struct *vma, unsigned long addr, int *type)
-        sg = rsv_schp->buffer;
-        sa = vma->vm_start;
-        for (k = 0; (k < rsv_schp->k_use_sg) && (sa < vma->vm_end);
--            ++k, sg = sg_next(sg)) {
-+            sg = sg_next(sg, ++k, rsv_schp->k_use_sg)) {
-                len = vma->vm_end - sa;
-                len = (len < sg->length) ? len : sg->length;
-                if (offset < len) {
-@@ -1209,7 +1209,7 @@ sg_mmap(struct file *filp, struct vm_area_struct *vma)
-        sa = vma->vm_start;
-        sg = rsv_schp->buffer;
-        for (k = 0; (k < rsv_schp->k_use_sg) && (sa < vma->vm_end);
--            ++k, sg = sg_next(sg)) {
-+            sg = sg_next(sg, ++k, rsv_schp->k_use_sg)) {
-                len = vma->vm_end - sa;
-                len = (len < sg->length) ? len : sg->length;
-                sa += len;
-@@ -1840,7 +1840,7 @@ sg_build_indirect(Sg_scatter_hold * schp, Sg_fd * sfp, int buff_size)
-        }
-        for (k = 0, sg = schp->buffer, rem_sz = blk_size;
-             (rem_sz > 0) && (k < mx_sc_elems);
--            ++k, rem_sz -= ret_sz, sg = sg_next(sg)) {
-+            rem_sz -= ret_sz, sg = sg_next(sg, ++k, mx_sc_elems)) {
-
-                num = (rem_sz > scatter_elem_sz_prev) ?
-                      scatter_elem_sz_prev : rem_sz;
-@@ -1913,7 +1913,7 @@ sg_write_xfer(Sg_request * srp)
-                if (res)
-                        return res;
-
--               for (; p; sg = sg_next(sg), ksglen = sg->length,
-+               for (; p; sg = sg_next_unsafe(sg), ksglen = sg->length,
-                     p = page_address(sg->page)) {
-                        if (usglen <= 0)
-                                break;
-@@ -1991,8 +1991,8 @@ sg_remove_scat(Sg_scatter_hold * schp)
-                } else {
-                        int k;
-
--                       for (k = 0; (k < schp->k_use_sg) && sg->page;
--                            ++k, sg = sg_next(sg)) {
-+                       for (k = 0; sg && sg->page;
-+                            sg = sg_next(sg, ++k, schp->k_use_sg)) {
-                                SCSI_LOG_TIMEOUT(5, printk(
-                                    "sg_remove_scat: k=%d, pg=0x%p, len=%d\n",
-                                    k, sg->page, sg->length));
-@@ -2045,7 +2045,7 @@ sg_read_xfer(Sg_request * srp)
-                if (res)
-                        return res;
-
--               for (; p; sg = sg_next(sg), ksglen = sg->length,
-+               for (; p; sg = sg_next_unsafe(sg), ksglen = sg->length,
-                     p = page_address(sg->page)) {
-                        if (usglen <= 0)
-                                break;
-@@ -2092,7 +2092,7 @@ sg_read_oxfer(Sg_request * srp, char __user *outp, int num_read_xfer)
-        if ((!outp) || (num_read_xfer <= 0))
-                return 0;
-
--       for (k = 0; (k < schp->k_use_sg) && sg->page; ++k, sg = sg_next(sg)) {
-+       for (k = 0; sg && sg->page; sg = sg_next(sg, ++k, schp->k_use_sg)) {
-                num = sg->length;
-                if (num > num_read_xfer) {
-                        if (__copy_to_user(outp, page_address(sg->page),
-@@ -2142,7 +2142,7 @@ sg_link_reserve(Sg_fd * sfp, Sg_request * srp, int size)
-        SCSI_LOG_TIMEOUT(4, printk("sg_link_reserve: size=%d\n", size));
-        rem = size;
-
--       for (k = 0; k < rsv_schp->k_use_sg; ++k, sg = sg_next(sg)) {
-+       for (k = 0; sg; sg = sg_next(sg, ++k, rsv_schp->k_use_sg)) {
-                num = sg->length;
-                if (rem <= num) {
-                        sfp->save_scat_len = num;
-
+-#define SCSI_MAX_SG_SEGMENTS	128
++#define SCSI_MAX_SG_SEGMENTS	129
+ 
+ struct scsi_host_sg_pool {
+ 	size_t		size;
