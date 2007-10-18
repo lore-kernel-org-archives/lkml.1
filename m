@@ -1,104 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXJROdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763554AbXJROe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764227AbXJROdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbXJROdo
+	id S1763554AbXJROe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXJROet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:33:44 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:1402 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbXJROdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:33:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=lzjSxniycRp0wfRFUm0U+Sx577etlc4jOPcvmcx9CvVqZOcKBoZMJI/4lowxcCTRohnOc41+l/RwyVyPEf6aGmiSxlFVX095Ff0tvHF1WcCAnj4gnMljtVMR4ngCBUbiVvlvcT12D3R2HnJaRPUfGbcisTSh5q1zkhI5kpPCcBs=
-Message-ID: <47176EED.1050801@gmail.com>
-Date: Thu, 18 Oct 2007 22:34:21 +0800
-From: Yi Yang <yang.y.yi@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070809)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: linux-kernel@vger.kernel.org, akpm@osdl.org, mj@atrey.karlin.mff.cuni.cz,
-       crutcher+kernel@datastacks.com, pavel@ucw.cz, schwab@suse.de
-Subject: Re: [PATCH 2.6.23] SysRq: print hotkey info while pressing undef
- key, try 2
-References: <471628D2.8010903@gmail.com> <18386.1192651748@turing-police.cc.vt.edu>
-In-Reply-To: <18386.1192651748@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 18 Oct 2007 10:34:49 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:45012 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751706AbXJROes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 10:34:48 -0400
+Date: Thu, 18 Oct 2007 16:37:52 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: "Maciej W\. Rozycki" <macro@linux-mips.org>
+Cc: Andy Fleming <afleming@freescale.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
+Message-ID: <20071018143752.GA3630@ff.dom.local>
+References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <Pine.LNX.4.64N.0710171221510.28993@blysk.ds.pg.gda.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64N.0710171221510.28993@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu 写道:
-> On Wed, 17 Oct 2007 23:22:58 +0800, Yi Yang said:
->
->   
->> SysRq has already provided a similiar help before this patch, but it
->> is not so clear that the user doesn't know what happened and what
->> he/she should do.
->>     
->
-> The person is in one of two states:
->
-> 1) He has been told "recreate the problem, hit alt-sysreq-cokebottle,
-> and send me the results".  He has a mission, and the only feedback he
-> needs is (a) that he hit cokebottle and not pepsibottle, and (b) the
-> resulting output.
->
-> 2) He's already read the file in Documentation/ and just needs a reminder.
-> In this case, the fact it's only 2 or 3 lines and doesn't scroll other stuff
-> out of sight is more important.
->   
-Screen scroll isn't a problem.
+On Thu, Oct 18, 2007 at 12:30:35PM +0100, Maciej W. Rozycki wrote:
+> On Wed, 17 Oct 2007, Jarek Poplawski wrote:
+> 
+> > I'm not sure free_irq() should maintain the depth count - rather warn
+> > on not zero. But, IMHO, any activity on freed irq seems suspicious to
+> > me (and doesn't look like very common), even if it's safe with current
+> > implementation.
+> 
+>  No way to avoid it with DEBUG_SHIRQ.
+> 
+> > Yes, these DEBUG_SHIRQ checks are suspicious to me too, but they seem
+> > to be reasonable only in the case of possible resent irqs (so not for
+> > all irqs). On the other hand, it seems, proper irq handler with proper
+> > hardware shouldn't have any problems with such a check.
+> 
+>  What do you mean by "proper irq handler with proper hardware"?  Using
+> softirqs (they used to be called bottom-halves) is actually a natural way 
+> of handling any interrupt which requires extensive processing.
 
-"SysRq : HELP : loglevel0-8 reBoot Crashdump tErm Full kIll saK showMem
-Nice powerOff showPc show-all-timers(Q) unRaw Sync showTasks Unmount
-shoW-blocked-tasks"
+Technically until free_irq returns a handler should respond to calls
+and with proper hardware it should have no problem with checking if
+it's its interrupt, even after disabling this hardware, because of
+possible races.
 
-The above help information isn't very user-friendly.
+But with a scenario like this:
 
->   
->> In addition, that funtion has a big loop with another big loop
->> embedded which is very inefficient, it is intended to skip some hot
->>     
->
-> You're optimizing code that hopefully never gets executed, and even if
-> it does, you have the optimization *backwards*.  If you're worried about
-> the efficiency, trim it down to output 3 lines - do you realize how many
-> instructions it takes in the VGA and fb drivers to actually *output* all
-> these lines? (Seriously - I had a 1.6Ghz P4 laptop, where scrolling the
-> screen with vga=791 actually ran so slowly that it horqued up the timer
-> initialization code. *That* was a fun bug to figure out..)
->   
-To remove a bad loop is just a plus fix. That loop is really inefficient.
->   
->> key help info for such a function as "Changing Loglevel", just print
->> a help info for this, that is very unnecessary. In fact, the key '0'
->>  - '8' have different results the user should know.
->>     
->
-> And ironically enough, you then output the same exact text for all levels.
->   
-Yes, only one line for them is better.
->
->   
->> +static char __read_mostly sysrq_hot_key_table[36] = {
->> +	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
->> +	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
->> +	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
->> +	'u', 'v', 'w', 'x', 'y', 'z'
->>     
->
-> The lists of 'Not defined' tends to scroll the screen away. The old code
-> instead focuses on listing the things you *can* do.  If I'm looking at the
-> help output, I don't care that 'g' is not defined.  I need to be reminded
-> that 'p' is 'showPc' and D is show-all-locks.
->   
-You're right, "Not defined" is meaningless for the common users. I'll 
-submit a new revision
-to fix your concerns.
+- disable_irq()
+- disable_my_hadrware_irq()
+- clear_my_hardware_irq()
+- free_irq()
+- enable_irq()
 
-Thank you very much.
+it seems the handler should respond even after free_irq because there
+could be still interrupts to resend, originally generated by its
+hardware, so such behavior looks very suspicious, at least with some
+type of interrupts.
 
+So, I think, the idea of DEBUG_SHIRQ is generally right and very
+useful - but, of course, there could be exceptions, which btw. could
+try some hacks under DEBUG_SHIRQ too. And my opinion about
+'properness' was very general (not about phy) too, just like my
+'knowledge' of drivers.
+
+> 
+> > 1) phy_change() checks PHY_HALTED flag without lock; I think it's
+> > racy: eg. if it's done during phy_stop() it can check just before
+> > the flag is set and reenable interrupts just after phy_stop() ends.
+> 
+>  I remember having a look into it, but it was long ago and I cannot 
+> immediately recall the conclusion.  Which means it is either broken or 
+> deserves a comment as non-obvious.  I will have a look into it again, but 
+> I am resource-starved a little at the moment, sorry.
+> 
+> > 2) phy_change() doesn't reenable irq line after it sees returns
+> > with errors; IMHO it should at least write some warning, but maybe
+> > try some safety plan, so enable_irq() and try to disable interrupts
+> > and free_irq() on the next call (if it happens). (But, I can be very
+> > wrong with this - maybe it's OK and official way.)
+> 
+>  No way to do this safely -- at this point the device probably still has 
+> its interrupt output asserted and the register to clear it is 
+> inaccessible, so enabling the line will enter an infinite loop.  At this 
+> point the system is no longer stable, so it is better to keep at least 
+> some functionality, so that it may be attempted to be shut down cleanly, 
+> rather than make it completely irresponsive.  The alternative is panic().
+
+Right! But then some warning could be useful, I presume.
+
+> 
+> > 3) phy_interrupt() checks PHY_HALTED flag without lock too, but I'm
+> > not sure now if it could be dangerous after fixing #1; on the other
+> > hand even if we know it's not our regular interrupt, with current
+> > DEBUG_SHIRQ it could be easier to call schedule_work() anyway since
+> > we are sure it's before/in free_irq() yet.
+> 
+>   See #1 above.
+> 
+> > 4) phy_interrupt() should check return value from schedule_work() and
+> > enable irq on 0.
+> 
+>  No -- the work already pending will do that.
+
+How? If schedule_work won't succeed because there is a pending one,
+we did disable_irq_nosync 2x, so we would stay at least 1x too deep!
+
+> 
+> > 5) phy_stop_interrupts(): maybe I miss something, but it seems
+> > phy_stop() is required before this, so maybe there should be a
+> > comment on this?
+> 
+>  The API is documented in: Documentation/networking/phy.txt -- you are 
+> welcome to improve.  If you do not want to get into the gory details, just 
+> use the cooked interface and phy_disconnect() will do the dirty work for 
+> you.
+> 
+> > 6) phy_stop_interrupts(): if I'm not wrong with #3 calling
+> > phy_disable_interrupts() looks like we are not sure this phy_stop()
+> > really works; than maybe a WARN_ON?
+> 
+>  WARN_ON what?
+
+I've thought that phy_stop() could be needed before
+phy_stop_interrupt() to set PHY_HALTED, but since it disables and
+clears interrupts too, then there should be no need to repeat this,
+maybe only check it's done. But if there is no such dependency, then
+no point at all.
+
+> 
+> > 7) phy_stop_interrupts(): after above mentioned changes in
+> > phy_interrupt(), and phy_changes() (always enable_irq()) I can't see
+> > any reason why there should be more than one skipped enable_irq(),
+> > so checking return from cancel_work_sync() shouldn't be enough
+> > instead of this atomic counter.
+> 
+>  CONFIG_DEBUG_SHIRQ.  Barring this option, cancel_work_sync() could have 
+> been moved to the front of free_irq().  I think I have seen this in 
+> reality, with the interrupt line left stuck disabled afterwards, but I 
+> will double check when I have an opportunity.  The approach implemented 
+> with this patch does work, which is the important bit, and if 
+> simplification is possible, then it may be applied later.
+> 
+> > 8) phy_stop_interrupts(): I'm not sure this additional call from
+> > DEBUG_SHIRQ should be so dangerous, eg.:
+> > 
+> > 	/*
+> > 	 * status == PHY_HALTED &&
+> > 	 * interrupts are stopped after phy_stop()
+> > 	 */
+> > 	if (cancel_work_sync(...))
+> > 		enable_irq();
+> > 
+> > 	free_irq(...);
+> > 	/*
+> > 	 * possible schedule_work() from DEBUG_SHIRQ only,
+> > 	 * but proper check for PHY_HALTED is done;
+> > 	 * so, let's flush after this too:
+> > 	 */
+> > 	cancel_work_sync();
+> 
+>  Well, if there is another handler registered on this line, you'll get 
+> your interrupt line stuck disabled.
+
+I'll rethink this yet...
+
+> 
+> > Of course, I don't know phy.c enough, so most of this can be terribly
+> > wrong, then feel free to forget about this - I don't expect you should
+> > waste any time for explaining me these things - after all they are
+> > doubts only.
+> 
+>  I am not sure I know phy.c well enough either, ;-) and your concerns are 
+> appreciated as interesting conclusions may develop.  If someone disagrees 
+> with what I have written here, they are welcome to speak out too.
+
+But, I've enough of other concerns too, so nothing urgent here...
+
+Many thanks,
+Jarek P.
