@@ -1,100 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933729AbXJRJAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933779AbXJRJCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933729AbXJRJAU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 05:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932632AbXJRJAF
+	id S933779AbXJRJCS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 05:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932896AbXJRJCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 05:00:05 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:35077 "EHLO e5.ny.us.ibm.com"
+	Thu, 18 Oct 2007 05:02:07 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35036 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932578AbXJRJAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 05:00:03 -0400
-Date: Thu, 18 Oct 2007 14:29:59 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: [RFC PATCH 2/4] Rename lock_cpu_hotplug to get_online_cpus
-Message-ID: <20071018085959.GC15281@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071016103308.GA9907@in.ibm.com> <20071016103506.GB16570@in.ibm.com> <20071017161308.GD6773@localdomain> <20071018075702.GB15281@in.ibm.com> <20071018082221.GE6773@localdomain>
+	id S932697AbXJRJCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 05:02:04 -0400
+Message-ID: <471720FE.4090004@garzik.org>
+Date: Thu, 18 Oct 2007 05:01:50 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018082221.GE6773@localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <20071017172932.GI15552@kernel.dk> <20071017173408.GA1960@elte.hu> <20071017174503.GA4622@elte.hu> <20071017175337.GN15552@kernel.dk> <20071017183716.GU15552@kernel.dk> <20071017190901.GA13780@elte.hu> <alpine.LFD.0.999.0710171217160.26902@woody.linux-foundation.org> <20071017193542.GA15552@kernel.dk> <20071018070706.GA7435@elte.hu> <471717BF.4030108@pobox.com> <20071018083213.GN5063@kernel.dk>
+In-Reply-To: <20071018083213.GN5063@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 03:22:21AM -0500, Nathan Lynch wrote:
-> Gautham R Shenoy wrote:
-> > Hi Nathan, 
-> > > Hi Gautham-
-> > > 
-> > > Gautham R Shenoy wrote:
-> > > > Replace all lock_cpu_hotplug/unlock_cpu_hotplug from the kernel and use 
-> > > > get_online_cpus and put_online_cpus instead as it highlights
-> > > > the refcount semantics in these operations.
-> > > 
-> > > Something other than "get_online_cpus", please?  lock_cpu_hotplug()
-> > > protects cpu_present_map as well as cpu_online_map.  For example, some
-> > > of the powerpc code modified in this patch is made a bit less clear
-> > > because it is manipulating cpu_present_map, not cpu_online_map.
-> > 
-> > A quick look at the code, and I am wondering why is lock_cpu_hotplug()
-> > used there in the first place. It doesn't look like we require any 
-> > protection against cpus coming up/ going down in the code below, 
-> > since the cpu-hotplug operation doesn't affect the cpu_present_map. 
-> 
-> The locking is necessary.  Changes to cpu_online_map and
-> cpu_present_map must be serialized; otherwise you could end up trying
-> to online a cpu as it is being removed (i.e. cleared from
-> cpu_present_map).  Online operations must check that a cpu is present
-> before bringing it up (kernel/cpu.c):
+Jens Axboe wrote:
+> index 4df8311..b858183 100644
+> --- a/drivers/ata/sata_mv.c
+> +++ b/drivers/ata/sata_mv.c
+> @@ -1139,6 +1139,7 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
+>  	struct mv_port_priv *pp = qc->ap->private_data;
+>  	struct scatterlist *sg;
+>  	struct mv_sg *mv_sg;
+> +	int end_marked = 0;
+>  
+>  	mv_sg = pp->sg_tbl;
+>  	ata_for_each_sg(sg, qc) {
+> @@ -1159,13 +1160,15 @@ static void mv_fill_sg(struct ata_queued_cmd *qc)
+>  			sg_len -= len;
+>  			addr += len;
+>  
+> -			if (!sg_len && ata_sg_is_last(sg, qc))
+> +			if (!sg_len && ata_sg_is_last(sg, qc)) {
+>  				mv_sg->flags_size |= cpu_to_le32(EPRD_FLAG_END_OF_TBL);
+> +				end_marked++;
+> +			}
+>  
+>  			mv_sg++;
+>  		}
+> -
+>  	}
+> +	BUG_ON(end_marked != 1);
 
-Fair enough! 
 
-But we are not protecting the cpu_present_map here using
-lock_cpu_hotplug(), now are we?
+Your BUG_ON() does indeed trip, here.
 
-The lock_cpu_hotplug() here, ensures that no cpu-hotplug operations
-occur in parallel with a processor add or a processor remove. 
-IOW, we're still ensuring that the cpu_online_map doesn't change 
-while we're changing the cpu_present_map. So I don't see why the name
-get_online_cpus() should be a problem here. May be we could add a
-comment as to why we don't want a cpu-hotplug operation to happen while
-we're adding/removing a processor.
+Its surprising that other folks don't explode, considering that 
+mv_fill_sg() intentionally mirrors the logic in ata_fill_sg().
 
-Unless of course, lock_cpu_hotplug() is also used to serialize 
-the add_processor and remove_processor operations. Is that the case
-here ?
+	Jeff
 
-Thanks and Regards
-gautham.
-> 
-> /* Requires cpu_add_remove_lock to be held */
-> static int __cpuinit _cpu_up(unsigned int cpu, int tasks_frozen)
-> {
-> 	int ret, nr_calls = 0;
-> 	void *hcpu = (void *)(long)cpu;
-> 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
-> 
-> 	if (cpu_online(cpu) || !cpu_present(cpu))
-> 		return -EINVAL;
-> 	....
-> 
-> > Can't we use another mutex here instead of the cpu_hotplug mutex here ?
-> 
-> I guess so, but I don't really see the need...
-> 
 
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
