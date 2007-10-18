@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764315AbXJRTEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbXJRTOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764315AbXJRTEW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 15:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbXJRTEP
+	id S1758796AbXJRTOm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 15:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXJRTOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 15:04:15 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:47058 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759244AbXJRTEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 15:04:14 -0400
-Date: Fri, 19 Oct 2007 00:42:56 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, pbadari@us.ibm.com,
-       dhaval@linux.vnet.ibm.com
-Subject: Re: Buggy idle time reported in /proc/uptime for SMP systems?
-Message-ID: <20071018191256.GA29046@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20071018162513.GA19214@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018162513.GA19214@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+	Thu, 18 Oct 2007 15:14:34 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43762 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755410AbXJRTOe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 15:14:34 -0400
+Message-ID: <4717B072.6090506@bull.net>
+Date: Thu, 18 Oct 2007 21:13:54 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: IceDove 1.5.0.12 (X11/20070606)
+MIME-Version: 1.0
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fix guest time accounting going faster than user time accounting
+References: <200710181941.31181.borntraeger@de.ibm.com>
+In-Reply-To: <200710181941.31181.borntraeger@de.ibm.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 18/10/2007 21:21:01,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 18/10/2007 21:21:03,
+	Serialize complete at 18/10/2007 21:21:03
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 09:55:13PM +0530, Srivatsa Vaddagiri wrote:
-> The idle time reported in /proc/uptime (2nd field) seems to be the idle
-> time of only CPU0. Shouldn't it reflect the total idle time on a SMP system? 
-> Do folks agree that it is a bug that needs to be fixed? If so, will send
-> a patch ...
+Acked-by: Laurent Vivier <Laurent.Vivier@bull.net>
 
-On further reflection, it doesn't sound buggy. Reporting idle time across all
-cpus in /proc/uptime will cause idle time > uptime, which will be odd. I
-guess if anyone wants strict idle time from all cpus, they can always
-look at /proc/stat.
+Christian Borntraeger a écrit :
+> Seems I overlooked this type while reviewing Laurents patch.
+> cputime_add already adds, dont do it twice.
+> 
+> Avi. This should go to Linus before 2.6.24.
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> 
+> ---
+>  fs/proc/array.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23/fs/proc/array.c
+> ===================================================================
+> --- linux-2.6.23.orig/fs/proc/array.c
+> +++ linux-2.6.23/fs/proc/array.c
+> @@ -446,7 +446,7 @@ static int do_task_stat(struct task_stru
+>  			maj_flt += sig->maj_flt;
+>  			utime = cputime_add(utime, sig->utime);
+>  			stime = cputime_add(stime, sig->stime);
+> -			gtime += cputime_add(gtime, sig->gtime);
+> +			gtime = cputime_add(gtime, sig->gtime);
+>  		}
+>  
+>  		sid = signal_session(sig);
+> 
 
-> Fyi, I see patches submitted to fix this way back in 2001
-> [http://lkml.org/lkml/2001/3/17/55], but don't think they made in ..
 
 -- 
-Regards,
-vatsa
+---------------- Laurent.Vivier@bull.net  -----------------
+"Given enough eyeballs, all bugs are shallow" E. S. Raymond
+
