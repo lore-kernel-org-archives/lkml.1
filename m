@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbXJRHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763259AbXJRHP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbXJRHOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 03:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXJRHON
+	id S1763259AbXJRHP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 03:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761041AbXJRHPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 03:14:13 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:24271 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755171AbXJRHOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 03:14:12 -0400
-Message-ID: <471707BD.4000203@sw.ru>
-Date: Thu, 18 Oct 2007 11:14:05 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: Re: How Inactive may be much greather than cached?
-References: <4716FC04.6070107@sw.ru> <200710181627.27827.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710181627.27827.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=KOI8-R
+	Thu, 18 Oct 2007 03:15:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45678 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759327AbXJRHPb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 03:15:31 -0400
+Date: Thu, 18 Oct 2007 00:02:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [RFC] remove netpoll receive code
+Message-Id: <20071018000244.2513c564.akpm@linux-foundation.org>
+In-Reply-To: <20071017.232838.41634977.davem@davemloft.net>
+References: <20071017132131.1992bedd@freepuppy.rosehill>
+	<20071017.232838.41634977.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Hi,
+On Wed, 17 Oct 2007 23:28:38 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+
+> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date: Wed, 17 Oct 2007 13:21:31 -0700
 > 
-> On Thursday 18 October 2007 16:24, Vasily Averin wrote:
->> Hi all,
->>
->> could anybody explain how "inactive" may be much greater than "cached"?
->> stress test (http://weather.ou.edu/~apw/projects/stress/) that writes into
->> removed files in cycle puts the node to the following state:
->>
->> MemTotal: 16401648 kB
->> MemFree: 636644 kB
->> Buffers: 1122556 kB
->> Cached: 362880 kB
->> SwapCached: 700 kB
->> Active: 1604180 kB
->> Inactive: 13609828 kB
->>
->> At the first glance memory should be freed on file closing, nobody refers
->> to file and ext3_delete_inode() truncates inode. We can see that memory is
->> go away from "cached", however could somebody explain why it become
->> "invalid" instead be freed? Who holds the references to these pages?
+> > I propose that we take out all the whole netpoll rx path. If/when
+> > kgdb gets submitted a better and alternative receive path can be
+> > added.
 > 
-> Buffers, swap cache, and anonymous.
+> I would like to kill the RX side handling of netpoll too,
+> but I don't think that's reasonable as kgdb is actively
+> being pushed for 2.6.25 inclusion.
+> 
+> Andrew is likely to add it to his -mm tree soon and therefore kgdb
+> will need to work properly now.
 
-But buffers and swap cache are low (1.1 Gb and 700kB in this example) and
-anonymous should go away when process finished.
+git-kgdb.patch has been in there for ages - maybe a year.  Although I
+disabled it a week or so ago due to the sheer number of rejects.  Will
+bring it back when things settle down a bit.
 
-
-
+> The RX netpoll thing has a long precedence, it's been in the tree for
+> a long time, so we are in some ways stuck with it until we have a
+> complete replacement facility.  That means we can't yank it out first
+> and implement the replacement later.
