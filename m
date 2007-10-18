@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbXJRUlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbXJRUqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763573AbXJRUlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 16:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXJRUlR
+	id S1762706AbXJRUqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 16:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXJRUqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 16:41:17 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27654 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758288AbXJRUlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 16:41:16 -0400
-Date: Thu, 18 Oct 2007 22:41:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
-Subject: Re: libata crash
-Message-ID: <20071018204111.GN10674@kernel.dk>
-References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk> <20071018195903.GA29567@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018195903.GA29567@elte.hu>
+	Thu, 18 Oct 2007 16:46:01 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:15577 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754846AbXJRUqA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 16:46:00 -0400
+Subject: Re: [PATCH] i386: fix TSC clock source calibration error
+From: Daniel Walker <dwalker@mvista.com>
+To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
+References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 13:43:34 -0700
+Message-Id: <1192740214.17527.185.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18 2007, Ingo Molnar wrote:
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, 2007-10-16 at 10:50 -0400, Dave Johnson wrote:
 > 
-> > I'll see if I can spend some time tonight chopping the patch into 
-> > digestable pieces, unfortunately I'll be away the next three days. And 
-> > it would be nice to get this thing merged asap.
+>  range of tsc_khz  # of boots  % of boots
+> -----------------  ----------  ----------
+>         < 1999750           0      0.000%
+> 1999750 - 1999800          21      3.048%
+> 1999800 - 1999850         166     24.128%
+> 1999850 - 1999900         241     35.029%
+> 1999900 - 1999950         211     30.669%
+> 1999950 - 2000000          42      6.105%
+> 2000000 - 2000000           0      0.000%
+> 2000050 - 2000100           0      0.000%
+>                    [...]
+> 2000100 - 2015000           1      0.145%  << BAD
+> 2015000 - 2030000           6      0.872%  << BAD
+> 2030000 - 2045000           1      0.145%  << BAD
+> 2045000 <                   0      0.000%
 > 
-> and make sure it builds:
-> 
-> drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
-> drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
-> drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
-> drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
-> drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
-> drivers/scsi/in2000.c: In function 'in2000_queuecommand':
-> drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
-> drivers/scsi/in2000.c: In function 'transfer_bytes':
-> drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
+> The worst boot was 2032.577 Mhz, over 1.5% off!
 
-Oops, wonder why they were missed in the allyes/modconfig. Fixed now,
-thanks!
+Can you tell us what type of machine this was? I've seen complaints
+where the SMI's can cause some other funny stuff with calibration , be
+no one can every reproduce anything..
 
--- 
-Jens Axboe
+Daniel
 
