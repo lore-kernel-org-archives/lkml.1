@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763218AbXJRAXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbXJRA25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763218AbXJRAXY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 20:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760546AbXJRAXE
+	id S1762639AbXJRA25 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 20:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759746AbXJRA2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 20:23:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49998 "EHLO mail.dvmed.net"
+	Wed, 17 Oct 2007 20:28:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60271 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759001AbXJRAXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 20:23:01 -0400
-Message-ID: <4716A761.5040307@garzik.org>
-Date: Wed, 17 Oct 2007 20:22:57 -0400
+	id S1759530AbXJRA2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 20:28:42 -0400
+Message-ID: <4716A8B4.5060406@garzik.org>
+Date: Wed, 17 Oct 2007 20:28:36 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: AAbdulla@nvidia.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-stable <stable@kernel.org>
-Subject: Re: [PATCH] forcedeth msi bugfix
-References: <200710171952.l9HJqXgq027920@colorfullife.mysite.adiungo.com>
-In-Reply-To: <200710171952.l9HJqXgq027920@colorfullife.mysite.adiungo.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+CC: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
+Subject: Re: [PATCH] vortex_up should initialize "err"
+References: <1192662956.14504.14.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <1192662956.14504.14.camel@dyn9047017100.beaverton.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -28,23 +28,16 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> pci_enable_msi() replaces the INTx irq number in pci_dev->irq with the
-> new MSI irq number.
-> The forcedeth driver did not update the copy in netdevice->irq and
-> parts of the driver used the stale copy.
-> See bugzilla.kernel.org, bug 9047.
+Badari Pulavarty wrote:
+> Simple compile warning fix. (against 2.6.23-git12)
 > 
-> The patch
-> - updates netdevice->irq
-> - replaces all accesses to netdevice->irq with pci_dev->irq.
+> Thanks,
+> Badari
 > 
-> The patch is against 2.6.23.1. IMHO suitable for both 2.6.23 and 2.6.24
+> vortex_up() should initialize 'err' for a successful return.
 > 
-> Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
+> drivers/net/3c59x.c: In function `vortex_up':
+> drivers/net/3c59x.c:1494: warning: `err' might be used uninitialized in this function
 
-applied to upstream, after fixing the driver version (already bumped).
-
-and I agree, stable@kernel.org should have this
-
+applied as an obvious bug fix (Steffen added to CC)
 
