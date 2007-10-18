@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbXJRG2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761964AbXJRG2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbXJRG2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 02:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXJRG14
+	id S1761964AbXJRG2h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 02:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbXJRG20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 02:27:56 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35383 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751745AbXJRG1z (ORCPT
+	Thu, 18 Oct 2007 02:28:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44826
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754082AbXJRG2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 02:27:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=c84c5Tj4kLTZjFL0/dlD8viLuI1l1xlaYYhrJx5SbpVf2qQoOajz1+JRxNUp9cWUSpcOzNDQ0bQYzQZiPv9fbt6YWFb6+xHf6tIkhYkuz7GhTCPes4fSa+xuQlb1eyPP3Bita6E0hBn8eBH4K1cllmLxCEvpu/vvI4G8JfRInP0=  ;
-X-YMail-OSG: V0ihsOIVM1ms_pj7_TPV2jndwEq1XOugS33aVAc8lXd.ksdidb3tmKeSM._V1ELOCskSmJiudhleom7tqvU03t_r94Je89lZnVVqJv.RsXmZEd1SkHSfjmCvhVyQ3A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Vasily Averin <vvs@sw.ru>
-Subject: Re: How Inactive may be much greather than cached?
-Date: Thu, 18 Oct 2007 16:27:27 +1000
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-References: <4716FC04.6070107@sw.ru>
-In-Reply-To: <4716FC04.6070107@sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
+	Thu, 18 Oct 2007 02:28:25 -0400
+Date: Wed, 17 Oct 2007 23:28:38 -0700 (PDT)
+Message-Id: <20071017.232838.41634977.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: akpm@osdl.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] remove netpoll receive code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071017132131.1992bedd@freepuppy.rosehill>
+References: <20071017132131.1992bedd@freepuppy.rosehill>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710181627.27827.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Wed, 17 Oct 2007 13:21:31 -0700
 
-On Thursday 18 October 2007 16:24, Vasily Averin wrote:
-> Hi all,
->
-> could anybody explain how "inactive" may be much greater than "cached"?
-> stress test (http://weather.ou.edu/~apw/projects/stress/) that writes into
-> removed files in cycle puts the node to the following state:
->
-> MemTotal: 16401648 kB
-> MemFree: 636644 kB
-> Buffers: 1122556 kB
-> Cached: 362880 kB
-> SwapCached: 700 kB
-> Active: 1604180 kB
-> Inactive: 13609828 kB
->
-> At the first glance memory should be freed on file closing, nobody refers
-> to file and ext3_delete_inode() truncates inode. We can see that memory is
-> go away from "cached", however could somebody explain why it become
-> "invalid" instead be freed? Who holds the references to these pages?
+> I propose that we take out all the whole netpoll rx path. If/when
+> kgdb gets submitted a better and alternative receive path can be
+> added.
 
-Buffers, swap cache, and anonymous.
+I would like to kill the RX side handling of netpoll too,
+but I don't think that's reasonable as kgdb is actively
+being pushed for 2.6.25 inclusion.
+
+Andrew is likely to add it to his -mm tree soon and therefore kgdb
+will need to work properly now.
+
+The RX netpoll thing has a long precedence, it's been in the tree for
+a long time, so we are in some ways stuck with it until we have a
+complete replacement facility.  That means we can't yank it out first
+and implement the replacement later.
