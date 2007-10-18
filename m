@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762656AbXJRVyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763415AbXJRV5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762656AbXJRVyK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 17:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbXJRVx6
+	id S1763415AbXJRV5F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 17:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbXJRV44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 17:53:58 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:54813 "EHLO tac.ki.iif.hu"
+	Thu, 18 Oct 2007 17:56:56 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:50882 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756482AbXJRVx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 17:53:58 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RocketPort Linux driver errors on module reload
-References: <bububu786234897832@pripojeni.net> <87k5pozgb5.fsf@tac.ki.iif.hu>
-	<4713BAD0.9020606@gmail.com> <87myujsdpr.fsf@szonett.ki.iif.hu>
-	<4af2d03a0710161419n3727dbfev10b1319599d30b49@mail.gmail.com>
-Date: Thu, 18 Oct 2007 23:53:50 +0200
-In-Reply-To: <4af2d03a0710161419n3727dbfev10b1319599d30b49@mail.gmail.com>
-	(Jiri Slaby's message of "Tue, 16 Oct 2007 23:19:28 +0200")
-Message-ID: <87ve94ccnl.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	id S1755979AbXJRV4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 17:56:55 -0400
+Date: Thu, 18 Oct 2007 23:58:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Bernhard Walle <bwalle@suse.de>,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       vgoyal@in.ibm.com
+Subject: Re: [patch 1/3] Add BSS to resource tree
+Message-ID: <20071018215827.GB23708@uranus.ravnborg.org>
+References: <20071018111535.356215664@strauss.suse.de> <20071018111535.883533731@strauss.suse.de> <20071018142642.5b3f6ba4.akpm@linux-foundation.org> <20071018214836.GA3459@bingen.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018214836.GA3459@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jiri Slaby" <jirislaby@gmail.com> writes:
+On Thu, Oct 18, 2007 at 11:48:37PM +0200, Andi Kleen wrote:
+> > > +extern char _text[], _end[], _etext[], _edata[], _bss[];
+> > 
+> > These should be in a header file.
+> 
+> Normally the "no externs in .c" rule doesn't apply to assembler or linker 
+> script defined labels. That's because the point of the header file is to 
+> type check them, but there is nothing to type check here.
 
-> On 10/16/07, Wagner Ferenc <wferi@niif.hu> wrote:
->
->> Jiri Slaby <jirislaby@gmail.com> writes:
->>
->>> Are you willing to test to-pci-probing patches (i.e. patches which
->>> converts the driver to the model introduced in linux 2.4)?
->>
->> Well yes.  We've got a copule of such cards, which raises some
->> interest in a proper driver.  Just send the patches with some
->> instructions along, or point me to a git branch if you prefer.
->
-> Maybe the git with stand-alone module would be better...
+For linker generated symbols we have sections.h for this purpose.
+The above symbols are all available if we do an:
+#include <asm/sections.h>
 
-Sorry, I don't understand this suggestion.  I don't read LKML, please
-don't suppose any prior knowledge of the jargon used here...  Do you
-mean I should use the bleeding edge git source of the kernel?  Not
-something I'm eager to do, but can do, actually.  And would you send
-me patches separately on top of that?
+This is the right fix in this case.
 
->>> If not, I'll only increment the counter on modprobe and decrement it
->>> on rmmod, since it would be a safe (in the meaning of not changing
->>> that much code) way of fixing the problem.
->>
->> And what are the drawbacks of this simple solution?
->
-> Nothing, but it's not the proper way -- just a safe fallback. But you
-> can still say no :).
-
-I expected an improper way to have some disadvantages at least. :)
-
-Anyway, I can tolerate some glitches during the porting of this
-module, resulting in interruptions of the serial devices, but leaving
-the rest of the system mostly stable; it's a production system after
-all.  If the changes are more threatening, I'll use another system for
-the tests.  In short: suggest a method and let's give a chance for the
-proper solution.  Just please enclose some risk assessment.
--- 
-Regards,
-Feri.
+	Sam
