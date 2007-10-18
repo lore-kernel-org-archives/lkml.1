@@ -1,75 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764012AbXJRQMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765858AbXJRQOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764012AbXJRQMW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 12:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXJRQML
+	id S1765858AbXJRQOE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 12:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXJRQNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 12:12:11 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:63729 "EHLO smtp.mba.ocn.ne.jp"
+	Thu, 18 Oct 2007 12:13:55 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37385 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757498AbXJRQMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 12:12:09 -0400
-Date: Fri, 19 Oct 2007 01:13:55 +0900 (JST)
-Message-Id: <20071019.011355.39154656.anemo@mba.ocn.ne.jp>
-To: rmk+kernel@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] serial: do not call ->pm() on initialization for console
- port
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	id S1751576AbXJRQNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 12:13:54 -0400
+Date: Thu, 18 Oct 2007 21:55:13 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, pbadari@us.ibm.com,
+       dhaval@linux.vnet.ibm.com
+Subject: Buggy idle time reported in /proc/uptime for SMP systems?
+Message-ID: <20071018162513.GA19214@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This commit in current git tree broke serial console for serial_txx9 driver.
+The idle time reported in /proc/uptime (2nd field) seems to be the idle
+time of only CPU0. Shouldn't it reflect the total idle time on a SMP system? 
+Do folks agree that it is a bug that needs to be fixed? If so, will send
+a patch ...
 
-> commit 97d97224ff361e08777fb33e0fd193ca877dac28
-> Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
-> Date:   Sat Sep 1 21:25:09 2007 +0100
-> 
->     [SERIAL] Fix console initialisation ordering
+Fyi, I see patches submitted to fix this way back in 2001
+[http://lkml.org/lkml/2001/3/17/55], but don't think they made in ..
 
-The serial_txx9 driver initialize its port entirely on its ->pm()
-method if new state was 0.  With the commit, serial_core calls ->pm()
-even if the port was used for console.
-
-Attached patch fixes this problem.  Is this a right way?
-If not, I will fix the serial_txx9 driver to skip the initialization in
-->pm() if oldstate was -1.
-
-
-------------------------------------------------------
-Subject: serial: do not call ->pm() on initialization for console port
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-
-If the port was already enabled as a serial console, there is no need
-to call pm callback to power it up.  This patch fixes serial console
-initialization on serial_txx9 driver.
-
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 68aa4da..5a38076 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2326,7 +2326,6 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
- 	}
- 
- 	state->port = port;
--	state->pm_state = -1;
- 
- 	port->cons = drv->cons;
- 	port->info = state->info;
-@@ -2336,6 +2335,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
- 	 * initialised.
- 	 */
- 	if (!(uart_console(port) && (port->cons->flags & CON_ENABLED))) {
-+		state->pm_state = -1;
- 		spin_lock_init(&port->lock);
- 		lockdep_set_class(&port->lock, &port_lock_key);
- 	}
+-- 
+Regards,
+vatsa
