@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXJRRWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764934AbXJRRYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764227AbXJRRWd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 13:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbXJRRWW
+	id S1764934AbXJRRYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 13:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbXJRRYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 13:22:22 -0400
-Received: from palrel10.hp.com ([156.153.255.245]:34626 "EHLO palrel10.hp.com"
+	Thu, 18 Oct 2007 13:24:05 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51064 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbXJRRWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 13:22:21 -0400
-Message-ID: <4717964A.8080100@hp.com>
-Date: Thu, 18 Oct 2007 10:22:18 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Felix von Leitner <felix-linuxkernel@fefe.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: bizarre network timing problem
-References: <20071017205127.GA21334@codeblau.de> <47167BDE.4000103@redhat.com>	<20071017220019.GA22765@codeblau.de> <471689BF.2040909@hp.com> <20071018094230.GA2978@codeblau.de>
-In-Reply-To: <20071018094230.GA2978@codeblau.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756144AbXJRRYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 13:24:04 -0400
+Date: Thu, 18 Oct 2007 19:25:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: - x86_64-check-msr-to-get-mmconfig-for-amd-family-10h-opteron.patch removed from -mm tree
+Message-ID: <20071018172536.GB21908@uranus.ravnborg.org>
+References: <200710180709.l9I794J2031878@imap1.linux-foundation.org> <471784C2.3080807@sun.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471784C2.3080807@sun.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Felix von Leitner wrote:
->>the packet trace was a bit too cooked perhaps, but there were indications 
->>that at times the TCP window was going to zero - perhaps something with 
->>window updates or persist timers?
+On Thu, Oct 18, 2007 at 09:07:30AM -0700, Yinghai Lu wrote:
 > 
+> akpm@linux-foundation.org wrote:
+> >The patch titled
+> >     x86_64: check MSR to get MMCONFIG for AMD Family 10h Opteron
+> >has been removed from the -mm tree.  Its filename was
+> >     x86_64-check-msr-to-get-mmconfig-for-amd-family-10h-opteron.patch
+> >
+> >This patch was dropped because it was merged into mainline or a subsystem 
+> >tree
+> >
+> >------------------------------------------------------
+> >Subject: x86_64: check MSR to get MMCONFIG for AMD Family 10h Opteron
+> >From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+> >
+> >So even MCFG is not there, we still can use MMCONFIG.
+> >
+> >Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> >Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >---
+> >
+> > arch/i386/pci/mmconfig-shared.c |   58 ++++++++++++++++++++++++++----
+> > 1 file changed, 52 insertions(+), 6 deletions(-)
 > 
-> Does TCP use different window sizes on loopback?  Why is this not
-> happening on ethernet?
-
-I don't think it uses different window sizes on loopback, but with the 
-autotuning it can be difficult to say a priori what the window size will be. 
-What one can say with confidence is that the MTU and thus the MSS will be 
-different between loopback and ethernet.
-
+> Andrew,
 > 
-> How could I test this theory?
+> where was this one going? Thomas got it?
 
-Can you take another trace that isn't so "cooked?"  One that just sticks with 
-TCP-level and below stuff?
+Yep - in his mm branch.
+See:
+http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-x86.git;a=commit;h=51fb449df2717b6e9eda88f4be4bce0a69bf04aa
 
-If SMB is a one-request-at-a-time protocol (I can never remember), you could 
-simulate it with a netperf TCP_RR test by passing suitable values to the 
-test-specific -r option:
-
-netperf -H <remote> -t TCP_RR -- -r <req>,<rsp>
-
-If that shows similar behaviour then you can ass-u-me it isn't your application. 
-  One caveat though is that TCP_CORK mode in netperf is very primitive and may 
-not match what you are doing, however, that may be a good thing.
-
-http://www.netperf.org/svn/netperf2/tags/netperf-2.4.4/  or
-ftp://ftp.netperf.org/netperf/
-
-to get the current netperf bits.  It is also possible to get multiple 
-transactions in flight at one time if you configure netperf with --enable-burst, 
-which will then enable a test-specific -b option.  With the latest netperf you 
-cna also switch the output of a TCP_RR test to bits or bytes per second a la the 
-_STREAM tests.
-
-rick jones
-
-> 
-> My initial idea was that it has something todo with the different MTU on
-> loopback.  My initial block size was 16k, but the problem stayed when I
-> changed it to 64k.
-> 
-> Felix
-
+	Sam
