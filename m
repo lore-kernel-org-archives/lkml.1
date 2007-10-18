@@ -1,99 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933733AbXJROPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXJROQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933733AbXJROPo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 10:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933338AbXJROP0
+	id S933289AbXJROQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 10:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763970AbXJROQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 10:15:26 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:59003 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933029AbXJROPX (ORCPT
+	Thu, 18 Oct 2007 10:16:34 -0400
+Received: from sa12.bezeqint.net ([192.115.104.27]:48558 "EHLO
+	sa12.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764522AbXJROQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 10:15:23 -0400
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: [PATCH] Fix a build error when BLOCK=n
-Date: Thu, 18 Oct 2007 09:06:03 -0500
-Message-Id: <1192716363-31661-1-git-send-email-Emilian.Medve@Freescale.com>
-X-Mailer: git-send-email 1.5.3.GIT
-X-Brightmail-Tracker: AAAAAQAAAAQ=
-X-Whitelist: TRUE
+	Thu, 18 Oct 2007 10:16:33 -0400
+Message-ID: <47176AB9.2070000@panasas.com>
+Date: Thu, 18 Oct 2007 16:16:25 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+References: <20071018082145.GK5063@kernel.dk> <20071018.045505.106265100.davem@davemloft.net> <20071018115702.GW5063@kernel.dk> <20071018.050554.115911163.davem@davemloft.net> <20071018120950.GX5063@kernel.dk> <20071018121547.GY5063@kernel.dk> <4717587E.6090301@panasas.com> <20071018135605.GL5063@kernel.dk> <20071018140550.GO5063@kernel.dk>
+In-Reply-To: <20071018140550.GO5063@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mm/filemap.c: In function '__filemap_fdatawrite_range':
-mm/filemap.c:200: error: implicit declaration of function 'mapping_cap_writeback_dirty'
-
-This happens when we don't use/have any block devices and a NFS root filesystem
-is used
-
-mapping_cap_writeback_dirty() is defined in linux/backing-dev.h which used to be
-provided in mm/filemap.c by linux/blkdev.h until commit
-f5ff8422bbdd59f8c1f699df248e1b7a11073027
-
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
-
-Also removed some trailing whitespaces
-
-This is against Linus' tree: d85714d81cc0408daddb68c10f7fd69eafe7c213
-
-linux-2.6> scripts/checkpatch.pl 0001-Fix-a-build-error-when-BLOCK-n.patch 
-Your patch has no obvious style problems and is ready for submission.
-
- mm/filemap.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 79f24a9..6f1643d 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -27,6 +27,7 @@
- #include <linux/writeback.h>
- #include <linux/pagevec.h>
- #include <linux/blkdev.h>
-+#include <linux/backing-dev.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
- #include <linux/cpuset.h>
-@@ -537,7 +538,7 @@ void fastcall unlock_page(struct page *page)
- 	smp_mb__before_clear_bit();
- 	if (!TestClearPageLocked(page))
- 		BUG();
--	smp_mb__after_clear_bit(); 
-+	smp_mb__after_clear_bit();
- 	wake_up_page(page, PG_locked);
- }
- EXPORT_SYMBOL(unlock_page);
-@@ -1249,7 +1250,7 @@ asmlinkage ssize_t sys_readahead(int fd, loff_t offset, size_t count)
- static int fastcall page_cache_read(struct file * file, pgoff_t offset)
- {
- 	struct address_space *mapping = file->f_mapping;
--	struct page *page; 
-+	struct page *page;
- 	int ret;
- 
- 	do {
-@@ -1266,7 +1267,7 @@ static int fastcall page_cache_read(struct file * file, pgoff_t offset)
- 		page_cache_release(page);
- 
- 	} while (ret == AOP_TRUNCATED_PAGE);
--		
-+
- 	return ret;
- }
- 
-@@ -2302,7 +2303,7 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
- 						OSYNC_METADATA|OSYNC_DATA);
- 		}
-   	}
--	
-+
- 	/*
- 	 * If we get here for O_DIRECT writes then we must have fallen through
- 	 * to buffered writes (block instantiation inside i_size).  So we sync
--- 
-1.5.3.GIT
-
+On Oct. 18, 2007, 16:05 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Oct 18 2007, Jens Axboe wrote:
+>> On Thu, Oct 18 2007, Benny Halevy wrote:
+>>>>  	return sg;
+>>>>  }
+>>>> @@ -83,6 +96,9 @@ static inline struct scatterlist *sg_last(struct scatterlist *sgl,
+>>>>  		ret = sg;
+>>>>  
+>>>>  #endif
+>>>> +#ifdef CONFIG_DEBUG_SG
+>>>> +	BUG_ON(sgl[0].sg_magic != SG_MAGIC);
+>>> can it also do BUG_ON(!sg_is_last(sg))?
+>> That would make sense, definitely. I'll add that.
+> 
+>         BUG_ON(!sg_is_last(ret));
+> 
+> it should be, not sg. That's what I merged.
+> 
+right. of course.
