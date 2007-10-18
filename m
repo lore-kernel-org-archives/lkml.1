@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbXJRP5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934154AbXJRP56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933888AbXJRP5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbXJRP4W
+	id S934154AbXJRP56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 11:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764971AbXJRP4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 11:56:22 -0400
-Received: from services.sin.cvut.cz ([147.32.110.2]:60459 "EHLO
+	Thu, 18 Oct 2007 11:56:25 -0400
+Received: from services.sin.cvut.cz ([147.32.110.2]:60460 "EHLO
 	services.sin.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763423AbXJRP4R (ORCPT
+	with ESMTP id S1763476AbXJRP4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 18 Oct 2007 11:56:17 -0400
 From: Jaroslav Sykora <jara@sin.cvut.cz>
 Reply-To: jaroslav.sykora@gmail.com
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 1/5] Shadow directories: headers
-Date: Thu, 18 Oct 2007 17:22:37 +0200
+Subject: [RFC PATCH 3/5] Shadow directories: chdir, fchdir
+Date: Thu, 18 Oct 2007 17:25:15 +0200
 User-Agent: KMail/1.9.7
 References: <200710181721.09201.jara@sin.cvut.cz>
 In-Reply-To: <200710181721.09201.jara@sin.cvut.cz>
@@ -25,157 +25,124 @@ Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710181722.37629.jara@sin.cvut.cz>
+Message-Id: <200710181725.15721.jara@sin.cvut.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Header file changes for shadow directories.
-Adds pointers to shadows dirs to the struct file and struct fs_struct.
-Defines internal lookup flags and syscall flags.
+sys_chdir and sys_fchdir changes.
 
 Signed-off-by: Jaroslav Sykora <jaroslav.sykora@gmail.com>
 
- include/linux/file.h      |    2 ++
- include/linux/fs.h        |   18 ++++++++++++++++++
- include/linux/fs_struct.h |   25 +++++++++++++++++++++++++
- include/linux/namei.h     |   16 ++++++++++++++++
- 4 files changed, 61 insertions(+)
+ fs/open.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 73 insertions(+), 6 deletions(-)
 
---- orig/include/linux/fs.h	2007-10-07 19:00:24.000000000 +0200
-+++ new/include/linux/fs.h	2007-10-07 13:39:08.000000000 +0200
-@@ -266,6 +266,14 @@ extern int dir_notify_enable;
- #define SYNC_FILE_RANGE_WRITE		2
- #define SYNC_FILE_RANGE_WAIT_AFTER	4
- 
-+/* sys_setshdwinfo(), sys_getshdwinfo(): */
-+#define FSI_SHDW_ENABLE		1	/* enable shadow directories */
-+#define FSI_SHDW_ESC_EN		2	/* enable use of escape character */
-+#define FSI_SHDW_ESC_CHAR	3	/* specify escape character */
-+/* sys_setshdwpath */
-+#define SHDW_FD_ROOT		-1	/* pseudo FD for root shadow dir */
-+#define SHDW_FD_PWD		-2	/* pseudo FD for pwd shadow dir */
-+
- #ifdef __KERNEL__
- 
- #include <linux/linkage.h>
-@@ -752,6 +760,16 @@ struct file {
- 	spinlock_t		f_ep_lock;
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
-+
-+	/* the following fields are protected by f_owner.lock */
-+	/* | f_shdw   | f_shdwmnt   | result
-+	   +----------+-------------+------------
-+	   | NULL     | NULL        | delayed
-+	   | NULL     | !NULL       | invalid
-+	   | !NULL    | NULL        | BUG
-+	   | !NULL    | !NULL       | valid */
-+	struct dentry		*f_shdw;
-+	struct vfsmount		*f_shdwmnt;
- };
- extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
---- orig/include/linux/fs_struct.h	2007-07-09 01:32:17.000000000 +0200
-+++ new/include/linux/fs_struct.h	2007-10-07 13:39:08.000000000 +0200
-@@ -10,8 +10,31 @@ struct fs_struct {
- 	int umask;
- 	struct dentry * root, * pwd, * altroot;
- 	struct vfsmount * rootmnt, * pwdmnt, * altrootmnt;
-+
-+	int flags;
-+	/* shadow dirs: root and pwd */
-+	/* | shdwroot | shdwrootmnt | result
-+	   +----------+-------------+------------
-+	   | NULL     | NULL        | BUG_ON(flags&SHDW_ENABLED)
-+	   | !NULL    | !NULL       | ok
-+	   +==========+=============+============
-+	   | shdwpwd  | shdwpwdmnt  | result
-+	   +----------+-------------+------------
-+	   | NULL     | NULL        | delayed
-+	   | NULL     | !NULL       | invalid
-+	   | !NULL    | NULL        | BUG
-+	   | !NULL    | !NULL       | valid */
-+	struct dentry *shdwroot, *shdwpwd;
-+	struct vfsmount *shdwrootmnt, *shdwpwdmnt;
-+	/* shadow dirs: escape character */
-+	unsigned char shdw_escch;
- };
- 
-+/* bitflags for fs_struct.flags */
-+#define SHDW_ENABLED		1	/* are shadow dirs enabled? */
-+#define SHDW_USE_ESC		2	/* use escape char in shadow dirs? */
-+
-+
- #define INIT_FS {				\
- 	.count		= ATOMIC_INIT(1),	\
- 	.lock		= RW_LOCK_UNLOCKED,	\
-@@ -24,6 +47,8 @@ extern void exit_fs(struct task_struct *
- extern void set_fs_altroot(void);
- extern void set_fs_root(struct fs_struct *, struct vfsmount *, struct dentry *);
- extern void set_fs_pwd(struct fs_struct *, struct vfsmount *, struct dentry *);
-+extern void set_fs_shdwpwd(struct fs_struct *fs,
-+			   struct vfsmount *mnt, struct dentry *dentry);
- extern struct fs_struct *copy_fs_struct(struct fs_struct *);
- extern void put_fs_struct(struct fs_struct *);
- 
---- orig/include/linux/namei.h	2007-10-07 19:00:25.000000000 +0200
-+++ new/include/linux/namei.h	2007-10-07 20:03:11.000000000 +0200
-@@ -22,6 +22,7 @@ struct nameidata {
- 	int		last_type;
- 	unsigned	depth;
- 	char *saved_names[MAX_NESTED_LINKS + 1];
-+	unsigned char	find_char;
- 
- 	/* Intent data */
- 	union {
-@@ -54,6 +55,16 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LA
- #define LOOKUP_PARENT		16
- #define LOOKUP_NOALT		32
- #define LOOKUP_REVAL		64
-+
-+/* don't fallback to lookup in shadow directory */
-+#define LOOKUP_NOSHDW		128
-+/* try to find nameidata.find_char in pathname,
-+ * set LOOKUP_CHARFOUND in nameidata.flags if found */
-+#define LOOKUP_FINDCHAR		(1<<16)
-+#define LOOKUP_CHARFOUND	(1<<17)
-+/* (dentry,mnt) was found in shadow dir */
-+#define LOOKUP_INSHDW		(1<<18)
-+
- /*
-  * Intent data
-  */
-@@ -68,6 +79,8 @@ extern int FASTCALL(__user_walk_fd(int d
- 	__user_walk_fd(AT_FDCWD, name, LOOKUP_FOLLOW, nd)
- #define user_path_walk_link(name,nd) \
- 	__user_walk_fd(AT_FDCWD, name, 0, nd)
-+extern int FASTCALL(path_lookup_shdw(int dfd, const char *name,
-+			unsigned int flags, struct nameidata *nd));
- extern int FASTCALL(path_lookup(const char *, unsigned, struct nameidata *));
- extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
- 			   const char *, unsigned int, struct nameidata *);
-@@ -90,6 +103,9 @@ extern int follow_up(struct vfsmount **,
- extern struct dentry *lock_rename(struct dentry *, struct dentry *);
- extern void unlock_rename(struct dentry *, struct dentry *);
- 
-+extern int get_file_shdwdir(struct file *file, struct dentry **dentry,
-+			    struct vfsmount **mnt);
-+
- static inline void nd_set_link(struct nameidata *nd, char *path)
- {
- 	nd->saved_names[nd->depth] = path;
---- orig/include/linux/file.h	2007-10-07 19:00:24.000000000 +0200
-+++ new/include/linux/file.h	2007-10-16 21:06:51.000000000 +0200
-@@ -68,6 +68,8 @@ static inline void fput_light(struct fil
- 		fput(file);
+--- orig/fs/open.c	2007-10-07 19:00:19.000000000 +0200
++++ new/fs/open.c	2007-10-16 21:04:56.000000000 +0200
+@@ -476,13 +476,51 @@ asmlinkage long sys_access(const char __
+ 	return sys_faccessat(AT_FDCWD, filename, mode);
  }
  
-+extern struct file *FASTCALL(__fget(struct files_struct *files,
-+				unsigned int fd));
- extern struct file * FASTCALL(fget(unsigned int fd));
- extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
- extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
-
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
++static inline int read_fs_flags(void)
++{
++	int res;
++	read_lock(&current->fs->lock);
++	res = current->fs->flags;
++	read_unlock(&current->fs->lock);
++	return res;
++}
++
++void set_fs_shdwpwd(struct fs_struct *fs,
++			struct vfsmount *mnt, struct dentry *dentry)
++{
++	struct dentry *old_dentry;
++	struct vfsmount *old_mnt;
++
++	BUG_ON(dentry != NULL && mnt == NULL);
++	write_lock(&fs->lock);
++	/* set shadow pwd */
++	old_dentry = fs->shdwpwd;
++	old_mnt = fs->shdwpwdmnt;
++	fs->shdwpwd = dget(dentry);
++	if (dentry)
++		fs->shdwpwdmnt = mntget(mnt);
++	else
++		/* PTR_ERR flag */
++		fs->shdwpwdmnt = mnt;
++	write_unlock(&fs->lock);
++
++	if (old_dentry) {
++		mntput(old_mnt);
++		dput(old_dentry);
++	}
++}
++
+ asmlinkage long sys_chdir(const char __user * filename)
+ {
+ 	struct nameidata nd;
+-	int error;
++	char *tmp = getname(filename);
++	int error = PTR_ERR(tmp);;
++
++	if (IS_ERR(tmp))
++		goto out_badname;
+ 
+-	error = __user_walk(filename,
+-			    LOOKUP_FOLLOW|LOOKUP_DIRECTORY|LOOKUP_CHDIR, &nd);
++	error = path_lookup(tmp, LOOKUP_FOLLOW | LOOKUP_DIRECTORY
++			| LOOKUP_CHDIR, &nd);
+ 	if (error)
+ 		goto out;
+ 
+@@ -490,11 +528,23 @@ asmlinkage long sys_chdir(const char __u
+ 	if (error)
+ 		goto dput_and_out;
+ 
+-	set_fs_pwd(current->fs, nd.mnt, nd.dentry);
++	if (!(read_fs_flags() & SHDW_ENABLED))
++		goto set_std;
+ 
++	if (!(nd.flags & LOOKUP_INSHDW))
++		set_fs_shdwpwd(current->fs, NULL, NULL);
++	else
++		/* shadow == std */
++		set_fs_shdwpwd(current->fs, nd.mnt, nd.dentry);
++
++set_std:
++	/* set std cwd */
++	set_fs_pwd(current->fs, nd.mnt, nd.dentry);
+ dput_and_out:
+ 	path_release(&nd);
+ out:
++	putname(tmp);
++out_badname:
+ 	return error;
+ }
+ 
+@@ -520,8 +570,25 @@ asmlinkage long sys_fchdir(unsigned int 
+ 		goto out_putf;
+ 
+ 	error = file_permission(file, MAY_EXEC);
+-	if (!error)
+-		set_fs_pwd(current->fs, mnt, dentry);
++	if (error)
++		goto out_putf;
++
++	set_fs_pwd(current->fs, mnt, dentry);
++
++	if (!(read_fs_flags() & SHDW_ENABLED))
++		/* shadow dirs aren't enabled */
++		goto out_putf;
++
++	if (get_file_shdwdir(file, &dentry, &mnt))
++		/* some error ocured */
++		set_fs_shdwpwd(current->fs, NULL, NULL);
++	else {
++		/* ok */
++		set_fs_shdwpwd(current->fs, mnt, dentry);
++		mntput(mnt);
++		dput(dentry);
++	}
++
+ out_putf:
+ 	fput(file);
+ out:
