@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXJRC5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbXJRC5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762034AbXJRC5D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 22:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760410AbXJRC4x
+	id S1764328AbXJRC5h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Oct 2007 22:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760410AbXJRC51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 22:56:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:51500 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758430AbXJRC4w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 22:56:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:to:subject:cc:message-id:date:from;
-	b=WVmLsLUoTT3ve7rOB4mwpvNgZ2P5RUoC2G4xDkHfv1e3WIrYMysHSL0s3gJzMB5uo
-	PVHgGHfqDVYjTyKprX2Ig==
-To: akpm@linux-foundation.org, pj@sgi.com
-Subject: [PATCH] Simplify /proc/cgroups
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Message-Id: <20071018025636.ADCDE3D6261@localhost>
-Date: Wed, 17 Oct 2007 19:56:36 -0700 (PDT)
-From: menage@google.com (Paul Menage)
+	Wed, 17 Oct 2007 22:57:27 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36573 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759100AbXJRC5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Oct 2007 22:57:25 -0400
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1192675254.12879.29.camel@pasglop>
+References: <1192670742.12879.5.camel@pasglop>
+	 <alpine.LFD.0.999.0710171906150.26902@woody.linux-foundation.org>
+	 <1192675254.12879.29.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 12:57:15 +1000
+Message-Id: <1192676235.12879.40.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch simplifies /proc/cgroups by removing pointers and some
-debugging information, and simply presenting a list of subsystems,
-which hierarchy they are part of (if any) and the number of cgroups
-created for that subsystem. Hierarchy id is determined by the bitmask
-of subsystem ids attached to that hierarchy.
 
-Signed-off-by: Paul Menage <menage@google.com>
+> 
+> In general, I tend to think that for this function to make any sense
+> (that is, to synchronize anything at all), it needs a barrier or you are
+> just making a decision based on a totally random value of desc->status
+> since it can have been re-ordered, speculatively loaded, pre-fetched,
+> whatever'ed... :-).
 
----
+Take a real life example:
 
-Several people have commented that /proc/cgroups is too confusing or
-contains strange information. Here's an attempt to simplify it. New
-typical output looks like:
+drivers/message/fusion/mptbase.c
 
-#subsys_name	hierarchy	num_cgroups
-cpuset	1	2
-cpuacct	10	1
-debug	0	1
-ns	10	1
-memory	0	1
-cpu	0	1
+	/* Disable interrupts! */
+	CHIPREG_WRITE32(&ioc->chip->IntMask, 0xFFFFFFFF);
 
-Maybe there should be more tabs so that the columns line up better?
-But then it'll be out of line if people create subsystems with longer
-names ...
+	ioc->active = 0;
+	synchronize_irq(pdev->irq);
 
- kernel/cgroup.c | 25 ++++---------------------
- 1 file changed, 4 insertions(+), 21 deletions(-)
+And we aren't in a spinlock here. 
 
-Index: container-2.6.23-mm1/kernel/cgroup.c
-===================================================================
---- container-2.6.23-mm1.orig/kernel/cgroup.c
-+++ container-2.6.23-mm1/kernel/cgroup.c
-@@ -2403,31 +2403,14 @@ static int proc_cgroupstats_show(struct 
- 	int i;
- 	struct cgroupfs_root *root;
- 
-+	seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\n");
- 	mutex_lock(&cgroup_mutex);
--	seq_puts(m, "Hierarchies:\n");
--	for_each_root(root) {
--		struct cgroup_subsys *ss;
--		int first = 1;
--		seq_printf(m, "%p: bits=%lx cgroups=%d (", root,
--			   root->subsys_bits, root->number_of_cgroups);
--		for_each_subsys(root, ss) {
--			seq_printf(m, "%s%s", first ? "" : ", ", ss->name);
--			first = false;
--		}
--		seq_putc(m, ')');
--		if (root->sb) {
--			seq_printf(m, " s_active=%d",
--				   atomic_read(&root->sb->s_active));
--		}
--		seq_putc(m, '\n');
--	}
--	seq_puts(m, "Subsystems:\n");
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
--		seq_printf(m, "%d: name=%s hierarchy=%p\n",
--			   i, ss->name, ss->root);
-+		seq_printf(m, "%s\t%d\t%d\n",
-+			   ss->name, ss->root->subsys_bits,
-+			   ss->root->number_of_cgroups);
- 	}
--	seq_printf(m, "Control Group groups: %d\n", css_set_count);
- 	mutex_unlock(&cgroup_mutex);
- 	return 0;
- }
+That's just a random example grepped.... I think I see a few more. Then,
+some drivers like tg3 actually do an smp_mb() before calling
+synchronize_irq(). But then, some don't.
+
+I think trying to have all drivers be correct here is asking for
+trouble, we'd rather have synchronize_irq() be uber-safe. It's not like
+it was used in hot path anyway.
+
+Ben.
+
+
+
+
