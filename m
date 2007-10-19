@@ -1,36 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965788AbXJSCEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966110AbXJSCGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965788AbXJSCEA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 22:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXJSCDr
+	id S966110AbXJSCGo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 22:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965900AbXJSCGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 22:03:47 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:42734 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965477AbXJSCDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 22:03:46 -0400
-Date: Fri, 19 Oct 2007 12:03:03 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710190203.l9J233cp003969@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: fix make archclean
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Thu, 18 Oct 2007 22:06:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34309 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965886AbXJSCGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 22:06:19 -0400
+Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sho@tnes.nec.co.jp, clameter@sgi.com
+In-Reply-To: <20071017210925.c3c66de5.akpm@linux-foundation.org>
+References: <20070828190551.415127746@sgi.com>
+	 <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+	 <1188434857.3799.76.camel@localhost.localdomain>
+	 <1191285346.11737.58.camel@localhost.localdomain>
+	 <20071004131207.65406a7b.akpm@linux-foundation.org>
+	 <20071011111849.GC7125@duck.suse.cz>
+	 <20071017210925.c3c66de5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Thu, 18 Oct 2007 19:05:55 -0700
+Message-Id: <1192759555.3776.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove build reference to arch/m68knommu/boot directory, it doesn't
-exist.
+On Wed, 2007-10-17 at 21:09 -0700, Andrew Morton wrote:
+> On Thu, 11 Oct 2007 13:18:49 +0200 Jan Kara <jack@suse.cz> wrote:
+> 
+> > With 64KB blocksize, a directory entry can have size 64KB which does not fit
+> > into 16 bits we have for entry lenght. So we store 0xffff instead and convert
+> > value when read from / written to disk.
+> 
+> btw, this changes ext2's on-disk format.
+> 
+Just to clarify this is only changes the directory entries format on
+ext2/3/4 fs with 64k block size. But currently without kernel changes
+ext2/3/4 does not support 64 block size.
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+> a) is the ext2 format documented anywhere?  If so, that document will
+>    need updating.
+> 
 
+The e2fsprogs needs to be changed to sync up with this change.
 
-diff -Naurp linux-2.6.23/arch/m68knommu/Makefile linux-2.6.23-uc0/arch/m68knommu/Makefile
---- linux-2.6.23/arch/m68knommu/Makefile	2007-10-19 10:30:58.000000000 +1000
-+++ linux-2.6.23-uc0/arch/m68knommu/Makefile	2007-10-19 10:35:41.000000000 +1000
-@@ -117,4 +118,4 @@ core-y	+= arch/m68knommu/kernel/ \
- libs-y	+= arch/m68knommu/lib/
+Ted has a paper a while back to show ext2 disk format 
+http://web.mit.edu/tytso/www/linux/ext2intro.html
+
+The Documentation/filesystems/ext2.txt doesn't have the ext2 format
+documented. That document is out-dated need to be reviewed and cleaned
+up.
  
- archclean:
--	$(Q)$(MAKE) $(clean)=arch/m68knommu/boot
-+
+> b) what happens when an old ext2 driver tries to read and/or write this
+>    directory entry?  Do we need a compat flag for it?
+> 
+> c) what happens when old and new ext3 or ext4 try to read/write this
+>    directory entry?
+> 
+
+Without the first patch in this series: ext2 large blocksize support
+patches, it fails to mount a ext2 filesystem with 64k block size. 
+
+[PATCH 1/2] ext2:  Support large blocksize up to PAGESIZE
+http://lkml.org/lkml/2007/10/1/361
+
+So the old ext2/3/4 driver will not get access the directory entry with
+64k block size format changes.
+
+
+Regards,
+
+Mingming
+
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
