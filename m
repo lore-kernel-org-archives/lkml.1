@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXJSGtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965795AbXJSGue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765630AbXJSGtp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 02:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759610AbXJSGti
+	id S965795AbXJSGue (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 02:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762666AbXJSGuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 02:49:38 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45484
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756618AbXJSGth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 02:49:37 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Rogier Wolff <R.E.Wolff@bitwizard.nl>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Date: Fri, 19 Oct 2007 01:49:31 -0500
-User-Agent: KMail/1.9.6
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-References: <200710112011.22000.rob@landley.net> <200710161734.15880.nickpiggin@yahoo.com.au> <20071018130048.GA25084@bitwizard.nl>
-In-Reply-To: <20071018130048.GA25084@bitwizard.nl>
+	Fri, 19 Oct 2007 02:50:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:47744 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759469AbXJSGuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 02:50:19 -0400
+Date: Fri, 19 Oct 2007 08:50:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Carlos Corbacho <cathectic@slackadelic.com>
+cc: linux-kernel@vger.kernel.org, Mikko Tiihonen <mikko.tiihonen@iki.fi>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: nVidia HPET force enable - merge requirements? (resend)
+In-Reply-To: <200710190423.31714.cathectic@slackadelic.com>
+Message-ID: <alpine.LFD.0.9999.0710190847500.22770@localhost.localdomain>
+References: <200710190423.31714.cathectic@slackadelic.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710190149.31962.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 October 2007 8:00:49 am Rogier Wolff wrote:
-> So... IMHO, it would be useful to implement something that pages out
-> chunks of memory larger than a single hardware page. This would reduce
-> the size of the memory management tables (*), as well as improve disk
-> throughput if things DO come to paging....
+On Fri, 19 Oct 2007, Carlos Corbacho wrote:
+> Back in April, Mikko posted a patch to force enable the HPET on some nVidia 
+> chipsets:
+>
+> A) There is now a force_hpet boot parameter in the x86 tree (mm branch) 
+> (rather than relying on the solution in the earlier patches of a config 
+> option).
 
-I believe that was more or less the topic of this paper:
-  http://kernel.org/doc/ols/2006/ols2006v2-pages-73-78.pdf
+There is still a config option for hpet. the hpet=force boot param is
+there to allow force enable hpet for not documented chip set features.
+ 
+> B) On the other hand, the force-quirk's are going into quirks.c, whilst 
+> Mikko's patch requires PCI scanning in early_quirks.c (could the PCI scanning 
+> be done in early_quirks.c and the actual HPET enabling handled in quirks.c 
+> later - or if not, could this early quirk play be made to obey the force_hpet 
+> boot option)?
 
-Although these seem sort of tangentially related:
-  http://kernel.org/doc/ols/2006/ols2006v1-pages-369-384.pdf
-  http://kernel.org/doc/ols/2006/ols2006v2-pages-125-130.pdf
+It's not necessary to scan in early_quirks.c at all. The force hpet
+code handles the late DECLARE_PCI_FIXUP_HEADER() based detection just
+fine.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+So if there are working quirks, please refactor them analogous to the
+existing ones in quirks.c.
+
+All undocumented chipset poking needs to be protected by the
+hpet=force boot option, so the default is not to do scan for it.
+
+Thanks,
+
+        tglx
