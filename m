@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935641AbXJSSdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935540AbXJSSf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935641AbXJSSdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764042AbXJSSdh
+	id S935540AbXJSSf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXJSSfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:33:37 -0400
-Received: from slackadelic.com ([65.196.224.53]:51340 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759548AbXJSSdg (ORCPT
+	Fri, 19 Oct 2007 14:35:20 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:20427 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759584AbXJSSfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:33:36 -0400
-From: Carlos Corbacho <cathectic@slackadelic.com>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: x86: Add HPET force support for MCP55 (nForce 5) chipsets
-Date: Fri, 19 Oct 2007 19:34:15 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Mikko Tiihonen <mikko.tiihonen@iki.fi>
-References: <200710190423.31714.cathectic@slackadelic.com> <200710191907.43789.cathectic@slackadelic.com> <alpine.LFD.0.9999.0710192014070.22770@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710192014070.22770@localhost.localdomain>
+	Fri, 19 Oct 2007 14:35:19 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710191934.16585.cathectic@slackadelic.com>
-X-slackadelic.com-MailScanner-Information: Please contact the ISP for more information
-X-slackadelic.com-MailScanner: Found to be clean
-X-slackadelic.com-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=0.1, required 4, RDNS_DYNAMIC 0.10)
-X-slackadelic.com-MailScanner-From: cathectic@slackadelic.com
+Message-ID: <18200.63696.399763.437303@zeus.sw.starentnetworks.com>
+Date: Fri, 19 Oct 2007 14:34:56 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] i386: fix TSC clock source calibration error [part 2]
+In-Reply-To: <4718F0DE.3050207@ct.jp.nec.com>
+References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
+	<20071018085713.GA11022@elte.hu>
+	<18200.59017.358372.378373@zeus.sw.starentnetworks.com>
+	<4718F0DE.3050207@ct.jp.nec.com>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carlos Corbacho <cathectic@gmail.com>
+Hiroshi Shimamoto writes:
+> Dave Johnson wrote:
+> >  		mach_prepare_counter();
+> 
+> It's a really rare case, but if SMI interrupt takes CPU here, just after
+> prepare and before rdtscll, it makes delta64 shorter than expected one.
+> Is it possible? And how about moving rdtscll before mach_prepare_counter()?
+> 
+> >  		rdtscll(start);
 
-Add support to force_hpet for all known MCP55 (nForce 5) chipset
-LPC bridges.
----
-These are the untested nForce 5 chips (taken from Mikko's original 
-patch, and checked against pci.ids).
+Yep, rare indeed (about 1 instruction). Moving the start read before
+the prepare call should solve that one too providing the setup doesn't
+take any real measurable time.
 
- arch/x86/kernel/quirks.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index df01a1e..8f72148 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -354,6 +354,24 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0050,
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0051,
- 			nvidia_force_enable_hpet);
- 
-+/* LPC bridges */
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0360,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0361,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0362,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0363,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0364,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0365,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0366,
-+			nvidia_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0367,
-+			nvidia_force_enable_hpet);
-+
- void force_hpet_resume(void)
- {
- 	switch (force_hpet_resume_type) {
 -- 
-1.5.2.2
+Dave Johnson
+Starent Networks
 
