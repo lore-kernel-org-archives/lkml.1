@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbXJSRgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933847AbXJSRi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbXJSRgJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXJSRfx
+	id S933847AbXJSRi5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 13:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761293AbXJSRis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:35:53 -0400
-Received: from rtr.ca ([76.10.145.34]:1962 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935424AbXJSRfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:35:52 -0400
-Message-ID: <4718EAF5.6000700@rtr.ca>
-Date: Fri, 19 Oct 2007 13:35:49 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 19 Oct 2007 13:38:48 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38390 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757607AbXJSRir (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 13:38:47 -0400
+Date: Fri, 19 Oct 2007 19:41:14 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20071019174113.GE20509@enneenne.com>
 MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Giangiacomo Mariotti <gg.mariotti@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23.1 Freezes on GB data transfers
-References: <12bfabe40710170420m6882ea8eg3b8e6e7db72a0cdd@mail.gmail.com>	 <2c0942db0710190858n647192d6t270e43b2a3075320@mail.gmail.com>	 <4718DB8F.3070903@rtr.ca> <2c0942db0710191018n894a773mc2b0400067c0fdf@mail.gmail.com>
-In-Reply-To: <2c0942db0710191018n894a773mc2b0400067c0fdf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [RFC] LinuxPPS (pre)patch
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 10/19/07, Mark Lord <lkml@rtr.ca> wrote:
->
->> I believe this is now the forth report of blinking-leds lockup with 2.6.23.1.
->>
->> I wonder what's causing it?
->> My system has this as well, totally random, once every day or so.
->> New behaviour since 2.6.23-rc9 (I posted previously about this).
-> 
-> Boy, there's just not a lot between 2.6.23-rc9 and 2.6.23 proper.
-> There are two things that kinda pop out, but this is at best a WAG.
+Hello,
 
-Yeah, I looked at the changes and it's all very innocent looking.
-More likely in my case, I suppose, is that the bug was there earlier
-and then some timing changed somewhere and now it triggers more often.
+here my last patch of LinuxPPS.
 
-One supporting evidence of that, is that with the powertop patches applied,
-it crashes much less often.  And all that those do is adjust timings in
-various places.
+Main differences from old versions is that now (finally) each PPS
+source is a dedicated char device!
 
-> First, are you on x86-32 and happen to have CONFIG_HIGHPTE set?
+This thanks to an agreement with NTP people who suggested to me how to
+interpret RFC 2783 in such a way even a dedicated char device is now
+RFC complain.
 
-Core2Duo, 2GB, x86-32, CONFIG_HIGHPTE is not set.
+Please, take a look at the code and report all suggestions and/or
+needed modifications for kernel inclusion so I can provide a final
+patch.
 
-> Second is another memory thing, where in filemap_fault we now do a
-> page_cache_release where we didn't before, but that appears to only be
-> in a case where we send a sigbus, so I wouldn't expect that to be
-> hitting.
+Ciao,
 
-It seems to happen most often here on resume from suspend (RAM),
-and when hotplugging hardware.  But it's infrequent enough that this
-may not be a reliable clue.
+Rodolfo
 
-Cheers
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
