@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbXJSQxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbXJSQyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765422AbXJSQxg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757711AbXJSQxa
+	id S932083AbXJSQyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXJSQyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:53:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43457 "EHLO mx1.redhat.com"
+	Fri, 19 Oct 2007 12:54:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:54040 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbXJSQx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:53:29 -0400
-Date: Fri, 19 Oct 2007 09:53:13 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-Cc: w@1wt.eu, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
-Message-Id: <20071019095313.76990765.zaitcev@redhat.com>
-In-Reply-To: <35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
-References: <1192383445.8372.18.camel@dell1.softservecom.com>
-	<20071014182542.GA2832@1wt.eu>
-	<35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
-	<20071014223921.GA4677@1wt.eu>
-	<1192542889.29039.66.camel@dell1.softservecom.com>
-	<20071016154138.GA23326@1wt.eu>
-	<1192559051.29039.139.camel@dell1.softservecom.com>
-	<1192644776.10761.60.camel@dell1.softservecom.com>
-	<35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756008AbXJSQyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:54:14 -0400
+Message-ID: <4718E134.70101@goop.org>
+Date: Fri, 19 Oct 2007 09:54:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH 2/9] irq-remove: arch non-trivial
+References: <20071019075443.GA6407@havoc.gtf.org> <20071019075543.GC6407@havoc.gtf.org>
+In-Reply-To: <20071019075543.GC6407@havoc.gtf.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 18:26:35 +0300, "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
+Jeff Garzik wrote:
+> commit 8d45690dd90b18daaa21b981ab20caf393220bf0
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Fri Oct 19 00:46:23 2007 -0400
+>
+>     [IRQ ARG REMOVAL] various non-trivial arch updates
+>
+>  arch/x86/kernel/vm86_32.c     |    3 ++-
+>  include/asm-x86/irq_regs_32.h |   25 +++++++++++++++++++++++++
+>  2 files changed, 27 insertions(+), 1 deletion(-)
+>
+> 8d45690dd90b18daaa21b981ab20caf393220bf0
+> diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
+> index 157e4be..18aae9e 100644
+> --- a/arch/x86/kernel/vm86_32.c
+> +++ b/arch/x86/kernel/vm86_32.c
+> @@ -739,10 +739,11 @@ static int irqbits;
+>  	| (1 << SIGUSR1) | (1 << SIGUSR2) | (1 << SIGIO)  | (1 << SIGURG) \
+>  	| (1 << SIGUNUSED) )
+>  	
+> -static irqreturn_t irq_handler(int intno, void *dev_id)
+> +static irqreturn_t irq_handler(void *dev_id)
+>  {
+>  	int irq_bit;
+>  	unsigned long flags;
+> +	unsigned int intno = get_irqfunc_irq();
+>  
+>  	spin_lock_irqsave(&irqbits_lock, flags);	
+>  	irq_bit = 1 << intno;
+> diff --git a/include/asm-x86/irq_regs_32.h b/include/asm-x86/irq_regs_32.h
+> index 3368b20..68a531d 100644
+> --- a/include/asm-x86/irq_regs_32.h
+> +++ b/include/asm-x86/irq_regs_32.h
+> @@ -26,4 +26,29 @@ static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
+>  	return old_regs;
+>  }
+>  
+> +DECLARE_PER_CPU(unsigned int, __irqfunc_irqs);
+> +
+> +static inline unsigned int get_irqfunc_irq(void)
+> +{
+> +	return __get_cpu_var(__irqfunc_irqs);
+> +}
+> +
+> +#if 0
+> +static inline unsigned int set_irqfunc_irq(unsigned int new_irq)
+> +{
+> +	unsigned int old_irq, *pirq = &__get_cpu_var(__irqfunc_irqs);
+> +
+> +	old_irq = *pirq;
+> +	*pirq = new_irq;
+> +	return old_irq;
+> +}
+> +#else
+> +static inline void set_irqfunc_irq(unsigned int new_irq)
+> +{
+> +	int *pirq = &__get_cpu_var(__irqfunc_irqs);
+> +
+> +	*pirq = new_irq;
+>   
 
-> Didn't here anything on this? What is our final decision here?
+x86_write_percpu(__irqfunc_irqs, new_irq) would be slightly more
+efficient here.  Any why the pointer anyway?
 
-It's gotten worse, not better. Apparently, you aren't getting the
-concept of protecting the open count with a static lock and my
-explanations are just not vivid enough or something. So I decided
-to fix it myself. Maybe then the patch in C will explain it better
-than English. But I didn't have time to do it.
-
-Also, there's an outright bug in the latest version. Your purge
-of the wrong lock was incomplete and so there was an unbalanced up().
-But this is moot.
-
-So, the version before the latest is borderline acceptable. If Willy
-wants to take it, it's fine. I'll fix it up later together with 2.6.
-
--- Pete
+    J
