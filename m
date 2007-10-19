@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbXJSLXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764160AbXJSLZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763890AbXJSLXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 07:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbXJSLXF
+	id S1764160AbXJSLZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 07:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbXJSLZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 07:23:05 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:47631 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753726AbXJSLXE (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 07:23:04 -0400
-Message-ID: <47189371.7080104@de.ibm.com>
-Date: Fri, 19 Oct 2007 13:22:25 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
-       Linux-kernel@vger.kernel.org
-Subject: severe bug in 2.6.23+ kvm.git
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Oct 2007 07:25:34 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:62261 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753677AbXJSLZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 07:25:32 -0400
+Subject: Re: 2.6.23-mm1 s390 driver problem
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org, cornelia.huck@de.ibm.com,
+       heiko.carstens@de.ibm.com, sam@ravnborg.org,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
+In-Reply-To: <47189242.8090006@fr.ibm.com>
+References: <20071018200148.GA14234@vino.hallyn.com>
+	 <200710182215.56428.borntraeger@de.ibm.com>
+	 <20071018203151.GA15382@vino.hallyn.com>
+	 <1192780036.25150.7.camel@localhost> <471875E0.8040308@fr.ibm.com>
+	 <20071019022719.537ee71f.akpm@linux-foundation.org>
+	 <47189242.8090006@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: IBM Corporation
+Date: Fri, 19 Oct 2007 13:25:29 +0200
+Message-Id: <1192793129.25150.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
 
-we've experienced a severe bug in current kvm.git, that may have been 
-introduced to the git tree quite recently around last weekend. 2.6.23 
-is broken, 2.6.23-rc8 works for us. The symptom is, that our operon 
-kvm test machine shredders its hard disk content to a state that is 
-not correctably by the file system checker. We use raid1 md mirrored 
-ext3 file systems on 4 sata hard disks on it, and we've verified 
-correct operation of the hardware via badblocks and memtest86.
-The problem occurs even without kvm modules loaded, so the cause seems 
-to be something that Avi pulled elsewhere. Did anyone else experience 
-similar problems with the 2.6.23 based kvm tree? Does anyone have an 
-idea about a possible cause, which would help us debugging it?
+On Fri, 2007-10-19 at 13:17 +0200, Cedric Le Goater wrote:
+> > please cc netdev on network issues.
+> 
+> yes.
+> 
+> >> Bringing up interface eth0:  ------------Ý cut here ¨------------ 
+> >> Kernel BUG at 0000000000000002 Ýverbose debug info unavailable¨ 
+> >> illegal operation: 0001 Ý#1¨ 
+> > 
+> > that's a network issue ;)
+> > 
+> >> 00000000002b3352 gives : include/linux/netdevice.h:819
+> >>
+> > 
+> > I have a feeling that we fixed this.  But there's no BUG at 2.6.23-mm1's
+> > include/linux/netdevice.h:819.  
+> 
+> but dev->header_ops is bogus. right ?
+> 
+> > How about setting CONFIG_DEBUG_BUGVERBOSE=y?
+> 
+> it is set :(
 
-thanks,
-Carsten
+This is definitly a problem with the header_ops in the qeth network
+driver. I've asked our network team to take care of it. Stay tuned..
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
