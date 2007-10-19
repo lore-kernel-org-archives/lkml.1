@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765852AbXJSPJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764825AbXJSPNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765852AbXJSPJb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 11:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbXJSPJY
+	id S1764825AbXJSPNq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 11:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXJSPNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 11:09:24 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45835 "EHLO pasmtpB.tele.dk"
+	Fri, 19 Oct 2007 11:13:39 -0400
+Received: from il.qumranet.com ([82.166.9.18]:34773 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754001AbXJSPJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 11:09:22 -0400
-Date: Fri, 19 Oct 2007 17:10:53 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rob Landley <rob@landley.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Finn Thain <fthain@telegraphics.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] Make m68k cross compile like every other architecture.
-Message-ID: <20071019151053.GA30825@uranus.ravnborg.org>
-References: <200710101722.21126.rob@landley.net> <Pine.LNX.4.64.0710152217150.16889@anakin> <20071018211420.GA23397@uranus.ravnborg.org> <200710190138.39005.rob@landley.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710190138.39005.rob@landley.net>
-User-Agent: Mutt/1.4.2.1i
+	id S1753775AbXJSPNj (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 11:13:39 -0400
+Message-ID: <4718C9A1.3010703@qumranet.com>
+Date: Fri, 19 Oct 2007 17:13:37 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: carsteno@de.ibm.com
+CC: "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com>
+In-Reply-To: <47189371.7080104@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 19 Oct 2007 17:13:37 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 01:38:38AM -0500, Rob Landley wrote:
-> On Thursday 18 October 2007 4:14:20 pm Sam Ravnborg wrote:
-> > > Anyway, here's a try to make it autodetect m68k-linux-gnu-gcc and
-> > > m68k-linux-gcc. Perhaps it can be generalized in kbuild, to allow
-> > > arch/*/Makefile to set a list of possible cross-compiler prefixes?
-> >
-> > Here is my first try.
-> > We only touch CROSS_COMPILE is empty and building for another arch.
-> >
-> > I can obviously move crossgcc part of this to core kbuild.
-> > Any better name?
-find-crossgcc
+Carsten Otte wrote:
+> Hi list,
+>
+> we've experienced a severe bug in current kvm.git, that may have been 
+> introduced to the git tree quite recently around last weekend. 2.6.23 
+> is broken, 2.6.23-rc8 works for us. The symptom is, that our operon 
+> kvm test machine shredders its hard disk content to a state that is 
+> not correctably by the file system checker. We use raid1 md mirrored 
+> ext3 file systems on 4 sata hard disks on it, and we've verified 
+> correct operation of the hardware via badblocks and memtest86.
+> The problem occurs even without kvm modules loaded, so the cause seems 
+> to be something that Avi pulled elsewhere. Did anyone else experience 
+> similar problems with the 2.6.23 based kvm tree? Does anyone have an 
+> idea about a possible cause, which would help us debugging it?
+>
+>   
 
-> >
-> > 	Sam
-> >
-> >
-> > diff --git a/arch/m68k/Makefile b/arch/m68k/Makefile
-> > index 4a1bd44..6465bbe 100644
-> > --- a/arch/m68k/Makefile
-> > +++ b/arch/m68k/Makefile
-> > @@ -13,17 +13,26 @@
-> >  # Copyright (C) 1994 by Hamish Macdonald
-> >  #
-> >
-> > -# test for cross compiling
-> > -COMPILE_ARCH = $(shell uname -m)
-> > +# usage:
-> > +# CROSS_COMPILE := $(call crossgcc, foo bar /usr/bin/)
-> > +# CROSS_COMPILE will be assinged the first prefix that point
-> > +# to a gcc in the path
-> > +crossgcc =  $(word 1, $(foreach c,$(1),                               \
-> > +		$(shell set -e;                                       \
-> > +		if (which $(strip $(c))$(CC)) > /dev/null 2>&1 ; then \
-> > +			echo $(c);                                    \
-> > +		fi)))
-> 
-> Searching for common cross compiler prefixes.  Cool.
-> 
-> What do you do if you want to use gcc as your host compiler, but m68k-pcc or 
-> arm-tcc as your target compiler?  (I have no idea, CROSS_COMPILE=m68k- CC=pcc 
-> HOSTCC=gcc perhaps?  Where does CC get set right now, anyway...  Ah, top 
-> level Makefile:
->   CC              = $(CROSS_COMPILE)gcc
-> 
-> That...  should work.  Odd and roundabout, but ok...
-I see no other way to do it - and it seems obvious since you guessed right.
+kvm.git is actually 2.6.24-rc, pulled from -linus at a random point in
+time, so it's not at all surprising if something is broken.
 
-> 
-> > +ifneq ($(SUBARCH),$(ARCH))
-> > +        ifeq ($(CROSS_COMPILE),)
-> > +                CROSS_COMPILE := $(call crossgcc, m68k-linux-gnu-)
-> > +        endif
-> > +endif
-> 
-> Other query:
-> 
-> If CROSS_COMPILE isn't set, and we iterate through all the standard prefixes 
-> but don't find a compiler, what's the right "fall off the end" behavior?  If 
-> it falls back to using the host gcc, presumably the build will break if you 
-> feed your host gcc target flags it doesn't understand, but there are 
-> platforms where that sometimes doesn't seem to happen until the very end 
-> (building x86_64 on x86 for example)...  Should the build just die with 
-> a "You are cross compiling, set CROSS_COMPILE".
-No - that would be a bug. One may set up PATH sp gcc point to the
-cross-compile gcc. fallback to native (host) gcc is expected and fine.
+One option is for you to pull -linus to get the latest and hopefully
+greatest and see if the bug is fixed.
 
-> 
-> I suppose there's the weird corner case where your hostcc is tcc and your 
-> targetcc is gcc...
-I do not see why thats a problem - you just need to set both CC and HOSTCC.
+Another is to use the external module capability to build kvm.git
+against 2.6.23.1.
 
-	Sam
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
