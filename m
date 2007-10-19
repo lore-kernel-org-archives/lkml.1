@@ -1,101 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934582AbXJSD1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966139AbXJSD2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934582AbXJSD1x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 23:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760588AbXJSD1r
+	id S966139AbXJSD2k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 23:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXJSD2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 23:27:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51217 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756614AbXJSD1q (ORCPT
+	Thu, 18 Oct 2007 23:28:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2554 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762351AbXJSD2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 23:27:46 -0400
-Date: Thu, 18 Oct 2007 20:26:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
+	Thu, 18 Oct 2007 23:28:31 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: nickpiggin@yahoo.com.au (Nick Piggin)
 Subject: Re: [PATCH] synchronize_irq needs a barrier
-In-Reply-To: <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop>
- <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
- <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
- <20071019023219.GB8453@gondor.apana.org.au>
- <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Cc: herbert@gondor.apana.org.au, torvalds@linux-foundation.org,
+       benh@kernel.crashing.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+       tglx@linutronix.de
+Organization: Core
+In-Reply-To: <200710191252.18272.nickpiggin@yahoo.com.au>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IiiX6-0002V0-00@gondolin.me.apana.org.au>
+Date: Fri, 19 Oct 2007 11:28:20 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 18 Oct 2007, Linus Torvalds wrote:
->
-> I *think* it should work with something like
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> 	for (;;) {
-> 		smp_rmb();
-> 		if (!spin_is_locked(&desc->lock)) {
-> 			smp_rmb();
-> 			if (!(desc->status & IRQ_INPROGRESS)
-> 				break;
-> 		}
-> 		cpu_relax();
-> 	}
+>> First of all let's agree on some basic assumptions:
+>>
+>> * A pair of spin lock/unlock subsumes the effect of a full mb.
+> 
+> Not unless you mean a pair of spin lock/unlock as in
+> 2 spin lock/unlock pairs (4 operations).
+> 
+> *X = 10;
+> spin_lock(&lock);
+> /* *Y speculatively loaded here */
+> /* store to *X leaves CPU store queue here */
+> spin_unlock(&lock);
+> y = *Y;
 
-I'm starting to doubt this. 
+Good point.
 
-One of the issues is that we still need the smp_mb() in front of the loop 
-(because we want to serialize the loop with any writes in the caller).
+Although in this case we're still safe because in the worst
+cases:
 
-The other issue is that I don't think it's enough that we saw the 
-descriptor lock unlocked, and then the IRQ_INPROGRESS bit clear. It might 
-have been unlocked *while* the IRQ was in progress, but the interrupt 
-handler is now in its last throes, and re-takes the spinlock and clears 
-the IRQ_INPROGRESS thing. But we're not actually happy until we've seen 
-the IRQ_INPROGRESS bit clear and the spinlock has been released *again*.
+CPU0				CPU1
+irq_sync = 1
+synchronize_irq
+	spin lock
+	load IRQ_INPROGRESS
+irq_sync sync is visible
+	spin unlock
+				spin lock
+					load irq_sync
+	while (IRQ_INPROGRESS)
+		wait
+	return
+				set IRQ_INPROGRESS
+				spin unlock
+				tg3_msi
+					ack IRQ
+					if (irq_sync)
+						return
+				spin lock
+				clear IRQ_INPROGRESS
+				spin unlock
 
-So those two tests should actually be the other way around: we want to see 
-the IRQ_INPROGRESS bit clear first.
+------------------------------------------------------------
 
-It's all just too damn subtle and clever. Something like this should not 
-need to be that subtle. 
+CPU0				CPU1
+				spin lock
+					load irq_sync
+irq_sync = 1
+synchronize_irq
+				set IRQ_INPROGRESS
+				spin unlock
+	spin lock
+	load IRQ_INPROGRESS
+irq_sync sync is visible
+	spin unlock
+	while (IRQ_INPROGRESS)
+		wait
+				tg3_msi
+					ack IRQ
+					if (irq_sync)
+						return
+					do work
+				spin lock
+				clear IRQ_INPROGRESS
+				spin unlock
+	return
 
-Maybe the rigth thing to do is to not rely on *any* ordering what-so-ever, 
-and just make the rule be: "if you look at the IRQ_INPROGRESS bit, you'd 
-better hold the descriptor spinlock", and not have any subtle ordering 
-issues at all.
+So because we're using the same lock on both sides, it does
+do the right thing even without the memory barrier.
 
-But that makes us have a loop with getting/releasing the lock all the 
-time, and then we get back to horrid issues with cacheline bouncing and 
-unfairness of cache accesses across cores (ie look at the issues we had 
-with the runqueue starvation in wait_task_inactive()).
-
-Those were fixed by starting out with the non-locked and totally unsafe 
-versions, but then having one last "check with lock held, and repeat only 
-if that says things went south". 
-
-See commit fa490cfd15d7ce0900097cc4e60cfd7a76381138 and ponder. Maybe we 
-should take the same approach here, and do something like
-
-	repeat:
-		/* Optimistic, no-locking loop */
-		while (desc->status & IRQ_INPROGRESS)
-			cpu_relax();
-
-		/* Ok, that indicated we're done: double-check carefully */
-		spin_lock_irqsave(&desc->lock, flags);
-		status = desc->status;
-		spin_unlock_irqrestore(&desc->lock, flags);
-
-		/* Oops, that failed? */
-		if (status & IRQ_INPROGRESS)
-			goto repeat;
-
-Hmm?
-
-			Linus
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
