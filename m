@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936510AbXJSWyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936663AbXJSWz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936510AbXJSWyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbXJSWxx
+	id S936663AbXJSWz2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761151AbXJSWzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:53:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:24184 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbXJSWxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:53:52 -0400
-Date: Fri, 19 Oct 2007 14:55:28 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: zippel@linux-m68k.org, sam@ravnborg.org
-Subject: [PATCH] xconfig: set title bar
-Message-Id: <20071019145528.1cdeb007.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 19 Oct 2007 18:55:20 -0400
+Received: from main.gmane.org ([80.91.229.2]:54128 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758976AbXJSWzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:55:18 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
+Date: Fri, 19 Oct 2007 21:32:08 +0000 (UTC)
+Message-ID: <ffb7oo$k26$1@ger.gmane.org>
+References: <200710181551.24912.florian.fainelli@telecomint.eu>
+	<20071018173828.159b15dd@ephemeral>
+	<200710191401.56916.florian.fainelli@telecomint.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 163.181.251.103
+User-Agent: pan 0.120 (Plate of Shrimp)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 19 Oct 2007 14:01:56 +0200, Florian Fainelli wrote:
 
-menuconfig and gconfig already place a title (or caption) on the top
-bar of their window (or whatever that is properly called).  However,
-qconf (xconfig) just says "qconf".  I tried to find a Qt API to set
-the title but did not find one, so set the program title (caption)
-by using the "-title <caption>" command line option instead.
+> Hi Andres,
+> 
+> Le jeudi 18 octobre 2007, Andres Salomon a écrit :
+>> While I certainly would like to see a generic GPIO API, this one isn't
+>> really useful for geode GPIOs.  It would be nice to have one that did
+>> work for us as well.  Unfortunately, I haven't had the chance to give
+>> much thought to this problem yet.
+> 
+> This one was discussed mostly on the ARM mailing-list and finally made his way 
+> to the mainline kernel. Though it lacks some functions to change for instance 
+> a entire GPIO line and not a single bit, it is used on ARM and MIPS systems 
+> so I would conform with this one for now because it is used by at least two 
+> or more architectures.
 
-This can be useful when someone has multiple qconf instances running,
-to help differentiate which one is which.
+Its reasonable to expect that the API will expand over time as it is
+thrust into new situations.  There is nothing wrong with the existing API,
+it does an admirable job of simple GPIO frobbing.  But on the Geode, GPIOs
+can do much more then just simple input and output.  We can cause events,
+use input filtering for debouncing, set various drain options, and more.
+And these are not bullet points from the datasheet that we want to
+implement for completeness; these functions are actually being used right
+now in the kernel on real hardware.  Just because other architectures
+haven't found a need to expand the API doesn't mean that we shouldn't
+expand it now.  And bear in mind, the Geode isn't unique - I'll bet beers
+that there are MIPS and ARM architectures that have these features too,
+and they would use the API if it existed.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kconfig/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Jordan
 
---- linux-2.6.23-git13.orig/scripts/kconfig/Makefile
-+++ linux-2.6.23-git13/scripts/kconfig/Makefile
-@@ -5,7 +5,7 @@
- PHONY += oldconfig xconfig gconfig menuconfig config silentoldconfig update-po-config
- 
- xconfig: $(obj)/qconf
--	$< arch/$(ARCH)/Kconfig
-+	$< arch/$(ARCH)/Kconfig -title "Linux v${KERNELVERSION} qconf"
- 
- gconfig: $(obj)/gconf
- 	$< arch/$(ARCH)/Kconfig
