@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935831AbXJSSBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936165AbXJSSCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935831AbXJSSBR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764000AbXJSSBF
+	id S936165AbXJSSCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbXJSSCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:01:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:10117 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763442AbXJSSBE (ORCPT
+	Fri, 19 Oct 2007 14:02:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57337 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757563AbXJSSCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:01:04 -0400
-Message-ID: <4718F0DE.3050207@ct.jp.nec.com>
-Date: Fri, 19 Oct 2007 11:01:02 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] i386: fix TSC clock source calibration error [part 2]
-References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>	<20071018085713.GA11022@elte.hu> <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
-In-Reply-To: <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 19 Oct 2007 14:02:14 -0400
+Date: Fri, 19 Oct 2007 11:00:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org, Paul Sokolovsky <pmiscml@gmail.com>,
+       Ben Dooks <ben@trinity.fluff.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
+Message-Id: <20071019110034.1534bb86.akpm@linux-foundation.org>
+In-Reply-To: <20071019105258.GA15170@caravaggio>
+References: <20071018091239.GA11360@caravaggio>
+	<20071018150544.6852d5c9.akpm@linux-foundation.org>
+	<20071019105258.GA15170@caravaggio>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Johnson wrote:
-> From: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
-> The previous patch wasn't correctly handling the 'count' variable.  If
-> a CPU gave bad results on the 1st or 2nd run but good results on the
-> 3rd, it wouldn't do the correct thing.  No idea if any such CPU
-> exists, but the patch below handles that case by discarding the bad
-> runs.
-> 
-> If a bad result (too quick, or too slow) occurs on any of the 3 runs
-> it will be discarded.
-> 
-> Also updated some comments to explain what's going on.
-> 
-> Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
-> ---
-> 
-> Should be applied after my previous patch.
-> 
-> ===== arch/i386/kernel/tsc.c 1.28 vs edited =====
-> --- 1.28/arch/i386/kernel/tsc.c	2007-10-19 11:07:36 -04:00
-> +++ edited/arch/i386/kernel/tsc.c	2007-10-19 11:07:44 -04:00
-> @@ -128,29 +128,35 @@
->  
->  	local_irq_save(flags);
->  
-> -	/* run 3 times to ensure the cache is warm */
-> +	/* run 3 times to ensure the cache is warm and to get an accurate reading */
->  	for (i = 0; i < 3; i++) {
->  		mach_prepare_counter();
+On Fri, 19 Oct 2007 12:53:00 +0200 Samuel Ortiz <sameo@openedhand.com> wrote:
 
-It's a really rare case, but if SMI interrupt takes CPU here, just after
-prepare and before rdtscll, it makes delta64 shorter than expected one.
-Is it possible? And how about moving rdtscll before mach_prepare_counter()?
+> On Thu, Oct 18, 2007 at 03:05:44PM -0700, Andrew Morton wrote:
+> > On Thu, 18 Oct 2007 11:12:41 +0200
+> > Samuel Ortiz <sameo@openedhand.com> wrote:
+> 
+> > > +#include <linux/module.h>
+> > > +#include <linux/version.h>
+> > > +#include <linux/irq.h>
+> > 
+> > Please see the large comment at the top of linux/irq.h.  I believe this
+> > driver will fial to compile on at least arm.
+> It doesn't build as a module, since we need the irq.h symbols.
+> I changed MFD_ASIC3 to bool. I somehow feel that this is not the cleanest
+> solution, but OTOH I think that dynamically adding IRQs and GPIOs to an
+> embedded board doesn't make much sense.
 
->  		rdtscll(start);
+We seem to have miscommunicated here.  <linux/irq.h> contains references to
+things which only some architectures actually implement.  I don't know
+which architectures those are, but it includes common ones like x86, so
+it's a real trap.  I recall it does not include arm, so your code might
+break on arm.
 
-Thanks
-Hiroshi Shimamoto
+At least, that's what's _supposed_ to happen: I just compiled and linked
+this driver into an ARM kernel with no problems so now I'm all confused as
+to what the problem was.
+
+Oh well, we'll see...
