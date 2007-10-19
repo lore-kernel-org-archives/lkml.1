@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937087AbXJSTxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936414AbXJSTx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937087AbXJSTxk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbXJSTuX
+	id S936414AbXJSTx5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937002AbXJSTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:50:23 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35368 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936505AbXJSTuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 15:50:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] irq-remove: core
-References: <20071019075443.GA6407@havoc.gtf.org>
-	<20071019075508.GB6407@havoc.gtf.org>
-	<m1ir53gev4.fsf@ebiederm.dsl.xmission.com>
-	<4718F5BB.5010301@garzik.org>
-Date: Fri, 19 Oct 2007 13:50:11 -0600
-In-Reply-To: <4718F5BB.5010301@garzik.org> (Jeff Garzik's message of "Fri, 19
-	Oct 2007 14:21:47 -0400")
-Message-ID: <m1ir52g9zg.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 19 Oct 2007 15:52:58 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:53113 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936822AbXJSTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 15:52:56 -0400
+Message-ID: <47190B28.6070405@cfl.rr.com>
+Date: Fri, 19 Oct 2007 15:53:12 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Huang, Ying" <ying.huang@intel.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
+References: <1192068833.27482.13.camel@caritas-dev.intel.com>
+In-Reply-To: <1192068833.27482.13.camel@caritas-dev.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2007 19:53:08.0159 (UTC) FILETIME=[ABC36CF0:01C81289]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15494.000
+X-TM-AS-Result: No--8.325400-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
->
-> Do you think set_irqfunc_irq() should be called at all the callsites of
-> set_irq_regs(), or one the fix you mention is applied, do you think current
-> model is sufficient?
+Huang, Ying wrote:
+> The hibernation procedure with the patch set is as follow:
+> 
+> 1. Boot a kernel A
+> 
+> 2. Work under kernel A
+> 
+> 3. Kexec another kernel B (crash dump enabled) in kernel A.
+> 
+> 4. Save the memory image of kernel A through crash dump (such as "cp
+>    /proc/vmcore ~"). Save the "jump back entry".
 
-Good question.  At first glance I think the call sites are ok, that
-is where we have the information now.  Non-genirq architectures needs
-work of course.
+Doesn't this also save the memory of kernel B?
 
-However given the weird poll case etc that either we need to take this
-slow and delay this change until all of the drivers are fixed up, to
-not need an irq parameter (as you suggested).  Or that we need to 
-allow both forms of irq handler to coexist temporarily.
+> 5. Shutdown or reboot
+> 
+> 
+> The restore process with the patch set is as follow:
+> 
+> 1. Boot a kernel C (crash dump enabled), the memory area used by
+>    kernel C must be a subset of memory area used by kernel B.
 
-Eric
+Why is a third kernel needed?  Why can't kernel B be used for this as 
+well?  In fact, if kernel A has been compiled to be relocatable and 
+crash dump enabled, why wouldn't it suffice for all 3 instances?
+
+
