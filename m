@@ -1,113 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934513AbXJSHrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXJSHrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934513AbXJSHrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbXJSHrM
+	id S1763597AbXJSHrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934741AbXJSHrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:47:12 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:46409 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750826AbXJSHrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:47:10 -0400
-Date: Fri, 19 Oct 2007 09:50:14 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Maciej W\. Rozycki" <macro@linux-mips.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] flush_work_sync vs. flush_scheduled_work Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071019075014.GA1765@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <20071018063157.GA1694@ff.dom.local> <20071018070531.GA2065@ff.dom.local> <20071018154819.GA425@tv-sign.ru>
+	Fri, 19 Oct 2007 03:47:25 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:11340 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934717AbXJSHrW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:47:22 -0400
+Subject: Re: 2.6.23-mm1 s390 driver problem
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       cornelia.huck@de.ibm.com, heiko.carstens@de.ibm.com, sam@ravnborg.org
+In-Reply-To: <20071018203151.GA15382@vino.hallyn.com>
+References: <20071018200148.GA14234@vino.hallyn.com>
+	 <200710182215.56428.borntraeger@de.ibm.com>
+	 <20071018203151.GA15382@vino.hallyn.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 19 Oct 2007 09:47:16 +0200
+Message-Id: <1192780036.25150.7.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018154819.GA425@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 07:48:19PM +0400, Oleg Nesterov wrote:
-> On 10/18, Jarek Poplawski wrote:
-> >
-> > +/**
-> > + * flush_work_sync - block until a work_struct's callback has terminated
->                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> Hmm...
+On Thu, 2007-10-18 at 15:31 -0500, Serge E. Hallyn wrote:
+> Quoting Christian Borntraeger (borntraeger@de.ibm.com):
+> > Am Donnerstag, 18. Oktober 2007 schrieb Serge E. Hallyn:
+> > > Sigh, well this turned out less informative than I'd liked.
+> > > After bisecting 2.6.23 to 2.6.23-mm1, I found that
+> > > git-s390.patch is the one breaking my s390 boot :(
+> > > (Frown bc it's a conglomeration of patches0
+> > > 
+> > > Symptom is:
+> > > 	"Cannot open root device "dasdd2" or unknown-block(94,14)"
+> > > even though dasdd2 appeared to be found earlier in the boot.  I also
+> > > get
+> > 
+> > Can you post the full console output from IPL to the unsuccessful end?
 > 
-> > + * Similar to cancel_work_sync() but will only busy wait (without cancel)
-> > + * if the work is queued.
+> Yeah, sorry, appended below.
 > 
-> Yes, it won't block, but will spin in busy-wait loop until all other works
-> scheduled before this work are finished. Not good. After that it really
-> blocks waiting for this work to complete.
-> 
-> And I am a bit confused. We can't use flush_workqueue() because some of the
-> queued work_structs may take rtnl_lock, yes? But in that case we can't use
-> the new flush_work_sync() helper as well, no?
+> I had thought that the line
+> 	sysctl table check failed: /sunrpc/transports .7249.14 Missing strategy
+> meant that the fix referenced in http://lkml.org/lkml/2007/10/11/48
+> would fix it, but it appeared to have no effect.
 
-OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOPS!
+This is the vmlinux.lds.S problem. The cleanup patch from Sam Ravnborg
+moved the __initramfs_start and __initramfs_end symbols into
+the .init.ramfs section. This is in itself not a problem, but it
+surfaced a bug: there is no *(.init.initramfs), that needs to be
+*(init.ramfs). I corrected this in the upstream patch but 2.6.23-mm1 has
+the older one that still causes the "Cannot open root device". For
+2.6.23-mm1 use the patch below.
 
-Of course, we can't!!! I remembered there was this issue long time
-ago, but then I've had some break in tracking net & workqueue. So,
-while reading this patch I was alarmed at first, and self-misled
-later. I think, there is definitely needed some warning about
-locking (or unlocking) during these flush_ & cancel_ functions.
-(Btw, I've very much wondered now, why I didn't notice at that 'old'
-time, that you added such a great feature (wrt. locking) and I even
-didn't notice this...). 
+-- 
+blue skies,
+  Martin.
 
-So, Maciej (and other readers of this thread) - I withdraw my false
-opinion from my second message here: it's very wrong to call this
-sched_work_sync() with rtnl_lock(). It's only less probable to lockup
-with this than with flush_schedule_work().
+"Reality continues to ruin my life." - Calvin.
 
-> 
-> If we can't just cancel the work, can't we do something like
-> 
-> 	if (cancel_work_sync(w))
-> 		w->func(w);
-> 
-> instead?
-> 
-> > +void flush_work_sync(struct work_struct *work)
-> > +{
-> > +	int ret;
-> > +
-> > +	do {
-> > +		ret = work_pending(work);
-> > +		wait_on_work(work);
-> > +		if (ret)
-> > +			cpu_relax();
-> > +	} while (ret);
-> > +}
-> 
-> If we really the new helper, perhaps we can make it a bit better?
-> 
-> 1. Modify insert_work() to take the "struct list_head *at" parameter instead
->    of "int tail". I think this patch will also cleanup the code a bit, and
->    shrink a couple of bytes from .text
+---
+diff -urpN linux-2.6/arch/s390/kernel/vmlinux.lds.S linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S
+--- linux-2.6/arch/s390/kernel/vmlinux.lds.S	2007-10-19 09:41:57.000000000 +0200
++++ linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S	2007-10-19 09:42:29.000000000 +0200
+@@ -128,7 +128,7 @@ SECTIONS
+ 	. = ALIGN(0x100);
+ 	.init.ramfs : {
+ 		__initramfs_start = .;
+-		*(.init.initramfs)
++		*(.init.ramfs)
+ 		. = ALIGN(2);
+ 		__initramfs_end = .;
+ 	}
 
-Looks like a very good idea, but I need more time to rethink this.
-Probably some code example should be helpful.
 
-> 
-> 2. flush_work_sync() inserts a barrier right after this work and blocks.
->    We still need some retry logic to handle the queueing is in progress
->    of course, but we won't spin waiting for the other works.
-
-Until monday I should have an opinion on that (today a bit under
-fire...).
-
-> 
-> What do you think?
-
-Since there is no gain wrt. locking with my current proposal, I
-withdraw this patch of course.
-
-It looks like my wrong patch was great idea because we got this very
-precious Oleg's opinion! (I know I'm a genius sometimes...)
-
-Thanks very much,
-Jarek P.
