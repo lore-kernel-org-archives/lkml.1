@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbXJSKSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764787AbXJSKTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764255AbXJSKSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 06:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXJSKSY
+	id S1764787AbXJSKTl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 06:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbXJSKTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 06:18:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45513 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753246AbXJSKSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 06:18:23 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19VrRNVOxhVlUPWq5RLPLAR8TSlhNuGqak5+K4lCx
-	EkGR7fef0X6V+9
-Subject: Re: [bisected][mismerge?] Re: [microcode] 2.6.23.git pulled this
-	morning oopses loading P4 microcode
-From: Mike Galbraith <efault@gmx.de>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1192762138.6838.13.camel@Homer.simpson.net>
-References: <1192681533.7147.5.camel@Homer.simpson.net>
-	 <1192730198.7182.18.camel@Homer.simpson.net>
-	 <20071018223333.GD4153@implementation>
-	 <1192762138.6838.13.camel@Homer.simpson.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Fri, 19 Oct 2007 12:18:19 +0200
-Message-Id: <1192789099.7389.31.camel@Homer.simpson.net>
+	Fri, 19 Oct 2007 06:19:34 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4397 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753833AbXJSKTd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 06:19:33 -0400
+Date: Fri, 19 Oct 2007 12:19:31 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Cc: bryan.wu@analog.com, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Blackfin I2C/TWI driver: update for 2.6.24 merge
+ windows
+Message-ID: <20071019121931.2d011ee5@hyperion.delvare>
+In-Reply-To: <386072610710190223n4f7613eeve6950fcb5fbe1426@mail.gmail.com>
+References: <1192456403.6215.5.camel@roc-laptop>
+	<386072610710172311o7d2207f2he47e16c48016c2c2@mail.gmail.com>
+	<20071019110750.33f66dd8@hyperion.delvare>
+	<386072610710190223n4f7613eeve6950fcb5fbe1426@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-19 at 04:49 +0200, Mike Galbraith wrote: 
-> On Thu, 2007-10-18 at 23:33 +0100, Samuel Thibault wrote:
-> > Hi,
-> > 
-> > Mike Galbraith, le Thu 18 Oct 2007 19:56:38 +0200, a écrit :
-> > > The winner of a very long git bisect session:
-> > > 
-> > >     unicode diacritics support
-> > 
-> > Uh, I fail to see how that could have an impact, I've again checked the
-> > boundaries, it looks fine, please people have a look.
-> 
-> I too was reluctant to believe the bisect result.  But...
+On Fri, 19 Oct 2007 17:23:24 +0800, Bryan Wu wrote:
+> On 10/19/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > If you want me to consider your patches as something that needs my
+> > attention, send them to the i2c list only, do not add LKML. This is
+> > general advice for everyone sending i2c patches, not just you, of
+> > course.
+>
+> I see. Actually this is the first time I was told about it.
+> Thanks for the clarification.
 
-Weeeell now, that skepticism is indeed well founded.  It's dontdiff.  A
-diff of trees where defkeymap.c_shipped has been modified produces no
-output.  Once a working tree has been afflicted by using diff+dontdiff
-to update it, even overwriting the entire tree via git-archive doesn't
-lead to a good build unless you also touch defkeymap.c_shipped
-afterward.  In my case, the working tree remained buildable yet
-thoroughly busted through a lengthy bisect and beyond.  That bisect
-positively identified... the victim.
+I probably had not been clear about it so far. I've added it to my
+"Linux 2.6 I2C development FAQ" now.
 
-poo.
-
-	-Mike
-
+-- 
+Jean Delvare
