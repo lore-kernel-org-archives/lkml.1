@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbXJSNRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXJSNk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763601AbXJSNRd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 09:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJSNR0
+	id S1762173AbXJSNk1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 09:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXJSNkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 09:17:26 -0400
-Received: from bay0-omc1-s15.bay0.hotmail.com ([65.54.246.87]:28177 "EHLO
-	bay0-omc1-s15.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755277AbXJSNRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 09:17:25 -0400
-Message-ID: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-X-Originating-IP: [218.80.174.211]
-From: Shane Huang <chunhao.huang@hotmail.com>
-To: <davem@davemloft.net>, <gregkh@suse.de>, <htejun@gmail.com>,
-       <brice.goglin@gmail.com>, <david.gaarenstroom@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <linux-pci@atrey.karlin.mff.cuni.cz>,
-       <shane.huang@amd.com>, <chunhao.huang@hotmail.com>
-Subject: RE: [patch] PCI: disable MSI on more ATI NorthBridges
-Date: Fri, 19 Oct 2007 21:17:23 +0800
-Importance: Normal
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
-MIME-Version: 1.0
-X-OriginalArrivalTime: 19 Oct 2007 13:17:25.0345 (UTC) FILETIME=[63F18510:01C81252]
+	Fri, 19 Oct 2007 09:40:15 -0400
+Received: from pat.uio.no ([129.240.10.15]:56855 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758008AbXJSNkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 09:40:14 -0400
+Subject: Re: nfsv2 ref leak in 2.6.24?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: bfields@fieldses.org, nfs@lists.sourceforge.net, neilb@suse.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710190549.l9J5nnX8007119@agora.fsl.cs.sunysb.edu>
+References: <200710190549.l9J5nnX8007119@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 09:41:16 -0400
+Message-Id: <1192801277.7073.4.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.073)
+X-UiO-Scanned: 620F7FB0A25508721B4F34967D1E9A68F2B759EC
+X-UiO-Ratelimit-Test: Ratelimit
+X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1168 total 4599944 max/h 8345 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Guys:
+On Fri, 2007-10-19 at 01:49 -0400, Erez Zadok wrote:
+> I'm testing unionfs on top of nfsv2/3/4, using 2.6.24 as of linus's commit
+> 4fa4d23fa20de67df919030c1216295664866ad7.  A lot of my unionfs regression
+> tests are failing on nfs2, b/c files that should be deleted, aren't.  It
+> feels like there may be a ref leak that prevents the files from being
+> deleted, or maybe an unlink issue.  It doesn't happen in all of my previous
+> kernels w/ identical unionfs (code 2.6.9--2.6.23).  And in 2.6.24 it happens
+> only w/ nfs2 -- nfs3/4 are fine.
+> 
+> I'm not sure if this is a client or server issue, and I'm only starting to
+> dig deeper.  But I thought I'd ask you in case this is a known problem and
+> you have a fix.  If this is the first you hear of this problem, let me know
+> and I'll try to narrow it down further.
 
-> This logic seems backwards, to me.  "shoot first, ask questions later"
-> To me this it not how to approach this problem.
->
-> Once you turn MSI off, there is next to no incentive to fix the
-> problem because users aren't running into it any longer.
->
-> The only two devices in that bug report which should be using MSI
-> would be the SATA controller and the broadcom ethernet NIC.  And by
-> the failed bootup logs provided by the user the problem is clearly
-> with the SATA controller.
->
-> One common problem we're finding is that some devices have a hardware
-> bug where setting INTX_DISABLE in the PCI COMMAND register masks MSI
-> interrupts too.
->
-> I mention this because the user in that report mentions that the
-> kernel upgrade causes the failure, and one thing we started doing not
-> too long ago was to set the INTX_DISABLE bit when MSI is enabled for a
-> device.
+A couple of questions:
 
-Yes, you are right, to find out the root cause is better. Thank you
-for all your suggestion and information to us.
-Since we have little experience on PCI and MSI here, we had to try to
-disable MSI  before we find a better solution. But as you are giving
-us help now on this case, it's great! Then let's go...
+      * Are these files being sillyrenamed?
+      * Are they shown as being removed by the server?
 
-> So maybe this SATA controller has this problem too.  It is easy to
-> test, simply comment out all of the pci_intx() function calls in
-> drivers/pci/msi.c and perform a test boot with MSI enabled.
->
-> I would rather you approach analysis of these kinds of MSI bugs in
-> this manner, instead of disabling MSI wholesale.  Because with the
-> latter approach it is nearly guarenteed that the real reason will only
-> be discovered with an extremely low priority.
+Cheers
+  Trond
 
-I'm using kernel 2.6.23-rc5 to debug this MSI problem, which can NOT
-boot on our Trevally board(RS690+SB700) without any kernel modification.
-
-But if I comment out all the pci_intx() function calls in
-drivers/pci/msi.c, it can boot now with MSI enabled as you expected!
-
-# cat /proc/interrupts 
-           CPU0       CPU1       
-  0:        318     174060   IO-APIC-edge      timer
-  8:          0          1   IO-APIC-edge      rtc
-  9:          0          0   IO-APIC-fasteoi   acpi
- 16:          0        204   IO-APIC-fasteoi   HDA Intel
- 17:          0        479   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb2, ehci_hcd:usb6
- 18:          1          2   IO-APIC-fasteoi   ohci_hcd:usb3, ohci_hcd:usb4, ohci_hcd:usb5
- 19:          0          0   IO-APIC-fasteoi   ehci_hcd:usb7
- 22:          4          1   IO-APIC-fasteoi   yenta
-8412:          0       1315   PCI-MSI-edge      eth0
-8413:        381       4858   PCI-MSI-edge      ahci
-NMI:          0          0 
-LOC:     174285     174210 
-ERR:          0
-
-Also if I keep the pci_intx() calls in drivers/pci/msi.c and ONLY
-comment out the pci_intx() call in drivers/ata/ahci.c
-My system can boot up too with MSI enabled!
-
-So does it mean that the root cause is our SB700 SATA controller
-has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
-register masks MSI interrupts too? 
-And what is the software solution or workaround?
-
-I will continue debug this MSI problem next week. Any suggestions,
-please don't hesitate to tell us.
-
-
-Thanks
-Best Regards
-
-Shane
-
-_________________________________________________________________
-News, entertainment and everything you care about at Live.com. Get it now!
-http://www.live.com/getstarted.aspx
