@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935141AbXJSRku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbXJSRmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935141AbXJSRku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXJSRkm
+	id S933695AbXJSRmR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 13:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXJSRmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:40:42 -0400
-Received: from mail.softservecom.com ([195.160.232.17]:47515 "EHLO
-	mail.softservecom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752227AbXJSRkl (ORCPT
+	Fri, 19 Oct 2007 13:42:06 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50223 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758773AbXJSRmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:40:41 -0400
-Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
-From: Vitaliy Ivanov <vitalivanov@gmail.com>
-Reply-To: vitalivanov@gmail.com
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: w@1wt.eu, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071019095313.76990765.zaitcev@redhat.com>
-References: <1192383445.8372.18.camel@dell1.softservecom.com>
-	 <20071014182542.GA2832@1wt.eu>
-	 <35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
-	 <20071014223921.GA4677@1wt.eu>
-	 <1192542889.29039.66.camel@dell1.softservecom.com>
-	 <20071016154138.GA23326@1wt.eu>
-	 <1192559051.29039.139.camel@dell1.softservecom.com>
-	 <1192644776.10761.60.camel@dell1.softservecom.com>
-	 <35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
-	 <20071019095313.76990765.zaitcev@redhat.com>
-Content-Type: text/plain
-Message-Id: <1192815634.7965.53.camel@dell1.softservecom.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.5 (1.4.5-1) 
-Date: Fri, 19 Oct 2007 20:40:35 +0300
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2007 17:40:34.0890 (UTC) FILETIME=[273EE2A0:01C81277]
+	Fri, 19 Oct 2007 13:42:05 -0400
+Date: Fri, 19 Oct 2007 13:38:38 -0400
+Message-Id: <200710191738.l9JHccYx011061@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, dwmw2@infradead.org, jffs-dev@axis.com,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: BUG at mm/filemap.c:1749 (2.6.24, jffs2, unionfs) 
+In-reply-to: Your message of "Fri, 19 Oct 2007 17:16:53 +1000."
+             <200710191716.53470.nickpiggin@yahoo.com.au> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Didn't here anything on this? What is our final decision here?
+In message <200710191716.53470.nickpiggin@yahoo.com.au>, Nick Piggin writes:
+[...]
+> Hmm, looks like jffs2_write_end is writing more than we actually ask it
+> to, and returns that back.
 > 
-> It's gotten worse, not better. Apparently, you aren't getting the
-> concept of protecting the open count with a static lock and my
-> explanations are just not vivid enough or something. So I decided
-> to fix it myself. Maybe then the patch in C will explain it better
-> than English. But I didn't have time to do it.
+>         unsigned aligned_start = start & ~3;
+> 
+> and
+> 
+>         if (end == PAGE_CACHE_SIZE) {
+>                 /* When writing out the end of a page, write out the
+>                    _whole_ page. This helps to reduce the number of
+>                    nodes in files which have many short writes, like
+>                    syslog files. */
+>                 start = aligned_start = 0;
+>         }
+> 
+> These "longer" writes are fine, but they shouldn't get propagated back
+> to the vm/vfs. Something like the following patch might fix it.
+> 
+> 
+> --Boundary-00=_lnFGHwOggSRGKPd
+> Content-Type: text/x-diff;
+>   charset="utf-8";
+>   name="jffs2-writtenlen-fix.patch"
+> Content-Transfer-Encoding: 7bit
+> Content-Disposition: attachment;
+> 	filename="jffs2-writtenlen-fix.patch"
 
-Probably I'm not trying to do what you want. I analyzed locks for other
-usb drivers in 2.4 tree and used same ideas.
-Static lock minor_table_mutex is used for minor table structure.
-And dev->sem for dev manipulations and that's why for open_count.
-If you will simply browse /drivers/usb dir for 2.4 you will see that
-such approach is widely used there.
-What's not right?
-Certainly, you have more experience so I can't say that I'm right.
+Nick, the patch worked.  All of my unionfs-over-jffs2 tests passed.
 
-> Also, there's an outright bug in the latest version. Your purge
-> of the wrong lock was incomplete and so there was an unbalanced up().
-> But this is moot.
-
-Yes, got it. It's up for minor_table_mutex in adu_release. Corrected.
-
-> So, the version before the latest is borderline acceptable. If Willy
-> wants to take it, it's fine. I'll fix it up later together with 2.6.
-
-Let's do everything correctly for 2.4.
-
-V.
-
+Thanks,
+Erez.
