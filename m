@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966764AbXJSHcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966806AbXJSHdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966764AbXJSHcZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763460AbXJSHcA
+	id S966806AbXJSHdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764384AbXJSHdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:32:00 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:46747 "EHLO havoc.gtf.org"
+	Fri, 19 Oct 2007 03:33:07 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:51162 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763093AbXJSHb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:31:58 -0400
-Date: Fri, 19 Oct 2007 03:31:57 -0400
+	id S1763538AbXJSHdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:33:05 -0400
+Date: Fri, 19 Oct 2007 03:33:03 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Eliminate pointless casts from void* in a few driver irq
-	handlers.
-Message-ID: <20071019073157.GA5704@havoc.gtf.org>
+To: David Miller <davem@davemloft.net>, jeremy@xensource.com,
+       netdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sparc/xen/cxgb3: use irq_handler_t where appropriate
+Message-ID: <20071019073303.GA5728@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,112 +25,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-commit 9739eb5090cc136ab50f2b323b83894c38d1ecb9
+commit 21b1f26bf54a2ba1e4072db6dd01da128b1f66ef
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 03:10:11 2007 -0400
+Date:   Fri Oct 19 03:12:20 2007 -0400
 
-    Eliminate pointless casts from void* in a few driver irq handlers.
+    [SPARC, XEN, NET/CXGB3] use irq_handler_t where appropriate
+    
+    Rather than hand-rolling our own prototype, make the code more
+    future-proof by using the standard irq_handler_t typedef.
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/atm/horizon.c              |    5 +++--
- drivers/char/tpm/tpm_tis.c         |    4 ++--
- drivers/mtd/onenand/onenand_base.c |    2 +-
- drivers/net/typhoon.c              |    2 +-
- drivers/net/ucc_geth.c             |    2 +-
- drivers/net/wan/sbni.c             |    4 ++--
- 6 files changed, 10 insertions(+), 9 deletions(-)
+ arch/sparc/kernel/irq.c     |    4 ++--
+ arch/x86/xen/events.c       |    4 ++--
+ drivers/net/cxgb3/adapter.h |    4 +---
+ drivers/net/cxgb3/sge.c     |    2 +-
+ 4 files changed, 6 insertions(+), 8 deletions(-)
 
-9739eb5090cc136ab50f2b323b83894c38d1ecb9
-diff --git a/drivers/atm/horizon.c b/drivers/atm/horizon.c
-index f96446c..9b2cf25 100644
---- a/drivers/atm/horizon.c
-+++ b/drivers/atm/horizon.c
-@@ -1382,8 +1382,9 @@ static inline void rx_data_av_handler (hrz_dev * dev) {
+21b1f26bf54a2ba1e4072db6dd01da128b1f66ef
+diff --git a/arch/sparc/kernel/irq.c b/arch/sparc/kernel/irq.c
+index 722d67d..e1e24f3 100644
+--- a/arch/sparc/kernel/irq.c
++++ b/arch/sparc/kernel/irq.c
+@@ -479,7 +479,7 @@ EXPORT_SYMBOL(pdma_areasize);
  
- /********** interrupt handler **********/
+ extern void floppy_hardint(void);
  
--static irqreturn_t interrupt_handler(int irq, void *dev_id) {
--  hrz_dev * dev = (hrz_dev *) dev_id;
-+static irqreturn_t interrupt_handler(int irq, void *dev_id)
-+{
-+  hrz_dev *dev = dev_id;
-   u32 int_source;
-   unsigned int irq_ok;
-   
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index a8e8084..fd771a4 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -381,7 +381,7 @@ static struct tpm_vendor_specific tpm_tis = {
+-static irqreturn_t (*floppy_irq_handler)(int irq, void *dev_id);
++static irq_handler_t floppy_irq_handler;
  
- static irqreturn_t tis_int_probe(int irq, void *dev_id)
+ void sparc_floppy_irq(int irq, void *dev_id, struct pt_regs *regs)
  {
--	struct tpm_chip *chip = (struct tpm_chip *) dev_id;
-+	struct tpm_chip *chip = dev_id;
- 	u32 interrupt;
+@@ -500,7 +500,7 @@ void sparc_floppy_irq(int irq, void *dev_id, struct pt_regs *regs)
+ }
  
- 	interrupt = ioread32(chip->vendor.iobase +
-@@ -401,7 +401,7 @@ static irqreturn_t tis_int_probe(int irq, void *dev_id)
- 
- static irqreturn_t tis_int_handler(int irq, void *dev_id)
+ int sparc_floppy_request_irq(int irq, unsigned long flags,
+-			     irqreturn_t (*irq_handler)(int irq, void *))
++			     irq_handler_t irq_handler)
  {
--	struct tpm_chip *chip = (struct tpm_chip *) dev_id;
-+	struct tpm_chip *chip = dev_id;
- 	u32 interrupt;
- 	int i;
+ 	floppy_irq_handler = irq_handler;
+ 	return request_fast_irq(irq, floppy_hardint, flags, "floppy");
+diff --git a/arch/x86/xen/events.c b/arch/x86/xen/events.c
+index da1b173..6d1da58 100644
+--- a/arch/x86/xen/events.c
++++ b/arch/x86/xen/events.c
+@@ -383,7 +383,7 @@ static void unbind_from_irq(unsigned int irq)
+ }
  
-diff --git a/drivers/mtd/onenand/onenand_base.c b/drivers/mtd/onenand/onenand_base.c
-index dd28355..1b0b320 100644
---- a/drivers/mtd/onenand/onenand_base.c
-+++ b/drivers/mtd/onenand/onenand_base.c
-@@ -359,7 +359,7 @@ static int onenand_wait(struct mtd_info *mtd, int state)
+ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+-			      irqreturn_t (*handler)(int, void *),
++			      irq_handler_t handler,
+ 			      unsigned long irqflags,
+ 			      const char *devname, void *dev_id)
+ {
+@@ -402,7 +402,7 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ EXPORT_SYMBOL_GPL(bind_evtchn_to_irqhandler);
+ 
+ int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
+-			    irqreturn_t (*handler)(int, void *),
++			    irq_handler_t handler,
+ 			    unsigned long irqflags, const char *devname, void *dev_id)
+ {
+ 	unsigned int irq;
+diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+index 0442617..3814cc6 100644
+--- a/drivers/net/cxgb3/adapter.h
++++ b/drivers/net/cxgb3/adapter.h
+@@ -46,8 +46,6 @@
+ #include <asm/bitops.h>
+ #include <asm/io.h>
+ 
+-typedef irqreturn_t(*intr_handler_t) (int, void *);
+-
+ struct vlan_group;
+ struct adapter;
+ struct sge_qset;
+@@ -270,7 +268,7 @@ void t3_sge_start(struct adapter *adap);
+ void t3_sge_stop(struct adapter *adap);
+ void t3_free_sge_resources(struct adapter *adap);
+ void t3_sge_err_intr_handler(struct adapter *adapter);
+-intr_handler_t t3_intr_handler(struct adapter *adap, int polling);
++irq_handler_t t3_intr_handler(struct adapter *adap, int polling);
+ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev);
+ int t3_mgmt_tx(struct adapter *adap, struct sk_buff *skb);
+ void t3_update_qset_coalesce(struct sge_qset *qs, const struct qset_params *p);
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 994b5d6..c15e43a 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -2431,7 +2431,7 @@ static irqreturn_t t3b_intr_napi(int irq, void *cookie)
+  *	(MSI-X, MSI, or legacy) and whether NAPI will be used to service the
+  *	response queues.
   */
- static irqreturn_t onenand_interrupt(int irq, void *data)
+-intr_handler_t t3_intr_handler(struct adapter *adap, int polling)
++irq_handler_t t3_intr_handler(struct adapter *adap, int polling)
  {
--	struct onenand_chip *this = (struct onenand_chip *) data;
-+	struct onenand_chip *this = data;
- 
- 	/* To handle shared interrupt */
- 	if (!this->complete.done)
-diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
-index 72e5e9b..94ac586 100644
---- a/drivers/net/typhoon.c
-+++ b/drivers/net/typhoon.c
-@@ -1801,7 +1801,7 @@ typhoon_poll(struct napi_struct *napi, int budget)
- static irqreturn_t
- typhoon_interrupt(int irq, void *dev_instance)
- {
--	struct net_device *dev = (struct net_device *) dev_instance;
-+	struct net_device *dev = dev_instance;
- 	struct typhoon *tp = dev->priv;
- 	void __iomem *ioaddr = tp->ioaddr;
- 	u32 intr_status;
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index bec413b..9741d61 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3607,7 +3607,7 @@ static int ucc_geth_poll(struct napi_struct *napi, int budget)
- 
- static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
- {
--	struct net_device *dev = (struct net_device *)info;
-+	struct net_device *dev = info;
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 	struct ucc_fast_private *uccf;
- 	struct ucc_geth_info *ug_info;
-diff --git a/drivers/net/wan/sbni.c b/drivers/net/wan/sbni.c
-index 76db40d..2e8b5c2 100644
---- a/drivers/net/wan/sbni.c
-+++ b/drivers/net/wan/sbni.c
-@@ -502,8 +502,8 @@ sbni_start_xmit( struct sk_buff  *skb,  struct net_device  *dev )
- static irqreturn_t
- sbni_interrupt( int  irq,  void  *dev_id )
- {
--	struct net_device	  *dev = (struct net_device *) dev_id;
--	struct net_local  *nl  = (struct net_local *) dev->priv;
-+	struct net_device	  *dev = dev_id;
-+	struct net_local  *nl  = dev->priv;
- 	int	repeat;
- 
- 	spin_lock( &nl->lock );
+ 	if (adap->flags & USING_MSIX)
+ 		return polling ? t3_sge_intr_msix_napi : t3_sge_intr_msix;
