@@ -1,47 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936241AbXJSTTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966045AbXJSTUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936241AbXJSTTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764160AbXJSTTM
+	id S966045AbXJSTUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762340AbXJSTUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:19:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56132 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762343AbXJSTTJ (ORCPT
+	Fri, 19 Oct 2007 15:20:24 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:63519 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761013AbXJSTUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 15:19:09 -0400
-Date: Fri, 19 Oct 2007 20:19:01 +0100 (BST)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jaroslav Kysela <perex@perex.cz>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl
-Subject: Re: suspicious ALSA empty commit
-In-Reply-To: <Pine.LNX.4.61.0710171928250.11118@tm8103.perex-int.cz>
-Message-ID: <Pine.LNX.4.64.0710192017040.12201@pentafluge.infradead.org>
-References: <20071016.155044.82377336.davem@davemloft.net>
- <alpine.LFD.0.999.0710161624350.26902@woody.linux-foundation.org>
- <Pine.LNX.4.61.0710170809580.11118@tm8103.perex-int.cz>
- <alpine.LFD.0.999.0710170854280.26902@woody.linux-foundation.org>
- <Pine.LNX.4.61.0710171928250.11118@tm8103.perex-int.cz>
+	Fri, 19 Oct 2007 15:20:22 -0400
+Date: Fri, 19 Oct 2007 15:19:22 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 2/8] track highest prio queued on runqueue
+Message-ID: <20071019191922.GA10404@goodmis.org>
+References: <20071019184254.456160632@goodmis.org> <20071019184336.349767581@goodmis.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019184336.349767581@goodmis.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm using stg on top of git for merging and easy tree rebasing, but the
-> version might be old (I'll try upgrade at first):
->
-> Stacked GIT 0.12
-> git version 1.5.0.3
->
-> stg import / refresh / pick commands are on way to move patches to linus
+On Fri, Oct 19, 2007 at 02:42:56PM -0400, Steven Rostedt wrote:
+> This patch adds accounting to each runqueue to keep track of the
+> highest prio task queued on the run queue. We only care about
+> RT tasks, so if the run queue does not contain any active RT tasks
+> its priority will be considered MAX_RT_PRIO.
+> 
+> This information will be used for later patches.
+> 
 
-with stgit, you should add stg clean on your workflow. This will remove the 
-empty commits.
+[...]
 
--- 
-Cheers,
-Mauro
+> @@ -972,6 +974,8 @@ static void activate_task(struct rq *rq,
+>  
+>  	enqueue_task(rq, p, wakeup);
+>  	inc_nr_running(p, rq);
+> +
+> +	rq_prio_add_task(rq, p);
+>  }
+>  
+>  /*
+> @@ -984,6 +988,8 @@ static void deactivate_task(struct rq *r
+>  
+>  	dequeue_task(rq, p, sleep);
+>  	dec_nr_running(p, rq);
+> +
+> +	rq_prio_remove_task(rq, p);
+>  }
+>  
+>  /**
+> @@ -6619,6 +6625,7 @@ void __init sched_init(void)
+>  		rq->cpu = i;
+>  		rq->migration_thread = NULL;
+>  		INIT_LIST_HEAD(&rq->migration_queue);
+> +		rq->highest_prio = MAX_RT_PRIO;
+>  #endif
+>  		atomic_set(&rq->nr_iowait, 0);
+>  
+> Index: linux-test.git/kernel/sched_rt.c
+> ===================================================================
+> --- linux-test.git.orig/kernel/sched_rt.c	2007-10-19 12:33:09.000000000 -0400
+> +++ linux-test.git/kernel/sched_rt.c	2007-10-19 12:33:23.000000000 -0400
+> @@ -110,6 +110,31 @@ static struct task_struct *pick_next_tas
+>  	return next;
+>  }
+>  
+> +#ifdef CONFIG_SMP
+> +static inline void rq_prio_add_task(struct rq *rq, struct task_struct *p)
+> +{
+> +	if (unlikely(rt_task(p)) && p->prio < rq->highest_prio)
+> +		rq->highest_prio = p->prio;
+> +}
+> +
+> +static inline void rq_prio_remove_task(struct rq *rq, struct task_struct *p)
+> +{
+> +	struct rt_prio_array *array;
+> +
+> +	if (unlikely(rt_task(p))) {
+> +		if (rq->rt_nr_running) {
+> +			if (p->prio >= rq->highest_prio) {
+> +				/* recalculate */
+> +				array = &rq->rt.active;
+> +				rq->highest_prio =
+> +					sched_find_first_bit(array->bitmap);
+> +			} /* otherwise leave rq->highest prio alone */
+> +		} else
+> +			rq->highest_prio = MAX_RT_PRIO;
+> +	}
+> +}
+> +#endif /* CONFIG_SMP */
+> +
+
+Sorry, I forgot to test this on UP. Seems to be missing a 
+
+#define rq_prio_remove_task(rq, p) do { } while(0)
+#define rq_prio_add(rq, p) do { } while(0)
+
+for the !CONFIG_SMP case.
+
+Will fix.
+
+-- Steve
+
+
