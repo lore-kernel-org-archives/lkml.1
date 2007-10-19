@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936363AbXJST6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937208AbXJST7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936363AbXJST6i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934609AbXJST6F
+	id S937208AbXJST7B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936297AbXJST6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:58:05 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43874 "EHLO e6.ny.us.ibm.com"
+	Fri, 19 Oct 2007 15:58:09 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55420 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753761AbXJST6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 15:58:01 -0400
-Date: Fri, 19 Oct 2007 14:57:49 -0500
-To: Shane Huang <chunhao.huang@hotmail.com>
-Cc: davem@davemloft.net, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       shane.huang@amd.com, jgarzik@pobox.com, linux-ide@vger.kernel.org
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-Message-ID: <20071019195749.GK29903@austin.ibm.com>
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-MIME-Version: 1.0
+	id S935935AbXJST6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 15:58:08 -0400
+Date: Fri, 19 Oct 2007 21:59:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Adrian Bunk <bunk@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, zippel@linux-m68k.org
+Subject: Re: [PATCH v3] kconfig: update kconfig-language text
+Message-ID: <20071019195940.GA360@uranus.ravnborg.org>
+References: <20070813113809.9a715e75.randy.dunlap@oracle.com> <20070813185431.GD18945@stusta.de> <20071019105348.08860145.randy.dunlap@oracle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+In-Reply-To: <20071019105348.08860145.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
-> Since we have little experience on PCI and MSI here, we had to try to
-
-As someone else pointed out, AMD should have *lots* of people with
-pci and msi experience on the payroll.  (Folks here buy AMD-designed 
-pci chips ...)
-
-> ONLY
-> comment out the pci_intx() call in drivers/ata/ahci.c
-> My system can boot up too with MSI enabled!
+On Fri, Oct 19, 2007 at 10:53:48AM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> So does it mean that the root cause is our SB700 SATA controller
-> has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
-> register masks MSI interrupts too? 
+> Add kconfig-language docs for mainmenu, def_bool, and def_tristate.
+> Remove "requires" as a synonym of "depends on" since it was removed
+> from  the parser in commit 247537b9a270b52cc0375adcb0fb2605a160cba5.
 
-That's what it sounds like, to me.
+Thanks Randy - applied.
 
-> And what is the software solution or workaround?
-
-Not sure. Sounds like the device driver needs a quirk for this part.
-
-The over-worked Jeff Garzik is the maintainer for that driver.
-
-You should probably provide the pci device id for this beast.
-
---linas
-
+	Sam
