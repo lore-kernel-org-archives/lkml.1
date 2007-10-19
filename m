@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760478AbXJSOEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964999AbXJSOEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760478AbXJSOEJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbXJSODw
+	id S964999AbXJSOEn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762173AbXJSOEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:03:52 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47630 "EHLO
+	Fri, 19 Oct 2007 10:04:33 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38542 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758008AbXJSODv (ORCPT
+	with ESMTP id S1758483AbXJSOEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:03:51 -0400
-Date: Fri, 19 Oct 2007 16:04:19 +0200
+	Fri, 19 Oct 2007 10:04:33 -0400
+Date: Fri, 19 Oct 2007 16:05:02 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] ide/pci/sis5513.c: add missing "else"
-Message-ID: <20071019140419.GC3778@stusta.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fix mm/util.c:krealloc()
+Message-ID: <20071019140502.GD3778@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,26 +23,29 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a missing "else" that was missing in
-commit c77a89cd98d99819f23a4a08e5e17ee1f13f6e4d.
+Commit ef8b4520bd9f8294ffce9abd6158085bde5dc902 added one NULL check for 
+"p" in krealloc(), but that doesn't seem to be enough since there 
+doesn't seem to be any guarantee that memcpy(ret, NULL, 0) works 
+(spotted by the Coverity checker).
 
-Spotted by the Coverity checker.
+For making it clearer what happens this patch also removes the
+pointless min().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-2e4b8d4f58ea45e55c87ba5563b0d0e135cac2b4 
-diff --git a/drivers/ide/pci/sis5513.c b/drivers/ide/pci/sis5513.c
-index c1d280b..1680926 100644
---- a/drivers/ide/pci/sis5513.c
-+++ b/drivers/ide/pci/sis5513.c
-@@ -264,7 +264,7 @@ static void sis_ata133_program_timings(ide_drive_t *drive, const u8 mode)
- 	if (mode >= XFER_MW_DMA_0) {
- 		t1 &= ~0x04;	/* disable UDMA */
- 		idx = mode - XFER_MW_DMA_0 + 5;
--	}
-+	} else
- 		idx = mode - XFER_PIO_0;
- 	t1 |= ini_time_value[clk][idx] << 12;
- 	t1 |= act_time_value[clk][idx] << 16;
-
+--- linux-2.6/mm/util.c.old	2007-10-19 15:10:43.000000000 +0200
++++ linux-2.6/mm/util.c	2007-10-19 15:32:01.000000000 +0200
+@@ -94,10 +94,10 @@ void *krealloc(const void *p, size_t new
+ 	if (ks >= new_size)
+ 		return (void *)p;
+ 
+ 	ret = kmalloc_track_caller(new_size, flags);
+-	if (ret) {
+-		memcpy(ret, p, min(new_size, ks));
++	if (ret && p) {
++		memcpy(ret, p, ks);
+ 		kfree(p);
+ 	}
+ 	return ret;
+ }
