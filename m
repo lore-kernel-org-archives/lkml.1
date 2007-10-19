@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967175AbXJSWTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967227AbXJSWW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967175AbXJSWTx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966844AbXJSWTm
+	id S967227AbXJSWW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXJSWWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:19:42 -0400
-Received: from www.tglx.de ([62.245.132.106]:51130 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966783AbXJSWTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:19:41 -0400
-Date: Sat, 20 Oct 2007 00:19:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Git pull] arch/x86 updates
-In-Reply-To: <alpine.LFD.0.999.0710191459340.26902@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0710200018170.22770@localhost.localdomain>
-References: <alpine.LFD.0.9999.0710192334440.22770@localhost.localdomain> <alpine.LFD.0.999.0710191459340.26902@woody.linux-foundation.org>
+	Fri, 19 Oct 2007 18:22:47 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:31043 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760718AbXJSWWq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=LDB6P4Ftv8y4+zfsOSw95qYQBokmhYJmtmj9Pg8+o6S5qCTAZDE1rMmMH3lm8ouy3Bqp0ZRjcReMDgMnWxpTK1ECQKlf2uTFJUzvZ8ekQQIvZoF4dOrFigBO+2upASppO/CpWun5vmyHg0MvlTAlhj4d85PG1QAIjNJUuyJRgXk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: nick@ukfsn.org
+Subject: Re: New CD/DVD drive - 80-wire cable detection failure
+Date: Sat, 20 Oct 2007 00:28:21 +0200
+User-Agent: KMail/1.9.7
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200710181832.42906.nick@ukfsn.org> <200710192344.27312.bzolnier@gmail.com> <200710192304.23749.nick@ukfsn.org>
+In-Reply-To: <200710192304.23749.nick@ukfsn.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200710200028.21860.bzolnier@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Linus Torvalds wrote:
->>
-> > Pavel Emelyanov (1):
-> >       i386: consolidate show_regs and show_registers for i386
-> 
-> While I think this is good otherwise, why does it do
-> 
-> 	printk(".. comm: %.*s .."
-> 		TASK_COMM_LEN, current->comm,
-> 
-> instead of just using "%s" and "current->comm"? I only noticed because 
-> there was an unrelated conflict around that thing.
-> 
-> That "current->comm" had better be NUL-terminated already, we use it as 
-> such all over the place. And if it's not, *that* should be fixed.
+On Saturday 20 October 2007, Nick Warne wrote:
+> On Friday 19 October 2007 22:44:27 Bartlomiej Zolnierkiewicz wrote:
 
-Fair enough. Did not notice.
+> hdparm -I
 
-     tglx
+It should have been hdparm --Istdout (sorry, once again).
+
+[ It is definitevely not my day, or rather trying to debug the problem
+  while preparing the next IDE pull request is not a such good idea... ]
+
+>From identify data we should be able to deduce whether this is a kernel
+problem or rather a hardware/configuration one.
+
+Thanks,
+Bart
