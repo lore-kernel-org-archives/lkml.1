@@ -1,121 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763892AbXJSNLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbXJSNRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763892AbXJSNLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 09:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbXJSNLN
+	id S1763601AbXJSNRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 09:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXJSNR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 09:11:13 -0400
-Received: from verein.lst.de ([213.95.11.210]:35218 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbXJSNLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 09:11:12 -0400
-Date: Fri, 19 Oct 2007 15:11:05 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] clean up vmtruncate
-Message-ID: <20071019131105.GA10406@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	Fri, 19 Oct 2007 09:17:26 -0400
+Received: from bay0-omc1-s15.bay0.hotmail.com ([65.54.246.87]:28177 "EHLO
+	bay0-omc1-s15.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755277AbXJSNRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 09:17:25 -0400
+Message-ID: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+X-Originating-IP: [218.80.174.211]
+From: Shane Huang <chunhao.huang@hotmail.com>
+To: <davem@davemloft.net>, <gregkh@suse.de>, <htejun@gmail.com>,
+       <brice.goglin@gmail.com>, <david.gaarenstroom@gmail.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-pci@atrey.karlin.mff.cuni.cz>,
+       <shane.huang@amd.com>, <chunhao.huang@hotmail.com>
+Subject: RE: [patch] PCI: disable MSI on more ATI NorthBridges
+Date: Fri, 19 Oct 2007 21:17:23 +0800
+Importance: Normal
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+X-OriginalArrivalTime: 19 Oct 2007 13:17:25.0345 (UTC) FILETIME=[63F18510:01C81252]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vmtruncate is a twisted maze of gotos, this patch cleans it up to
-have a proper if else for the two major cases of extending and
-truncating truncate and thus makes it a lot more readable while
-keeping exactly the same functinality.
+
+Hi Guys:
+
+> This logic seems backwards, to me.  "shoot first, ask questions later"
+> To me this it not how to approach this problem.
+>
+> Once you turn MSI off, there is next to no incentive to fix the
+> problem because users aren't running into it any longer.
+>
+> The only two devices in that bug report which should be using MSI
+> would be the SATA controller and the broadcom ethernet NIC.  And by
+> the failed bootup logs provided by the user the problem is clearly
+> with the SATA controller.
+>
+> One common problem we're finding is that some devices have a hardware
+> bug where setting INTX_DISABLE in the PCI COMMAND register masks MSI
+> interrupts too.
+>
+> I mention this because the user in that report mentions that the
+> kernel upgrade causes the failure, and one thing we started doing not
+> too long ago was to set the INTX_DISABLE bit when MSI is enabled for a
+> device.
+
+Yes, you are right, to find out the root cause is better. Thank you
+for all your suggestion and information to us.
+Since we have little experience on PCI and MSI here, we had to try to
+disable MSI  before we find a better solution. But as you are giving
+us help now on this case, it's great! Then let's go...
+
+> So maybe this SATA controller has this problem too.  It is easy to
+> test, simply comment out all of the pci_intx() function calls in
+> drivers/pci/msi.c and perform a test boot with MSI enabled.
+>
+> I would rather you approach analysis of these kinds of MSI bugs in
+> this manner, instead of disabling MSI wholesale.  Because with the
+> latter approach it is nearly guarenteed that the real reason will only
+> be discovered with an extremely low priority.
+
+I'm using kernel 2.6.23-rc5 to debug this MSI problem, which can NOT
+boot on our Trevally board(RS690+SB700) without any kernel modification.
+
+But if I comment out all the pci_intx() function calls in
+drivers/pci/msi.c, it can boot now with MSI enabled as you expected!
+
+# cat /proc/interrupts 
+           CPU0       CPU1       
+  0:        318     174060   IO-APIC-edge      timer
+  8:          0          1   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 16:          0        204   IO-APIC-fasteoi   HDA Intel
+ 17:          0        479   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb2, ehci_hcd:usb6
+ 18:          1          2   IO-APIC-fasteoi   ohci_hcd:usb3, ohci_hcd:usb4, ohci_hcd:usb5
+ 19:          0          0   IO-APIC-fasteoi   ehci_hcd:usb7
+ 22:          4          1   IO-APIC-fasteoi   yenta
+8412:          0       1315   PCI-MSI-edge      eth0
+8413:        381       4858   PCI-MSI-edge      ahci
+NMI:          0          0 
+LOC:     174285     174210 
+ERR:          0
+
+Also if I keep the pci_intx() calls in drivers/pci/msi.c and ONLY
+comment out the pci_intx() call in drivers/ata/ahci.c
+My system can boot up too with MSI enabled!
+
+So does it mean that the root cause is our SB700 SATA controller
+has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
+register masks MSI interrupts too? 
+And what is the software solution or workaround?
+
+I will continue debug this MSI problem next week. Any suggestions,
+please don't hesitate to tell us.
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Thanks
+Best Regards
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2007-09-14 13:51:55.000000000 +0200
-+++ linux-2.6/mm/memory.c	2007-09-14 13:55:41.000000000 +0200
-@@ -2003,50 +2003,49 @@ EXPORT_SYMBOL(unmap_mapping_range);
-  */
- int vmtruncate(struct inode * inode, loff_t offset)
- {
--	struct address_space *mapping = inode->i_mapping;
--	unsigned long limit;
-+	if (inode->i_size < offset) {
-+		unsigned long limit;
- 
--	if (inode->i_size < offset)
--		goto do_expand;
--	/*
--	 * truncation of in-use swapfiles is disallowed - it would cause
--	 * subsequent swapout to scribble on the now-freed blocks.
--	 */
--	if (IS_SWAPFILE(inode))
--		goto out_busy;
--	i_size_write(inode, offset);
-+		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-+		if (limit != RLIM_INFINITY && offset > limit)
-+			goto out_sig;
-+		if (offset > inode->i_sb->s_maxbytes)
-+			goto out_big;
-+		i_size_write(inode, offset);
-+	} else {
-+		struct address_space *mapping = inode->i_mapping;
- 
--	/*
--	 * unmap_mapping_range is called twice, first simply for efficiency
--	 * so that truncate_inode_pages does fewer single-page unmaps. However
--	 * after this first call, and before truncate_inode_pages finishes,
--	 * it is possible for private pages to be COWed, which remain after
--	 * truncate_inode_pages finishes, hence the second unmap_mapping_range
--	 * call must be made for correctness.
--	 */
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	truncate_inode_pages(mapping, offset);
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	goto out_truncate;
--
--do_expand:
--	limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--	if (limit != RLIM_INFINITY && offset > limit)
--		goto out_sig;
--	if (offset > inode->i_sb->s_maxbytes)
--		goto out_big;
--	i_size_write(inode, offset);
-+		/*
-+		 * truncation of in-use swapfiles is disallowed - it would
-+		 * cause subsequent swapout to scribble on the now-freed
-+		 * blocks.
-+		 */
-+		if (IS_SWAPFILE(inode))
-+			return -ETXTBSY;
-+		i_size_write(inode, offset);
-+
-+		/*
-+		 * unmap_mapping_range is called twice, first simply for
-+		 * efficiency so that truncate_inode_pages does fewer
-+		 * single-page unmaps.  However after this first call, and
-+		 * before truncate_inode_pages finishes, it is possible for
-+		 * private pages to be COWed, which remain after
-+		 * truncate_inode_pages finishes, hence the second
-+		 * unmap_mapping_range call must be made for correctness.
-+		 */
-+		unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
-+		truncate_inode_pages(mapping, offset);
-+		unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
-+	}
- 
--out_truncate:
- 	if (inode->i_op && inode->i_op->truncate)
- 		inode->i_op->truncate(inode);
- 	return 0;
-+
- out_sig:
- 	send_sig(SIGXFSZ, current, 0);
- out_big:
- 	return -EFBIG;
--out_busy:
--	return -ETXTBSY;
- }
- EXPORT_SYMBOL(vmtruncate);
- 
+Shane
+
+_________________________________________________________________
+News, entertainment and everything you care about at Live.com. Get it now!
+http://www.live.com/getstarted.aspx
