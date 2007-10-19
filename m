@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbXJSQyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764961AbXJSQ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932083AbXJSQyX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXJSQyP
+	id S1764961AbXJSQ6f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXJSQ61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:54:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:54040 "EHLO mail.goop.org"
+	Fri, 19 Oct 2007 12:58:27 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:55718 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756008AbXJSQyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:54:14 -0400
-Message-ID: <4718E134.70101@goop.org>
-Date: Fri, 19 Oct 2007 09:54:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH 2/9] irq-remove: arch non-trivial
-References: <20071019075443.GA6407@havoc.gtf.org> <20071019075543.GC6407@havoc.gtf.org>
-In-Reply-To: <20071019075543.GC6407@havoc.gtf.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757607AbXJSQ61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:58:27 -0400
+Subject: Re: [kvm-devel] Use virtual cpu accounting if available for guest
+	times.
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Laurent Vivier <Laurent.Vivier@bull.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <200710181439.10390.borntraeger@de.ibm.com>
+References: <47135D1B.1060004@bull.net>
+	 <11926264852739-git-send-email-Laurent.Vivier@bull.net>
+	 <200710181439.10390.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 19 Oct 2007 11:57:36 -0500
+Message-Id: <1192813056.10451.6.camel@basalt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> commit 8d45690dd90b18daaa21b981ab20caf393220bf0
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Fri Oct 19 00:46:23 2007 -0400
->
->     [IRQ ARG REMOVAL] various non-trivial arch updates
->
->  arch/x86/kernel/vm86_32.c     |    3 ++-
->  include/asm-x86/irq_regs_32.h |   25 +++++++++++++++++++++++++
->  2 files changed, 27 insertions(+), 1 deletion(-)
->
-> 8d45690dd90b18daaa21b981ab20caf393220bf0
-> diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
-> index 157e4be..18aae9e 100644
-> --- a/arch/x86/kernel/vm86_32.c
-> +++ b/arch/x86/kernel/vm86_32.c
-> @@ -739,10 +739,11 @@ static int irqbits;
->  	| (1 << SIGUSR1) | (1 << SIGUSR2) | (1 << SIGIO)  | (1 << SIGURG) \
->  	| (1 << SIGUNUSED) )
->  	
-> -static irqreturn_t irq_handler(int intno, void *dev_id)
-> +static irqreturn_t irq_handler(void *dev_id)
+On Thu, 2007-10-18 at 14:39 +0200, Christian Borntraeger wrote:
+> Avi,
+> 
+> ppc and s390 offer the possibility to track process times precisely
+> by looking at cpu timer on every context switch, irq, softirq etc.
+> We can use that infrastructure as well for guest time accounting.
+> We need to account the used time before we change the state. 
+> This patch adds a call to account_system_vtime to kvm_guest_enter
+> and kvm_guest exit. If CONFIG_VIRT_CPU_ACCOUNTING is not set,
+> account_system_vtime is defined in hardirq.h as an empty function,
+> which means this patch does not change the behaviour on other
+> platforms.
+> 
+> I compile tested this patch on x86 and function tested the patch on
+> s390.
+> 
+> Avi, please apply.
+> 
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> 
+> ---
+>  drivers/kvm/kvm.h |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: kvm/drivers/kvm/kvm.h
+> ===================================================================
+> --- kvm.orig/drivers/kvm/kvm.h
+> +++ kvm/drivers/kvm/kvm.h
+> @@ -7,6 +7,7 @@
+>   */
+> 
+>  #include <linux/types.h>
+> +#include <linux/hardirq.h>
+>  #include <linux/list.h>
+>  #include <linux/mutex.h>
+>  #include <linux/spinlock.h>
+> @@ -669,11 +670,13 @@ __init void kvm_arch_init(void);
+> 
+>  static inline void kvm_guest_enter(void)
 >  {
->  	int irq_bit;
->  	unsigned long flags;
-> +	unsigned int intno = get_irqfunc_irq();
->  
->  	spin_lock_irqsave(&irqbits_lock, flags);	
->  	irq_bit = 1 << intno;
-> diff --git a/include/asm-x86/irq_regs_32.h b/include/asm-x86/irq_regs_32.h
-> index 3368b20..68a531d 100644
-> --- a/include/asm-x86/irq_regs_32.h
-> +++ b/include/asm-x86/irq_regs_32.h
-> @@ -26,4 +26,29 @@ static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
->  	return old_regs;
+> +	account_system_vtime(current);
+>  	current->flags |= PF_VCPU;
 >  }
->  
-> +DECLARE_PER_CPU(unsigned int, __irqfunc_irqs);
-> +
-> +static inline unsigned int get_irqfunc_irq(void)
-> +{
-> +	return __get_cpu_var(__irqfunc_irqs);
-> +}
-> +
-> +#if 0
-> +static inline unsigned int set_irqfunc_irq(unsigned int new_irq)
-> +{
-> +	unsigned int old_irq, *pirq = &__get_cpu_var(__irqfunc_irqs);
-> +
-> +	old_irq = *pirq;
-> +	*pirq = new_irq;
-> +	return old_irq;
-> +}
-> +#else
-> +static inline void set_irqfunc_irq(unsigned int new_irq)
-> +{
-> +	int *pirq = &__get_cpu_var(__irqfunc_irqs);
-> +
-> +	*pirq = new_irq;
->   
+> 
+>  static inline void kvm_guest_exit(void)
+>  {
+> +	account_system_vtime(current);
+>  	current->flags &= ~PF_VCPU;
+>  }
 
-x86_write_percpu(__irqfunc_irqs, new_irq) would be slightly more
-efficient here.  Any why the pointer anyway?
+I don't understand. Should kvm_guest_exit() be calling
+account_user_vtime() (instead of account_system_vtime())?
 
-    J
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
+
