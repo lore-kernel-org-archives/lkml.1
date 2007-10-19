@@ -1,93 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935434AbXJSSV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935851AbXJSSYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935434AbXJSSV6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759667AbXJSSVu
+	id S935851AbXJSSYB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbXJSSXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:21:50 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35490 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760209AbXJSSVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:21:49 -0400
-Message-ID: <4718F5BB.5010301@garzik.org>
-Date: Fri, 19 Oct 2007 14:21:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] irq-remove: core
-References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075508.GB6407@havoc.gtf.org> <m1ir53gev4.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ir53gev4.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 19 Oct 2007 14:23:51 -0400
+Received: from rwcrmhc11.comcast.net ([216.148.227.151]:61751 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759584AbXJSSXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 14:23:50 -0400
+Subject: Re: Network failure with 2.6.23-git14
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <4718DB32.5000404@garzik.org>
+References: <1192790946.6416.4.camel@localhost>
+	 <4718DB32.5000404@garzik.org>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 13:28:47 -0500
+Message-Id: <1192818527.6416.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Jeff Garzik <jeff@garzik.org> writes:
+On Fri, 2007-10-19 at 12:28 -0400, Jeff Garzik wrote:
+> Chris Holvenstot wrote:
+> > I built 2.6.23-git14 this morning - when booted I can not access the
+> > network via my Ethernet connection.  Fallback to 2.6.23-git11 works OK.
+> > One interesting message during boot:
 > 
->> commit 008b5fcf3c1d8456005de26ddd4256b1369225e8
->> Author: Jeff Garzik <jeff@garzik.org>
->> Date:   Fri Oct 19 00:45:51 2007 -0400
->>
->>     [IRQ ARG REMOVAL] core interrupt delivery infrastructure updates
->>
->>  include/asm-generic/irq_regs.h |   25 +++++++++++++++++++++++++
->>  include/linux/interrupt.h      |    4 ++--
->>  kernel/irq/handle.c            |    5 +++--
->>  kernel/irq/manage.c            |    4 ++--
->>  kernel/irq/spurious.c          |    3 ++-
->>  lib/irq_regs.c                 |    5 +++++
->>  6 files changed, 39 insertions(+), 7 deletions(-)
->>
->> 008b5fcf3c1d8456005de26ddd4256b1369225e8
->> diff --git a/include/asm-generic/irq_regs.h b/include/asm-generic/irq_regs.h
->> index 5ae1d07..1d99ef4 100644
->> --- a/include/asm-generic/irq_regs.h
->> +++ b/include/asm-generic/irq_regs.h
->> @@ -34,4 +34,29 @@ static inline struct pt_regs *set_irq_regs(struct pt_regs
->> *new_regs)
->>  	return old_regs;
->>  }
->>  
->> +DECLARE_PER_CPU(unsigned int, __irqfunc_irqs);
->> +
->> +static inline unsigned int get_irqfunc_irq(void)
->> +{
->> +	return __get_cpu_var(__irqfunc_irqs);
->> +}
->> +
->> +#if 0
->> +static inline unsigned int set_irqfunc_irq(unsigned int new_irq)
->> +{
->> +	unsigned int old_irq, *pirq = &__get_cpu_var(__irqfunc_irqs);
->> +
->> +	old_irq = *pirq;
->> +	*pirq = new_irq;
->> +	return old_irq;
->> +}
->> +#else
->> +static inline void set_irqfunc_irq(unsigned int new_irq)
->> +{
->> +	int *pirq = &__get_cpu_var(__irqfunc_irqs);
->> +
->> +	*pirq = new_irq;
->> +}
->> +#endif
+> > [   37.325760] forcedeth: Reverse Engineered nForce ethernet driver.
+> > [   37.843618] forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @ 1,
+> > addr 00:19:db:6d:3f:1b
+> > [   37.843623] forcedeth 0000:00:0a.0: highdma csum timirq gbit lnktim
+> > desc-v3
 > 
-> Please look at handle_IRQ_event.  Local irqs are enabled so irq
-> recursion can happen.  So not handling old_irq is a big nasty
-> bug.
+> > [   46.414433] sysfs: duplicate filename 'eth1' can not be created
+> > [   46.414438] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > [   46.414445]  [<c01ba80f>] sysfs_add_one+0x9f/0xe0
+> > [   46.414456]  [<c01bb5c6>] sysfs_create_link+0x86/0x110
+> > [   46.414462]  [<c025608a>] device_rename+0x17a/0x1e0
+> > [   46.414467]  [<c0130190>] run_timer_softirq+0x30/0x180
+> > [   46.414472]  [<c0287a60>] dev_change_name+0xb0/0x200
+> > [   46.414476]  [<c0159a62>] filemap_fault+0x1f2/0x400
+> > [   46.414478]  [<c012c895>] __do_softirq+0x75/0xf0
+> > [   46.414484]  [<c027a260>] sock_ioctl+0x0/0x230
+> > [   46.414487]  [<c028809c>] dev_ioctl+0x25c/0x520
+> > [   46.414489]  [<c01646eb>] __do_fault+0x1ab/0x380
+> > [   46.414494]  [<c0165d28>] handle_mm_fault+0xf8/0x610
+> > [   46.414499]  [<c027a260>] sock_ioctl+0x0/0x230
+> > [   46.414502]  [<c018343b>] do_ioctl+0x2b/0x90
+> > [   46.414506]  [<c01834fc>] vfs_ioctl+0x5c/0x290
+> > [   46.414510]  [<c0183798>] sys_ioctl+0x68/0x80
+> > [   46.414513]  [<c01041de>] sysenter_past_esp+0x5f/0x85
+> > [   46.414520]  =======================
+> > [   46.414523] net eth1: device_rename: sysfs_create_symlink failed
+> 
+> 
+> What are your network devices?  Is your problem with eth0, forcedeth, or 
+> as this traceback implies, eth1?
+> 
+> What is eth1?  (driver, bus, ...)
+> 
+> Can you bisect?
+> 
+> 	Jeff
+> 
+> 
 
-Do you think set_irqfunc_irq() should be called at all the callsites of 
-set_irq_regs(), or one the fix you mention is applied, do you think 
-current model is sufficient?
+Jeff - 
 
-	Jeff
+You are correct, it is eth1 - which is the only hardware interface I
+have available on the system.  It is implemented on the motherboard
+using the Nvidia CK804 chip set.  My motherboard is an MSI product.
+
+Attached at the end of this is an extract from an lshal command which I
+hope will provide what you are looking for.
+
+Bisect - I am willing to give it a try, but I see two problems.  
+
+First, git12 was a dead dog on my system.  so what ever happened there
+is not much of a spread between there and git14 which is where I am
+having this problem.
+
+BUT, I am willing to try if you are willing to do a little hand holding.
+
+I have git 1.5.2.5 on my system.
+
+I have NO git repository on my system no am I sure how to get it.  To
+date the method I have been using is to download the newest patches on a
+on a daily basis and work from there.
+
+So, yes, I am willing to bisect, as long as you understand you may get a
+few private, off-the-list emails asking for guidance.  
+
+Chris
+
+udi = '/org/freedesktop/Hal/devices/pci_10de_57'
+  info.bus = 'pci'  (string)
+  info.linux.driver = 'forcedeth'  (string)
+  info.parent = '/org/freedesktop/Hal/devices/computer'  (string)
+  info.product = 'CK804 Ethernet Controller'  (string)
+  info.subsystem = 'pci'  (string)
+  info.udi = '/org/freedesktop/Hal/devices/pci_10de_57'  (string)
+  info.vendor = 'nVidia Corporation'  (string)
+  linux.hotplug_type = 2  (0x2)  (int)
+  linux.subsystem = 'pci'  (string)
+  linux.sysfs_path = '/sys/devices/pci0000:00/0000:00:0a.0'  (string)
+  pci.device_class = 6  (0x6)  (int)
+  pci.device_protocol = 0  (0x0)  (int)
+  pci.device_subclass = 128  (0x80)  (int)
+  pci.linux.sysfs_path = '/sys/devices/pci0000:00/0000:00:0a.0'
+(string)
+  pci.product = 'CK804 Ethernet Controller'  (string)
+  pci.product_id = 87  (0x57)  (int)
+  pci.subsys_product_id = 28965  (0x7125)  (int)
+  pci.subsys_vendor = 'Micro-Star International Co., Ltd.'  (string)
+  pci.subsys_vendor_id = 5218  (0x1462)  (int)
+  pci.vendor = 'nVidia Corporation'  (string)
+  pci.vendor_id = 4318  (0x10de)  (int)
+
+udi = '/org/freedesktop/Hal/devices/net_00_19_db_6d_3f_1b'
+  info.capabilities = {'net', 'net.80203'} (string list)
+  info.category = 'net.80203'  (string)
+  info.parent = '/org/freedesktop/Hal/devices/pci_10de_57'  (string)
+  info.product = 'Networking Interface'  (string)
+  info.udi = '/org/freedesktop/Hal/devices/net_00_19_db_6d_3f_1b'
+(string)
+  linux.hotplug_type = 2  (0x2)  (int)
+  linux.subsystem = 'net'  (string)
+  linux.sysfs_path = '/sys/class/net/eth1'  (string)
+  net.80203.mac_address = 111055552283  (0x19db6d3f1b)  (uint64)
+  net.address = '00:19:db:6d:3f:1b'  (string)
+  net.arp_proto_hw_id = 1  (0x1)  (int)
+  net.interface = 'eth1'  (string)
+  net.linux.ifindex = 2  (0x2)  (int)
+  net.originating_device = '/org/freedesktop/Hal/devices/pci_10de_57'
+(string)
+  net.physical_device = '/org/freedesktop/Hal/devices/pci_10de_57'
+(string)
 
 
+
+
+
+> 
 
