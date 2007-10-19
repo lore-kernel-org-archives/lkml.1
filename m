@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933397AbXJSNmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763672AbXJSNp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933397AbXJSNmk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 09:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXJSNmd
+	id S1763672AbXJSNp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 09:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbXJSNpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 09:42:33 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:50131 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757513AbXJSNmd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 09:42:33 -0400
-Date: Fri, 19 Oct 2007 15:43:00 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: fs/buffer.c:nobh_write_end(): NULL dereference
-Message-ID: <20071019134300.GA3778@stusta.de>
+	Fri, 19 Oct 2007 09:45:12 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:34600 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbXJSNpK (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 09:45:10 -0400
+Message-ID: <4718B4DB.1000202@de.ibm.com>
+Date: Fri, 19 Oct 2007 15:44:59 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: carsteno@de.ibm.com
+CC: Mike Lampard <mike@secnet.net.au>, kvm-devel@lists.sourceforge.net,
+       Aurelien Jarno <aurelien@aurel32.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net> <47189706.1040809@de.ibm.com> <200710192127.17584.mike@secnet.net.au> <4718A14B.4060008@de.ibm.com>
+In-Reply-To: <4718A14B.4060008@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 03158cd7eb3374843de68421142ca5900df845d9 introcduced the 
-following NULL dereference:
+Carsten Otte wrote:
+> First thing we do, is figure whether or not 2.6.23.1 as released breaks 
+> our system too. This way, we can either focus on differences between 
+> Linus and Avi, or turn on the big red warning sign saying "regression".
+Looks like 2.6.23.1 works fine on that box. We'll leave it running over
+the weekend with "while true; do make; make clean; done".
 
-<--  snip  -->
-
-...
-int nobh_write_end(struct file *file, struct address_space *mapping,
-                        loff_t pos, unsigned len, unsigned copied,
-                        struct page *page, void *fsdata)
-{
-        struct inode *inode = page->mapping->host;
-        struct buffer_head *head = NULL;
-        struct buffer_head *bh;
-
-        if (!PageMappedToDisk(page)) {
-                if (unlikely(copied < len) && !page_has_buffers(page))
-                        attach_nobh_buffers(page, head);
-...                                               ^^^^
-
-<--  snip  -->
-
-Spotted by the Coverity checker.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
