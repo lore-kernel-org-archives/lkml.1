@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935545AbXJSR5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935987AbXJSR5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935545AbXJSR5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbXJSR5H
+	id S935987AbXJSR5p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 13:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764789AbXJSR5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:57:07 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51199 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756996AbXJSR5G (ORCPT
+	Fri, 19 Oct 2007 13:57:34 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:21533 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932973AbXJSR5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:57:06 -0400
-Date: Fri, 19 Oct 2007 13:53:40 -0400
-Message-Id: <200710191753.l9JHreeS012064@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: [BLOCK2MTD] WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
-X-MailKey: Erez_Zadok
+	Fri, 19 Oct 2007 13:57:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=5CfxappfTVQSKNkZQgS3wA0qynUpq9z9KHo133OoXaUgupImzX4h3iikH2idb/GJWmXQyK1HuUu4nKgCJDmA9G5W9zBS0TuoO1fO5cqpE2LI7SNnJeu0JVX1Sxqmv82dbO+mh043m5OP4Q/76zzohRd0kMiH3Il3/ZpWtKsoZmQ=  ;
+X-YMail-OSG: t5QsIU0VM1mQDOHy2d7T0V1GHULPMgBLLROIf5nJ3epXinzN2foheW6GUNRX691OWp4boO0Xl.3YpWDZQPA08ucyffxjUr5aF0P75SFlCgui2d1ppWNUJCW_nvxj
+Date: Fri, 19 Oct 2007 10:57:30 -0700
+From: David Brownell <david-b@pacbell.net>
+To: cooloney.lkml@gmail.com
+Subject: Re: [PATCH 02/10] Blackfin SPI driver: use new GPIO API and add error handling
+Cc: spi-devel-general@lists.sourceforge.net, michael.hennerich@analog.com,
+       linux-kernel@vger.kernel.org, bryan.wu@analog.com,
+       akpm@linux-foundation.org
+References: <1192158304-8277-1-git-send-email-bryan.wu@analog.com>
+ <200710112326.34500.david-b@pacbell.net>
+ <1192172077.6247.15.camel@roc-laptop>
+ <200710121017.47645.david-b@pacbell.net>
+ <386072610710172306m2a0831eds646da3d7c78809bb@mail.gmail.com>
+In-Reply-To: <386072610710172306m2a0831eds646da3d7c78809bb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071019175730.8546323A5F7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been having this problem for some time with mtd, which I use to mount
-jffs2 images (for unionfs testing).  I've seen it in several recent major
-kernels, including 2.6.24.  Here's the sequence of ops I perform:
+> > In fact, if I look at the kernel.org GIT tree, it doesn't have
+> > them either.  Your tree must have somehow gotten a bunch of
+> > private changes.
+>
+> Did you apply these patches, or I need resent a new patchset against
+> latest Linus GIT tree?
 
-# cp jffs2-empty.img /tmp/foo
-# losetup /dev/loop0 /tmp/foo
-# modprobe mtdblock
-# modprobe block2mtd block2mtd=/dev/loop0,128ki
-# mount -t jffs2 /dev/mtdblock0 /n/lower/b0
+I'm still not quite sure why the patches you sent didn't apply
+for me.  Why don't you send refreshed patches to me after RC1.
 
-The jffs2-empty.img is a small jffs2 image, of an empty directory, created
-w/ the jffs2 utils.  At the point I modprobe block2mtd, I get the following
-lockdep warning and a "BUG" message:
 
-BUG: key f88e1340 not in .data!
-WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
- [<c0102bc2>] show_trace_log_lvl+0x1a/0x2f
- [<c0103692>] show_trace+0x12/0x14
- [<c01037b2>] dump_stack+0x15/0x17
- [<c0125432>] lockdep_init_map+0x94/0x3e4
- [<c0125001>] debug_mutex_init+0x2c/0x3c
- [<c01210d4>] __mutex_init+0x38/0x40
- [<f88e01d3>] 0xf88e01d3
- [<c011dda7>] parse_args+0x123/0x200
- [<c012b725>] sys_init_module+0xdd0/0x122c
- [<c0102586>] sysenter_past_esp+0x5f/0x91
- =======================
-block2mtd: mtd0: [d: /dev/loop0] erase_size = 128KiB [131072]
-block2mtd: version $Revision: 1.30 $
+> I noticed in latest GIT tree the Blackfin SPI driver are modified.
 
-However, everything seems to work afterwards: jffs2 mounts, and all my
-unionfs+jffs2 tests succeed.
+Yes, various cleanup patches.  Missing newlines in dev_*() calls,
+class_device removal, remove extra includes, and so forth.  They
+might conflict with your patches (I suspect they won't).
 
-So, what is this "key xxx not in .data" message and should I worry?  Is the
-lockdep warning a problem?  (It might be a problem if lockdep warnings are
-turned off afterwards, so lockdep won't complain about future warnings.)
-Heck, am I using mtd/jffs correctly?
+That's a big part of why you should arrange to submit patches well
+in advance of the merge window opening.  As a rule, maintainers
+won't have/make extra time during that window to review and/or fix
+nontrivial issues, or address conflicts with other patches.  Try to
+submit at least a few weeks before the previous kernel finalizes.
 
-Thanks,
-Erez.
+- Dave
+
