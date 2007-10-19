@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765751AbXJSGXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965821AbXJSGeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765751AbXJSGXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 02:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbXJSGXM
+	id S965821AbXJSGeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 02:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbXJSGeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 02:23:12 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4041 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751884AbXJSGXL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 02:23:11 -0400
-Date: Fri, 19 Oct 2007 13:53:33 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-ID: <20071019055333.GA10748@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop> <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org> <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org> <20071019023219.GB8453@gondor.apana.org.au> <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org> <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org> <1192767073.7367.84.camel@pasglop> <1192768014.7367.96.camel@pasglop>
+	Fri, 19 Oct 2007 02:34:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50591 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753324AbXJSGeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 02:34:08 -0400
+Date: Fri, 19 Oct 2007 16:33:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Make advansys depend on CONFIG_VIRT_TO_BUS
+Message-Id: <20071019163359.2409613d.sfr@canb.auug.org.au>
+In-Reply-To: <20071018223023.d805c8c4.akpm@linux-foundation.org>
+References: <20071019150431.996522c5.sfr@canb.auug.org.au>
+	<20071018222017.514df7b9.randy.dunlap@oracle.com>
+	<20071018223023.d805c8c4.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1192768014.7367.96.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__19_Oct_2007_16_33_59_+1000_tAUFkayY_.ipfDEA"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 02:26:54PM +1000, Benjamin Herrenschmidt wrote:
+--Signature=_Fri__19_Oct_2007_16_33_59_+1000_tAUFkayY_.ipfDEA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 18 Oct 2007 22:30:23 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
 >
-> I think a simple smp_mb(); here after foo = 1; is enough, which means
-> basically just having an smp_mp(); inside napi_synchronize(), before
-> the test_bit(). Or do I miss something ?
+> On Thu, 18 Oct 2007 22:20:17 -0700 Randy Dunlap <randy.dunlap@oracle.com>=
+ wrote:
+> >=20
+> > Please explain "why" in the changelog (what changelog?).
+> >=20
+> > E.g.:
+> > so that make allmodconfig on powerpc will have a better chance
+> > of building.
 
-Yes I think you're right.  In this case we do have barriers
-everywhere else so this should work.
+Yep, sorry.
 
-Although if you want napi_synchronize to have the property that
-when it returns all NAPI processing effects are visible then
-you'd need another smp_mb() after the loop.
+> My version of this patch does that.  I'll be sending it into Linus in an
+> hour or so.
 
+Thanks.
+
+--=20
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__19_Oct_2007_16_33_59_+1000_tAUFkayY_.ipfDEA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHGE/bTgG2atn1QN8RAn1+AJ9eVWU+wYtXEyVAbeH3UDDVTkxFMQCgmdcL
+jYEw3b2DRKeoxWqyWODdqzs=
+=I0mA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__19_Oct_2007_16_33_59_+1000_tAUFkayY_.ipfDEA--
