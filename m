@@ -1,170 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966733AbXJSHz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966940AbXJSHzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966733AbXJSHz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765771AbXJSHzL
+	id S966940AbXJSHzm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934769AbXJSHzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:55:11 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:46303 "EHLO havoc.gtf.org"
+	Fri, 19 Oct 2007 03:55:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:53772 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764736AbXJSHzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:55:10 -0400
-Date: Fri, 19 Oct 2007 03:55:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Eric Biederman <ebiederm@xmission.com>
-Subject: [PATCH 1/9] irq-remove: core
-Message-ID: <20071019075508.GB6407@havoc.gtf.org>
-References: <20071019075443.GA6407@havoc.gtf.org>
+	id S934136AbXJSHzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:55:16 -0400
+Message-ID: <471862C1.8080003@goop.org>
+Date: Fri, 19 Oct 2007 00:54:41 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071019075443.GA6407@havoc.gtf.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Jeff Garzik <jeff@garzik.org>
+CC: David Miller <davem@davemloft.net>, jeremy@xensource.com,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sparc/xen/cxgb3: use irq_handler_t where appropriate
+References: <20071019073303.GA5728@havoc.gtf.org>
+In-Reply-To: <20071019073303.GA5728@havoc.gtf.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> commit 21b1f26bf54a2ba1e4072db6dd01da128b1f66ef
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Fri Oct 19 03:12:20 2007 -0400
+>
+>     [SPARC, XEN, NET/CXGB3] use irq_handler_t where appropriate
+>     
+>     Rather than hand-rolling our own prototype, make the code more
+>     future-proof by using the standard irq_handler_t typedef.
+>     
+>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>   
 
-commit 008b5fcf3c1d8456005de26ddd4256b1369225e8
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 00:45:51 2007 -0400
+Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-    [IRQ ARG REMOVAL] core interrupt delivery infrastructure updates
+>  arch/sparc/kernel/irq.c     |    4 ++--
+>  arch/x86/xen/events.c       |    4 ++--
+>  drivers/net/cxgb3/adapter.h |    4 +---
+>  drivers/net/cxgb3/sge.c     |    2 +-
+>  4 files changed, 6 insertions(+), 8 deletions(-)
+>
+> 21b1f26bf54a2ba1e4072db6dd01da128b1f66ef
+> diff --git a/arch/sparc/kernel/irq.c b/arch/sparc/kernel/irq.c
+> index 722d67d..e1e24f3 100644
+> --- a/arch/sparc/kernel/irq.c
+> +++ b/arch/sparc/kernel/irq.c
+> @@ -479,7 +479,7 @@ EXPORT_SYMBOL(pdma_areasize);
+>  
+>  extern void floppy_hardint(void);
+>  
+> -static irqreturn_t (*floppy_irq_handler)(int irq, void *dev_id);
+> +static irq_handler_t floppy_irq_handler;
+>  
+>  void sparc_floppy_irq(int irq, void *dev_id, struct pt_regs *regs)
+>  {
+> @@ -500,7 +500,7 @@ void sparc_floppy_irq(int irq, void *dev_id, struct pt_regs *regs)
+>  }
+>  
+>  int sparc_floppy_request_irq(int irq, unsigned long flags,
+> -			     irqreturn_t (*irq_handler)(int irq, void *))
+> +			     irq_handler_t irq_handler)
+>  {
+>  	floppy_irq_handler = irq_handler;
+>  	return request_fast_irq(irq, floppy_hardint, flags, "floppy");
+> diff --git a/arch/x86/xen/events.c b/arch/x86/xen/events.c
+> index da1b173..6d1da58 100644
+> --- a/arch/x86/xen/events.c
+> +++ b/arch/x86/xen/events.c
+> @@ -383,7 +383,7 @@ static void unbind_from_irq(unsigned int irq)
+>  }
+>  
+>  int bind_evtchn_to_irqhandler(unsigned int evtchn,
+> -			      irqreturn_t (*handler)(int, void *),
+> +			      irq_handler_t handler,
+>  			      unsigned long irqflags,
+>  			      const char *devname, void *dev_id)
+>  {
+> @@ -402,7 +402,7 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+>  EXPORT_SYMBOL_GPL(bind_evtchn_to_irqhandler);
+>  
+>  int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
+> -			    irqreturn_t (*handler)(int, void *),
+> +			    irq_handler_t handler,
+>  			    unsigned long irqflags, const char *devname, void *dev_id)
+>  {
+>  	unsigned int irq;
+> diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+> index 0442617..3814cc6 100644
+> --- a/drivers/net/cxgb3/adapter.h
+> +++ b/drivers/net/cxgb3/adapter.h
+> @@ -46,8 +46,6 @@
+>  #include <asm/bitops.h>
+>  #include <asm/io.h>
+>  
+> -typedef irqreturn_t(*intr_handler_t) (int, void *);
+> -
+>  struct vlan_group;
+>  struct adapter;
+>  struct sge_qset;
+> @@ -270,7 +268,7 @@ void t3_sge_start(struct adapter *adap);
+>  void t3_sge_stop(struct adapter *adap);
+>  void t3_free_sge_resources(struct adapter *adap);
+>  void t3_sge_err_intr_handler(struct adapter *adapter);
+> -intr_handler_t t3_intr_handler(struct adapter *adap, int polling);
+> +irq_handler_t t3_intr_handler(struct adapter *adap, int polling);
+>  int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev);
+>  int t3_mgmt_tx(struct adapter *adap, struct sk_buff *skb);
+>  void t3_update_qset_coalesce(struct sge_qset *qs, const struct qset_params *p);
+> diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+> index 994b5d6..c15e43a 100644
+> --- a/drivers/net/cxgb3/sge.c
+> +++ b/drivers/net/cxgb3/sge.c
+> @@ -2431,7 +2431,7 @@ static irqreturn_t t3b_intr_napi(int irq, void *cookie)
+>   *	(MSI-X, MSI, or legacy) and whether NAPI will be used to service the
+>   *	response queues.
+>   */
+> -intr_handler_t t3_intr_handler(struct adapter *adap, int polling)
+> +irq_handler_t t3_intr_handler(struct adapter *adap, int polling)
+>  {
+>  	if (adap->flags & USING_MSIX)
+>  		return polling ? t3_sge_intr_msix_napi : t3_sge_intr_msix;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
- include/asm-generic/irq_regs.h |   25 +++++++++++++++++++++++++
- include/linux/interrupt.h      |    4 ++--
- kernel/irq/handle.c            |    5 +++--
- kernel/irq/manage.c            |    4 ++--
- kernel/irq/spurious.c          |    3 ++-
- lib/irq_regs.c                 |    5 +++++
- 6 files changed, 39 insertions(+), 7 deletions(-)
-
-008b5fcf3c1d8456005de26ddd4256b1369225e8
-diff --git a/include/asm-generic/irq_regs.h b/include/asm-generic/irq_regs.h
-index 5ae1d07..1d99ef4 100644
---- a/include/asm-generic/irq_regs.h
-+++ b/include/asm-generic/irq_regs.h
-@@ -34,4 +34,29 @@ static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
- 	return old_regs;
- }
- 
-+DECLARE_PER_CPU(unsigned int, __irqfunc_irqs);
-+
-+static inline unsigned int get_irqfunc_irq(void)
-+{
-+	return __get_cpu_var(__irqfunc_irqs);
-+}
-+
-+#if 0
-+static inline unsigned int set_irqfunc_irq(unsigned int new_irq)
-+{
-+	unsigned int old_irq, *pirq = &__get_cpu_var(__irqfunc_irqs);
-+
-+	old_irq = *pirq;
-+	*pirq = new_irq;
-+	return old_irq;
-+}
-+#else
-+static inline void set_irqfunc_irq(unsigned int new_irq)
-+{
-+	int *pirq = &__get_cpu_var(__irqfunc_irqs);
-+
-+	*pirq = new_irq;
-+}
-+#endif
-+
- #endif /* _ASM_GENERIC_IRQ_REGS_H */
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 2306920..98720ea 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -55,7 +55,7 @@
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
- 
--typedef irqreturn_t (*irq_handler_t)(int, void *);
-+typedef irqreturn_t (*irq_handler_t)(void *);
- 
- struct irqaction {
- 	irq_handler_t handler;
-@@ -68,7 +68,7 @@ struct irqaction {
- 	struct proc_dir_entry *dir;
- };
- 
--extern irqreturn_t no_action(int cpl, void *dev_id);
-+extern irqreturn_t no_action(void *dev_id);
- extern int __must_check request_irq(unsigned int, irq_handler_t handler,
- 		       unsigned long, const char *, void *);
- extern void free_irq(unsigned int, void *);
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index e391cbb..fe19034 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -114,7 +114,7 @@ struct irq_chip dummy_irq_chip = {
- /*
-  * Special, empty irq handler:
-  */
--irqreturn_t no_action(int cpl, void *dev_id)
-+irqreturn_t no_action(void *dev_id)
- {
- 	return IRQ_NONE;
- }
-@@ -137,7 +137,8 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
- 		local_irq_enable_in_hardirq();
- 
- 	do {
--		ret = action->handler(irq, action->dev_id);
-+		set_irqfunc_irq(irq);
-+		ret = action->handler(action->dev_id);
- 		if (ret == IRQ_HANDLED)
- 			status |= action->flags;
- 		retval |= ret;
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 80eab7a..92e1456 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -455,7 +455,7 @@ void free_irq(unsigned int irq, void *dev_id)
- 			 */
- 			if (action->flags & IRQF_SHARED) {
- 				local_irq_save(flags);
--				action->handler(irq, dev_id);
-+				action->handler(dev_id);
- 				local_irq_restore(flags);
- 			}
- #endif
-@@ -549,7 +549,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
- 		unsigned long flags;
- 
- 		local_irq_save(flags);
--		handler(irq, dev_id);
-+		handler(dev_id);
- 		local_irq_restore(flags);
- 	}
- #endif
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index 32b1619..8c6038e 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -49,7 +49,8 @@ static int misrouted_irq(int irq)
- 		while (action) {
- 			/* Only shared IRQ handlers are safe to call */
- 			if (action->flags & IRQF_SHARED) {
--				if (action->handler(i, action->dev_id) ==
-+				set_irqfunc_irq(i);
-+				if (action->handler(action->dev_id) ==
- 						IRQ_HANDLED)
- 					ok = 1;
- 			}
-diff --git a/lib/irq_regs.c b/lib/irq_regs.c
-index 753880a..765a938 100644
---- a/lib/irq_regs.c
-+++ b/lib/irq_regs.c
-@@ -15,3 +15,8 @@
- DEFINE_PER_CPU(struct pt_regs *, __irq_regs);
- EXPORT_PER_CPU_SYMBOL(__irq_regs);
- #endif
-+
-+#ifndef ARCH_HAS_OWN_IRQFUNC_IRQ
-+DEFINE_PER_CPU(unsigned int, __irqfunc_irqs);
-+EXPORT_PER_CPU_SYMBOL(__irqfunc_irqs);
-+#endif
