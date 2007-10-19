@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966365AbXJSDt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966401AbXJSDvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966365AbXJSDt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 23:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763720AbXJSDtu
+	id S966401AbXJSDvY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 23:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763907AbXJSDvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 23:49:50 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:43549 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763520AbXJSDtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 23:49:49 -0400
-Date: Fri, 19 Oct 2007 12:49:37 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: linuxsh <linuxsh-dev@lists.sourceforge.net>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH / HP6XX] : Add Timer values into HD64461.h
-Message-ID: <20071019034937.GA8477@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-	linuxsh <linuxsh-dev@lists.sourceforge.net>,
-	linux-main <linux-kernel@vger.kernel.org>
-References: <20071018213904.c0be3b03.Kristoffer.ericson@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071018213904.c0be3b03.Kristoffer.ericson@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 18 Oct 2007 23:51:17 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:58754 "EHLO snapgear.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762259AbXJSDvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 23:51:17 -0400
+Date: Fri, 19 Oct 2007 13:51:03 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200710190351.l9J3p3U9004618@goober>
+To: torvalds@linux-foundation.org
+Subject: [M68KNOMMU]: remove use of undefined symbol CONFIG_DISKtel
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 09:39:04PM -0700, Kristoffer Ericson wrote:
-> This patch adds HD64461 Timer adresses & registers to the HD64461
-> header file (/include/asm-sh/hd64461.h).  The timers (TMU0 & TMU1) can
-> hold 16bit values and auto loads the counter constant when it reaches
-> zero. Upon reaching zero it generates an interrupt.
-> 
-> Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-> 
-There's nothing that uses these, so why are you adding them? If you plan
-on hooking these up in the hd64461 or TMU code, submit these definitions
-along with the code that uses them.
+Remove use of undefined symbol CONFIG_DISKtel.
+
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
+
+
+diff -Naurp linux-2.6.23/include/asm-m68knommu/mcfuart.h linux-2.6.23-uc0/include/asm-m68knommu/mcfuart.h
+--- linux-2.6.23/include/asm-m68knommu/mcfuart.h	2007-10-19 10:21:30.000000000 +1000
++++ linux-2.6.23-uc0/include/asm-m68knommu/mcfuart.h	2007-10-19 10:32:26.000000000 +1000
+@@ -12,7 +12,6 @@
+ #define	mcfuart_h
+ /****************************************************************************/
+ 
+-
+ /*
+  *	Define the base address of the UARTS within the MBAR address
+  *	space.
+@@ -33,7 +32,7 @@
+ #define MCFUART_BASE2		0x240           /* Base address of UART2 */
+ #define MCFUART_BASE3		0x280           /* Base address of UART3 */
+ #elif defined(CONFIG_M5249) || defined(CONFIG_M5307) || defined(CONFIG_M5407)
+-#if defined(CONFIG_NETtel) || defined(CONFIG_DISKtel) || defined(CONFIG_SECUREEDGEMP3)
++#if defined(CONFIG_NETtel) || defined(CONFIG_SECUREEDGEMP3)
+ #define MCFUART_BASE1		0x200           /* Base address of UART1 */
+ #define MCFUART_BASE2		0x1c0           /* Base address of UART2 */
+ #else
