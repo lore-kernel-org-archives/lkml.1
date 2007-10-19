@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966110AbXJSCGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966168AbXJSCMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966110AbXJSCGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 22:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965900AbXJSCGW
+	id S966168AbXJSCMi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 22:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764312AbXJSCMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 22:06:22 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34309 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965886AbXJSCGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 22:06:19 -0400
-Subject: Re: [PATCH 2/2] ext2: Avoid rec_len overflow with 64KB block size
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sho@tnes.nec.co.jp, clameter@sgi.com
-In-Reply-To: <20071017210925.c3c66de5.akpm@linux-foundation.org>
-References: <20070828190551.415127746@sgi.com>
-	 <20070828190735.292638294@sgi.com>
-	 <1188432669.3799.35.camel@localhost.localdomain>
-	 <1188434857.3799.76.camel@localhost.localdomain>
-	 <1191285346.11737.58.camel@localhost.localdomain>
-	 <20071004131207.65406a7b.akpm@linux-foundation.org>
-	 <20071011111849.GC7125@duck.suse.cz>
-	 <20071017210925.c3c66de5.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 18 Oct 2007 19:05:55 -0700
-Message-Id: <1192759555.3776.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Thu, 18 Oct 2007 22:12:30 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:46898 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1764181AbXJSCM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 22:12:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=CEgIpOKHQ6tw1DvNJ900LM0Su5D7LYeVbeF4IuVkJmPkt6d7zm90dhApQ2C39gDHkjRvJY6PvQrFTRyDJqRCdF2WltZXGRYTzS64yUi/FkQmesKKOkjpn2edcFTgWA/yFwNR7xSMlj/I6cLWmEKzGKhJBaMm7r0ZjCofTUqSG4o=  ;
+X-YMail-OSG: 0M8Q9MUVM1m1YrIfbsFaJX8aDJScbraj.sI7Nxwlt429jx1KqndszUyr_DlUzEY5yKQR8LNrOA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: SLUB: Avoid atomic operation for slab_unlock
+Date: Fri, 19 Oct 2007 12:12:00 +1000
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, linux-mm@kvack.org
+References: <Pine.LNX.4.64.0710181514310.3584@schroedinger.engr.sgi.com> <200710191156.43049.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710191212.00653.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 21:09 -0700, Andrew Morton wrote:
-> On Thu, 11 Oct 2007 13:18:49 +0200 Jan Kara <jack@suse.cz> wrote:
-> 
-> > With 64KB blocksize, a directory entry can have size 64KB which does not fit
-> > into 16 bits we have for entry lenght. So we store 0xffff instead and convert
-> > value when read from / written to disk.
-> 
-> btw, this changes ext2's on-disk format.
-> 
-Just to clarify this is only changes the directory entries format on
-ext2/3/4 fs with 64k block size. But currently without kernel changes
-ext2/3/4 does not support 64 block size.
+On Friday 19 October 2007 12:01, Christoph Lameter wrote:
+> On Fri, 19 Oct 2007, Nick Piggin wrote:
+> > > Yes that is what I attempted to do with the write barrier. To my
+> > > knowledge there are no reads that could bleed out and I wanted to avoid
+> > > a full fence instruction there.
+> >
+> > Oh, OK. Bit risky ;) You might be right, but anyway I think it
+> > should be just as fast with the optimised bit_unlock on most
+> > architectures.
+>
+> How expensive is the fence? An store with release semantics would be safer
+> and okay for IA64.
 
-> a) is the ext2 format documented anywhere?  If so, that document will
->    need updating.
-> 
-
-The e2fsprogs needs to be changed to sync up with this change.
-
-Ted has a paper a while back to show ext2 disk format 
-http://web.mit.edu/tytso/www/linux/ext2intro.html
-
-The Documentation/filesystems/ext2.txt doesn't have the ext2 format
-documented. That document is out-dated need to be reviewed and cleaned
-up.
- 
-> b) what happens when an old ext2 driver tries to read and/or write this
->    directory entry?  Do we need a compat flag for it?
-> 
-> c) what happens when old and new ext3 or ext4 try to read/write this
->    directory entry?
-> 
-
-Without the first patch in this series: ext2 large blocksize support
-patches, it fails to mount a ext2 filesystem with 64k block size. 
-
-[PATCH 1/2] ext2:  Support large blocksize up to PAGESIZE
-http://lkml.org/lkml/2007/10/1/361
-
-So the old ext2/3/4 driver will not get access the directory entry with
-64k block size format changes.
+I'm not sure, I had an idea it was relatively expensive on ia64,
+but I didn't really test with a good workload (a microbenchmark
+probably isn't that good because it won't generate too much out
+of order memory traffic that needs to be fenced).
 
 
-Regards,
+> > Which reminds me, it would be interesting to test the ia64
+> > implementation I did. For the non-atomic unlock, I'm actually
+> > doing an atomic operation there so that it can use the release
+> > barrier rather than the mf. Maybe it's faster the other way around
+> > though? Will be useful to test with something that isn't a trivial
+> > loop, so the slub case would be a good benchmark.
+>
+> Lets avoid mf (too expensive) and just use a store with release semantics.
 
-Mingming
+OK, that's what I've done at the moment.
 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+> Where can I find your patchset? I looked through lkml but did not see it.
+
+Infrastructure in -mm, starting at bitops-introduce-lock-ops.patch.
+bit_spin_lock-use-lock-bitops.patch and ia64-lock-bitops.patch are
+ones to look at.
+
+The rest of the patches I have queued here, apart from the SLUB patch,
+I guess aren't so interesting to you (they don't do anything fancy
+like convert to non-atomic unlocks, just switch things like page and
+buffer locks to use new bitops).
