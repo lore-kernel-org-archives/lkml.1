@@ -1,43 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934670AbXJSFay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765103AbXJSFhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934670AbXJSFay (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 01:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbXJSFal
+	id S1765103AbXJSFhD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 01:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXJSFgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 01:30:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44345 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752066AbXJSFaj (ORCPT
+	Fri, 19 Oct 2007 01:36:50 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3430 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752268AbXJSFgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 01:30:39 -0400
-Date: Thu, 18 Oct 2007 22:30:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Matthew Wilcox <matthew@wil.cx>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Make advansys depend on CONFIG_VIRT_TO_BUS
-Message-Id: <20071018223023.d805c8c4.akpm@linux-foundation.org>
-In-Reply-To: <20071018222017.514df7b9.randy.dunlap@oracle.com>
-References: <20071019150431.996522c5.sfr@canb.auug.org.au>
-	<20071018222017.514df7b9.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 19 Oct 2007 01:36:49 -0400
+Date: Fri, 19 Oct 2007 13:36:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org
+Subject: [NET]: Fix possible dev_deactivate race condition
+Message-ID: <20071019053624.GA10560@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop> <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org> <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org> <20071019023219.GB8453@gondor.apana.org.au> <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org> <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org> <20071019042025.GA9617@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 22:20:17 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
+>
+> In fact this bug exists elsewhere too.  For example, the network
+> stack does this in net/sched/sch_generic.c:
+> 
+>         /* Wait for outstanding qdisc_run calls. */
+> 	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+> 		yield();
+> 
+> This has the same problem as the current synchronize_irq code.
 
-> On Fri, 19 Oct 2007 15:04:31 +1000 Stephen Rothwell wrote:
-> 
-> > At least for now.
-> 
-> Please explain "why" in the changelog (what changelog?).
-> 
-> E.g.:
-> so that make allmodconfig on powerpc will have a better chance
-> of building.
+OK here is the fix for that case.
 
-My version of this patch does that.  I'll be sending it into Linus in an
-hour or so.
+[NET]: Fix possible dev_deactivate race condition
+
+The function dev_deactivate is supposed to only return when
+all outstanding transmissions have completed.  Unfortunately
+it is possible for store operations in the driver's transmit
+function to only become visible after dev_deactivate returns.
+
+This patch fixes this by taking the queue lock after we see
+the end of the queue run.  This ensures that all effects of
+any previous transmit calls are visible.
+
+If however we detect that there is another queue run occuring,
+then we'll warn about it because this should never happen as
+we have pointed dev->qdisc to noop_qdisc within the same queue
+lock earlier in the functino.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index e01d576..b3b7420 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -556,6 +556,7 @@ void dev_deactivate(struct net_device *dev)
+ {
+ 	struct Qdisc *qdisc;
+ 	struct sk_buff *skb;
++	int running;
+ 
+ 	spin_lock_bh(&dev->queue_lock);
+ 	qdisc = dev->qdisc;
+@@ -571,12 +572,31 @@ void dev_deactivate(struct net_device *dev)
+ 
+ 	dev_watchdog_down(dev);
+ 
+-	/* Wait for outstanding dev_queue_xmit calls. */
++	/* Wait for outstanding qdisc-less dev_queue_xmit calls. */
+ 	synchronize_rcu();
+ 
+ 	/* Wait for outstanding qdisc_run calls. */
+-	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+-		yield();
++	do {
++		while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
++			yield();
++
++		/*
++		 * Double-check inside queue lock to ensure that all effects
++		 * of the queue run are visible when we return.
++		 */
++		spin_lock_bh(&dev->queue_lock);
++		running = test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
++		spin_unlock_bh(&dev->queue_lock);
++
++		/*
++		 * The running flag should never be set at this point because
++		 * we've already set dev->qdisc to noop_qdisc *inside* the same
++		 * pair of spin locks.  That is, if any qdisc_run starts after
++		 * our initial test it should see the noop_qdisc and then
++		 * clear the RUNNING bit before dropping the queue lock.  So
++		 * if it is set here then we've found a bug.
++		 */
++	} while (WARN_ON_ONCE(running));
+ }
+ 
+ void dev_init_scheduler(struct net_device *dev)
