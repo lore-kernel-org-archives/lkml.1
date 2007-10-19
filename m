@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936284AbXJSXzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936469AbXJSX6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936284AbXJSXzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 19:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764836AbXJSXzZ
+	id S936469AbXJSX6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 19:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764387AbXJSX6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 19:55:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:64907 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758773AbXJSXzX (ORCPT
+	Fri, 19 Oct 2007 19:58:31 -0400
+Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:36617 "HELO
+	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762791AbXJSX6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 19:55:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=sOJmUrkCB1xMs5W9kyiEnhVzHW149f9eUsE+Us2xdmLTsuOlm+uKbQTu8CiEw9aMtbTEMOvzeSlz7jx/xvRuRMFtQmueUsskDgndNGR3ZkoOYYYX3oVuVig4gG58hDbvuwkzQV1A3oSI3fteSVidDTRePvSCK0YrxJ8x7SFN02s=
-Message-ID: <47194132.7070905@googlemail.com>
-Date: Sat, 20 Oct 2007 01:43:46 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Fri, 19 Oct 2007 19:58:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=qPXGTDEE6BNxKSqlBP7B6rKKABF5Oh4jrWnwaJumS2huZgnGlbqiVLH4WyO3OlEbPLVGv/2Sn/M8X9Gu4FzDTy9EsCPdcGduEL4vTv8DO795985teB3vTJ3znCxYpjDBPP1rQhRHxkMLZTMmgLrenVu5LU0PaaQANuV3f0uU1jw=;
+X-YMail-OSG: 7CmC.4sVM1kEYaYVfIdDJg4w8HyjNK2o5XCO3epMvfMWneMxM08d8VxjBldAqgJGRgCDSA--
+Date: Fri, 19 Oct 2007 16:58:29 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 6/8] drivers-edac-i3000 replace macros with functions
+To: Andrew Morton <akpm@linux-foundation.org>, juhlenko@akamai.com
+Cc: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071019141118.91846dee.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Jiri Kosina <jikos@jikos.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>
-Subject: Re: some kernel headers broken in current git ?
-References: <4719174A.7020004@googlemail.com> <Pine.LNX.4.64.0710192307320.18815@twin.jikos.cz> <47191F6C.2040801@googlemail.com> <47192E7D.7080409@googlemail.com> <alpine.LFD.0.9999.0710200048290.22770@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710200048290.22770@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <282333.62461.qm@web50104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Sat, 20 Oct 2007, Gabriel C wrote:
->> Gabriel C wrote:
->>> Jiri Kosina wrote: 
->>>> Trying 'make mrproper' first has high chances of fixing this I'd guess.
->>> Is what I did before latest pull. 
->>>
->>> Maybe this whole tree got broken. I'll try a fresh one and report back.
->>>
->>
->> I get the same on fresh cloned git tree
->>
->> #-- git rev-parse --verify HEAD
->> c4ec20717313daafba59225f812db89595952b83
+Jason,
+
+Can you provide some information on this?
+
+doug t
+
+
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Fri, 19 Oct 2007 13:18:23 -0600
+> dougthompson@xmission.com wrote:
 > 
-> Hmm. The kernel itself compiles fine ?
-
-Yes kernel is fine.
-
+> > +static inline unsigned long deap_pfn(u8 edeap, u32 deap)
+> > +{
+> > +	deap >>= PAGE_SHIFT;
+> > +	deap |= (edeap & 1) << (32 - PAGE_SHIFT);
+> > +	return deap;
+> > +}
+> > +
+> > +static inline unsigned long deap_offset(u32 deap)
+> > +{
+> > +	return deap & ~(I3000_DEAP_GRAIN - 1) & ~PAGE_MASK;
+> > +}
+> > +
 > 
-> What external thing breaks ?
-
-Actually I try to get VirtualBox-1.5.2_OSE to compile but I get a lot errors from 
-include/asm-generic/atomic.h and other headers.
-
-and looks like some are missing ?
-
-...
-
-/lib/modules/2.6.23-rc0/build/include/asm/irq_32.h:15:25: error: irq_vectors.h: No such file or directory
-/lib/modules/2.6.23-rc0/build/include/asm/smp_32.h:154:26: error: mach_apicdef.h: No such file or directory
-
-...
-
-this is fresh cloned tree and pulled once to get your x86 updates:
-
-#-- git rev-parse --verify HEAD
-60812a4a99b796d894d2522dc63cb0fafc3be25e
-
-
-Full error log can found there : -> http://194.231.229.228/current-git/errors.txt
-
-> 
->      tglx
+> The types here look a bit confused.  Implicit conversions of
+> u32s into unsigned longs.
 > 
 
 
-Gabriel
+W1DUG
