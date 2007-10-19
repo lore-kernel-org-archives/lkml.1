@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXJSHrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935127AbXJSHwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763597AbXJSHrk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934741AbXJSHrZ
+	id S935127AbXJSHwn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXJSHwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:47:25 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:11340 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934717AbXJSHrW (ORCPT
+	Fri, 19 Oct 2007 03:52:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50782
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750916AbXJSHwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:47:22 -0400
-Subject: Re: 2.6.23-mm1 s390 driver problem
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       cornelia.huck@de.ibm.com, heiko.carstens@de.ibm.com, sam@ravnborg.org
-In-Reply-To: <20071018203151.GA15382@vino.hallyn.com>
-References: <20071018200148.GA14234@vino.hallyn.com>
-	 <200710182215.56428.borntraeger@de.ibm.com>
-	 <20071018203151.GA15382@vino.hallyn.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 19 Oct 2007 09:47:16 +0200
-Message-Id: <1192780036.25150.7.camel@localhost>
+	Fri, 19 Oct 2007 03:52:32 -0400
+Date: Fri, 19 Oct 2007 00:52:45 -0700 (PDT)
+Message-Id: <20071019.005245.77429272.davem@davemloft.net>
+To: xemul@openvz.org
+Cc: olof@lixom.net, netdev@vger.kernel.org, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] Fix race between sk_filter reassign and sk_clone()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47185E9E.1030102@openvz.org>
+References: <20071019022947.GA29560@lixom.net>
+	<20071018.215521.28810637.davem@davemloft.net>
+	<47185E9E.1030102@openvz.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-18 at 15:31 -0500, Serge E. Hallyn wrote:
-> Quoting Christian Borntraeger (borntraeger@de.ibm.com):
-> > Am Donnerstag, 18. Oktober 2007 schrieb Serge E. Hallyn:
-> > > Sigh, well this turned out less informative than I'd liked.
-> > > After bisecting 2.6.23 to 2.6.23-mm1, I found that
-> > > git-s390.patch is the one breaking my s390 boot :(
-> > > (Frown bc it's a conglomeration of patches0
-> > > 
-> > > Symptom is:
-> > > 	"Cannot open root device "dasdd2" or unknown-block(94,14)"
-> > > even though dasdd2 appeared to be found earlier in the boot.  I also
-> > > get
+From: Pavel Emelyanov <xemul@openvz.org>
+Date: Fri, 19 Oct 2007 11:37:02 +0400
+
+> David Miller wrote:
+> > From: Olof Johansson <olof@lixom.net>
+> > Date: Thu, 18 Oct 2007 21:29:47 -0500
 > > 
-> > Can you post the full console output from IPL to the unsuccessful end?
+> >> So, looks like rcu_dereference() returned NULL. I don't know the
+> >> filter code at all, but it seems like it might be a valid case?
+> >> sk_detach_filter() seems to handle a NULL sk_filter, at least.
+> >>
+> >>
+> >> So, this needs review by someone who knows the filter, but it fixes the
+> >> problem for me:
 > 
-> Yeah, sorry, appended below.
+> Yes. The NULL filter is a valid case, when there are no
+> filters attached at all. So this fix is correct.
 > 
-> I had thought that the line
-> 	sysctl table check failed: /sunrpc/transports .7249.14 Missing strategy
-> meant that the fix referenced in http://lkml.org/lkml/2007/10/11/48
-> would fix it, but it appeared to have no effect.
+> Thanks, Olof. Sorry, Dave :(
 
-This is the vmlinux.lds.S problem. The cleanup patch from Sam Ravnborg
-moved the __initramfs_start and __initramfs_end symbols into
-the .init.ramfs section. This is in itself not a problem, but it
-surfaced a bug: there is no *(.init.initramfs), that needs to be
-*(init.ramfs). I corrected this in the upstream patch but 2.6.23-mm1 has
-the older one that still causes the "Cannot open root device". For
-2.6.23-mm1 use the patch below.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
----
-diff -urpN linux-2.6/arch/s390/kernel/vmlinux.lds.S linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S
---- linux-2.6/arch/s390/kernel/vmlinux.lds.S	2007-10-19 09:41:57.000000000 +0200
-+++ linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S	2007-10-19 09:42:29.000000000 +0200
-@@ -128,7 +128,7 @@ SECTIONS
- 	. = ALIGN(0x100);
- 	.init.ramfs : {
- 		__initramfs_start = .;
--		*(.init.initramfs)
-+		*(.init.ramfs)
- 		. = ALIGN(2);
- 		__initramfs_end = .;
- 	}
-
-
+No worries, thanks for reviewing.
