@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967272AbXJSWTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967175AbXJSWTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967272AbXJSWTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966839AbXJSWTY
+	id S967175AbXJSWTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966844AbXJSWTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:19:24 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:36165 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966803AbXJSWTX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:19:23 -0400
-Message-ID: <47192D69.60203@lwfinger.net>
-Date: Fri, 19 Oct 2007 17:19:21 -0500
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 19 Oct 2007 18:19:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:51130 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966783AbXJSWTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:19:41 -0400
+Date: Sat, 20 Oct 2007 00:19:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Git pull] arch/x86 updates
+In-Reply-To: <alpine.LFD.0.999.0710191459340.26902@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0710200018170.22770@localhost.localdomain>
+References: <alpine.LFD.0.9999.0710192334440.22770@localhost.localdomain> <alpine.LFD.0.999.0710191459340.26902@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: Locking problem in usbserial with 2.6.23-git 5a34417f
-References: <4718D469.2080606@lwfinger.net> <Pine.LNX.4.64.0710192304590.18815@twin.jikos.cz> <4719235E.9030507@lwfinger.net> <Pine.LNX.4.64.0710200001520.18815@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0710200001520.18815@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Fri, 19 Oct 2007, Larry Finger wrote:
+On Fri, 19 Oct 2007, Linus Torvalds wrote:
+>>
+> > Pavel Emelyanov (1):
+> >       i386: consolidate show_regs and show_registers for i386
 > 
->> As I said earlier, the lock problem went away; however, I get the 
->> following two kernel warnings:
+> While I think this is good otherwise, why does it do
 > 
-> That's because I messed up the patch, sorry. The one below should work 
-> better.
+> 	printk(".. comm: %.*s .."
+> 		TASK_COMM_LEN, current->comm,
 > 
+> instead of just using "%s" and "current->comm"? I only noticed because 
+> there was an unrelated conflict around that thing.
 > 
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> 
-> USB: usbserial - fix potential deadlock between write() and IRQ
-> 
-> usb_serial_generic_write() doesn't disable interrupts when taking port->lock,
-> and could therefore deadlock with usb_serial_generic_read_bulk_callback()
-> being called from interrupt, taking the same lock. Fix it.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> That "current->comm" had better be NUL-terminated already, we use it as 
+> such all over the place. And if it's not, *that* should be fixed.
 
-It does work better. With it, I was able to make a dial-up connection and send pings over it.
+Fair enough. Did not notice.
 
-Larry
-
+     tglx
