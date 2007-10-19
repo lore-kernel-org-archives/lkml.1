@@ -1,88 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966570AbXJSJMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966968AbXJSJMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966570AbXJSJMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 05:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXJSJMH
+	id S966968AbXJSJMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 05:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765838AbXJSJMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 05:12:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48892 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbXJSJME (ORCPT
+	Fri, 19 Oct 2007 05:12:14 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:2891 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765007AbXJSJMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 05:12:04 -0400
-Date: Fri, 19 Oct 2007 12:12:03 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: latest checkpatch
-In-Reply-To: <20071018193929.GA22031@elte.hu>
-Message-ID: <Pine.LNX.4.64.0710191157050.11079@kivilampi-30.cs.helsinki.fi>
-References: <20071015182118.GA4459@shadowen.org>
- <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org>
- <20071018111352.GA17039@elte.hu> <20071018192521.GC21136@shadowen.org>
- <20071018193929.GA22031@elte.hu>
-Mime-Version: 1.0
+	Fri, 19 Oct 2007 05:12:13 -0400
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 05:12:12 EDT
+Date: Fri, 19 Oct 2007 09:55:55 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected][mismerge?] Re: [microcode] 2.6.23.git pulled this morning oopses loading P4 microcode
+Message-ID: <20071019085555.GB3809@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>
+References: <1192681533.7147.5.camel@Homer.simpson.net> <1192730198.7182.18.camel@Homer.simpson.net> <20071018223333.GD4153@implementation> <1192762138.6838.13.camel@Homer.simpson.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1192762138.6838.13.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 19 Oct 2007 08:55:57.0007 (UTC) FILETIME=[DCF71DF0:01C8122D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007, Ingo Molnar wrote:
+Just to make sure, could you check in System.map that accent_table is
+correctly 256*3*4=3072 bytes long?
 
-> 
-> * Andy Whitcroft <apw@shadowen.org> wrote:
-> 
-> > > it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
-> > > wants to make any noise about such constructs it should warn about 
-> > > the _lack_ of curly braces in every multi-line condition block 
-> > > _except_ the only safe single-line statement:
-> > > 
-> > > 	if (x)
-> > > 		y();
-> > 
-> > Indeed.  We should probabally do more on the indentation checks in
-> > general.  The current direct check for:
-> > 
-> > 	if (foo);
-> > 		bar();
-> > 
-> > Could probabally be generalised to look for this kind of error:
-> > 
-> > 	if (foo)
-> > 		bar();
-> > 		baz();
-> > 	one();
-> 
-> detecting that would be awesome - it's often the sign of a real bug 
-> because the intent is often to have bar() and baz() in the conditional 
-> block.
-
-Should probably detect these as well (if not yet being done):
-
-	if (abc)
-#if...
-		def();
-		ghi();
-#e...
-
-
-...plus this one:
-
-	if (abc)
-#if...
-		def();
-#endif
-	ghi();
-
-...Both of them are clearly bugs.
-
-...and this where either indentation has to be fixed or the bug corrected:
-
-	if (abc)
-	def();
-
-
--- 
- i.
+Samuel
