@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966607AbXJSHbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966764AbXJSHcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966607AbXJSHbo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763093AbXJSHbe
+	id S966764AbXJSHcZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763460AbXJSHcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:31:34 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:39684 "EHLO havoc.gtf.org"
+	Fri, 19 Oct 2007 03:32:00 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:46747 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755344AbXJSHbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:31:33 -0400
-Date: Fri, 19 Oct 2007 03:31:32 -0400
+	id S1763093AbXJSHb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:31:58 -0400
+Date: Fri, 19 Oct 2007 03:31:57 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: marcel@holtmann.org, maxk@qualcomm.com, bluez-devel@lists.sourceforge.net
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] bluetooth: Eliminate checks for impossible conditions in
-	irq handler
-Message-ID: <20071019073132.GA5678@havoc.gtf.org>
+To: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Eliminate pointless casts from void* in a few driver irq
+	handlers.
+Message-ID: <20071019073157.GA5704@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,88 +24,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-commit 1c8073a42f133bf5780099c1e6efd9e48468cd29
+commit 9739eb5090cc136ab50f2b323b83894c38d1ecb9
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 03:07:30 2007 -0400
+Date:   Fri Oct 19 03:10:11 2007 -0400
 
-    [BLUETOOTH] Eliminate checks for impossible conditions in irq handler
-    
-    Our info structure and info->hdev is always passed to the irq handler,
-    so we don't have to worry about these checks in every interrupt.
-    
-    Leave a BUG_ON() just to help unwary programmers, but these could
-    probably be removed as well.
+    Eliminate pointless casts from void* in a few driver irq handlers.
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/bluetooth/bluecard_cs.c |    5 +----
- drivers/bluetooth/bt3c_cs.c     |    5 +----
- drivers/bluetooth/btuart_cs.c   |    5 +----
- drivers/bluetooth/dtl1_cs.c     |    5 +----
- 4 files changed, 4 insertions(+), 16 deletions(-)
+ drivers/atm/horizon.c              |    5 +++--
+ drivers/char/tpm/tpm_tis.c         |    4 ++--
+ drivers/mtd/onenand/onenand_base.c |    2 +-
+ drivers/net/typhoon.c              |    2 +-
+ drivers/net/ucc_geth.c             |    2 +-
+ drivers/net/wan/sbni.c             |    4 ++--
+ 6 files changed, 10 insertions(+), 9 deletions(-)
 
-1c8073a42f133bf5780099c1e6efd9e48468cd29
-diff --git a/drivers/bluetooth/bluecard_cs.c b/drivers/bluetooth/bluecard_cs.c
-index 851de4d..bcf5792 100644
---- a/drivers/bluetooth/bluecard_cs.c
-+++ b/drivers/bluetooth/bluecard_cs.c
-@@ -503,10 +503,7 @@ static irqreturn_t bluecard_interrupt(int irq, void *dev_inst)
- 	unsigned int iobase;
- 	unsigned char reg;
+9739eb5090cc136ab50f2b323b83894c38d1ecb9
+diff --git a/drivers/atm/horizon.c b/drivers/atm/horizon.c
+index f96446c..9b2cf25 100644
+--- a/drivers/atm/horizon.c
++++ b/drivers/atm/horizon.c
+@@ -1382,8 +1382,9 @@ static inline void rx_data_av_handler (hrz_dev * dev) {
  
--	if (!info || !info->hdev) {
--		BT_ERR("Call of irq %d for unknown device", irq);
--		return IRQ_NONE;
--	}
-+	BUG_ON(!info->hdev);
+ /********** interrupt handler **********/
  
- 	if (!test_bit(CARD_READY, &(info->hw_state)))
- 		return IRQ_HANDLED;
-diff --git a/drivers/bluetooth/bt3c_cs.c b/drivers/bluetooth/bt3c_cs.c
-index 3951607..a18f9b8 100644
---- a/drivers/bluetooth/bt3c_cs.c
-+++ b/drivers/bluetooth/bt3c_cs.c
-@@ -344,10 +344,7 @@ static irqreturn_t bt3c_interrupt(int irq, void *dev_inst)
- 	unsigned int iobase;
- 	int iir;
+-static irqreturn_t interrupt_handler(int irq, void *dev_id) {
+-  hrz_dev * dev = (hrz_dev *) dev_id;
++static irqreturn_t interrupt_handler(int irq, void *dev_id)
++{
++  hrz_dev *dev = dev_id;
+   u32 int_source;
+   unsigned int irq_ok;
+   
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index a8e8084..fd771a4 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -381,7 +381,7 @@ static struct tpm_vendor_specific tpm_tis = {
  
--	if (!info || !info->hdev) {
--		BT_ERR("Call of irq %d for unknown device", irq);
--		return IRQ_NONE;
--	}
-+	BUG_ON(!info->hdev);
+ static irqreturn_t tis_int_probe(int irq, void *dev_id)
+ {
+-	struct tpm_chip *chip = (struct tpm_chip *) dev_id;
++	struct tpm_chip *chip = dev_id;
+ 	u32 interrupt;
  
- 	iobase = info->p_dev->io.BasePort1;
+ 	interrupt = ioread32(chip->vendor.iobase +
+@@ -401,7 +401,7 @@ static irqreturn_t tis_int_probe(int irq, void *dev_id)
  
-diff --git a/drivers/bluetooth/btuart_cs.c b/drivers/bluetooth/btuart_cs.c
-index d7d2ea0..08f48d5 100644
---- a/drivers/bluetooth/btuart_cs.c
-+++ b/drivers/bluetooth/btuart_cs.c
-@@ -294,10 +294,7 @@ static irqreturn_t btuart_interrupt(int irq, void *dev_inst)
- 	int boguscount = 0;
- 	int iir, lsr;
+ static irqreturn_t tis_int_handler(int irq, void *dev_id)
+ {
+-	struct tpm_chip *chip = (struct tpm_chip *) dev_id;
++	struct tpm_chip *chip = dev_id;
+ 	u32 interrupt;
+ 	int i;
  
--	if (!info || !info->hdev) {
--		BT_ERR("Call of irq %d for unknown device", irq);
--		return IRQ_NONE;
--	}
-+	BUG_ON(!info->hdev);
+diff --git a/drivers/mtd/onenand/onenand_base.c b/drivers/mtd/onenand/onenand_base.c
+index dd28355..1b0b320 100644
+--- a/drivers/mtd/onenand/onenand_base.c
++++ b/drivers/mtd/onenand/onenand_base.c
+@@ -359,7 +359,7 @@ static int onenand_wait(struct mtd_info *mtd, int state)
+  */
+ static irqreturn_t onenand_interrupt(int irq, void *data)
+ {
+-	struct onenand_chip *this = (struct onenand_chip *) data;
++	struct onenand_chip *this = data;
  
- 	iobase = info->p_dev->io.BasePort1;
+ 	/* To handle shared interrupt */
+ 	if (!this->complete.done)
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index 72e5e9b..94ac586 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -1801,7 +1801,7 @@ typhoon_poll(struct napi_struct *napi, int budget)
+ static irqreturn_t
+ typhoon_interrupt(int irq, void *dev_instance)
+ {
+-	struct net_device *dev = (struct net_device *) dev_instance;
++	struct net_device *dev = dev_instance;
+ 	struct typhoon *tp = dev->priv;
+ 	void __iomem *ioaddr = tp->ioaddr;
+ 	u32 intr_status;
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index bec413b..9741d61 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3607,7 +3607,7 @@ static int ucc_geth_poll(struct napi_struct *napi, int budget)
  
-diff --git a/drivers/bluetooth/dtl1_cs.c b/drivers/bluetooth/dtl1_cs.c
-index 7f9c54b..dae45cd 100644
---- a/drivers/bluetooth/dtl1_cs.c
-+++ b/drivers/bluetooth/dtl1_cs.c
-@@ -298,10 +298,7 @@ static irqreturn_t dtl1_interrupt(int irq, void *dev_inst)
- 	int boguscount = 0;
- 	int iir, lsr;
+ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+ {
+-	struct net_device *dev = (struct net_device *)info;
++	struct net_device *dev = info;
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 	struct ucc_fast_private *uccf;
+ 	struct ucc_geth_info *ug_info;
+diff --git a/drivers/net/wan/sbni.c b/drivers/net/wan/sbni.c
+index 76db40d..2e8b5c2 100644
+--- a/drivers/net/wan/sbni.c
++++ b/drivers/net/wan/sbni.c
+@@ -502,8 +502,8 @@ sbni_start_xmit( struct sk_buff  *skb,  struct net_device  *dev )
+ static irqreturn_t
+ sbni_interrupt( int  irq,  void  *dev_id )
+ {
+-	struct net_device	  *dev = (struct net_device *) dev_id;
+-	struct net_local  *nl  = (struct net_local *) dev->priv;
++	struct net_device	  *dev = dev_id;
++	struct net_local  *nl  = dev->priv;
+ 	int	repeat;
  
--	if (!info || !info->hdev) {
--		BT_ERR("Call of irq %d for unknown device", irq);
--		return IRQ_NONE;
--	}
-+	BUG_ON(!info->hdev);
- 
- 	iobase = info->p_dev->io.BasePort1;
- 
+ 	spin_lock( &nl->lock );
