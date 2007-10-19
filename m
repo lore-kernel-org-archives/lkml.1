@@ -1,117 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765103AbXJSFhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935213AbXJSFhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765103AbXJSFhD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 01:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXJSFgu
+	id S935213AbXJSFhg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 01:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933650AbXJSFhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 01:36:50 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3430 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752268AbXJSFgt (ORCPT
+	Fri, 19 Oct 2007 01:37:12 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41883 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932950AbXJSFhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 01:36:49 -0400
-Date: Fri, 19 Oct 2007 13:36:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org
-Subject: [NET]: Fix possible dev_deactivate race condition
-Message-ID: <20071019053624.GA10560@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop> <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org> <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org> <20071019023219.GB8453@gondor.apana.org.au> <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org> <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org> <20071019042025.GA9617@gondor.apana.org.au>
+	Fri, 19 Oct 2007 01:37:09 -0400
+Date: Fri, 19 Oct 2007 06:37:04 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: David Newall <david@davidnewall.com>
+Cc: jaroslav.sykora@gmail.com, Jan Engelhardt <jengelh@computergmbh.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/5] Shadow directories
+Message-ID: <20071019053704.GR8181@ftp.linux.org.uk>
+References: <200710181721.09201.jara@sin.cvut.cz> <Pine.LNX.4.64.0710181802300.2936@fbirervta.pbzchgretzou.qr> <200710181907.58643.jara@sin.cvut.cz> <4717BBBB.6040205@davidnewall.com> <4717C419.8060602@davidnewall.com> <20071018204703.GQ8181@ftp.linux.org.uk> <47181D0C.3040504@davidnewall.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <47181D0C.3040504@davidnewall.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
->
-> In fact this bug exists elsewhere too.  For example, the network
-> stack does this in net/sched/sch_generic.c:
+On Fri, Oct 19, 2007 at 12:27:16PM +0930, David Newall wrote:
+
+> >Learn to read.  Linux has never allowed that.  Most of the Unix systems
+> >do not allow that.
 > 
->         /* Wait for outstanding qdisc_run calls. */
-> 	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> 		yield();
-> 
-> This has the same problem as the current synchronize_irq code.
+> I did read the claim and it is ambiguous, in that it can reasonably be 
+> read to mean that most UNIX systems never allowed such links, which is 
+> wrong.  All UNIX systems allowed it until relatively recently.
 
-OK here is the fix for that case.
+FVO"relatively recently" exceeding a decade and half.  In any case,
+it's _trivial_ to get fs corruption on any system with such links -
+play with rename() races a bit and you'll get it.  And yes, it does
+include 4.4BSD and quite a chunk of even later history.
 
-[NET]: Fix possible dev_deactivate race condition
+Anyway, you are quite welcome to propose a sane locking scheme capable
+of dealing with that mess.
 
-The function dev_deactivate is supposed to only return when
-all outstanding transmissions have completed.  Unfortunately
-it is possible for store operations in the driver's transmit
-function to only become visible after dev_deactivate returns.
-
-This patch fixes this by taking the queue lock after we see
-the end of the queue run.  This ensures that all effects of
-any previous transmit calls are visible.
-
-If however we detect that there is another queue run occuring,
-then we'll warn about it because this should never happen as
-we have pointed dev->qdisc to noop_qdisc within the same queue
-lock earlier in the functino.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index e01d576..b3b7420 100644
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -556,6 +556,7 @@ void dev_deactivate(struct net_device *dev)
- {
- 	struct Qdisc *qdisc;
- 	struct sk_buff *skb;
-+	int running;
- 
- 	spin_lock_bh(&dev->queue_lock);
- 	qdisc = dev->qdisc;
-@@ -571,12 +572,31 @@ void dev_deactivate(struct net_device *dev)
- 
- 	dev_watchdog_down(dev);
- 
--	/* Wait for outstanding dev_queue_xmit calls. */
-+	/* Wait for outstanding qdisc-less dev_queue_xmit calls. */
- 	synchronize_rcu();
- 
- 	/* Wait for outstanding qdisc_run calls. */
--	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
--		yield();
-+	do {
-+		while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-+			yield();
-+
-+		/*
-+		 * Double-check inside queue lock to ensure that all effects
-+		 * of the queue run are visible when we return.
-+		 */
-+		spin_lock_bh(&dev->queue_lock);
-+		running = test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
-+		spin_unlock_bh(&dev->queue_lock);
-+
-+		/*
-+		 * The running flag should never be set at this point because
-+		 * we've already set dev->qdisc to noop_qdisc *inside* the same
-+		 * pair of spin locks.  That is, if any qdisc_run starts after
-+		 * our initial test it should see the noop_qdisc and then
-+		 * clear the RUNNING bit before dropping the queue lock.  So
-+		 * if it is set here then we've found a bug.
-+		 */
-+	} while (WARN_ON_ONCE(running));
- }
- 
- void dev_init_scheduler(struct net_device *dev)
+As for the posted patch, AFAICS it's FUBAR in handling of .. in such
+directories.  Moreover, how are you going to keep that shadow tree
+in sync with the main one if somebody starts doing renames in the
+latter?  Or mount --move, or...
