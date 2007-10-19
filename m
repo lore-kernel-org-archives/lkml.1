@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbXJSPUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbXJSPX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbXJSPUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 11:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXJSPUf
+	id S1764175AbXJSPX7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 11:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbXJSPXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 11:20:35 -0400
-Received: from main.gmane.org ([80.91.229.2]:47115 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbXJSPUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 11:20:34 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Samuel Tardieu <sam@rfc1149.net>
-Subject: Re: OOM notifications
-Date: Fri, 19 Oct 2007 17:18:06 +0200
-Message-ID: <87lk9zgmkx.fsf@willow.rfc1149.net>
-References: <20071018202504.GA2854@dmt> <4717C43D.6030204@keyaccess.nl> <20071018165238.0537eaa6@bree.surriel.com> <4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com> <4717D7B6.40102@keyaccess.nl> <4717D9BF.4010508@redhat.com> <20071019101743.GA24354@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: zaphod.rfc1149.net
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-Cancel-Lock: sha1:tc8R6zui9SMRrbmuGP48Ygs/2hs=
-X-Leafnode-NNTP-Posting-Host: 2001:6f8:37a:2::2
+	Fri, 19 Oct 2007 11:23:52 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:28142 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbXJSPXv (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 11:23:51 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+Date: Fri, 19 Oct 2007 17:23:48 +0200
+User-Agent: KMail/1.9.7
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, carsteno@de.ibm.com,
+       Mike Lampard <mike@secnet.net.au>, Linux-kernel@vger.kernel.org,
+       Aurelien Jarno <aurelien@aurel32.net>, kvm-devel@lists.sourceforge.net
+References: <47189371.7080104@de.ibm.com> <200710191648.32157.borntraeger@de.ibm.com> <4718C5E0.9000204@bull.net>
+In-Reply-To: <4718C5E0.9000204@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710191723.48104.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Pavel" == Pavel Machek <pavel@ucw.cz> writes:
+Am Freitag, 19. Oktober 2007 schrieb Laurent Vivier:
+> Did you patch kvm.git with patch-2.6.23.1.bz2 or did you download 
+> linux-2.6.23.1.tar.bz2 ?
+> 
+> 2.6.23.1 corrects nothing except sata_mv...
 
-Pavel> That works okay on a PC, but try cellphone one day.
+Yes I know. The question we tried to answer was: is the bug in 2.6.23 or was
+it introduced after 2.6.23, as kvm.git  already contains lots of post 2. 6.23 
+stuff.
+Current state is:
 
-Pavel> You want management app to close the least used
-Pavel> application. You do not want _kernel_ to select "who to send
-Pavel> SIGTERM to".
+kvm.git with tag 2.6.23-rc6 works for days without a problem.
+2.6.23.1 vanilla has survived and is currently still under test.
+kvm.git tag master killed our filesystem at least three times.since monday.
 
-That's why I would prefer that *all* processes receive the
-SIGDANGER/whatever (and of course ignore it by default). Only the
-management app would handle it in the case you describe and would
-select one or more applications to unload to free some memory.
+I will continue to bang on 2.6.23.1 to see if its really fine. After that,
+maybe I will try to bisect on kvm.git, but this will take quite a long time,
+given that we had to reinstall the system due to this error. 
 
-  Sam
--- 
-Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
-
+Christian
