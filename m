@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbXJSUST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934601AbXJSUVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbXJSUST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 16:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbXJSUSL
+	id S934601AbXJSUVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 16:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbXJSUVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 16:18:11 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:59495 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758914AbXJSUSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 16:18:09 -0400
-Date: Fri, 19 Oct 2007 21:18:03 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] dz.c: Always check if it is safe to console_putchar()
-Message-ID: <Pine.LNX.4.64N.0710192059530.13279@blysk.ds.pg.gda.pl>
+	Fri, 19 Oct 2007 16:21:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38260 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759478AbXJSUVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 16:21:30 -0400
+Message-ID: <471911BE.2000405@garzik.org>
+Date: Fri, 19 Oct 2007 16:21:18 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linas Vepstas <linas@austin.ibm.com>
+CC: Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
+       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
+       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl> <20071019195749.GK29903@austin.ibm.com>
+In-Reply-To: <20071019195749.GK29903@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Polled transmission is tricky enough with the DZ11 design.  While "loop" 
-is set to a high value, conceptually you are not allowed to transmit 
-without checking whether the device offers the right transmission line 
-(yes, it is the device that selects the line -- the driver has no control 
-over it other than disabling the transmitter offered if it is the wrong 
-one), so the loop has to be run at least once.
+Linas Vepstas wrote:
+> On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
+>> Since we have little experience on PCI and MSI here, we had to try to
+> 
+> As someone else pointed out, AMD should have *lots* of people with
+> pci and msi experience on the payroll.  (Folks here buy AMD-designed 
+> pci chips ...)
+> 
+>> ONLY
+>> comment out the pci_intx() call in drivers/ata/ahci.c
+>> My system can boot up too with MSI enabled!
+>>
+>> So does it mean that the root cause is our SB700 SATA controller
+>> has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
+>> register masks MSI interrupts too? 
+> 
+> That's what it sounds like, to me.
+> 
+>> And what is the software solution or workaround?
+> 
+> Not sure. Sounds like the device driver needs a quirk for this part.
 
- Well, the '1977 or PDP11 view of how serial lines should be handled...  
-Except that the serial interface used to be quite an impressive board back 
-then rather than chip.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Tested with checkpatch.pl and at the run-time -- MIPS/Linux on a 
-DECstation 5000/200.
+Take a look at tg3.c net driver change 
+2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
 
- Please apply,
+However, it may turn out that removing the pci_intx() stuff as a general 
+rule is easier than quirking these devices, if enough of them turn out 
+to have this hardware bug.
 
-  Maciej
+The tg3.c change should illustrate how to fix immediately, though.
 
-patch-mips-2.6.18-20060920-dz-putchar-0
-diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/serial/dz.c linux-mips-2.6.18-20060920/drivers/serial/dz.c
---- linux-mips-2.6.18-20060920.macro/drivers/serial/dz.c	2006-11-23 05:17:01.000000000 +0000
-+++ linux-mips-2.6.18-20060920/drivers/serial/dz.c	2007-01-14 00:07:02.000000000 +0000
-@@ -686,7 +686,7 @@ static void dz_console_putchar(struct ua
- 	iob();
- 	spin_unlock_irqrestore(&dport->port.lock, flags);
- 
--	while (loops--) {
-+	do {
- 		trdy = dz_in(dport, DZ_CSR);
- 		if (!(trdy & DZ_TRDY))
- 			continue;
-@@ -697,7 +697,7 @@ static void dz_console_putchar(struct ua
- 		dz_out(dport, DZ_TCR, mask);
- 		iob();
- 		udelay(2);
--	}
-+	} while (loops--);
- 
- 	if (loops)				/* Cannot send otherwise. */
- 		dz_out(dport, DZ_TDR, ch);
+	Jeff
+
