@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935519AbXJSXqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935550AbXJSXxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935519AbXJSXqg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 19:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbXJSXq1
+	id S935550AbXJSXxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 19:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbXJSXxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 19:46:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51106 "EHLO mail.dvmed.net"
+	Fri, 19 Oct 2007 19:53:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42923 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbXJSXq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 19:46:27 -0400
-Message-ID: <471941CC.6020200@garzik.org>
-Date: Fri, 19 Oct 2007 19:46:20 -0400
+	id S1751343AbXJSXxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 19:53:32 -0400
+Message-ID: <47194379.3000900@garzik.org>
+Date: Fri, 19 Oct 2007 19:53:29 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: LKML <linux-kernel@vger.kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH 1/9] irq-remove: core
 References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075508.GB6407@havoc.gtf.org>	<m1ir53gev4.fsf@ebiederm.dsl.xmission.com>	<4718F5BB.5010301@garzik.org>	<m1ir52g9zg.fsf@ebiederm.dsl.xmission.com>	<47190C80.8090400@garzik.org> <m1hckmem00.fsf@ebiederm.dsl.xmission.com>
 In-Reply-To: <m1hckmem00.fsf@ebiederm.dsl.xmission.com>
@@ -47,14 +48,21 @@ Eric W. Biederman wrote:
 >> not need {get,set}_irqfunc_irq()
 > 
 > Sounds good.  That was my impression when I was looking at this kind of stuff.
-> 
-> Just so long as this doesn't slow us down so much we don't actually drop the
-> ball on this.
 
-Hey I'm the one who has kept the ball rolling since the day pt_regs were 
-removed...  :)
+'irq' argument is gone from the entire tree, save for
+
+drivers/char/tpm/tpm_tis.c
+drivers/scsi/sym53c416.c
+drivers/scsi/NCR53C9x.c
+drivers/scsi/NCR5380.c
+drivers/net/hamradio/scc.c
+drivers/ide/ide-io.c
+
+So I'd say the task is within reach :)
+
+All the irq handler cleanups have been checked into branch 
+'irq-cleanups', and 'irq-remove' branch is rebased on top of that.
 
 	Jeff
-
 
 
