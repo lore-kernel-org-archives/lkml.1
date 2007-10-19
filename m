@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbXJSQ2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764599AbXJSQ3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762905AbXJSQ2t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbXJSQ2i
+	id S1764599AbXJSQ3P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763566AbXJSQ27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:28:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34725 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755456AbXJSQ2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:28:37 -0400
-Message-ID: <4718DB32.5000404@garzik.org>
-Date: Fri, 19 Oct 2007 12:28:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 19 Oct 2007 12:28:59 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55747 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755846AbXJSQ26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:28:58 -0400
+Date: Fri, 19 Oct 2007 10:28:57 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/5] Use wake_up_locked() in eventpoll
+Message-ID: <20071019162856.GA30807@parisc-linux.org>
+References: <11927463623428-git-send-email-matthew@wil.cx> <11927463621072-git-send-email-matthew@wil.cx> <20071018205623.717ef237@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Chris Holvenstot <cholvenstot@comcast.net>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: Network failure with 2.6.23-git14
-References: <1192790946.6416.4.camel@localhost>
-In-Reply-To: <1192790946.6416.4.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018205623.717ef237@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Holvenstot wrote:
-> I built 2.6.23-git14 this morning - when booted I can not access the
-> network via my Ethernet connection.  Fallback to 2.6.23-git11 works OK.
-> One interesting message during boot:
+On Thu, Oct 18, 2007 at 08:56:23PM -0700, Arjan van de Ven wrote:
+> Have you tested this patch with LOCKDEP enabled? eventpoll is... tricky
+> in what it does with waitqueues and locks.... and some of this stuff is
+> there, afaik, to deal with that. You're now changing this ... call me
+> chicken :)
 
-> [   37.325760] forcedeth: Reverse Engineered nForce ethernet driver.
-> [   37.843618] forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @ 1,
-> addr 00:19:db:6d:3f:1b
-> [   37.843623] forcedeth 0000:00:0a.0: highdma csum timirq gbit lnktim
-> desc-v3
+I haven't tested it, but it's a simple textual substitution:
 
-> [   46.414433] sysfs: duplicate filename 'eth1' can not be created
-> [   46.414438] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> [   46.414445]  [<c01ba80f>] sysfs_add_one+0x9f/0xe0
-> [   46.414456]  [<c01bb5c6>] sysfs_create_link+0x86/0x110
-> [   46.414462]  [<c025608a>] device_rename+0x17a/0x1e0
-> [   46.414467]  [<c0130190>] run_timer_softirq+0x30/0x180
-> [   46.414472]  [<c0287a60>] dev_change_name+0xb0/0x200
-> [   46.414476]  [<c0159a62>] filemap_fault+0x1f2/0x400
-> [   46.414478]  [<c012c895>] __do_softirq+0x75/0xf0
-> [   46.414484]  [<c027a260>] sock_ioctl+0x0/0x230
-> [   46.414487]  [<c028809c>] dev_ioctl+0x25c/0x520
-> [   46.414489]  [<c01646eb>] __do_fault+0x1ab/0x380
-> [   46.414494]  [<c0165d28>] handle_mm_fault+0xf8/0x610
-> [   46.414499]  [<c027a260>] sock_ioctl+0x0/0x230
-> [   46.414502]  [<c018343b>] do_ioctl+0x2b/0x90
-> [   46.414506]  [<c01834fc>] vfs_ioctl+0x5c/0x290
-> [   46.414510]  [<c0183798>] sys_ioctl+0x68/0x80
-> [   46.414513]  [<c01041de>] sysenter_past_esp+0x5f/0x85
-> [   46.414520]  =======================
-> [   46.414523] net eth1: device_rename: sysfs_create_symlink failed
+#define wake_up_locked(x)               __wake_up_locked((x),
+TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE)
 
+so it should be identical in effect.
 
-What are your network devices?  Is your problem with eth0, forcedeth, or 
-as this traceback implies, eth1?
-
-What is eth1?  (driver, bus, ...)
-
-Can you bisect?
-
-	Jeff
-
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
