@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbXJSQjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbXJSQps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764119AbXJSQjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbXJSQji
+	id S1764475AbXJSQps (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbXJSQpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:39:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36279 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756008AbXJSQji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:39:38 -0400
-Message-ID: <4718DDB7.7070707@redhat.com>
-Date: Fri, 19 Oct 2007 12:39:19 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86_64 and AMD with C1E
-References: <20071001101532.025d652f@localhost>
-In-Reply-To: <20071001101532.025d652f@localhost>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Oct 2007 12:45:38 -0400
+Received: from grex.cyberspace.org ([216.86.77.194]:14929 "EHLO
+	grex.cyberspace.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757885AbXJSQpi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:45:38 -0400
+X-Greylist: delayed 1717 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 12:45:38 EDT
+Date: Fri, 19 Oct 2007 12:17:00 -0400
+From: Roopesh <roopesh@cyberspace.org>
+To: linux-kernel@vger.kernel.org
+Subject: MMC: CRC Errors with 2GB cards
+Message-ID: <20071019161700.GA19254@grex.cyberspace.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2007 02:15 AM, Mikhail Kshevetskiy wrote:
-> Hello,
-> 
-> I have ASUS F3T notebook with dualcore AMD processor. It has c1e feature
-> enabled. I test linux-2.6.23-rc8-hrt1 kernel. Everything is work (thanks
-> to lapic disable patch), but i have to many processor interrupts per 
-> seconds (about 260 additional timer interrupts). 
-> 
-> The same situation can be observed for linux-2.6.22. Moreover the same
-> problem exist with i386 kernel (test with 2.6.21, 2.6.22, 2.6.22-hrt6,
-> 2.6.23-rc5-hrt1).
-> 
-> The problem disappear when I disable c1e on both cores. In this case 
-> lapic is not disabled. The back side of this patch is the disabling of
-> all C-state including C1. As result the power consumption increase from
-> 23 (c1e enabled) to 27 (c1e disabled) watts.
-> 
-> I fill something wrong here.
-> Is it possible to reduce the amount of timer interrupts?
-> Is it possible to force enable C1,C2 and C3 states when c1e disabled?
-> 
+ Hi, 
 
-How are you disabling C1E?
+ I am seeing a lot of CRC errors happening with CMD25 on a couple 
+ of Transcend 2GB cards (specifiation version 1.1).  However, if 
+ I apply the following patch, I see no errors being reported
 
+
+--- linux-2.6.22/drivers/mmc/card/block.c	2007-09-27 14:59:44.000000000 +0530
++++ linux-tao/drivers/mmc/card/block.c	2007-10-19 20:53:52.000000000 +0530
+@@ -298,6 +298,7 @@
+ 		}
+ 
+ 		if (rq_data_dir(req) != READ) {
++			/* Wait for the card to to be in transfer state*/
+ 			do {
+ 				int err;
+ 
+@@ -310,8 +311,8 @@
+ 					       req->rq_disk->disk_name, err);
+ 					goto cmd_err;
+ 				}
+-			} while (!(cmd.resp[0] & R1_READY_FOR_DATA));
+-
++			} while (!(R1_CURRENT_STATE(cmd.resp[0]) == 4)); 
++			
+ #if 0
+ 			if (cmd.resp[0] & ~0x00000900)
+ 				printk(KERN_ERR "%s: status = %08x\n",
+
+
+ I noticed that at times the card is not actually in transfer 
+ state when it recieves the second consecutive 
+ MULTIPLE_BLOCK_WRITE cmd.  As per the simplified specification 
+ available, all class 4 commands including CMD25 can be issued 
+ only in tra state, though its also specified that READY_FOR_DATA 
+ indicates whether the card can accept new data.
+
+ I am just wondering if I have set of broken cards.  Any pointers 
+ in this regard?
+
+ Thanks and Regards,
+ Roopesh.
