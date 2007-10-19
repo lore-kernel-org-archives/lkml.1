@@ -1,74 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765386AbXJSOSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933885AbXJSOTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765386AbXJSOSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbXJSOSP
+	id S933885AbXJSOTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbXJSOS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:18:15 -0400
-Received: from mail66.opentransfer.com ([76.162.254.66]:45545 "HELO
-	mail66.opentransfer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754802AbXJSOSO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:18:14 -0400
-Message-ID: <002301c8125a$d50c7860$4400a8c0@YOUR9EC669DBD1>
-From: <kyle@xtechgear.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Re: Syba 8-Port Serial Card Unidentified By Kernel
-Date: Fri, 19 Oct 2007 10:17:50 -0400
+	Fri, 19 Oct 2007 10:18:59 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36563 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760253AbXJSOS6 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 10:18:58 -0400
+Date: Fri, 19 Oct 2007 16:18:57 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: carsteno@de.ibm.com
+cc: Mike Lampard <mike@secnet.net.au>, kvm-devel@lists.sourceforge.net,
+       Aurelien Jarno <aurelien@aurel32.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+In-Reply-To: <4718B4DB.1000202@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0710191618450.1997@fbirervta.pbzchgretzou.qr>
+References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net>
+ <47189706.1040809@de.ibm.com> <200710192127.17584.mike@secnet.net.au>
+ <4718A14B.4060008@de.ibm.com> <4718B4DB.1000202@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I also have an 8 port PCI serial card with the 8871 chip on it and a 
-breakout cable.  It is identified as such on my machine:
 
-01:02.0 Serial controller: PLX Technology, Inc. Unknown device 9016 (rev 01) 
-(prog-if 02 [16550])
-        Subsystem: Unknown device 544e:0008
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR+ FastB2B-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-        Interrupt: pin A routed to IRQ 9
-        Region 0: I/O ports at b800 [disabled] [size=64]
-        Region 1: I/O ports at b400 [disabled] [size=16]
-        Region 2: I/O ports at b000 [disabled] [size=16]
-        Region 3: Memory at ff8fe000 (32-bit, non-prefetchable) [disabled] 
-[size=4K]
-        Region 4: Memory at ff8fd000 (32-bit, non-prefetchable) [disabled] 
-[size=4K]
-        Region 5: Memory at ff8fc000 (32-bit, non-prefetchable) [disabled] 
-[size=4K]
+On Oct 19 2007 15:44, Carsten Otte wrote:
+> Carsten Otte wrote:
+>> First thing we do, is figure whether or not 2.6.23.1 as released breaks our
+>> system too. This way, we can either focus on differences between Linus and
+>> Avi, or turn on the big red warning sign saying "regression".
+>
+> Looks like 2.6.23.1 works fine on that box. We'll leave it running over
+> the weekend with "while true; do make; make clean; done".
 
-There was also a driver cd included with my card, and I've placed the 
-drivers at:
-
-http://www.sasseriansection.com/media/files/it8871.tar.gz
-
-I have not been able to get the drivers to install properly into my 2.6.18 
-kernel though.
-
-Looking at the files and whatnot, it does seem that the suspicions posted 
-here were correct.  That the card is ran via a parallel port, and through 
-this parallel port the uarts are accessed.  The drivers seem to basically be 
-a modified parport_pc module.  The drivers that came with the card are for a 
-2.4 kernel though.
-
-I also found a couple references to work on some kernel modules at 
-http://lkml.org/lkml/2007/8/10/404 regarding adding 8871 support, but 
-haven't been able to do much with it.
-
-Hope this information is helpful to someone, and if possible please CC me on 
-any additional discussions regarding this card.
--------------
-Kyle Sasser 
-
+Well, do you happen to use sata_mv?
