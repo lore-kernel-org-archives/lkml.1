@@ -1,76 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966168AbXJSCMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765900AbXJSCXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966168AbXJSCMi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 22:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764312AbXJSCMa
+	id S1765900AbXJSCXa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 22:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759953AbXJSCXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 22:12:30 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:46898 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764181AbXJSCM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 22:12:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CEgIpOKHQ6tw1DvNJ900LM0Su5D7LYeVbeF4IuVkJmPkt6d7zm90dhApQ2C39gDHkjRvJY6PvQrFTRyDJqRCdF2WltZXGRYTzS64yUi/FkQmesKKOkjpn2edcFTgWA/yFwNR7xSMlj/I6cLWmEKzGKhJBaMm7r0ZjCofTUqSG4o=  ;
-X-YMail-OSG: 0M8Q9MUVM1m1YrIfbsFaJX8aDJScbraj.sI7Nxwlt429jx1KqndszUyr_DlUzEY5yKQR8LNrOA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: SLUB: Avoid atomic operation for slab_unlock
-Date: Fri, 19 Oct 2007 12:12:00 +1000
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, linux-mm@kvack.org
-References: <Pine.LNX.4.64.0710181514310.3584@schroedinger.engr.sgi.com> <200710191156.43049.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
+	Thu, 18 Oct 2007 22:23:20 -0400
+Received: from lixom.net ([66.141.50.11]:59300 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759354AbXJSCXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 22:23:19 -0400
+Date: Thu, 18 Oct 2007 21:29:47 -0500
+From: Olof Johansson <olof@lixom.net>
+To: David Miller <davem@davemloft.net>
+Cc: xemul@openvz.org, netdev@vger.kernel.org, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] Fix race between sk_filter reassign and sk_clone()
+Message-ID: <20071019022947.GA29560@lixom.net>
+References: <4715D9D2.8070102@openvz.org> <20071017.212302.68039057.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710191212.00653.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071017.212302.68039057.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 October 2007 12:01, Christoph Lameter wrote:
-> On Fri, 19 Oct 2007, Nick Piggin wrote:
-> > > Yes that is what I attempted to do with the write barrier. To my
-> > > knowledge there are no reads that could bleed out and I wanted to avoid
-> > > a full fence instruction there.
-> >
-> > Oh, OK. Bit risky ;) You might be right, but anyway I think it
-> > should be just as fast with the optimised bit_unlock on most
-> > architectures.
->
-> How expensive is the fence? An store with release semantics would be safer
-> and okay for IA64.
+On Wed, Oct 17, 2007 at 09:23:02PM -0700, David Miller wrote:
+[...]
+> > The same problem exists for detaching filter (SO_DETACH_FILTER).
+> > 
+> > The proposed fix consists of 3 preparation patches and the fix itself.
+> > 
+> > Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> Looks good, applied.
+> 
+> Thanks for fixing this bug Pavel!
 
-I'm not sure, I had an idea it was relatively expensive on ia64,
-but I didn't really test with a good workload (a microbenchmark
-probably isn't that good because it won't generate too much out
-of order memory traffic that needs to be fenced).
+Looks like this might be causing problems, at least for me on ppc. This
+happened during a normal boot, right around first interface config/dhcp
+run..
+
+cpu 0x0: Vector: 300 (Data Access) at [c00000000147b820]
+    pc: c000000000435e5c: .sk_filter_delayed_uncharge+0x1c/0x60
+    lr: c0000000004360d0: .sk_attach_filter+0x170/0x180
+    sp: c00000000147baa0
+   msr: 9000000000009032
+   dar: 4
+ dsisr: 40000000
+  current = 0xc000000004780fa0
+  paca    = 0xc000000000650480
+    pid   = 1295, comm = dhclient3
+0:mon> t
+[c00000000147bb20] c0000000004360d0 .sk_attach_filter+0x170/0x180
+[c00000000147bbd0] c000000000418988 .sock_setsockopt+0x788/0x7f0
+[c00000000147bcb0] c000000000438a74 .compat_sys_setsockopt+0x4e4/0x5a0
+[c00000000147bd90] c00000000043955c .compat_sys_socketcall+0x25c/0x2b0
+[c00000000147be30] c000000000007508 syscall_exit+0x0/0x40
+--- Exception: c01 (System Call) at 000000000ff618d8
+SP (fffdf040) is in userspace
+0:mon> 
+
+I.e. null pointer deref at sk_filter_delayed_uncharge+0x1c:
+
+0:mon> di $.sk_filter_delayed_uncharge
+c000000000435e40  7c0802a6      mflr    r0
+c000000000435e44  fbc1fff0      std     r30,-16(r1)
+c000000000435e48  7c8b2378      mr      r11,r4
+c000000000435e4c  ebc2cdd0      ld      r30,-12848(r2)
+c000000000435e50  f8010010      std     r0,16(r1)
+c000000000435e54  f821ff81      stdu    r1,-128(r1)
+c000000000435e58  380300a4      addi    r0,r3,164
+c000000000435e5c  81240004      lwz     r9,4(r4)
+
+That's the deref of fp:
+
+static void sk_filter_delayed_uncharge(struct sock *sk, struct sk_filter *fp)
+{
+        unsigned int size = sk_filter_len(fp);
+...
+
+That is called from sk_attach_filter():
+
+...
+        rcu_read_lock_bh();
+        old_fp = rcu_dereference(sk->sk_filter);
+        rcu_assign_pointer(sk->sk_filter, fp);
+        rcu_read_unlock_bh();
+
+        sk_filter_delayed_uncharge(sk, old_fp);
+        return 0;
+...
+
+So, looks like rcu_dereference() returned NULL. I don't know the
+filter code at all, but it seems like it might be a valid case?
+sk_detach_filter() seems to handle a NULL sk_filter, at least.
 
 
-> > Which reminds me, it would be interesting to test the ia64
-> > implementation I did. For the non-atomic unlock, I'm actually
-> > doing an atomic operation there so that it can use the release
-> > barrier rather than the mf. Maybe it's faster the other way around
-> > though? Will be useful to test with something that isn't a trivial
-> > loop, so the slub case would be a good benchmark.
->
-> Lets avoid mf (too expensive) and just use a store with release semantics.
-
-OK, that's what I've done at the moment.
+So, this needs review by someone who knows the filter, but it fixes the
+problem for me:
 
 
-> Where can I find your patchset? I looked through lkml but did not see it.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Infrastructure in -mm, starting at bitops-introduce-lock-ops.patch.
-bit_spin_lock-use-lock-bitops.patch and ia64-lock-bitops.patch are
-ones to look at.
+diff --git a/net/core/filter.c b/net/core/filter.c
+index 1f0068e..e0a0694 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -447,7 +447,8 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
+ 	rcu_assign_pointer(sk->sk_filter, fp);
+ 	rcu_read_unlock_bh();
+ 
+-	sk_filter_delayed_uncharge(sk, old_fp);
++	if (old_fp)
++		sk_filter_delayed_uncharge(sk, old_fp);
+ 	return 0;
+ }
+ 
 
-The rest of the patches I have queued here, apart from the SLUB patch,
-I guess aren't so interesting to you (they don't do anything fancy
-like convert to non-atomic unlocks, just switch things like page and
-buffer locks to use new bitops).
