@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934494AbXJSEuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934718AbXJSEvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934494AbXJSEuQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXJSEuA
+	id S934718AbXJSEvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 00:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXJSEv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:50:00 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:26685 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752066AbXJSEt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:49:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NmR1eyObT1KlLhZypiaajqhMAJDNU9qm3Z/FcbRp+4AicJP1wIKGzwiL23WRBEArnTzKNMipu1HeyCMZDf/lSifH+rX1a1etkInNyv5KJ+hz1fTKW1PWvgR2fEb36fgs7VTz46Z/tGhe0wNLX8ArF/u8pHcPADSMDUmlPBenoqs=  ;
-X-YMail-OSG: x3mSJtIVM1l5kLyouoNfcQSOBX.L50_v26k522KBnnBKL4pKfQI80pHOK.ecJ3kV6QSyYmN5iQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Date: Fri, 19 Oct 2007 14:49:29 +1000
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, mingo@elte.hu, tglx@linutronix.de
-References: <E1IiiX6-0002V0-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1IiiX6-0002V0-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710191449.30027.nickpiggin@yahoo.com.au>
+	Fri, 19 Oct 2007 00:51:27 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:59758 "EHLO snapgear.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752181AbXJSEv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 00:51:27 -0400
+Date: Fri, 19 Oct 2007 14:50:12 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200710190450.l9J4oC2S005057@goober>
+To: torvalds@linux-foundation.org
+Subject: [M68KNOMMU]: fix syscall tracing
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 October 2007 13:28, Herbert Xu wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >> First of all let's agree on some basic assumptions:
-> >>
-> >> * A pair of spin lock/unlock subsumes the effect of a full mb.
-> >
-> > Not unless you mean a pair of spin lock/unlock as in
-> > 2 spin lock/unlock pairs (4 operations).
-> >
-> > *X = 10;
-> > spin_lock(&lock);
-> > /* *Y speculatively loaded here */
-> > /* store to *X leaves CPU store queue here */
-> > spin_unlock(&lock);
-> > y = *Y;
->
-> Good point.
->
-> Although in this case we're still safe because in the worst
-> cases:
->
-> CPU0				CPU1
-> irq_sync = 1
-> synchronize_irq
-> 	spin lock
-> 	load IRQ_INPROGRESS
-> irq_sync sync is visible
-> 	spin unlock
-> 				spin lock
-> 					load irq_sync
-> 	while (IRQ_INPROGRESS)
-> 		wait
-> 	return
-> 				set IRQ_INPROGRESS
-> 				spin unlock
-> 				tg3_msi
-> 					ack IRQ
-> 					if (irq_sync)
-> 						return
-> 				spin lock
-> 				clear IRQ_INPROGRESS
-> 				spin unlock
->
-> ------------------------------------------------------------
->
-> CPU0				CPU1
-> 				spin lock
-> 					load irq_sync
-> irq_sync = 1
-> synchronize_irq
-> 				set IRQ_INPROGRESS
-> 				spin unlock
-> 	spin lock
-> 	load IRQ_INPROGRESS
-> irq_sync sync is visible
-> 	spin unlock
-> 	while (IRQ_INPROGRESS)
-> 		wait
-> 				tg3_msi
-> 					ack IRQ
-> 					if (irq_sync)
-> 						return
-> 					do work
-> 				spin lock
-> 				clear IRQ_INPROGRESS
-> 				spin unlock
-> 	return
->
-> So because we're using the same lock on both sides, it does
-> do the right thing even without the memory barrier.
+From: Matt Waddel <Matt.Waddel@freescale.com>
+
+Fix the system call code for handling syscall tracing, so strace
+and gdbserver work properly.
+
+This fix originally developed by Philippe De Muyter and Stuart Hughes.
+
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
 
-Yeah, if you've got the lock on both sides there, then I
-agree it will be correct.
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5307/entry.S linux-2.6.23-uc0/arch/m68knommu/platform/5307/entry.S
+--- linux-2.6.23/arch/m68knommu/platform/5307/entry.S	2007-10-19 10:30:55.000000000 +1000
++++ linux-2.6.23-uc0/arch/m68knommu/platform/5307/entry.S	2007-10-19 10:35:40.000000000 +1000
+@@ -74,7 +74,8 @@ ENTRY(system_call)
+ 	movel	%sp,%d2			/* get thread_info pointer */
+ 	andl	#-THREAD_SIZE,%d2	/* at start of kernel stack */
+ 	movel	%d2,%a0
+-	movel	%sp,%a0@(THREAD_ESP0)	/* save top of frame */
++	movel	%a0@,%a1		/* save top of frame */
++	movel	%sp,%a1@(TASK_THREAD+THREAD_ESP0)
+ 	btst	#(TIF_SYSCALL_TRACE%8),%a0@(TI_FLAGS+(31-TIF_SYSCALL_TRACE)/8)
+ 	bnes	1f
+ 
+@@ -83,6 +84,8 @@ ENTRY(system_call)
+ 	movel	%d0,%sp@(PT_D0)		/* save the return value */
+ 	jra	ret_from_exception
+ 1:
++	movel	#-ENOSYS,%d2		/* strace needs -ENOSYS in PT_D0 */
++	movel	%d2,PT_D0(%sp)		/* on syscall entry */
+ 	subql	#4,%sp
+ 	SAVE_SWITCH_STACK
+ 	jbsr	syscall_trace
