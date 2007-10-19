@@ -1,163 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXJSIyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934769AbXJSJAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbXJSIyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 04:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXJSIyJ
+	id S934769AbXJSJAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 05:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXJSJA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 04:54:09 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3305 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752182AbXJSIyI (ORCPT
+	Fri, 19 Oct 2007 05:00:27 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:58179 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756905AbXJSJA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 04:54:08 -0400
-Date: Fri, 19 Oct 2007 10:54:02 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] ibmpex: Change printk to dev_{info,err} macros
-Message-ID: <20071019105402.546da123@hyperion.delvare>
-In-Reply-To: <20071017221503.GC31309@tree.beaverton.ibm.com>
-References: <20071017192902.GB3778@stusta.de>
-	<20071017225850.7d8a9e88@hyperion.delvare>
-	<20071017221503.GC31309@tree.beaverton.ibm.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 19 Oct 2007 05:00:26 -0400
+To: jens.axboe@oracle.com
+Cc: arjan@infradead.org, torvalds@linux-foundation.org, davem@davemloft.net,
+       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       alan@lxorguk.ukuu.org.uk, tomof@acm.org
+Subject: Re: [bug] ata subsystem related crash with latest -git
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071018171429.GH10674@kernel.dk>
+References: <alpine.LFD.0.999.0710180952070.26902@woody.linux-foundation.org>
+	<20071018101005.5681a365@laptopd505.fenrus.org>
+	<20071018171429.GH10674@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071019175903N.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 19 Oct 2007 17:59:03 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Darrick,
+On Thu, 18 Oct 2007 19:14:29 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Wed, 17 Oct 2007 15:15:03 -0700, Darrick J. Wong wrote:
-> Clean up printk use in ibmpex to use dev_err/dev_info macros and reword
-> some of the messages to be a bit more clear.
+> On Thu, Oct 18 2007, Arjan van de Ven wrote:
+> > On Thu, 18 Oct 2007 09:55:04 -0700 (PDT)
+> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > 
+> > > On Thu, 18 Oct 2007, Jens Axboe wrote:
+> > > > -		unsigned long addr = page_to_phys(s->page) +
+> > > > s->offset; 
+> > > > +		unsigned long addr = page_to_phys(sg_page(s)) +
+> > > > s->offset; 
+> > > 
+> > > Umm. May I suggest (I haven't read the whole thread yet, maybe
+> > > somebody else already did) that
+> > > 
+> > > 	static inline unsigned long sg_phys(struct scatterlist *sg)
+> > > 	{
+> > > 		return 	page_to_phys(sg_page(sg)) + sg->offset;
+> > > 	}
+> > > 
+> > > would be a good thing to have?
+> > > 
+> > > Very few drivers should care so much about the *page* itself (or the 
+> > > offset). That's something that the generic allocation code etc cares 
+> > > about, but the driver is almost bound to care mostly about the actual
+> > > DMA address
+> > 
+> > .... but will that work for systems with IOMMU ? or is it fundamentally
+> > the wrong interface
 > 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> ---
-> 
->  drivers/hwmon/ibmpex.c |   48 +++++++++++++++++++++++-------------------------
->  1 files changed, 23 insertions(+), 25 deletions(-)
-> 
-> diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
-> index c462824..3c8278b 100644
-> --- a/drivers/hwmon/ibmpex.c
-> +++ b/drivers/hwmon/ibmpex.c
-> @@ -140,10 +140,10 @@ static int ibmpex_send_message(struct ibmpex_bmc_data *data)
->  
->  	return 0;
->  out1:
-> -	printk(KERN_ERR "%s: request_settime=%x\n", __FUNCTION__, err);
-> +	dev_err(data->bmc_device, "request_settime=%x\n", err);
->  	return err;
->  out:
-> -	printk(KERN_ERR "%s: validate_addr=%x\n", __FUNCTION__, err);
-> +	dev_err(data->bmc_device, "validate_addr=%x\n", err);
->  	return err;
->  }
->  
-> @@ -161,14 +161,14 @@ static int ibmpex_ver_check(struct ibmpex_bmc_data *data)
->  	data->sensor_major = data->rx_msg_data[0];
->  	data->sensor_minor = data->rx_msg_data[1];
->  
-> -	printk(KERN_INFO DRVNAME ": Found BMC with sensor interface "
-> -	       "v%d.%d %d-%02d-%02d on interface %d\n",
-> -	       data->sensor_major,
-> -	       data->sensor_minor,
-> -	       extract_value(data->rx_msg_data, 2),
-> -	       data->rx_msg_data[4],
-> -	       data->rx_msg_data[5],
-> -	       data->interface);
-> +	dev_info(data->bmc_device, "Found BMC with sensor interface "
-> +		 "v%d.%d %d-%02d-%02d on interface %d\n",
-> +		 data->sensor_major,
-> +		 data->sensor_minor,
-> +		 extract_value(data->rx_msg_data, 2),
-> +		 data->rx_msg_data[4],
-> +		 data->rx_msg_data[5],
-> +		 data->interface);
->  
->  	return 0;
->  }
-> @@ -212,8 +212,8 @@ static int ibmpex_query_sensor_data(struct ibmpex_bmc_data *data, int sensor)
->  	wait_for_completion(&data->read_complete);
->  
->  	if (data->rx_result || data->rx_msg_len < 26) {
-> -		printk(KERN_ERR "Error reading sensor %d, please check.\n",
-> -		       sensor);
-> +		dev_err(data->bmc_device, "Error reading sensor %d.\n",
-> +			sensor);
->  		return -ENOENT;
->  	}
->  
-> @@ -456,8 +456,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
->  
->  	data = kzalloc(sizeof(*data), GFP_KERNEL);
->  	if (!data) {
-> -		printk(KERN_ERR DRVNAME ": Insufficient memory for BMC "
-> -		       "interface %d.\n", data->interface);
-> +		dev_err(dev, "Insufficient memory for BMC interface.\n");
->  		return;
->  	}
->  
-> @@ -471,9 +470,8 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
->  	err = ipmi_create_user(data->interface, &driver_data.ipmi_hndlrs,
->  			       data, &data->user);
->  	if (err < 0) {
-> -		printk(KERN_ERR DRVNAME ": Error, unable to register user with "
-> -		       "ipmi interface %d\n",
-> -		       data->interface);
-> +		dev_err(dev, "Unable to register user with IPMI "
-> +			"interface %d\n", data->interface);
->  		goto out;
->  	}
->  
-> @@ -495,9 +493,9 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
->  	data->hwmon_dev = hwmon_device_register(data->bmc_device);
->  
->  	if (IS_ERR(data->hwmon_dev)) {
-> -		printk(KERN_ERR DRVNAME ": Error, unable to register hwmon "
-> -		       "class device for interface %d\n",
-> -		       data->interface);
-> +		dev_err(data->bmc_device, "Unable to register hwmon "
-> +			"device for IPMI interface %d\n",
-> +			data->interface);
->  		goto out_user;
->  	}
->  
-> @@ -508,7 +506,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
->  	/* Now go find all the sensors */
->  	err = ibmpex_find_sensors(data);
->  	if (err) {
-> -		printk(KERN_ERR "Error %d allocating memory\n", err);
-> +		dev_err(data->bmc_device, "Error %d allocating memory\n", err);
+> They use foo_to_bus() on the address. sg_phys() should of course only be
+> used where the user previously did page_to_phys() on the sg page.
 
-This message might be misleading, as there are other reasons why
-ibmpex_find_sensors() can fail.
+I can take care of IOMMU stuff when I'll send IOMMU merging fix
+patchset:
 
->  		goto out_register;
->  	}
->  
-> @@ -561,10 +559,10 @@ static void ibmpex_msg_handler(struct ipmi_recv_msg *msg, void *user_msg_data)
->  	struct ibmpex_bmc_data *data = (struct ibmpex_bmc_data *)user_msg_data;
->  
->  	if (msg->msgid != data->tx_msgid) {
-> -		printk(KERN_ERR "Received msgid (%02x) and transmitted "
-> -		       "msgid (%02x) mismatch!\n",
-> -		       (int)msg->msgid,
-> -		       (int)data->tx_msgid);
-> +		dev_err(data->bmc_device, "Mismatch between received msgid "
-> +			"(%02x) and transmitted msgid (%02x)!\n",
-> +			(int)msg->msgid,
-> +			(int)data->tx_msgid);
->  		ipmi_free_recv_msg(msg);
->  		return;
->  	}
-
-Other than that, the patch looks OK:
-
-Acked-by: Jean Delvare <khali@linux-fr.org>
-
--- 
-Jean Delvare
+http://marc.info/?l=linux-scsi&m=119079718126157&w=2
