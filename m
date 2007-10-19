@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765696AbXJSMkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXJSMl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765696AbXJSMkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 08:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXJSMj4
+	id S933015AbXJSMl1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 08:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbXJSMlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 08:39:56 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:45867 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755886AbXJSMjz (ORCPT
+	Fri, 19 Oct 2007 08:41:19 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:32085 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753915AbXJSMlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 08:39:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BXUbqgkQhtWF3RTUoRsTzRVNhrhWcLQBpqzygpJmFD4yUhNCn4rsQ4EN0zThr3OrB3OFN+PwVpTesXGSOYFO2EyRTOx+dItJJDrv/EkI5+2/EpOrNSUIzD1hObDaAvXplyPWJ48O3ouFf7OozjUuwQ488hc+4D9WtlZDzME6UvQ=
-Message-ID: <1865922a0710190539j4eec697dmffeb7c97b9601c63@mail.gmail.com>
-Date: Fri, 19 Oct 2007 14:39:48 +0200
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-To: "Al Viro" <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Version 8 (2.6.23) Smack: Simplified Mandatory Access Control Kernel
-Cc: "Casey Schaufler" <casey@schaufler-ca.com>, torvalds@osdl.org,
-       akpm@osdl.org, linux-security-module@vger.kernel.org,
+	Fri, 19 Oct 2007 08:41:18 -0400
+Date: Fri, 19 Oct 2007 14:40:25 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20071018051031.GN8181@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] x86: rename iommu.h to gart.h
+Message-ID: <20071019124025.GD4361@rhun.haifa.ibm.com>
+References: <1192797491473-git-send-email-joerg.roedel@amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47158CE4.30706@schaufler-ca.com>
-	 <20071018045705.GM8181@ftp.linux.org.uk>
-	 <20071018051031.GN8181@ftp.linux.org.uk>
+In-Reply-To: <1192797491473-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/18/07, Al Viro <viro@ftp.linux.org.uk> wrote:
-> On Thu, Oct 18, 2007 at 05:57:05AM +0100, Al Viro wrote:
-> > On Tue, Oct 16, 2007 at 09:17:40PM -0700, Casey Schaufler wrote:
->
-> > Think what happens if CPU1 adds to list and CPU2 sees write to smk_known
-> > *before* it sees write to ->smk_next.  We see a single-element list and
-> > we'll be lucky if that single entry won't be FUBAR.
->
-> While we are at it, what protects smack_cipso_count?
-> -
+On Fri, Oct 19, 2007 at 02:38:11PM +0200, Joerg Roedel wrote:
 
-My fault. I sent to Casey a one-liner patch to make "smack_cipso_count++"
-be protected by the smk_cipsolock spinlock.
+> This patch renames the include file asm-x86/iommu.h to asm-x86/gart.h to make
+> clear to which IOMMU implementation it belongs. The patch also adds "GART" to
+> the Kconfig line.
 
-We don't need a lock in the reading side since we don't do a write operation
-depending on that read, right ?.
+Long overdue IMHO. How about also renaming the config option to
+CONFIG_GART_IOMMU while you're at it?
 
+Cheers,
+Muli
 -- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
+http://www.haifa.il.ibm.com/Workshops/systor2007/
+
+Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
