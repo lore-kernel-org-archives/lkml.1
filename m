@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936711AbXJST6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936363AbXJST6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936711AbXJST6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764585AbXJST6D
+	id S936363AbXJST6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934609AbXJST6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:58:03 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:48184 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758396AbXJST6B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 15:58:05 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:43874 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbXJST6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Oct 2007 15:58:01 -0400
-Date: Fri, 19 Oct 2007 20:57:53 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] dz.h: Remove useless unused module junk
-Message-ID: <Pine.LNX.4.64N.0710192055090.13279@blysk.ds.pg.gda.pl>
+Date: Fri, 19 Oct 2007 14:57:49 -0500
+To: Shane Huang <chunhao.huang@hotmail.com>
+Cc: davem@davemloft.net, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       shane.huang@amd.com, jgarzik@pobox.com, linux-ide@vger.kernel.org
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+Message-ID: <20071019195749.GK29903@austin.ibm.com>
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Remove unused module function prototypes that would not even build if
-enabled.
+On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
+> Since we have little experience on PCI and MSI here, we had to try to
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Please apply under the obviously-correct rule.
+As someone else pointed out, AMD should have *lots* of people with
+pci and msi experience on the payroll.  (Folks here buy AMD-designed 
+pci chips ...)
 
-  Maciej
+> ONLY
+> comment out the pci_intx() call in drivers/ata/ahci.c
+> My system can boot up too with MSI enabled!
+> 
+> So does it mean that the root cause is our SB700 SATA controller
+> has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
+> register masks MSI interrupts too? 
 
-patch-mips-2.6.18-20060920-dz-junk-0
-diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/serial/dz.h linux-mips-2.6.18-20060920/drivers/serial/dz.h
---- linux-mips-2.6.18-20060920.macro/drivers/serial/dz.h	2003-06-11 23:26:46.000000000 +0000
-+++ linux-mips-2.6.18-20060920/drivers/serial/dz.h	2007-01-07 19:06:02.000000000 +0000
-@@ -110,9 +110,4 @@
- #define DZ_XMIT_SIZE   4096                 /* buffer size */
- #define DZ_WAKEUP_CHARS   DZ_XMIT_SIZE/4
- 
--#ifdef MODULE
--int init_module (void)
--void cleanup_module (void)
--#endif
--
- #endif /* DZ_SERIAL_H */
+That's what it sounds like, to me.
+
+> And what is the software solution or workaround?
+
+Not sure. Sounds like the device driver needs a quirk for this part.
+
+The over-worked Jeff Garzik is the maintainer for that driver.
+
+You should probably provide the pci device id for this beast.
+
+--linas
+
