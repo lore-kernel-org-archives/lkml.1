@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbXJSQag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbXJSQjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764175AbXJSQag (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbXJSQaM
+	id S1764119AbXJSQjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbXJSQji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:30:12 -0400
-Received: from rtr.ca ([76.10.145.34]:2359 "EHLO mail.rtr.ca"
+	Fri, 19 Oct 2007 12:39:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36279 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757711AbXJSQaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:30:09 -0400
-Message-ID: <4718DB8F.3070903@rtr.ca>
-Date: Fri, 19 Oct 2007 12:30:07 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1756008AbXJSQji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:39:38 -0400
+Message-ID: <4718DDB7.7070707@redhat.com>
+Date: Fri, 19 Oct 2007 12:39:19 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Giangiacomo Mariotti <gg.mariotti@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23.1 Freezes on GB data transfers
-References: <12bfabe40710170420m6882ea8eg3b8e6e7db72a0cdd@mail.gmail.com> <2c0942db0710190858n647192d6t270e43b2a3075320@mail.gmail.com>
-In-Reply-To: <2c0942db0710190858n647192d6t270e43b2a3075320@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86_64 and AMD with C1E
+References: <20071001101532.025d652f@localhost>
+In-Reply-To: <20071001101532.025d652f@localhost>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 10/17/07, Giangiacomo Mariotti <gg.mariotti@gmail.com> wrote:
->> Linux Kernel 2.6.23.1 freezes on GB data transfers.
->>
->> Pc completely freezed while transferring 4Gb of data from
->> dvd(/dev/hdc) to hd(nothing else was happening, cpu general usage at
->> 5-6%).Except for this,it has been working flawlessly for 1 day,but
->> when I tried to transfer 4Gb of data from the dvd to the hd,after
->> having completed 60% of the transfer, the system became completely
->> freezed,no keyboard,no mouse,no consoles,nothing, and the Caps Lock
->> LED started to blink.
+On 10/01/2007 02:15 AM, Mikhail Kshevetskiy wrote:
+> Hello,
 > 
-> The blinking Caps lock LED means that your system is Oopsing. Please
-> try your test again from a console (not from X), and see if an oops
-> message is printed out. If it is, you'll need to either copy it down
-> or take a photograph of it with a digital camera, then post the text
-> of it or post a link to the image.
+> I have ASUS F3T notebook with dualcore AMD processor. It has c1e feature
+> enabled. I test linux-2.6.23-rc8-hrt1 kernel. Everything is work (thanks
+> to lapic disable patch), but i have to many processor interrupts per 
+> seconds (about 260 additional timer interrupts). 
+> 
+> The same situation can be observed for linux-2.6.22. Moreover the same
+> problem exist with i386 kernel (test with 2.6.21, 2.6.22, 2.6.22-hrt6,
+> 2.6.23-rc5-hrt1).
+> 
+> The problem disappear when I disable c1e on both cores. In this case 
+> lapic is not disabled. The back side of this patch is the disabling of
+> all C-state including C1. As result the power consumption increase from
+> 23 (c1e enabled) to 27 (c1e disabled) watts.
+> 
+> I fill something wrong here.
+> Is it possible to reduce the amount of timer interrupts?
+> Is it possible to force enable C1,C2 and C3 states when c1e disabled?
+> 
 
+How are you disabling C1E?
 
-I believe this is now the forth report of blinking-leds lockup with 2.6.23.1.
-
-I wonder what's causing it?
-My system has this as well, totally random, once every day or so.
-New behaviour since 2.6.23-rc9 (I posted previously about this).
-
-Cheers
