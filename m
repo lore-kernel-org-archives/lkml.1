@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934770AbXJSFCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXJSFEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934770AbXJSFCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 01:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760136AbXJSFCJ
+	id S1764339AbXJSFEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 01:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXJSFEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 01:02:09 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:27526 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbXJSFCG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 01:02:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=HXpTU5j8fbvaTnbH6YOYhLarJ8w9rpXdAH7yikR9/+o/Iy3lEWcqwzgHMEKzPTjDjEsaABRLBgpSh11tf8LeIzBjrT+wutptYn7OokZMyZFbfsk58i5yWDLtFBElFa89xx4YSZOLeXiCBvIIl/KwYtj6RJd1HJ5XPZ5MEXpI2tk=
-Date: Fri, 19 Oct 2007 13:00:58 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: bluez-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] bluetooth: hidp core debug code wrong argument fix
-Message-ID: <20071019050057.GA8734@darkstar.te-china.tietoenator.com>
+	Fri, 19 Oct 2007 01:04:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54366 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbXJSFEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 01:04:40 -0400
+Date: Fri, 19 Oct 2007 15:04:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Make advansys depend on CONFIG_VIRT_TO_BUS
+Message-Id: <20071019150431.996522c5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the debug code of the hidp_queue_report function, the "device" variable does not exist, replace it with "session->hid"
+At least for now.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-net/bluetooth/hidp/core.c |    2 +-
-1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff -upr linux/net/bluetooth/hidp/core.c linux.new/net/bluetooth/hidp/core.c
---- linux/net/bluetooth/hidp/core.c	2007-10-15 14:05:23.000000000 +0800
-+++ linux.new/net/bluetooth/hidp/core.c	2007-10-15 14:06:38.000000000 +0800
-@@ -247,7 +247,7 @@ static inline int hidp_queue_report(stru
- {
- 	struct sk_buff *skb;
- 
--	BT_DBG("session %p hid %p data %p size %d", session, device, data, size);
-+	BT_DBG("session %p hid %p data %p size %d", session, session->hid, data, size);
- 
- 	if (!(skb = alloc_skb(size + 1, GFP_ATOMIC))) {
- 		BT_ERR("Can't allocate memory for new frame");
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 30905ce..325533c 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -523,6 +523,7 @@ config SCSI_ADVANSYS
+ 	tristate "AdvanSys SCSI support"
+ 	depends on SCSI
+ 	depends on ISA || EISA || PCI
++	depends on VIRT_TO_BUS
+ 	help
+ 	  This is a driver for all SCSI host adapters manufactured by
+ 	  AdvanSys. It is documented in the kernel source in
+-- 
+1.5.3.4
+
