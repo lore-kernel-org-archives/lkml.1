@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbXJSTga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936284AbXJSTgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933965AbXJSTga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758396AbXJSTgV
+	id S936284AbXJSTgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763120AbXJSTgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:36:21 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49182 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754260AbXJSTgU (ORCPT
+	Fri, 19 Oct 2007 15:36:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36879 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758208AbXJSTgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 15:36:20 -0400
-Subject: Re: [patch 6/8] pull RT tasks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
-In-Reply-To: <1192821893.9471.17.camel@lappy>
-References: <20071019184254.456160632@goodmis.org>
-	 <20071019184336.983272715@goodmis.org>  <1192821893.9471.17.camel@lappy>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 21:35:30 +0200
-Message-Id: <1192822530.9471.22.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Oct 2007 15:36:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/9] Remove 'irq' argument from all irq handlers
+References: <20071019075443.GA6407@havoc.gtf.org>
+	<alpine.LFD.0.9999.0710191649120.22770@localhost.localdomain>
+	<m1bqavgdbf.fsf@ebiederm.dsl.xmission.com>
+	<20071019190721.GA1514@elte.hu>
+Date: Fri, 19 Oct 2007 13:35:55 -0600
+In-Reply-To: <20071019190721.GA1514@elte.hu> (Ingo Molnar's message of "Fri,
+	19 Oct 2007 21:07:22 +0200")
+Message-ID: <m1wstigan8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
 
-On Fri, 2007-10-19 at 21:24 +0200, Peter Zijlstra wrote:
-> On Fri, 2007-10-19 at 14:43 -0400, Steven Rostedt wrote:
-> > plain text document attachment (rt-balance-pull-tasks.patch)
-> 
-> > +static int pull_rt_task(struct rq *this_rq)
-> > +{
-> > +	struct task_struct *next;
-> > +	struct task_struct *p;
-> > +	struct rq *src_rq;
-> > +	int this_cpu = this_rq->cpu;
-> > +	int cpu;
-> > +	int ret = 0;
-> > +
-> > +	assert_spin_locked(&this_rq->lock);
-> > +
-> > +	if (likely(!atomic_read(&rt_overload)))
-> > +		return 0;
-> 
-> This seems to be the only usage of rt_overload. I'm not sure its worth
-> keeping it around for this.
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> > thanks for doing this.
+>> 
+>> Yes.  keeping this alive is good.
+>> 
+>> The practical question is how do we make this change without breaking 
+>> the drivers that use their irq argument.
+>
+> the get_irq_regs() approach worked out really well. We should do a 
+> get_irq_nr() and be done with it?
 
-Ingo just brought up a good point. With large smp (where large is >64)
-this will all suck chunks.
+The problem are some drivers today pass in 0 for their irq number
+to flag that they are calling the interrupt handler in a polling
+mode (not from interrupt context?) so the same logic doesn't quite apply.
 
-rt_overload will bounce around the system, and the rto_cpumask updates
-might already hurt.
+Do what you suggest would likely break those drivers.
 
-The idea would be to do this per cpuset, these naturally limit the
-migraiton posibilities of tasks and would thus be the natural locality
-to break this data structure.
-
-> > +	next = pick_next_task_rt(this_rq);
-> > +
-> > +	for_each_cpu_mask(cpu, rto_cpumask) {
-> > +		if (this_cpu == cpu)
-> > +			continue;
-> 
-> ...
-> 
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> 
-
+Eric
