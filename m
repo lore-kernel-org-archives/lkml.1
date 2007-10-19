@@ -1,85 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965826AbXJSIae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXJSIyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965826AbXJSIae (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 04:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbXJSIa0
+	id S933289AbXJSIyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 04:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXJSIyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 04:30:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42401 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755021AbXJSIaZ (ORCPT
+	Fri, 19 Oct 2007 04:54:09 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3305 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752182AbXJSIyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 04:30:25 -0400
-Date: Fri, 19 Oct 2007 18:30:19 +1000
-To: torvalds@linux-foundation.org
-Cc: tes@sgi.com, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.24-rc1
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 19 Oct 2007 04:54:08 -0400
+Date: Fri, 19 Oct 2007 10:54:02 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Adrian Bunk <bunk@kernel.org>, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] ibmpex: Change printk to dev_{info,err} macros
+Message-ID: <20071019105402.546da123@hyperion.delvare>
+In-Reply-To: <20071017221503.GC31309@tree.beaverton.ibm.com>
+References: <20071017192902.GB3778@stusta.de>
+	<20071017225850.7d8a9e88@hyperion.delvare>
+	<20071017221503.GC31309@tree.beaverton.ibm.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071019083019.6F53058C38F1@chook.melbourne.sgi.com>
-From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi Darrick,
 
-A couple of Christoph patches for XFS ...
-A fid one for nfs exports which akpm is waiting for.
-Thanks.
+On Wed, 17 Oct 2007 15:15:03 -0700, Darrick J. Wong wrote:
+> Clean up printk use in ibmpex to use dev_err/dev_info macros and reword
+> some of the messages to be a bit more clear.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/ibmpex.c |   48 +++++++++++++++++++++++-------------------------
+>  1 files changed, 23 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
+> index c462824..3c8278b 100644
+> --- a/drivers/hwmon/ibmpex.c
+> +++ b/drivers/hwmon/ibmpex.c
+> @@ -140,10 +140,10 @@ static int ibmpex_send_message(struct ibmpex_bmc_data *data)
+>  
+>  	return 0;
+>  out1:
+> -	printk(KERN_ERR "%s: request_settime=%x\n", __FUNCTION__, err);
+> +	dev_err(data->bmc_device, "request_settime=%x\n", err);
+>  	return err;
+>  out:
+> -	printk(KERN_ERR "%s: validate_addr=%x\n", __FUNCTION__, err);
+> +	dev_err(data->bmc_device, "validate_addr=%x\n", err);
+>  	return err;
+>  }
+>  
+> @@ -161,14 +161,14 @@ static int ibmpex_ver_check(struct ibmpex_bmc_data *data)
+>  	data->sensor_major = data->rx_msg_data[0];
+>  	data->sensor_minor = data->rx_msg_data[1];
+>  
+> -	printk(KERN_INFO DRVNAME ": Found BMC with sensor interface "
+> -	       "v%d.%d %d-%02d-%02d on interface %d\n",
+> -	       data->sensor_major,
+> -	       data->sensor_minor,
+> -	       extract_value(data->rx_msg_data, 2),
+> -	       data->rx_msg_data[4],
+> -	       data->rx_msg_data[5],
+> -	       data->interface);
+> +	dev_info(data->bmc_device, "Found BMC with sensor interface "
+> +		 "v%d.%d %d-%02d-%02d on interface %d\n",
+> +		 data->sensor_major,
+> +		 data->sensor_minor,
+> +		 extract_value(data->rx_msg_data, 2),
+> +		 data->rx_msg_data[4],
+> +		 data->rx_msg_data[5],
+> +		 data->interface);
+>  
+>  	return 0;
+>  }
+> @@ -212,8 +212,8 @@ static int ibmpex_query_sensor_data(struct ibmpex_bmc_data *data, int sensor)
+>  	wait_for_completion(&data->read_complete);
+>  
+>  	if (data->rx_result || data->rx_msg_len < 26) {
+> -		printk(KERN_ERR "Error reading sensor %d, please check.\n",
+> -		       sensor);
+> +		dev_err(data->bmc_device, "Error reading sensor %d.\n",
+> +			sensor);
+>  		return -ENOENT;
+>  	}
+>  
+> @@ -456,8 +456,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+>  
+>  	data = kzalloc(sizeof(*data), GFP_KERNEL);
+>  	if (!data) {
+> -		printk(KERN_ERR DRVNAME ": Insufficient memory for BMC "
+> -		       "interface %d.\n", data->interface);
+> +		dev_err(dev, "Insufficient memory for BMC interface.\n");
+>  		return;
+>  	}
+>  
+> @@ -471,9 +470,8 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+>  	err = ipmi_create_user(data->interface, &driver_data.ipmi_hndlrs,
+>  			       data, &data->user);
+>  	if (err < 0) {
+> -		printk(KERN_ERR DRVNAME ": Error, unable to register user with "
+> -		       "ipmi interface %d\n",
+> -		       data->interface);
+> +		dev_err(dev, "Unable to register user with IPMI "
+> +			"interface %d\n", data->interface);
+>  		goto out;
+>  	}
+>  
+> @@ -495,9 +493,9 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+>  	data->hwmon_dev = hwmon_device_register(data->bmc_device);
+>  
+>  	if (IS_ERR(data->hwmon_dev)) {
+> -		printk(KERN_ERR DRVNAME ": Error, unable to register hwmon "
+> -		       "class device for interface %d\n",
+> -		       data->interface);
+> +		dev_err(data->bmc_device, "Unable to register hwmon "
+> +			"device for IPMI interface %d\n",
+> +			data->interface);
+>  		goto out_user;
+>  	}
+>  
+> @@ -508,7 +506,7 @@ static void ibmpex_register_bmc(int iface, struct device *dev)
+>  	/* Now go find all the sensors */
+>  	err = ibmpex_find_sensors(data);
+>  	if (err) {
+> -		printk(KERN_ERR "Error %d allocating memory\n", err);
+> +		dev_err(data->bmc_device, "Error %d allocating memory\n", err);
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+This message might be misleading, as there are other reasons why
+ibmpex_find_sensors() can fail.
 
-This will update the following files:
+>  		goto out_register;
+>  	}
+>  
+> @@ -561,10 +559,10 @@ static void ibmpex_msg_handler(struct ipmi_recv_msg *msg, void *user_msg_data)
+>  	struct ibmpex_bmc_data *data = (struct ibmpex_bmc_data *)user_msg_data;
+>  
+>  	if (msg->msgid != data->tx_msgid) {
+> -		printk(KERN_ERR "Received msgid (%02x) and transmitted "
+> -		       "msgid (%02x) mismatch!\n",
+> -		       (int)msg->msgid,
+> -		       (int)data->tx_msgid);
+> +		dev_err(data->bmc_device, "Mismatch between received msgid "
+> +			"(%02x) and transmitted msgid (%02x)!\n",
+> +			(int)msg->msgid,
+> +			(int)data->tx_msgid);
+>  		ipmi_free_recv_msg(msg);
+>  		return;
+>  	}
 
- fs/xfs/linux-2.6/xfs_export.c |    6 +++---
- fs/xfs/linux-2.6/xfs_export.h |    6 +++---
- fs/xfs/linux-2.6/xfs_ioctl.c  |   24 ++++++++++++------------
- fs/xfs/xfs_dmops.c            |   21 ++++-----------------
- fs/xfs/xfs_fs.h               |   29 ++++++-----------------------
- fs/xfs/xfs_qmops.c            |   22 +++++++---------------
- fs/xfs/xfs_vfsops.c           |    9 ++++-----
- fs/xfs/xfs_vfsops.h           |    4 ++--
- fs/xfs/xfs_vnodeops.c         |   13 ++-----------
- fs/xfs/xfs_vnodeops.h         |    2 +-
- 10 files changed, 44 insertions(+), 92 deletions(-)
+Other than that, the patch looks OK:
 
-through these commits:
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
-commit c6143911a7e0f8abef0319c801eb36718f57dfde
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Fri Sep 14 15:22:37 2007 +1000
-
-    [XFS] cleanup fid types mess
-    
-    Currently XFs has three different fid types: struct fid, struct xfs_fid
-    and struct xfs_fid2 with hte latter two beeing identicaly and the first
-    one beeing the same size but an unstructured array with the same size.
-    
-    This patch consolidates all this to alway uuse struct xfs_fid.
-    
-    This patch is required for an upcoming patch series from me that revamps
-    the nfs exporting code and introduces a Linux-wide struct fid.
-    
-    SGI-PV: 970336
-    SGI-Modid: xfs-linux-melb:xfs-kern:29651a
-    
-    Signed-off-by: Christoph Hellwig <hch@infradead.org>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit c8fcfac5a257f8a04f7ba3d397dedccffef19be2
-Author: Christoph Hellwig <hch@lst.de>
-Date:   Fri Oct 19 16:57:01 2007 +1000
-
-    [XFS] fixups after behavior removal merge into mainline git
-    
-    Fixup for lack of dmapi support and no quota module support.
-    
-    SGI-PV: 969985
-    
-    Signed-off-by: Christoph Hellwig <hch@infradead.org>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
+-- 
+Jean Delvare
