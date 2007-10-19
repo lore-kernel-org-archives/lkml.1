@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbXJSLyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbXJSL4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558AbXJSLyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 07:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757134AbXJSLyd
+	id S933877AbXJSL4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 07:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXJSL4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 07:54:33 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49825 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757097AbXJSLyc convert rfc822-to-8bit (ORCPT
+	Fri, 19 Oct 2007 07:56:05 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33608 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756180AbXJSL4E (ORCPT
 	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 07:54:32 -0400
-Message-ID: <47189AD3.8010301@bull.net>
-Date: Fri, 19 Oct 2007 13:53:55 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: IceDove 1.5.0.12 (X11/20070606)
+	Fri, 19 Oct 2007 07:56:04 -0400
+Message-ID: <47189B47.6070107@de.ibm.com>
+Date: Fri, 19 Oct 2007 13:55:51 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
 To: carsteno@de.ibm.com
-Cc: "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
-       Linux-kernel@vger.kernel.org, Aurelien Jarno <aurelien@aurel32.net>
-Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
-References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net>	<47189706.1040809@de.ibm.com> <4718982D.4020500@bull.net> <471899CA.8060206@de.ibm.com>
-In-Reply-To: <471899CA.8060206@de.ibm.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/10/2007 14:01:03,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 19/10/2007 14:01:03,
-	Serialize complete at 19/10/2007 14:01:03
-Content-Transfer-Encoding: 8BIT
+CC: "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com>
+In-Reply-To: <47189371.7080104@de.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carsten Otte a écrit :
-> Laurent Vivier wrote:
->> How do you know the problem has been introduced by kvm ?
-> I don't. In fact I think it has not been introduced by kvm. All I 
-> stated, is that we experienced the problem when running the kvm.git 
-> kernel after the 2.6.23 update that has not been present in the 
-> kvm.git -rc8 as of last thursday.
-
-Perhaps 2.6.23.1 corrects this ?
-
-http://lkml.org/lkml/2007/10/12/302
-
-Laurent
--- 
----------------- Laurent.Vivier@bull.net  -----------------
-"Given enough eyeballs, all bugs are shallow" E. S. Raymond
-
+Carsten Otte wrote:
+> 2.6.23 is  broken, 2.6.23-rc8 works for us.
+Actually, the working version was 2.6.23-rc6, git-head of kvm.git as 
+of October 11.
