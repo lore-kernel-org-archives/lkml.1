@@ -1,105 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966139AbXJSD2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934997AbXJSDaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966139AbXJSD2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 23:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXJSD2c
+	id S934997AbXJSDaO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 23:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXJSDaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 23:28:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2554 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762351AbXJSD2b (ORCPT
+	Thu, 18 Oct 2007 23:30:00 -0400
+Received: from slackadelic.com ([65.196.224.53]:51951 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756674AbXJSD37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 23:28:31 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: nickpiggin@yahoo.com.au (Nick Piggin)
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Cc: herbert@gondor.apana.org.au, torvalds@linux-foundation.org,
-       benh@kernel.crashing.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
-       tglx@linutronix.de
-Organization: Core
-In-Reply-To: <200710191252.18272.nickpiggin@yahoo.com.au>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IiiX6-0002V0-00@gondolin.me.apana.org.au>
-Date: Fri, 19 Oct 2007 11:28:20 +0800
+	Thu, 18 Oct 2007 23:29:59 -0400
+X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Oct 2007 23:29:59 EDT
+From: Carlos Corbacho <cathectic@slackadelic.com>
+To: linux-kernel@vger.kernel.org
+Subject: nVidia HPET force enable - merge requirements? (resend)
+User-Agent: KMail/1.9.7
+Cc: Mikko Tiihonen <mikko.tiihonen@iki.fi>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Fri, 19 Oct 2007 04:23:31 +0100
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710190423.31714.cathectic@slackadelic.com>
+X-slackadelic.com-MailScanner-Information: Please contact the ISP for more information
+X-slackadelic.com-MailScanner: Found to be clean
+X-slackadelic.com-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=0.1, required 4, RDNS_DYNAMIC 0.10)
+X-slackadelic.com-MailScanner-From: cathectic@slackadelic.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
->> First of all let's agree on some basic assumptions:
->>
->> * A pair of spin lock/unlock subsumes the effect of a full mb.
-> 
-> Not unless you mean a pair of spin lock/unlock as in
-> 2 spin lock/unlock pairs (4 operations).
-> 
-> *X = 10;
-> spin_lock(&lock);
-> /* *Y speculatively loaded here */
-> /* store to *X leaves CPU store queue here */
-> spin_unlock(&lock);
-> y = *Y;
+(Resend with CC's fixed)
 
-Good point.
+Back in April, Mikko posted a patch to force enable the HPET on some nVidia 
+chipsets:
 
-Although in this case we're still safe because in the worst
-cases:
+v2:
+http://lkml.org/lkml/2007/4/16/46
 
-CPU0				CPU1
-irq_sync = 1
-synchronize_irq
-	spin lock
-	load IRQ_INPROGRESS
-irq_sync sync is visible
-	spin unlock
-				spin lock
-					load irq_sync
-	while (IRQ_INPROGRESS)
-		wait
-	return
-				set IRQ_INPROGRESS
-				spin unlock
-				tg3_msi
-					ack IRQ
-					if (irq_sync)
-						return
-				spin lock
-				clear IRQ_INPROGRESS
-				spin unlock
+v3:
+http://lkml.org/lkml/2007/4/17/354
 
-------------------------------------------------------------
+What would need to be done to this patch to get it into x86 now (besides i386/ 
+x86_64 -> x86 conversion), given that:
 
-CPU0				CPU1
-				spin lock
-					load irq_sync
-irq_sync = 1
-synchronize_irq
-				set IRQ_INPROGRESS
-				spin unlock
-	spin lock
-	load IRQ_INPROGRESS
-irq_sync sync is visible
-	spin unlock
-	while (IRQ_INPROGRESS)
-		wait
-				tg3_msi
-					ack IRQ
-					if (irq_sync)
-						return
-					do work
-				spin lock
-				clear IRQ_INPROGRESS
-				spin unlock
-	return
+A) There is now a force_hpet boot parameter in the x86 tree (mm branch) 
+(rather than relying on the solution in the earlier patches of a config 
+option).
 
-So because we're using the same lock on both sides, it does
-do the right thing even without the memory barrier.
+B) On the other hand, the force-quirk's are going into quirks.c, whilst 
+Mikko's patch requires PCI scanning in early_quirks.c (could the PCI scanning 
+be done in early_quirks.c and the actual HPET enabling handled in quirks.c 
+later - or if not, could this early quirk play be made to obey the force_hpet 
+boot option)?
 
-Cheers,
+-Carlos
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+E-Mail: cathectic@gmail.com
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
