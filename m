@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935540AbXJSSf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936202AbXJSSgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935540AbXJSSf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXJSSfU
+	id S936202AbXJSSgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760806AbXJSSgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:35:20 -0400
-Received: from [12.38.223.190] ([12.38.223.190]:20427 "EHLO
-	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759584AbXJSSfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:35:19 -0400
+	Fri, 19 Oct 2007 14:36:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39997 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbXJSSgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 14:36:10 -0400
+Message-ID: <4718F918.8050904@garzik.org>
+Date: Fri, 19 Oct 2007 14:36:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/9] irq-remove: driver non-trivial
+References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075640.GE6407@havoc.gtf.org> <m1hcknge5y.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcknge5y.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18200.63696.399763.437303@zeus.sw.starentnetworks.com>
-Date: Fri, 19 Oct 2007 14:34:56 -0400
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] i386: fix TSC clock source calibration error [part 2]
-In-Reply-To: <4718F0DE.3050207@ct.jp.nec.com>
-References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
-	<20071018085713.GA11022@elte.hu>
-	<18200.59017.358372.378373@zeus.sw.starentnetworks.com>
-	<4718F0DE.3050207@ct.jp.nec.com>
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto writes:
-> Dave Johnson wrote:
-> >  		mach_prepare_counter();
-> 
-> It's a really rare case, but if SMI interrupt takes CPU here, just after
-> prepare and before rdtscll, it makes delta64 shorter than expected one.
-> Is it possible? And how about moving rdtscll before mach_prepare_counter()?
-> 
-> >  		rdtscll(start);
+Eric W. Biederman wrote:
+> [snip] Found issues and ran out of review bandwidth.
 
-Yep, rare indeed (about 1 instruction). Moving the start read before
-the prepare call should solve that one too providing the setup doesn't
-take any real measurable time.
+thanks for the comments!  I'll work through these.
 
--- 
-Dave Johnson
-Starent Networks
+There are definitely plenty of open issues I haven't yet tackled in the 
+driver area, as you are seeing.  As you noted, a lot of these are with 
+drivers doing weird things like calling their own interrupt function 
+with (-1, NULL) or (0, NULL), which triggers some magic "I'm polling" 
+behavior.
+
+
+>>  	}
+>>  __out:
+>>  	spin_unlock(&mts->lock);
+>> +
+>> +	return IRQ_HANDLED;
+> 
+> Missing parport code change, see below.
+
+those two parport changes were bogus, and actually got fixed up in patch #9
 
