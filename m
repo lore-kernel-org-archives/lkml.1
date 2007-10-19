@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935276AbXJSRzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935545AbXJSR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935276AbXJSRzY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763890AbXJSRzM
+	id S935545AbXJSR5T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 13:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbXJSR5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:55:12 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53575 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761967AbXJSRzK (ORCPT
+	Fri, 19 Oct 2007 13:57:07 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51199 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756996AbXJSR5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:55:10 -0400
-Date: Fri, 19 Oct 2007 10:53:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, sam@ravnborg.org, zippel@linux-m68k.org
-Subject: [PATCH v3] kconfig: update kconfig-language text
-Message-Id: <20071019105348.08860145.randy.dunlap@oracle.com>
-In-Reply-To: <20070813185431.GD18945@stusta.de>
-References: <20070813113809.9a715e75.randy.dunlap@oracle.com>
-	<20070813185431.GD18945@stusta.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 19 Oct 2007 13:57:06 -0400
+Date: Fri, 19 Oct 2007 13:53:40 -0400
+Message-Id: <200710191753.l9JHreeS012064@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: [BLOCK2MTD] WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+I've been having this problem for some time with mtd, which I use to mount
+jffs2 images (for unionfs testing).  I've seen it in several recent major
+kernels, including 2.6.24.  Here's the sequence of ops I perform:
 
-Add kconfig-language docs for mainmenu, def_bool, and def_tristate.
-Remove "requires" as a synonym of "depends on" since it was removed
-from  the parser in commit 247537b9a270b52cc0375adcb0fb2605a160cba5.
+# cp jffs2-empty.img /tmp/foo
+# losetup /dev/loop0 /tmp/foo
+# modprobe mtdblock
+# modprobe block2mtd block2mtd=/dev/loop0,128ki
+# mount -t jffs2 /dev/mtdblock0 /n/lower/b0
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/kbuild/kconfig-language.txt |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+The jffs2-empty.img is a small jffs2 image, of an empty directory, created
+w/ the jffs2 utils.  At the point I modprobe block2mtd, I get the following
+lockdep warning and a "BUG" message:
 
---- linux-2.6.23-git13.orig/Documentation/kbuild/kconfig-language.txt
-+++ linux-2.6.23-git13/Documentation/kbuild/kconfig-language.txt
-@@ -77,7 +77,12 @@ applicable everywhere (see syntax).
-   Optionally, dependencies only for this default value can be added with
-   "if".
- 
--- dependencies: "depends on"/"requires" <expr>
-+- type definition + default value:
-+	"def_bool"/"def_tristate" <expr> ["if" <expr>]
-+  This is a shorthand notation for a type definition plus a value.
-+  Optionally dependencies for this default value can be added with "if".
-+
-+- dependencies: "depends on" <expr>
-   This defines a dependency for this menu entry. If multiple
-   dependencies are defined, they are connected with '&&'. Dependencies
-   are applied to all other options within this menu entry (which also
-@@ -289,3 +294,10 @@ source:
- 	"source" <prompt>
- 
- This reads the specified configuration file. This file is always parsed.
-+
-+mainmenu:
-+
-+	"mainmenu" <prompt>
-+
-+This sets the config program's title bar if the config program chooses
-+to use it.
+BUG: key f88e1340 not in .data!
+WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
+ [<c0102bc2>] show_trace_log_lvl+0x1a/0x2f
+ [<c0103692>] show_trace+0x12/0x14
+ [<c01037b2>] dump_stack+0x15/0x17
+ [<c0125432>] lockdep_init_map+0x94/0x3e4
+ [<c0125001>] debug_mutex_init+0x2c/0x3c
+ [<c01210d4>] __mutex_init+0x38/0x40
+ [<f88e01d3>] 0xf88e01d3
+ [<c011dda7>] parse_args+0x123/0x200
+ [<c012b725>] sys_init_module+0xdd0/0x122c
+ [<c0102586>] sysenter_past_esp+0x5f/0x91
+ =======================
+block2mtd: mtd0: [d: /dev/loop0] erase_size = 128KiB [131072]
+block2mtd: version $Revision: 1.30 $
 
+However, everything seems to work afterwards: jffs2 mounts, and all my
+unionfs+jffs2 tests succeed.
+
+So, what is this "key xxx not in .data" message and should I worry?  Is the
+lockdep warning a problem?  (It might be a problem if lockdep warnings are
+turned off afterwards, so lockdep won't complain about future warnings.)
+Heck, am I using mtd/jffs correctly?
+
+Thanks,
+Erez.
