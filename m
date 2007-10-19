@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968262AbXJSWEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968340AbXJSWFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968262AbXJSWEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934209AbXJSWEb
+	id S968340AbXJSWFV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966611AbXJSWFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:04:31 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:41904 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755751AbXJSWE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:04:29 -0400
-From: Nick Warne <nick@ukfsn.org>
-Reply-To: nick@ukfsn.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: New CD/DVD drive - 80-wire cable detection failure
-Date: Fri, 19 Oct 2007 23:04:23 +0100
-User-Agent: KMail/1.9.7
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200710181832.42906.nick@ukfsn.org> <200710192212.30533.nick@ukfsn.org> <200710192344.27312.bzolnier@gmail.com>
-In-Reply-To: <200710192344.27312.bzolnier@gmail.com>
+	Fri, 19 Oct 2007 18:05:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51112 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755330AbXJSWFB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:05:01 -0400
+Date: Fri, 19 Oct 2007 15:04:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Git pull] arch/x86 updates
+In-Reply-To: <alpine.LFD.0.9999.0710192334440.22770@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0710191459340.26902@woody.linux-foundation.org>
+References: <alpine.LFD.0.9999.0710192334440.22770@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710192304.23749.nick@ukfsn.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 October 2007 22:44:27 Bartlomiej Zolnierkiewicz wrote:
->
-> Ah, so the patch won't help (sorry, I didn't pay enough attention).
->
-> Len's advices are worth the try, also please send the output
-> of hdparm -I /dev/hdd.
->
-> Thanks,
-> Bart
 
-Yes, Len's advice has me wondering now.  Do I have a dodgy cable? I will have 
-to change that tomorrow.
 
-But more info.  The old drive played DVD movies etc. OK, but slowly it became 
-worse until I couldn't read any one of them 9 times out of 10.  CD play 
-back/burning was OK 100% all the time though - so I guessed the dvd laser 
-(whatever it does) was dead - hence why I bought a new one. 
+On Fri, 19 Oct 2007, Thomas Gleixner wrote:
+> 
+> Pavel Emelyanov (1):
+>       i386: consolidate show_regs and show_registers for i386
 
-The new drive works perfectly, but for the udma33 issue.  If it was the cable, 
-why would it read/burn CD OK, but not DVD sometimes on the old drive?
+While I think this is good otherwise, why does it do
 
-hdparm -I
+	printk(".. comm: %.*s .."
+		TASK_COMM_LEN, current->comm,
 
-/dev/hdd:
+instead of just using "%s" and "current->comm"? I only noticed because 
+there was an unrelated conflict around that thing.
 
-ATAPI CD-ROM, with removable media
-        Model Number:       TSSTcorp CDDVDW SH-S202J
-        Serial Number:
-        Firmware Revision:  SB00
-Standards:
-        Supported: CD-ROM ATAPI-3 -4 -5 -6 -7
-Configuration:
-        DRQ response: 50us.
-        Packet size: 12 bytes
-Capabilities:
-        LBA, IORDY(cannot be disabled)
-        DMA: mdma0 mdma1 mdma2 udma0 udma1 *udma2 udma3 udma4
-             Cycle time: min=120ns recommended=120ns
-        PIO: pio0 pio1 pio2 pio3 pio4
-             Cycle time: no flow control=383ns  IORDY flow control=120ns
+That "current->comm" had better be NUL-terminated already, we use it as 
+such all over the place. And if it's not, *that* should be fixed.
 
-BTW, thanks for help all.
+I'm editing it back to the simpler pure string.
 
-Nick
--- 
-Free Software Foundation Associate Member 5508
+		Linus
