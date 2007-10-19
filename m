@@ -1,53 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965574AbXJSCCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965788AbXJSCEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965574AbXJSCCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 22:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933846AbXJSCBy
+	id S965788AbXJSCEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 22:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXJSCDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 22:01:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38347 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933839AbXJSCBx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 22:01:53 -0400
-Date: Thu, 18 Oct 2007 19:01:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, linux-mm@kvack.org
-Subject: Re: SLUB: Avoid atomic operation for slab_unlock
-In-Reply-To: <200710191156.43049.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0710181514310.3584@schroedinger.engr.sgi.com>
- <200710190949.01019.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0710181817380.4194@schroedinger.engr.sgi.com>
- <200710191156.43049.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 18 Oct 2007 22:03:47 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:42734 "EHLO snapgear.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965477AbXJSCDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 22:03:46 -0400
+Date: Fri, 19 Oct 2007 12:03:03 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200710190203.l9J233cp003969@goober>
+To: torvalds@linux-foundation.org
+Subject: [M68KNOMMU]: fix make archclean
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Nick Piggin wrote:
+Remove build reference to arch/m68knommu/boot directory, it doesn't
+exist.
 
-> > Yes that is what I attempted to do with the write barrier. To my knowledge
-> > there are no reads that could bleed out and I wanted to avoid a full fence
-> > instruction there.
-> 
-> Oh, OK. Bit risky ;) You might be right, but anyway I think it
-> should be just as fast with the optimised bit_unlock on most
-> architectures.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-How expensive is the fence? An store with release semantics would be safer 
-and okay for IA64.
+
+diff -Naurp linux-2.6.23/arch/m68knommu/Makefile linux-2.6.23-uc0/arch/m68knommu/Makefile
+--- linux-2.6.23/arch/m68knommu/Makefile	2007-10-19 10:30:58.000000000 +1000
++++ linux-2.6.23-uc0/arch/m68knommu/Makefile	2007-10-19 10:35:41.000000000 +1000
+@@ -117,4 +118,4 @@ core-y	+= arch/m68knommu/kernel/ \
+ libs-y	+= arch/m68knommu/lib/
  
-> Which reminds me, it would be interesting to test the ia64
-> implementation I did. For the non-atomic unlock, I'm actually
-> doing an atomic operation there so that it can use the release
-> barrier rather than the mf. Maybe it's faster the other way around
-> though? Will be useful to test with something that isn't a trivial
-> loop, so the slub case would be a good benchmark.
-
-Lets avoid mf (too expensive) and just use a store with release semantics.
-
-Where can I find your patchset? I looked through lkml but did not see it.
+ archclean:
+-	$(Q)$(MAKE) $(clean)=arch/m68knommu/boot
++
