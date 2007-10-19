@@ -1,305 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936581AbXJSS4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936427AbXJSS6C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936581AbXJSS4H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934851AbXJSSzY
+	id S936427AbXJSS6C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:58:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXJSS5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:55:24 -0400
-Received: from mail02a.mail.t-online.hu ([84.2.40.7]:52246 "EHLO
-	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934601AbXJSSzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:55:21 -0400
-Message-ID: <4718FD04.3080602@freemail.hu>
-Date: Fri, 19 Oct 2007 20:52:52 +0200
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Fri, 19 Oct 2007 14:57:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:32963 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758391AbXJSS5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 14:57:53 -0400
+Message-ID: <4718FE2B.1030909@garzik.org>
+Date: Fri, 19 Oct 2007 14:57:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Richard Purdie <rpurdie@rpsys.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
-Subject: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/9] Remove 'irq' argument from all irq handlers
+References: <20071019075443.GA6407@havoc.gtf.org>	<alpine.LFD.0.9999.0710191649120.22770@localhost.localdomain> <m1bqavgdbf.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1bqavgdbf.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Eric W. Biederman wrote:
+> Yes.  keeping this alive is good.
+> 
+> The practical question is how do we make this change without breaking
+> the drivers that use their irq argument.
 
-The driver supports the mail LED commonly found on different Clevo notebooks.
-The driver access the LED through the i8042 hardware and implements the support for
-hardware accelerated blink function.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -uprN linux-2.6.23.orig/drivers/leds/Kconfig linux-2.6.23/drivers/leds/Kconfig
---- linux-2.6.23.orig/drivers/leds/Kconfig	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23/drivers/leds/Kconfig	2007-10-18 07:20:12.000000000 +0200
-@@ -101,6 +101,26 @@ config LEDS_GPIO
- 	  outputs. To be useful the particular board must have LEDs
- 	  and they must be connected to the GPIO lines.
+This is why I'm taking it slow, and not rushing to get this upstream :)
 
-+config LEDS_CLEVO_MAIL
-+	tristate "Mail LED on Clevo notebook (EXPERIMENTAL)"
-+	depends on LEDS_CLASS && X86 && SERIO_I8042 && DMI && EXPERIMENTAL
-+	help
-+	  This driver makes the mail LED accessible from userspace
-+	  programs through the leds subsystem. This LED can blink at
-+	  about 0.5Hz and 1Hz.
-+
-+	  This module can drive the mail LED for the following notebooks:
-+
-+		Clevo D410J
-+		Clevo D410V
-+		Clevo D400V/D470V (not tested, but might work)
-+		Clevo M540N
-+		Clevo M5x0N (not tested, but might work)
-+		Positivo Mobile (Clevo M5x0V)
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called leds-clevo-mail.
-+
- comment "LED Triggers"
+I am finding a ton of bugs in each get_irqfunc_irq() driver, so I would 
+rather patiently sift through them, and push fixes and cleanups upstream.
 
- config LEDS_TRIGGERS
-diff -uprN linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c linux-2.6.23/drivers/leds/leds-clevo-mail.c
---- linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.23/drivers/leds/leds-clevo-mail.c	2007-10-18 07:17:56.000000000 +0200
-@@ -0,0 +1,226 @@
-+
-+#include <linux/module.h>
-+
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/leds.h>
-+
-+#include <linux/io.h>
-+#include <linux/dmi.h>
-+
-+#include <linux/i8042.h>
-+
-+
-+#define TRUE				1
-+#define FALSE				0
-+
-+#define HANDLED				0
-+
-+#define CLEVO_MAIL_LED_OFF		0x0084
-+#define CLEVO_MAIL_LED_BLINK_1HZ	0x008A
-+#define CLEVO_MAIL_LED_BLINK_0_5HZ	0x0083
-+
-+#define MODULE_FNAME		"leds-clevo-mail.c"
-+#define DRVNAME			"clevo-mail-led"
-+#define NO_RESOURCES		NULL
-+
-+MODULE_AUTHOR("Márton Németh <nm127@freemail.hu>");
-+MODULE_DESCRIPTION("Clevo mail LED driver");
-+MODULE_LICENSE("GPL");
-+
-+static unsigned int __initdata nodetect;
-+module_param_named(nodetect, nodetect, bool, 0);
-+MODULE_PARM_DESC(nodetect, "Skip DMI hardware detection");
-+
-+
-+static struct platform_device *pdev;
-+
-+
-+static int __init clevo_mail_led_dmi_callback(struct dmi_system_id *id)
-+{
-+	printk(KERN_INFO MODULE_FNAME ": '%s' found\n", id->ident);
-+	return 1;
-+}
-+
-+/**
-+ * struct mail_led_whitelist - List of known good models
-+ *
-+ * Contains the known good models this driver is compatible with.
-+ * When adding a new model try to be as strict as possible. This
-+ * makes it possible to keep the false positives (the model is
-+ * detected as working, but in reality it is not) as low as
-+ * possible.
-+ */
-+static struct dmi_system_id __initdata mail_led_whitelist[] = {
-+	{
-+		.callback = clevo_mail_led_dmi_callback,
-+		.ident = "Clevo D410J",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "VIA"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "K8N800"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "VT8204B")
-+		}
-+	},
-+	{
-+		.callback = clevo_mail_led_dmi_callback,
-+		.ident = "Clevo M5x0N",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "CLEVO Co."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "M5x0N")
-+		}
-+	},
-+	{
-+		.callback = clevo_mail_led_dmi_callback,
-+		.ident = "Positivo Mobile",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "CLEVO Co. "),
-+			DMI_MATCH(DMI_BOARD_NAME, "M5X0V "),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Positivo Mobile"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "VT6198")
-+		}
-+	},
-+	{
-+		.callback = clevo_mail_led_dmi_callback,
-+		.ident = "Clevo D410V",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "Clevo, Co."),
-+			DMI_MATCH(DMI_BOARD_NAME, "D400V/D470V"),
-+			DMI_MATCH(DMI_BOARD_VERSION, "SS78B"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "Rev. A1")
-+		}
-+	},
-+	{ }
-+};
-+
-+
-+static void clevo_mail_led_set(struct led_classdev *led_cdev,
-+				enum led_brightness value)
-+{
-+	if (value == LED_OFF)
-+		i8042_command(NULL, CLEVO_MAIL_LED_OFF);
-+	else if (value <= LED_HALF)
-+		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
-+	else
-+		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
-+
-+}
-+
-+static int clevo_mail_led_blink(struct led_classdev *led_cdev,
-+				int delay_on, int delay_off)
-+{
-+	int status = -EINVAL;
-+
-+	if (delay_on == 500 /* ms */ && delay_off == 500 /* ms */) {
-+		/* blink the led with 1Hz */
-+		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
-+		status = HANDLED;
-+
-+	} else if (delay_on == 1000 /* ms */ && delay_off == 1000 /* ms */) {
-+		/* blink the led with 0.5Hz */
-+		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
-+		status = HANDLED;
-+
-+	} else {
-+		printk(KERN_DEBUG MODULE_FNAME
-+		       ": clevo_mail_led_blink(..., %u, %u),"
-+		       " returning -EINVAL (unsupported)\n",
-+		       delay_on, delay_off);
-+	}
-+
-+	return status;
-+}
-+
-+
-+static struct led_classdev clevo_mail_led = {
-+	.name			= "clevo::mail",
-+	.brightness_set		= clevo_mail_led_set,
-+	.blink_set		= clevo_mail_led_blink,
-+};
-+
-+static int __init clevo_mail_led_probe(struct platform_device *pdev)
-+{
-+	return led_classdev_register(&pdev->dev, &clevo_mail_led);
-+}
-+
-+static int clevo_mail_led_remove(struct platform_device *pdev)
-+{
-+	led_classdev_unregister(&clevo_mail_led);
-+	return 0;
-+}
-+
-+
-+
-+#ifdef CONFIG_PM
-+static int clevo_mail_led_suspend(struct platform_device *dev,
-+				  pm_message_t state)
-+{
-+	led_classdev_suspend(&clevo_mail_led);
-+	return 0;
-+}
-+
-+static int clevo_mail_led_resume(struct platform_device *dev)
-+{
-+	led_classdev_resume(&clevo_mail_led);
-+	return 0;
-+}
-+#endif
-+
-+static struct platform_driver clevo_mail_led_driver = {
-+	.probe		= clevo_mail_led_probe,
-+	.remove		= clevo_mail_led_remove,
-+#ifdef CONFIG_PM
-+	.suspend	= clevo_mail_led_suspend,
-+	.resume		= clevo_mail_led_resume,
-+#endif
-+	.driver		= {
-+		.name		= DRVNAME,
-+	},
-+};
-+
-+
-+static int __init clevo_mail_led_init(void)
-+{
-+	int error = 0;
-+	int count = 0;
-+
-+	/* Check with the help of DMI if we are running on supported hardware */
-+	if (!nodetect) {
-+		count = dmi_check_system(mail_led_whitelist);
-+	} else {
-+		count = 1;
-+		printk(KERN_ERR MODULE_FNAME ": Skipping DMI detection. "
-+		       "If the driver works on your hardware please "
-+		       "report model and the output of dmidecode in tracker "
-+		       "at http://sourceforge.net/projects/clevo-mailled/\n");
-+	}
-+
-+	if (!count) {
-+		return -ENODEV;
-+	}
-+
-+	pdev = platform_device_register_simple(DRVNAME, -1, NO_RESOURCES, 0);
-+	if (!IS_ERR(pdev)) {
-+		error = platform_driver_probe(&clevo_mail_led_driver,
-+					      clevo_mail_led_probe);
-+		if (error) {
-+			printk(KERN_ERR MODULE_FNAME
-+			       ": Can't probe platform driver\n");
-+			platform_device_unregister(pdev);
-+		}
-+	} else {
-+		error = PTR_ERR(pdev);
-+	}
-+
-+	return error;
-+}
-+
-+static void __exit clevo_mail_led_exit(void)
-+{
-+	platform_device_unregister(pdev);
-+	platform_driver_unregister(&clevo_mail_led_driver);
-+
-+	clevo_mail_led_set(NULL, LED_OFF);
-+}
-+
-+module_init(clevo_mail_led_init);
-+module_exit(clevo_mail_led_exit);
-diff -uprN linux-2.6.23.orig/drivers/leds/Makefile linux-2.6.23/drivers/leds/Makefile
---- linux-2.6.23.orig/drivers/leds/Makefile	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23/drivers/leds/Makefile	2007-10-18 07:18:49.000000000 +0200
-@@ -17,6 +17,7 @@ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
- obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
- obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
-+obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
+Once that effort is done, everything should be in the 'trivial' pile and 
+not have the logic that you are worried about (and thus there would be 
+no need to add an additional branch to the error handling path).
 
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+	Jeff
+
+
