@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbXJSQwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbXJSQxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764847AbXJSQwH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760974AbXJSQv4
+	id S1765422AbXJSQxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757711AbXJSQxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:51:56 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:48499 "EHLO atlrel7.hp.com"
+	Fri, 19 Oct 2007 12:53:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43457 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760870AbXJSQvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:51:55 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: linux-pcmcia@lists.infradead.org
-Subject: PCMCIA driver resource allocation
-Date: Fri, 19 Oct 2007 10:51:51 -0600
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1752464AbXJSQx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:53:29 -0400
+Date: Fri, 19 Oct 2007 09:53:13 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
+Cc: w@1wt.eu, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+Message-Id: <20071019095313.76990765.zaitcev@redhat.com>
+In-Reply-To: <35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
+References: <1192383445.8372.18.camel@dell1.softservecom.com>
+	<20071014182542.GA2832@1wt.eu>
+	<35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+	<20071014223921.GA4677@1wt.eu>
+	<1192542889.29039.66.camel@dell1.softservecom.com>
+	<20071016154138.GA23326@1wt.eu>
+	<1192559051.29039.139.camel@dell1.softservecom.com>
+	<1192644776.10761.60.camel@dell1.softservecom.com>
+	<35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710191051.51686.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Question 1: Does the linux-pcmcia list still exist?  It's in MAINTAINERS:
+On Fri, 19 Oct 2007 18:26:35 +0300, "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
 
-  PCMCIA SUBSYSTEM
-  P:      Linux PCMCIA Team
-  L:      linux-pcmcia@lists.infradead.org
-  L:      http://lists.infradead.org/mailman/listinfo/linux-pcmcia
-  T:      git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
-  S:      Maintained
+> Didn't here anything on this? What is our final decision here?
 
-but the archive: http://lists.infradead.org/mailman/listinfo/linux-pcmcia
-seems dead.
+It's gotten worse, not better. Apparently, you aren't getting the
+concept of protecting the open count with a static lock and my
+explanations are just not vivid enough or something. So I decided
+to fix it myself. Maybe then the patch in C will explain it better
+than English. But I didn't have time to do it.
 
-Question 2: Documentation/pcmcia/driver-changes.txt says drivers should
-now claim their own resources:
+Also, there's an outright bug in the latest version. Your purge
+of the wrong lock was incomplete and so there was an unbalanced up().
+But this is moot.
 
-  * Resource management. (as of 2.6.8)
-     Although the PCMCIA subsystem will allocate resources for cards,
-     it no longer marks these resources busy. This means that driver
-     authors are now responsible for claiming your resources as per
-     other drivers in Linux.
+So, the version before the latest is borderline acceptable. If Willy
+wants to take it, it's fine. I'll fix it up later together with 2.6.
 
-But I don't see any drivers that do that.  It looks like there should
-be a bunch of changes like the one below.  Is there a reason these
-changes didn't happen, other than just lack of interest?
-
-Bjorn
-
-
-Index: work3/drivers/net/wireless/orinoco.h
-===================================================================
---- work3.orig/drivers/net/wireless/orinoco.h	2007-10-18 10:56:34.000000000 -0600
-+++ work3/drivers/net/wireless/orinoco.h	2007-10-18 13:22:06.000000000 -0600
-@@ -57,6 +57,7 @@
- 	struct iw_statistics wstats;
- 
- 	/* Hardware control variables */
-+	struct resource *io_resource;
- 	hermes_t hw;
- 	u16 txfid;
- 
-Index: work3/drivers/net/wireless/orinoco_cs.c
-===================================================================
---- work3.orig/drivers/net/wireless/orinoco_cs.c	2007-10-18 10:56:34.000000000 -0600
-+++ work3/drivers/net/wireless/orinoco_cs.c	2007-10-18 13:22:44.000000000 -0600
-@@ -296,6 +296,10 @@
- 	/* We initialize the hermes structure before completing PCMCIA
- 	 * configuration just in case the interrupt handler gets
- 	 * called. */
-+	priv->io_resource = request_region(link->io.BasePort1,
-+					   link->io.NumPorts1, DRIVER_NAME);
-+	if (!priv->io_resource)
-+		goto cs_failed;
- 	mem = ioport_map(link->io.BasePort1, link->io.NumPorts1);
- 	if (!mem)
- 		goto cs_failed;
-@@ -366,6 +370,10 @@
- 	pcmcia_disable_device(link);
- 	if (priv->hw.iobase)
- 		ioport_unmap(priv->hw.iobase);
-+	if (priv->io_resource) {
-+		release_resource(priv->io_resource);
-+		priv->io_resource = NULL;
-+	}
- }				/* orinoco_cs_release */
- 
- static int orinoco_cs_suspend(struct pcmcia_device *link)
+-- Pete
