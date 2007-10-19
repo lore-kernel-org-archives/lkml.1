@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968262AbXJSWDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968262AbXJSWEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968262AbXJSWDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968173AbXJSWDK
+	id S968262AbXJSWEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934209AbXJSWEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:03:10 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42240 "EHLO mail.dvmed.net"
+	Fri, 19 Oct 2007 18:04:31 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:41904 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968077AbXJSWDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:03:09 -0400
-Message-ID: <47192999.6010607@garzik.org>
-Date: Fri, 19 Oct 2007 18:03:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1755751AbXJSWE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:04:29 -0400
+From: Nick Warne <nick@ukfsn.org>
+Reply-To: nick@ukfsn.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: New CD/DVD drive - 80-wire cable detection failure
+Date: Fri, 19 Oct 2007 23:04:23 +0100
+User-Agent: KMail/1.9.7
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200710181832.42906.nick@ukfsn.org> <200710192212.30533.nick@ukfsn.org> <200710192344.27312.bzolnier@gmail.com>
+In-Reply-To: <200710192344.27312.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.23] tasks stuck in running state?
-References: <47192425.6020507@garzik.org> <47192763.9050004@redhat.com>
-In-Reply-To: <47192763.9050004@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200710192304.23749.nick@ukfsn.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 10/19/2007 05:39 PM, Jeff Garzik wrote:
->> On my main devel box, vanilla 2.6.23 on x86-64/Fedora-7, I'm seeing a
->> certain behavior at least once a day.  I'll start a kernel build (make
->> -sj5 on this box), and it will "hang" in the following way:
->>
-> 
-> Can you try to strace the hanging task?
+On Friday 19 October 2007 22:44:27 Bartlomiej Zolnierkiewicz wrote:
+>
+> Ah, so the patch won't help (sorry, I didn't pay enough attention).
+>
+> Len's advices are worth the try, also please send the output
+> of hdparm -I /dev/hdd.
+>
+> Thanks,
+> Bart
 
-Well, to the system it's running, so that doesn't do much of anything...
+Yes, Len's advice has me wondering now.  Do I have a dodgy cable? I will have 
+to change that tomorrow.
 
-> 
->  8482 pts/0    S+     0:00                          \_ /bin/sh /garz/repo/misc-2.6/scripts/hdrcheck.sh /garz/repo/misc-2.6/usr/include /garz/repo/misc-2.6/usr/include/linux/kernelcapi.h /garz/repo/misc-2.6/usr/include/linux/.check.kernelcapi.h
->  8484 pts/0    R+     3:10                              \_ grep ^[ \t]*#[ \t]*include[ \t]*< /garz/repo/misc-2.6/usr/include/linux/kernelcapi.h
->  8486 pts/0    S+     0:00                              \_ cut -f2 -d<
->  8487 pts/0    S+     0:00                              \_ cut -f1 -d>
->  8488 pts/0    S+     0:00                              \_ egrep ^linux|^asm
-> [jgarzik@pretzel misc-2.6]$ strace -p8484
-> Process 8484 attached - interrupt to quit
-[sits there, chewing up CPU grepping a 47-line header file]
+But more info.  The old drive played DVD movies etc. OK, but slowly it became 
+worse until I couldn't read any one of them 9 times out of 10.  CD play 
+back/burning was OK 100% all the time though - so I guessed the dvd laser 
+(whatever it does) was dead - hence why I bought a new one. 
+
+The new drive works perfectly, but for the udma33 issue.  If it was the cable, 
+why would it read/burn CD OK, but not DVD sometimes on the old drive?
+
+hdparm -I
+
+/dev/hdd:
+
+ATAPI CD-ROM, with removable media
+        Model Number:       TSSTcorp CDDVDW SH-S202J
+        Serial Number:
+        Firmware Revision:  SB00
+Standards:
+        Supported: CD-ROM ATAPI-3 -4 -5 -6 -7
+Configuration:
+        DRQ response: 50us.
+        Packet size: 12 bytes
+Capabilities:
+        LBA, IORDY(cannot be disabled)
+        DMA: mdma0 mdma1 mdma2 udma0 udma1 *udma2 udma3 udma4
+             Cycle time: min=120ns recommended=120ns
+        PIO: pio0 pio1 pio2 pio3 pio4
+             Cycle time: no flow control=383ns  IORDY flow control=120ns
+
+BTW, thanks for help all.
+
+Nick
+-- 
+Free Software Foundation Associate Member 5508
