@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765836AbXJSMGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762408AbXJSMOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765836AbXJSMGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 08:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXJSMGE
+	id S1762408AbXJSMOi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 08:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXJSMO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 08:06:04 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43151 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755781AbXJSMGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 08:06:03 -0400
-Date: Fri, 19 Oct 2007 14:05:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] x86: fix global_flush_tlb() bug
-Message-ID: <20071019120559.GA8708@one.firstfloor.org>
-References: <20071019104855.GA6621@elte.hu>
+	Fri, 19 Oct 2007 08:14:29 -0400
+Received: from tag.witbe.net ([81.88.96.48]:52021 "EHLO tag.witbe.net"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750826AbXJSMO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 08:14:28 -0400
+Date: Fri, 19 Oct 2007 14:14:21 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [2.6.22.5] irq X: nobody cared but X is successfully used by
+ libata
+Message-ID: <20071019141421.5a13e90c@tux.DEF.witbe.net>
+In-Reply-To: <47182323.10706@gmail.com>
+References: <20070826203513.4fa35f68@tux.DEF.witbe.net>
+	<6bffcb0e0708261637s3369dd6fl1f833461e41c4daa@mail.gmail.com>
+	<47182323.10706@gmail.com>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071019104855.GA6621@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Tejun,
 
-Thanks for catching. 
+On Fri, 19 Oct 2007 12:23:15 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
-> why this bug never become prominent is a mystery - it can probably be
-> explained with the (still) relative obscurity of the x86_64 architecture.
+> > On 26/08/07, Paul Rolland <rol@as2917.net> wrote:
+> >> My machine (an ASUS P5W-DH-Deluxe, Core2, 4Go RAM, 3 SATA and 2IDE) is
+> >> reporting a :
+> >> irq 23: nobody cared (try booting with the "irqpoll" option)
+> >> together with a Call Trace, but :
+> >>  - irqpoll is present on the command line,
+> >>  - the irq is reported to be used by libata,
+> >>  - the irqpoll option is mandatory if I want _some_ of my SATA disks to
+> >> be accessible.
+> 
+> Does this still happen with 2.6.23?  If so, please post boot log.  Thanks.
+> 
+Not tested yet, will do so during the WE.
 
-global_flush_tlb() is not very common in the big scheme of things. In a normal
-system it only happens single threaded during X server startup and when
-the system starts.
-
-So while it's nasty it's unlikely to really hit people in practice.
-
-BTW while looking I noticed this code in the vermilion driver is also
-surely not correct:
-
-        /*
-         * Change caching policy of the linear kernel map to avoid
-         * mapping type conflicts with user-space mappings.
-         * The first global_flush_tlb() is really only there to do a global
-         * wbinvd().
-         */
-
-        global_flush_tlb();
-
-That is not what gft is guaranteed to do.
-
-It would be probably best to just do away with g_f_t() and fold it directly into
-c_p_a(). I've seen little evidence the delayed flush optimization ever made 
-much difference and it seems to be misused and a source of bugs. And near all
-legitimate users seem to always call it directly after c_p_a() anyways.
-
-Besides it is grossly misnamed -- it does much more than flushing TLBs.
-
--Andi
+Regards,
+Paul
