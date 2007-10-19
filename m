@@ -1,126 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765925AbXJSCdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765082AbXJSCmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765925AbXJSCdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 22:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762766AbXJSCdF
+	id S1765082AbXJSCmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 22:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXJSCmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 22:33:05 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2157 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758170AbXJSCdE (ORCPT
+	Thu, 18 Oct 2007 22:42:37 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53628 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757660AbXJSCmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 22:33:04 -0400
-Date: Fri, 19 Oct 2007 10:32:19 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-ID: <20071019023219.GB8453@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop> <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org> <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 18 Oct 2007 22:42:36 -0400
+Message-ID: <4718189A.4040609@jp.fujitsu.com>
+Date: Fri, 19 Oct 2007 11:38:18 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+Cc: kristen.c.accardi@intel.com, greg@kroah.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 1/3] pciehp: hotplug: deal with pre-inserted
+ ExpressCards
+References: <4716CB9D.6080503@rtr.ca> <4716D3C0.20808@rtr.ca> <47174069.9000108@jp.fujitsu.com> <4717602E.2080903@rtr.ca>
+In-Reply-To: <4717602E.2080903@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 18, 2007 at 04:39:59PM -0700, Linus Torvalds wrote:
->
-> Basic notion: the only thing that serializes the IRQ_INPROGRESS flag is 
-> the descriptor lock. And we don't have to (or even want to!) hold it while 
-> waiting for the thing, but we want to *have*held*it* in between whatever 
-> we're synchronizing with.
+> If a PCIe ExpressCard34 is inserted into the slot *before*
+> I modprobe pciehp (with pciehp_force=1), then the card is not
+> detected nor enabled.  The patch provided here fixes that.
+> 
+>> Could you give me answers against the following questions?
+>>
+>>  (1) Did you try "echo 1 > /sys/bus/pci/slots/XXX/power"?
+>>      (XXX is the slot number to which your card had been inserted)
+>>  (2) If the answer against (1) is yes, did "echo 1 > ..." work?
+> 
+> 
+> After 1. inserting the card, and then 2. modprobing pciehp,
+> the value of /sys/bus/pci/slots/XXX/power is already "1".
 
-Thinking about this again and checking code I have come to the
-conclusion that
+According to pciehp_debug output from you, your slot doesn't
+have software programmable power controller. So your hardware
+automatically power on the slot. I think this is why the value
+of "power" file is already "1". (But I'm not sure if it is
+correct, especially because your firmware doesn't have _OSC.)
 
-1) There is a race (in some drivers) even with the full mb.
-2) Linus's patch fixes it.
-3) It's difficult to fix it elegantly in the driver.
+On the other hand, my slot has software programmable power
+controller. So the value of "power" file is "0" in this case. 
 
-In other words I think this patch is great :)
+> 
+> But, yes, doing "echo 1" into it does trigger card detection
+> and things work afterwards.  This doesn't really help,
+> because it doesn't happen automatically, unless the kernel patch
+> is applied.
+> 
+>>  (6) I think your slot is surprise removable. Is it correct?
+> 
+> Yes, it's an externally accessible ExpressCard slot on a notebook,
+> which is intended to be fully hotpluggable by surprise or otherwise.
 
-First of all let's agree on some basic assumptions:
+Ok. I think your patch is trying to solve the following two
+problems. Right?
 
-* A pair of spin lock/unlock subsumes the effect of a full mb.
-* A spin lock in general only equates to (SS/SL/LL).
-* A spin unlock in general only equates to (SS/LS).
+  - When the card is inserted *after* modprobing pciehp, the card
+    is automatically enabled (pciehp tries to automatically enable
+    slot when the card is inserted if the slot is surprise remove
+    capable). But if the card is inserted *before* modprobing
+    pciehp, the card is not automatically enabled even after
+    modprobing pciehp.
 
-In particular, a load after a spin unlock may pass before the
-spin unlock.
+  - When the card is inserted *before* modprobing pciehp, the card
+    is automatically powered on by hardware, but it is not detected
+    by OS. That is, "power" file tells the card is working, but it
+    is not working actually. It is strange.
 
-Here is the race (with tg3 as the only example that I know of).
-The driver attempts to quiesce interrupts such that after the
-call to synchronize_irq it is intended that no further IRQ
-handler calls for that device will do any work besides acking
-the IRQ.
+But those are not problems on the slot which is not surprise remove
+capable and has software programmable power controller because:
 
-Here is how it does it:
+  - When the card is inserted *after* modprobing pciehp, the card
+    is *not* automatically powered on/detected. So it is very
+    natural that the card, which had been inserted before modprobing
+    pciehp, is not automatically enabled at the pciehp modprobe time.
 
-CPU0				CPU1
-				spin lock
-					load irq_sync
-irq_sync = 1
-smp_mb
-synchronize_irq()
-	while (IRQ_INPROGRESS)
-		wait
-	return
-				set IRQ_INPROGRESS
-				spin unlock
-				tg3_msi
-					ack IRQ
-					if (irq_sync)
-						return
-					do work
+  - When the card is inserted *before* modprobing pciehp, the card
+    is not automatically powered on by hardware if the slot has
+    sortware programmable power controller. So there is no
+    contradiction.
 
-The problem here is that load of irq_sync in the handler has
-passed above the setting of IRQ_INPROGRESS.
+I think your patch has a bad effect to this kind of slots. So I
+think your patch needs additional checks to see if the slot should
+be enabled or not.
 
-Linus's patch fixes it because this becomes:
+And you need to test your patch on PCIe Native hotplug capable
+hardware:)
 
-CPU0				CPU1
-				spin lock
-					load irq_sync
-irq_sync = 1
-smp_mb
-synchronize_irq
-				set IRQ_INPROGRESS
-				spin unlock
-	spin lock
-	spin unlock
-				tg3_msi
-					ack IRQ
-					if (irq_sync)
-						return
-					do work
-	while (IRQ_INPROGRESS)
-		wait
-				spin lock
-				clear IRQ_INPROGRESS
-				spin unlock
-	return
+Thanks,
+Kenji Kaneshige
 
-Even though we still do the work on the right we will now notice
-the INPROGRESS flag on the left and wait.
 
-It's hard to fix this in the drivers because they'd either have
-to access the desc lock or add a full mb to the fast path on the
-right.
 
-Once this goes in we can also remove the smp_mb from tg3.c.  BTW,
-a lot of drivers (including the fusion example Ben quoted) call
-synchronize_irq before free_irq.  This is unnecessary because
-the latter already calls it anyway.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
