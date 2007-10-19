@@ -1,123 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934338AbXJSD0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934582AbXJSD1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934338AbXJSD0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 23:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXJSD02
+	id S934582AbXJSD1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 23:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760588AbXJSD1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 23:26:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40187 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754533AbXJSD01 (ORCPT
+	Thu, 18 Oct 2007 23:27:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51217 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756614AbXJSD1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 23:26:27 -0400
-Date: Thu, 18 Oct 2007 20:26:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-ia64@ver.kernel.org
-Subject: [IA64] Reduce __clear_bit_unlock overhead
-In-Reply-To: <200710191212.00653.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0710181917300.4761@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0710181514310.3584@schroedinger.engr.sgi.com>
- <200710191156.43049.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0710181858240.4685@schroedinger.engr.sgi.com>
- <200710191212.00653.nickpiggin@yahoo.com.au>
+	Thu, 18 Oct 2007 23:27:46 -0400
+Date: Thu, 18 Oct 2007 20:26:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+In-Reply-To: <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop>
+ <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+ <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+ <20071019023219.GB8453@gondor.apana.org.au>
+ <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Nick Piggin wrote:
 
-> I'm not sure, I had an idea it was relatively expensive on ia64,
-> but I didn't really test with a good workload (a microbenchmark
-> probably isn't that good because it won't generate too much out
-> of order memory traffic that needs to be fenced).
 
-Its expensive on IA64. Is it any less expensive on x86?
-
-> > Where can I find your patchset? I looked through lkml but did not see it.
+On Thu, 18 Oct 2007, Linus Torvalds wrote:
+>
+> I *think* it should work with something like
 > 
-> Infrastructure in -mm, starting at bitops-introduce-lock-ops.patch.
-> bit_spin_lock-use-lock-bitops.patch and ia64-lock-bitops.patch are
-> ones to look at.
+> 	for (;;) {
+> 		smp_rmb();
+> 		if (!spin_is_locked(&desc->lock)) {
+> 			smp_rmb();
+> 			if (!(desc->status & IRQ_INPROGRESS)
+> 				break;
+> 		}
+> 		cpu_relax();
+> 	}
 
-ia64-lock-bitops.patch defines:
+I'm starting to doubt this. 
 
-static __inline__ void
-clear_bit_unlock (int nr, volatile void *addr)
-{
-       __u32 mask, old, new;
-       volatile __u32 *m;
-       CMPXCHG_BUGCHECK_DECL
+One of the issues is that we still need the smp_mb() in front of the loop 
+(because we want to serialize the loop with any writes in the caller).
 
-       m = (volatile __u32 *) addr + (nr >> 5);
-       mask = ~(1 << (nr & 31));
-       do {
-               CMPXCHG_BUGCHECK(m);
-               old = *m;
-               new = old & mask;
-       } while (cmpxchg_rel(m, old, new) != old);
-}
+The other issue is that I don't think it's enough that we saw the 
+descriptor lock unlocked, and then the IRQ_INPROGRESS bit clear. It might 
+have been unlocked *while* the IRQ was in progress, but the interrupt 
+handler is now in its last throes, and re-takes the spinlock and clears 
+the IRQ_INPROGRESS thing. But we're not actually happy until we've seen 
+the IRQ_INPROGRESS bit clear and the spinlock has been released *again*.
 
-/**
- * __clear_bit_unlock - Non-atomically clear a bit with release
- *
- * This is like clear_bit_unlock, but the implementation may use a non-atomic
- * store (this one uses an atomic, however).
- */
-#define __clear_bit_unlock clear_bit_unlock
+So those two tests should actually be the other way around: we want to see 
+the IRQ_INPROGRESS bit clear first.
 
+It's all just too damn subtle and clever. Something like this should not 
+need to be that subtle. 
 
-A non atomic store is a misaligned store on IA64. That is not 
-relevant here. The data is properly aligned. I guess it was intended to
-refer to the cmpxchg.
+Maybe the rigth thing to do is to not rely on *any* ordering what-so-ever, 
+and just make the rule be: "if you look at the IRQ_INPROGRESS bit, you'd 
+better hold the descriptor spinlock", and not have any subtle ordering 
+issues at all.
 
-How about this patch? [Works fine on IA64 simulator...]
+But that makes us have a loop with getting/releasing the lock all the 
+time, and then we get back to horrid issues with cacheline bouncing and 
+unfairness of cache accesses across cores (ie look at the issues we had 
+with the runqueue starvation in wait_task_inactive()).
 
+Those were fixed by starting out with the non-locked and totally unsafe 
+versions, but then having one last "check with lock held, and repeat only 
+if that says things went south". 
 
+See commit fa490cfd15d7ce0900097cc4e60cfd7a76381138 and ponder. Maybe we 
+should take the same approach here, and do something like
 
+	repeat:
+		/* Optimistic, no-locking loop */
+		while (desc->status & IRQ_INPROGRESS)
+			cpu_relax();
 
-IA64: Slim down __clear_bit_unlock
+		/* Ok, that indicated we're done: double-check carefully */
+		spin_lock_irqsave(&desc->lock, flags);
+		status = desc->status;
+		spin_unlock_irqrestore(&desc->lock, flags);
 
-__clear_bit_unlock does not need to perform atomic operations on the variable.
-Avoid a cmpxchg and simply do a store with release semantics. Add a barrier to
-be safe that the compiler does not do funky things.
+		/* Oops, that failed? */
+		if (status & IRQ_INPROGRESS)
+			goto repeat;
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Hmm?
 
----
- include/asm-ia64/bitops.h |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-Index: linux-2.6.23-mm1/include/asm-ia64/bitops.h
-===================================================================
---- linux-2.6.23-mm1.orig/include/asm-ia64/bitops.h	2007-10-18 19:37:22.000000000 -0700
-+++ linux-2.6.23-mm1/include/asm-ia64/bitops.h	2007-10-18 19:50:22.000000000 -0700
-@@ -124,10 +124,21 @@ clear_bit_unlock (int nr, volatile void 
- /**
-  * __clear_bit_unlock - Non-atomically clear a bit with release
-  *
-- * This is like clear_bit_unlock, but the implementation may use a non-atomic
-- * store (this one uses an atomic, however).
-+ * This is like clear_bit_unlock, but the implementation uses a store
-+ * with release semantics. See also __raw_spin_unlock().
-  */
--#define __clear_bit_unlock clear_bit_unlock
-+static __inline__ void
-+__clear_bit_unlock (int nr, volatile void *addr)
-+{
-+	__u32 mask, new;
-+	volatile __u32 *m;
-+
-+	m = (volatile __u32 *) addr + (nr >> 5);
-+	mask = ~(1 << (nr & 31));
-+	new = *m & mask;
-+	barrier();
-+	asm volatile ("st4.rel.nta [%0] = %1\n\t" :: "r"(m), "r"(new));
-+}
- 
- /**
-  * __clear_bit - Clears a bit in memory (non-atomic version)
+			Linus
