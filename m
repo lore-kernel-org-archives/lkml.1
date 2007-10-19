@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbXJSM5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbXJSM5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933857AbXJSM5M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 08:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759789AbXJSM4m
+	id S934680AbXJSM5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 08:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763618AbXJSM4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 08:56:42 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48122 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759609AbXJSM4k (ORCPT
+	Fri, 19 Oct 2007 08:56:48 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:42323 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762146AbXJSM4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 08:56:40 -0400
-Date: Fri, 19 Oct 2007 14:57:09 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: perex@perex.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: sound/pci/hda/patch_via.c: array overflow
-Message-ID: <20071019125709.GZ3778@stusta.de>
+	Fri, 19 Oct 2007 08:56:46 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] x86: MCE optimization and cleanups
+Date: Fri, 19 Oct 2007 14:54:55 +0200
+Message-ID: <11927984973809-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.2.5
+X-OriginalArrivalTime: 19 Oct 2007 12:54:58.0064 (UTC)
+ FILETIME=[40E6C100:01C8124F]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-WSS-ID: 6B0676DD0602385768-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sound/pci/hda/patch_via.c contains the following code:
+This patchset includes two patches.
 
-<--  snip  -->
+1. Checks for the MCA fetures as early as possible and signedness fixup.
+2. Minor coding style cleanup.
 
-...
-struct via_spec {
-...
-        hda_nid_t private_dac_nids[4];  
-...                               ^^^
-};
-...
-static int vt1709_auto_fill_dac_nids(struct via_spec *spec,
-                                     const struct auto_pin_cfg *cfg)
-{
-...
-       spec->multiout.dac_nids = spec->private_dac_nids;
 
-        if (cfg->line_outs == 4) { /* 10 channels */   <------------------
-                for (i = 0; i < cfg->line_outs; i++) {
-                        nid = cfg->line_out_pins[i];
-                        if (nid) {
-                                /* config dac list */
-                                switch (i) {
-                                case AUTO_SEQ_FRONT:
-                                        /* AOW0 */
-                                        spec->multiout.dac_nids[i] = 0x10;
-                                        break;
-                                case AUTO_SEQ_CENLFE:
-                                        /* AOW2 */
-                                        spec->multiout.dac_nids[i] = 0x12;
-                                        break;
-                                case AUTO_SEQ_SURROUND:
-                                        /* AOW3 */
-                                        spec->multiout.dac_nids[i] = 0x27;
-                                        break;
-                                case AUTO_SEQ_SIDE:
-                                        /* AOW1 */
-                                        spec->multiout.dac_nids[i] = 0x11;
-                                        break;
-                                default:
-                                        break;
-                                }
-                        }
-                }
-                spec->multiout.dac_nids[cfg->line_outs] = 0x28; /* AOW4 */
-...                                     ^^^^^^^^^^^^^^
 
-<--  snip  -->
-
-Spotted by the Coverity checker.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
