@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935212AbXJSE7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934770AbXJSFCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935212AbXJSE7e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbXJSE70
+	id S934770AbXJSFCV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 01:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760136AbXJSFCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:59:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39943 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760752AbXJSE7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:59:25 -0400
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20071019044806.GA10080@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-	 <1192745137.7367.40.camel@pasglop>
-	 <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	 <1192749449.7367.51.camel@pasglop>
-	 <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	 <20071019023219.GB8453@gondor.apana.org.au>
-	 <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	 <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	 <20071019042025.GA9617@gondor.apana.org.au>
-	 <20071019044806.GA10080@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 14:58:30 +1000
-Message-Id: <1192769910.7367.106.camel@pasglop>
+	Fri, 19 Oct 2007 01:02:09 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:27526 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752748AbXJSFCG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 01:02:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=HXpTU5j8fbvaTnbH6YOYhLarJ8w9rpXdAH7yikR9/+o/Iy3lEWcqwzgHMEKzPTjDjEsaABRLBgpSh11tf8LeIzBjrT+wutptYn7OokZMyZFbfsk58i5yWDLtFBElFa89xx4YSZOLeXiCBvIIl/KwYtj6RJd1HJ5XPZ5MEXpI2tk=
+Date: Fri, 19 Oct 2007 13:00:58 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: bluez-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] bluetooth: hidp core debug code wrong argument fix
+Message-ID: <20071019050057.GA8734@darkstar.te-china.tietoenator.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In the debug code of the hidp_queue_report function, the "device" variable does not exist, replace it with "session->hid"
 
-On Fri, 2007-10-19 at 12:48 +0800, Herbert Xu wrote:
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-> [IRQ]: Fix synchronize_irq races with IRQ handler
-> 
-> As it is some callers of synchronize_irq rely on memory barriers
-> to provide synchronisation against the IRQ handlers.  For example,
-> the tg3 driver does
-> 
-> 	tp->irq_sync = 1;
-> 	smp_mb();
-> 	synchronize_irq();
-> 
-> and then in the IRQ handler:
-> 
-> 	if (!tp->irq_sync)
-> 		netif_rx_schedule(dev, &tp->napi);
-> 
-> Unfortunately memory barriers only work well when they come in
-> pairs.  Because we don't actually have memory barriers on the
-> IRQ path, the memory barrier before the synchronize_irq() doesn't
-> actually protect us.
-> 
-> In particular, synchronize_irq() may return followed by the
-> result of netif_rx_schedule being made visible.
-> 
-> This patch (mostly written by Linus) fixes this by using spin
-> locks instead of memory barries on the synchronize_irq() path.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+---
+net/bluetooth/hidp/core.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
 
-Good for me.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cheers,
-Ben.
-
-
+diff -upr linux/net/bluetooth/hidp/core.c linux.new/net/bluetooth/hidp/core.c
+--- linux/net/bluetooth/hidp/core.c	2007-10-15 14:05:23.000000000 +0800
++++ linux.new/net/bluetooth/hidp/core.c	2007-10-15 14:06:38.000000000 +0800
+@@ -247,7 +247,7 @@ static inline int hidp_queue_report(stru
+ {
+ 	struct sk_buff *skb;
+ 
+-	BT_DBG("session %p hid %p data %p size %d", session, device, data, size);
++	BT_DBG("session %p hid %p data %p size %d", session, session->hid, data, size);
+ 
+ 	if (!(skb = alloc_skb(size + 1, GFP_ATOMIC))) {
+ 		BT_ERR("Can't allocate memory for new frame");
