@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935337AbXJSSRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936053AbXJSSRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935337AbXJSSRX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760406AbXJSSRN
+	id S936053AbXJSSRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbXJSSRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:17:13 -0400
-Received: from anyanka.rfc1149.net ([81.56.47.149]:59765 "EHLO
-	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760806AbXJSSRM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:17:12 -0400
-To: linux-mtd@lists.infradead.org
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071019174155.80782C408E@mail2.rfc1149.net>
-Subject: Re: [PATCH] eccbuf is statically defined and always evaluate to true
-References: <20071019174155.80782C408E@mail2.rfc1149.net>
-Date: Fri, 19 Oct 2007 20:17:10 +0200
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 19 Oct 2007 14:17:37 -0400
+Received: from www.tglx.de ([62.245.132.106]:42796 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764869AbXJSSRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 14:17:37 -0400
+Date: Fri, 19 Oct 2007 20:17:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Samuel Ortiz <sameo@openedhand.com>, linux-kernel@vger.kernel.org,
+       Paul Sokolovsky <pmiscml@gmail.com>, Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [RFC] [PATCH -mm] ASIC3 driver
+In-Reply-To: <20071019110034.1534bb86.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0710192016190.22770@localhost.localdomain>
+References: <20071018091239.GA11360@caravaggio> <20071018150544.6852d5c9.akpm@linux-foundation.org> <20071019105258.GA15170@caravaggio> <20071019110034.1534bb86.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Samuel Tardieu <sam@rfc1149.net>
-Organization: RFC 1149 (see http://www.rfc1149.net/)
-Content-Transfer-Encoding: 8bit
-X-WWW: http://www.rfc1149.net/sam
-X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
-X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
-Message-Id: <2007-10-19-20-17-10+trackit+sam@rfc1149.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Off course, there should be the required
 
-  Signed-off-by: Samuel Tardieu <sam@rfc1149.net>
 
-on this patch.
+On Fri, 19 Oct 2007, Andrew Morton wrote:
 
-  Sam
--- 
-Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
+> On Fri, 19 Oct 2007 12:53:00 +0200 Samuel Ortiz <sameo@openedhand.com> wrote:
+> 
+> > On Thu, Oct 18, 2007 at 03:05:44PM -0700, Andrew Morton wrote:
+> > > On Thu, 18 Oct 2007 11:12:41 +0200
+> > > Samuel Ortiz <sameo@openedhand.com> wrote:
+> > 
+> > > > +#include <linux/module.h>
+> > > > +#include <linux/version.h>
+> > > > +#include <linux/irq.h>
+> > > 
+> > > Please see the large comment at the top of linux/irq.h.  I believe this
+> > > driver will fial to compile on at least arm.
+> > It doesn't build as a module, since we need the irq.h symbols.
+> > I changed MFD_ASIC3 to bool. I somehow feel that this is not the cleanest
+> > solution, but OTOH I think that dynamically adding IRQs and GPIOs to an
+> > embedded board doesn't make much sense.
+> 
+> We seem to have miscommunicated here.  <linux/irq.h> contains references to
+> things which only some architectures actually implement.  I don't know
+> which architectures those are, but it includes common ones like x86, so
+> it's a real trap.  I recall it does not include arm, so your code might
+> break on arm.
+> 
+> At least, that's what's _supposed_ to happen: I just compiled and linked
+> this driver into an ARM kernel with no problems so now I'm all confused as
+> to what the problem was.
+> 
+> Oh well, we'll see...
+
+We obviously never removed the big fat warning, which was valid before
+the ARM to generic irq conversion.
+
+    tglx
 
