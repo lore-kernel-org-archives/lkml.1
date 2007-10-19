@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966384AbXJSJIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966570AbXJSJMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966384AbXJSJIB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 05:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966755AbXJSJHx
+	id S966570AbXJSJMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 05:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXJSJMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 05:07:53 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4013 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965782AbXJSJHw (ORCPT
+	Fri, 19 Oct 2007 05:12:07 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48892 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbXJSJME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 05:07:52 -0400
-Date: Fri, 19 Oct 2007 11:07:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Bryan Wu" <cooloney.lkml@gmail.com>
-Cc: bryan.wu@analog.com, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Blackfin I2C/TWI driver: update for 2.6.24 merge
- windows
-Message-ID: <20071019110750.33f66dd8@hyperion.delvare>
-In-Reply-To: <386072610710172311o7d2207f2he47e16c48016c2c2@mail.gmail.com>
-References: <1192456403.6215.5.camel@roc-laptop>
-	<386072610710172311o7d2207f2he47e16c48016c2c2@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 19 Oct 2007 05:12:04 -0400
+Date: Fri, 19 Oct 2007 12:12:03 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: latest checkpatch
+In-Reply-To: <20071018193929.GA22031@elte.hu>
+Message-ID: <Pine.LNX.4.64.0710191157050.11079@kivilampi-30.cs.helsinki.fi>
+References: <20071015182118.GA4459@shadowen.org>
+ <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org>
+ <20071018111352.GA17039@elte.hu> <20071018192521.GC21136@shadowen.org>
+ <20071018193929.GA22031@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
+On Thu, 18 Oct 2007, Ingo Molnar wrote:
 
-On Thu, 18 Oct 2007 14:11:35 +0800, Bryan Wu wrote:
-> Could you kindly review this patch?
+> 
+> * Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+> > > it's perfectly legitimate, in fact more robust. So if checkpatch.pl 
+> > > wants to make any noise about such constructs it should warn about 
+> > > the _lack_ of curly braces in every multi-line condition block 
+> > > _except_ the only safe single-line statement:
+> > > 
+> > > 	if (x)
+> > > 		y();
+> > 
+> > Indeed.  We should probabally do more on the indentation checks in
+> > general.  The current direct check for:
+> > 
+> > 	if (foo);
+> > 		bar();
+> > 
+> > Could probabally be generalised to look for this kind of error:
+> > 
+> > 	if (foo)
+> > 		bar();
+> > 		baz();
+> > 	one();
+> 
+> detecting that would be awesome - it's often the sign of a real bug 
+> because the intent is often to have bar() and baz() in the conditional 
+> block.
 
-I'm pretty busy these days, I don't have much spare time for reviews.
+Should probably detect these as well (if not yet being done):
 
-BTW, as a rule of thumb, I am ignoring patches that are sent to the
-LKML in addition to the i2c list. If you think that your patch is so
-important that it has to be send to a list with over 4500 subscribers
-that sees 120.000 messages each year, then who am I to dare to comment
-on it?
+	if (abc)
+#if...
+		def();
+		ghi();
+#e...
 
-If you want me to consider your patches as something that needs my
-attention, send them to the i2c list only, do not add LKML. This is
-general advice for everyone sending i2c patches, not just you, of
-course.
 
-Back to your patch... Originally you posted two patches, and I see that
-they are now merged into a single patch, why? It's much better to have
-separate patches, it makes reviews and testing way easier. If you
-provide separate patches I'll try to find some time to review them.
+...plus this one:
 
-Note that this won't be for 2.6.24 anyway, it's too late for that, I've
-already sent my i2c patches to Linus. From now on, only bugfixes can go
-in 2.6.24, improvements will have to wait for 2.6.25.
+	if (abc)
+#if...
+		def();
+#endif
+	ghi();
+
+...Both of them are clearly bugs.
+
+...and this where either indentation has to be fixed or the bug corrected:
+
+	if (abc)
+	def();
+
 
 -- 
-Jean Delvare
+ i.
