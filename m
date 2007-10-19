@@ -1,113 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764132AbXJRXd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXJRXiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764132AbXJRXd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 19:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbXJRXdU
+	id S933069AbXJRXiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 19:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXJRXiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 19:33:20 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:33057 "EHLO
-	mail-09.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbXJRXdT (ORCPT
+	Thu, 18 Oct 2007 19:38:10 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:55056 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758028AbXJRXiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 19:33:19 -0400
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>
-Subject: [PATCH] hash: Add explicit u32 and u64 versions of hash
-Date: Thu, 18 Oct 2007 19:33:42 -0400
-Message-Id: <11927504222872-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.4.4.2
+	Thu, 18 Oct 2007 19:38:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=IqJvcobSbGNH0cxIllXbRHajvtUrVjojmsXxh/tEB44FeDMKSErvrCRrW0j9RGn3+MtmvWuAVDJiTD1NVZPmZX8YhdNlDSg63b4rI1OvaFANbmu2TZphuHEq5BFWzp2zr9PGPQZYMEpEuqeNH+Q5CWx/XDa5t3PJNYBlvXX0seg=
+Date: Fri, 19 Oct 2007 01:37:36 -0700
+To: Russell King <linux@arm.linux.org.uk>
+Cc: Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: PDA Suspend SA1100
+Message-Id: <20071019013736.11dec046.Kristoffer.ericson@gmail.com>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 32-bit version is more efficient (and apparently gives better hash
-results than the 64-bit version), so users who are only hashing a 32-bit
-quantity can now opt to use the 32-bit version explicitly, rather than
-promoting to a long.
+Greetings,
 
-Signed-off-by: Matthew Wilcox <matthew@wil.cx>
----
- include/linux/hash.h |   42 +++++++++++++++++++++++++++---------------
- 1 files changed, 27 insertions(+), 15 deletions(-)
+I've been trying to implement proper suspend on my jornada 720 machine. But as far as I can see it never reaches
+the sa11x0_suspend code.
 
-diff --git a/include/linux/hash.h b/include/linux/hash.h
-index acf17bb..06d25c1 100644
---- a/include/linux/hash.h
-+++ b/include/linux/hash.h
-@@ -1,6 +1,6 @@
- #ifndef _LINUX_HASH_H
- #define _LINUX_HASH_H
--/* Fast hashing routine for a long.
-+/* Fast hashing routine for ints,  longs and pointers.
-    (C) 2002 William Lee Irwin III, IBM */
- 
- /*
-@@ -13,23 +13,30 @@
-  * them can use shifts and additions instead of multiplications for
-  * machines where multiplications are slow.
-  */
--#if BITS_PER_LONG == 32
-+
-+#include <asm/types.h>
-+
- /* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
--#define GOLDEN_RATIO_PRIME 0x9e370001UL
--#elif BITS_PER_LONG == 64
-+#define GOLDEN_RATIO_PRIME_32 0x9e370001UL
- /*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
--#define GOLDEN_RATIO_PRIME 0x9e37fffffffc0001UL
-+#define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
-+
-+#if BITS_PER_LONG == 32
-+#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
-+#define hash_long(val, bits) hash_32(val, bits)
-+#elif BITS_PER_LONG == 64
-+#define hash_long(val, bits) hash_64(val, bits)
-+#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
- #else
--#error Define GOLDEN_RATIO_PRIME for your wordsize.
-+#error Wordsize not 32 or 64
- #endif
- 
--static inline unsigned long hash_long(unsigned long val, unsigned int bits)
-+static inline u64 hash_64(u64 val, unsigned int bits)
- {
--	unsigned long hash = val;
-+	u64 hash = val;
- 
--#if BITS_PER_LONG == 64
- 	/*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
--	unsigned long n = hash;
-+	u64 n = hash;
- 	n <<= 18;
- 	hash -= n;
- 	n <<= 33;
-@@ -42,15 +49,20 @@ static inline unsigned long hash_long(unsigned long val, unsigned int bits)
- 	hash += n;
- 	n <<= 2;
- 	hash += n;
--#else
-+
-+	/* High bits are more random, so use them. */
-+	return hash >> (64 - bits);
-+}
-+
-+static inline u32 hash_32(u32 val, unsigned int bits)
-+{
- 	/* On some cpus multiply is faster, on others gcc will do shifts */
--	hash *= GOLDEN_RATIO_PRIME;
--#endif
-+	u32 hash = val * GOLDEN_RATIO_PRIME_32;
- 
- 	/* High bits are more random, so use them. */
--	return hash >> (BITS_PER_LONG - bits);
-+	return hash >> (32 - bits);
- }
--	
-+
- static inline unsigned long hash_ptr(void *ptr, unsigned int bits)
- {
- 	return hash_long((unsigned long)ptr, bits);
--- 
-1.4.4.2
+I've linked power button event to produce APM_SUSPEND and I can see that it says "Stopping TASKS ======". It then
+blanks screen but keeps LCD powerd. I know it goes into resume again since removing backlight code in resume function
+effectivly turns off the LCD.
 
+Im assuming that it tries to suspend but fails at some point and tries to return into normal operations?
+Exactly what is needed to get the suspend procedure happy? Does every driver need to have suspend/resume code?
+
+Best wishes
+Kristoffer Ericson
