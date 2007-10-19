@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXJSHa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966662AbXJSHao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965513AbXJSHa3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762348AbXJSHaN
+	id S966662AbXJSHao (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762485AbXJSHae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:30:13 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:49727 "EHLO havoc.gtf.org"
+	Fri, 19 Oct 2007 03:30:34 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:51678 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756148AbXJSHaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:30:12 -0400
-Date: Fri, 19 Oct 2007 03:30:10 -0400
+	id S1762348AbXJSHad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:30:33 -0400
+Date: Fri, 19 Oct 2007 03:30:32 -0400
 From: Jeff Garzik <jeff@garzik.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] parport: Kill useless 'irq' arg from
-	parport_{generic_irq,ieee1284_interrupt
-Message-ID: <20071019073010.GA5611@havoc.gtf.org>
+Subject: [PATCH 3/3] parport: Remove unused 'irq' argument from parport irq
+	functions
+Message-ID: <20071019073032.GB5611@havoc.gtf.org>
 References: <20071019072914.GA5591@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,118 +26,265 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-commit 69a4a1aad140a3d9e17d3e313a3633445a7934fe
+commit ed58d6e0a6e1ad61a7dde232de7a4891ebc99f61
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 01:56:02 2007 -0400
+Date:   Fri Oct 19 02:54:26 2007 -0400
 
-    [PARPORT] Kill useless 'irq' arg from parport_{generic_irq,ieee1284_interrupt}
+    [PARPORT] Remove unused 'irq' argument from parport irq functions
     
-    parport_ieee1284_interrupt() was not using its first arg at all.
-    Delete.
-    
-    parport_generic_irq()'s second arg makes its first arg completely
-    redundant.  Delete, and use port->irq in the one place where we actually
-    need it.
-    
-    Also, s/__inline__/inline/ to make the code look nicer.
+    None of the drivers with a struct pardevice's ->irq_func() hook ever
+    used the 'irq' argument passed to it, so remove it.
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/parport/ieee1284.c     |    2 +-
- drivers/parport/parport_mfc3.c |    2 +-
- drivers/parport/share.c        |    2 +-
- drivers/usb/misc/uss720.c      |    4 ++--
- include/linux/parport.h        |    8 ++++----
- 5 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/char/ppdev.c              |    4 ++--
+ drivers/input/serio/parkbd.c      |    2 +-
+ drivers/net/hamradio/baycom_epp.c |    8 +-------
+ drivers/net/hamradio/baycom_par.c |    4 ++--
+ drivers/net/plip.c                |    6 +++---
+ drivers/parport/daisy.c           |   13 ++-----------
+ drivers/parport/probe.c           |    3 +--
+ drivers/parport/share.c           |    2 +-
+ include/linux/parport.h           |   12 ++++--------
+ sound/drivers/mts64.c             |    2 +-
+ sound/drivers/portman2x4.c        |    2 +-
+ 11 files changed, 19 insertions(+), 39 deletions(-)
 
-69a4a1aad140a3d9e17d3e313a3633445a7934fe
-diff --git a/drivers/parport/ieee1284.c b/drivers/parport/ieee1284.c
-index 5accaa7..54a6ef7 100644
---- a/drivers/parport/ieee1284.c
-+++ b/drivers/parport/ieee1284.c
-@@ -571,7 +571,7 @@ static int parport_ieee1284_ack_data_avail (struct parport *port)
- #endif /* IEEE1284 support */
- 
- /* Handle an interrupt. */
--void parport_ieee1284_interrupt (int which, void *handle)
-+void parport_ieee1284_interrupt (void *handle)
- {
- 	struct parport *port = handle;
- 	parport_ieee1284_wakeup (port);
-diff --git a/drivers/parport/parport_mfc3.c b/drivers/parport/parport_mfc3.c
-index 77726fc..6dec9ba 100644
---- a/drivers/parport/parport_mfc3.c
-+++ b/drivers/parport/parport_mfc3.c
-@@ -219,7 +219,7 @@ static irqreturn_t mfc3_interrupt(int irq, void *dev_id)
- 		if (this_port[i] != NULL)
- 			if (pia(this_port[i])->crb & 128) { /* Board caused interrupt */
- 				dummy = pia(this_port[i])->pprb; /* clear irq bit */
--				parport_generic_irq(irq, this_port[i]);
-+				parport_generic_irq(this_port[i]);
- 			}
- 	return IRQ_HANDLED;
+ed58d6e0a6e1ad61a7dde232de7a4891ebc99f61
+diff --git a/drivers/char/ppdev.c b/drivers/char/ppdev.c
+index efe2f5c..3aab837 100644
+--- a/drivers/char/ppdev.c
++++ b/drivers/char/ppdev.c
+@@ -267,9 +267,9 @@ static ssize_t pp_write (struct file * file, const char __user * buf,
+ 	return bytes_written;
  }
+ 
+-static void pp_irq (int irq, void * private)
++static void pp_irq (void *private)
+ {
+-	struct pp_struct * pp = (struct pp_struct *) private;
++	struct pp_struct *pp = private;
+ 
+ 	if (pp->irqresponse) {
+ 		parport_write_control (pp->pdev->port, pp->irqctl);
+diff --git a/drivers/input/serio/parkbd.c b/drivers/input/serio/parkbd.c
+index 688610e..b089977 100644
+--- a/drivers/input/serio/parkbd.c
++++ b/drivers/input/serio/parkbd.c
+@@ -102,7 +102,7 @@ static int parkbd_write(struct serio *port, unsigned char c)
+ 	return 0;
+ }
+ 
+-static void parkbd_interrupt(int irq, void *dev_id)
++static void parkbd_interrupt(void *dev_id)
+ {
+ 
+ 	if (parkbd_writing) {
+diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
+index 1a5a75a..dde9c7e 100644
+--- a/drivers/net/hamradio/baycom_epp.c
++++ b/drivers/net/hamradio/baycom_epp.c
+@@ -325,12 +325,6 @@ static int eppconfig(struct baycom_state *bc)
+ 
+ /* ---------------------------------------------------------------------- */
+ 
+-static void epp_interrupt(int irq, void *dev_id)
+-{
+-}
+-
+-/* ---------------------------------------------------------------------- */
+-
+ static inline void do_kiss_params(struct baycom_state *bc,
+ 				  unsigned char *data, unsigned long len)
+ {
+@@ -871,7 +865,7 @@ static int epp_open(struct net_device *dev)
+ 	}
+ 	memset(&bc->modem, 0, sizeof(bc->modem));
+         bc->pdev = parport_register_device(pp, dev->name, NULL, epp_wakeup, 
+-					epp_interrupt, PARPORT_DEV_EXCL, dev);
++					   NULL, PARPORT_DEV_EXCL, dev);
+ 	parport_put_port(pp);
+         if (!bc->pdev) {
+                 printk(KERN_ERR "%s: cannot register parport at 0x%lx\n", bc_drvname, pp->base);
+diff --git a/drivers/net/hamradio/baycom_par.c b/drivers/net/hamradio/baycom_par.c
+index 5930aeb..2e6fc4d 100644
+--- a/drivers/net/hamradio/baycom_par.c
++++ b/drivers/net/hamradio/baycom_par.c
+@@ -270,9 +270,9 @@ static __inline__ void par96_rx(struct net_device *dev, struct baycom_state *bc)
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static void par96_interrupt(int irq, void *dev_id)
++static void par96_interrupt(void *dev_id)
+ {
+-	struct net_device *dev = (struct net_device *)dev_id;
++	struct net_device *dev = dev_id;
+ 	struct baycom_state *bc = netdev_priv(dev);
+ 
+ 	baycom_int_freq(bc);
+diff --git a/drivers/net/plip.c b/drivers/net/plip.c
+index b5e9981..5071fcd 100644
+--- a/drivers/net/plip.c
++++ b/drivers/net/plip.c
+@@ -143,7 +143,7 @@ static void plip_bh(struct work_struct *work);
+ static void plip_timer_bh(struct work_struct *work);
+ 
+ /* Interrupt handler */
+-static void plip_interrupt(int irq, void *dev_id);
++static void plip_interrupt(void *dev_id);
+ 
+ /* Functions for DEV methods */
+ static int plip_tx_packet(struct sk_buff *skb, struct net_device *dev);
+@@ -380,7 +380,7 @@ plip_timer_bh(struct work_struct *work)
+ 		container_of(work, struct net_local, timer.work);
+ 
+ 	if (!(atomic_read (&nl->kill_timer))) {
+-		plip_interrupt (-1, nl->dev);
++		plip_interrupt (nl->dev);
+ 
+ 		schedule_delayed_work(&nl->timer, 1);
+ 	}
+@@ -897,7 +897,7 @@ plip_error(struct net_device *dev, struct net_local *nl,
+ 
+ /* Handle the parallel port interrupts. */
+ static void
+-plip_interrupt(int irq, void *dev_id)
++plip_interrupt(void *dev_id)
+ {
+ 	struct net_device *dev = dev_id;
+ 	struct net_local *nl;
+diff --git a/drivers/parport/daisy.c b/drivers/parport/daisy.c
+index 5bbff20..3c8f06c 100644
+--- a/drivers/parport/daisy.c
++++ b/drivers/parport/daisy.c
+@@ -199,11 +199,6 @@ void parport_daisy_fini(struct parport *port)
+  *	parport_open - find a device by canonical device number
+  *	@devnum: canonical device number
+  *	@name: name to associate with the device
+- *	@pf: preemption callback
+- *	@kf: kick callback
+- *	@irqf: interrupt handler
+- *	@flags: registration flags
+- *	@handle: driver data
+  *
+  *	This function is similar to parport_register_device(), except
+  *	that it locates a device by its number rather than by the port
+@@ -214,10 +209,7 @@ void parport_daisy_fini(struct parport *port)
+  *	for parport_register_device().
+  **/
+ 
+-struct pardevice *parport_open(int devnum, const char *name,
+-				int (*pf) (void *), void (*kf) (void *),
+-				void (*irqf) (int, void *),
+-				int flags, void *handle)
++struct pardevice *parport_open(int devnum, const char *name)
+ {
+ 	struct daisydev *p = topology;
+ 	struct parport *port;
+@@ -237,8 +229,7 @@ struct pardevice *parport_open(int devnum, const char *name,
+ 	port = parport_get_port(p->port);
+ 	spin_unlock(&topology_lock);
+ 
+-	dev = parport_register_device(port, name, pf, kf,
+-				       irqf, flags, handle);
++	dev = parport_register_device(port, name, NULL, NULL, NULL, 0, NULL);
+ 	parport_put_port(port);
+ 	if (!dev)
+ 		return NULL;
+diff --git a/drivers/parport/probe.c b/drivers/parport/probe.c
+index ea83b70..853a15f 100644
+--- a/drivers/parport/probe.c
++++ b/drivers/parport/probe.c
+@@ -255,8 +255,7 @@ static ssize_t parport_read_device_id (struct parport *port, char *buffer,
+ ssize_t parport_device_id (int devnum, char *buffer, size_t count)
+ {
+ 	ssize_t retval = -ENXIO;
+-	struct pardevice *dev = parport_open (devnum, "Device ID probe",
+-					      NULL, NULL, NULL, 0, NULL);
++	struct pardevice *dev = parport_open (devnum, "Device ID probe");
+ 	if (!dev)
+ 		return -ENXIO;
+ 
 diff --git a/drivers/parport/share.c b/drivers/parport/share.c
-index 414c52a..d0b353c 100644
+index d0b353c..a8a62bb 100644
 --- a/drivers/parport/share.c
 +++ b/drivers/parport/share.c
-@@ -999,7 +999,7 @@ irqreturn_t parport_irq_handler(int irq, void *dev_id)
+@@ -524,7 +524,7 @@ void parport_remove_port(struct parport *port)
+ struct pardevice *
+ parport_register_device(struct parport *port, const char *name,
+ 			int (*pf)(void *), void (*kf)(void *),
+-			void (*irq_func)(int, void *), 
++			void (*irq_func)(void *), 
+ 			int flags, void *handle)
  {
- 	struct parport *port = dev_id;
- 
--	parport_generic_irq(irq, port);
-+	parport_generic_irq(port);
- 
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/usb/misc/uss720.c b/drivers/usb/misc/uss720.c
-index 2734fe2..f1255b0 100644
---- a/drivers/usb/misc/uss720.c
-+++ b/drivers/usb/misc/uss720.c
-@@ -128,7 +128,7 @@ static void async_complete(struct urb *urb)
- #endif
- 		/* if nAck interrupts are enabled and we have an interrupt, call the interrupt procedure */
- 		if (rq->reg[2] & rq->reg[1] & 0x10 && pp)
--			parport_generic_irq(0, pp);
-+			parport_generic_irq(pp);
- 	}
- 	complete(&rq->compl);
- 	kref_put(&rq->ref_count, destroy_async);
-@@ -337,7 +337,7 @@ static int uss720_irq(int usbstatus, void *buffer, int len, void *dev_id)
- 	memcpy(priv->reg, buffer, 4);
- 	/* if nAck interrupts are enabled and we have an interrupt, call the interrupt procedure */
- 	if (priv->reg[2] & priv->reg[1] & 0x10)
--		parport_generic_irq(0, pp);
-+		parport_generic_irq(pp);
- 	return 1;
- }
- #endif
+ 	struct pardevice *tmp;
 diff --git a/include/linux/parport.h b/include/linux/parport.h
-index 66026ea..557c37d 100644
+index 557c37d..d1ad546 100644
 --- a/include/linux/parport.h
 +++ b/include/linux/parport.h
-@@ -465,7 +465,7 @@ static __inline__ int parport_yield_blocking(struct pardevice *dev)
- #define PARPORT_FLAG_EXCL		(1<<1)	/* EXCL driver registered. */
+@@ -230,7 +230,7 @@ struct pardevice {
+ 	int (*preempt)(void *);
+ 	void (*wakeup)(void *);
+ 	void *private;
+-	void (*irq_func)(int, void *);
++	void (*irq_func)(void *);
+ 	unsigned int flags;
+ 	struct pardevice *next;
+ 	struct pardevice *prev;
+@@ -383,7 +383,7 @@ extern void parport_put_port (struct parport *);
+ struct pardevice *parport_register_device(struct parport *port, 
+ 			  const char *name,
+ 			  int (*pf)(void *), void (*kf)(void *),
+-			  void (*irq_func)(int, void *), 
++			  void (*irq_func)(void *), 
+ 			  int flags, void *handle);
  
- /* IEEE1284 functions */
--extern void parport_ieee1284_interrupt (int, void *);
-+extern void parport_ieee1284_interrupt (void *);
- extern int parport_negotiate (struct parport *, int mode);
- extern ssize_t parport_write (struct parport *, const void *buf, size_t len);
- extern ssize_t parport_read (struct parport *, void *buf, size_t len);
-@@ -518,12 +518,12 @@ extern void parport_daisy_deselect_all (struct parport *port);
- extern int parport_daisy_select (struct parport *port, int daisy, int mode);
- 
- /* Lowlevel drivers _can_ call this support function to handle irqs.  */
--static inline void parport_generic_irq(int irq, struct parport *port)
-+static inline void parport_generic_irq(struct parport *port)
- {
--	parport_ieee1284_interrupt (irq, port);
-+	parport_ieee1284_interrupt (port);
+ /* parport_unregister unlinks a device from the chain. */
+@@ -507,11 +507,7 @@ extern size_t parport_ieee1284_epp_read_addr (struct parport *,
+ /* IEEE1284.3 functions */
+ extern int parport_daisy_init (struct parport *port);
+ extern void parport_daisy_fini (struct parport *port);
+-extern struct pardevice *parport_open (int devnum, const char *name,
+-				       int (*pf) (void *),
+-				       void (*kf) (void *),
+-				       void (*irqf) (int, void *),
+-				       int flags, void *handle);
++extern struct pardevice *parport_open (int devnum, const char *name);
+ extern void parport_close (struct pardevice *dev);
+ extern ssize_t parport_device_id (int devnum, char *buffer, size_t len);
+ extern void parport_daisy_deselect_all (struct parport *port);
+@@ -523,7 +519,7 @@ static inline void parport_generic_irq(struct parport *port)
+ 	parport_ieee1284_interrupt (port);
  	read_lock(&port->cad_lock);
  	if (port->cad && port->cad->irq_func)
--		port->cad->irq_func(irq, port->cad->private);
-+		port->cad->irq_func(port->irq, port->cad->private);
+-		port->cad->irq_func(port->irq, port->cad->private);
++		port->cad->irq_func(port->cad->private);
  	read_unlock(&port->cad_lock);
  }
  
+diff --git a/sound/drivers/mts64.c b/sound/drivers/mts64.c
+index 911c159..dcc90f9 100644
+--- a/sound/drivers/mts64.c
++++ b/sound/drivers/mts64.c
+@@ -830,7 +830,7 @@ static int __devinit snd_mts64_rawmidi_create(struct snd_card *card)
+ /*********************************************************************
+  * parport stuff
+  *********************************************************************/
+-static void snd_mts64_interrupt(int irq, void *private)
++static void snd_mts64_interrupt(void *private)
+ {
+ 	struct mts64 *mts = ((struct snd_card*)private)->private_data;
+ 	u16 ret;
+diff --git a/sound/drivers/portman2x4.c b/sound/drivers/portman2x4.c
+index 0eb9b5c..e065b2a 100644
+--- a/sound/drivers/portman2x4.c
++++ b/sound/drivers/portman2x4.c
+@@ -611,7 +611,7 @@ static int __devinit snd_portman_rawmidi_create(struct snd_card *card)
+ /*********************************************************************
+  * parport stuff
+  *********************************************************************/
+-static void snd_portman_interrupt(int irq, void *userdata)
++static void snd_portman_interrupt(void *userdata)
+ {
+ 	unsigned char midivalue = 0;
+ 	struct portman *pm = ((struct snd_card*)userdata)->private_data;
