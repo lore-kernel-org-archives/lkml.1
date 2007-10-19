@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934769AbXJSJAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935420AbXJSJB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934769AbXJSJAf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 05:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXJSJA1
+	id S935420AbXJSJB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 05:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763453AbXJSJBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 05:00:27 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:58179 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756905AbXJSJA0 (ORCPT
+	Fri, 19 Oct 2007 05:01:20 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1737 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763415AbXJSJBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 05:00:26 -0400
-To: jens.axboe@oracle.com
-Cc: arjan@infradead.org, torvalds@linux-foundation.org, davem@davemloft.net,
-       fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       alan@lxorguk.ukuu.org.uk, tomof@acm.org
-Subject: Re: [bug] ata subsystem related crash with latest -git
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071018171429.GH10674@kernel.dk>
-References: <alpine.LFD.0.999.0710180952070.26902@woody.linux-foundation.org>
-	<20071018101005.5681a365@laptopd505.fenrus.org>
-	<20071018171429.GH10674@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071019175903N.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 19 Oct 2007 17:59:03 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Fri, 19 Oct 2007 05:01:19 -0400
+Date: Fri, 19 Oct 2007 10:01:15 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: latest checkpatch
+Message-ID: <20071019090115.GE21136@shadowen.org>
+References: <20071015182118.GA4459@shadowen.org> <200710161759.l9GHxnkK012590@agora.fsl.cs.sunysb.edu> <20071017163916.GO21136@shadowen.org> <20071018111352.GA17039@elte.hu> <20071018192521.GC21136@shadowen.org> <20071018193929.GA22031@elte.hu> <4717BBD0.7070504@qumranet.com> <20071018205147.GA1382@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018205147.GA1382@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Oct 2007 19:14:29 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Thu, Oct 18 2007, Arjan van de Ven wrote:
-> > On Thu, 18 Oct 2007 09:55:04 -0700 (PDT)
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > 
-> > > On Thu, 18 Oct 2007, Jens Axboe wrote:
-> > > > -		unsigned long addr = page_to_phys(s->page) +
-> > > > s->offset; 
-> > > > +		unsigned long addr = page_to_phys(sg_page(s)) +
-> > > > s->offset; 
-> > > 
-> > > Umm. May I suggest (I haven't read the whole thread yet, maybe
-> > > somebody else already did) that
-> > > 
-> > > 	static inline unsigned long sg_phys(struct scatterlist *sg)
-> > > 	{
-> > > 		return 	page_to_phys(sg_page(sg)) + sg->offset;
-> > > 	}
-> > > 
-> > > would be a good thing to have?
-> > > 
-> > > Very few drivers should care so much about the *page* itself (or the 
-> > > offset). That's something that the generic allocation code etc cares 
-> > > about, but the driver is almost bound to care mostly about the actual
-> > > DMA address
-> > 
-> > .... but will that work for systems with IOMMU ? or is it fundamentally
-> > the wrong interface
+On Thu, Oct 18, 2007 at 10:51:47PM +0200, Ingo Molnar wrote:
 > 
-> They use foo_to_bus() on the address. sg_phys() should of course only be
-> used where the user previously did page_to_phys() on the sg page.
+> * Avi Kivity <avi@qumranet.com> wrote:
+> 
+> > >> 	if (foo)
+> > >> 		bar();
+> > >> 		baz();
+> > >> 	one();
+> > >>     
+> > >
+> > > detecting that would be awesome - it's often the sign of a real bug 
+> > > because the intent is often to have bar() and baz() in the conditional 
+> > > block.
+> > 
+> > This is more useful operating on an entire file, so the script can see 
+> > all the context.
+> 
+> there's "checkpatch --file" for complete files, so it can see the full 
+> context if the user passes it in.
 
-I can take care of IOMMU stuff when I'll send IOMMU merging fix
-patchset:
+Indeed so.  checkpatch uses all the context it can when making a
+decision.  Often 3 lines carries enough history to figure this out.
 
-http://marc.info/?l=linux-scsi&m=119079718126157&w=2
+-apw
