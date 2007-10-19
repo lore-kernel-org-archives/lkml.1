@@ -1,49 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765494AbXJSRQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932643AbXJSRRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765494AbXJSRQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXJSRQt
+	id S932643AbXJSRRj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 13:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762965AbXJSRRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:16:49 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55836 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754643AbXJSRQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:16:49 -0400
-Message-ID: <4718E67F.6000300@garzik.org>
-Date: Fri, 19 Oct 2007 13:16:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 19 Oct 2007 13:17:32 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:12842 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1763451AbXJSRRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 13:17:31 -0400
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9] irq-remove: arch non-trivial
-References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075543.GC6407@havoc.gtf.org> <m1tzonghco.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1tzonghco.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-ID: <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
+Date: Fri, 19 Oct 2007 13:16:57 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Greg KH <gregkh@suse.de>, Chris Wright <chrisw@sous-sol.org>
+Subject: [PATCH] i386: fix TSC clock source calibration error [part 2]
+In-Reply-To: <20071018085713.GA11022@elte.hu>
+References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>
+	<20071018085713.GA11022@elte.hu>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> In this case we can easily pass the irqno into request_irq, allowing
-> us to do "unsigned int intno = (unsigned int)dev_id;".
-> 
-> I suspect this is the case for the majority of the non-trivial users
-> as well.
 
+From: Dave Johnson <djohnson@sw.starentnetworks.com>
 
-Not that easy, alas :)  Save for weirdos like the mac drivers I 
-highlighted, it seems like most drivers in the non-trivial already pass 
-a useful pointer to request_irq().
+The previous patch wasn't correctly handling the 'count' variable.  If
+a CPU gave bad results on the 1st or 2nd run but good results on the
+3rd, it wouldn't do the correct thing.  No idea if any such CPU
+exists, but the patch below handles that case by discarding the bad
+runs.
 
-But as I mentioned, most of the "non-trivial" uses are actually trivial 
--- just not as simple as removing the 'int irq' argument.  Most of the 
-time the irq number is used in non-critical ways like printk's.  A few 
-times its used to index into a structure (something dev_id could replace).
+If a bad result (too quick, or too slow) occurs on any of the 3 runs
+it will be discarded.
 
-	Jeff
+Also updated some comments to explain what's going on.
 
+Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+
+---
+
+Should be applied after my previous patch.
+
+===== arch/i386/kernel/tsc.c 1.28 vs edited =====
+--- 1.28/arch/i386/kernel/tsc.c	2007-10-19 11:07:36 -04:00
++++ edited/arch/i386/kernel/tsc.c	2007-10-19 11:07:44 -04:00
+@@ -128,29 +128,35 @@
+ 
+ 	local_irq_save(flags);
+ 
+-	/* run 3 times to ensure the cache is warm */
++	/* run 3 times to ensure the cache is warm and to get an accurate reading */
+ 	for (i = 0; i < 3; i++) {
+ 		mach_prepare_counter();
+ 		rdtscll(start);
+ 		mach_countup(&count);
+ 		rdtscll(end);
++
++		/*
++		 * Error: ECTCNEVERSET
++		 * The CTC wasn't reliable: we got a hit on the very first read,
++		 * or the CPU was so fast/slow that the quotient wouldn't fit in
++		 * 32 bits..
++		 */
++		if (count <= 1)
++			continue;
++
++		/* cpu freq too slow: */
++		if ((end - start) <= CALIBRATE_TIME_MSEC)
++			continue;
++
++		/*
++		 * We want the minimum time of all runs in case one of them
++		 * is inaccurate due to SMI or other delay
++		 */
+ 		delta64 = min(delta64, (end - start));
+ 	}
+-	/*
+-	 * Error: ECTCNEVERSET
+-	 * The CTC wasn't reliable: we got a hit on the very first read,
+-	 * or the CPU was so fast/slow that the quotient wouldn't fit in
+-	 * 32 bits..
+-	 */
+-	if (count <= 1)
+-		goto err;
+ 
+-	/* cpu freq too fast: */
++	/* cpu freq too fast (or every run was bad): */
+ 	if (delta64 > (1ULL<<32))
+-		goto err;
+-
+-	/* cpu freq too slow: */
+-	if (delta64 <= CALIBRATE_TIME_MSEC)
+ 		goto err;
+ 
+ 	delta64 += CALIBRATE_TIME_MSEC/2; /* round for do_div */
 
