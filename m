@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbXJSOJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765494AbXJSOKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764119AbXJSOJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXJSOJu
+	id S1765494AbXJSOKc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbXJSOKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:09:50 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52944 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752981AbXJSOJu (ORCPT
+	Fri, 19 Oct 2007 10:10:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:23693 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764536AbXJSOKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:09:50 -0400
-Date: Fri, 19 Oct 2007 10:09:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
- devices
-In-Reply-To: <1192757236.3308.3.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0710191004090.4091-100000@iolanthe.rowland.org>
+	Fri, 19 Oct 2007 10:10:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qqyVFmiOJiKSdko2eUQ0a32PE9646jteaWngyUrSOFQNUtP2mri5lceVgxshB8xBWnzWeCeqtAjFJ20tGoqqPsWLYFNOj7e6A3mCEml8MUS0V5h1bmnM9aNRO4JUPzPijVlxrUhEMIHnUJjvjbbHSVd51mH1rC5FDXTqoc06pPg=
+Message-ID: <9783dadb0710190710m549742e3jd1aa665a0c90f0b2@mail.gmail.com>
+Date: Fri, 19 Oct 2007 16:10:10 +0200
+From: "David Gaarenstroom" <david.gaarenstroom@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: [patch] PCI: disable MSI on more ATI NorthBridges
+In-Reply-To: <9783dadb0710190706i499b4edbh9736019b0384f9b1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+	 <9783dadb0710190706i499b4edbh9736019b0384f9b1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Kay Sievers wrote:
+2007/10/19, Shane Huang <chunhao.huang@hotmail.com>:
+>
+> Since we have little experience on PCI and MSI here,
 
-> > This accounts for everything in del_gendisk except the final
-> > put_device.  Evidently it doesn't belong there.  There's no matching 
-> > get_device in add_disk or register_disk.
-> 
-> Hmm, do you have kobject debugging enabled? Do you ever see something
-> like: "kobject sdb: cleaning up" when you remove the put_device()?
+"Here" as in "here at AMD"?! I'm stunned...
 
-I didn't enable kobject debugging, but I did put a printk statement in
-drivers/scsi/sd.c:scsi_disk_release(), which is the release routine for
-the scsi_disk structure.  It does the final put_disk() call -- or at 
-least, this is _supposed_ to be the final call.
-
-With my patch, just before the call to put_disk the value of 
-disk->dev.kobj.kref.refcount is 1.  Without my patch, the value is 
-garbage (probably a slab poison value, but I printed it in decimal 
-rather than hex so I can't be sure).
-
-Don't you have a USB storage device?  It should be easy for you to test 
-this on your own system.
-
-Alan Stern
-
+Both AMD and the former ATI should have quite some experience?!
