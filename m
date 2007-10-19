@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966286AbXJSGsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXJSGtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966286AbXJSGsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 02:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXJSGsp
+	id S1765630AbXJSGtp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 02:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759610AbXJSGti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 02:48:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43512 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751242AbXJSGsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 02:48:45 -0400
-Date: Fri, 19 Oct 2007 08:48:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Mark Lord <lkml@rtr.ca>
-Subject: Re: libata crash
-Message-ID: <20071019064817.GA23000@elte.hu>
-References: <20071018164745.GD10674@kernel.dk> <20071018192839.GA17247@elte.hu> <20071018193236.GJ10674@kernel.dk> <20071018195903.GA29567@elte.hu> <20071018204111.GN10674@kernel.dk>
+	Fri, 19 Oct 2007 02:49:38 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45484
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756618AbXJSGth (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 02:49:37 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Rogier Wolff <R.E.Wolff@bitwizard.nl>
+Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
+Date: Fri, 19 Oct 2007 01:49:31 -0500
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Theodore Tso <tytso@mit.edu>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Nick Piggin <piggin@cyberone.com.au>
+References: <200710112011.22000.rob@landley.net> <200710161734.15880.nickpiggin@yahoo.com.au> <20071018130048.GA25084@bitwizard.nl>
+In-Reply-To: <20071018130048.GA25084@bitwizard.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071018204111.GN10674@kernel.dk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0010]
+Message-Id: <200710190149.31962.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 18 October 2007 8:00:49 am Rogier Wolff wrote:
+> So... IMHO, it would be useful to implement something that pages out
+> chunks of memory larger than a single hardware page. This would reduce
+> the size of the memory management tables (*), as well as improve disk
+> throughput if things DO come to paging....
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+I believe that was more or less the topic of this paper:
+  http://kernel.org/doc/ols/2006/ols2006v2-pages-73-78.pdf
 
-> > and make sure it builds:
-> > 
-> > drivers/scsi/fd_mcs.c: In function 'fd_mcs_intr':
-> > drivers/scsi/fd_mcs.c:976: error: 'struct scatterlist' has no member named 'page'
-> > drivers/scsi/fd_mcs.c:1009: error: 'struct scatterlist' has no member named 'page'
-> > drivers/scsi/fd_mcs.c: In function 'fd_mcs_queue':
-> > drivers/scsi/fd_mcs.c:1112: error: 'struct scatterlist' has no member named 'page'
-> > drivers/scsi/in2000.c: In function 'in2000_queuecommand':
-> > drivers/scsi/in2000.c:375: error: 'struct scatterlist' has no member named 'page'
-> > drivers/scsi/in2000.c: In function 'transfer_bytes':
-> > drivers/scsi/in2000.c:767: error: 'struct scatterlist' has no member named 'page'
-> 
-> Oops, wonder why they were missed in the allyes/modconfig. Fixed now, 
-> thanks!
+Although these seem sort of tangentially related:
+  http://kernel.org/doc/ols/2006/ols2006v1-pages-369-384.pdf
+  http://kernel.org/doc/ols/2006/ols2006v2-pages-125-130.pdf
 
-where can i pick the latest sg patchset up from? These build failures 
-are ruining my make randconfig build tests :)
-
-	Ingo
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
