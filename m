@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935219AbXJSDbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966234AbXJSDiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935219AbXJSDbx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Oct 2007 23:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760580AbXJSDbp
+	id S966234AbXJSDiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Oct 2007 23:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934165AbXJSDiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Oct 2007 23:31:45 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32814 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758673AbXJSDbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Oct 2007 23:31:44 -0400
-Message-ID: <47182429.1080103@jp.fujitsu.com>
-Date: Fri, 19 Oct 2007 12:27:37 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 18 Oct 2007 23:38:46 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:53336 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933686AbXJSDip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Oct 2007 23:38:45 -0400
+Date: Fri, 19 Oct 2007 12:38:42 +0900
+From: Simon Horman <horms@verge.net.au>
+To: tachibana@mxm.nes.nec.co.jp
+Cc: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
+       Don Zickus <dzickus@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>,
+       kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] [kexec-tools] Pass vmcoreinfo's address and size
+Message-ID: <20071019033842.GG692@verge.net.au>
+References: <20071018053739.GA31244@verge.net.au> <20071018181407tachibana@mail.jp.nec.com>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-Cc: kristen.c.accardi@intel.com, greg@kroah.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [Pcihpd-discuss] [PATCH 1/3] pciehp: hotplug: deal with pre-inserted
- ExpressCards
-References: <4716CB9D.6080503@rtr.ca> <4716D3C0.20808@rtr.ca> <47174069.9000108@jp.fujitsu.com> <4717602E.2080903@rtr.ca> <4718189A.4040609@jp.fujitsu.com> <47181FEC.4050102@rtr.ca>
-In-Reply-To: <47181FEC.4050102@rtr.ca>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071018181407tachibana@mail.jp.nec.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord さんは書きました:
-> Kenji Kaneshige wrote:
->>
->>  - When the card is inserted *after* modprobing pciehp, the card
->>    is *not* automatically powered on/detected. So it is very
->>    natural that the card, which had been inserted before modprobing
->>    pciehp, is not automatically enabled at the pciehp modprobe time.
+On Thu, Oct 18, 2007 at 06:14:07PM +0900, tachibana@mxm.nes.nec.co.jp wrote:
 > 
+> Hi Simon,
 > 
-> Not true.  Once pciehp is loaded, it automatically detects and handles
-> inserted and removed cards just fine.  Until after the next suspend/resume.
+> On Thu, 18 Oct 2007 14:37:41 +0900, Simon Horman <horms@verge.net.au> wrote:
+> > On Wed, Oct 17, 2007 at 02:16:19PM +0900, Ken'ichi Ohmichi wrote:
+> > > 
+> > > Hi Simon,
+> > > 
+> > > Simon Horman wrote:
+> > > > On Wed, Aug 22, 2007 at 09:13:39PM +0900, Ken'ichi Ohmichi wrote:
+> > > >> [2/3] [kexec-tools] Pass vmcoreinfo's address and size
+> > > >> The patch is for kexec-tools-testing-20070330.
+> > > >> (http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/)
+> > > >> kexec command gets the address and size of the vmcoreinfo data from
+> > > >> /sys/kernel/vmcoreinfo, and passes them to the second kernel through
+> > > >> ELF header of /proc/vmcore. When the second kernel is booting, the
+> > > >> kernel gets them from the ELF header and creates vmcoreinfo's PT_NOTE
+> > > >> segment into /proc/vmcore.
+> > > > 
+> > > > Sorry for the long delay, I completely missed this patch.
+> > > > 
+> > > > The kexec-tools change seems ok to me. What is the status of
+> > > > the kernel portion of the change?
+> > > 
+> > > The kernel portion is merged into linux-2.6.23-mm1.
+> > > According to Andrew's mail "-mm merge plans for 2.6.24",  its status is
+> > > "The infamous misc.  Will re-review and will merge basically all of them".
+> > > 
+> > > http://www.ussg.iu.edu/hypermail/linux/kernel/0710.0/0313.html
+> > > 
+> > > 
+> > > > Do you still want the kexec-tools portion applied?
+> > > 
+> > > Yes, I hope so.
+> > 
+> > Thanks, applied :-)
 > 
+> Thank you for applying ;-)
+> 
+> But it has the compatibility problem that the kexec command fails on
+> kernels which don't have /sys/kernel/vmcoreinfo:
+> 
+>  # ls /sys/kernel/
+>  debug  kexec_crash_loaded  kexec_loaded  security  uevent_helper 
+>  uevent_seqnum
+>  #
+>  (There is not /sys/kernel/vmcoreinfo.)
+> 
+>  #
+>  # kexec -p --args-linux vmlinuz --initrd=initrd.img
+>  Could not open "/sys/kernel/vmcoreinfo": No such file or directory
+>  #
+> 
+> To fix the problem, could you please apply the attached patch ?
+> The fixed part is the same as the patch in the following mail.
 
-This is because your slot is surprise remove capable. On my slot,
-which is not surprise remove capable, the card is not enabled
-even after pciehp is loaded.
-
-Thanks,
-Kenji Kaneshige
-
-
+Thanks, applied.
