@@ -1,101 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936555AbXJSTt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936593AbXJSTu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936555AbXJSTt1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 15:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934340AbXJSTtM
+	id S936593AbXJSTu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 15:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbXJSTuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 15:49:12 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:56075 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934018AbXJSTtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 15:49:10 -0400
-From: Nick Warne <nick@ukfsn.org>
-Reply-To: nick@ukfsn.org
-To: linux-kernel@vger.kernel.org
-Subject: Re: New CD/DVD drive - 80-wire cable detection failure
-Date: Fri, 19 Oct 2007 20:49:07 +0100
-User-Agent: KMail/1.9.7
-References: <200710181832.42906.nick@ukfsn.org>
-In-Reply-To: <200710181832.42906.nick@ukfsn.org>
+	Fri, 19 Oct 2007 15:50:01 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:24614 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764038AbXJSTt7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 15:49:59 -0400
+X-Greylist: delayed 2064 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 15:49:59 EDT
+Date: Fri, 19 Oct 2007 13:16:43 -0600
+From: dougthompson@xmission.com
+To: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/8] drivers-edac-turnon edac device error logging
+Message-ID: <4719029b.yLjfdGUW2HMOjG56%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710192049.07877.nick@ukfsn.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 October 2007 18:32:42 Nick Warne wrote:
-> Hi all,
->
-> Please CC, not subscribed.
->
-> kernel 2.6.23
->
-> My DVD/CDrom stopped reading DVD's, so I purchased a new one today.
->
-> Old:
-> Oct 10 21:01:01 linuxamd kernel:     ide0: BM-DMA at 0xd000-0xd007, BIOS
-> settings: hda:DMA, hdb:DMA
-> Oct 10 21:01:01 linuxamd kernel:     ide1: BM-DMA at 0xd008-0xd00f, BIOS
-> settings: hdc:DMA, hdd:DMA
->
-> Oct 10 21:01:01 linuxamd kernel: hdd: ATAPI 48X DVD-ROM DVD-R CD-R/RW
-> drive, 2048kB Cache, UDMA(66)
-> Oct 10 21:01:01 linuxamd kernel: Uniform CD-ROM driver Revision: 3.20
->
-> New:
-> Oct 18 17:32:20 linuxamd kernel:     ide0: BM-DMA at 0xd000-0xd007, BIOS
-> settings: hda:DMA, hdb:DMA
-> Oct 18 17:32:20 linuxamd kernel:     ide1: BM-DMA at 0xd008-0xd00f, BIOS
-> settings: hdc:DMA, hdd:DMA
->
-> Oct 18 17:32:20 linuxamd kernel: hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW
-> drive, 2048kB Cache, UDMA(33)
-> Oct 18 17:32:20 linuxamd kernel: Uniform CD-ROM driver Revision: 3.20
->
-> For some reason the new drive produces:
->
-> hdd: TSSTcorp CDDVDW SH-S202J, ATAPI CD/DVD-ROM drive
-> hdd: drive side 80-wire cable detection failed, limiting max speed to
-> UDMA33
->
-> I boot with hdd=ide-cd
->
-> How to debug this to find out what is going on?
->
-> Thanks,
->
-> Nick
+From:	Doug Thompson <dougthompson@xmission.com>
 
-No help anyone?  Did I buy a taboo drive?  
+This patch ENABLES the 'logging' of CE and UE events for the 
+EDAC_DEVICE class of error harvester in EDAC
 
-nick@linuxamd:nick$ /usr/sbin/hdparm -i /dev/hdd
+CC:	Alan Cox <alan@lxorguk.ukuu.org.uk
+Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
+---
 
-/dev/hdd:
+ edac_device.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
- Model=TSSTcorp CDDVDW SH-S202J, FwRev=SB00, SerialNo=
- Config={ Fixed Removeable DTR<=5Mbs DTR>10Mbs nonMagnetic }
- RawCHS=0/0/0, TrkSize=0, SectSize=0, ECCbytes=0
- BuffType=unknown, BuffSize=0kB, MaxMultSect=0
- (maybe): CurCHS=0/0/0, CurSects=0, LBA=yes, LBAsects=0
- IORDY=yes, tPIO={min:383,w/IORDY:120}, tDMA={min:120,rec:120}
- PIO modes:  pio0 pio1 pio2 pio3 pio4
- DMA modes:  mdma0 mdma1 mdma2
- UDMA modes: udma0 udma1 *udma2 udma3 udma4
- AdvancedPM=no
- Drive conforms to: unknown:
-
- * signifies the current active mode
-
-
-Any help to get this fixed (by me) would be welcome.  I cannot find any 
-information on why this happens (or rather why the 'drive side') refuses to 
-see 80-wire ide cable.
-
-Thanks,
-
-Nick
--- 
-Free Software Foundation Associate Member 5508
+Index: linux-2.6.23/drivers/edac/edac_device.c
+===================================================================
+--- linux-2.6.23.orig/drivers/edac/edac_device.c
++++ linux-2.6.23/drivers/edac/edac_device.c
+@@ -155,6 +155,10 @@ struct edac_device_ctl_info *edac_device
+ 	dev_ctl->instances = dev_inst;
+ 	dev_ctl->pvt_info = pvt;
+ 
++	/* Default logging of CEs and UEs */
++	dev_ctl->log_ce = 1;
++	dev_ctl->log_ue = 1;
++
+ 	/* Name of this edac device */
+ 	snprintf(dev_ctl->name,sizeof(dev_ctl->name),"%s",edac_device_name);
+ 
