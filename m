@@ -1,140 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966370AbXJSOsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966603AbXJSOtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966370AbXJSOsk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXJSOsb
+	id S966603AbXJSOtV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966426AbXJSOtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:48:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51059 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760228AbXJSOsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:48:30 -0400
-Date: Fri, 19 Oct 2007 16:48:28 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ak@suse.de,
-       vgoyal@in.ibm.com, linux-ia64@vger.kernel.org
-Subject: Re: [patch 1/3] Add BSS to resource tree
-Message-ID: <20071019144827.GA14023@suse.de>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ak@suse.de,
-	vgoyal@in.ibm.com, linux-ia64@vger.kernel.org
-References: <20071018111535.356215664@strauss.suse.de> <20071018111535.883533731@strauss.suse.de> <20071018142642.5b3f6ba4.akpm@linux-foundation.org>
+	Fri, 19 Oct 2007 10:49:12 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:40031 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966361AbXJSOtL (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 10:49:11 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+Date: Fri, 19 Oct 2007 16:48:32 +0200
+User-Agent: KMail/1.9.7
+Cc: carsteno@de.ibm.com, Mike Lampard <mike@secnet.net.au>,
+       kvm-devel@lists.sourceforge.net, Aurelien Jarno <aurelien@aurel32.net>,
+       Linux-kernel@vger.kernel.org
+References: <47189371.7080104@de.ibm.com> <4718B4DB.1000202@de.ibm.com> <Pine.LNX.4.64.0710191618450.1997@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710191618450.1997@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071018142642.5b3f6ba4.akpm@linux-foundation.org>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200710191648.32157.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2007-10-18 23:26]:
-> On Thu, 18 Oct 2007 13:15:36 +0200
-> Bernhard Walle <bwalle@suse.de> wrote:
+Am Freitag, 19. Oktober 2007 schrieb Jan Engelhardt:
 > 
-> > This patch adds the BSS to the resource tree just as kernel text and kernel
-> > data are in the resource tree. The main reason behind this is to avoid
-> > crashkernel reservation in that area.
-> > 
-> > While it's not strictly necessary to have the BSS in the resource tree
-> > (the actual collision detection is done in the reserve_bootmem() function
-> > before), the usage of the BSS resource should be presented to the user
-> > in /proc/iomem just as Kernel data and Kernel code.
-> > 
-> > Note: The patch currently is only implemented for x86 and ia64 (because
-> > efi_initialize_iomem_resources() has the same signature on i386 and
-> > ia64).
-> > 
-> > 
-> > ...
+> On Oct 19 2007 15:44, Carsten Otte wrote:
+> > Carsten Otte wrote:
+> >> First thing we do, is figure whether or not 2.6.23.1 as released breaks our
+> >> system too. This way, we can either focus on differences between Linus and
+> >> Avi, or turn on the big red warning sign saying "regression".
 > >
-> > -extern char _text[], _end[], _etext[];
-> > +
-> > +static struct resource bss_resource = {
-> > +	.name	= "Kernel bss",
-> > +	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-> > +};
-> > +extern char _text[], _end[], _etext[], _edata[], _bss[];
+> > Looks like 2.6.23.1 works fine on that box. We'll leave it running over
+> > the weekend with "while true; do make; make clean; done".
 > 
-> These should be in a header file.
+> Well, do you happen to use sata_mv?
 
-It's already ... the problem just was that IA64 uses _bss instead of
-__bss_start. So I think we should change this. I verified that the
-kernel still compiles with the patch below.
-
-
-Thanks,
-   Bernhard
-
----
-[PATCH] Rename _bss to __bss_start
-
-Rename _bss to __bss_start as on other architectures. That makes it possible to
-use the <linux/sections.h> instead of own declarations. Also add __bss_stop
-because that symbol exists on other architectures.
-
-That patch applies to current git plus kexec-add-bss-to-resource-tree.patch in
--mm tree.
-
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/ia64/hp/sim/boot/bootloader.lds |    3 ++-
- arch/ia64/kernel/setup.c             |    3 +--
- arch/ia64/kernel/vmlinux.lds.S       |    3 ++-
- 3 files changed, 5 insertions(+), 4 deletions(-)
-
---- a/arch/ia64/hp/sim/boot/bootloader.lds
-+++ b/arch/ia64/hp/sim/boot/bootloader.lds
-@@ -22,10 +22,11 @@ SECTIONS
-   .sdata     : { *(.sdata) }
-   _edata  =  .;
- 
--  _bss = .;
-+  __bss_start = .;
-   .sbss      : { *(.sbss) *(.scommon) }
-   .bss       : { *(.bss) *(COMMON) }
-   . = ALIGN(64 / 8);
-+  __bss_stop = .;
-   _end = . ;
- 
-   /* Stabs debugging sections.  */
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -95,7 +95,6 @@ static struct resource bss_resource = {
- 	.name	= "Kernel bss",
- 	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
- };
--extern char _text[], _end[], _etext[], _edata[], _bss[];
- 
- unsigned long ia64_max_cacheline_size;
- 
-@@ -206,7 +205,7 @@ static int __init register_memory(void)
- 	code_resource.end   = ia64_tpa(_etext) - 1;
- 	data_resource.start = ia64_tpa(_etext);
- 	data_resource.end   = ia64_tpa(_edata) - 1;
--	bss_resource.start  = ia64_tpa(_bss);
-+	bss_resource.start  = ia64_tpa(__bss_start);
- 	bss_resource.end    = ia64_tpa(_end) - 1;
- 	efi_initialize_iomem_resources(&code_resource, &data_resource,
- 			&bss_resource);
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -240,11 +240,12 @@ SECTIONS
-   .sdata : AT(ADDR(.sdata) - LOAD_OFFSET)
- 	{ *(.sdata) *(.sdata1) *(.srdata) }
-   _edata  =  .;
--  _bss = .;
-+  __bss_start = .;
-   .sbss : AT(ADDR(.sbss) - LOAD_OFFSET)
- 	{ *(.sbss) *(.scommon) }
-   .bss : AT(ADDR(.bss) - LOAD_OFFSET)
- 	{ *(.bss) *(COMMON) }
-+  __bss_stop = .;
- 
-   _end = .;
- 
+no, we have nvidia, so its sata_nv.
 
 
