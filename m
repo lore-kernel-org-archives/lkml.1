@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932220AbXJSR7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935831AbXJSSBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932220AbXJSR7E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 13:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934989AbXJSR6k
+	id S935831AbXJSSBR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764000AbXJSSBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 13:58:40 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:52737 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932487AbXJSR6i (ORCPT
+	Fri, 19 Oct 2007 14:01:05 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:10117 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763442AbXJSSBE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 13:58:38 -0400
-Date: Fri, 19 Oct 2007 18:58:30 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-In-Reply-To: <20071019143921.GB2598@ff.dom.local>
-Message-ID: <Pine.LNX.4.64N.0710191852140.13279@blysk.ds.pg.gda.pl>
-References: <20071015125301.GC3015@ff.dom.local>
- <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local>
- <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local>
- <Pine.LNX.4.64N.0710171221510.28993@blysk.ds.pg.gda.pl>
- <Pine.LNX.4.64N.0710191229510.13279@blysk.ds.pg.gda.pl> <20071019143921.GB2598@ff.dom.local>
+	Fri, 19 Oct 2007 14:01:04 -0400
+Message-ID: <4718F0DE.3050207@ct.jp.nec.com>
+Date: Fri, 19 Oct 2007 11:01:02 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] i386: fix TSC clock source calibration error [part 2]
+References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com>	<20071018085713.GA11022@elte.hu> <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
+In-Reply-To: <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Jarek Poplawski wrote:
+Dave Johnson wrote:
+> From: Dave Johnson <djohnson@sw.starentnetworks.com>
+> 
+> The previous patch wasn't correctly handling the 'count' variable.  If
+> a CPU gave bad results on the 1st or 2nd run but good results on the
+> 3rd, it wouldn't do the correct thing.  No idea if any such CPU
+> exists, but the patch below handles that case by discarding the bad
+> runs.
+> 
+> If a bad result (too quick, or too slow) occurs on any of the 3 runs
+> it will be discarded.
+> 
+> Also updated some comments to explain what's going on.
+> 
+> Signed-off-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+> 
+> ---
+> 
+> Should be applied after my previous patch.
+> 
+> ===== arch/i386/kernel/tsc.c 1.28 vs edited =====
+> --- 1.28/arch/i386/kernel/tsc.c	2007-10-19 11:07:36 -04:00
+> +++ edited/arch/i386/kernel/tsc.c	2007-10-19 11:07:44 -04:00
+> @@ -128,29 +128,35 @@
+>  
+>  	local_irq_save(flags);
+>  
+> -	/* run 3 times to ensure the cache is warm */
+> +	/* run 3 times to ensure the cache is warm and to get an accurate reading */
+>  	for (i = 0; i < 3; i++) {
+>  		mach_prepare_counter();
 
-> Actually I'm not convinced with this explanation. It seems to me that
-> since there are such serious locking problems (especially with rntl),
-> there could be once more considered a private workqueue. You've
-> written earlier about being a lonely user of this code. But, since
+It's a really rare case, but if SMI interrupt takes CPU here, just after
+prepare and before rdtscll, it makes delta64 shorter than expected one.
+Is it possible? And how about moving rdtscll before mach_prepare_counter()?
 
- Well, this will change eventually when I submit the patch for Broadcom 
-SiByte platforms so that sb1250-mac.c will be able to request an interrupt 
-for the PHYs.  All the infrastructure is in place except from platform 
-code to configure the SOC's GPIO line used for the interrupt input (when 
-applicable) and let the driver know what the line actually is.
+>  		rdtscll(start);
 
-> Benjamin offered his help with changing to mutexes, which looks like
-> very reasonable idea to me (probably I miss most of the points...),
-> maybe it's very good opportunity to both: make this code better and
-> double the user base! I'm interested in looking for such solution
-> if Benjamin thinks there could be too few problems for him... So,
-> let somebody tell us what could be wrong with this idea?
-
- I do not object and can certainly cooperate, but cannot make it a high 
-priority work for me at the moment -- sorry.
-
-  Maciej
+Thanks
+Hiroshi Shimamoto
