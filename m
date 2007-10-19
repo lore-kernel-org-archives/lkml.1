@@ -1,108 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966766AbXJSIQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965826AbXJSIae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966766AbXJSIQN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 04:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764008AbXJSIP6
+	id S965826AbXJSIae (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 04:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbXJSIa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 04:15:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47045 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764183AbXJSIP4 (ORCPT
+	Fri, 19 Oct 2007 04:30:26 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42401 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755021AbXJSIaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 04:15:56 -0400
-Subject: Re: [NET]: Fix possible dev_deactivate race condition
-From: Peter Zijlstra <peterz@infradead.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20071019053624.GA10560@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-	 <1192745137.7367.40.camel@pasglop>
-	 <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	 <1192749449.7367.51.camel@pasglop>
-	 <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	 <20071019023219.GB8453@gondor.apana.org.au>
-	 <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	 <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	 <20071019042025.GA9617@gondor.apana.org.au>
-	 <20071019053624.GA10560@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 09:35:19 +0200
-Message-Id: <1192779319.27435.163.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 19 Oct 2007 04:30:25 -0400
+Date: Fri, 19 Oct 2007 18:30:19 +1000
+To: torvalds@linux-foundation.org
+Cc: tes@sgi.com, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.24-rc1
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071019083019.6F53058C38F1@chook.melbourne.sgi.com>
+From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-19 at 13:36 +0800, Herbert Xu wrote:
-> On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
-> >
-> > In fact this bug exists elsewhere too.  For example, the network
-> > stack does this in net/sched/sch_generic.c:
-> > 
-> >         /* Wait for outstanding qdisc_run calls. */
-> >       while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> >               yield();
-> > 
-> > This has the same problem as the current synchronize_irq code.
-> 
+Hi Linus,
 
-> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-> index e01d576..b3b7420 100644
-> --- a/net/sched/sch_generic.c
-> +++ b/net/sched/sch_generic.c
-> @@ -556,6 +556,7 @@ void dev_deactivate(struct net_device *dev)
->  {
->         struct Qdisc *qdisc;
->         struct sk_buff *skb;
-> +       int running;
->  
->         spin_lock_bh(&dev->queue_lock);
->         qdisc = dev->qdisc;
-> @@ -571,12 +572,31 @@ void dev_deactivate(struct net_device *dev)
->  
->         dev_watchdog_down(dev);
->  
-> -       /* Wait for outstanding dev_queue_xmit calls. */
-> +       /* Wait for outstanding qdisc-less dev_queue_xmit calls. */
->         synchronize_rcu();
->  
->         /* Wait for outstanding qdisc_run calls. */
-> -       while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> -               yield();
-> +       do {
-> +               while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> +                       yield();
-> +
+A couple of Christoph patches for XFS ...
+A fid one for nfs exports which akpm is waiting for.
+Thanks.
 
-Ouch!, is there really no sane locking alternative? Hashed waitqueues
-like for the page lock come to mind.
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-> +               /*
-> +                * Double-check inside queue lock to ensure that all effects
-> +                * of the queue run are visible when we return.
-> +                */
-> +               spin_lock_bh(&dev->queue_lock);
-> +               running = test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
-> +               spin_unlock_bh(&dev->queue_lock);
-> +
-> +               /*
-> +                * The running flag should never be set at this point because
-> +                * we've already set dev->qdisc to noop_qdisc *inside* the same
-> +                * pair of spin locks.  That is, if any qdisc_run starts after
-> +                * our initial test it should see the noop_qdisc and then
-> +                * clear the RUNNING bit before dropping the queue lock.  So
-> +                * if it is set here then we've found a bug.
-> +                */
-> +       } while (WARN_ON_ONCE(running));
->  }
->  
->  void dev_init_scheduler(struct net_device *dev) 
+This will update the following files:
 
+ fs/xfs/linux-2.6/xfs_export.c |    6 +++---
+ fs/xfs/linux-2.6/xfs_export.h |    6 +++---
+ fs/xfs/linux-2.6/xfs_ioctl.c  |   24 ++++++++++++------------
+ fs/xfs/xfs_dmops.c            |   21 ++++-----------------
+ fs/xfs/xfs_fs.h               |   29 ++++++-----------------------
+ fs/xfs/xfs_qmops.c            |   22 +++++++---------------
+ fs/xfs/xfs_vfsops.c           |    9 ++++-----
+ fs/xfs/xfs_vfsops.h           |    4 ++--
+ fs/xfs/xfs_vnodeops.c         |   13 ++-----------
+ fs/xfs/xfs_vnodeops.h         |    2 +-
+ 10 files changed, 44 insertions(+), 92 deletions(-)
+
+through these commits:
+
+commit c6143911a7e0f8abef0319c801eb36718f57dfde
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Fri Sep 14 15:22:37 2007 +1000
+
+    [XFS] cleanup fid types mess
+    
+    Currently XFs has three different fid types: struct fid, struct xfs_fid
+    and struct xfs_fid2 with hte latter two beeing identicaly and the first
+    one beeing the same size but an unstructured array with the same size.
+    
+    This patch consolidates all this to alway uuse struct xfs_fid.
+    
+    This patch is required for an upcoming patch series from me that revamps
+    the nfs exporting code and introduces a Linux-wide struct fid.
+    
+    SGI-PV: 970336
+    SGI-Modid: xfs-linux-melb:xfs-kern:29651a
+    
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit c8fcfac5a257f8a04f7ba3d397dedccffef19be2
+Author: Christoph Hellwig <hch@lst.de>
+Date:   Fri Oct 19 16:57:01 2007 +1000
+
+    [XFS] fixups after behavior removal merge into mainline git
+    
+    Fixup for lack of dmapi support and no quota module support.
+    
+    SGI-PV: 969985
+    
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
