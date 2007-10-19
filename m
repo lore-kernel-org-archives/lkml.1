@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966719AbXJSEhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966826AbXJSEjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966719AbXJSEhd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbXJSEh0
+	id S966826AbXJSEjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 00:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934259AbXJSEjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:37:26 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:46179 "EHLO snapgear.com"
+	Fri, 19 Oct 2007 00:39:14 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:56062 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753132AbXJSEh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:37:26 -0400
-Date: Fri, 19 Oct 2007 14:36:44 +1000
+	id S933946AbXJSEjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 00:39:13 -0400
+Date: Fri, 19 Oct 2007 14:39:01 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710190436.l9J4ai5d004958@goober>
+Message-Id: <200710190439.l9J4d1j0004977@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: no separate stack region to report at startup
+Subject: [M68KNOMMU]: fix syscall restart handling
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no separate stack region addresses to print at startup time,
-so remove it from the debug listing
+Fix system call restart handling. We can call directly to the
+restart handler, no need to back track through trap that isn't
+even implemented on m68knommu.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
 
-diff -Naurp linux-2.6.23/arch/m68knommu/kernel/setup.c linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c
---- linux-2.6.23/arch/m68knommu/kernel/setup.c	2007-10-19 10:30:54.000000000 +1000
-+++ linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c	2007-10-19 10:35:38.000000000 +1000
-@@ -188,11 +173,9 @@ void setup_arch(char **cmdline_p)
- 		"BSS=0x%06x-0x%06x\n", (int) &_stext, (int) &_etext,
- 		(int) &_sdata, (int) &_edata,
- 		(int) &_sbss, (int) &_ebss);
--	printk(KERN_DEBUG "KERNEL -> ROMFS=0x%06x-0x%06x MEM=0x%06x-0x%06x "
--		"STACK=0x%06x-0x%06x\n",
-+	printk(KERN_DEBUG "MEMORY -> ROMFS=0x%06x-0x%06x MEM=0x%06x-0x%06x\n ",
- 		(int) &_ebss, (int) memory_start,
--		(int) memory_start, (int) memory_end,
--		(int) memory_end, (int) _ramend);
-+		(int) memory_start, (int) memory_end);
- #endif
- 
- 	/* Keep a copy of command line */
+diff -Naurp linux-2.6.23/arch/m68knommu/kernel/signal.c linux-2.6.23-uc0/arch/m68knommu/kernel/signal.c
+--- linux-2.6.23/arch/m68knommu/kernel/signal.c	2007-10-19 10:30:55.000000000 +1000
++++ linux-2.6.23-uc0/arch/m68knommu/kernel/signal.c	2007-10-19 10:35:40.000000000 +1000
+@@ -781,15 +781,7 @@ asmlinkage int do_signal(sigset_t *oldse
+ 	/* Did we come from a system call? */
+ 	if (regs->orig_d0 >= 0) {
+ 		/* Restart the system call - no handlers present */
+-		if (regs->d0 == -ERESTARTNOHAND
+-		    || regs->d0 == -ERESTARTSYS
+-		    || regs->d0 == -ERESTARTNOINTR) {
+-			regs->d0 = regs->orig_d0;
+-			regs->pc -= 2;
+-		} else if (regs->d0 == -ERESTART_RESTARTBLOCK) {
+-			regs->d0 = __NR_restart_syscall;
+-			regs->pc -= 2;
+-		}
++		handle_restart(regs, NULL, 0);
+ 	}
+ 	return 0;
+ }
