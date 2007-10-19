@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966826AbXJSEjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966555AbXJSElO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966826AbXJSEjW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934259AbXJSEjO
+	id S966555AbXJSElO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 00:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXJSEkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:39:14 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:56062 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933946AbXJSEjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:39:13 -0400
-Date: Fri, 19 Oct 2007 14:39:01 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710190439.l9J4d1j0004977@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: fix syscall restart handling
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Fri, 19 Oct 2007 00:40:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50894
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754627AbXJSEky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 00:40:54 -0400
+Date: Thu, 18 Oct 2007 21:41:07 -0700 (PDT)
+Message-Id: <20071018.214107.21905270.davem@davemloft.net>
+To: ezk@cs.sunysb.edu
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, pcnet32@verizon.net,
+       netdev@vger.kernel.org
+Subject: Re: broken PCNET32 in 2.6.24 requires experimental PCNET32_NAPI? 
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200710190433.l9J4X9vh011890@agora.fsl.cs.sunysb.edu>
+References: <4717C90A.4060208@garzik.org>
+	<200710190433.l9J4X9vh011890@agora.fsl.cs.sunysb.edu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix system call restart handling. We can call directly to the
-restart handler, no need to back track through trap that isn't
-even implemented on m68knommu.
+From: Erez Zadok <ezk@cs.sunysb.edu>
+Date: Fri, 19 Oct 2007 00:33:09 -0400
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+> Call Trace:
+>  [<c0102bc2>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0102c72>] show_stack_log_lvl+0x9b/0xa3
+>  [<c0102e2e>] show_registers+0x1b4/0x285
+>  [<c0102fff>] die+0x100/0x21d
+>  [<c010a72f>] do_page_fault+0x434/0x515
+>  [<c026a40a>] error_code+0x6a/0x70
+>  [<c021ea1b>] sock_setsockopt+0x43f/0x494
+>  [<c021b994>] sys_setsockopt+0x4f/0x85
+>  [<c021ce0e>] sys_socketcall+0x1cb/0x222
+>  [<c0102586>] sysenter_past_esp+0x5f/0x91
 
+This fix from Olof Johnson should fix it.
 
-diff -Naurp linux-2.6.23/arch/m68knommu/kernel/signal.c linux-2.6.23-uc0/arch/m68knommu/kernel/signal.c
---- linux-2.6.23/arch/m68knommu/kernel/signal.c	2007-10-19 10:30:55.000000000 +1000
-+++ linux-2.6.23-uc0/arch/m68knommu/kernel/signal.c	2007-10-19 10:35:40.000000000 +1000
-@@ -781,15 +781,7 @@ asmlinkage int do_signal(sigset_t *oldse
- 	/* Did we come from a system call? */
- 	if (regs->orig_d0 >= 0) {
- 		/* Restart the system call - no handlers present */
--		if (regs->d0 == -ERESTARTNOHAND
--		    || regs->d0 == -ERESTARTSYS
--		    || regs->d0 == -ERESTARTNOINTR) {
--			regs->d0 = regs->orig_d0;
--			regs->pc -= 2;
--		} else if (regs->d0 == -ERESTART_RESTARTBLOCK) {
--			regs->d0 = __NR_restart_syscall;
--			regs->pc -= 2;
--		}
-+		handle_restart(regs, NULL, 0);
- 	}
+I'll merge this tonight.
+
+diff --git a/net/core/filter.c b/net/core/filter.c
+index 1f0068e..e0a0694 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -447,7 +447,8 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
+ 	rcu_assign_pointer(sk->sk_filter, fp);
+ 	rcu_read_unlock_bh();
+ 
+-	sk_filter_delayed_uncharge(sk, old_fp);
++	if (old_fp)
++		sk_filter_delayed_uncharge(sk, old_fp);
  	return 0;
  }
+ 
+
