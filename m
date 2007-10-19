@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbXJSPed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbXJSPnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbXJSPed (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 11:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbXJSPeZ
+	id S1761939AbXJSPnW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 11:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXJSPnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 11:34:25 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:47629 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXJSPeY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 11:34:24 -0400
-Date: Fri, 19 Oct 2007 08:34:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected][mismerge?] Re: [microcode] 2.6.23.git pulled this
- morning oopses loading P4 microcode
-Message-Id: <20071019083408.fafadb8d.randy.dunlap@oracle.com>
-In-Reply-To: <1192789099.7389.31.camel@Homer.simpson.net>
-References: <1192681533.7147.5.camel@Homer.simpson.net>
-	<1192730198.7182.18.camel@Homer.simpson.net>
-	<20071018223333.GD4153@implementation>
-	<1192762138.6838.13.camel@Homer.simpson.net>
-	<1192789099.7389.31.camel@Homer.simpson.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 19 Oct 2007 11:43:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:20084 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752345AbXJSPnN (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 11:43:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ED2oFL/68w24njanvjick+Q4Yr1m7YlQjxxbquW1aYWAe/EFVSSHpLNolnCmlQuByRss1HDAMX7ELyobL8PY+1RjNZVavSRcO2uxhv4cjmhN04BUIv/xDS2ojr9qKpb4Ir0lvkAXtJCC50Ek08oiyRYGrnmGUFU0Y2naVAzS+sA=
+Message-ID: <68676e00710190843l740698ffv478375665773263@mail.gmail.com>
+Date: Fri, 19 Oct 2007 17:43:06 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Christian Borntraeger" <borntraeger@de.ibm.com>
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+Cc: "Laurent Vivier" <Laurent.Vivier@bull.net>, carsteno@de.ibm.com,
+       "Mike Lampard" <mike@secnet.net.au>, Linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Aurelien Jarno" <aurelien@aurel32.net>
+In-Reply-To: <200710191723.48104.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47189371.7080104@de.ibm.com>
+	 <200710191648.32157.borntraeger@de.ibm.com>
+	 <4718C5E0.9000204@bull.net>
+	 <200710191723.48104.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 12:18:19 +0200 Mike Galbraith wrote:
+On 10/19/07, Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> Am Freitag, 19. Oktober 2007 schrieb Laurent Vivier:
+> > Did you patch kvm.git with patch-2.6.23.1.bz2 or did you download
+> > linux-2.6.23.1.tar.bz2 ?
+> >
+> > 2.6.23.1 corrects nothing except sata_mv...
+>
+> Yes I know. The question we tried to answer was: is the bug in 2.6.23 or was
+> it introduced after 2.6.23, as kvm.git  already contains lots of post 2. 6.23
+> stuff.
+> Current state is:
+>
+> kvm.git with tag 2.6.23-rc6 works for days without a problem.
+> 2.6.23.1 vanilla has survived and is currently still under test.
+> kvm.git tag master killed our filesystem at least three times.since monday.
 
-> On Fri, 2007-10-19 at 04:49 +0200, Mike Galbraith wrote: 
-> > On Thu, 2007-10-18 at 23:33 +0100, Samuel Thibault wrote:
-> > > Hi,
-> > > 
-> > > Mike Galbraith, le Thu 18 Oct 2007 19:56:38 +0200, a écrit :
-> > > > The winner of a very long git bisect session:
-> > > > 
-> > > >     unicode diacritics support
-> > > 
-> > > Uh, I fail to see how that could have an impact, I've again checked the
-> > > boundaries, it looks fine, please people have a look.
-> > 
-> > I too was reluctant to believe the bisect result.  But...
-> 
-> Weeeell now, that skepticism is indeed well founded.  It's dontdiff.  A
-> diff of trees where defkeymap.c_shipped has been modified produces no
-> output.  Once a working tree has been afflicted by using diff+dontdiff
-> to update it, even overwriting the entire tree via git-archive doesn't
-> lead to a good build unless you also touch defkeymap.c_shipped
-> afterward.  In my case, the working tree remained buildable yet
-> thoroughly busted through a lengthy bisect and beyond.  That bisect
-> positively identified... the victim.
-> 
-> poo.
+linus-git has at least one bug with SG chaining, but usually it just
+hangs the machine. Patch is here:
 
-Yes, that's bad.  Sam has asked me to fix some dontdiff problems.
-I'll try to get to it soon.  Other people can also update it....
+http://lkml.org/lkml/2007/10/17/269
 
-
----
-~Randy
+Luca
