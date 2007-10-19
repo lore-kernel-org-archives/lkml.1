@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935257AbXJSH6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935711AbXJSH7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935257AbXJSH6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967097AbXJSH5s
+	id S935711AbXJSH7L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967128AbXJSH6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:57:48 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:52814 "EHLO havoc.gtf.org"
+	Fri, 19 Oct 2007 03:58:19 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:50327 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967079AbXJSH5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:57:43 -0400
-Date: Fri, 19 Oct 2007 03:57:42 -0400
+	id S967030AbXJSH6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:58:12 -0400
+Date: Fri, 19 Oct 2007 03:58:08 -0400
 From: Jeff Garzik <jeff@garzik.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Eric Biederman <ebiederm@xmission.com>
-Subject: [PATCH 6/9] irq-remove: sound driver trivial
-Message-ID: <20071019075742.GG6407@havoc.gtf.org>
+Subject: [PATCH 7/9] irq-remove: scsi driver trivial
+Message-ID: <20071019075808.GH6407@havoc.gtf.org>
 References: <20071019075443.GA6407@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,1811 +25,1579 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-commit 6348eaa5c5320cc3c4fac5ca1d41b587388e74d9
+commit fb66571c6fde956fb8bddacf11d64101f8df8bf8
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 00:48:10 2007 -0400
+Date:   Fri Oct 19 00:48:35 2007 -0400
 
-    [IRQ ARG REMOVAL] trivial sound driver updates
+    [IRQ ARG REMOVAL] trivial scsi driver updates
 
- sound/aoa/core/snd-aoa-gpio-feature.c   |    2 +-
- sound/aoa/soundbus/i2sbus/i2sbus-core.c |    2 +-
- sound/aoa/soundbus/i2sbus/i2sbus-pcm.c  |    4 ++--
- sound/aoa/soundbus/i2sbus/i2sbus.h      |    4 ++--
- sound/arm/aaci.c                        |    2 +-
- sound/arm/pxa2xx-ac97.c                 |    2 +-
- sound/drivers/mpu401/mpu401_uart.c      |    4 ++--
- sound/drivers/mtpav.c                   |    2 +-
- sound/drivers/serial-u16550.c           |    2 +-
- sound/drivers/vx/vx_core.c              |    2 +-
- sound/isa/ad1816a/ad1816a_lib.c         |    2 +-
- sound/isa/ad1848/ad1848_lib.c           |    2 +-
- sound/isa/cs423x/cs4231_lib.c           |    2 +-
- sound/isa/es1688/es1688_lib.c           |    2 +-
- sound/isa/es18xx.c                      |    4 ++--
- sound/isa/gus/gus_irq.c                 |    2 +-
- sound/isa/gus/gusmax.c                  |    6 +++---
- sound/isa/gus/interwave.c               |    6 +++---
- sound/isa/opl3sa2.c                     |    6 +++---
- sound/isa/opti9xx/opti92x-ad1848.c      |    2 +-
- sound/isa/sb/es968.c                    |    2 +-
- sound/isa/sb/sb16_main.c                |    4 ++--
- sound/isa/sb/sb8.c                      |    2 +-
- sound/isa/sgalaxy.c                     |    2 +-
- sound/isa/wavefront/wavefront.c         |    2 +-
- sound/mips/au1x00.c                     |    2 +-
- sound/oss/ad1848.c                      |    4 ++--
- sound/oss/btaudio.c                     |    2 +-
- sound/oss/dmasound/dmasound_atari.c     |    4 ++--
- sound/oss/dmasound/dmasound_paula.c     |    4 ++--
- sound/oss/dmasound/dmasound_q40.c       |    8 ++++----
- sound/oss/hal2.c                        |    2 +-
- sound/oss/i810_audio.c                  |    2 +-
- sound/oss/mpu401.c                      |    2 +-
- sound/oss/mpu401.h                      |    2 +-
- sound/oss/msnd_pinnacle.c               |    2 +-
- sound/oss/pas2_card.c                   |    2 +-
- sound/oss/sb_common.c                   |    4 ++--
- sound/oss/sh_dac_audio.c                |    2 +-
- sound/oss/swarm_cs4297a.c               |    2 +-
- sound/oss/trident.c                     |    2 +-
- sound/oss/uart401.c                     |    2 +-
- sound/oss/uart6850.c                    |    2 +-
- sound/oss/via82cxxx_audio.c             |    6 +++---
- sound/oss/vidc.h                        |    2 +-
- sound/oss/vwsnd.c                       |    2 +-
- sound/oss/waveartist.c                  |    4 ++--
- sound/parisc/harmony.c                  |    2 +-
- sound/pci/ad1889.c                      |    2 +-
- sound/pci/ali5451/ali5451.c             |    2 +-
- sound/pci/als300.c                      |    4 ++--
- sound/pci/als4000.c                     |    4 ++--
- sound/pci/atiixp.c                      |    2 +-
- sound/pci/atiixp_modem.c                |    2 +-
- sound/pci/au88x0/au88x0.h               |    2 +-
- sound/pci/au88x0/au88x0_core.c          |    5 ++---
- sound/pci/azt3328.c                     |    4 ++--
- sound/pci/bt87x.c                       |    2 +-
- sound/pci/ca0106/ca0106_main.c          |    2 +-
- sound/pci/cmipci.c                      |    4 ++--
- sound/pci/cs4281.c                      |    4 ++--
- sound/pci/cs46xx/cs46xx_lib.c           |    2 +-
- sound/pci/cs5535audio/cs5535audio.c     |    2 +-
- sound/pci/echoaudio/echoaudio.c         |    2 +-
- sound/pci/emu10k1/emu10k1x.c            |    2 +-
- sound/pci/emu10k1/irq.c                 |    2 +-
- sound/pci/ens1370.c                     |    4 ++--
- sound/pci/es1938.c                      |    6 +++---
- sound/pci/es1968.c                      |    9 ++++-----
- sound/pci/fm801.c                       |    4 ++--
- sound/pci/hda/hda_intel.c               |    2 +-
- sound/pci/ice1712/ice1712.c             |    6 +++---
- sound/pci/ice1712/ice1724.c             |    4 ++--
- sound/pci/intel8x0.c                    |    2 +-
- sound/pci/intel8x0m.c                   |    2 +-
- sound/pci/korg1212/korg1212.c           |    2 +-
- sound/pci/maestro3.c                    |    4 ++--
- sound/pci/mixart/mixart_core.c          |    2 +-
- sound/pci/mixart/mixart_core.h          |    2 +-
- sound/pci/nm256/nm256.c                 |    4 ++--
- sound/pci/pcxhr/pcxhr_core.c            |    2 +-
- sound/pci/pcxhr/pcxhr_core.h            |    2 +-
- sound/pci/riptide/riptide.c             |    5 ++---
- sound/pci/rme32.c                       |    2 +-
- sound/pci/rme96.c                       |    3 +--
- sound/pci/rme9652/hdsp.c                |    2 +-
- sound/pci/rme9652/hdspm.c               |    2 +-
- sound/pci/rme9652/rme9652.c             |    2 +-
- sound/pci/sonicvibes.c                  |    4 ++--
- sound/pci/trident/trident_main.c        |    6 +++---
- sound/pci/via82xx.c                     |    6 +++---
- sound/pci/via82xx_modem.c               |    2 +-
- sound/pci/ymfpci/ymfpci_main.c          |    4 ++--
- sound/pcmcia/pdaudiocf/pdaudiocf.h      |    2 +-
- sound/pcmcia/pdaudiocf/pdaudiocf_irq.c  |    2 +-
- sound/ppc/pmac.c                        |    6 +++---
- sound/ppc/tumbler.c                     |    2 +-
- sound/sparc/amd7930.c                   |    2 +-
- sound/sparc/cs4231.c                    |    2 +-
- sound/sparc/dbri.c                      |    2 +-
- 100 files changed, 148 insertions(+), 152 deletions(-)
+ drivers/scsi/3w-9xxx.c                |    2 +-
+ drivers/scsi/3w-xxxx.c                |    2 +-
+ drivers/scsi/53c700.c                 |    2 +-
+ drivers/scsi/53c700.h                 |    2 +-
+ drivers/scsi/BusLogic.c               |    2 +-
+ drivers/scsi/BusLogic.h               |    2 +-
+ drivers/scsi/NCR5380.h                |    2 +-
+ drivers/scsi/NCR53C9x.h               |    2 +-
+ drivers/scsi/NCR53c406a.c             |    4 ++--
+ drivers/scsi/NCR_D700.c               |    8 ++++----
+ drivers/scsi/NCR_Q720.c               |    5 ++---
+ drivers/scsi/a100u2w.c                |    2 +-
+ drivers/scsi/a2091.c                  |    2 +-
+ drivers/scsi/a3000.c                  |    2 +-
+ drivers/scsi/aacraid/rx.c             |    4 ++--
+ drivers/scsi/aacraid/sa.c             |    2 +-
+ drivers/scsi/advansys.c               |    2 +-
+ drivers/scsi/aha1740.c                |    2 +-
+ drivers/scsi/aic7xxx/aic79xx_osm.c    |    2 +-
+ drivers/scsi/aic7xxx/aic79xx_osm.h    |    2 +-
+ drivers/scsi/aic7xxx/aic7xxx_osm.c    |    2 +-
+ drivers/scsi/aic7xxx/aic7xxx_osm.h    |    2 +-
+ drivers/scsi/aic7xxx_old.c            |    4 ++--
+ drivers/scsi/aic94xx/aic94xx_hwi.c    |    2 +-
+ drivers/scsi/aic94xx/aic94xx_hwi.h    |    2 +-
+ drivers/scsi/arcmsr/arcmsr_hba.c      |    2 +-
+ drivers/scsi/arm/acornscsi.c          |    7 +++----
+ drivers/scsi/arm/cumana_2.c           |    5 ++---
+ drivers/scsi/arm/eesox.c              |    5 ++---
+ drivers/scsi/arm/powertec.c           |    5 ++---
+ drivers/scsi/atari_NCR5380.c          |    4 ++--
+ drivers/scsi/atari_dma_emul.c         |    4 ++--
+ drivers/scsi/atari_scsi.c             |   10 +++++-----
+ drivers/scsi/atp870u.c                |    2 +-
+ drivers/scsi/dc395x.c                 |    2 +-
+ drivers/scsi/dec_esp.c                |   12 ++++++------
+ drivers/scsi/dpt_i2o.c                |    2 +-
+ drivers/scsi/dpti.h                   |    2 +-
+ drivers/scsi/eata_pio.c               |    6 +++---
+ drivers/scsi/fd_mcs.c                 |    4 ++--
+ drivers/scsi/fdomain.c                |    4 ++--
+ drivers/scsi/gvp11.c                  |    2 +-
+ drivers/scsi/hptiop.c                 |    2 +-
+ drivers/scsi/ibmmca.c                 |    2 +-
+ drivers/scsi/ibmvscsi/rpa_vscsi.c     |    3 +--
+ drivers/scsi/in2000.c                 |    2 +-
+ drivers/scsi/initio.c                 |    2 +-
+ drivers/scsi/ipr.c                    |    2 +-
+ drivers/scsi/ips.c                    |    4 ++--
+ drivers/scsi/lpfc/lpfc_crtn.h         |    2 +-
+ drivers/scsi/lpfc/lpfc_sli.c          |    2 +-
+ drivers/scsi/mac53c94.c               |    8 ++++----
+ drivers/scsi/mac_esp.c                |   10 +++++-----
+ drivers/scsi/megaraid.c               |    5 ++---
+ drivers/scsi/megaraid.h               |    4 ++--
+ drivers/scsi/megaraid/megaraid_mbox.c |    4 ++--
+ drivers/scsi/megaraid/megaraid_sas.c  |    2 +-
+ drivers/scsi/mesh.c                   |    2 +-
+ drivers/scsi/mvme147.c                |    2 +-
+ drivers/scsi/ncr53c8xx.c              |    2 +-
+ drivers/scsi/ncr53c8xx.h              |    2 +-
+ drivers/scsi/nsp32.c                  |    4 ++--
+ drivers/scsi/pcmcia/nsp_cs.c          |    2 +-
+ drivers/scsi/pcmcia/nsp_cs.h          |    2 +-
+ drivers/scsi/pcmcia/sym53c500_cs.c    |    2 +-
+ drivers/scsi/qla1280.c                |    2 +-
+ drivers/scsi/qla2xxx/qla_gbl.h        |    6 +++---
+ drivers/scsi/qla2xxx/qla_inline.h     |    2 +-
+ drivers/scsi/qla2xxx/qla_isr.c        |   11 +++++------
+ drivers/scsi/qla4xxx/ql4_glbl.h       |    2 +-
+ drivers/scsi/qla4xxx/ql4_isr.c        |    3 +--
+ drivers/scsi/qlogicfas408.c           |    2 +-
+ drivers/scsi/qlogicfas408.h           |    2 +-
+ drivers/scsi/qlogicpti.c              |    4 ++--
+ drivers/scsi/seagate.c                |   10 +++++-----
+ drivers/scsi/sgiwd93.c                |    2 +-
+ drivers/scsi/stex.c                   |    2 +-
+ drivers/scsi/sun3_NCR5380.c           |    2 +-
+ drivers/scsi/sun3_scsi.c              |    4 ++--
+ drivers/scsi/sun3_scsi_vme.c          |    4 ++--
+ drivers/scsi/sym53c8xx_2/sym_glue.c   |    2 +-
+ drivers/scsi/tmscsim.c                |    2 +-
+ drivers/scsi/ultrastor.c              |    4 ++--
+ drivers/scsi/wd7000.c                 |    2 +-
+ 84 files changed, 137 insertions(+), 146 deletions(-)
 
-6348eaa5c5320cc3c4fac5ca1d41b587388e74d9
-diff --git a/sound/aoa/core/snd-aoa-gpio-feature.c b/sound/aoa/core/snd-aoa-gpio-feature.c
-index 805dcbf..1915d9b 100644
---- a/sound/aoa/core/snd-aoa-gpio-feature.c
-+++ b/sound/aoa/core/snd-aoa-gpio-feature.c
-@@ -281,7 +281,7 @@ static void ftr_gpio_exit(struct gpio_runtime *rt)
- 	mutex_destroy(&rt->line_out_notify.mutex);
+fb66571c6fde956fb8bddacf11d64101f8df8bf8
+diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
+index fb14014..ec76865 100644
+--- a/drivers/scsi/3w-9xxx.c
++++ b/drivers/scsi/3w-9xxx.c
+@@ -1192,7 +1192,7 @@ out:
+ } /* End twa_initialize_device_extension() */
+ 
+ /* This function is the interrupt service routine */
+-static irqreturn_t twa_interrupt(int irq, void *dev_instance)
++static irqreturn_t twa_interrupt(void *dev_instance)
+ {
+ 	int request_id, error = 0;
+ 	u32 status_reg_value;
+diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
+index a64153b..2ec0c28 100644
+--- a/drivers/scsi/3w-xxxx.c
++++ b/drivers/scsi/3w-xxxx.c
+@@ -2021,7 +2021,7 @@ static int tw_scsi_queue(struct scsi_cmnd *SCpnt, void (*done)(struct scsi_cmnd
+ } /* End tw_scsi_queue() */
+ 
+ /* This function is the interrupt service routine */
+-static irqreturn_t tw_interrupt(int irq, void *dev_instance) 
++static irqreturn_t tw_interrupt(void *dev_instance) 
+ {
+ 	int request_id;
+ 	u32 status_reg_value;
+diff --git a/drivers/scsi/53c700.c b/drivers/scsi/53c700.c
+index 71ff3fb..43e4633 100644
+--- a/drivers/scsi/53c700.c
++++ b/drivers/scsi/53c700.c
+@@ -1479,7 +1479,7 @@ NCR_700_start_command(struct scsi_cmnd *SCp)
  }
  
--static irqreturn_t ftr_handle_notify_irq(int xx, void *data)
-+static irqreturn_t ftr_handle_notify_irq(void *data)
+ irqreturn_t
+-NCR_700_intr(int irq, void *dev_id)
++NCR_700_intr(void *dev_id)
  {
- 	struct gpio_notification *notif = data;
+ 	struct Scsi_Host *host = (struct Scsi_Host *)dev_id;
+ 	struct NCR_700_Host_Parameters *hostdata =
+diff --git a/drivers/scsi/53c700.h b/drivers/scsi/53c700.h
+index e06bdfe..d601ab3 100644
+--- a/drivers/scsi/53c700.h
++++ b/drivers/scsi/53c700.h
+@@ -57,7 +57,7 @@ struct NCR_700_Host_Parameters;
+ struct Scsi_Host *NCR_700_detect(struct scsi_host_template *,
+ 		struct NCR_700_Host_Parameters *, struct device *);
+ int NCR_700_release(struct Scsi_Host *host);
+-irqreturn_t NCR_700_intr(int, void *);
++irqreturn_t NCR_700_intr(void *);
  
-diff --git a/sound/aoa/soundbus/i2sbus/i2sbus-core.c b/sound/aoa/soundbus/i2sbus/i2sbus-core.c
-index efb9441..ee0a5ac 100644
---- a/sound/aoa/soundbus/i2sbus/i2sbus-core.c
-+++ b/sound/aoa/soundbus/i2sbus/i2sbus-core.c
-@@ -92,7 +92,7 @@ static void i2sbus_release_dev(struct device *dev)
- 	kfree(i2sdev);
- }
  
--static irqreturn_t i2sbus_bus_intr(int irq, void *devid)
-+static irqreturn_t i2sbus_bus_intr(void *devid)
+ enum NCR_700_Host_State {
+diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
+index 49e1ffa..144b6e2 100644
+--- a/drivers/scsi/BusLogic.c
++++ b/drivers/scsi/BusLogic.c
+@@ -2665,7 +2665,7 @@ static void BusLogic_ProcessCompletedCCBs(struct BusLogic_HostAdapter *HostAdapt
+   Adapters.
+ */
+ 
+-static irqreturn_t BusLogic_InterruptHandler(int IRQ_Channel, void *DeviceIdentifier)
++static irqreturn_t BusLogic_InterruptHandler(void *DeviceIdentifier)
  {
- 	struct i2sbus_dev *dev = devid;
- 	u32 intreg;
-diff --git a/sound/aoa/soundbus/i2sbus/i2sbus-pcm.c b/sound/aoa/soundbus/i2sbus/i2sbus-pcm.c
-index c6b42f9..e732f15 100644
---- a/sound/aoa/soundbus/i2sbus/i2sbus-pcm.c
-+++ b/sound/aoa/soundbus/i2sbus/i2sbus-pcm.c
-@@ -702,13 +702,13 @@ static inline void handle_interrupt(struct i2sbus_dev *i2sdev, int in)
- 	spin_unlock(&i2sdev->low_lock);
- }
+ 	struct BusLogic_HostAdapter *HostAdapter = (struct BusLogic_HostAdapter *) DeviceIdentifier;
+ 	unsigned long ProcessorFlags;
+diff --git a/drivers/scsi/BusLogic.h b/drivers/scsi/BusLogic.h
+index bfbfb5c..3dfe9ce 100644
+--- a/drivers/scsi/BusLogic.h
++++ b/drivers/scsi/BusLogic.h
+@@ -1341,7 +1341,7 @@ static int BusLogic_BIOSDiskParameters(struct scsi_device *, struct block_device
+ static int BusLogic_ProcDirectoryInfo(struct Scsi_Host *, char *, char **, off_t, int, int);
+ static int BusLogic_SlaveConfigure(struct scsi_device *);
+ static void BusLogic_QueueCompletedCCB(struct BusLogic_CCB *);
+-static irqreturn_t BusLogic_InterruptHandler(int, void *);
++static irqreturn_t BusLogic_InterruptHandler(void *);
+ static int BusLogic_ResetHostAdapter(struct BusLogic_HostAdapter *, bool HardReset);
+ static void BusLogic_Message(enum BusLogic_MessageLevel, char *, struct BusLogic_HostAdapter *, ...);
+ static int __init BusLogic_Setup(char *);
+diff --git a/drivers/scsi/NCR5380.h b/drivers/scsi/NCR5380.h
+index bdc468c..7d932ac 100644
+--- a/drivers/scsi/NCR5380.h
++++ b/drivers/scsi/NCR5380.h
+@@ -303,7 +303,7 @@ static int NCR5380_init(struct Scsi_Host *instance, int flags);
+ static void NCR5380_exit(struct Scsi_Host *instance);
+ static void NCR5380_information_transfer(struct Scsi_Host *instance);
+ #ifndef DONT_USE_INTR
+-static irqreturn_t NCR5380_intr(int irq, void *dev_id);
++static irqreturn_t NCR5380_intr(void *dev_id);
+ #endif
+ static void NCR5380_main(struct work_struct *work);
+ static void __maybe_unused NCR5380_print_options(struct Scsi_Host *instance);
+diff --git a/drivers/scsi/NCR53C9x.h b/drivers/scsi/NCR53C9x.h
+index d85cb73..ff0fbd9 100644
+--- a/drivers/scsi/NCR53C9x.h
++++ b/drivers/scsi/NCR53C9x.h
+@@ -656,7 +656,7 @@ extern struct NCR_ESP *esp_allocate(struct scsi_host_template *, void *, int);
+ extern void esp_deallocate(struct NCR_ESP *);
+ extern void esp_release(void);
+ extern void esp_initialize(struct NCR_ESP *);
+-extern irqreturn_t esp_intr(int, void *);
++extern irqreturn_t esp_intr(void *);
+ extern const char *esp_info(struct Scsi_Host *);
+ extern int esp_queue(Scsi_Cmnd *, void (*done)(Scsi_Cmnd *));
+ extern int esp_abort(Scsi_Cmnd *);
+diff --git a/drivers/scsi/NCR53c406a.c b/drivers/scsi/NCR53c406a.c
+index 3168a17..3aef1da 100644
+--- a/drivers/scsi/NCR53c406a.c
++++ b/drivers/scsi/NCR53c406a.c
+@@ -168,7 +168,7 @@ enum Phase {
  
--irqreturn_t i2sbus_tx_intr(int irq, void *devid)
-+irqreturn_t i2sbus_tx_intr(void *devid)
- {
- 	handle_interrupt((struct i2sbus_dev *)devid, 0);
- 	return IRQ_HANDLED;
- }
- 
--irqreturn_t i2sbus_rx_intr(int irq, void *devid)
-+irqreturn_t i2sbus_rx_intr(void *devid)
- {
- 	handle_interrupt((struct i2sbus_dev *)devid, 1);
- 	return IRQ_HANDLED;
-diff --git a/sound/aoa/soundbus/i2sbus/i2sbus.h b/sound/aoa/soundbus/i2sbus/i2sbus.h
-index ff29654..9d97f3b 100644
---- a/sound/aoa/soundbus/i2sbus/i2sbus.h
-+++ b/sound/aoa/soundbus/i2sbus/i2sbus.h
-@@ -100,9 +100,9 @@ i2sbus_attach_codec(struct soundbus_dev *dev, struct snd_card *card,
- extern void
- i2sbus_detach_codec(struct soundbus_dev *dev, void *data);
- extern irqreturn_t
--i2sbus_tx_intr(int irq, void *devid);
-+i2sbus_tx_intr(void *devid);
- extern irqreturn_t
--i2sbus_rx_intr(int irq, void *devid);
-+i2sbus_rx_intr(void *devid);
- 
- extern void i2sbus_wait_for_stop_both(struct i2sbus_dev *i2sdev);
- extern void i2sbus_pcm_prepare_both(struct i2sbus_dev *i2sdev);
-diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
-index 3b73ba7..2c7b8bc 100644
---- a/sound/arm/aaci.c
-+++ b/sound/arm/aaci.c
-@@ -309,7 +309,7 @@ static void aaci_fifo_irq(struct aaci *aaci, int channel, u32 mask)
- 	}
- }
- 
--static irqreturn_t aaci_irq(int irq, void *devid)
-+static irqreturn_t aaci_irq(void *devid)
- {
- 	struct aaci *aaci = devid;
- 	u32 mask;
-diff --git a/sound/arm/pxa2xx-ac97.c b/sound/arm/pxa2xx-ac97.c
-index 7bc2767..4110b80 100644
---- a/sound/arm/pxa2xx-ac97.c
-+++ b/sound/arm/pxa2xx-ac97.c
-@@ -152,7 +152,7 @@ static void pxa2xx_ac97_reset(struct snd_ac97 *ac97)
- 	GCR |= GCR_SDONE_IE|GCR_CDONE_IE;
- }
- 
--static irqreturn_t pxa2xx_ac97_irq(int irq, void *dev_id)
-+static irqreturn_t pxa2xx_ac97_irq(void *dev_id)
- {
- 	long status;
- 
-diff --git a/sound/drivers/mpu401/mpu401_uart.c b/sound/drivers/mpu401/mpu401_uart.c
-index 3306ecd..702c2dd 100644
---- a/sound/drivers/mpu401/mpu401_uart.c
-+++ b/sound/drivers/mpu401/mpu401_uart.c
-@@ -128,7 +128,7 @@ static void _snd_mpu401_uart_interrupt(struct snd_mpu401 *mpu)
-  *
-  * Processes the interrupt for MPU401-UART i/o.
-  */
--irqreturn_t snd_mpu401_uart_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_mpu401_uart_interrupt(void *dev_id)
- {
- 	struct snd_mpu401 *mpu = dev_id;
- 	
-@@ -147,7 +147,7 @@ EXPORT_SYMBOL(snd_mpu401_uart_interrupt);
-  *
-  * Processes the interrupt for MPU401-UART output.
-  */
--irqreturn_t snd_mpu401_uart_interrupt_tx(int irq, void *dev_id)
-+irqreturn_t snd_mpu401_uart_interrupt_tx(void *dev_id)
- {
- 	struct snd_mpu401 *mpu = dev_id;
- 	
-diff --git a/sound/drivers/mtpav.c b/sound/drivers/mtpav.c
-index 40eb026..ae65941 100644
---- a/sound/drivers/mtpav.c
-+++ b/sound/drivers/mtpav.c
-@@ -570,7 +570,7 @@ static void snd_mtpav_read_bytes(struct mtpav *mcrd)
- 	} while (sbyt & SIGS_BYTE);
- }
- 
--static irqreturn_t snd_mtpav_irqh(int irq, void *dev_id)
-+static irqreturn_t snd_mtpav_irqh(void *dev_id)
- {
- 	struct mtpav *mcard = dev_id;
- 
-diff --git a/sound/drivers/serial-u16550.c b/sound/drivers/serial-u16550.c
-index 65de3a7..63c08a3 100644
---- a/sound/drivers/serial-u16550.c
-+++ b/sound/drivers/serial-u16550.c
-@@ -292,7 +292,7 @@ static void snd_uart16550_io_loop(struct snd_uart16550 * uart)
-  * Note that some devices need OUT2 to be set before they will generate
-  * interrupts at all. (Possibly tied to an internal pull-up on CTS?)
-  */
--static irqreturn_t snd_uart16550_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_uart16550_interrupt(void *dev_id)
- {
- 	struct snd_uart16550 *uart;
- 
-diff --git a/sound/drivers/vx/vx_core.c b/sound/drivers/vx/vx_core.c
-index ed19bc1..d043118 100644
---- a/sound/drivers/vx/vx_core.c
-+++ b/sound/drivers/vx/vx_core.c
-@@ -537,7 +537,7 @@ static void vx_interrupt(unsigned long private_data)
- /**
-  * snd_vx_irq_handler - interrupt handler
-  */
--irqreturn_t snd_vx_irq_handler(int irq, void *dev)
-+irqreturn_t snd_vx_irq_handler(void *dev)
- {
- 	struct vx_core *chip = dev;
- 
-diff --git a/sound/isa/ad1816a/ad1816a_lib.c b/sound/isa/ad1816a/ad1816a_lib.c
-index cf18fe4..376bd96 100644
---- a/sound/isa/ad1816a/ad1816a_lib.c
-+++ b/sound/isa/ad1816a/ad1816a_lib.c
-@@ -315,7 +315,7 @@ static snd_pcm_uframes_t snd_ad1816a_capture_pointer(struct snd_pcm_substream *s
- }
- 
- 
--static irqreturn_t snd_ad1816a_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ad1816a_interrupt(void *dev_id)
- {
- 	struct snd_ad1816a *chip = dev_id;
- 	unsigned char status;
-diff --git a/sound/isa/ad1848/ad1848_lib.c b/sound/isa/ad1848/ad1848_lib.c
-index a901cd1..d3686db 100644
---- a/sound/isa/ad1848/ad1848_lib.c
-+++ b/sound/isa/ad1848/ad1848_lib.c
-@@ -564,7 +564,7 @@ static int snd_ad1848_capture_prepare(struct snd_pcm_substream *substream)
+ /* Static function prototypes */
+ static void NCR53c406a_intr(void *);
+-static irqreturn_t do_NCR53c406a_intr(int, void *);
++static irqreturn_t do_NCR53c406a_intr(void *);
+ static void chip_init(void);
+ static void calc_port_addr(void);
+ #ifndef IRQ_LEV
+@@ -765,7 +765,7 @@ static int NCR53c406a_biosparm(struct scsi_device *disk,
  	return 0;
  }
  
--static irqreturn_t snd_ad1848_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ad1848_interrupt(void *dev_id)
- {
- 	struct snd_ad1848 *chip = dev_id;
- 
-diff --git a/sound/isa/cs423x/cs4231_lib.c b/sound/isa/cs423x/cs4231_lib.c
-index a5eb965..94b0961 100644
---- a/sound/isa/cs423x/cs4231_lib.c
-+++ b/sound/isa/cs423x/cs4231_lib.c
-@@ -909,7 +909,7 @@ static void snd_cs4231_overrange(struct snd_cs4231 *chip)
- 		chip->capture_substream->runtime->overrange++;
- }
- 
--irqreturn_t snd_cs4231_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_cs4231_interrupt(void *dev_id)
- {
- 	struct snd_cs4231 *chip = dev_id;
- 	unsigned char status;
-diff --git a/sound/isa/es1688/es1688_lib.c b/sound/isa/es1688/es1688_lib.c
-index 5c26d49..1f20e42 100644
---- a/sound/isa/es1688/es1688_lib.c
-+++ b/sound/isa/es1688/es1688_lib.c
-@@ -479,7 +479,7 @@ static int snd_es1688_capture_trigger(struct snd_pcm_substream *substream,
- 	return snd_es1688_trigger(chip, cmd, 0x0f);
- }
- 
--static irqreturn_t snd_es1688_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_es1688_interrupt(void *dev_id)
- {
- 	struct snd_es1688 *chip = dev_id;
- 
-diff --git a/sound/isa/es18xx.c b/sound/isa/es18xx.c
-index 4a7367a..369a6f2 100644
---- a/sound/isa/es18xx.c
-+++ b/sound/isa/es18xx.c
-@@ -754,7 +754,7 @@ static int snd_es18xx_playback_trigger(struct snd_pcm_substream *substream,
- 		return snd_es18xx_playback2_trigger(chip, substream, cmd);
- }
- 
--static irqreturn_t snd_es18xx_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_es18xx_interrupt(void *dev_id)
- {
- 	struct snd_es18xx *chip = dev_id;
- 	unsigned char status;
-@@ -799,7 +799,7 @@ static irqreturn_t snd_es18xx_interrupt(int irq, void *dev_id)
- 
- 	/* MPU */
- 	if ((status & MPU_IRQ) && chip->rmidi)
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 
- 	/* Hardware volume */
- 	if (status & HWV_IRQ) {
-diff --git a/sound/isa/gus/gus_irq.c b/sound/isa/gus/gus_irq.c
-index cd9a6f1..ea27421 100644
---- a/sound/isa/gus/gus_irq.c
-+++ b/sound/isa/gus/gus_irq.c
-@@ -30,7 +30,7 @@
- #define STAT_ADD(x)	while (0) { ; }
- #endif
- 
--irqreturn_t snd_gus_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_gus_interrupt(void *dev_id)
- {
- 	struct snd_gus_card * gus = dev_id;
- 	unsigned char status;
-diff --git a/sound/isa/gus/gusmax.c b/sound/isa/gus/gusmax.c
-index 4922f5d..31d4121 100644
---- a/sound/isa/gus/gusmax.c
-+++ b/sound/isa/gus/gusmax.c
-@@ -103,7 +103,7 @@ static int __devinit snd_gusmax_detect(struct snd_gus_card * gus)
- 	return 0;
- }
- 
--static irqreturn_t snd_gusmax_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_gusmax_interrupt(void *dev_id)
- {
- 	struct snd_gusmax *maxcard = dev_id;
- 	int loop, max = 5;
-@@ -113,12 +113,12 @@ static irqreturn_t snd_gusmax_interrupt(int irq, void *dev_id)
- 		loop = 0;
- 		if (inb(maxcard->gus_status_reg)) {
- 			handled = 1;
--			snd_gus_interrupt(irq, maxcard->gus);
-+			snd_gus_interrupt(maxcard->gus);
- 			loop++;
- 		}
- 		if (inb(maxcard->pcm_status_reg) & 0x01) { /* IRQ bit is set? */
- 			handled = 1;
--			snd_cs4231_interrupt(irq, maxcard->cs4231);
-+			snd_cs4231_interrupt(maxcard->cs4231);
- 			loop++;
- 		}
- 	} while (loop && --max > 0);
-diff --git a/sound/isa/gus/interwave.c b/sound/isa/gus/interwave.c
-index 2091c50..6cd4770 100644
---- a/sound/isa/gus/interwave.c
-+++ b/sound/isa/gus/interwave.c
-@@ -298,7 +298,7 @@ static int __devinit snd_interwave_detect(struct snd_interwave *iwcard,
- 	return -ENODEV;
- }
- 
--static irqreturn_t snd_interwave_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_interwave_interrupt(void *dev_id)
- {
- 	struct snd_interwave *iwcard = dev_id;
- 	int loop, max = 5;
-@@ -308,12 +308,12 @@ static irqreturn_t snd_interwave_interrupt(int irq, void *dev_id)
- 		loop = 0;
- 		if (inb(iwcard->gus_status_reg)) {
- 			handled = 1;
--			snd_gus_interrupt(irq, iwcard->gus);
-+			snd_gus_interrupt(iwcard->gus);
- 			loop++;
- 		}
- 		if (inb(iwcard->pcm_status_reg) & 0x01) {	/* IRQ bit is set? */
- 			handled = 1;
--			snd_cs4231_interrupt(irq, iwcard->cs4231);
-+			snd_cs4231_interrupt(iwcard->cs4231);
- 			loop++;
- 		}
- 	} while (loop && --max > 0);
-diff --git a/sound/isa/opl3sa2.c b/sound/isa/opl3sa2.c
-index 59af9ab..44ba899 100644
---- a/sound/isa/opl3sa2.c
-+++ b/sound/isa/opl3sa2.c
-@@ -296,7 +296,7 @@ static int __devinit snd_opl3sa2_detect(struct snd_opl3sa2 *chip)
- 	return 0;
- }
- 
--static irqreturn_t snd_opl3sa2_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_opl3sa2_interrupt(void *dev_id)
- {
- 	unsigned short status;
- 	struct snd_opl3sa2 *chip = dev_id;
-@@ -314,12 +314,12 @@ static irqreturn_t snd_opl3sa2_interrupt(int irq, void *dev_id)
- 
- 	if ((status & 0x10) && chip->rmidi != NULL) {
- 		handled = 1;
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 	}
- 
- 	if (status & 0x07) {	/* TI,CI,PI */
- 		handled = 1;
--		snd_cs4231_interrupt(irq, chip->cs4231);
-+		snd_cs4231_interrupt(chip->cs4231);
- 	}
- 
- 	if (status & 0x40) { /* hardware volume change */
-diff --git a/sound/isa/opti9xx/opti92x-ad1848.c b/sound/isa/opti9xx/opti92x-ad1848.c
-index ee1a824..4e04ee7 100644
---- a/sound/isa/opti9xx/opti92x-ad1848.c
-+++ b/sound/isa/opti9xx/opti92x-ad1848.c
-@@ -1098,7 +1098,7 @@ static void snd_opti93x_overrange(struct snd_opti93x *chip)
- 	spin_unlock_irqrestore(&chip->lock, flags);
- }
- 
--static irqreturn_t snd_opti93x_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_opti93x_interrupt(void *dev_id)
- {
- 	struct snd_opti93x *codec = dev_id;
- 	unsigned char status;
-diff --git a/sound/isa/sb/es968.c b/sound/isa/sb/es968.c
-index d4b2187..4eb3bbf 100644
---- a/sound/isa/sb/es968.c
-+++ b/sound/isa/sb/es968.c
-@@ -70,7 +70,7 @@ MODULE_DEVICE_TABLE(pnp_card, snd_es968_pnpids);
- 
- #define	DRIVER_NAME	"snd-card-es968"
- 
--static irqreturn_t snd_card_es968_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_card_es968_interrupt(void *dev_id)
- {
- 	struct snd_sb *chip = dev_id;
- 
-diff --git a/sound/isa/sb/sb16_main.c b/sound/isa/sb/sb16_main.c
-index c06754f..eea5976 100644
---- a/sound/isa/sb/sb16_main.c
-+++ b/sound/isa/sb/sb16_main.c
-@@ -395,7 +395,7 @@ static int snd_sb16_capture_trigger(struct snd_pcm_substream *substream,
- 	return result;
- }
- 
--irqreturn_t snd_sb16dsp_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_sb16dsp_interrupt(void *dev_id)
- {
- 	struct snd_sb *chip = dev_id;
- 	unsigned char status;
-@@ -405,7 +405,7 @@ irqreturn_t snd_sb16dsp_interrupt(int irq, void *dev_id)
- 	status = snd_sbmixer_read(chip, SB_DSP4_IRQSTATUS);
- 	spin_unlock(&chip->mixer_lock);
- 	if ((status & SB_IRQTYPE_MPUIN) && chip->rmidi_callback)
--		chip->rmidi_callback(irq, chip->rmidi->private_data);
-+		chip->rmidi_callback(chip->rmidi->private_data);
- 	if (status & SB_IRQTYPE_8BIT) {
- 		ok = 0;
- 		if (chip->mode & SB_MODE_PLAYBACK_8) {
-diff --git a/sound/isa/sb/sb8.c b/sound/isa/sb/sb8.c
-index f933aef..8b3aa59 100644
---- a/sound/isa/sb/sb8.c
-+++ b/sound/isa/sb/sb8.c
-@@ -61,7 +61,7 @@ struct snd_sb8 {
- 	struct snd_sb *chip;
- };
- 
--static irqreturn_t snd_sb8_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_sb8_interrupt(void *dev_id)
- {
- 	struct snd_sb *chip = dev_id;
- 
-diff --git a/sound/isa/sgalaxy.c b/sound/isa/sgalaxy.c
-index 922519d..3255bea 100644
---- a/sound/isa/sgalaxy.c
-+++ b/sound/isa/sgalaxy.c
-@@ -108,7 +108,7 @@ static int __devinit snd_sgalaxy_sbdsp_command(unsigned long port,
- 	return 0;
- }
- 
--static irqreturn_t snd_sgalaxy_dummy_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_sgalaxy_dummy_interrupt(void *dev_id)
- {
- 	return IRQ_NONE;
- }
-diff --git a/sound/isa/wavefront/wavefront.c b/sound/isa/wavefront/wavefront.c
-index 83c2fc4..5cc35d4 100644
---- a/sound/isa/wavefront/wavefront.c
-+++ b/sound/isa/wavefront/wavefront.c
-@@ -264,7 +264,7 @@ snd_wavefront_pnp (int dev, snd_wavefront_card_t *acard, struct pnp_card_link *c
- 
- #endif /* CONFIG_PNP */
- 
--static irqreturn_t snd_wavefront_ics2115_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_wavefront_ics2115_interrupt(void *dev_id)
- {
- 	snd_wavefront_card_t *acard;
- 
-diff --git a/sound/mips/au1x00.c b/sound/mips/au1x00.c
-index 8a61a11..f4f7ae8 100644
---- a/sound/mips/au1x00.c
-+++ b/sound/mips/au1x00.c
-@@ -220,7 +220,7 @@ au1000_dma_start(struct audio_stream *stream)
- }
- 
- static irqreturn_t
--au1000_dma_interrupt(int irq, void *dev_id)
-+au1000_dma_interrupt(void *dev_id)
- {
- 	struct audio_stream *stream = (struct audio_stream *) dev_id;
- 	struct snd_pcm_substream *substream = stream->substream;
-diff --git a/sound/oss/ad1848.c b/sound/oss/ad1848.c
-index 7cf9913..0848881 100644
---- a/sound/oss/ad1848.c
-+++ b/sound/oss/ad1848.c
-@@ -195,7 +195,7 @@ static void     ad1848_halt(int dev);
- static void     ad1848_halt_input(int dev);
- static void     ad1848_halt_output(int dev);
- static void     ad1848_trigger(int dev, int bits);
--static irqreturn_t adintr(int irq, void *dev_id);
-+static irqreturn_t adintr(void *dev_id);
- 
- #ifndef EXCLUDE_TIMERS
- static int ad1848_tmr_install(int dev);
-@@ -2196,7 +2196,7 @@ void ad1848_unload(int io_base, int irq, int dma_playback, int dma_capture, int
- 		printk(KERN_ERR "ad1848: Can't find device to be unloaded. Base=%x\n", io_base);
- }
- 
--static irqreturn_t adintr(int irq, void *dev_id)
-+static irqreturn_t adintr(void *dev_id)
- {
- 	unsigned char status;
- 	ad1848_info *devc;
-diff --git a/sound/oss/btaudio.c b/sound/oss/btaudio.c
-index 4d5cf05..5583f35 100644
---- a/sound/oss/btaudio.c
-+++ b/sound/oss/btaudio.c
-@@ -824,7 +824,7 @@ static char *irq_name[] = { "", "", "", "OFLOW", "", "", "", "", "", "", "",
- 			    "RISCI", "FBUS", "FTRGT", "FDSR", "PPERR",
- 			    "RIPERR", "PABORT", "OCERR", "SCERR" };
- 
--static irqreturn_t btaudio_irq(int irq, void *dev_id)
-+static irqreturn_t btaudio_irq(void *dev_id)
- {
- 	int count = 0;
- 	u32 stat,astat;
-diff --git a/sound/oss/dmasound/dmasound_atari.c b/sound/oss/dmasound/dmasound_atari.c
-index 285239d..bf5db09 100644
---- a/sound/oss/dmasound/dmasound_atari.c
-+++ b/sound/oss/dmasound/dmasound_atari.c
-@@ -133,7 +133,7 @@ static int FalconSetFormat(int format);
- static int FalconSetVolume(int volume);
- static void AtaPlayNextFrame(int index);
- static void AtaPlay(void);
--static irqreturn_t AtaInterrupt(int irq, void *dummy);
-+static irqreturn_t AtaInterrupt(void *dummy);
- 
- /*** Mid level stuff *********************************************************/
- 
-@@ -1257,7 +1257,7 @@ static void AtaPlay(void)
- }
- 
- 
--static irqreturn_t AtaInterrupt(int irq, void *dummy)
-+static irqreturn_t AtaInterrupt(void *dummy)
- {
- #if 0
- 	/* ++TeSche: if you should want to test this... */
-diff --git a/sound/oss/dmasound/dmasound_paula.c b/sound/oss/dmasound/dmasound_paula.c
-index 90fc058..cc85922 100644
---- a/sound/oss/dmasound/dmasound_paula.c
-+++ b/sound/oss/dmasound/dmasound_paula.c
-@@ -82,7 +82,7 @@ static int AmiSetVolume(int volume);
- static int AmiSetTreble(int treble);
- static void AmiPlayNextFrame(int index);
- static void AmiPlay(void);
--static irqreturn_t AmiInterrupt(int irq, void *dummy);
-+static irqreturn_t AmiInterrupt(void *dummy);
- 
- #ifdef CONFIG_HEARTBEAT
- 
-@@ -556,7 +556,7 @@ static void AmiPlay(void)
- }
- 
- 
--static irqreturn_t AmiInterrupt(int irq, void *dummy)
-+static irqreturn_t AmiInterrupt(void *dummy)
- {
- 	int minframes = 1;
- 
-diff --git a/sound/oss/dmasound/dmasound_q40.c b/sound/oss/dmasound/dmasound_q40.c
-index b3379dd..d706976 100644
---- a/sound/oss/dmasound/dmasound_q40.c
-+++ b/sound/oss/dmasound/dmasound_q40.c
-@@ -48,8 +48,8 @@ static int Q40SetFormat(int format);
- static int Q40SetVolume(int volume);
- static void Q40PlayNextFrame(int index);
- static void Q40Play(void);
--static irqreturn_t Q40StereoInterrupt(int irq, void *dummy);
--static irqreturn_t Q40MonoInterrupt(int irq, void *dummy);
-+static irqreturn_t Q40StereoInterrupt(void *dummy);
-+static irqreturn_t Q40MonoInterrupt(void *dummy);
- static void Q40Interrupt(void);
- 
- 
-@@ -451,7 +451,7 @@ static void Q40Play(void)
- 	spin_unlock_irqrestore(&dmasound.lock, flags);
- }
- 
--static irqreturn_t Q40StereoInterrupt(int irq, void *dummy)
-+static irqreturn_t Q40StereoInterrupt(void *dummy)
- {
- 	spin_lock(&dmasound.lock);
-         if (q40_sc>1){
-@@ -463,7 +463,7 @@ static irqreturn_t Q40StereoInterrupt(int irq, void *dummy)
- 	spin_unlock(&dmasound.lock);
- 	return IRQ_HANDLED;
- }
--static irqreturn_t Q40MonoInterrupt(int irq, void *dummy)
-+static irqreturn_t Q40MonoInterrupt(void *dummy)
- {
- 	spin_lock(&dmasound.lock);
-         if (q40_sc>0){
-diff --git a/sound/oss/hal2.c b/sound/oss/hal2.c
-index a94b9df..4d4f8fa 100644
---- a/sound/oss/hal2.c
-+++ b/sound/oss/hal2.c
-@@ -370,7 +370,7 @@ static void hal2_adc_interrupt(struct hal2_codec *adc)
- 	wake_up(&adc->dma_wait);
- }
- 
--static irqreturn_t hal2_interrupt(int irq, void *dev_id)
-+static irqreturn_t hal2_interrupt(void *dev_id)
- {
- 	struct hal2_card *hal2 = dev_id;
- 	irqreturn_t ret = IRQ_NONE;
-diff --git a/sound/oss/i810_audio.c b/sound/oss/i810_audio.c
-index f5e31f1..d99fe07 100644
---- a/sound/oss/i810_audio.c
-+++ b/sound/oss/i810_audio.c
-@@ -1524,7 +1524,7 @@ static void i810_channel_interrupt(struct i810_card *card)
- #endif
- }
- 
--static irqreturn_t i810_interrupt(int irq, void *dev_id)
-+static irqreturn_t i810_interrupt(void *dev_id)
- {
- 	struct i810_card *card = dev_id;
- 	u32 status;
-diff --git a/sound/oss/mpu401.c b/sound/oss/mpu401.c
-index a690ca5..111fcd9 100644
---- a/sound/oss/mpu401.c
-+++ b/sound/oss/mpu401.c
-@@ -432,7 +432,7 @@ static void mpu401_input_loop(struct mpu_config *devc)
- 	devc->m_busy = 0;
- }
- 
--static irqreturn_t mpuintr(int irq, void *dev_id)
-+static irqreturn_t mpuintr(void *dev_id)
- {
- 	struct mpu_config *devc;
- 	int dev = (int)(unsigned long) dev_id;
-diff --git a/sound/oss/mpu401.h b/sound/oss/mpu401.h
-index 0ad1e9e..fe21576 100644
---- a/sound/oss/mpu401.h
-+++ b/sound/oss/mpu401.h
-@@ -3,7 +3,7 @@
- int probe_uart401 (struct address_info *hw_config, struct module *owner);
- void unload_uart401 (struct address_info *hw_config);
- 
--irqreturn_t uart401intr (int irq, void *dev_id);
-+irqreturn_t uart401intr (void *dev_id);
- 
- /*	From mpu401.c */
- int probe_mpu401(struct address_info *hw_config, struct resource *ports);
-diff --git a/sound/oss/msnd_pinnacle.c b/sound/oss/msnd_pinnacle.c
-index f1f49eb..efd59c8 100644
---- a/sound/oss/msnd_pinnacle.c
-+++ b/sound/oss/msnd_pinnacle.c
-@@ -1087,7 +1087,7 @@ static __inline__ void eval_dsp_msg(register WORD wMessage)
- 	}
- }
- 
--static irqreturn_t intr(int irq, void *dev_id)
-+static irqreturn_t intr(void *dev_id)
- {
- 	/* Send ack to DSP */
- 	msnd_inb(dev.io + HP_RXL);
-diff --git a/sound/oss/pas2_card.c b/sound/oss/pas2_card.c
-index 25f3a22..e9902fa 100644
---- a/sound/oss/pas2_card.c
-+++ b/sound/oss/pas2_card.c
-@@ -88,7 +88,7 @@ void pas_write(unsigned char data, int ioaddr)
- 
- /******************* Begin of the Interrupt Handler ********************/
- 
--static irqreturn_t pasintr(int irq, void *dev_id)
-+static irqreturn_t pasintr(void *dev_id)
- {
- 	int             status;
- 
-diff --git a/sound/oss/sb_common.c b/sound/oss/sb_common.c
-index 07cbacf..1c65d0b 100644
---- a/sound/oss/sb_common.c
-+++ b/sound/oss/sb_common.c
-@@ -132,7 +132,7 @@ static void sb_intr (sb_devc *devc)
- 
- 		if (src & 4)						/* MPU401 interrupt */
- 			if(devc->midi_irq_cookie)
--				uart401intr(devc->irq, devc->midi_irq_cookie);
-+				uart401intr(devc->midi_irq_cookie);
- 
- 		if (!(src & 3))
- 			return;	/* Not a DSP interrupt */
-@@ -200,7 +200,7 @@ static void pci_intr(sb_devc *devc)
- 		sb_intr(devc);
- }
- 
--static irqreturn_t sbintr(int irq, void *dev_id)
-+static irqreturn_t sbintr(void *dev_id)
- {
- 	sb_devc *devc = dev_id;
- 
-diff --git a/sound/oss/sh_dac_audio.c b/sound/oss/sh_dac_audio.c
-index b493660..2971832 100644
---- a/sound/oss/sh_dac_audio.c
-+++ b/sound/oss/sh_dac_audio.c
-@@ -263,7 +263,7 @@ const struct file_operations dac_audio_fops = {
-       .release =	dac_audio_release,
- };
- 
--static irqreturn_t timer1_interrupt(int irq, void *dev)
-+static irqreturn_t timer1_interrupt(void *dev)
- {
- 	unsigned long timer_status;
- 
-diff --git a/sound/oss/swarm_cs4297a.c b/sound/oss/swarm_cs4297a.c
-index a8057f2..e58fdd6 100644
---- a/sound/oss/swarm_cs4297a.c
-+++ b/sound/oss/swarm_cs4297a.c
-@@ -2503,7 +2503,7 @@ static /*const */ struct file_operations cs4297a_audio_fops = {
- 	.release	= cs4297a_release,
- };
- 
--static void cs4297a_interrupt(int irq, void *dev_id)
-+static void cs4297a_interrupt(void *dev_id)
- {
- 	struct cs4297a_state *s = (struct cs4297a_state *) dev_id;
-         u32 status;
-diff --git a/sound/oss/trident.c b/sound/oss/trident.c
-index 96adc47..e702019 100644
---- a/sound/oss/trident.c
-+++ b/sound/oss/trident.c
-@@ -1811,7 +1811,7 @@ cyber_address_interrupt(struct trident_card *card)
- }
- 
- static irqreturn_t
--trident_interrupt(int irq, void *dev_id)
-+trident_interrupt(void *dev_id)
- {
- 	struct trident_card *card = (struct trident_card *) dev_id;
- 	u32 event;
-diff --git a/sound/oss/uart401.c b/sound/oss/uart401.c
-index a446b82..50922ef 100644
---- a/sound/oss/uart401.c
-+++ b/sound/oss/uart401.c
-@@ -96,7 +96,7 @@ static void uart401_input_loop(uart401_devc * devc)
- 		printk(KERN_WARNING "Too much work in interrupt on uart401 (0x%X). UART jabbering ??\n", devc->base);
- }
- 
--irqreturn_t uart401intr(int irq, void *dev_id)
-+irqreturn_t uart401intr(void *dev_id)
- {
- 	uart401_devc *devc = dev_id;
- 
-diff --git a/sound/oss/uart6850.c b/sound/oss/uart6850.c
-index f3f914a..ccc3cf1 100644
---- a/sound/oss/uart6850.c
-+++ b/sound/oss/uart6850.c
-@@ -104,7 +104,7 @@ static void uart6850_input_loop(void)
- 	}
- }
- 
--static irqreturn_t m6850intr(int irq, void *dev_id)
-+static irqreturn_t m6850intr(void *dev_id)
- {
- 	if (input_avail())
- 		uart6850_input_loop();
-diff --git a/sound/oss/via82cxxx_audio.c b/sound/oss/via82cxxx_audio.c
-index 5d3c037..a2b73ed 100644
---- a/sound/oss/via82cxxx_audio.c
-+++ b/sound/oss/via82cxxx_audio.c
-@@ -1911,7 +1911,7 @@ static void via_intr_channel (struct via_info *card, struct via_channel *chan)
- }
- 
- 
--static irqreturn_t  via_interrupt(int irq, void *dev_id)
-+static irqreturn_t  via_interrupt(void *dev_id)
- {
- 	struct via_info *card = dev_id;
- 	u32 status32;
-@@ -1926,7 +1926,7 @@ static irqreturn_t  via_interrupt(int irq, void *dev_id)
-         {
- #ifdef CONFIG_MIDI_VIA82CXXX
- 	    	 if (card->midi_devc)
--                    	uart401intr(irq, card->midi_devc);
-+                    	uart401intr(card->midi_devc);
- #endif
- 		return IRQ_HANDLED;
-     	}
-@@ -1949,7 +1949,7 @@ static irqreturn_t  via_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t via_new_interrupt(int irq, void *dev_id)
-+static irqreturn_t via_new_interrupt(void *dev_id)
- {
- 	struct via_info *card = dev_id;
- 	u32 status32;
-diff --git a/sound/oss/vidc.h b/sound/oss/vidc.h
-index 0d14247..95da71a 100644
---- a/sound/oss/vidc.h
-+++ b/sound/oss/vidc.h
-@@ -33,7 +33,7 @@ extern unsigned long vidc_fill_2x16_s(unsigned long ibuf, unsigned long iend,
-  * DMA Interrupt handler
-  */
- 
--extern irqreturn_t vidc_sound_dma_irq(int irqnr, void *ref);
-+extern irqreturn_t vidc_sound_dma_irq(void *ref);
- 
- /*
-  * Filler routine pointer
-diff --git a/sound/oss/vwsnd.c b/sound/oss/vwsnd.c
-index d25249a..6cf7c74 100644
---- a/sound/oss/vwsnd.c
-+++ b/sound/oss/vwsnd.c
-@@ -2233,7 +2233,7 @@ static void vwsnd_audio_write_intr(vwsnd_dev_t *devc, unsigned int status)
- 		pcm_output(devc, underflown, 0);
- }
- 
--static irqreturn_t vwsnd_audio_intr(int irq, void *dev_id)
-+static irqreturn_t vwsnd_audio_intr(void *dev_id)
- {
- 	vwsnd_dev_t *devc = dev_id;
- 	unsigned int status;
-diff --git a/sound/oss/waveartist.c b/sound/oss/waveartist.c
-index b48c729..4bdac2a 100644
---- a/sound/oss/waveartist.c
-+++ b/sound/oss/waveartist.c
-@@ -833,9 +833,9 @@ static struct audio_driver waveartist_audio_driver = {
- 
- 
- static irqreturn_t
--waveartist_intr(int irq, void *dev_id)
-+waveartist_intr(void *dev_id)
- {
--	wavnc_info *devc = (wavnc_info *)dev_id;
-+	wavnc_info *devc = dev_id;
- 	int	   irqstatus, status;
- 
- 	spin_lock(&waveartist_lock);
-diff --git a/sound/parisc/harmony.c b/sound/parisc/harmony.c
-index ff705c6..141ae20 100644
---- a/sound/parisc/harmony.c
-+++ b/sound/parisc/harmony.c
-@@ -193,7 +193,7 @@ harmony_set_control(struct snd_harmony *h)
- }
- 
- static irqreturn_t
--snd_harmony_interrupt(int irq, void *dev)
-+snd_harmony_interrupt(void *dev)
- {
- 	u32 dstatus;
- 	struct snd_harmony *h = dev;
-diff --git a/sound/pci/ad1889.c b/sound/pci/ad1889.c
-index 98970d4..5272038 100644
---- a/sound/pci/ad1889.c
-+++ b/sound/pci/ad1889.c
-@@ -596,7 +596,7 @@ static struct snd_pcm_ops snd_ad1889_capture_ops = {
- };
- 
- static irqreturn_t
--snd_ad1889_interrupt(int irq, void *dev_id)
-+snd_ad1889_interrupt(void *dev_id)
- {
- 	unsigned long st;
- 	struct snd_ad1889 *chip = dev_id;
-diff --git a/sound/pci/ali5451/ali5451.c b/sound/pci/ali5451/ali5451.c
-index 4c2bd7a..8c3ce64 100644
---- a/sound/pci/ali5451/ali5451.c
-+++ b/sound/pci/ali5451/ali5451.c
-@@ -968,7 +968,7 @@ static void snd_ali_update_ptr(struct snd_ali *codec, int channel)
- 	pchregs->data.aint = old & (~mask);
- }
- 
--static irqreturn_t snd_ali_card_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ali_card_interrupt(void *dev_id)
- {
- 	struct snd_ali 	*codec = dev_id;
- 	int channel;
-diff --git a/sound/pci/als300.c b/sound/pci/als300.c
-index 48cc39b..1fdd075 100644
---- a/sound/pci/als300.c
-+++ b/sound/pci/als300.c
-@@ -204,7 +204,7 @@ static int snd_als300_dev_free(struct snd_device *device)
- 	return snd_als300_free(chip);
- }
- 
--static irqreturn_t snd_als300_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_als300_interrupt(void *dev_id)
- {
- 	u8 status;
- 	struct snd_als300 *chip = dev_id;
-@@ -235,7 +235,7 @@ static irqreturn_t snd_als300_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t snd_als300plus_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_als300plus_interrupt(void *dev_id)
- {
- 	u8 general, mpu, dram;
- 	struct snd_als300 *chip = dev_id;
-diff --git a/sound/pci/als4000.c b/sound/pci/als4000.c
-index 1190ef3..6f08ea2 100644
---- a/sound/pci/als4000.c
-+++ b/sound/pci/als4000.c
-@@ -385,7 +385,7 @@ static snd_pcm_uframes_t snd_als4000_playback_pointer(struct snd_pcm_substream *
-  * SB IRQ status.
-  * And do we *really* need the lock here for *reading* SB_DSP4_IRQSTATUS??
-  * */
--static irqreturn_t snd_als4000_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_als4000_interrupt(void *dev_id)
- {
- 	struct snd_sb *chip = dev_id;
- 	unsigned gcr_status;
-@@ -399,7 +399,7 @@ static irqreturn_t snd_als4000_interrupt(int irq, void *dev_id)
- 	if ((gcr_status & 0x40) && (chip->capture_substream)) /* capturing */
- 		snd_pcm_period_elapsed(chip->capture_substream);
- 	if ((gcr_status & 0x10) && (chip->rmidi)) /* MPU401 interrupt */
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 	/* release the gcr */
- 	outb(gcr_status, chip->alt_port + 0xe);
- 	
-diff --git a/sound/pci/atiixp.c b/sound/pci/atiixp.c
-index 89184a4..8f91784 100644
---- a/sound/pci/atiixp.c
-+++ b/sound/pci/atiixp.c
-@@ -1329,7 +1329,7 @@ static int __devinit snd_atiixp_pcm_new(struct atiixp *chip)
- /*
-  * interrupt handler
-  */
--static irqreturn_t snd_atiixp_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_atiixp_interrupt(void *dev_id)
- {
- 	struct atiixp *chip = dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/atiixp_modem.c b/sound/pci/atiixp_modem.c
-index ce752f8..c592e6a 100644
---- a/sound/pci/atiixp_modem.c
-+++ b/sound/pci/atiixp_modem.c
-@@ -1017,7 +1017,7 @@ static int __devinit snd_atiixp_pcm_new(struct atiixp_modem *chip)
- /*
-  * interrupt handler
-  */
--static irqreturn_t snd_atiixp_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_atiixp_interrupt(void *dev_id)
- {
- 	struct atiixp_modem *chip = dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/au88x0/au88x0.h b/sound/pci/au88x0/au88x0.h
-index 5ccf0b1..06133a0 100644
---- a/sound/pci/au88x0/au88x0.h
-+++ b/sound/pci/au88x0/au88x0.h
-@@ -236,7 +236,7 @@ static void vortex_spdif_init(vortex_t * vortex, int spdif_sr, int spdif_mode);
- static int vortex_core_init(vortex_t * card);
- static int vortex_core_shutdown(vortex_t * card);
- static void vortex_enable_int(vortex_t * card);
--static irqreturn_t vortex_interrupt(int irq, void *dev_id);
-+static irqreturn_t vortex_interrupt(void *dev_id);
- static int vortex_alsafmt_aspfmt(int alsafmt);
- 
- /* Connection  stuff. */
-diff --git a/sound/pci/au88x0/au88x0_core.c b/sound/pci/au88x0/au88x0_core.c
-index 4a336ea..e385146 100644
---- a/sound/pci/au88x0/au88x0_core.c
-+++ b/sound/pci/au88x0/au88x0_core.c
-@@ -2385,7 +2385,7 @@ static void vortex_disable_int(vortex_t * card)
- 		hwread(card->mmio, VORTEX_CTRL) & ~CTRL_IRQ_ENABLE);
- }
- 
--static irqreturn_t vortex_interrupt(int irq, void *dev_id)
-+static irqreturn_t vortex_interrupt(void *dev_id)
- {
- 	vortex_t *vortex = dev_id;
- 	int i, handled;
-@@ -2461,8 +2461,7 @@ static irqreturn_t vortex_interrupt(int irq, void *dev_id)
- 		handled = 1;
- 	}
- 	if (source & IRQ_MIDI) {
--		snd_mpu401_uart_interrupt(vortex->irq,
--					  vortex->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(vortex->rmidi->private_data);
- 		handled = 1;
- 	}
- 
-diff --git a/sound/pci/azt3328.c b/sound/pci/azt3328.c
-index 36d3666..09cc9de 100644
---- a/sound/pci/azt3328.c
-+++ b/sound/pci/azt3328.c
-@@ -1198,7 +1198,7 @@ snd_azf3328_capture_pointer(struct snd_pcm_substream *substream)
- }
- 
- static irqreturn_t
--snd_azf3328_interrupt(int irq, void *dev_id)
-+snd_azf3328_interrupt(void *dev_id)
- {
- 	struct snd_azf3328 *chip = dev_id;
- 	u8 status, which;
-@@ -1263,7 +1263,7 @@ snd_azf3328_interrupt(int irq, void *dev_id)
- 	/* MPU401 has less critical IRQ requirements
- 	 * than timer and playback/recording, right? */
- 	if (status & IRQ_MPU401) {
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 
- 		/* hmm, do we have to ack the IRQ here somehow?
- 		 * If so, then I don't know how... */
-diff --git a/sound/pci/bt87x.c b/sound/pci/bt87x.c
-index 91f9e6a..b2c37f0 100644
---- a/sound/pci/bt87x.c
-+++ b/sound/pci/bt87x.c
-@@ -310,7 +310,7 @@ static void snd_bt87x_pci_error(struct snd_bt87x *chip, unsigned int status)
- 	}
- }
- 
--static irqreturn_t snd_bt87x_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_bt87x_interrupt(void *dev_id)
- {
- 	struct snd_bt87x *chip = dev_id;
- 	unsigned int status, irq_status;
-diff --git a/sound/pci/ca0106/ca0106_main.c b/sound/pci/ca0106/ca0106_main.c
-index 31d8db9..c14ab27 100644
---- a/sound/pci/ca0106/ca0106_main.c
-+++ b/sound/pci/ca0106/ca0106_main.c
-@@ -1138,7 +1138,7 @@ static int snd_ca0106_dev_free(struct snd_device *device)
- 	return snd_ca0106_free(chip);
- }
- 
--static irqreturn_t snd_ca0106_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ca0106_interrupt(void *dev_id)
- {
- 	unsigned int status;
- 
-diff --git a/sound/pci/cmipci.c b/sound/pci/cmipci.c
-index 6832649..d51f834 100644
---- a/sound/pci/cmipci.c
-+++ b/sound/pci/cmipci.c
-@@ -1412,7 +1412,7 @@ static int snd_cmipci_capture_spdif_hw_free(struct snd_pcm_substream *subs)
- /*
-  * interrupt handler
-  */
--static irqreturn_t snd_cmipci_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_cmipci_interrupt(void *dev_id)
- {
- 	struct cmipci *cm = dev_id;
- 	unsigned int status, mask = 0;
-@@ -1433,7 +1433,7 @@ static irqreturn_t snd_cmipci_interrupt(int irq, void *dev_id)
- 	spin_unlock(&cm->reg_lock);
- 
- 	if (cm->rmidi && (status & CM_UARTINT))
--		snd_mpu401_uart_interrupt(irq, cm->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(cm->rmidi->private_data);
- 
- 	if (cm->pcm) {
- 		if ((status & CM_CHINT0) && cm->channel[0].running)
-diff --git a/sound/pci/cs4281.c b/sound/pci/cs4281.c
-index 9a55f4a..ba3f91c 100644
---- a/sound/pci/cs4281.c
-+++ b/sound/pci/cs4281.c
-@@ -493,7 +493,7 @@ struct cs4281 {
- 
- };
- 
--static irqreturn_t snd_cs4281_interrupt(int irq, void *dev_id);
-+static irqreturn_t snd_cs4281_interrupt(void *dev_id);
- 
- static struct pci_device_id snd_cs4281_ids[] = {
- 	{ 0x1013, 0x6005, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0, },	/* CS4281 */
-@@ -1810,7 +1810,7 @@ static int __devinit snd_cs4281_midi(struct cs4281 * chip, int device,
-  *  Interrupt handler
-  */
- 
--static irqreturn_t snd_cs4281_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_cs4281_interrupt(void *dev_id)
- {
- 	struct cs4281 *chip = dev_id;
- 	unsigned int status, dma, val;
-diff --git a/sound/pci/cs46xx/cs46xx_lib.c b/sound/pci/cs46xx/cs46xx_lib.c
-index 2c7bfc9..194d328 100644
---- a/sound/pci/cs46xx/cs46xx_lib.c
-+++ b/sound/pci/cs46xx/cs46xx_lib.c
-@@ -1149,7 +1149,7 @@ static int snd_cs46xx_capture_prepare(struct snd_pcm_substream *substream)
- 	return 0;
- }
- 
--static irqreturn_t snd_cs46xx_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_cs46xx_interrupt(void *dev_id)
- {
- 	struct snd_cs46xx *chip = dev_id;
- 	u32 status1;
-diff --git a/sound/pci/cs5535audio/cs5535audio.c b/sound/pci/cs5535audio/cs5535audio.c
-index 2b35889..64c7cf0 100644
---- a/sound/pci/cs5535audio/cs5535audio.c
-+++ b/sound/pci/cs5535audio/cs5535audio.c
-@@ -203,7 +203,7 @@ static void process_bm1_irq(struct cs5535audio *cs5535au)
- 	}
- }
- 
--static irqreturn_t snd_cs5535audio_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_cs5535audio_interrupt(void *dev_id)
- {
- 	u16 acc_irq_stat;
- 	unsigned char count;
-diff --git a/sound/pci/echoaudio/echoaudio.c b/sound/pci/echoaudio/echoaudio.c
-index 499ee1a..83e03f3 100644
---- a/sound/pci/echoaudio/echoaudio.c
-+++ b/sound/pci/echoaudio/echoaudio.c
-@@ -1805,7 +1805,7 @@ static struct snd_kcontrol_new snd_echo_channels_info __devinitdata = {
- 	IRQ Handler
- ******************************************************************************/
- 
--static irqreturn_t snd_echo_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_echo_interrupt(void *dev_id)
- {
- 	struct echoaudio *chip = dev_id;
- 	struct snd_pcm_substream *substream;
-diff --git a/sound/pci/emu10k1/emu10k1x.c b/sound/pci/emu10k1/emu10k1x.c
-index 1ec7eba..992a9b7 100644
---- a/sound/pci/emu10k1/emu10k1x.c
-+++ b/sound/pci/emu10k1/emu10k1x.c
-@@ -780,7 +780,7 @@ static int snd_emu10k1x_dev_free(struct snd_device *device)
- 	return snd_emu10k1x_free(chip);
- }
- 
--static irqreturn_t snd_emu10k1x_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_emu10k1x_interrupt(void *dev_id)
- {
- 	unsigned int status;
- 
-diff --git a/sound/pci/emu10k1/irq.c b/sound/pci/emu10k1/irq.c
-index 3c114b4..d5b7df9 100644
---- a/sound/pci/emu10k1/irq.c
-+++ b/sound/pci/emu10k1/irq.c
-@@ -30,7 +30,7 @@
- #include <sound/core.h>
- #include <sound/emu10k1.h>
- 
--irqreturn_t snd_emu10k1_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_emu10k1_interrupt(void *dev_id)
- {
- 	struct snd_emu10k1 *emu = dev_id;
- 	unsigned int status, status2, orig_status, orig_status2;
-diff --git a/sound/pci/ens1370.c b/sound/pci/ens1370.c
-index b958f86..d6954d8 100644
---- a/sound/pci/ens1370.c
-+++ b/sound/pci/ens1370.c
-@@ -442,7 +442,7 @@ struct ensoniq {
- #endif
- };
- 
--static irqreturn_t snd_audiopci_interrupt(int irq, void *dev_id);
-+static irqreturn_t snd_audiopci_interrupt(void *dev_id);
- 
- static struct pci_device_id snd_audiopci_ids[] = {
- #ifdef CHIP1370
-@@ -2358,7 +2358,7 @@ static int __devinit snd_ensoniq_midi(struct ensoniq * ensoniq, int device,
-  *  Interrupt handler
-  */
- 
--static irqreturn_t snd_audiopci_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_audiopci_interrupt(void *dev_id)
- {
- 	struct ensoniq *ensoniq = dev_id;
- 	unsigned int status, sctrl;
-diff --git a/sound/pci/es1938.c b/sound/pci/es1938.c
-index fb25abe..65e0fcc 100644
---- a/sound/pci/es1938.c
-+++ b/sound/pci/es1938.c
-@@ -241,7 +241,7 @@ struct es1938 {
- #endif
- };
- 
--static irqreturn_t snd_es1938_interrupt(int irq, void *dev_id);
-+static irqreturn_t snd_es1938_interrupt(void *dev_id);
- 
- static struct pci_device_id snd_es1938_ids[] = {
-         { 0x125d, 0x1969, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0, },   /* Solo-1 */
-@@ -1645,7 +1645,7 @@ static int __devinit snd_es1938_create(struct snd_card *card,
- /* --------------------------------------------------------------------
-  * Interrupt handler
-  * -------------------------------------------------------------------- */
--static irqreturn_t snd_es1938_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_es1938_interrupt(void *dev_id)
- {
- 	struct es1938 *chip = dev_id;
- 	unsigned char status, audiostatus;
-@@ -1717,7 +1717,7 @@ static irqreturn_t snd_es1938_interrupt(int irq, void *dev_id)
- 		// snd_es1938_mixer_bits(chip, ESSSB_IREG_MPU401CONTROL, 0x40, 0); /* ack? */
- 		if (chip->rmidi) {
- 			handled = 1;
--			snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+			snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 		}
- 	}
- 	return IRQ_RETVAL(handled);
-diff --git a/sound/pci/es1968.c b/sound/pci/es1968.c
-index d69b11d..c15e89d 100644
---- a/sound/pci/es1968.c
-+++ b/sound/pci/es1968.c
-@@ -550,7 +550,7 @@ struct es1968 {
- #endif
- };
- 
--static irqreturn_t snd_es1968_interrupt(int irq, void *dev_id);
-+static irqreturn_t snd_es1968_interrupt(void *dev_id);
- 
- static struct pci_device_id snd_es1968_ids[] = {
- 	/* Maestro 1 */
-@@ -1913,7 +1913,7 @@ static void es1968_update_hw_volume(unsigned long private_data)
- /*
-  * interrupt handler
-  */
--static irqreturn_t snd_es1968_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_es1968_interrupt(void *dev_id)
- {
- 	struct es1968 *chip = dev_id;
- 	u32 event;
-@@ -1929,9 +1929,8 @@ static irqreturn_t snd_es1968_interrupt(int irq, void *dev_id)
- 	/* else ack 'em all, i imagine */
- 	outb(0xFF, chip->io_port + 0x1A);
- 
--	if ((event & ESM_MPU401_IRQ) && chip->rmidi) {
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
--	}
-+	if ((event & ESM_MPU401_IRQ) && chip->rmidi)
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 
- 	if (event & ESM_SOUND_IRQ) {
- 		struct esschan *es;
-diff --git a/sound/pci/fm801.c b/sound/pci/fm801.c
-index 9939109..1037c1d 100644
---- a/sound/pci/fm801.c
-+++ b/sound/pci/fm801.c
-@@ -520,7 +520,7 @@ static snd_pcm_uframes_t snd_fm801_capture_pointer(struct snd_pcm_substream *sub
- 	return bytes_to_frames(substream->runtime, ptr);
- }
- 
--static irqreturn_t snd_fm801_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_fm801_interrupt(void *dev_id)
- {
- 	struct fm801 *chip = dev_id;
- 	unsigned short status;
-@@ -561,7 +561,7 @@ static irqreturn_t snd_fm801_interrupt(int irq, void *dev_id)
- 		snd_pcm_period_elapsed(chip->capture_substream);
- 	}
- 	if (chip->rmidi && (status & FM801_IRQ_MPU))
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 	if (status & FM801_IRQ_VOLUME)
- 		;/* TODO */
- 
-diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index 3fa0f97..abb9229 100644
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -878,7 +878,7 @@ static void azx_init_pci(struct azx *chip)
- /*
-  * interrupt handler
-  */
--static irqreturn_t azx_interrupt(int irq, void *dev_id)
-+static irqreturn_t azx_interrupt(void *dev_id)
- {
- 	struct azx *chip = dev_id;
- 	struct azx_dev *azx_dev;
-diff --git a/sound/pci/ice1712/ice1712.c b/sound/pci/ice1712/ice1712.c
-index 052fc3c..089f263 100644
---- a/sound/pci/ice1712/ice1712.c
-+++ b/sound/pci/ice1712/ice1712.c
-@@ -413,7 +413,7 @@ static void snd_ice1712_set_input_clock_source(struct snd_ice1712 *ice, int spdi
-  *  Interrupt handler
-  */
- 
--static irqreturn_t snd_ice1712_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ice1712_interrupt(void *dev_id)
- {
- 	struct snd_ice1712 *ice = dev_id;
- 	unsigned char status;
-@@ -426,7 +426,7 @@ static irqreturn_t snd_ice1712_interrupt(int irq, void *dev_id)
- 		handled = 1;
- 		if (status & ICE1712_IRQ_MPU1) {
- 			if (ice->rmidi[0])
--				snd_mpu401_uart_interrupt(irq, ice->rmidi[0]->private_data);
-+				snd_mpu401_uart_interrupt(ice->rmidi[0]->private_data);
- 			outb(ICE1712_IRQ_MPU1, ICEREG(ice, IRQSTAT));
- 			status &= ~ICE1712_IRQ_MPU1;
- 		}
-@@ -434,7 +434,7 @@ static irqreturn_t snd_ice1712_interrupt(int irq, void *dev_id)
- 			outb(ICE1712_IRQ_TIMER, ICEREG(ice, IRQSTAT));
- 		if (status & ICE1712_IRQ_MPU2) {
- 			if (ice->rmidi[1])
--				snd_mpu401_uart_interrupt(irq, ice->rmidi[1]->private_data);
-+				snd_mpu401_uart_interrupt(ice->rmidi[1]->private_data);
- 			outb(ICE1712_IRQ_MPU2, ICEREG(ice, IRQSTAT));
- 			status &= ~ICE1712_IRQ_MPU2;
- 		}
-diff --git a/sound/pci/ice1712/ice1724.c b/sound/pci/ice1712/ice1724.c
-index 0b0bbb0..e61b1f1 100644
---- a/sound/pci/ice1712/ice1724.c
-+++ b/sound/pci/ice1712/ice1724.c
-@@ -219,7 +219,7 @@ static unsigned int snd_vt1724_get_gpio_data(struct snd_ice1712 *ice)
-  *  Interrupt handler
-  */
- 
--static irqreturn_t snd_vt1724_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_vt1724_interrupt(void *dev_id)
- {
- 	struct snd_ice1712 *ice = dev_id;
- 	unsigned char status;
-@@ -237,7 +237,7 @@ static irqreturn_t snd_vt1724_interrupt(int irq, void *dev_id)
- 		 */
- 		if ((status & VT1724_IRQ_MPU_RX)||(status & VT1724_IRQ_MPU_TX)) {
- 			if (ice->rmidi[0])
--				snd_mpu401_uart_interrupt(irq, ice->rmidi[0]->private_data);
-+				snd_mpu401_uart_interrupt(ice->rmidi[0]->private_data);
- 			outb(status & (VT1724_IRQ_MPU_RX|VT1724_IRQ_MPU_TX), ICEREG1724(ice, IRQSTAT));
- 			status &= ~(VT1724_IRQ_MPU_RX|VT1724_IRQ_MPU_TX);
- 		}
-diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-index b4a38a3..12a4f4d 100644
---- a/sound/pci/intel8x0.c
-+++ b/sound/pci/intel8x0.c
-@@ -777,7 +777,7 @@ static inline void snd_intel8x0_update(struct intel8x0 *chip, struct ichdev *ich
- 		 status & (ICH_FIFOE | ICH_BCIS | ICH_LVBCI));
- }
- 
--static irqreturn_t snd_intel8x0_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_intel8x0_interrupt(void *dev_id)
- {
- 	struct intel8x0 *chip = dev_id;
- 	struct ichdev *ichdev;
-diff --git a/sound/pci/intel8x0m.c b/sound/pci/intel8x0m.c
-index fad806e..97a88df 100644
---- a/sound/pci/intel8x0m.c
-+++ b/sound/pci/intel8x0m.c
-@@ -483,7 +483,7 @@ static inline void snd_intel8x0_update(struct intel8x0m *chip, struct ichdev *ic
- 	iputbyte(chip, port + ichdev->roff_sr, ICH_FIFOE | ICH_BCIS | ICH_LVBCI);
- }
- 
--static irqreturn_t snd_intel8x0_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_intel8x0_interrupt(void *dev_id)
- {
- 	struct intel8x0m *chip = dev_id;
- 	struct ichdev *ichdev;
-diff --git a/sound/pci/korg1212/korg1212.c b/sound/pci/korg1212/korg1212.c
-index c4af57f..d1fb714 100644
---- a/sound/pci/korg1212/korg1212.c
-+++ b/sound/pci/korg1212/korg1212.c
-@@ -1127,7 +1127,7 @@ static void snd_korg1212_OnDSPDownloadComplete(struct snd_korg1212 *korg1212)
- 	snd_korg1212_setCardState(korg1212, K1212_STATE_DSP_COMPLETE);
- }
- 
--static irqreturn_t snd_korg1212_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_korg1212_interrupt(void *dev_id)
- {
-         u32 doorbellValue;
-         struct snd_korg1212 *korg1212 = dev_id;
-diff --git a/sound/pci/maestro3.c b/sound/pci/maestro3.c
-index 3224577..315c806 100644
---- a/sound/pci/maestro3.c
-+++ b/sound/pci/maestro3.c
-@@ -1658,7 +1658,7 @@ static void snd_m3_update_hw_volume(unsigned long private_data)
- 	spin_unlock_irqrestore(&chip->ac97_lock, flags);
- }
- 
--static irqreturn_t snd_m3_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_m3_interrupt(void *dev_id)
- {
- 	struct snd_m3 *chip = dev_id;
- 	u8 status;
-@@ -1696,7 +1696,7 @@ static irqreturn_t snd_m3_interrupt(int irq, void *dev_id)
- 
- #if 0 /* TODO: not supported yet */
- 	if ((status & MPU401_INT_PENDING) && chip->rmidi)
--		snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data, regs);
-+		snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- #endif
- 
- 	/* ack ints */
-diff --git a/sound/pci/mixart/mixart_core.c b/sound/pci/mixart/mixart_core.c
-index d544573..2bacb1b 100644
---- a/sound/pci/mixart/mixart_core.c
-+++ b/sound/pci/mixart/mixart_core.c
-@@ -408,7 +408,7 @@ void snd_mixart_msg_tasklet(unsigned long arg)
- }
- 
- 
--irqreturn_t snd_mixart_interrupt(int irq, void *dev_id)
-+irqreturn_t snd_mixart_interrupt(void *dev_id)
- {
- 	struct mixart_mgr *mgr = dev_id;
- 	int err;
-diff --git a/sound/pci/mixart/mixart_core.h b/sound/pci/mixart/mixart_core.h
-index c919b73..dda03cd 100644
---- a/sound/pci/mixart/mixart_core.h
-+++ b/sound/pci/mixart/mixart_core.h
-@@ -563,7 +563,7 @@ int  snd_mixart_send_msg(struct mixart_mgr *mgr, struct mixart_msg *request, int
- int  snd_mixart_send_msg_wait_notif(struct mixart_mgr *mgr, struct mixart_msg *request, u32 notif_event);
- int  snd_mixart_send_msg_nonblock(struct mixart_mgr *mgr, struct mixart_msg *request);
- 
--irqreturn_t snd_mixart_interrupt(int irq, void *dev_id);
-+irqreturn_t snd_mixart_interrupt(void *dev_id);
- void snd_mixart_msg_tasklet(unsigned long arg);
- 
- void snd_mixart_reset_board(struct mixart_mgr *mgr);
-diff --git a/sound/pci/nm256/nm256.c b/sound/pci/nm256/nm256.c
-index 276c576..69141e6 100644
---- a/sound/pci/nm256/nm256.c
-+++ b/sound/pci/nm256/nm256.c
-@@ -1003,7 +1003,7 @@ snd_nm256_intr_check(struct nm256 *chip)
-  */
- 
- static irqreturn_t
--snd_nm256_interrupt(int irq, void *dev_id)
-+snd_nm256_interrupt(void *dev_id)
- {
- 	struct nm256 *chip = dev_id;
- 	u16 status;
-@@ -1068,7 +1068,7 @@ snd_nm256_interrupt(int irq, void *dev_id)
-  */
- 
- static irqreturn_t
--snd_nm256_interrupt_zx(int irq, void *dev_id)
-+snd_nm256_interrupt_zx(void *dev_id)
- {
- 	struct nm256 *chip = dev_id;
- 	u32 status;
-diff --git a/sound/pci/pcxhr/pcxhr_core.c b/sound/pci/pcxhr/pcxhr_core.c
-index 0ff8dc3..1871253 100644
---- a/sound/pci/pcxhr/pcxhr_core.c
-+++ b/sound/pci/pcxhr/pcxhr_core.c
-@@ -1131,7 +1131,7 @@ static void pcxhr_update_timer_pos(struct pcxhr_mgr *mgr,
- }
- 
- 
--irqreturn_t pcxhr_interrupt(int irq, void *dev_id)
-+irqreturn_t pcxhr_interrupt(void *dev_id)
- {
- 	struct pcxhr_mgr *mgr = dev_id;
- 	unsigned int reg;
-diff --git a/sound/pci/pcxhr/pcxhr_core.h b/sound/pci/pcxhr/pcxhr_core.h
-index d9a4ab6..0a2c18f 100644
---- a/sound/pci/pcxhr/pcxhr_core.h
-+++ b/sound/pci/pcxhr/pcxhr_core.h
-@@ -194,7 +194,7 @@ int pcxhr_write_io_num_reg_cont(struct pcxhr_mgr *mgr, unsigned int mask,
- 
- 
- /* interrupt handling */
--irqreturn_t pcxhr_interrupt(int irq, void *dev_id);
-+irqreturn_t pcxhr_interrupt(void *dev_id);
- void pcxhr_msg_tasklet(unsigned long arg);
- 
- #endif /* __SOUND_PCXHR_CORE_H */
-diff --git a/sound/pci/riptide/riptide.c b/sound/pci/riptide/riptide.c
-index 8e54104..72bb4b5 100644
---- a/sound/pci/riptide/riptide.c
-+++ b/sound/pci/riptide/riptide.c
-@@ -1742,7 +1742,7 @@ snd_riptide_pcm(struct snd_riptide *chip, int device, struct snd_pcm **rpcm)
- }
- 
- static irqreturn_t
--snd_riptide_interrupt(int irq, void *dev_id)
-+snd_riptide_interrupt(void *dev_id)
- {
- 	struct snd_riptide *chip = dev_id;
- 	struct cmdif *cif = chip->cif;
-@@ -1756,8 +1756,7 @@ snd_riptide_interrupt(int irq, void *dev_id)
- 		}
- 		if (chip->rmidi && IS_MPUIRQ(cif->hwport)) {
- 			chip->handled_irqs++;
--			snd_mpu401_uart_interrupt(irq,
--						  chip->rmidi->private_data);
-+			snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 		}
- 		SET_AIACK(cif->hwport);
- 	}
-diff --git a/sound/pci/rme32.c b/sound/pci/rme32.c
-index 1475912..9d52963 100644
---- a/sound/pci/rme32.c
-+++ b/sound/pci/rme32.c
-@@ -805,7 +805,7 @@ static void snd_rme32_pcm_stop(struct rme32 * rme32, int to_pause)
- 		writel(0, rme32->iobase + RME32_IO_RESET_POS);
- }
- 
--static irqreturn_t snd_rme32_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_rme32_interrupt(void *dev_id)
- {
- 	struct rme32 *rme32 = (struct rme32 *) dev_id;
- 
-diff --git a/sound/pci/rme96.c b/sound/pci/rme96.c
-index 0b3c532..7136784 100644
---- a/sound/pci/rme96.c
-+++ b/sound/pci/rme96.c
-@@ -1102,8 +1102,7 @@ snd_rme96_capture_stop(struct rme96 *rme96)
- }
- 
- static irqreturn_t
--snd_rme96_interrupt(int irq,
--		    void *dev_id)
-+snd_rme96_interrupt(void *dev_id)
- {
- 	struct rme96 *rme96 = (struct rme96 *)dev_id;
- 
-diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
-index ff26a36..9814607 100644
---- a/sound/pci/rme9652/hdsp.c
-+++ b/sound/pci/rme9652/hdsp.c
-@@ -3673,7 +3673,7 @@ static void hdsp_midi_tasklet(unsigned long arg)
- 		snd_hdsp_midi_input_read (&hdsp->midi[1]);
- } 
- 
--static irqreturn_t snd_hdsp_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_hdsp_interrupt(void *dev_id)
- {
- 	struct hdsp *hdsp = (struct hdsp *) dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/rme9652/hdspm.c b/sound/pci/rme9652/hdspm.c
-index f1bdda6..1acd8ee 100644
---- a/sound/pci/rme9652/hdspm.c
-+++ b/sound/pci/rme9652/hdspm.c
-@@ -3419,7 +3419,7 @@ static int snd_hdspm_set_defaults(struct hdspm * hdspm)
-    interupt 
-  ------------------------------------------------------------*/
- 
--static irqreturn_t snd_hdspm_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_hdspm_interrupt(void *dev_id)
- {
- 	struct hdspm *hdspm = (struct hdspm *) dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/rme9652/rme9652.c b/sound/pci/rme9652/rme9652.c
-index 34f96f1..78ba478 100644
---- a/sound/pci/rme9652/rme9652.c
-+++ b/sound/pci/rme9652/rme9652.c
-@@ -1861,7 +1861,7 @@ static void snd_rme9652_set_defaults(struct snd_rme9652 *rme9652)
- 	rme9652_set_rate(rme9652, 48000);
- }
- 
--static irqreturn_t snd_rme9652_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_rme9652_interrupt(void *dev_id)
- {
- 	struct snd_rme9652 *rme9652 = (struct snd_rme9652 *) dev_id;
- 
-diff --git a/sound/pci/sonicvibes.c b/sound/pci/sonicvibes.c
-index 44a7f5f..da5547e 100644
---- a/sound/pci/sonicvibes.c
-+++ b/sound/pci/sonicvibes.c
-@@ -580,7 +580,7 @@ static int snd_sonicvibes_trigger(struct sonicvibes * sonic, int what, int cmd)
- 	return result;
- }
- 
--static irqreturn_t snd_sonicvibes_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_sonicvibes_interrupt(void *dev_id)
- {
- 	struct sonicvibes *sonic = dev_id;
- 	unsigned char status;
-@@ -601,7 +601,7 @@ static irqreturn_t snd_sonicvibes_interrupt(int irq, void *dev_id)
- 	}
- 	if (sonic->rmidi) {
- 		if (status & SV_MIDI_IRQ)
--			snd_mpu401_uart_interrupt(irq, sonic->rmidi->private_data);
-+			snd_mpu401_uart_interrupt(sonic->rmidi->private_data);
- 	}
- 	if (status & SV_UD_IRQ) {
- 		unsigned char udreg;
-diff --git a/sound/pci/trident/trident_main.c b/sound/pci/trident/trident_main.c
-index a235e03..680d57a 100644
---- a/sound/pci/trident/trident_main.c
-+++ b/sound/pci/trident/trident_main.c
-@@ -52,7 +52,7 @@ static int snd_trident_pcm_mixer_build(struct snd_trident *trident,
- static int snd_trident_pcm_mixer_free(struct snd_trident *trident,
- 				      struct snd_trident_voice * voice,
- 				      struct snd_pcm_substream *substream);
--static irqreturn_t snd_trident_interrupt(int irq, void *dev_id);
-+static irqreturn_t snd_trident_interrupt(void *dev_id);
- static int snd_trident_sis_reset(struct snd_trident *trident);
- 
- static void snd_trident_clear_voices(struct snd_trident * trident,
-@@ -3718,7 +3718,7 @@ static int snd_trident_free(struct snd_trident *trident)
-   
-   ---------------------------------------------------------------------------*/
- 
--static irqreturn_t snd_trident_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_trident_interrupt(void *dev_id)
- {
- 	struct snd_trident *trident = dev_id;
- 	unsigned int audio_int, chn_int, stimer, channel, mask, tmp;
-@@ -3806,7 +3806,7 @@ static irqreturn_t snd_trident_interrupt(int irq, void *dev_id)
- 	}
- 	if (audio_int & MPU401_IRQ) {
- 		if (trident->rmidi) {
--			snd_mpu401_uart_interrupt(irq, trident->rmidi->private_data);
-+			snd_mpu401_uart_interrupt(trident->rmidi->private_data);
- 		} else {
- 			inb(TRID_REG(trident, T4D_MPUR0));
- 		}
-diff --git a/sound/pci/via82xx.c b/sound/pci/via82xx.c
-index cf62d2a..50c993b 100644
---- a/sound/pci/via82xx.c
-+++ b/sound/pci/via82xx.c
-@@ -613,7 +613,7 @@ static void snd_via82xx_channel_reset(struct via82xx *chip, struct viadev *viade
-  *  Interrupt handler
-  *  Used for 686 and 8233A
-  */
--static irqreturn_t snd_via686_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_via686_interrupt(void *dev_id)
- {
- 	struct via82xx *chip = dev_id;
- 	unsigned int status;
-@@ -623,7 +623,7 @@ static irqreturn_t snd_via686_interrupt(int irq, void *dev_id)
- 	if (! (status & chip->intr_mask)) {
- 		if (chip->rmidi)
- 			/* check mpu401 interrupt */
--			return snd_mpu401_uart_interrupt(irq, chip->rmidi->private_data);
-+			return snd_mpu401_uart_interrupt(chip->rmidi->private_data);
- 		return IRQ_NONE;
- 	}
- 
-@@ -659,7 +659,7 @@ static irqreturn_t snd_via686_interrupt(int irq, void *dev_id)
- /*
-  *  Interrupt handler
-  */
--static irqreturn_t snd_via8233_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_via8233_interrupt(void *dev_id)
- {
- 	struct via82xx *chip = dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/via82xx_modem.c b/sound/pci/via82xx_modem.c
-index 57fb9ae..2bfc320 100644
---- a/sound/pci/via82xx_modem.c
-+++ b/sound/pci/via82xx_modem.c
-@@ -475,7 +475,7 @@ static void snd_via82xx_channel_reset(struct via82xx_modem *chip, struct viadev
-  *  Interrupt handler
-  */
- 
--static irqreturn_t snd_via82xx_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_via82xx_interrupt(void *dev_id)
- {
- 	struct via82xx_modem *chip = dev_id;
- 	unsigned int status;
-diff --git a/sound/pci/ymfpci/ymfpci_main.c b/sound/pci/ymfpci/ymfpci_main.c
-index 1fe39ed..3e18d13 100644
---- a/sound/pci/ymfpci/ymfpci_main.c
-+++ b/sound/pci/ymfpci/ymfpci_main.c
-@@ -779,7 +779,7 @@ static void snd_ymfpci_irq_wait(struct snd_ymfpci *chip)
- 	}
- }
- 
--static irqreturn_t snd_ymfpci_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_ymfpci_interrupt(void *dev_id)
- {
- 	struct snd_ymfpci *chip = dev_id;
- 	u32 status, nvoice, mode;
-@@ -825,7 +825,7 @@ static irqreturn_t snd_ymfpci_interrupt(int irq, void *dev_id)
- 	snd_ymfpci_writew(chip, YDSXGR_INTFLAG, status);
- 
- 	if (chip->rawmidi)
--		snd_mpu401_uart_interrupt(irq, chip->rawmidi->private_data);
-+		snd_mpu401_uart_interrupt(chip->rawmidi->private_data);
- 	return IRQ_HANDLED;
- }
- 
-diff --git a/sound/pcmcia/pdaudiocf/pdaudiocf.h b/sound/pcmcia/pdaudiocf/pdaudiocf.h
-index b060183..780c619 100644
---- a/sound/pcmcia/pdaudiocf/pdaudiocf.h
-+++ b/sound/pcmcia/pdaudiocf/pdaudiocf.h
-@@ -138,7 +138,7 @@ int snd_pdacf_suspend(struct snd_pdacf *chip, pm_message_t state);
- int snd_pdacf_resume(struct snd_pdacf *chip);
- #endif
- int snd_pdacf_pcm_new(struct snd_pdacf *chip);
--irqreturn_t pdacf_interrupt(int irq, void *dev);
-+irqreturn_t pdacf_interrupt(void *dev);
- void pdacf_tasklet(unsigned long private_data);
- void pdacf_reinit(struct snd_pdacf *chip, int resume);
- 
-diff --git a/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c b/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-index 5454336..34b05ad 100644
---- a/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-+++ b/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-@@ -27,7 +27,7 @@
- /*
-  *
-  */
--irqreturn_t pdacf_interrupt(int irq, void *dev)
-+irqreturn_t pdacf_interrupt(void *dev)
- {
- 	struct snd_pdacf *chip = dev;
- 	unsigned short stat;
-diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
-index 4f9b19c..a888e3b 100644
---- a/sound/ppc/pmac.c
-+++ b/sound/ppc/pmac.c
-@@ -689,7 +689,7 @@ void snd_pmac_beep_dma_stop(struct snd_pmac *chip)
-  * interrupt handlers
-  */
- static irqreturn_t
--snd_pmac_tx_intr(int irq, void *devid)
-+snd_pmac_tx_intr(void *devid)
- {
- 	struct snd_pmac *chip = devid;
- 	snd_pmac_pcm_update(chip, &chip->playback);
-@@ -698,7 +698,7 @@ snd_pmac_tx_intr(int irq, void *devid)
- 
- 
- static irqreturn_t
--snd_pmac_rx_intr(int irq, void *devid)
-+snd_pmac_rx_intr(void *devid)
- {
- 	struct snd_pmac *chip = devid;
- 	snd_pmac_pcm_update(chip, &chip->capture);
-@@ -707,7 +707,7 @@ snd_pmac_rx_intr(int irq, void *devid)
- 
- 
- static irqreturn_t
--snd_pmac_ctrl_intr(int irq, void *devid)
-+snd_pmac_ctrl_intr(void *devid)
- {
- 	struct snd_pmac *chip = devid;
- 	int ctrl = in_le32(&chip->awacs->control);
-diff --git a/sound/ppc/tumbler.c b/sound/ppc/tumbler.c
-index 5821cdd..96d9f74 100644
---- a/sound/ppc/tumbler.c
-+++ b/sound/ppc/tumbler.c
-@@ -1018,7 +1018,7 @@ static void tumbler_update_automute(struct snd_pmac *chip, int do_notify)
- 
- 
- /* interrupt - headphone plug changed */
--static irqreturn_t headphone_intr(int irq, void *devid)
-+static irqreturn_t headphone_intr(void *devid)
- {
- 	struct snd_pmac *chip = devid;
- 	if (chip->update_automute && chip->initialized) {
-diff --git a/sound/sparc/amd7930.c b/sound/sparc/amd7930.c
-index 07962a3..0fb49b2 100644
---- a/sound/sparc/amd7930.c
-+++ b/sound/sparc/amd7930.c
-@@ -491,7 +491,7 @@ static void __amd7930_update_map(struct snd_amd7930 *amd)
- 	__amd7930_write_map(amd);
- }
- 
--static irqreturn_t snd_amd7930_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_amd7930_interrupt(void *dev_id)
- {
- 	struct snd_amd7930 *amd = dev_id;
- 	unsigned int elapsed;
-diff --git a/sound/sparc/cs4231.c b/sound/sparc/cs4231.c
-index 9785382..1efb7d4 100644
---- a/sound/sparc/cs4231.c
-+++ b/sound/sparc/cs4231.c
-@@ -1661,7 +1661,7 @@ out_err:
- 
- #ifdef SBUS_SUPPORT
- 
--static irqreturn_t snd_cs4231_sbus_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_cs4231_sbus_interrupt(void *dev_id)
+-static irqreturn_t do_NCR53c406a_intr(int unused, void *dev_id)
++static irqreturn_t do_NCR53c406a_intr(void *dev_id)
  {
  	unsigned long flags;
- 	unsigned char status;
-diff --git a/sound/sparc/dbri.c b/sound/sparc/dbri.c
-index 376b986..ffc950b 100644
---- a/sound/sparc/dbri.c
-+++ b/sound/sparc/dbri.c
-@@ -1910,7 +1910,7 @@ static void dbri_process_interrupt_buffer(struct snd_dbri *dbri)
+ 	struct Scsi_Host *dev = dev_id;
+diff --git a/drivers/scsi/NCR_D700.c b/drivers/scsi/NCR_D700.c
+index 9e64b21..2afd135 100644
+--- a/drivers/scsi/NCR_D700.c
++++ b/drivers/scsi/NCR_D700.c
+@@ -224,15 +224,15 @@ NCR_D700_probe_one(struct NCR_D700_private *p, int siop, int irq,
+ 	return ret;
+ }
+ 
+-static int
+-NCR_D700_intr(int irq, void *data)
++static irqreturn_t
++NCR_D700_intr(void *data)
+ {
+-	struct NCR_D700_private *p = (struct NCR_D700_private *)data;
++	struct NCR_D700_private *p = data;
+ 	int i, found = 0;
+ 
+ 	for (i = 0; i < 2; i++)
+ 		if (p->hosts[i] &&
+-		    NCR_700_intr(irq, p->hosts[i]) == IRQ_HANDLED)
++		    NCR_700_intr(p->hosts[i]) == IRQ_HANDLED)
+ 			found++;
+ 
+ 	return found ? IRQ_HANDLED : IRQ_NONE;
+diff --git a/drivers/scsi/NCR_Q720.c b/drivers/scsi/NCR_Q720.c
+index a8bbdc2..aa2bc5d 100644
+--- a/drivers/scsi/NCR_Q720.c
++++ b/drivers/scsi/NCR_Q720.c
+@@ -54,7 +54,7 @@ static struct scsi_host_template NCR_Q720_tpnt = {
+ };
+ 
+ static irqreturn_t
+-NCR_Q720_intr(int irq, void *data)
++NCR_Q720_intr(void *data)
+ {
+ 	struct NCR_Q720_private *p = (struct NCR_Q720_private *)data;
+ 	__u8 sir = (readb(p->mem_base + 0x0d) & 0xf0) >> 4;
+@@ -65,10 +65,9 @@ NCR_Q720_intr(int irq, void *data)
+ 	if(sir == 0xff)
+ 		return IRQ_NONE;
+ 
+-
+ 	while((siop = ffz(sir)) < p->siops) {
+ 		sir |= 1<<siop;
+-		ncr53c8xx_intr(irq, p->hosts[siop]);
++		ncr53c8xx_intr(p->hosts[siop]);
+ 	}
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/scsi/a100u2w.c b/drivers/scsi/a100u2w.c
+index d3a6d15..954e6d6 100644
+--- a/drivers/scsi/a100u2w.c
++++ b/drivers/scsi/a100u2w.c
+@@ -1045,7 +1045,7 @@ static void inia100_scb_handler(struct orc_host *host, struct orc_scb *scb)
+  *	Entry point for IRQ handling. All the real work is performed
+  *	by orc_interrupt.
+  */
+-static irqreturn_t inia100_intr(int irqno, void *devid)
++static irqreturn_t inia100_intr(void *devid)
+ {
+ 	struct Scsi_Host *shost = (struct Scsi_Host *)devid;
+ 	struct orc_host *host = (struct orc_host *)shost->hostdata;
+diff --git a/drivers/scsi/a2091.c b/drivers/scsi/a2091.c
+index b7c5385..d2db130 100644
+--- a/drivers/scsi/a2091.c
++++ b/drivers/scsi/a2091.c
+@@ -23,7 +23,7 @@
+ #define DMA(ptr) ((a2091_scsiregs *)((ptr)->base))
+ #define HDATA(ptr) ((struct WD33C93_hostdata *)((ptr)->hostdata))
+ 
+-static irqreturn_t a2091_intr (int irq, void *_instance)
++static irqreturn_t a2091_intr (void *_instance)
+ {
+     unsigned long flags;
+     unsigned int status;
+diff --git a/drivers/scsi/a3000.c b/drivers/scsi/a3000.c
+index 796f1c4..863de5b 100644
+--- a/drivers/scsi/a3000.c
++++ b/drivers/scsi/a3000.c
+@@ -25,7 +25,7 @@
+ 
+ static struct Scsi_Host *a3000_host = NULL;
+ 
+-static irqreturn_t a3000_intr (int irq, void *dummy)
++static irqreturn_t a3000_intr (void *dummy)
+ {
+ 	unsigned long flags;
+ 	unsigned int status = DMA(a3000_host)->ISTR;
+diff --git a/drivers/scsi/aacraid/rx.c b/drivers/scsi/aacraid/rx.c
+index 73eef3d..d9c1441 100644
+--- a/drivers/scsi/aacraid/rx.c
++++ b/drivers/scsi/aacraid/rx.c
+@@ -45,7 +45,7 @@
+ 
+ #include "aacraid.h"
+ 
+-static irqreturn_t aac_rx_intr_producer(int irq, void *dev_id)
++static irqreturn_t aac_rx_intr_producer(void *dev_id)
+ {
+ 	struct aac_dev *dev = dev_id;
+ 	unsigned long bellbits;
+@@ -84,7 +84,7 @@ static irqreturn_t aac_rx_intr_producer(int irq, void *dev_id)
+ 	return IRQ_NONE;
+ }
+ 
+-static irqreturn_t aac_rx_intr_message(int irq, void *dev_id)
++static irqreturn_t aac_rx_intr_message(void *dev_id)
+ {
+ 	struct aac_dev *dev = dev_id;
+ 	u32 Index = rx_readl(dev, MUnit.OutboundQueue);
+diff --git a/drivers/scsi/aacraid/sa.c b/drivers/scsi/aacraid/sa.c
+index 85b91bc..7a236d1 100644
+--- a/drivers/scsi/aacraid/sa.c
++++ b/drivers/scsi/aacraid/sa.c
+@@ -44,7 +44,7 @@
+ 
+ #include "aacraid.h"
+ 
+-static irqreturn_t aac_sa_intr(int irq, void *dev_id)
++static irqreturn_t aac_sa_intr(void *dev_id)
+ {
+ 	struct aac_dev *dev = dev_id;
+ 	unsigned short intstat, mask;
+diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
+index 9dd3952..f6167bc 100644
+--- a/drivers/scsi/advansys.c
++++ b/drivers/scsi/advansys.c
+@@ -9600,7 +9600,7 @@ advansys_biosparam(struct scsi_device *sdev, struct block_device *bdev,
+  *
+  * 'dev_id' is a pointer to the interrupting adapter's Scsi_Host.
+  */
+-static irqreturn_t advansys_interrupt(int irq, void *dev_id)
++static irqreturn_t advansys_interrupt(void *dev_id)
+ {
+ 	struct Scsi_Host *shost = dev_id;
+ 	struct asc_board *boardp = shost_priv(shost);
+diff --git a/drivers/scsi/aha1740.c b/drivers/scsi/aha1740.c
+index f6722fd..aaf6e99 100644
+--- a/drivers/scsi/aha1740.c
++++ b/drivers/scsi/aha1740.c
+@@ -223,7 +223,7 @@ static int aha1740_test_port(unsigned int base)
+ }
+ 
+ /* A "high" level interrupt handler */
+-static irqreturn_t aha1740_intr_handle(int irq, void *dev_id)
++static irqreturn_t aha1740_intr_handle(void *dev_id)
+ {
+ 	struct Scsi_Host *host = (struct Scsi_Host *) dev_id;
+         void (*my_done)(Scsi_Cmnd *);
+diff --git a/drivers/scsi/aic7xxx/aic79xx_osm.c b/drivers/scsi/aic7xxx/aic79xx_osm.c
+index 42c0f14..0751639 100644
+--- a/drivers/scsi/aic7xxx/aic79xx_osm.c
++++ b/drivers/scsi/aic7xxx/aic79xx_osm.c
+@@ -1526,7 +1526,7 @@ ahd_linux_run_command(struct ahd_softc *ahd, struct ahd_linux_device *dev,
+  * SCSI controller interrupt handler.
+  */
+ irqreturn_t
+-ahd_linux_isr(int irq, void *dev_id)
++ahd_linux_isr(void *dev_id)
+ {
+ 	struct	ahd_softc *ahd;
+ 	u_long	flags;
+diff --git a/drivers/scsi/aic7xxx/aic79xx_osm.h b/drivers/scsi/aic7xxx/aic79xx_osm.h
+index 853998b..ee488a4 100644
+--- a/drivers/scsi/aic7xxx/aic79xx_osm.h
++++ b/drivers/scsi/aic7xxx/aic79xx_osm.h
+@@ -852,7 +852,7 @@ int	ahd_platform_abort_scbs(struct ahd_softc *ahd, int target,
+ 				char channel, int lun, u_int tag,
+ 				role_t role, uint32_t status);
+ irqreturn_t
+-	ahd_linux_isr(int irq, void *dev_id);
++	ahd_linux_isr(void *dev_id);
+ void	ahd_done(struct ahd_softc*, struct scb*);
+ void	ahd_send_async(struct ahd_softc *, char channel,
+ 		       u_int target, u_int lun, ac_code);
+diff --git a/drivers/scsi/aic7xxx/aic7xxx_osm.c b/drivers/scsi/aic7xxx/aic7xxx_osm.c
+index 7770bef..5bcf877 100644
+--- a/drivers/scsi/aic7xxx/aic7xxx_osm.c
++++ b/drivers/scsi/aic7xxx/aic7xxx_osm.c
+@@ -1532,7 +1532,7 @@ ahc_linux_run_command(struct ahc_softc *ahc, struct ahc_linux_device *dev,
+  * SCSI controller interrupt handler.
+  */
+ irqreturn_t
+-ahc_linux_isr(int irq, void *dev_id)
++ahc_linux_isr(void *dev_id)
+ {
+ 	struct	ahc_softc *ahc;
+ 	u_long	flags;
+diff --git a/drivers/scsi/aic7xxx/aic7xxx_osm.h b/drivers/scsi/aic7xxx/aic7xxx_osm.h
+index b48dab4..e24d6c8 100644
+--- a/drivers/scsi/aic7xxx/aic7xxx_osm.h
++++ b/drivers/scsi/aic7xxx/aic7xxx_osm.h
+@@ -820,7 +820,7 @@ int	ahc_platform_abort_scbs(struct ahc_softc *ahc, int target,
+ 				char channel, int lun, u_int tag,
+ 				role_t role, uint32_t status);
+ irqreturn_t
+-	ahc_linux_isr(int irq, void *dev_id);
++	ahc_linux_isr(void *dev_id);
+ void	ahc_platform_flushwork(struct ahc_softc *ahc);
+ void	ahc_done(struct ahc_softc*, struct scb*);
+ void	ahc_send_async(struct ahc_softc *, char channel,
+diff --git a/drivers/scsi/aic7xxx_old.c b/drivers/scsi/aic7xxx_old.c
+index 4025608..4c6ad7a 100644
+--- a/drivers/scsi/aic7xxx_old.c
++++ b/drivers/scsi/aic7xxx_old.c
+@@ -6467,12 +6467,12 @@ aic7xxx_isr(void *dev_id)
+  *   anything like it, please inform the Gross Hack Police immediately
+  *-F*************************************************************************/
+ static irqreturn_t
+-do_aic7xxx_isr(int irq, void *dev_id)
++do_aic7xxx_isr(void *dev_id)
+ {
+   unsigned long cpu_flags;
+   struct aic7xxx_host *p;
+   
+-  p = (struct aic7xxx_host *)dev_id;
++  p = dev_id;
+   if(!p)
+     return IRQ_NONE;
+   spin_lock_irqsave(p->host->host_lock, cpu_flags);
+diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.c b/drivers/scsi/aic94xx/aic94xx_hwi.c
+index 0cd7eed..c2bf1ed 100644
+--- a/drivers/scsi/aic94xx/aic94xx_hwi.c
++++ b/drivers/scsi/aic94xx/aic94xx_hwi.c
+@@ -1017,7 +1017,7 @@ static inline void asd_hst_pcix_isr(struct asd_ha_struct *asd_ha)
+  *
+  * The ISR processes done list entries and level 3 error handling.
+  */
+-irqreturn_t asd_hw_isr(int irq, void *dev_id)
++irqreturn_t asd_hw_isr(void *dev_id)
+ {
+ 	struct asd_ha_struct *asd_ha = dev_id;
+ 	u32 chimint = asd_read_reg_dword(asd_ha, CHIMINT);
+diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.h b/drivers/scsi/aic94xx/aic94xx_hwi.h
+index 491e5d8..6bb6e07 100644
+--- a/drivers/scsi/aic94xx/aic94xx_hwi.h
++++ b/drivers/scsi/aic94xx/aic94xx_hwi.h
+@@ -372,7 +372,7 @@ static inline void asd_ascb_free_list(struct asd_ascb *ascb_list)
+ /* ---------- Function declarations ---------- */
+ 
+ int  asd_init_hw(struct asd_ha_struct *asd_ha);
+-irqreturn_t asd_hw_isr(int irq, void *dev_id);
++irqreturn_t asd_hw_isr(void *dev_id);
+ 
+ 
+ struct asd_ascb *asd_ascb_alloc_list(struct asd_ha_struct
+diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
+index f817775..60fbfa5 100644
+--- a/drivers/scsi/arcmsr/arcmsr_hba.c
++++ b/drivers/scsi/arcmsr/arcmsr_hba.c
+@@ -168,7 +168,7 @@ static struct pci_driver arcmsr_pci_driver = {
+ 	#endif
+ };
+ 
+-static irqreturn_t arcmsr_do_interrupt(int irq, void *dev_id)
++static irqreturn_t arcmsr_do_interrupt(void *dev_id)
+ {
+ 	irqreturn_t handle_state;
+ 	struct AdapterControlBlock *acb = dev_id;
+diff --git a/drivers/scsi/arm/acornscsi.c b/drivers/scsi/arm/acornscsi.c
+index eceacf6..419cd8b 100644
+--- a/drivers/scsi/arm/acornscsi.c
++++ b/drivers/scsi/arm/acornscsi.c
+@@ -2460,13 +2460,12 @@ intr_ret_t acornscsi_sbicintr(AS_Host *host, int in_irq)
+ }
+ 
+ /*
+- * Prototype: void acornscsi_intr(int irq, void *dev_id)
++ * Prototype: void acornscsi_intr(void *dev_id)
+  * Purpose  : handle interrupts from Acorn SCSI card
+- * Params   : irq    - interrupt number
+- *	      dev_id - device specific data (AS_Host structure)
++ * Params   : dev_id - device specific data (AS_Host structure)
+  */
+ static irqreturn_t
+-acornscsi_intr(int irq, void *dev_id)
++acornscsi_intr(void *dev_id)
+ {
+     AS_Host *host = (AS_Host *)dev_id;
+     intr_ret_t ret;
+diff --git a/drivers/scsi/arm/cumana_2.c b/drivers/scsi/arm/cumana_2.c
+index 68a6412..6740fb0 100644
+--- a/drivers/scsi/arm/cumana_2.c
++++ b/drivers/scsi/arm/cumana_2.c
+@@ -134,11 +134,10 @@ cumanascsi_2_terminator_ctl(struct Scsi_Host *host, int on_off)
+ 
+ /* Prototype: void cumanascsi_2_intr(irq, *dev_id, *regs)
+  * Purpose  : handle interrupts from Cumana SCSI 2 card
+- * Params   : irq    - interrupt number
+- *	      dev_id - user-defined (Scsi_Host structure)
++ * Params   : dev_id - user-defined (Scsi_Host structure)
+  */
+ static irqreturn_t
+-cumanascsi_2_intr(int irq, void *dev_id)
++cumanascsi_2_intr(void *dev_id)
+ {
+ 	struct cumanascsi2_info *info = dev_id;
+ 
+diff --git a/drivers/scsi/arm/eesox.c b/drivers/scsi/arm/eesox.c
+index bb2477b..8c8cbf0 100644
+--- a/drivers/scsi/arm/eesox.c
++++ b/drivers/scsi/arm/eesox.c
+@@ -135,11 +135,10 @@ eesoxscsi_terminator_ctl(struct Scsi_Host *host, int on_off)
+ 
+ /* Prototype: void eesoxscsi_intr(irq, *dev_id, *regs)
+  * Purpose  : handle interrupts from EESOX SCSI card
+- * Params   : irq    - interrupt number
+- *	      dev_id - user-defined (Scsi_Host structure)
++ * Params   : dev_id - user-defined (Scsi_Host structure)
+  */
+ static irqreturn_t
+-eesoxscsi_intr(int irq, void *dev_id)
++eesoxscsi_intr(void *dev_id)
+ {
+ 	struct eesoxscsi_info *info = dev_id;
+ 
+diff --git a/drivers/scsi/arm/powertec.c b/drivers/scsi/arm/powertec.c
+index d9a546d..247f904 100644
+--- a/drivers/scsi/arm/powertec.c
++++ b/drivers/scsi/arm/powertec.c
+@@ -109,10 +109,9 @@ powertecscsi_terminator_ctl(struct Scsi_Host *host, int on_off)
+ 
+ /* Prototype: void powertecscsi_intr(irq, *dev_id, *regs)
+  * Purpose  : handle interrupts from Powertec SCSI card
+- * Params   : irq    - interrupt number
+- *	      dev_id - user-defined (Scsi_Host structure)
++ * Params   : dev_id - user-defined (Scsi_Host structure)
+  */
+-static irqreturn_t powertecscsi_intr(int irq, void *dev_id)
++static irqreturn_t powertecscsi_intr(void *dev_id)
+ {
+ 	struct powertec_info *info = dev_id;
+ 
+diff --git a/drivers/scsi/atari_NCR5380.c b/drivers/scsi/atari_NCR5380.c
+index 52d0b87..e1a8b0f 100644
+--- a/drivers/scsi/atari_NCR5380.c
++++ b/drivers/scsi/atari_NCR5380.c
+@@ -1271,11 +1271,11 @@ static void NCR5380_dma_complete(struct Scsi_Host *instance)
+  *	from the disconnected queue, and restarting NCR5380_main()
+  *	as required.
+  *
+- * Inputs : int irq, irq that caused this interrupt.
++ * Inputs : void *dev_id: instance structure
+  *
+  */
+ 
+-static irqreturn_t NCR5380_intr(int irq, void *dev_id)
++static irqreturn_t NCR5380_intr(void *dev_id)
+ {
+ 	struct Scsi_Host *instance = first_instance;
+ 	int done = 1, handled = 0;
+diff --git a/drivers/scsi/atari_dma_emul.c b/drivers/scsi/atari_dma_emul.c
+index cdc710e..587f051 100644
+--- a/drivers/scsi/atari_dma_emul.c
++++ b/drivers/scsi/atari_dma_emul.c
+@@ -110,7 +110,7 @@ static inline void set_restdata_reg(unsigned char *cur_addr)
+ }
+ 
+ /*
+- * void hades_dma_emulator(int irq, void *dummy)
++ * void hades_dma_emulator(void *dummy)
+  * 
+  * This code emulates TT SCSI DMA on the Hades.
+  * 
+@@ -140,7 +140,7 @@ static inline void set_restdata_reg(unsigned char *cur_addr)
+  *    increased with one.
+  */
+ 
+-static irqreturn_t hades_dma_emulator(int irq, void *dummy)
++static irqreturn_t hades_dma_emulator(void *dummy)
+ {
+ 	unsigned long dma_base;
+ 	register unsigned long dma_cnt asm ("d3");
+diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
+index 6f8403b..7cfebd2 100644
+--- a/drivers/scsi/atari_scsi.c
++++ b/drivers/scsi/atari_scsi.c
+@@ -193,8 +193,8 @@ static int falcon_classify_cmd(Scsi_Cmnd *cmd);
+ static unsigned long atari_dma_xfer_len(unsigned long wanted_len,
+ 					Scsi_Cmnd *cmd, int write_flag);
+ #endif
+-static irqreturn_t scsi_tt_intr(int irq, void *dummy);
+-static irqreturn_t scsi_falcon_intr(int irq, void *dummy);
++static irqreturn_t scsi_tt_intr(void *dummy);
++static irqreturn_t scsi_falcon_intr(void *dummy);
+ static void falcon_release_lock_if_possible(struct NCR5380_hostdata *hostdata);
+ static void falcon_get_lock(void);
+ #ifdef CONFIG_ATARI_SCSI_RESET_BOOT
+@@ -282,7 +282,7 @@ static int scsi_dma_is_ignored_buserr(unsigned char dma_stat)
+  * end-of-DMA, both SCSI ints are triggered simultaneously, so the NCR int has
+  * to clear the DMA int pending bit before it allows other level 6 interrupts.
+  */
+-static void scsi_dma_buserr(int irq, void *dummy)
++static void scsi_dma_buserr(void *dummy)
+ {
+ 	unsigned char dma_stat = tt_scsi_dma.dma_ctrl;
+ 
+@@ -310,7 +310,7 @@ static void scsi_dma_buserr(int irq, void *dummy)
+ #endif
+ 
+ 
+-static irqreturn_t scsi_tt_intr(int irq, void *dummy)
++static irqreturn_t scsi_tt_intr(void *dummy)
+ {
+ #ifdef REAL_DMA
+ 	int dma_stat;
+@@ -403,7 +403,7 @@ static irqreturn_t scsi_tt_intr(int irq, void *dummy)
+ }
+ 
+ 
+-static irqreturn_t scsi_falcon_intr(int irq, void *dummy)
++static irqreturn_t scsi_falcon_intr(void *dummy)
+ {
+ #ifdef REAL_DMA
+ 	int dma_stat;
+diff --git a/drivers/scsi/atp870u.c b/drivers/scsi/atp870u.c
+index fec58cc..5a6ada2 100644
+--- a/drivers/scsi/atp870u.c
++++ b/drivers/scsi/atp870u.c
+@@ -44,7 +44,7 @@ static void send_s870(struct atp_unit *dev,unsigned char c);
+ static void is885(struct atp_unit *dev, unsigned int wkport,unsigned char c);
+ static void tscam_885(void);
+ 
+-static irqreturn_t atp870u_intr_handle(int irq, void *dev_id)
++static irqreturn_t atp870u_intr_handle(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	unsigned short int tmpcip, id;
+diff --git a/drivers/scsi/dc395x.c b/drivers/scsi/dc395x.c
+index fd42d47..d300a5f 100644
+--- a/drivers/scsi/dc395x.c
++++ b/drivers/scsi/dc395x.c
+@@ -1800,7 +1800,7 @@ static void dc395x_handle_interrupt(struct AdapterCtlBlk *acb,
+ }
+ 
+ 
+-static irqreturn_t dc395x_interrupt(int irq, void *dev_id)
++static irqreturn_t dc395x_interrupt(void *dev_id)
+ {
+ 	struct AdapterCtlBlk *acb = dev_id;
+ 	u16 scsi_status;
+diff --git a/drivers/scsi/dec_esp.c b/drivers/scsi/dec_esp.c
+index d42ad66..9af7fdd 100644
+--- a/drivers/scsi/dec_esp.c
++++ b/drivers/scsi/dec_esp.c
+@@ -94,9 +94,9 @@ volatile unsigned char pmaz_cmd_buffer[16];
+ 				 * via PIO.
+ 				 */
+ 
+-static irqreturn_t scsi_dma_merr_int(int, void *);
+-static irqreturn_t scsi_dma_err_int(int, void *);
+-static irqreturn_t scsi_dma_int(int, void *);
++static irqreturn_t scsi_dma_merr_int(void *);
++static irqreturn_t scsi_dma_err_int(void *);
++static irqreturn_t scsi_dma_int(void *);
+ 
+ static struct scsi_host_template dec_esp_template = {
+ 	.module			= THIS_MODULE,
+@@ -352,7 +352,7 @@ static void __exit dec_esp_remove(struct device *dev)
+ 
+ 
+ /************************************************************* DMA Functions */
+-static irqreturn_t scsi_dma_merr_int(int irq, void *dev_id)
++static irqreturn_t scsi_dma_merr_int(void *dev_id)
+ {
+ 	printk("Got unexpected SCSI DMA Interrupt! < ");
+ 	printk("SCSI_DMA_MEMRDERR ");
+@@ -361,14 +361,14 @@ static irqreturn_t scsi_dma_merr_int(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t scsi_dma_err_int(int irq, void *dev_id)
++static irqreturn_t scsi_dma_err_int(void *dev_id)
+ {
+ 	/* empty */
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t scsi_dma_int(int irq, void *dev_id)
++static irqreturn_t scsi_dma_int(void *dev_id)
+ {
+ 	u32 scsi_next_ptr;
+ 
+diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+index 8258506..f87b897 100644
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -1966,7 +1966,7 @@ static int adpt_ioctl(struct inode *inode, struct file *file, uint cmd,
+ }
+ 
+ 
+-static irqreturn_t adpt_isr(int irq, void *dev_id)
++static irqreturn_t adpt_isr(void *dev_id)
+ {
+ 	struct scsi_cmnd* cmd;
+ 	adpt_hba* pHba = dev_id;
+diff --git a/drivers/scsi/dpti.h b/drivers/scsi/dpti.h
+index 0892f6c..64be1df 100644
+--- a/drivers/scsi/dpti.h
++++ b/drivers/scsi/dpti.h
+@@ -259,7 +259,7 @@ struct sg_simple_element {
+ static void adpt_i2o_sys_shutdown(void);
+ static int adpt_init(void);
+ static int adpt_i2o_build_sys_table(void);
+-static irqreturn_t adpt_isr(int irq, void *dev_id);
++static irqreturn_t adpt_isr(void *dev_id);
+ #ifdef REBOOT_NOTIFIER
+ static int adpt_reboot_event(struct notifier_block *n, ulong code, void *p);
+ #endif
+diff --git a/drivers/scsi/eata_pio.c b/drivers/scsi/eata_pio.c
+index 96180bb..17bcdfe 100644
+--- a/drivers/scsi/eata_pio.c
++++ b/drivers/scsi/eata_pio.c
+@@ -178,9 +178,9 @@ static void IncStat(struct scsi_pointer *SCp, unsigned int Increment)
  	}
  }
  
--static irqreturn_t snd_dbri_interrupt(int irq, void *dev_id)
-+static irqreturn_t snd_dbri_interrupt(void *dev_id)
+-static irqreturn_t eata_pio_int_handler(int irq, void *dev_id);
++static irqreturn_t eata_pio_int_handler(void *dev_id);
+ 
+-static irqreturn_t do_eata_pio_int_handler(int irq, void *dev_id)
++static irqreturn_t do_eata_pio_int_handler(void *dev_id)
  {
- 	struct snd_dbri *dbri = dev_id;
- 	static int errcnt = 0;
+ 	unsigned long flags;
+ 	struct Scsi_Host *dev = dev_id;
+@@ -192,7 +192,7 @@ static irqreturn_t do_eata_pio_int_handler(int irq, void *dev_id)
+ 	return ret;
+ }
+ 
+-static irqreturn_t eata_pio_int_handler(int irq, void *dev_id)
++static irqreturn_t eata_pio_int_handler(void *dev_id)
+ {
+ 	unsigned int eata_stat = 0xfffff;
+ 	struct scsi_cmnd *cmd;
+diff --git a/drivers/scsi/fd_mcs.c b/drivers/scsi/fd_mcs.c
+index 668569e..254827f 100644
+--- a/drivers/scsi/fd_mcs.c
++++ b/drivers/scsi/fd_mcs.c
+@@ -281,7 +281,7 @@ static struct fd_mcs_adapters_struct fd_mcs_adapters[] = {
+ 
+ #define FD_BRDS ARRAY_SIZE(fd_mcs_adapters)
+ 
+-static irqreturn_t fd_mcs_intr(int irq, void *dev_id);
++static irqreturn_t fd_mcs_intr(void *dev_id);
+ 
+ static unsigned long addresses[] = { 0xc8000, 0xca000, 0xce000, 0xde000 };
+ static unsigned short ports[] = { 0x140, 0x150, 0x160, 0x170 };
+@@ -619,7 +619,7 @@ static void my_done(struct Scsi_Host *shpnt, int error)
+ }
+ 
+ /* only my_done needs to be protected  */
+-static irqreturn_t fd_mcs_intr(int irq, void *dev_id)
++static irqreturn_t fd_mcs_intr(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	int status;
+diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
+index 5d282e6..fc03f07 100644
+--- a/drivers/scsi/fdomain.c
++++ b/drivers/scsi/fdomain.c
+@@ -406,7 +406,7 @@ static volatile int      in_interrupt_flag;
+ static int               FIFO_Size = 0x2000; /* 8k FIFO for
+ 						pre-tmc18c30 chips */
+ 
+-static irqreturn_t       do_fdomain_16x0_intr( int irq, void *dev_id );
++static irqreturn_t       do_fdomain_16x0_intr( void *dev_id );
+ /* Allow insmod parameters to be like LILO parameters.  For example:
+    insmod fdomain fdomain=0x140,11 */
+ static char * fdomain = NULL;
+@@ -1123,7 +1123,7 @@ static void my_done(int error)
+ #endif
+ }
+ 
+-static irqreturn_t do_fdomain_16x0_intr(int irq, void *dev_id)
++static irqreturn_t do_fdomain_16x0_intr(void *dev_id)
+ {
+    unsigned long flags;
+    int      status;
+diff --git a/drivers/scsi/gvp11.c b/drivers/scsi/gvp11.c
+index 37741e9..74cab0b 100644
+--- a/drivers/scsi/gvp11.c
++++ b/drivers/scsi/gvp11.c
+@@ -23,7 +23,7 @@
+ #define DMA(ptr) ((gvp11_scsiregs *)((ptr)->base))
+ #define HDATA(ptr) ((struct WD33C93_hostdata *)((ptr)->hostdata))
+ 
+-static irqreturn_t gvp11_intr (int irq, void *_instance)
++static irqreturn_t gvp11_intr (void *_instance)
+ {
+     unsigned long flags;
+     unsigned int status;
+diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+index 8515054..9205ebb 100644
+--- a/drivers/scsi/hptiop.c
++++ b/drivers/scsi/hptiop.c
+@@ -429,7 +429,7 @@ void hptiop_iop_request_callback(struct hptiop_hba *hba, u32 tag)
+ 	writel(tag, &hba->iop->outbound_queue);
+ }
+ 
+-static irqreturn_t hptiop_intr(int irq, void *dev_id)
++static irqreturn_t hptiop_intr(void *dev_id)
+ {
+ 	struct hptiop_hba  *hba = dev_id;
+ 	int  handled;
+diff --git a/drivers/scsi/ibmmca.c b/drivers/scsi/ibmmca.c
+index 714e627..683fe1d 100644
+--- a/drivers/scsi/ibmmca.c
++++ b/drivers/scsi/ibmmca.c
+@@ -497,7 +497,7 @@ static int option_setup(char *);
+ static int ldn_access_load(struct Scsi_Host *, int);
+ static int ldn_access_total_read_write(struct Scsi_Host *);
+ 
+-static irqreturn_t interrupt_handler(int irq, void *dev_id)
++static irqreturn_t interrupt_handler(void *dev_id)
+ {
+ 	unsigned int intr_reg;
+ 	unsigned int cmd_result;
+diff --git a/drivers/scsi/ibmvscsi/rpa_vscsi.c b/drivers/scsi/ibmvscsi/rpa_vscsi.c
+index 1821461..8003fb1 100644
+--- a/drivers/scsi/ibmvscsi/rpa_vscsi.c
++++ b/drivers/scsi/ibmvscsi/rpa_vscsi.c
+@@ -43,13 +43,12 @@ static unsigned int partition_number = -1;
+  */
+ /**
+  * rpavscsi_handle_event: - Interrupt handler for crq events
+- * @irq:	number of irq to handle, not used
+  * @dev_instance: ibmvscsi_host_data of host that received interrupt
+  *
+  * Disables interrupts and schedules srp_task
+  * Always returns IRQ_HANDLED
+  */
+-static irqreturn_t rpavscsi_handle_event(int irq, void *dev_instance)
++static irqreturn_t rpavscsi_handle_event(void *dev_instance)
+ {
+ 	struct ibmvscsi_host_data *hostdata =
+ 	    (struct ibmvscsi_host_data *)dev_instance;
+diff --git a/drivers/scsi/in2000.c b/drivers/scsi/in2000.c
+index ab7cbf3..c6754d1 100644
+--- a/drivers/scsi/in2000.c
++++ b/drivers/scsi/in2000.c
+@@ -829,7 +829,7 @@ static void transfer_bytes(Scsi_Cmnd * cmd, int data_in_dir)
+  * but it _does_ need to be able to compile and run in an SMP kernel.)
+  */
+ 
+-static irqreturn_t in2000_intr(int irqnum, void *dev_id)
++static irqreturn_t in2000_intr(void *dev_id)
+ {
+ 	struct Scsi_Host *instance = dev_id;
+ 	struct IN2000_hostdata *hostdata;
+diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
+index 22d40fd..87c7537 100644
+--- a/drivers/scsi/initio.c
++++ b/drivers/scsi/initio.c
+@@ -2532,7 +2532,7 @@ static int initio_wait_done_disc(struct initio_host * host)
+  *	code under the lock.
+  */
+ 
+-static irqreturn_t i91u_intr(int irqno, void *dev_id)
++static irqreturn_t i91u_intr(void *dev_id)
+ {
+ 	struct Scsi_Host *dev = dev_id;
+ 	unsigned long flags;
+diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+index c316a0b..78a44ab 100644
+--- a/drivers/scsi/ipr.c
++++ b/drivers/scsi/ipr.c
+@@ -4178,7 +4178,7 @@ static irqreturn_t ipr_handle_other_interrupt(struct ipr_ioa_cfg *ioa_cfg,
+  * Return value:
+  * 	IRQ_NONE / IRQ_HANDLED
+  **/
+-static irqreturn_t ipr_isr(int irq, void *devp)
++static irqreturn_t ipr_isr(void *devp)
+ {
+ 	struct ipr_ioa_cfg *ioa_cfg = (struct ipr_ioa_cfg *)devp;
+ 	unsigned long lock_flags = 0;
+diff --git a/drivers/scsi/ips.c b/drivers/scsi/ips.c
+index edaac27..0f1edb9 100644
+--- a/drivers/scsi/ips.c
++++ b/drivers/scsi/ips.c
+@@ -235,7 +235,7 @@ static int ips_eh_abort(struct scsi_cmnd *);
+ static int ips_eh_reset(struct scsi_cmnd *);
+ static int ips_queue(struct scsi_cmnd *, void (*)(struct scsi_cmnd *));
+ static const char *ips_info(struct Scsi_Host *);
+-static irqreturn_t do_ipsintr(int, void *);
++static irqreturn_t do_ipsintr(void *);
+ static int ips_hainit(ips_ha_t *);
+ static int ips_map_status(ips_ha_t *, ips_scb_t *, ips_stat_t *);
+ static int ips_send_wait(ips_ha_t *, ips_scb_t *, int, int);
+@@ -1231,7 +1231,7 @@ ips_slave_configure(struct scsi_device * SDptr)
+ /*                                                                          */
+ /****************************************************************************/
+ static irqreturn_t
+-do_ipsintr(int irq, void *dev_id)
++do_ipsintr(void *dev_id)
+ {
+ 	ips_ha_t *ha;
+ 	struct Scsi_Host *host;
+diff --git a/drivers/scsi/lpfc/lpfc_crtn.h b/drivers/scsi/lpfc/lpfc_crtn.h
+index a599e15..0771fbc 100644
+--- a/drivers/scsi/lpfc/lpfc_crtn.h
++++ b/drivers/scsi/lpfc/lpfc_crtn.h
+@@ -152,7 +152,7 @@ int lpfc_sli_queue_setup(struct lpfc_hba *);
+ 
+ void lpfc_handle_eratt(struct lpfc_hba *);
+ void lpfc_handle_latt(struct lpfc_hba *);
+-irqreturn_t lpfc_intr_handler(int, void *);
++irqreturn_t lpfc_intr_handler(void *);
+ 
+ void lpfc_read_rev(struct lpfc_hba *, LPFC_MBOXQ_t *);
+ void lpfc_config_ring(struct lpfc_hba *, int, LPFC_MBOXQ_t *);
+diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
+index ce348c5..f1e20e7 100644
+--- a/drivers/scsi/lpfc/lpfc_sli.c
++++ b/drivers/scsi/lpfc/lpfc_sli.c
+@@ -3765,7 +3765,7 @@ lpfc_sli_flush_mbox_queue(struct lpfc_hba * phba)
+ }
+ 
+ irqreturn_t
+-lpfc_intr_handler(int irq, void *dev_id)
++lpfc_intr_handler(void *dev_id)
+ {
+ 	struct lpfc_hba  *phba;
+ 	uint32_t ha_copy;
+diff --git a/drivers/scsi/mac53c94.c b/drivers/scsi/mac53c94.c
+index a035001..db29fc0 100644
+--- a/drivers/scsi/mac53c94.c
++++ b/drivers/scsi/mac53c94.c
+@@ -60,8 +60,8 @@ struct fsc_state {
+ 
+ static void mac53c94_init(struct fsc_state *);
+ static void mac53c94_start(struct fsc_state *);
+-static void mac53c94_interrupt(int, void *);
+-static irqreturn_t do_mac53c94_interrupt(int, void *);
++static void mac53c94_interrupt(void *);
++static irqreturn_t do_mac53c94_interrupt(void *);
+ static void cmd_done(struct fsc_state *, int result);
+ static void set_dma_cmds(struct fsc_state *, struct scsi_cmnd *);
+ 
+@@ -176,7 +176,7 @@ static void mac53c94_start(struct fsc_state *state)
+ 	set_dma_cmds(state, cmd);
+ }
+ 
+-static irqreturn_t do_mac53c94_interrupt(int irq, void *dev_id)
++static irqreturn_t do_mac53c94_interrupt(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct Scsi_Host *dev = ((struct fsc_state *) dev_id)->current_req->device->host;
+@@ -187,7 +187,7 @@ static irqreturn_t do_mac53c94_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void mac53c94_interrupt(int irq, void *dev_id)
++static void mac53c94_interrupt(void *dev_id)
+ {
+ 	struct fsc_state *state = (struct fsc_state *) dev_id;
+ 	struct mac53c94_regs __iomem *regs = state->regs;
+diff --git a/drivers/scsi/mac_esp.c b/drivers/scsi/mac_esp.c
+index bcb4902..fc03a88 100644
+--- a/drivers/scsi/mac_esp.c
++++ b/drivers/scsi/mac_esp.c
+@@ -44,7 +44,7 @@
+ /* #define DEBUG_MAC_ESP */
+ 
+ extern void esp_handle(struct NCR_ESP *esp);
+-extern void mac_esp_intr(int irq, void *dev_id);
++extern void mac_esp_intr(void *dev_id);
+ 
+ static int  dma_bytes_sent(struct NCR_ESP * esp, int fifo_count);
+ static int  dma_can_transfer(struct NCR_ESP * esp, Scsi_Cmnd *sp);
+@@ -88,7 +88,7 @@ static int setup_hostid = -1;
+  * set up properly!
+  */
+ 
+-void mac_esp_intr(int irq, void *dev_id)
++void mac_esp_intr(void *dev_id)
+ {
+ 	struct NCR_ESP *esp = (struct NCR_ESP *) dev_id;
+ 	int irq_p = 0;
+@@ -122,7 +122,7 @@ void mac_esp_intr(int irq, void *dev_id)
+  * acknowledge on the various machines
+  */
+ 
+-void scsi_esp_polled(int irq, void *dev_id)
++void scsi_esp_polled(void *dev_id)
+ {
+ 	if (esp_initialized == 0)
+ 		return;
+@@ -130,7 +130,7 @@ void scsi_esp_polled(int irq, void *dev_id)
+ 	mac_esp_intr(irq, dev_id);
+ }
+ 
+-void fake_intr(int irq, void *dev_id)
++void fake_intr(void *dev_id)
+ {
+ #ifdef DEBUG_MAC_ESP
+ 	printk("mac_esp: got irq\n");
+@@ -139,7 +139,7 @@ void fake_intr(int irq, void *dev_id)
+ 	mac_esp_intr(irq, dev_id);
+ }
+ 
+-irqreturn_t fake_drq(int irq, void *dev_id)
++irqreturn_t fake_drq(void *dev_id)
+ {
+ 	printk("mac_esp: got drq\n");
+ 	return IRQ_HANDLED;
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 10d1aff..ff6d232 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -1244,7 +1244,6 @@ bug_blocked_mailbox:
+ 
+ /**
+  * megaraid_isr_iomapped()
+- * @irq - irq
+  * @devp - pointer to our soft state
+  *
+  * Interrupt service routine for io-mapped controllers.
+@@ -1252,7 +1251,7 @@ bug_blocked_mailbox:
+  * and service the completed commands.
+  */
+ static irqreturn_t
+-megaraid_isr_iomapped(int irq, void *devp)
++megaraid_isr_iomapped(void *devp)
+ {
+ 	adapter_t	*adapter = devp;
+ 	unsigned long	flags;
+@@ -1328,7 +1327,7 @@ megaraid_isr_iomapped(int irq, void *devp)
+  * and service the completed commands.
+  */
+ static irqreturn_t
+-megaraid_isr_memmapped(int irq, void *devp)
++megaraid_isr_memmapped(void *devp)
+ {
+ 	adapter_t	*adapter = devp;
+ 	unsigned long	flags;
+diff --git a/drivers/scsi/megaraid.h b/drivers/scsi/megaraid.h
+index ee70bd4..a04f446 100644
+--- a/drivers/scsi/megaraid.h
++++ b/drivers/scsi/megaraid.h
+@@ -992,8 +992,8 @@ static scb_t * mega_build_cmd(adapter_t *, Scsi_Cmnd *, int *);
+ static void __mega_runpendq(adapter_t *);
+ static int issue_scb_block(adapter_t *, u_char *);
+ 
+-static irqreturn_t megaraid_isr_memmapped(int, void *);
+-static irqreturn_t megaraid_isr_iomapped(int, void *);
++static irqreturn_t megaraid_isr_memmapped(void *);
++static irqreturn_t megaraid_isr_iomapped(void *);
+ 
+ static void mega_free_scb(adapter_t *, scb_t *);
+ 
+diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
+index e4e4c6a..f179000 100644
+--- a/drivers/scsi/megaraid/megaraid_mbox.c
++++ b/drivers/scsi/megaraid/megaraid_mbox.c
+@@ -121,7 +121,7 @@ static void megaraid_mbox_prepare_pthru(adapter_t *, scb_t *,
+ static void megaraid_mbox_prepare_epthru(adapter_t *, scb_t *,
+ 		struct scsi_cmnd *);
+ 
+-static irqreturn_t megaraid_isr(int, void *);
++static irqreturn_t megaraid_isr(void *);
+ 
+ static void megaraid_mbox_dpc(unsigned long);
+ 
+@@ -2188,7 +2188,7 @@ megaraid_ack_sequence(adapter_t *adapter)
+  * Interrupt service routine for memory-mapped mailbox controllers.
+  */
+ static irqreturn_t
+-megaraid_isr(int irq, void *devp)
++megaraid_isr(void *devp)
+ {
+ 	adapter_t	*adapter = devp;
+ 	int		handled;
+diff --git a/drivers/scsi/megaraid/megaraid_sas.c b/drivers/scsi/megaraid/megaraid_sas.c
+index e3c5c52..b76847c 100644
+--- a/drivers/scsi/megaraid/megaraid_sas.c
++++ b/drivers/scsi/megaraid/megaraid_sas.c
+@@ -1316,7 +1316,7 @@ out_done:
+ /**
+  * megasas_isr - isr entry point
+  */
+-static irqreturn_t megasas_isr(int irq, void *devp)
++static irqreturn_t megasas_isr(void *devp)
+ {
+ 	return megasas_deplete_reply_queue((struct megasas_instance *)devp,
+ 					   DID_OK);
+diff --git a/drivers/scsi/mesh.c b/drivers/scsi/mesh.c
+index 7470ff3..b1c5f46 100644
+--- a/drivers/scsi/mesh.c
++++ b/drivers/scsi/mesh.c
+@@ -1018,7 +1018,7 @@ static void handle_reset(struct mesh_state *ms)
+ 	out_8(&mr->sequence, SEQ_ENBRESEL);
+ }
+ 
+-static irqreturn_t do_mesh_interrupt(int irq, void *dev_id)
++static irqreturn_t do_mesh_interrupt(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct mesh_state *ms = dev_id;
+diff --git a/drivers/scsi/mvme147.c b/drivers/scsi/mvme147.c
+index be41aad..4f99eb0 100644
+--- a/drivers/scsi/mvme147.c
++++ b/drivers/scsi/mvme147.c
+@@ -19,7 +19,7 @@
+ 
+ static struct Scsi_Host *mvme147_host = NULL;
+ 
+-static irqreturn_t mvme147_intr (int irq, void *dummy)
++static irqreturn_t mvme147_intr (void *dummy)
+ {
+     if (irq == MVME147_IRQ_SCSI_PORT)
+ 	wd33c93_intr (mvme147_host);
+diff --git a/drivers/scsi/ncr53c8xx.c b/drivers/scsi/ncr53c8xx.c
+index 016c462..59fef30 100644
+--- a/drivers/scsi/ncr53c8xx.c
++++ b/drivers/scsi/ncr53c8xx.c
+@@ -8066,7 +8066,7 @@ printk("ncr53c8xx : command successfully queued\n");
+      return sts;
+ }
+ 
+-irqreturn_t ncr53c8xx_intr(int irq, void *dev_id)
++irqreturn_t ncr53c8xx_intr(void *dev_id)
+ {
+      unsigned long flags;
+      struct Scsi_Host *shost = (struct Scsi_Host *)dev_id;
+diff --git a/drivers/scsi/ncr53c8xx.h b/drivers/scsi/ncr53c8xx.h
+index 0e008da..0eaee1b 100644
+--- a/drivers/scsi/ncr53c8xx.h
++++ b/drivers/scsi/ncr53c8xx.h
+@@ -1322,7 +1322,7 @@ struct ncr_device {
+ 
+ extern struct Scsi_Host *ncr_attach(struct scsi_host_template *tpnt, int unit, struct ncr_device *device);
+ extern void ncr53c8xx_release(struct Scsi_Host *host);
+-irqreturn_t ncr53c8xx_intr(int irq, void *dev_id);
++irqreturn_t ncr53c8xx_intr(void *dev_id);
+ extern int ncr53c8xx_init(void);
+ extern void ncr53c8xx_exit(void);
+ 
+diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
+index 28161dc..c50373b 100644
+--- a/drivers/scsi/nsp32.c
++++ b/drivers/scsi/nsp32.c
+@@ -243,7 +243,7 @@ static void nsp32_sack_negate (nsp32_hw_data *);
+ static void nsp32_do_bus_reset(nsp32_hw_data *);
+ 
+ /* hardware interrupt handler */
+-static irqreturn_t do_nsp32_isr(int, void *);
++static irqreturn_t do_nsp32_isr(void *);
+ 
+ /* initialize hardware */
+ static int  nsp32hw_init(nsp32_hw_data *);
+@@ -1161,7 +1161,7 @@ static int nsp32hw_init(nsp32_hw_data *data)
+ 
+ 
+ /* interrupt routine */
+-static irqreturn_t do_nsp32_isr(int irq, void *dev_id)
++static irqreturn_t do_nsp32_isr(void *dev_id)
+ {
+ 	nsp32_hw_data *data = dev_id;
+ 	unsigned int base = data->BaseAddress;
+diff --git a/drivers/scsi/pcmcia/nsp_cs.c b/drivers/scsi/pcmcia/nsp_cs.c
+index a45d89b..49f42c3 100644
+--- a/drivers/scsi/pcmcia/nsp_cs.c
++++ b/drivers/scsi/pcmcia/nsp_cs.c
+@@ -940,7 +940,7 @@ static int nsp_nexus(struct scsi_cmnd *SCpnt)
+ /*
+  * interrupt handler
+  */
+-static irqreturn_t nspintr(int irq, void *dev_id)
++static irqreturn_t nspintr(void *dev_id)
+ {
+ 	unsigned int   base;
+ 	unsigned char  irq_status, irq_phase, phase;
+diff --git a/drivers/scsi/pcmcia/nsp_cs.h b/drivers/scsi/pcmcia/nsp_cs.h
+index b7f0fa2..1ea53ae 100644
+--- a/drivers/scsi/pcmcia/nsp_cs.h
++++ b/drivers/scsi/pcmcia/nsp_cs.h
+@@ -332,7 +332,7 @@ static int  nsp_reselected       (struct scsi_cmnd *SCpnt);
+ static struct Scsi_Host *nsp_detect(struct scsi_host_template *sht);
+ 
+ /* Interrupt handler */
+-//static irqreturn_t nspintr(int irq, void *dev_id);
++//static irqreturn_t nspintr(void *dev_id);
+ 
+ /* Module entry point*/
+ static int  __init nsp_cs_init(void);
+diff --git a/drivers/scsi/pcmcia/sym53c500_cs.c b/drivers/scsi/pcmcia/sym53c500_cs.c
+index 190e2a7..45e52df 100644
+--- a/drivers/scsi/pcmcia/sym53c500_cs.c
++++ b/drivers/scsi/pcmcia/sym53c500_cs.c
+@@ -362,7 +362,7 @@ SYM53C500_pio_write(int fast_pio, int base, unsigned char *request, unsigned int
+ }
+ 
+ static irqreturn_t
+-SYM53C500_intr(int irq, void *dev_id)
++SYM53C500_intr(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct Scsi_Host *dev = dev_id;
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index 76089cf..013e4c1 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -1111,7 +1111,7 @@ qla1280_enable_intrs(struct scsi_qla_host *ha)
+  *   Handles the H/W interrupt
+  **************************************************************************/
+ static irqreturn_t
+-qla1280_intr_handler(int irq, void *dev_id)
++qla1280_intr_handler(void *dev_id)
+ {
+ 	struct scsi_qla_host *ha;
+ 	struct device_reg __iomem *reg;
+diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h
+index 09cb2a9..e5de80e 100644
+--- a/drivers/scsi/qla2xxx/qla_gbl.h
++++ b/drivers/scsi/qla2xxx/qla_gbl.h
+@@ -258,9 +258,9 @@ qla2x00_set_idma_speed(scsi_qla_host_t *, uint16_t, uint16_t, uint16_t *);
+ /*
+  * Global Function Prototypes in qla_isr.c source file.
+  */
+-extern irqreturn_t qla2100_intr_handler(int, void *);
+-extern irqreturn_t qla2300_intr_handler(int, void *);
+-extern irqreturn_t qla24xx_intr_handler(int, void *);
++extern irqreturn_t qla2100_intr_handler(void *);
++extern irqreturn_t qla2300_intr_handler(void *);
++extern irqreturn_t qla24xx_intr_handler(void *);
+ extern void qla2x00_process_response_queue(struct scsi_qla_host *);
+ extern void qla24xx_process_response_queue(struct scsi_qla_host *);
+ 
+diff --git a/drivers/scsi/qla2xxx/qla_inline.h b/drivers/scsi/qla2xxx/qla_inline.h
+index 8e3b044..cf05419 100644
+--- a/drivers/scsi/qla2xxx/qla_inline.h
++++ b/drivers/scsi/qla2xxx/qla_inline.h
+@@ -104,7 +104,7 @@ static __inline__ void qla2x00_poll(scsi_qla_host_t *);
+ static inline void
+ qla2x00_poll(scsi_qla_host_t *ha)
+ {
+-	ha->isp_ops->intr_handler(0, ha);
++	ha->isp_ops->intr_handler(ha);
+ }
+ 
+ static __inline__ void qla2x00_check_fabric_devices(scsi_qla_host_t *);
+diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
+index c4768c4..714c100 100644
+--- a/drivers/scsi/qla2xxx/qla_isr.c
++++ b/drivers/scsi/qla2xxx/qla_isr.c
+@@ -20,7 +20,6 @@ static void qla24xx_ms_entry(scsi_qla_host_t *, struct ct_entry_24xx *);
+ 
+ /**
+  * qla2100_intr_handler() - Process interrupts for the ISP2100 and ISP2200.
+- * @irq:
+  * @dev_id: SCSI driver HA context
+  *
+  * Called by system whenever the host adapter generates an interrupt.
+@@ -28,7 +27,7 @@ static void qla24xx_ms_entry(scsi_qla_host_t *, struct ct_entry_24xx *);
+  * Returns handled flag.
+  */
+ irqreturn_t
+-qla2100_intr_handler(int irq, void *dev_id)
++qla2100_intr_handler(void *dev_id)
+ {
+ 	scsi_qla_host_t	*ha;
+ 	struct device_reg_2xxx __iomem *reg;
+@@ -120,7 +119,7 @@ qla2100_intr_handler(int irq, void *dev_id)
+  * Returns handled flag.
+  */
+ irqreturn_t
+-qla2300_intr_handler(int irq, void *dev_id)
++qla2300_intr_handler(void *dev_id)
+ {
+ 	scsi_qla_host_t	*ha;
+ 	struct device_reg_2xxx __iomem *reg;
+@@ -1541,7 +1540,7 @@ done:
+  * Returns handled flag.
+  */
+ irqreturn_t
+-qla24xx_intr_handler(int irq, void *dev_id)
++qla24xx_intr_handler(void *dev_id)
+ {
+ 	scsi_qla_host_t	*ha;
+ 	struct device_reg_24xx __iomem *reg;
+@@ -1665,7 +1664,7 @@ qla24xx_ms_entry(scsi_qla_host_t *ha, struct ct_entry_24xx *pkt)
+ }
+ 
+ static irqreturn_t
+-qla24xx_msix_rsp_q(int irq, void *dev_id)
++qla24xx_msix_rsp_q(void *dev_id)
+ {
+ 	scsi_qla_host_t	*ha;
+ 	struct device_reg_24xx __iomem *reg;
+@@ -1686,7 +1685,7 @@ qla24xx_msix_rsp_q(int irq, void *dev_id)
+ }
+ 
+ static irqreturn_t
+-qla24xx_msix_default(int irq, void *dev_id)
++qla24xx_msix_default(void *dev_id)
+ {
+ 	scsi_qla_host_t	*ha;
+ 	struct device_reg_24xx __iomem *reg;
+diff --git a/drivers/scsi/qla4xxx/ql4_glbl.h b/drivers/scsi/qla4xxx/ql4_glbl.h
+index a3608e0..da9e27e 100644
+--- a/drivers/scsi/qla4xxx/ql4_glbl.h
++++ b/drivers/scsi/qla4xxx/ql4_glbl.h
+@@ -17,7 +17,7 @@ int qla4xxx_send_command_to_isp(struct scsi_qla_host *ha, struct srb * srb);
+ int qla4xxx_initialize_adapter(struct scsi_qla_host * ha,
+ 			       uint8_t renew_ddb_list);
+ int qla4xxx_soft_reset(struct scsi_qla_host *ha);
+-irqreturn_t qla4xxx_intr_handler(int irq, void *dev_id);
++irqreturn_t qla4xxx_intr_handler(void *dev_id);
+ 
+ void qla4xxx_free_ddb_list(struct scsi_qla_host * ha);
+ void qla4xxx_process_aen(struct scsi_qla_host * ha, uint8_t process_aen);
+diff --git a/drivers/scsi/qla4xxx/ql4_isr.c b/drivers/scsi/qla4xxx/ql4_isr.c
+index 4a154be..118d23a 100644
+--- a/drivers/scsi/qla4xxx/ql4_isr.c
++++ b/drivers/scsi/qla4xxx/ql4_isr.c
+@@ -633,10 +633,9 @@ void qla4xxx_interrupt_service_routine(struct scsi_qla_host * ha,
+ 
+ /**
+  * qla4xxx_intr_handler - hardware interrupt handler.
+- * @irq: Unused
+  * @dev_id: Pointer to host adapter structure
+  **/
+-irqreturn_t qla4xxx_intr_handler(int irq, void *dev_id)
++irqreturn_t qla4xxx_intr_handler(void *dev_id)
+ {
+ 	struct scsi_qla_host *ha;
+ 	uint32_t intr_status;
+diff --git a/drivers/scsi/qlogicfas408.c b/drivers/scsi/qlogicfas408.c
+index 2bfbf26..ac372b1 100644
+--- a/drivers/scsi/qlogicfas408.c
++++ b/drivers/scsi/qlogicfas408.c
+@@ -424,7 +424,7 @@ static void ql_ihandl(void *dev_id)
+ 	(icmd->scsi_done) (icmd);
+ }
+ 
+-irqreturn_t qlogicfas408_ihandl(int irq, void *dev_id)
++irqreturn_t qlogicfas408_ihandl(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct Scsi_Host *host = dev_id;
+diff --git a/drivers/scsi/qlogicfas408.h b/drivers/scsi/qlogicfas408.h
+index 2606264..57e7ed2 100644
+--- a/drivers/scsi/qlogicfas408.h
++++ b/drivers/scsi/qlogicfas408.h
+@@ -102,7 +102,7 @@ struct qlogicfas408_priv {
+ #define get_priv_by_cmd(x) (struct qlogicfas408_priv *)&((x)->device->host->hostdata[0])
+ #define get_priv_by_host(x) (struct qlogicfas408_priv *)&((x)->hostdata[0])
+ 
+-irqreturn_t qlogicfas408_ihandl(int irq, void *dev_id);
++irqreturn_t qlogicfas408_ihandl(void *dev_id);
+ int qlogicfas408_queuecommand(struct scsi_cmnd * cmd,
+ 			      void (*done) (struct scsi_cmnd *));
+ int qlogicfas408_biosparam(struct scsi_device * disk,
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index 7a2e798..a08b023 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -649,7 +649,7 @@ static int qlogicpti_verify_tmon(struct qlogicpti *qpti)
+ 	return 0;
+ }
+ 
+-static irqreturn_t qpti_intr(int irq, void *dev_id);
++static irqreturn_t qpti_intr(void *dev_id);
+ 
+ static void __init qpti_chain_add(struct qlogicpti *qpti)
+ {
+@@ -1180,7 +1180,7 @@ static struct scsi_cmnd *qlogicpti_intr_handler(struct qlogicpti *qpti)
+ 	return done_queue;
+ }
+ 
+-static irqreturn_t qpti_intr(int irq, void *dev_id)
++static irqreturn_t qpti_intr(void *dev_id)
+ {
+ 	struct qlogicpti *qpti = dev_id;
+ 	unsigned long flags;
+diff --git a/drivers/scsi/seagate.c b/drivers/scsi/seagate.c
+index ce80fa9..440aff0 100644
+--- a/drivers/scsi/seagate.c
++++ b/drivers/scsi/seagate.c
+@@ -321,8 +321,8 @@ static Signature __initdata signatures[] = {
+  */
+ 
+ static int hostno = -1;
+-static void seagate_reconnect_intr (int, void *);
+-static irqreturn_t do_seagate_reconnect_intr (int, void *);
++static void seagate_reconnect_intr (void *);
++static irqreturn_t do_seagate_reconnect_intr (void *);
+ static int seagate_st0x_bus_reset(struct scsi_cmnd *);
+ 
+ #ifdef FAST
+@@ -620,18 +620,18 @@ static int should_reconnect = 0;
+  * asserting SEL.
+  */
+ 
+-static irqreturn_t do_seagate_reconnect_intr(int irq, void *dev_id)
++static irqreturn_t do_seagate_reconnect_intr(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct Scsi_Host *dev = dev_id;
+ 	
+ 	spin_lock_irqsave (dev->host_lock, flags);
+-	seagate_reconnect_intr (irq, dev_id);
++	seagate_reconnect_intr (dev_id);
+ 	spin_unlock_irqrestore (dev->host_lock, flags);
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void seagate_reconnect_intr (int irq, void *dev_id)
++static void seagate_reconnect_intr (void *dev_id)
+ {
+ 	int temp;
+ 	struct scsi_cmnd *SCtmp;
+diff --git a/drivers/scsi/sgiwd93.c b/drivers/scsi/sgiwd93.c
+index eef8275..48e4b72 100644
+--- a/drivers/scsi/sgiwd93.c
++++ b/drivers/scsi/sgiwd93.c
+@@ -46,7 +46,7 @@ struct hpc_chunk {
+ 	u32 _padding;	/* align to quadword boundary */
+ };
+ 
+-static irqreturn_t sgiwd93_intr(int irq, void *dev_id)
++static irqreturn_t sgiwd93_intr(void *dev_id)
+ {
+ 	struct Scsi_Host * host = dev_id;
+ 	unsigned long flags;
+diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+index e3fab3a..79b98f1 100644
+--- a/drivers/scsi/stex.c
++++ b/drivers/scsi/stex.c
+@@ -838,7 +838,7 @@ update_status:
+ 	readl(base + IMR1); /* flush */
+ }
+ 
+-static irqreturn_t stex_intr(int irq, void *__hba)
++static irqreturn_t stex_intr(void *__hba)
+ {
+ 	struct st_hba *hba = __hba;
+ 	void __iomem *base = hba->mmio_base;
+diff --git a/drivers/scsi/sun3_NCR5380.c b/drivers/scsi/sun3_NCR5380.c
+index dc15a22..3f20aa6 100644
+--- a/drivers/scsi/sun3_NCR5380.c
++++ b/drivers/scsi/sun3_NCR5380.c
+@@ -1255,7 +1255,7 @@ static void NCR5380_dma_complete( struct Scsi_Host *instance )
+  *
+  */
+ 
+-static irqreturn_t NCR5380_intr (int irq, void *dev_id)
++static irqreturn_t NCR5380_intr (void *dev_id)
+ {
+     struct Scsi_Host *instance = first_instance;
+     int done = 1, handled = 0;
+diff --git a/drivers/scsi/sun3_scsi.c b/drivers/scsi/sun3_scsi.c
+index 5e46d84..aa76608 100644
+--- a/drivers/scsi/sun3_scsi.c
++++ b/drivers/scsi/sun3_scsi.c
+@@ -101,7 +101,7 @@ static void NCR5380_print(struct Scsi_Host *instance);
+ #define	ENABLE_IRQ()	enable_irq( IRQ_SUN3_SCSI ); 
+ 
+ 
+-static irqreturn_t scsi_sun3_intr(int irq, void *dummy);
++static irqreturn_t scsi_sun3_intr(void *dummy);
+ static inline unsigned char sun3scsi_read(int reg);
+ static inline void sun3scsi_write(int reg, int value);
+ 
+@@ -370,7 +370,7 @@ const char * sun3scsi_info (struct Scsi_Host *spnt) {
+ // safe bits for the CSR
+ #define CSR_GOOD 0x060f
+ 
+-static irqreturn_t scsi_sun3_intr(int irq, void *dummy)
++static irqreturn_t scsi_sun3_intr(void *dummy)
+ {
+ 	unsigned short csr = dregs->csr;
+ 	int handled = 0;
+diff --git a/drivers/scsi/sun3_scsi_vme.c b/drivers/scsi/sun3_scsi_vme.c
+index 7cb4a31..cf243a7 100644
+--- a/drivers/scsi/sun3_scsi_vme.c
++++ b/drivers/scsi/sun3_scsi_vme.c
+@@ -66,7 +66,7 @@ extern int sun3_map_test(unsigned long, char *);
+ #define ENABLE_IRQ()
+ 
+ 
+-static irqreturn_t scsi_sun3_intr(int irq, void *dummy);
++static irqreturn_t scsi_sun3_intr(void *dummy);
+ static inline unsigned char sun3scsi_read(int reg);
+ static inline void sun3scsi_write(int reg, int value);
+ 
+@@ -339,7 +339,7 @@ static const char * sun3scsi_info (struct Scsi_Host *spnt) {
+ // safe bits for the CSR
+ #define CSR_GOOD 0x060f
+ 
+-static irqreturn_t scsi_sun3_intr(int irq, void *dummy)
++static irqreturn_t scsi_sun3_intr(void *dummy)
+ {
+ 	unsigned short csr = dregs->csr;
+ 	int handled = 0;
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+index db03c4c..e6766b4 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.c
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+@@ -591,7 +591,7 @@ static int sym53c8xx_queue_command(struct scsi_cmnd *cmd,
+ /*
+  *  Linux entry point of the interrupt handler.
+  */
+-static irqreturn_t sym53c8xx_intr(int irq, void *dev_id)
++static irqreturn_t sym53c8xx_intr(void *dev_id)
+ {
+ 	unsigned long flags;
+ 	struct sym_hcb *np = (struct sym_hcb *)dev_id;
+diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
+index 5c72ca3..ea27599 100644
+--- a/drivers/scsi/tmscsim.c
++++ b/drivers/scsi/tmscsim.c
+@@ -742,7 +742,7 @@ DC390_Interrupt(void *dev_id)
+     return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t do_DC390_Interrupt(int irq, void *dev_id)
++static irqreturn_t do_DC390_Interrupt(void *dev_id)
+ {
+     irqreturn_t ret;
+     DEBUG1(printk (KERN_INFO "DC390: Irq (%i) caught: ", irq));
+diff --git a/drivers/scsi/ultrastor.c b/drivers/scsi/ultrastor.c
+index ea72bbe..cdde36a 100644
+--- a/drivers/scsi/ultrastor.c
++++ b/drivers/scsi/ultrastor.c
+@@ -288,7 +288,7 @@ static const unsigned short ultrastor_ports_14f[] = {
+ #endif
+ 
+ static void ultrastor_interrupt(void *);
+-static irqreturn_t do_ultrastor_interrupt(int, void *);
++static irqreturn_t do_ultrastor_interrupt(void *);
+ static inline void build_sg_list(struct mscp *, struct scsi_cmnd *SCpnt);
+ 
+ 
+@@ -1170,7 +1170,7 @@ static void ultrastor_interrupt(void *dev_id)
+ #endif
+ }
+ 
+-static irqreturn_t do_ultrastor_interrupt(int irq, void *dev_id)
++static irqreturn_t do_ultrastor_interrupt(void *dev_id)
+ {
+     unsigned long flags;
+     struct Scsi_Host *dev = dev_id;
+diff --git a/drivers/scsi/wd7000.c b/drivers/scsi/wd7000.c
+index 255c611..19ca418 100644
+--- a/drivers/scsi/wd7000.c
++++ b/drivers/scsi/wd7000.c
+@@ -998,7 +998,7 @@ static int make_code(unsigned hosterr, unsigned scsierr)
+ #define wd7000_intr_ack(host)   outb (0, host->iobase + ASC_INTR_ACK)
+ 
+ 
+-static irqreturn_t wd7000_intr(int irq, void *dev_id)
++static irqreturn_t wd7000_intr(void *dev_id)
+ {
+ 	Adapter *host = (Adapter *) dev_id;
+ 	int flag, icmb, errstatus, icmb_status;
