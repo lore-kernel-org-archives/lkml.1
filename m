@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXJSQT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbXJSQ2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762173AbXJSQT4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXJSQTs
+	id S1762905AbXJSQ2t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbXJSQ2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:19:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:56595 "EHLO www.tglx.de"
+	Fri, 19 Oct 2007 12:28:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34725 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbXJSQTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:19:47 -0400
-Date: Fri, 19 Oct 2007 18:19:37 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Carlos Corbacho <cathectic@slackadelic.com>
-cc: linux-kernel@vger.kernel.org, Mikko Tiihonen <mikko.tiihonen@iki.fi>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: nVidia HPET force enable - merge requirements? (resend)
-In-Reply-To: <200710191629.11526.cathectic@slackadelic.com>
-Message-ID: <alpine.LFD.0.9999.0710191736280.22770@localhost.localdomain>
-References: <200710190423.31714.cathectic@slackadelic.com> <alpine.LFD.0.9999.0710190847500.22770@localhost.localdomain> <200710191629.11526.cathectic@slackadelic.com>
+	id S1755456AbXJSQ2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:28:37 -0400
+Message-ID: <4718DB32.5000404@garzik.org>
+Date: Fri, 19 Oct 2007 12:28:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Holvenstot <cholvenstot@comcast.net>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: Network failure with 2.6.23-git14
+References: <1192790946.6416.4.camel@localhost>
+In-Reply-To: <1192790946.6416.4.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Carlos Corbacho wrote:
-> Would the following patch be more acceptable then? I've limited the device
-> id's to just the nForce 4 chipset, because that's the only one I have here
-> to test with at the moment - it appears to work fine:
+Chris Holvenstot wrote:
+> I built 2.6.23-git14 this morning - when booted I can not access the
+> network via my Ethernet connection.  Fallback to 2.6.23-git11 works OK.
+> One interesting message during boot:
 
-Yes, looks good. It is just missing the resume part, which is
-necessary to reenable the hpet after suspend/resume.
- 
-> hpet clockevent registered
-> hpet0: at MMIO 0xfefff000, IRQs 2, 8, 31
-> hpet0: 3 32-bit timers, 25000000 Hz
-> Time: hpet clocksource has been installed.
-> Switched to high resolution mode on CPU 0
-> Switched to high resolution mode on CPU 1
-> 
-> At the moment, I'm not clear on how to detect if the HPET has not been
-> enabled by the BIOS (but given that this is hidden behind hpet=force,
-> would this be acceptable, since the user would have to explicitly call
-> hpet=force, and then it either works or doesn't?)
+> [   37.325760] forcedeth: Reverse Engineered nForce ethernet driver.
+> [   37.843618] forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @ 1,
+> addr 00:19:db:6d:3f:1b
+> [   37.843623] forcedeth 0000:00:0a.0: highdma csum timirq gbit lnktim
+> desc-v3
 
-Don't worry. If HPET is enabled in the BIOS, then we have an
-hpet_address already before we come into the force enable
-quirk. That's why we check for hpet_address in the quirk code.
+> [   46.414433] sysfs: duplicate filename 'eth1' can not be created
+> [   46.414438] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> [   46.414445]  [<c01ba80f>] sysfs_add_one+0x9f/0xe0
+> [   46.414456]  [<c01bb5c6>] sysfs_create_link+0x86/0x110
+> [   46.414462]  [<c025608a>] device_rename+0x17a/0x1e0
+> [   46.414467]  [<c0130190>] run_timer_softirq+0x30/0x180
+> [   46.414472]  [<c0287a60>] dev_change_name+0xb0/0x200
+> [   46.414476]  [<c0159a62>] filemap_fault+0x1f2/0x400
+> [   46.414478]  [<c012c895>] __do_softirq+0x75/0xf0
+> [   46.414484]  [<c027a260>] sock_ioctl+0x0/0x230
+> [   46.414487]  [<c028809c>] dev_ioctl+0x25c/0x520
+> [   46.414489]  [<c01646eb>] __do_fault+0x1ab/0x380
+> [   46.414494]  [<c0165d28>] handle_mm_fault+0xf8/0x610
+> [   46.414499]  [<c027a260>] sock_ioctl+0x0/0x230
+> [   46.414502]  [<c018343b>] do_ioctl+0x2b/0x90
+> [   46.414506]  [<c01834fc>] vfs_ioctl+0x5c/0x290
+> [   46.414510]  [<c0183798>] sys_ioctl+0x68/0x80
+> [   46.414513]  [<c01041de>] sysenter_past_esp+0x5f/0x85
+> [   46.414520]  =======================
+> [   46.414523] net eth1: device_rename: sysfs_create_symlink failed
 
-     tglx
+
+What are your network devices?  Is your problem with eth0, forcedeth, or 
+as this traceback implies, eth1?
+
+What is eth1?  (driver, bus, ...)
+
+Can you bisect?
+
+	Jeff
+
+
 
