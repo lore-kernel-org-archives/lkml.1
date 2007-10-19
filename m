@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936619AbXJSSsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbXJSStY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936619AbXJSSsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936014AbXJSSpm
+	id S934044AbXJSStY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936500AbXJSSs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:45:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:43273 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936359AbXJSSpj (ORCPT
+	Fri, 19 Oct 2007 14:48:29 -0400
+Received: from mga07.intel.com ([143.182.124.22]:44523 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936529AbXJSSs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:45:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=aYQ6ZEYwrs2ZoaRESlkM6QxcFQS7p7KwHj9y8p5EtyBbGuAcczZ4QZMa4MQeDUJw1qvIDcR51VkHuOjaRKDA3/h+u7o8K65JJfpBrmjXm5T8ScYzmvbk28HSYgLVZ6vbUMvqUiMoU91KZH1Bsb8v59pL8I6naKGcESw01xLQ5C0=
-Message-ID: <e06186140710191145r4276e974s1218a6325b5a1f9f@mail.gmail.com>
-Date: Fri, 19 Oct 2007 12:45:36 -0600
-From: "Charles R Harris" <charlesr.harris@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: fix TSC clock source calibration error
+	Fri, 19 Oct 2007 14:48:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,301,1188802800"; 
+   d="scan'208";a="301749372"
+Date: Fri, 19 Oct 2007 11:45:35 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH 0/9] Remove 'irq' argument from all irq handlers
+Message-ID: <20071019184535.GB1847@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071019075443.GA6407@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071019075443.GA6407@havoc.gtf.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-16 at 10:50 -0400, Dave Johnson wrote:
->
->  range of tsc_khz  # of boots  % of boots
-> -----------------  ----------  ----------
->         < 1999750           0      0.000%
-> 1999750 - 1999800          21      3.048%
-> 1999800 - 1999850         166     24.128%
-> 1999850 - 1999900         241     35.029%
-> 1999900 - 1999950         211     30.669%
-> 1999950 - 2000000          42      6.105%
-> 2000000 - 2000000           0      0.000%
-> 2000050 - 2000100           0      0.000%
->                    [...]
-> 2000100 - 2015000           1      0.145%  << BAD
-> 2015000 - 2030000           6      0.872%  << BAD
-> 2030000 - 2045000           1      0.145%  << BAD
-> 2045000 <                   0      0.000%
->
-> The worst boot was 2032.577 Mhz, over 1.5% off!
+On Fri, Oct 19, 2007 at 03:54:43AM -0400, Jeff Garzik wrote:
+> 
+> WARNING NOT FOR MERGE WARNING NOT FOR MERGE WARNING NOT FOR MERGE
 
-This may be related to bug
-https://bugzilla.redhat.com/show_bug.cgi?id=270321 at Redhat bugzilla.
-It has been easily reproducible on my machine.
+then whats the point ?
 
-Chuck
+> 
+> This posting is just to demonstrate something that I have been keeping
+> alive in the background.  I have no urge to push it upstream anytime
+> soon.
+
+why not? 
+
+--mgross
+
+> 
+> The overwhelming majority of drivers do not ever bother with the 'irq'
+> argument that is passed to each driver's irq handler.
+> 
+> Of the minority of drivers that do use the arg, the majority of those
+> have the irq number stored in their private-info structure somewhere.
+> 
+> There are a tiny few -- a couple Mac drivers -- which do weird things
+> with that argument, but that's it.
+> 
+> For the large sweeps through the tree, these patches are grouped into
+> "trivial" changes -- simply removing the unused irq arg -- or all other
+> changes.
+> 
+>    [IRQ ARG REMOVAL] core interrupt delivery infrastructure updates
+>    [IRQ ARG REMOVAL] various non-trivial arch updates
+>    [IRQ ARG REMOVAL] trivial arch updates
+>    [IRQ ARG REMOVAL] non-trivial driver updates
+>    [IRQ ARG REMOVAL] trivial net driver updates
+>    [IRQ ARG REMOVAL] trivial sound driver updates
+>    [IRQ ARG REMOVAL] trivial scsi driver updates
+>    [IRQ ARG REMOVAL] trivial driver updates
+>    [IRQ ARG REMOVAL] x86-64 build fixes, cleanups
+> 
+> WARNING NOT FOR MERGE WARNING NOT FOR MERGE WARNING NOT FOR MERGE
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
