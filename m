@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933149AbXJSSQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935337AbXJSSRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933149AbXJSSQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761739AbXJSSQH
+	id S935337AbXJSSRX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760406AbXJSSRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:16:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:42730 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759548AbXJSSQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:16:05 -0400
-Date: Fri, 19 Oct 2007 20:15:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Carlos Corbacho <cathectic@slackadelic.com>
-cc: linux-kernel@vger.kernel.org, Mikko Tiihonen <mikko.tiihonen@iki.fi>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: Fix resume for nVidia and force_hpet
-In-Reply-To: <200710191907.43789.cathectic@slackadelic.com>
-Message-ID: <alpine.LFD.0.9999.0710192014070.22770@localhost.localdomain>
-References: <200710190423.31714.cathectic@slackadelic.com> <200710191851.28639.cathectic@slackadelic.com> <alpine.LFD.0.9999.0710191957420.22770@localhost.localdomain> <200710191907.43789.cathectic@slackadelic.com>
+	Fri, 19 Oct 2007 14:17:13 -0400
+Received: from anyanka.rfc1149.net ([81.56.47.149]:59765 "EHLO
+	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760806AbXJSSRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 14:17:12 -0400
+To: linux-mtd@lists.infradead.org
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071019174155.80782C408E@mail2.rfc1149.net>
+Subject: Re: [PATCH] eccbuf is statically defined and always evaluate to true
+References: <20071019174155.80782C408E@mail2.rfc1149.net>
+Date: Fri, 19 Oct 2007 20:17:10 +0200
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+From: Samuel Tardieu <sam@rfc1149.net>
+Organization: RFC 1149 (see http://www.rfc1149.net/)
+Content-Transfer-Encoding: 8bit
+X-WWW: http://www.rfc1149.net/sam
+X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
+X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
+Message-Id: <2007-10-19-20-17-10+trackit+sam@rfc1149.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Carlos Corbacho wrote:
+Off course, there should be the required
 
-> From: Carlos Corbacho <cathectic@gmail.com>
-> 
-> Actually set force_hpet_resume_type.
-> ---
-> Whoops, just noticed I forgot to re-add this to the patch before submitting it.
-> 
->  arch/x86/kernel/quirks.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-> index cb21bcb..df01a1e 100644
-> --- a/arch/x86/kernel/quirks.c
-> +++ b/arch/x86/kernel/quirks.c
-> @@ -344,6 +344,7 @@ static void nvidia_force_enable_hpet(struct pci_dev *dev)
->  	printk(KERN_DEBUG "Force enabled HPET at base address 0x%lx\n",
->  		force_hpet_address);
->  	cached_dev = dev;
-> +	force_hpet_resume_type = NVIDIA_FORCE_HPET_RESUME;
->  	return;
->  }
+  Signed-off-by: Samuel Tardieu <sam@rfc1149.net>
 
-Yep, noticed it when I pushed it into the queue. Fixed it up
-already. Please be more careful next time.
+on this patch.
 
-Btw, I'm happy to take a follow up patch for platforms which you can
-not test and stick them into -mm for a while.
+  Sam
+-- 
+Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
 
-Thanks,
-
-	 tglx
