@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765886AbXJSLw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbXJSLyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765886AbXJSLw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 07:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755623AbXJSLwt
+	id S933558AbXJSLyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 07:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757134AbXJSLyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 07:52:49 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3854 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753724AbXJSLws (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 07:52:48 -0400
-Date: Fri, 19 Oct 2007 13:52:45 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Bryan Wu" <cooloney.lkml@gmail.com>, bryan.wu@analog.com,
-       i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Blackfin I2C/TWI driver: update for 2.6.24 merge 
- windows
-Message-ID: <20071019135245.1c482589@hyperion.delvare>
-In-Reply-To: <20071019022334.8e88e285.akpm@linux-foundation.org>
-References: <1192456403.6215.5.camel@roc-laptop>
-	<386072610710172311o7d2207f2he47e16c48016c2c2@mail.gmail.com>
-	<20071019110750.33f66dd8@hyperion.delvare>
-	<20071019022334.8e88e285.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Oct 2007 07:54:33 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49825 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757097AbXJSLyc convert rfc822-to-8bit (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 07:54:32 -0400
+Message-ID: <47189AD3.8010301@bull.net>
+Date: Fri, 19 Oct 2007 13:53:55 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: IceDove 1.5.0.12 (X11/20070606)
+MIME-Version: 1.0
+To: carsteno@de.ibm.com
+Cc: "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
+       Linux-kernel@vger.kernel.org, Aurelien Jarno <aurelien@aurel32.net>
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net>	<47189706.1040809@de.ibm.com> <4718982D.4020500@bull.net> <471899CA.8060206@de.ibm.com>
+In-Reply-To: <471899CA.8060206@de.ibm.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/10/2007 14:01:03,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/10/2007 14:01:03,
+	Serialize complete at 19/10/2007 14:01:03
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Carsten Otte a écrit :
+> Laurent Vivier wrote:
+>> How do you know the problem has been introduced by kvm ?
+> I don't. In fact I think it has not been introduced by kvm. All I 
+> stated, is that we experienced the problem when running the kvm.git 
+> kernel after the 2.6.23 update that has not been present in the 
+> kvm.git -rc8 as of last thursday.
 
-On Fri, 19 Oct 2007 02:23:34 -0700, Andrew Morton wrote:
-> On Fri, 19 Oct 2007 11:07:50 +0200 Jean Delvare <khali@linux-fr.org> wrote:
-> 
-> > BTW, as a rule of thumb, I am ignoring patches that are sent to the
-> > LKML in addition to the i2c list. If you think that your patch is so
-> > important that it has to be send to a list with over 4500 subscribers
-> > that sees 120.000 messages each year, then who am I to dare to comment
-> > on it?
-> > 
-> > If you want me to consider your patches as something that needs my
-> > attention, send them to the i2c list only, do not add LKML. This is
-> > general advice for everyone sending i2c patches, not just you, of
-> > course.
-> 
-> Disagree.  I don't think there's any benefit to anyone for developers to
-> hide their stuff on remote mailing lists.
+Perhaps 2.6.23.1 corrects this ?
 
-Hiding? These are lists _dedicated_ to the matter.
+http://lkml.org/lkml/2007/10/12/302
 
->                                            Copying lkml increases the
-> changes that someone will spot a bug or some improvement and it generally
-> keeps people informed as to what's going on.
-
-Sending spam to millions of people increases the chances than someone
-will buy your product. Does it make spam a good thing?
-
-> yeah, 120,000 messages/year.  But a lot of them are just noise.  Patches
-> are important.
-
-Lot of noise, yes. Counting 1 second on average to process posts you're
-not interested in, that's 33 hours a year. This is completely insane
-and that's why I unsubscribed from LKML long ago. And the situation is
-only getting worse every year. You may fail to realize the problem just
-because you aren't completely human ;)
-
-> And I really don't understand this huffy attitude and putting more
-> roadblocks in the way of our contributors.
-
-Quite on the contrary, I am trying to educate people into targeting
-their posts to the right lists so that they get more appropriate
-responses in a shorter time.
-
-In a world where we would have infinite work power and time would grow
-on trees, I would be fine with everyone sending everything to every
-mailing list. But in the real world, time spent to do one thing isn't
-spent on another. If we don't learn, collectively, to target our posts
-to the right people, then we end up wasting a significant amount of our
-precious time.
-
->                                             People like Bryan are doing a
-> lot of work to improve Linux and most people are (or should be) grateful
-> for that and should be prepared to go the extra yard to help them.
-
-My comment is general and absolutely not targeted at Bryan personally.
-I thought it was clear. I fully agree that Bryan is a really pleasant
-and easy person to work with and I do appreciate his contributions.
-
+Laurent
 -- 
-Jean Delvare
+---------------- Laurent.Vivier@bull.net  -----------------
+"Given enough eyeballs, all bugs are shallow" E. S. Raymond
+
