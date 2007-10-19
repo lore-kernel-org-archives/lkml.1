@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966653AbXJSOxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764004AbXJSO6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966653AbXJSOxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXJSOxn
+	id S1764004AbXJSO6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760627AbXJSO6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:53:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:38789 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933050AbXJSOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:53:42 -0400
-Date: Fri, 19 Oct 2007 16:53:22 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Garzik <jeff@garzik.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Eric Biederman <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/9] Remove 'irq' argument from all irq handlers
-In-Reply-To: <20071019075443.GA6407@havoc.gtf.org>
-Message-ID: <alpine.LFD.0.9999.0710191649120.22770@localhost.localdomain>
-References: <20071019075443.GA6407@havoc.gtf.org>
+	Fri, 19 Oct 2007 10:58:15 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46287 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760454AbXJSO6N convert rfc822-to-8bit (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 10:58:13 -0400
+Message-ID: <4718C5E0.9000204@bull.net>
+Date: Fri, 19 Oct 2007 16:57:36 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: IceDove 1.5.0.12 (X11/20070606)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, carsteno@de.ibm.com,
+       Mike Lampard <mike@secnet.net.au>, Linux-kernel@vger.kernel.org,
+       Aurelien Jarno <aurelien@aurel32.net>, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com> <4718B4DB.1000202@de.ibm.com>	<Pine.LNX.4.64.0710191618450.1997@fbirervta.pbzchgretzou.qr> <200710191648.32157.borntraeger@de.ibm.com>
+In-Reply-To: <200710191648.32157.borntraeger@de.ibm.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/10/2007 17:04:43,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 19/10/2007 17:04:44,
+	Serialize complete at 19/10/2007 17:04:44
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Jeff Garzik wrote:
+Christian Borntraeger a écrit :
+> Am Freitag, 19. Oktober 2007 schrieb Jan Engelhardt:
+>> On Oct 19 2007 15:44, Carsten Otte wrote:
+>>> Carsten Otte wrote:
+>>>> First thing we do, is figure whether or not 2.6.23.1 as released breaks our
+>>>> system too. This way, we can either focus on differences between Linus and
+>>>> Avi, or turn on the big red warning sign saying "regression".
+>>> Looks like 2.6.23.1 works fine on that box. We'll leave it running over
+>>> the weekend with "while true; do make; make clean; done".
+>> Well, do you happen to use sata_mv?
 > 
-> WARNING NOT FOR MERGE WARNING NOT FOR MERGE WARNING NOT FOR MERGE
-> 
-> This posting is just to demonstrate something that I have been keeping
-> alive in the background.  I have no urge to push it upstream anytime
-> soon.
-> 
-> The overwhelming majority of drivers do not ever bother with the 'irq'
-> argument that is passed to each driver's irq handler.
-> 
-> Of the minority of drivers that do use the arg, the majority of those
-> have the irq number stored in their private-info structure somewhere.
-> 
-> There are a tiny few -- a couple Mac drivers -- which do weird things
-> with that argument, but that's it.
+> no, we have nvidia, so its sata_nv.
 
-Jeff,
+Did you patch kvm.git with patch-2.6.23.1.bz2 or did you download 
+linux-2.6.23.1.tar.bz2 ?
 
-thanks for doing this.
+2.6.23.1 corrects nothing except sata_mv...
 
-Full ACK.
+Laurent
+-- 
+---------------- Laurent.Vivier@bull.net  -----------------
+"Given enough eyeballs, all bugs are shallow" E. S. Raymond
 
-We should do this right at the edge of -rc1. And let's do this right
-now in .24 and not drag it out for no good reason.
-
-Thanks,
-
-	tglx
