@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbXJSQps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbXJSQwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764475AbXJSQps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbXJSQpi
+	id S1764847AbXJSQwH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760974AbXJSQv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:45:38 -0400
-Received: from grex.cyberspace.org ([216.86.77.194]:14929 "EHLO
-	grex.cyberspace.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757885AbXJSQpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:45:38 -0400
-X-Greylist: delayed 1717 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 12:45:38 EDT
-Date: Fri, 19 Oct 2007 12:17:00 -0400
-From: Roopesh <roopesh@cyberspace.org>
-To: linux-kernel@vger.kernel.org
-Subject: MMC: CRC Errors with 2GB cards
-Message-ID: <20071019161700.GA19254@grex.cyberspace.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 19 Oct 2007 12:51:56 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:48499 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760870AbXJSQvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:51:55 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: linux-pcmcia@lists.infradead.org
+Subject: PCMCIA driver resource allocation
+Date: Fri, 19 Oct 2007 10:51:51 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200710191051.51686.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Hi, 
+Question 1: Does the linux-pcmcia list still exist?  It's in MAINTAINERS:
 
- I am seeing a lot of CRC errors happening with CMD25 on a couple 
- of Transcend 2GB cards (specifiation version 1.1).  However, if 
- I apply the following patch, I see no errors being reported
+  PCMCIA SUBSYSTEM
+  P:      Linux PCMCIA Team
+  L:      linux-pcmcia@lists.infradead.org
+  L:      http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+  T:      git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+  S:      Maintained
+
+but the archive: http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+seems dead.
+
+Question 2: Documentation/pcmcia/driver-changes.txt says drivers should
+now claim their own resources:
+
+  * Resource management. (as of 2.6.8)
+     Although the PCMCIA subsystem will allocate resources for cards,
+     it no longer marks these resources busy. This means that driver
+     authors are now responsible for claiming your resources as per
+     other drivers in Linux.
+
+But I don't see any drivers that do that.  It looks like there should
+be a bunch of changes like the one below.  Is there a reason these
+changes didn't happen, other than just lack of interest?
+
+Bjorn
 
 
---- linux-2.6.22/drivers/mmc/card/block.c	2007-09-27 14:59:44.000000000 +0530
-+++ linux-tao/drivers/mmc/card/block.c	2007-10-19 20:53:52.000000000 +0530
-@@ -298,6 +298,7 @@
- 		}
+Index: work3/drivers/net/wireless/orinoco.h
+===================================================================
+--- work3.orig/drivers/net/wireless/orinoco.h	2007-10-18 10:56:34.000000000 -0600
++++ work3/drivers/net/wireless/orinoco.h	2007-10-18 13:22:06.000000000 -0600
+@@ -57,6 +57,7 @@
+ 	struct iw_statistics wstats;
  
- 		if (rq_data_dir(req) != READ) {
-+			/* Wait for the card to to be in transfer state*/
- 			do {
- 				int err;
+ 	/* Hardware control variables */
++	struct resource *io_resource;
+ 	hermes_t hw;
+ 	u16 txfid;
  
-@@ -310,8 +311,8 @@
- 					       req->rq_disk->disk_name, err);
- 					goto cmd_err;
- 				}
--			} while (!(cmd.resp[0] & R1_READY_FOR_DATA));
--
-+			} while (!(R1_CURRENT_STATE(cmd.resp[0]) == 4)); 
-+			
- #if 0
- 			if (cmd.resp[0] & ~0x00000900)
- 				printk(KERN_ERR "%s: status = %08x\n",
-
-
- I noticed that at times the card is not actually in transfer 
- state when it recieves the second consecutive 
- MULTIPLE_BLOCK_WRITE cmd.  As per the simplified specification 
- available, all class 4 commands including CMD25 can be issued 
- only in tra state, though its also specified that READY_FOR_DATA 
- indicates whether the card can accept new data.
-
- I am just wondering if I have set of broken cards.  Any pointers 
- in this regard?
-
- Thanks and Regards,
- Roopesh.
+Index: work3/drivers/net/wireless/orinoco_cs.c
+===================================================================
+--- work3.orig/drivers/net/wireless/orinoco_cs.c	2007-10-18 10:56:34.000000000 -0600
++++ work3/drivers/net/wireless/orinoco_cs.c	2007-10-18 13:22:44.000000000 -0600
+@@ -296,6 +296,10 @@
+ 	/* We initialize the hermes structure before completing PCMCIA
+ 	 * configuration just in case the interrupt handler gets
+ 	 * called. */
++	priv->io_resource = request_region(link->io.BasePort1,
++					   link->io.NumPorts1, DRIVER_NAME);
++	if (!priv->io_resource)
++		goto cs_failed;
+ 	mem = ioport_map(link->io.BasePort1, link->io.NumPorts1);
+ 	if (!mem)
+ 		goto cs_failed;
+@@ -366,6 +370,10 @@
+ 	pcmcia_disable_device(link);
+ 	if (priv->hw.iobase)
+ 		ioport_unmap(priv->hw.iobase);
++	if (priv->io_resource) {
++		release_resource(priv->io_resource);
++		priv->io_resource = NULL;
++	}
+ }				/* orinoco_cs_release */
+ 
+ static int orinoco_cs_suspend(struct pcmcia_device *link)
