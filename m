@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764961AbXJSQ6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbXJSQ7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764961AbXJSQ6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 12:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXJSQ61
+	id S1765260AbXJSQ7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 12:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbXJSQ7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 12:58:27 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55718 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757607AbXJSQ61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 12:58:27 -0400
-Subject: Re: [kvm-devel] Use virtual cpu accounting if available for guest
-	times.
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Avi Kivity <avi@qumranet.com>, kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Laurent Vivier <Laurent.Vivier@bull.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <200710181439.10390.borntraeger@de.ibm.com>
-References: <47135D1B.1060004@bull.net>
-	 <11926264852739-git-send-email-Laurent.Vivier@bull.net>
-	 <200710181439.10390.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 19 Oct 2007 11:57:36 -0500
-Message-Id: <1192813056.10451.6.camel@basalt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 19 Oct 2007 12:59:07 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:41128 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbXJSQ7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 12:59:06 -0400
+Message-ID: <4718E24F.3060805@nortel.com>
+Date: Fri, 19 Oct 2007 10:58:55 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Samuel Tardieu <sam@rfc1149.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: OOM notifications
+References: <20071018202504.GA2854@dmt> <4717C43D.6030204@keyaccess.nl> <20071018165238.0537eaa6@bree.surriel.com> <4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com> <4717D7B6.40102@keyaccess.nl> <4717D9BF.4010508@redhat.com> <20071019101743.GA24354@elf.ucw.cz> <87lk9zgmkx.fsf@willow.rfc1149.net>
+In-Reply-To: <87lk9zgmkx.fsf@willow.rfc1149.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Oct 2007 16:58:59.0552 (UTC) FILETIME=[57E88600:01C81271]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-18 at 14:39 +0200, Christian Borntraeger wrote:
-> Avi,
-> 
-> ppc and s390 offer the possibility to track process times precisely
-> by looking at cpu timer on every context switch, irq, softirq etc.
-> We can use that infrastructure as well for guest time accounting.
-> We need to account the used time before we change the state. 
-> This patch adds a call to account_system_vtime to kvm_guest_enter
-> and kvm_guest exit. If CONFIG_VIRT_CPU_ACCOUNTING is not set,
-> account_system_vtime is defined in hardirq.h as an empty function,
-> which means this patch does not change the behaviour on other
-> platforms.
-> 
-> I compile tested this patch on x86 and function tested the patch on
-> s390.
-> 
-> Avi, please apply.
-> 
-> 
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> 
-> ---
->  drivers/kvm/kvm.h |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: kvm/drivers/kvm/kvm.h
-> ===================================================================
-> --- kvm.orig/drivers/kvm/kvm.h
-> +++ kvm/drivers/kvm/kvm.h
-> @@ -7,6 +7,7 @@
->   */
-> 
->  #include <linux/types.h>
-> +#include <linux/hardirq.h>
->  #include <linux/list.h>
->  #include <linux/mutex.h>
->  #include <linux/spinlock.h>
-> @@ -669,11 +670,13 @@ __init void kvm_arch_init(void);
-> 
->  static inline void kvm_guest_enter(void)
->  {
-> +	account_system_vtime(current);
->  	current->flags |= PF_VCPU;
->  }
-> 
->  static inline void kvm_guest_exit(void)
->  {
-> +	account_system_vtime(current);
->  	current->flags &= ~PF_VCPU;
->  }
+Samuel Tardieu wrote:
+>>>>>>"Pavel" == Pavel Machek <pavel@ucw.cz> writes:
 
-I don't understand. Should kvm_guest_exit() be calling
-account_user_vtime() (instead of account_system_vtime())?
+> Pavel> That works okay on a PC, but try cellphone one day.
+> 
+> Pavel> You want management app to close the least used
+> Pavel> application. You do not want _kernel_ to select "who to send
+> Pavel> SIGTERM to".
+> 
+> That's why I would prefer that *all* processes receive the
+> SIGDANGER/whatever (and of course ignore it by default). Only the
+> management app would handle it in the case you describe and would
+> select one or more applications to unload to free some memory.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+It's still helpful to have two stages...one that all apps can listen to 
+(and try to reduce their footprint if possible), and a second one that 
+only the manager would handle (and would kill some suitable target). 
+Finally, if all that fails then the kernel starts whacking things.
 
+Chris
