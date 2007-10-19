@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935235AbXJSEz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935212AbXJSE7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935235AbXJSEz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbXJSEzK
+	id S935212AbXJSE7e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 00:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbXJSE70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:55:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53007
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756136AbXJSEzI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:55:08 -0400
-Date: Thu, 18 Oct 2007 21:55:21 -0700 (PDT)
-Message-Id: <20071018.215521.28810637.davem@davemloft.net>
-To: olof@lixom.net
-Cc: xemul@openvz.org, netdev@vger.kernel.org, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] Fix race between sk_filter reassign and sk_clone()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071019022947.GA29560@lixom.net>
-References: <4715D9D2.8070102@openvz.org>
-	<20071017.212302.68039057.davem@davemloft.net>
-	<20071019022947.GA29560@lixom.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 19 Oct 2007 00:59:26 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39943 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760752AbXJSE7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 00:59:25 -0400
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20071019044806.GA10080@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	 <1192745137.7367.40.camel@pasglop>
+	 <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	 <1192749449.7367.51.camel@pasglop>
+	 <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	 <20071019023219.GB8453@gondor.apana.org.au>
+	 <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	 <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+	 <20071019042025.GA9617@gondor.apana.org.au>
+	 <20071019044806.GA10080@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 14:58:30 +1000
+Message-Id: <1192769910.7367.106.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Olof Johansson <olof@lixom.net>
-Date: Thu, 18 Oct 2007 21:29:47 -0500
 
-> So, looks like rcu_dereference() returned NULL. I don't know the
-> filter code at all, but it seems like it might be a valid case?
-> sk_detach_filter() seems to handle a NULL sk_filter, at least.
-> 
-> 
-> So, this needs review by someone who knows the filter, but it fixes the
-> problem for me:
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+On Fri, 2007-10-19 at 12:48 +0800, Herbert Xu wrote:
 
-I've applied this for now to my net-2.6 tree, thanks Olof
-for tracking this down.
+> [IRQ]: Fix synchronize_irq races with IRQ handler
+> 
+> As it is some callers of synchronize_irq rely on memory barriers
+> to provide synchronisation against the IRQ handlers.  For example,
+> the tg3 driver does
+> 
+> 	tp->irq_sync = 1;
+> 	smp_mb();
+> 	synchronize_irq();
+> 
+> and then in the IRQ handler:
+> 
+> 	if (!tp->irq_sync)
+> 		netif_rx_schedule(dev, &tp->napi);
+> 
+> Unfortunately memory barriers only work well when they come in
+> pairs.  Because we don't actually have memory barriers on the
+> IRQ path, the memory barrier before the synchronize_irq() doesn't
+> actually protect us.
+> 
+> In particular, synchronize_irq() may return followed by the
+> result of netif_rx_schedule being made visible.
+> 
+> This patch (mostly written by Linus) fixes this by using spin
+> locks instead of memory barries on the synchronize_irq() path.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-Pavel please take a look at this and let me know if it should
-fixed in some other way.
+Good for me.
 
-Thanks!
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Cheers,
+Ben.
+
+
