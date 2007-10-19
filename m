@@ -1,234 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934257AbXJSGJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765472AbXJSGSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934257AbXJSGJr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 02:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXJSGJe
+	id S1765472AbXJSGSR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 02:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXJSGSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 02:09:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33739 "EHLO mx1.redhat.com"
+	Fri, 19 Oct 2007 02:18:03 -0400
+Received: from main.gmane.org ([80.91.229.2]:60733 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbXJSGJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 02:09:33 -0400
-Date: Fri, 19 Oct 2007 02:09:29 -0400
-From: Chris Snook <csnook@redhat.com>
-To: andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: mostly merge types.h
-Message-ID: <20071019060929.GA16291@shell.boston.redhat.com>
+	id S1752507AbXJSGSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 02:18:00 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Shreyansh Jain <shreyansh.jain@gmail.com>
+Subject: Query about Bio submission / Direct IO 
+Date: Fri, 19 Oct 2007 06:17:42 +0000 (UTC)
+Message-ID: <loom.20071019T055230-553@post.gmane.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 192.8.220.10 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.7) Gecko/20070914 Firefox/2.0.0.7)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+Hi List,
 
-Most of types_32.h and types_64.h are the same.  Merge the common definitions
-into types.h, keeping the differences in their own files.  Also #error if
-types_{32,64}.h is included directly.  Tested with allmodconfig on x86_64.
+I have tried this on kernelnewbies
+<http://article.gmane.org/gmane.linux.kernel.kernelnewbies/23166> but it seems 
+I am not good at explaining well. trying here again.
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+Question:
+Is there a limitation (some kind of caveat) when direct IO pages are added to 
+a bio (multiple pages per bio) and if the total length or offset of some of 
+the vectors is not aligned (PAGE_SIZE or sector size)?
 
- types.h    |   45 +++++++++++++++++++++++++++++++++++++++++++++
- types_32.h |   48 ++++++------------------------------------------
- types_64.h |   47 +++++++----------------------------------------
- 3 files changed, 58 insertions(+), 82 deletions(-)
+My scenario:
+1. I have a filesystem in which I create bio for submission to a SCSI disk 
+   connected in a SAN via a FC switch. 
+2. This is a direct IO request where in multiple pages are being added in a bio
+   (bio_map_user). Also, as the user buffer I get is unaligned, I am changing
+    bio's first vector offset (as well as len, bi_size accordingly).
 
-diff -urp a/include/asm-x86/types_32.h b/include/asm-x86/types_32.h
---- a/include/asm-x86/types_32.h	2007-10-18 04:23:36.000000000 -0400
-+++ b/include/asm-x86/types_32.h	2007-10-18 07:03:05.000000000 -0400
-@@ -1,64 +1,28 @@
- #ifndef _I386_TYPES_H
- #define _I386_TYPES_H
- 
--#ifndef __ASSEMBLY__
--
--typedef unsigned short umode_t;
--
--/*
-- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-- * header files exported to user space
-- */
--
--typedef __signed__ char __s8;
--typedef unsigned char __u8;
--
--typedef __signed__ short __s16;
--typedef unsigned short __u16;
--
--typedef __signed__ int __s32;
--typedef unsigned int __u32;
-+#ifndef _X86_TYPES_H
-+#error Do not include this file directly.  Use asm/types.h instead.
-+#endif
- 
--#if defined(__GNUC__)
-+#if !defined(__ASSEMBLY__) && defined(__GNUC__)
- __extension__ typedef __signed__ long long __s64;
- __extension__ typedef unsigned long long __u64;
- #endif
- 
--#endif /* __ASSEMBLY__ */
--
--/*
-- * These aren't exported outside the kernel to avoid name space clashes
-- */
- #ifdef __KERNEL__
- 
- #define BITS_PER_LONG 32
- 
- #ifndef __ASSEMBLY__
- 
--
--typedef signed char s8;
--typedef unsigned char u8;
--
--typedef signed short s16;
--typedef unsigned short u16;
--
--typedef signed int s32;
--typedef unsigned int u32;
--
--typedef signed long long s64;
--typedef unsigned long long u64;
--
--/* DMA addresses come in generic and 64-bit flavours.  */
--
-+/* DMA addresses come in generic and 64-bit flavours. */
- #ifdef CONFIG_HIGHMEM64G
- typedef u64 dma_addr_t;
- #else
- typedef u32 dma_addr_t;
- #endif
--typedef u64 dma64_addr_t;
- 
- #endif /* __ASSEMBLY__ */
--
- #endif /* __KERNEL__ */
--
--#endif
-+#endif /* _I386_TYPES_H */
-diff -urp a/include/asm-x86/types_64.h b/include/asm-x86/types_64.h
---- a/include/asm-x86/types_64.h	2007-10-18 04:23:36.000000000 -0400
-+++ b/include/asm-x86/types_64.h	2007-10-18 07:03:11.000000000 -0400
-@@ -1,55 +1,22 @@
- #ifndef _X86_64_TYPES_H
- #define _X86_64_TYPES_H
- 
--#ifndef __ASSEMBLY__
--
--typedef unsigned short umode_t;
--
--/*
-- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-- * header files exported to user space
-- */
--
--typedef __signed__ char __s8;
--typedef unsigned char __u8;
--
--typedef __signed__ short __s16;
--typedef unsigned short __u16;
--
--typedef __signed__ int __s32;
--typedef unsigned int __u32;
-+#ifndef _X86_TYPES_H
-+#error Do not include this file directly.  Use asm/types.h instead.
-+#endif
- 
-+#ifndef __ASSEMBLY__
- typedef __signed__ long long __s64;
- typedef unsigned long long  __u64;
-+#endif
- 
--#endif /* __ASSEMBLY__ */
--
--/*
-- * These aren't exported outside the kernel to avoid name space clashes
-- */
- #ifdef __KERNEL__
- 
- #define BITS_PER_LONG 64
- 
- #ifndef __ASSEMBLY__
--
--typedef signed char s8;
--typedef unsigned char u8;
--
--typedef signed short s16;
--typedef unsigned short u16;
--
--typedef signed int s32;
--typedef unsigned int u32;
--
--typedef signed long long s64;
--typedef unsigned long long u64;
--
--typedef u64 dma64_addr_t;
- typedef u64 dma_addr_t;
--
--#endif /* __ASSEMBLY__ */
-+#endif
- 
- #endif /* __KERNEL__ */
--
--#endif
-+#endif /* _X86_64_TYPES_H */
-diff -urp a/include/asm-x86/types.h b/include/asm-x86/types.h
---- a/include/asm-x86/types.h	2007-10-18 04:23:36.000000000 -0400
-+++ b/include/asm-x86/types.h	2007-10-18 06:59:37.000000000 -0400
-@@ -1,3 +1,46 @@
-+#ifndef _X86_TYPES_H
-+#define _X86_TYPES_H
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned short umode_t;
-+
-+/*
-+ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-+ * header files exported to user space
-+ */
-+
-+typedef __signed__ char __s8;
-+typedef unsigned char __u8;
-+
-+typedef __signed__ short __s16;
-+typedef unsigned short __u16;
-+
-+typedef __signed__ int __s32;
-+typedef unsigned int __u32;
-+
-+/*
-+ * These aren't exported outside the kernel to avoid name space clashes
-+ */
-+#ifdef __KERNEL__
-+
-+typedef signed char s8;
-+typedef unsigned char u8;
-+
-+typedef signed short s16;
-+typedef unsigned short u16;
-+
-+typedef signed int s32;
-+typedef unsigned int u32;
-+
-+typedef signed long long s64;
-+typedef unsigned long long u64;
-+
-+typedef u64 dma64_addr_t;
-+
-+#endif /* __KERNEL__ */
-+#endif /* __ASSEMBLY__ */
-+
- #ifdef __KERNEL__
- # ifdef CONFIG_X86_32
- #  include "types_32.h"
-@@ -11,3 +54,5 @@
- #  include "types_64.h"
- # endif
- #endif
-+
-+#endif /* _X86_TYPES_H */
+What I observe is:
+
+1. IO is performed perfectly (as expected) in case there are no SCSI failure.
+   end_bio gets called as expected and the user app is happy.
+2. In case I  disconnect the SCSI device from switch, my end_bio function 
+   keeps on getting sub-completion bio (bi_size > 0 and uptodate cleared,
+   error set to -5).
+3. For capturing and ignoring sub-completion returns from block layer, 
+   using other kernel end_bio implementation as example I had a code like
+
+    if(bio->bi_size > 0)
+       return 1;
+
+   as the starting lines of the end_bio routine. Thus, my user space goes off 
+   to disk sleep and kernel log keeps on spweing messages like 
+
+...
+Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+Oct 17 21:56:07 mgs02 kernel: sd 2:0:0:8: SCSI error: return code = 0x10000
+Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+Oct 17 21:56:07 mgs02 kernel: sd 2:0:0:8: SCSI error: return code = 0x10000
+Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+...
+
+till i connect the switch back - even if that is one hour after disconnecting it.
+
+Best part - it works amazingly well in case I keep the offset of the first page
+aligned (somehow, at expense of corrupted data copy) - failure of SCSI disk
+(end_bio returns, bi_size=0, my code captures error) or no failure.
+
+I have tried this on 2.6.5 and 2.6.16.27 (I agree they are old, but that is 
+what I have to work  on :( ). It is a qlogic SCSI HBA. I have created the bio
+ just like other kernel subsystems do.
+
+Only thing I am not sure is whether there is something special that needs to 
+be done in case of direct IO which I am missing.
+
+biodoc.txt states that:
+"Note: Right now the only user of bios with more than one page is ll_rw_kio,
+ which in turn means that only raw I/O uses it (direct i/o may not work right
+ now)."
+
+Any idea why it doesn't work (though I am expecting that this doc is 2.6
+starting era and things might have changed a lot now).
+
+Any help would be highly appreciated. Apologies if my channel of approach is
+wrong and if this post is huge (couldn't keep it shorter than this).
+
+Shreyansh
+
+
+[PS: Is this situation something to do with request flags REQ_PC /
+REQ_BLOCK_PC?? While searching code, I found these somewhere connected to 
+direct IO (bio_add_pc_page) and could find more about them]
 
