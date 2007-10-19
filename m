@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966998AbXJSVJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765241AbXJSVJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966998AbXJSVJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 17:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966831AbXJSVIr
+	id S1765241AbXJSVJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 17:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966919AbXJSVJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 17:08:47 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:55057 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966687AbXJSVIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 17:08:45 -0400
-Date: Fri, 19 Oct 2007 23:08:28 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: some kernel headers broken in current git ?
-In-Reply-To: <4719174A.7020004@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0710192307320.18815@twin.jikos.cz>
-References: <4719174A.7020004@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 19 Oct 2007 17:09:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59343 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966732AbXJSVJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 17:09:30 -0400
+Date: Fri, 19 Oct 2007 14:09:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dougthompson@xmission.com
+Cc: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] drivers-edac-add Cell MC driver
+Message-Id: <20071019140918.bedc6be5.akpm@linux-foundation.org>
+In-Reply-To: <471902d7.hBdUrev76DdB/GOb%dougthompson@xmission.com>
+References: <471902d7.hBdUrev76DdB/GOb%dougthompson@xmission.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Gabriel C wrote:
+On Fri, 19 Oct 2007 13:17:43 -0600
+dougthompson@xmission.com wrote:
 
-> usually I'll wait for rc1 and test compile external module to see which 
-> are broken and what need fixing but while I need virtualbox for some 
-> tests I test compile it on current git and it failed badly. Maybe 
-> something is missing from x86 merge ?
+> +	/* The procedure for clearing FIR bits is a bit ... weird */
+> +	if (clear) {
+> +		fir &= ~(CBE_MIC_FIR_ECC_ERR_MASK | CBE_MIC_FIR_ECC_SET_MASK);
+> +		fir |= CBE_MIC_FIR_ECC_RESET_MASK;
+> +		fir &= ~clear;
+> +		out_be64(&priv->regs->mic_fir, fir);
+> +		(void)in_be64(&priv->regs->mic_fir);
 
-Trying 'make mrproper' first has high chances of fixing this I'd guess.
+The (void) cast isn't particularly popular practice.  Did you find that it
+actually does anything useful?
 
--- 
-Jiri Kosina
+> +
+> +		mb();	/* sync up */
+
+What's this here for?  It could do with a more usful comment.
+
+If it's trying to perform some synchronisation of device register access
+then I suspect it didn't work.  Or maybe it happens to work because of how
+ppc implements mb(), in which case a direct use of the appropriate ppc
+primitive might be clearer.
+
+> +#ifdef DEBUG
+> +		fir = in_be64(&priv->regs->mic_fir);
+> +		dev_dbg(mci->dev, "fir clear  : 0x%016lx\n", fir);
+> +#endif
+> +	}
