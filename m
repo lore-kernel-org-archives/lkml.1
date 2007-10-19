@@ -1,63 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966555AbXJSElO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbXJSEsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966555AbXJSElO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 00:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXJSEkz
+	id S933221AbXJSEsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 00:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXJSEsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 00:40:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50894
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754627AbXJSEky (ORCPT
+	Fri, 19 Oct 2007 00:48:17 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3201 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751107AbXJSEsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 00:40:54 -0400
-Date: Thu, 18 Oct 2007 21:41:07 -0700 (PDT)
-Message-Id: <20071018.214107.21905270.davem@davemloft.net>
-To: ezk@cs.sunysb.edu
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, pcnet32@verizon.net,
-       netdev@vger.kernel.org
-Subject: Re: broken PCNET32 in 2.6.24 requires experimental PCNET32_NAPI? 
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200710190433.l9J4X9vh011890@agora.fsl.cs.sunysb.edu>
-References: <4717C90A.4060208@garzik.org>
-	<200710190433.l9J4X9vh011890@agora.fsl.cs.sunysb.edu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 19 Oct 2007 00:48:16 -0400
+Date: Fri, 19 Oct 2007 12:48:06 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+Message-ID: <20071019044806.GA10080@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au> <1192745137.7367.40.camel@pasglop> <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org> <1192749449.7367.51.camel@pasglop> <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org> <20071019023219.GB8453@gondor.apana.org.au> <alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org> <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org> <20071019042025.GA9617@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
-Date: Fri, 19 Oct 2007 00:33:09 -0400
+On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
+>
+> That's why I think this patch is in fact the only one that
+> solves all the races in this thread.  The case that it solves
+> which the lock/unlock patch does not is the one where action
+> flows downwards past the clearing of IRQ_INPROGRESS.  I missed
+> this case earlier.
 
-> Call Trace:
->  [<c0102bc2>] show_trace_log_lvl+0x1a/0x2f
->  [<c0102c72>] show_stack_log_lvl+0x9b/0xa3
->  [<c0102e2e>] show_registers+0x1b4/0x285
->  [<c0102fff>] die+0x100/0x21d
->  [<c010a72f>] do_page_fault+0x434/0x515
->  [<c026a40a>] error_code+0x6a/0x70
->  [<c021ea1b>] sock_setsockopt+0x43f/0x494
->  [<c021b994>] sys_setsockopt+0x4f/0x85
->  [<c021ce0e>] sys_socketcall+0x1cb/0x222
->  [<c0102586>] sysenter_past_esp+0x5f/0x91
+OK, here is the patch again with a changelog:
 
-This fix from Olof Johnson should fix it.
+[IRQ]: Fix synchronize_irq races with IRQ handler
 
-I'll merge this tonight.
+As it is some callers of synchronize_irq rely on memory barriers
+to provide synchronisation against the IRQ handlers.  For example,
+the tg3 driver does
 
-diff --git a/net/core/filter.c b/net/core/filter.c
-index 1f0068e..e0a0694 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -447,7 +447,8 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
- 	rcu_assign_pointer(sk->sk_filter, fp);
- 	rcu_read_unlock_bh();
+	tp->irq_sync = 1;
+	smp_mb();
+	synchronize_irq();
+
+and then in the IRQ handler:
+
+	if (!tp->irq_sync)
+		netif_rx_schedule(dev, &tp->napi);
+
+Unfortunately memory barriers only work well when they come in
+pairs.  Because we don't actually have memory barriers on the
+IRQ path, the memory barrier before the synchronize_irq() doesn't
+actually protect us.
+
+In particular, synchronize_irq() may return followed by the
+result of netif_rx_schedule being made visible.
+
+This patch (mostly written by Linus) fixes this by using spin
+locks instead of memory barries on the synchronize_irq() path.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 80eab7a..1f31422 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -29,12 +29,28 @@
+ void synchronize_irq(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_desc + irq;
++	unsigned int status;
  
--	sk_filter_delayed_uncharge(sk, old_fp);
-+	if (old_fp)
-+		sk_filter_delayed_uncharge(sk, old_fp);
- 	return 0;
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	do {
++		unsigned long flags;
++
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/* Ok, that indicated we're done: double-check carefully. */
++		spin_lock_irqsave(&desc->lock, flags);
++		status = desc->status;
++		spin_unlock_irqrestore(&desc->lock, flags);
++
++		/* Oops, that failed? */
++	} while (status & IRQ_INPROGRESS);
  }
+ EXPORT_SYMBOL(synchronize_irq);
  
-
