@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936663AbXJSWz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966920AbXJSXAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936663AbXJSWz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761151AbXJSWzU
+	id S966920AbXJSXAY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 19:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966708AbXJSW76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:55:20 -0400
-Received: from main.gmane.org ([80.91.229.2]:54128 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758976AbXJSWzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:55:18 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
-Date: Fri, 19 Oct 2007 21:32:08 +0000 (UTC)
-Message-ID: <ffb7oo$k26$1@ger.gmane.org>
-References: <200710181551.24912.florian.fainelli@telecomint.eu>
-	<20071018173828.159b15dd@ephemeral>
-	<200710191401.56916.florian.fainelli@telecomint.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 163.181.251.103
-User-Agent: pan 0.120 (Plate of Shrimp)
+	Fri, 19 Oct 2007 18:59:58 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:42009 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758675AbXJSW74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:59:56 -0400
+Date: Fri, 19 Oct 2007 18:59:36 -0400
+Message-Id: <200710192259.l9JMxaAT006804@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, bfields@fieldses.org,
+       nfs@lists.sourceforge.net, neilb@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: nfsv2 ref leak in 2.6.24? 
+In-reply-to: Your message of "Fri, 19 Oct 2007 17:52:32 EDT."
+             <1192830752.7466.32.camel@heimdal.trondhjem.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 14:01:56 +0200, Florian Fainelli wrote:
-
-> Hi Andres,
+In message <1192830752.7466.32.camel@heimdal.trondhjem.org>, Trond Myklebust writes:
 > 
-> Le jeudi 18 octobre 2007, Andres Salomon a écrit :
->> While I certainly would like to see a generic GPIO API, this one isn't
->> really useful for geode GPIOs.  It would be nice to have one that did
->> work for us as well.  Unfortunately, I haven't had the chance to give
->> much thought to this problem yet.
+> On Fri, 2007-10-19 at 17:40 -0400, Erez Zadok wrote:
+[...]
+> > Trond, I was able to narrow down the problem w/o using unionfs at all (yay!
+> > :-).  All I do is setup a loop device, mkfs it as ext2, mount it, then
+> > export it to localhost and mount it locally as nfs2.  I go and touch a new
+> > file in the ext2 directory.  Then I readdir the export point to find the new
+> > file indeed.  Then I stat(1) the new file, and get the appropriate stat
+> > output.  Now the strange thing is that right after the stat through the
+> > export point, the file DISAPPEARS from the lower ext2 dir, but REAPPEARS a
+> > few seconds later.
 > 
-> This one was discussed mostly on the ARM mailing-list and finally made his way 
-> to the mainline kernel. Though it lacks some functions to change for instance 
-> a entire GPIO line and not a single bit, it is used on ARM and MIPS systems 
-> so I would conform with this one for now because it is used by at least two 
-> or more architectures.
+> Let me get this straight:
+> 
+>   1) You create the file on the server
+>   2) You readdir the file from the client
+>   3) You stat the file from the client
+> 
+> ....with the result that the file disappears from sight on the server?
 
-Its reasonable to expect that the API will expand over time as it is
-thrust into new situations.  There is nothing wrong with the existing API,
-it does an admirable job of simple GPIO frobbing.  But on the Geode, GPIOs
-can do much more then just simple input and output.  We can cause events,
-use input filtering for debouncing, set various drain options, and more.
-And these are not bullet points from the datasheet that we want to
-implement for completeness; these functions are actually being used right
-now in the kernel on real hardware.  Just because other architectures
-haven't found a need to expand the API doesn't mean that we shouldn't
-expand it now.  And bear in mind, the Geode isn't unique - I'll bet beers
-that there are MIPS and ARM architectures that have these features too,
-and they would use the API if it existed.
+Yup.
 
-Jordan
+> That would indicate some dcache issues with the server code. What export
+> options are you using?
 
+The explicit command I use is:
+
+exportfs -o no_root_squash,rw localhost:/n/export/b0
+
+The options recorded in exportfs -v:
+
+/n/export/b0  localhost.localdomain(rw,wdelay,no_root_squash,no_subtree_check,anonuid=65534,anongid=65534)
+
+Erez.
