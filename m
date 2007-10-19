@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765564AbXJSFQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764322AbXJSFWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765564AbXJSFQQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 01:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbXJSFQE
+	id S1764322AbXJSFWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 01:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXJSFWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 01:16:04 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:35140 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbXJSFQD (ORCPT
+	Fri, 19 Oct 2007 01:22:31 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60890 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbXJSFWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 01:16:03 -0400
-Message-ID: <47183D7A.7050902@nortel.com>
-Date: Thu, 18 Oct 2007 23:15:38 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Rik van Riel <riel@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org
-Subject: Re: OOM notifications
-References: <20071018202504.GA2854@dmt>	<4717C43D.6030204@keyaccess.nl> <20071018165238.0537eaa6@bree.surriel.com>	<4717CAEC.50203@keyaccess.nl> <20071018171857.409255de@bree.surriel.com> <4717D7B6.40102@keyaccess.nl> <4717D9BF.4010508@redhat.com>
-In-Reply-To: <4717D9BF.4010508@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 19 Oct 2007 01:22:30 -0400
+Date: Thu, 18 Oct 2007 22:20:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Make advansys depend on CONFIG_VIRT_TO_BUS
+Message-Id: <20071018222017.514df7b9.randy.dunlap@oracle.com>
+In-Reply-To: <20071019150431.996522c5.sfr@canb.auug.org.au>
+References: <20071019150431.996522c5.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Oct 2007 05:15:42.0769 (UTC) FILETIME=[18AA6A10:01C8120F]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
+On Fri, 19 Oct 2007 15:04:31 +1000 Stephen Rothwell wrote:
 
-> I agree.  Applications shouldn't be expected to be yet more complicated
-> and have different levels of low memory handling.  You might want to
-> give a process a second shot at handling SIGDANGER but after that's it's
-> all about preparation for a shutdown.
+> At least for now.
 
-I disagree.  From an embedded viewpoint it would be nice to have a 
-"please free up memory", then a "we really need memory NOW", then 
-finally the kernel oom killer.
+Please explain "why" in the changelog (what changelog?).
 
-The advantage of the middle message is that it allows userspace to do 
-smarter things if it wants to (for instance, if there is an overall 
-system manager or some such thing, it could do a better job of 
-restarting tasks than the kernel oom killer since it knows the relative 
-importance of tasks).
+E.g.:
+so that make allmodconfig on powerpc will have a better chance
+of building.
 
-Chris
+or whatever.
+
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/scsi/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 30905ce..325533c 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -523,6 +523,7 @@ config SCSI_ADVANSYS
+>  	tristate "AdvanSys SCSI support"
+>  	depends on SCSI
+>  	depends on ISA || EISA || PCI
+> +	depends on VIRT_TO_BUS
+>  	help
+>  	  This is a driver for all SCSI host adapters manufactured by
+>  	  AdvanSys. It is documented in the kernel source in
+
+
+---
+~Randy
