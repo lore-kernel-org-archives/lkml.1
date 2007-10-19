@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967227AbXJSWW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967253AbXJSW2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967227AbXJSWW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXJSWWr
+	id S967253AbXJSW2e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXJSW2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:22:47 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:31043 "EHLO
+	Fri, 19 Oct 2007 18:28:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:37343 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760718AbXJSWWq convert rfc822-to-8bit (ORCPT
+	with ESMTP id S966779AbXJSW2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:22:46 -0400
+	Fri, 19 Oct 2007 18:28:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=LDB6P4Ftv8y4+zfsOSw95qYQBokmhYJmtmj9Pg8+o6S5qCTAZDE1rMmMH3lm8ouy3Bqp0ZRjcReMDgMnWxpTK1ECQKlf2uTFJUzvZ8ekQQIvZoF4dOrFigBO+2upASppO/CpWun5vmyHg0MvlTAlhj4d85PG1QAIjNJUuyJRgXk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: nick@ukfsn.org
-Subject: Re: New CD/DVD drive - 80-wire cable detection failure
-Date: Sat, 20 Oct 2007 00:28:21 +0200
-User-Agent: KMail/1.9.7
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200710181832.42906.nick@ukfsn.org> <200710192344.27312.bzolnier@gmail.com> <200710192304.23749.nick@ukfsn.org>
-In-Reply-To: <200710192304.23749.nick@ukfsn.org>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=hILqgpkJs7KgmQZgesC6LWzVjZO02IuVweHHehuc6qpdKCGfEjYfBWmkYY8F3/kkspA4c5GBoM934GKmIKWc+duU09CpU3o0RY1G6sAJdm4w+L8ajkUpP/dIOZc0YvWqdQ31LTN+Ib0AwLWNHYo6ucRtvZJl2FTZFfOt+FM4mjw=
+Message-ID: <47192E7D.7080409@googlemail.com>
+Date: Sat, 20 Oct 2007 00:23:57 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710200028.21860.bzolnier@gmail.com>
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: some kernel headers broken in current git ?
+References: <4719174A.7020004@googlemail.com> <Pine.LNX.4.64.0710192307320.18815@twin.jikos.cz> <47191F6C.2040801@googlemail.com>
+In-Reply-To: <47191F6C.2040801@googlemail.com>
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 October 2007, Nick Warne wrote:
-> On Friday 19 October 2007 22:44:27 Bartlomiej Zolnierkiewicz wrote:
+Gabriel C wrote:
+> Jiri Kosina wrote: 
+>> Trying 'make mrproper' first has high chances of fixing this I'd guess.
+> 
+> Is what I did before latest pull. 
+> 
+> Maybe this whole tree got broken. I'll try a fresh one and report back.
+> 
 
-> hdparm -I
 
-It should have been hdparm --Istdout (sorry, once again).
+I get the same on fresh cloned git tree
 
-[ It is definitevely not my day, or rather trying to debug the problem
-  while preparing the next IDE pull request is not a such good idea... ]
+#-- git rev-parse --verify HEAD
+c4ec20717313daafba59225f812db89595952b83
 
->From identify data we should be able to deduce whether this is a kernel
-problem or rather a hardware/configuration one.
 
-Thanks,
-Bart
+Regards,
+
+Gabriel
