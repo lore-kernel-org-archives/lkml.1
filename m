@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966155AbXJSHWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966395AbXJSH0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966155AbXJSHWB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 03:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXJSHVy
+	id S966395AbXJSH0N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 03:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbXJSHZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 03:21:54 -0400
-Received: from dtp.xs4all.nl ([80.126.206.180]:52147 "HELO abra2.bitwizard.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1756237AbXJSHVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 03:21:53 -0400
-Date: Fri, 19 Oct 2007 09:21:50 +0200
-From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-To: Rob Landley <rob@landley.net>
-Cc: Rogier Wolff <R.E.Wolff@BitWizard.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Theodore Tso <tytso@mit.edu>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Nick Piggin <piggin@cyberone.com.au>
-Subject: Re: OOM killer gripe (was Re: What still uses the block layer?)
-Message-ID: <20071019072150.GA18307@bitwizard.nl>
-References: <200710112011.22000.rob@landley.net> <200710161734.15880.nickpiggin@yahoo.com.au> <20071018130048.GA25084@bitwizard.nl> <200710190149.31962.rob@landley.net>
+	Fri, 19 Oct 2007 03:25:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42196 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700AbXJSHZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 03:25:56 -0400
+Message-ID: <47185BFD.2010909@garzik.org>
+Date: Fri, 19 Oct 2007 03:25:49 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710190149.31962.rob@landley.net>
-Organization: BitWizard.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: peer chen <peerchen@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Kuan Luo <kluo@nvidia.com>
+Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>	 <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>	 <47181CE1.4000802@garzik.org> <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>
+In-Reply-To: <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 01:49:31AM -0500, Rob Landley wrote:
-> On Thursday 18 October 2007 8:00:49 am Rogier Wolff wrote:
-> > So... IMHO, it would be useful to implement something that pages out
-> > chunks of memory larger than a single hardware page. This would reduce
-> > the size of the memory management tables (*), as well as improve disk
-> > throughput if things DO come to paging....
-> 
-> I believe that was more or less the topic of this paper:
->   http://kernel.org/doc/ols/2006/ols2006v2-pages-73-78.pdf
+peer chen wrote:
+> Ok,I agree to use AHCI driver for our AHCI controllers no matter their
+> class codes are IDE/RAID/AHCI. But for those new or upcoming AHCI
+> controller which DIDs are not included in ahci.c and also IDE/RAID
+> mode being set in BIOS, no driver will be loaded currently, so I hope
+> the first patch http://lkml.org/lkml/2007/10/8/93 can be appied for
+> this case. Any comments?
 
-Not really. They are talking about doing this for the page
-cache. That's where filesystem files are cached in memory. I'm talking
-about the memory that programs use while they are running.
+hmmm is that the correct URL?  That one updates sata_nv to support AHCI 
+controllers?.
 
-	Roger. 
+I would think you would want to add the RAID class code to ahci.c 
+instead?  And just some regular PCI IDs?
 
--- 
-** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-*-- BitWizard writes Linux device drivers for any device you may have! --*
-Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
-Does it sit on the couch all day? Is it unemployed? Please be specific! 
-Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
+	Jeff
+
+
