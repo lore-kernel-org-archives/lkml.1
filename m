@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXJSM0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765535AbXJSM1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764284AbXJSM0c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 08:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXJSM0Z
+	id S1765535AbXJSM1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 08:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXJSM1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 08:26:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:38714 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754950AbXJSM0Y (ORCPT
+	Fri, 19 Oct 2007 08:27:04 -0400
+Received: from hosted02.westnet.com.au ([203.10.1.213]:34294 "EHLO
+	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756947AbXJSM1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 08:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JKAvrwzbtk1MR0fBNjOe8/7Y59gytcPbBcnRCVoeUbaXP7wkc/hA2/knq+Fh9QMO2Q0X1RuZwznRxuu/P21IEaxjqhxOYQjbBZXR8DUgicsRsqPKW/pfknTwsJK8SHD7nBJmiYWjjdMIvKiMUcWVSKNFy1SmUH4pWTdUwNQ67Ms=
-Message-ID: <5a4c581d0710190526r735d175du346d43a0bd18c9fd@mail.gmail.com>
-Date: Fri, 19 Oct 2007 14:26:22 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: g3vbv@blueyonder.co.uk
-Subject: Re: 2.6.23-git10 make bzImage problem
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4715481F.7060502@blueyonder.co.uk>
+	Fri, 19 Oct 2007 08:27:03 -0400
+X-Greylist: delayed 1554 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 08:27:03 EDT
+From: Mike Lampard <mike@secnet.net.au>
+To: kvm-devel@lists.sourceforge.net, carsteno@de.ibm.com
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+Date: Fri, 19 Oct 2007 21:27:17 +0930
+User-Agent: KMail/1.9.7
+Cc: Aurelien Jarno <aurelien@aurel32.net>, Linux-kernel@vger.kernel.org
+References: <47189371.7080104@de.ibm.com> <47189585.5010901@aurel32.net> <47189706.1040809@de.ibm.com>
+In-Reply-To: <47189706.1040809@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4715481F.7060502@blueyonder.co.uk>
+Message-Id: <200710192127.17584.mike@secnet.net.au>
+X-GROMMIT-SECNET-NET-AU-MailScanner: Found to be clean
+X-GROMMIT-SECNET-NET-AU-MailScanner-SpamCheck: 
+X-GROMMIT-SECNET-NET-AU-MailScanner-From: mike@secnet.net.au
+X-STATE: 1
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/17/07, Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
-> When booted, it complains that kernel size is too big, but size OK for a
-> bzImage, not for zImage as is returned by the file command, -git9 was
-> OK, x86_64 SMP kernel on two 64x2 boxes.
-> I shall supplymy .config if needed, but they are the same as for -git9.
+On Fri, 19 Oct 2007 09:07:42 pm Carsten Otte wrote:
+> Aurelien Jarno wrote:
+> > Could you please precise what is corrupted? The guest disk image?
 >
->   # l arch/x86/boot/bzImage
-> -rw-r--r-- 1 root root 1761496 2007-10-16 22:45 arch/x86/boot/bzImage
+> As stated, we actually did not run any guests and did not load the kvm
+> kernel modules.
+> The host root file system gets corrupted to an extend not correctable
+> by the file system checker (we gave it 24h to repair, then interrupted
+> it), and it's very easy to reproduce: a simple kernel make on the
+> hosts lets us reinstall the entire host operating system.
 >
-> # file arch/x86_64/boot/bzImage
-> arch/x86_64/boot/bzImage: symbolic link to
-> `/usr/src/linux-2.6.23-git10/arch/x86/boot/bzImage'
->
-> # file arch/x86/boot/bzImage
-> arch/x86/boot/bzImage: Linux/x86 Kernel, Setup Version 0x206, zImage,
-> RO-rootFS, root_dev 0x801, swap_dev 0x1, Prompt for Videomode
+There was a commit ab9c232286c2b77be78441c2d8396500b045777e regarding libata 
+on linus's master tree that happened on Friday, that was pulled into kvm git 
+over the weekend.. I dont know if that may be affecting you.. there is/was 
+also chatter on LKML regarding some problems with s/g, you may want to check 
+there.
 
-Same here - but it -git13 seems to be back to proper behavior...
-
-[asuardi@sandman boot]$ file vmlinuz-2.6.23-git? vmlinuz-2.6.23-git??
-vmlinuz-2.6.23-git3:  Linux kernel x86 boot executable RO-rootFS,
-root_dev 0x807, swap_dev 0x1, Normal VGA
-vmlinuz-2.6.23-git6:  Linux kernel x86 boot executable RO-rootFS,
-root_dev 0x807, swap_dev 0x1, Normal VGA
-vmlinuz-2.6.23-git10: Linux kernel x86 boot executable zImage, version
-2.6.23-git10 (asuardi@sandman) , RO-rootFS, root_dev 0x807, swap_dev
-0x1, Prompt for Videomode
-vmlinuz-2.6.23-git13: Linux kernel x86 boot executable RO-rootFS,
-root_dev 0x807, swap_dev 0x1, Normal VGA
-
---alessandro
-
- "you feel the sweet breath of time
-  it's whispering, its truth not mine"
-
-   (Interpol, 'No I In Threesome')
+Cheers
+Mike
