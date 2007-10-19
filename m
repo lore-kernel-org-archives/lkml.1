@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933756AbXJSSbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936067AbXJSSbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933756AbXJSSbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 14:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758804AbXJSSbG
+	id S936067AbXJSSbt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 14:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763399AbXJSSbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 14:31:06 -0400
-Received: from smtpout2.l-3com.com ([128.170.207.214]:3153 "EHLO
-	smtpout2.L-3com.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757094AbXJSSbF convert rfc822-to-8bit (ORCPT
+	Fri, 19 Oct 2007 14:31:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33990 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763431AbXJSSbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 14:31:05 -0400
-X-IronPort-AV: E=Sophos;i="4.21,301,1188799200"; 
-   d="scan'208";a="92023755"
-From: Jason.V.Mock@L-3Com.com
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [NFS] Kernel Oops in NFS
-Date: Fri, 19 Oct 2007 13:30:57 -0500
-Message-ID: <F31FEAB987B7C2469181758C14265CFA040BBB86@gvlexch03.is.l-3com.com>
-In-Reply-To: <1192749866.7437.57.camel@heimdal.trondhjem.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [NFS] Kernel Oops in NFS
-Thread-Index: AcgR3eTJ3X/w4lbvREu9UZ/V38z5RAAn+q1Q
-References: <F31FEAB987B7C2469181758C14265CFA040BBB64@gvlexch03.is.l-3com.com> <F31FEAB987B7C2469181758C14265CFA040BBB7A@gvlexch03.is.l-3com.com> <1192749866.7437.57.camel@heimdal.trondhjem.org>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Kile, SE Scott @ IS" <scott.kile@L-3Com.com>,
-       <nfs@lists.sourceforge.net>
+	Fri, 19 Oct 2007 14:31:37 -0400
+Subject: Re: [BLOCK2MTD] WARNING: at kernel/lockdep.c:2331
+	lockdep_init_map()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+In-Reply-To: <200710191753.l9JHreeS012064@agora.fsl.cs.sunysb.edu>
+References: <200710191753.l9JHreeS012064@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 20:31:29 +0200
+Message-Id: <1192818689.9471.14.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Trond Myklebust [mailto:trond.myklebust@fys.uio.no] 
-> Sent: Thursday, October 18, 2007 18:24
-> To: Mock, JV Jason @ IS
-> Cc: nfs@lists.sourceforge.net; linux-kernel@vger.kernel.org; 
-> Kile, SE Scott @ IS
-> Subject: Re: [NFS] Kernel Oops in NFS
-> 
-> 
-> On Thu, 2007-10-18 at 16:01 -0500, Jason.V.Mock@L-3Com.com wrote:
-> > > We've come across an Oops, in what appears to NFS.
-> > > 
-> > > 2.6.22.6 vanilla + realtime-lsm
-> > > RHEL4 over PXE/NFS_ROOT
-...
-> > > [<c01a9fb8>] nfs_lookup+0x11b/0x26a SS:ESP 0068:f63b5d4
-> > > 
-> > > We haven't seen any negative side-effects other than users seeing 
-> > > this in Kwrited quite often.  We've yet to update to 2.6.22.9, 
-> > > however we've examined the change logs and patches 
-> associated with 
-> > > NFS between then and now, and don't see anything 
-> appropriate for the 
-> > > errors we're receiving.  Let me know if you need anything 
-> else for 
-> > > this...
-> > 
-> > I was just checking to see if there's anything that I'm 
-> missing here, 
-> > in regards to never hearing a single thing back about this.
-> > 
-> > - Jason Mock
-> 
-> Well... Your Oops did have the 'tainted' flag set, but in 
-> this case I believe that the issue is already known. Please try
-> 
->   
-> http://client.linux-nfs.org/Linux-2.6.x/2.6.22/linux-2.6.22-01
-> 0-fix_nfs_reval_fsid.dif
-> 
-> Trond
-> 
 
-Thanks Trond.  The Tainted flag is *probably* due to the NVIDIA driver,
-but I'd also have to check the realtime-lsm.  Either way we'll get that
-built up and see...
+On Fri, 2007-10-19 at 13:53 -0400, Erez Zadok wrote:
+> I've been having this problem for some time with mtd, which I use to mount
+> jffs2 images (for unionfs testing).  I've seen it in several recent major
+> kernels, including 2.6.24.  Here's the sequence of ops I perform:
+> 
+> # cp jffs2-empty.img /tmp/foo
+> # losetup /dev/loop0 /tmp/foo
+> # modprobe mtdblock
+> # modprobe block2mtd block2mtd=/dev/loop0,128ki
+> # mount -t jffs2 /dev/mtdblock0 /n/lower/b0
+> 
+> The jffs2-empty.img is a small jffs2 image, of an empty directory, created
+> w/ the jffs2 utils.  At the point I modprobe block2mtd, I get the following
+> lockdep warning and a "BUG" message:
+> 
+> BUG: key f88e1340 not in .data!
+> WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
+>  [<c0102bc2>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0103692>] show_trace+0x12/0x14
+>  [<c01037b2>] dump_stack+0x15/0x17
+>  [<c0125432>] lockdep_init_map+0x94/0x3e4
+>  [<c0125001>] debug_mutex_init+0x2c/0x3c
+>  [<c01210d4>] __mutex_init+0x38/0x40
+>  [<f88e01d3>] 0xf88e01d3
+>  [<c011dda7>] parse_args+0x123/0x200
+>  [<c012b725>] sys_init_module+0xdd0/0x122c
+>  [<c0102586>] sysenter_past_esp+0x5f/0x91
+>  =======================
+> block2mtd: mtd0: [d: /dev/loop0] erase_size = 128KiB [131072]
+> block2mtd: version $Revision: 1.30 $
+> 
+> However, everything seems to work afterwards: jffs2 mounts, and all my
+> unionfs+jffs2 tests succeed.
+> 
+> So, what is this "key xxx not in .data" message and should I worry?  Is the
+> lockdep warning a problem?  (It might be a problem if lockdep warnings are
+> turned off afterwards, so lockdep won't complain about future warnings.)
+> Heck, am I using mtd/jffs correctly?
 
-Thanks again!!
+Someone stuck a key object in non static storage. That breaks lockdep,
+don't do that :-)
 
-- Jason Mock
+Is the mutex_init() done from a function tagged with __init?
+
