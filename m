@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967206AbXJSVZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936466AbXJSV25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967206AbXJSVZE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 17:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966717AbXJSVYt
+	id S936466AbXJSV25 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 17:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761672AbXJSV2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 17:24:49 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:4512 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966754AbXJSVYr (ORCPT
+	Fri, 19 Oct 2007 17:28:49 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58422 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764209AbXJSV2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 17:24:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=lSFshJS+B7c1Z9Zf4ziOS7RMTDA2kJhINlIBiJX872HR+21S9gyYEJLwNZy6ZHzbulXgqVM9R8QQdGWwOMBFZ28rR5jwglJQG6ZYx7zRJUV4mcY2gYnwqGsl3Af0lbJOx0pPtBILw4bK75axaOh4xx4trHvIdd8TzS5tuPjciNA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] ide/pci/sis5513.c: add missing "else"
-Date: Fri, 19 Oct 2007 23:00:57 +0200
-User-Agent: KMail/1.9.7
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20071019140419.GC3778@stusta.de>
-In-Reply-To: <20071019140419.GC3778@stusta.de>
+	Fri, 19 Oct 2007 17:28:48 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own mappings.
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<m1zlykj8zl.fsf_-_@ebiederm.dsl.xmission.com>
+	<200710160956.58061.borntraeger@de.ibm.com>
+	<200710171814.01717.borntraeger@de.ibm.com>
+	<m1sl49ei8x.fsf@ebiederm.dsl.xmission.com>
+	<1192648456.15717.7.camel@think.oraclecorp.com>
+	<m17illeb8f.fsf@ebiederm.dsl.xmission.com>
+	<1192654481.15717.16.camel@think.oraclecorp.com>
+	<m1ve95ctuc.fsf@ebiederm.dsl.xmission.com>
+	<1192661889.15717.27.camel@think.oraclecorp.com>
+	<m16415cocs.fsf@ebiederm.dsl.xmission.com>
+	<1192665785.15717.34.camel@think.oraclecorp.com>
+	<m1tzopaxa1.fsf_-_@ebiederm.dsl.xmission.com>
+	<20071017213216.b2d0c4bd.akpm@linux-foundation.org>
+Date: Fri, 19 Oct 2007 15:27:25 -0600
+In-Reply-To: <20071017213216.b2d0c4bd.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 17 Oct 2007 21:32:16 -0700")
+Message-ID: <m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710192300.58051.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 October 2007, Adrian Bunk wrote:
-> This patch adds a missing "else" that was missing in
-> commit c77a89cd98d99819f23a4a08e5e17ee1f13f6e4d.
-> 
-> Spotted by the Coverity checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-applied, thanks!
+>
+> I don't think we little angels want to tread here.  There are so many
+> weirdo things out there which will break if we bust the coherence between
+> the fs and /dev/hda1.
 
-> ---
-> 2e4b8d4f58ea45e55c87ba5563b0d0e135cac2b4 
-> diff --git a/drivers/ide/pci/sis5513.c b/drivers/ide/pci/sis5513.c
-> index c1d280b..1680926 100644
-> --- a/drivers/ide/pci/sis5513.c
-> +++ b/drivers/ide/pci/sis5513.c
-> @@ -264,7 +264,7 @@ static void sis_ata133_program_timings(ide_drive_t *drive, const u8 mode)
->  	if (mode >= XFER_MW_DMA_0) {
->  		t1 &= ~0x04;	/* disable UDMA */
->  		idx = mode - XFER_MW_DMA_0 + 5;
-> -	}
-> +	} else
->  		idx = mode - XFER_PIO_0;
->  	t1 |= ini_time_value[clk][idx] << 12;
->  	t1 |= act_time_value[clk][idx] << 16;
+We broke coherence between the fs and /dev/hda1 when we introduced
+the page cache years ago, and weird hacky cases like
+unmap_underlying_metadata don't change that.  Currently only
+metadata is more or less in sync with the contents of /dev/hda1.
+
+> Online resize, online fs checkers, various local
+> tools which people have hacked up to look at metadata in a live fs,
+> direct-io access to the underlying fs, heaven knows how many boot loader
+> installers, etc.  Cerainly I couldn't enumerate  tham all.
+
+Well I took a look at ext3.  For online resize all of the writes are
+done by the fs not by the user space tool.  For e2fsck of a read-only
+filesystem currently we do cache the buffers for the super block and
+reexamine those blocks when we mount read-only.
+
+Which makes my patch by itself unsafe.  If however ext3 and anyone
+else who does things like that were to reread the data and not
+to merely reexamine the data we should be fine.
+
+Fundamentally doing anything like this requires some form of
+synchronization, and if that synchronization does not exist
+today there will be bugs.  Further decoupling things only makes that
+requirement clearer.
+
+Unfortunately because of things like the ext3 handling of remounting
+from ro to rw this doesn't fall into the quick trivial fix category :(
+
+> I don't actually see what the conceptual problem is with the existing
+> implementation.  The buffer_head is a finer-grained view onto the
+> blockdev's pagecache: it provides additional states and additional locking
+> against a finer-grained section of the page.   It works well.
+
+The buffer_head itself seems to be a reasonable entity.
+
+The buffer cache is a monster.  It does not follow the ordinary rules
+of the page cache, making it extremely hard to reason about.
+
+Currently in the buffer cache there are buffer_heads we are not
+allowed to make dirty which hold dirty data.  Some filesystems
+panic the kernel when they notice this.  Others like ext3 use a
+different bit to remember that the buffer is dirty.
+
+Because of ordering considerations the buffer cache does not hold a
+consistent view of what has been scheduled for being written to disk.
+It instead holds partially complete pages.
+
+The only place we should ever clear the dirty bit is just before
+calling write_page but try_to_free_buffers clears the dirty bit!
+
+We have buffers on pages without a mapping!
+
+In general the buffer cache violates a primary rule for comprehensible
+programming having.  The buffer cache does not have a clear enough
+definition that it is clear what things are bugs and what things
+are features.
+
+99% of the weird strange behavior in rd.c is because of the buffer
+cache not following the normal rules.
+
+> Yeah, the highmem thing is a bit of a problem (but waning in importance). 
+> But we can fix that by teaching individual filesystems about kmap and then
+> tweak the blockdev's caching policy with mapping_set_gfp_mask() at mount
+> time.  If anyone cares, which they don't.
+
+This presumes I want to use a filesystem on my block device.  Where I
+would care most is when I am doing things like fsck or mkfs on an
+unmounted filesystem.  Where having buffer_heads is just extra memory
+pressure slowing things down, and similarly for highmem.  We have
+to sync the filesystem before mounting but we have to do that anyway
+for all of the non metadata so that isn't new.
+
+Anyway my main objective was to get a good grasp on the buffer cache
+and the mm layer again.  Which I now more or less have.  While I think
+the buffer cache needs a bunch of tender loving care before it becomes
+sane I have other projects that I intend to complete before I try
+anything in this area.
+
+Eric
