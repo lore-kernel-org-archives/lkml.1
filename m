@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934707AbXJSWrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbXJSWuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934707AbXJSWrL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 18:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbXJSWq5
+	id S932384AbXJSWuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbXJSWuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 18:46:57 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58579 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbXJSWq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 18:46:56 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Mark ramdisk buffers heads dirty
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710172348.23113.borntraeger@de.ibm.com>
-	<m1myuhcrfu.fsf@ebiederm.dsl.xmission.com>
-	<200710181126.10559.borntraeger@de.ibm.com>
-Date: Fri, 19 Oct 2007 16:46:04 -0600
-In-Reply-To: <200710181126.10559.borntraeger@de.ibm.com> (Christian
-	Borntraeger's message of "Thu, 18 Oct 2007 11:26:10 +0200")
-Message-ID: <m1sl46en9v.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 19 Oct 2007 18:50:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:38270 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758218AbXJSWuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 18:50:02 -0400
+Date: Sat, 20 Oct 2007 00:49:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Jiri Kosina <jikos@jikos.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>
+Subject: Re: some kernel headers broken in current git ?
+In-Reply-To: <47192E7D.7080409@googlemail.com>
+Message-ID: <alpine.LFD.0.9999.0710200048290.22770@localhost.localdomain>
+References: <4719174A.7020004@googlemail.com> <Pine.LNX.4.64.0710192307320.18815@twin.jikos.cz> <47191F6C.2040801@googlemail.com> <47192E7D.7080409@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger <borntraeger@de.ibm.com> writes:
+On Sat, 20 Oct 2007, Gabriel C wrote:
+> Gabriel C wrote:
+> > Jiri Kosina wrote: 
+> >> Trying 'make mrproper' first has high chances of fixing this I'd guess.
+> > 
+> > Is what I did before latest pull. 
+> > 
+> > Maybe this whole tree got broken. I'll try a fresh one and report back.
+> > 
+> 
+> 
+> I get the same on fresh cloned git tree
+> 
+> #-- git rev-parse --verify HEAD
+> c4ec20717313daafba59225f812db89595952b83
 
-> Am Donnerstag, 18. Oktober 2007 schrieb Eric W. Biederman:
->> Grr. Inconsistent rules on a core piece of infrastructure.
->> It looks like that if there is any trivial/minimal fix it
->> is based on your patch suppressing try_to_free_buffers.  Ugh.
->> 
->> Eric
->
-> Ok. What do you think about having my patch for 2.6.23 stable, for 2.6.24
-> and doing a nicer fix (rd rewrite for example for post 2.6.24)?
+Hmm. The kernel itself compiles fine ?
 
-Looking at it.  If we don't get carried away using our own private
-inode is barely more difficult then stomping on release_page and
-in a number of ways a whole lot more subtle.  At least for 2.6.24 I
-think it makes a sane fix, and quite possibly as a back port as well.
+What external thing breaks ?
 
-Eric
+     tglx
