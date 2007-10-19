@@ -1,69 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966263AbXJSOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966370AbXJSOsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966263AbXJSOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 10:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758834AbXJSOgS
+	id S966370AbXJSOsk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 10:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXJSOsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 10:36:18 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:58690 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755058AbXJSOgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 10:36:17 -0400
-Date: Fri, 19 Oct 2007 16:39:21 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Maciej W\. Rozycki" <macro@linux-mips.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071019143921.GB2598@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <Pine.LNX.4.64N.0710171221510.28993@blysk.ds.pg.gda.pl> <Pine.LNX.4.64N.0710191229510.13279@blysk.ds.pg.gda.pl>
-Mime-Version: 1.0
+	Fri, 19 Oct 2007 10:48:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51059 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760228AbXJSOsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 10:48:30 -0400
+Date: Fri, 19 Oct 2007 16:48:28 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ak@suse.de,
+       vgoyal@in.ibm.com, linux-ia64@vger.kernel.org
+Subject: Re: [patch 1/3] Add BSS to resource tree
+Message-ID: <20071019144827.GA14023@suse.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ak@suse.de,
+	vgoyal@in.ibm.com, linux-ia64@vger.kernel.org
+References: <20071018111535.356215664@strauss.suse.de> <20071018111535.883533731@strauss.suse.de> <20071018142642.5b3f6ba4.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64N.0710191229510.13279@blysk.ds.pg.gda.pl>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20071018142642.5b3f6ba4.akpm@linux-foundation.org>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 12:38:29PM +0100, Maciej W. Rozycki wrote:
-> On Thu, 18 Oct 2007, Maciej W. Rozycki wrote:
+* Andrew Morton <akpm@linux-foundation.org> [2007-10-18 23:26]:
+> On Thu, 18 Oct 2007 13:15:36 +0200
+> Bernhard Walle <bwalle@suse.de> wrote:
 > 
-> > > 1) phy_change() checks PHY_HALTED flag without lock; I think it's
-> > > racy: eg. if it's done during phy_stop() it can check just before
-> > > the flag is set and reenable interrupts just after phy_stop() ends.
+> > This patch adds the BSS to the resource tree just as kernel text and kernel
+> > data are in the resource tree. The main reason behind this is to avoid
+> > crashkernel reservation in that area.
 > > 
-> >  I remember having a look into it, but it was long ago and I cannot 
-> > immediately recall the conclusion.  Which means it is either broken or 
-> > deserves a comment as non-obvious.  I will have a look into it again, but 
-> > I am resource-starved a little at the moment, sorry.
+> > While it's not strictly necessary to have the BSS in the resource tree
+> > (the actual collision detection is done in the reserve_bootmem() function
+> > before), the usage of the BSS resource should be presented to the user
+> > in /proc/iomem just as Kernel data and Kernel code.
+> > 
+> > Note: The patch currently is only implemented for x86 and ia64 (because
+> > efi_initialize_iomem_resources() has the same signature on i386 and
+> > ia64).
+> > 
+> > 
+> > ...
+> >
+> > -extern char _text[], _end[], _etext[];
+> > +
+> > +static struct resource bss_resource = {
+> > +	.name	= "Kernel bss",
+> > +	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
+> > +};
+> > +extern char _text[], _end[], _etext[], _edata[], _bss[];
 > 
->  Well, I have now recalled what the issue is -- we just plainly and simply 
-> want to avoid a hardirq spinlock for the very reason we do not do all the 
-> processing in the hardirq handler.  The thing is we make accesses to the 
-> MDIO bus with the phydev lock held and it may take ages until these 
-> accesses will have completed.  And we cannot afford keeping interrupts 
-> disabled for so long.
-> 
->  So the only way is to make the check for the HALTED state lockless and 
-> make sure any race condition is handled gracefully and does not lead to 
-> inconsistent behaviour.  Which I think as of what we have in the 
-> net-2.6.24 tree is the case, but there are never too many eyes to look at 
-> a piece of code, so if anybody feels like proving me wrong, then just go 
-> ahead!
+> These should be in a header file.
 
-Actually I'm not convinced with this explanation. It seems to me that
-since there are such serious locking problems (especially with rntl),
-there could be once more considered a private workqueue. You've
-written earlier about being a lonely user of this code. But, since
-Benjamin offered his help with changing to mutexes, which looks like
-very reasonable idea to me (probably I miss most of the points...),
-maybe it's very good opportunity to both: make this code better and
-double the user base! I'm interested in looking for such solution
-if Benjamin thinks there could be too few problems for him... So,
-let somebody tell us what could be wrong with this idea?
+It's already ... the problem just was that IA64 uses _bss instead of
+__bss_start. So I think we should change this. I verified that the
+kernel still compiles with the patch below.
 
-Cheers (till Monday),
-Jarek P.
+
+Thanks,
+   Bernhard
+
+---
+[PATCH] Rename _bss to __bss_start
+
+Rename _bss to __bss_start as on other architectures. That makes it possible to
+use the <linux/sections.h> instead of own declarations. Also add __bss_stop
+because that symbol exists on other architectures.
+
+That patch applies to current git plus kexec-add-bss-to-resource-tree.patch in
+-mm tree.
+
+
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+
+---
+ arch/ia64/hp/sim/boot/bootloader.lds |    3 ++-
+ arch/ia64/kernel/setup.c             |    3 +--
+ arch/ia64/kernel/vmlinux.lds.S       |    3 ++-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+--- a/arch/ia64/hp/sim/boot/bootloader.lds
++++ b/arch/ia64/hp/sim/boot/bootloader.lds
+@@ -22,10 +22,11 @@ SECTIONS
+   .sdata     : { *(.sdata) }
+   _edata  =  .;
+ 
+-  _bss = .;
++  __bss_start = .;
+   .sbss      : { *(.sbss) *(.scommon) }
+   .bss       : { *(.bss) *(COMMON) }
+   . = ALIGN(64 / 8);
++  __bss_stop = .;
+   _end = . ;
+ 
+   /* Stabs debugging sections.  */
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -95,7 +95,6 @@ static struct resource bss_resource = {
+ 	.name	= "Kernel bss",
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
+ };
+-extern char _text[], _end[], _etext[], _edata[], _bss[];
+ 
+ unsigned long ia64_max_cacheline_size;
+ 
+@@ -206,7 +205,7 @@ static int __init register_memory(void)
+ 	code_resource.end   = ia64_tpa(_etext) - 1;
+ 	data_resource.start = ia64_tpa(_etext);
+ 	data_resource.end   = ia64_tpa(_edata) - 1;
+-	bss_resource.start  = ia64_tpa(_bss);
++	bss_resource.start  = ia64_tpa(__bss_start);
+ 	bss_resource.end    = ia64_tpa(_end) - 1;
+ 	efi_initialize_iomem_resources(&code_resource, &data_resource,
+ 			&bss_resource);
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -240,11 +240,12 @@ SECTIONS
+   .sdata : AT(ADDR(.sdata) - LOAD_OFFSET)
+ 	{ *(.sdata) *(.sdata1) *(.srdata) }
+   _edata  =  .;
+-  _bss = .;
++  __bss_start = .;
+   .sbss : AT(ADDR(.sbss) - LOAD_OFFSET)
+ 	{ *(.sbss) *(.scommon) }
+   .bss : AT(ADDR(.bss) - LOAD_OFFSET)
+ 	{ *(.bss) *(COMMON) }
++  __bss_stop = .;
+ 
+   _end = .;
+ 
+
+
