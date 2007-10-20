@@ -1,108 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbXJTG5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762938AbXJTHbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934030AbXJTG5S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 02:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbXJTG5J
+	id S1762938AbXJTHbB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 03:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXJTHav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 02:57:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41948 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbXJTG5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 02:57:08 -0400
-Date: Sat, 20 Oct 2007 02:56:59 -0400
-From: Chris Snook <csnook@redhat.com>
-To: tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: merge mmu{,_32,_64}.h
-Message-ID: <20071020065659.GA12404@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Oct 2007 03:30:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:49933 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbXJTHau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 03:30:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=A/KjIVf/CrIJDxqCYyQ1NMqxkFLcDOkReeEtuI4EVM7K+RKFGwIiB7R4TJNtleMnJehVVAo0yp8A1IMFAZRUe01PJg33MDLyFho7x5RApz0q5GNhyGr1ssptFnYpcaGKrbb9xZ/yhPx1ZGDX3ws6H0f8vwja6haZZ0fKswXIpZQ=
+Message-ID: <86802c440710200030y4bdff609m35966a6300f697b2@mail.gmail.com>
+Date: Sat, 20 Oct 2007 00:30:50 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: kbuild: kconfig source with " " or not
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+Sam,
 
-Merge mmu_32.h and mmu_64.h into mmu.h.
+in Kconfig, most of source to include other kconfig has "..."
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+for example:
 
-diff -Nurp a/include/asm-x86/mmu_32.h b/include/asm-x86/mmu_32.h
---- a/include/asm-x86/mmu_32.h	2007-10-20 02:42:24.000000000 -0400
-+++ b/include/asm-x86/mmu_32.h	1969-12-31 19:00:00.000000000 -0500
-@@ -1,18 +0,0 @@
--#ifndef __i386_MMU_H
--#define __i386_MMU_H
--
--#include <linux/mutex.h>
--/*
-- * The i386 doesn't have a mmu context, but
-- * we put the segment information here.
-- *
-- * cpu_vm_mask is used to optimize ldt flushing.
-- */
--typedef struct { 
--	int size;
--	struct mutex lock;
--	void *ldt;
--	void *vdso;
--} mm_context_t;
--
--#endif
-diff -Nurp a/include/asm-x86/mmu_64.h b/include/asm-x86/mmu_64.h
---- a/include/asm-x86/mmu_64.h	2007-10-20 02:42:24.000000000 -0400
-+++ b/include/asm-x86/mmu_64.h	1969-12-31 19:00:00.000000000 -0500
-@@ -1,21 +0,0 @@
--#ifndef __x86_64_MMU_H
--#define __x86_64_MMU_H
--
--#include <linux/spinlock.h>
--#include <linux/mutex.h>
--
--/*
-- * The x86_64 doesn't have a mmu context, but
-- * we put the segment information here.
-- *
-- * cpu_vm_mask is used to optimize ldt flushing.
-- */
--typedef struct { 
--	void *ldt;
--	rwlock_t ldtlock; 
--	int size;
--	struct mutex lock;
--	void *vdso;
--} mm_context_t;
--
--#endif
-diff -Nurp a/include/asm-x86/mmu.h b/include/asm-x86/mmu.h
---- a/include/asm-x86/mmu.h	2007-10-20 02:42:24.000000000 -0400
-+++ b/include/asm-x86/mmu.h	2007-10-20 02:38:36.000000000 -0400
-@@ -1,5 +1,23 @@
--#ifdef CONFIG_X86_32
--# include "mmu_32.h"
--#else
--# include "mmu_64.h"
-+#ifndef _ASM_X86_MMU_H
-+#define _ASM_X86_MMU_H
-+
-+#include <linux/spinlock.h>
-+#include <linux/mutex.h>
-+
-+/*
-+ * The x86 doesn't have a mmu context, but
-+ * we put the segment information here.
-+ *
-+ * cpu_vm_mask is used to optimize ldt flushing.
-+ */
-+typedef struct { 
-+	void *ldt;
-+#ifdef CONFIG_X86_64
-+	rwlock_t ldtlock; 
- #endif
-+	int size;
-+	struct mutex lock;
-+	void *vdso;
-+} mm_context_t;
-+
-+#endif /* _ASM_X86_MMU_H */
+in arch/x86_64/Kconfig:
+source "net/Kconfig"
+
+but some other don't
+
+< ./drivers/w1/Kconfig:source drivers/w1/masters/Kconfig
+< ./drivers/w1/Kconfig:source drivers/w1/slaves/Kconfig
+< ./drivers/i2c/Kconfig:source drivers/i2c/algos/Kconfig
+< ./drivers/i2c/Kconfig:source drivers/i2c/busses/Kconfig
+< ./drivers/i2c/Kconfig:source drivers/i2c/chips/Kconfig
+< ./arch/frv/Kconfig:source kernel/power/Kconfig
+< ./arch/v850/Kconfig:source init/Kconfig
+< ./arch/v850/Kconfig:source drivers/mtd/Kconfig
+< ./arch/v850/Kconfig:source drivers/parport/Kconfig
+< ./arch/v850/Kconfig:#source drivers/pnp/Kconfig
+< ./arch/v850/Kconfig:source drivers/block/Kconfig
+< ./arch/v850/Kconfig:#source drivers/misc/Config.in
+< ./arch/ia64/Kconfig:source kernel/Kconfig.hz
+< ./arch/i386/Kconfig:source kernel/Kconfig.hz
+< ./arch/i386/Kconfig:source kernel/power/Kconfig
+< ./arch/ppc/Kconfig:source arch/ppc/platforms/4xx/Kconfig
+< ./arch/ppc/Kconfig:source arch/ppc/platforms/85xx/Kconfig
+< ./arch/ppc/Kconfig:source kernel/Kconfig.hz
+< ./arch/ppc/Kconfig:source kernel/Kconfig.preempt
+< ./arch/ppc/Kconfig:source kernel/power/Kconfig
+< ./arch/x86_64/Kconfig:source kernel/Kconfig.hz
+< ./arch/x86_64/Kconfig:source kernel/power/Kconfig
+< ./arch/x86_64/Kconfig:source drivers/Kconfig
+< ./arch/x86_64/Kconfig:source fs/Kconfig
+< ./arch/s390/Kconfig:source kernel/Kconfig.hz
+< ./arch/cris/Kconfig:source mm/Kconfig
+< ./arch/cris/Kconfig:source arch/cris/arch-v10/Kconfig
+< ./arch/cris/Kconfig:source arch/cris/arch-v10/drivers/Kconfig
+< ./arch/cris/Kconfig:#source drivers/misc/Config.in
+< ./arch/powerpc/Kconfig:source kernel/time/Kconfig
+< ./arch/powerpc/Kconfig:source kernel/Kconfig.hz
+< ./arch/powerpc/Kconfig:source kernel/Kconfig.preempt
+< ./arch/powerpc/Kconfig:source kernel/power/Kconfig
+< ./arch/sh64/Kconfig:source init/Kconfig
+< ./arch/sh/Kconfig:source kernel/Kconfig.hz
+< ./arch/sh/Kconfig:source kernel/power/Kconfig
+< ./arch/sparc64/Kconfig:source kernel/Kconfig.hz
+< ./arch/arm/Kconfig:source arch/arm/mm/Kconfig
+< ./arch/blackfin/Kconfig:source kernel/Kconfig.hz
+< ./block/Kconfig:source block/Kconfig.iosched
+< ./security/Kconfig:source security/selinux/Kconfig
+
+better to keep them consistent
+
+YH
