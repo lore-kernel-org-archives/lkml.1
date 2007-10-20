@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbXJTSUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761779AbXJTS2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbXJTSUn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 14:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXJTSUg
+	id S1761779AbXJTS2K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 14:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXJTS15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 14:20:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33584 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757071AbXJTSUf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 14:20:35 -0400
-Date: Sat, 20 Oct 2007 11:19:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: git/cscope with x86 merge
-In-Reply-To: <20071020164752.GB6855@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.0.999.0710201058300.3794@woody.linux-foundation.org>
-References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com>
- <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org>
- <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com>
- <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org>
- <20071020164752.GB6855@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 20 Oct 2007 14:27:57 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:48717
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755896AbXJTS15 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 14:27:57 -0400
+Message-Id: <471A56B3020000780003F5C8@public.id2-vpn.continvity.gns.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Sat, 20 Oct 2007 19:27:47 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <sam@ravnborg.org>
+Cc: <akpm@linux-foundation.org>, <torvalds@linux-foundation.org>,
+       <zippel@linux-m68k.org>, <david-b@pacbell.net>,
+       <linux-kernel@vger.kernel.org>, <rdunlap@xenotime.net>
+Subject: Re: 2.6.23-git Kconfig regression
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'll try to, but it may take some time. Jan
 
+>>> Sam Ravnborg <sam@ravnborg.org> 10/20/07 6:50 PM >>>
+Jan - I assume you will look into this.
 
-On Sat, 20 Oct 2007, Sam Ravnborg wrote:
+And thanks to David/Randy for narrowing this down.
+
+Thanks,
+
+	Sam
+
+On Fri, Oct 19, 2007 at 09:25:55PM -0700, Linus Torvalds wrote:
 > 
-> But you do not see the rename arch/x86_64/kernel/{vmlinux.lds.S => vmlinux.lds.S}
+> 
+> On Fri, 19 Oct 2007, David Brownell wrote:
+> 
+> > > My (quick, meaning that I may have missed something) testing
+> > > indicates that the problem is in the patches attached.
+> > 
+> > Yes, reverting this seems to resolve the problem:
+> > 
+> > > a5bf3d891a6a0fb5aa122792d965e3774108b923
+> > >
+> > > Change kconfig behavior so that mixing bool and tristate config settings in
+> > > a choice is possible and has the desired effect of offering just the
+> > > tristate options individually if the choice gets set to M, and a normal
+> > > boolean selection if the choice gets set to Y.
+> > 
+> > Reverting this patch also fixes a second problem that I didn't
+> > mention:  various dependent options couldn't be enabled.
+> > 
+> > Again in drivers/usb/gadget/Kconfig, examples include the
+> > ability to configure the Ethernet gadget to act as an RNDIS
+> > peripheral; or enabling Mass Storage gadget debug options.
+> > 
+> > 
+> > Good sleuthing, and thanks!
+> > 
+> > Now we just need to see that patch reverted before RC1... I don't
+> > know how Linus deals with all his LKML mail, so I cc'd him in
+> > the hope that direct messages get through a bit faster.
+> 
+> Ok, I'll revert it, but wanted to make sure that the parties that pushed 
+> the change are aware of this.
+> 
+> 		Linus 
 
-Umm. What you are describing isn't a rename - that's the same name. Do you 
-perhaps mean vmlinux.lds.S => vmlinux_64.lds.S ?
-
-And yes, it doesn't show that as a rename, because of the fact that the
-
-	arch/x86_64/kernel/vmlinux.lds.S
-
-file actually *remained*, so it wasn't really a rename. It just got almost 
-all of its data changed.
-
-So there was never really a rename: there was a "copy" and a "rewrite". 
-And "git --follow" doesn't follow copies.
-
-However, "git blame" does do so. So if you do
-
-	git blame -C arch/x86/kernel/vmlinux_64.lds.S
-
-(where that -C tells it to follow data across file copies), it will 
-actually show the history down, line for line!
-
-But when you try to follow the history of the whole *file*, git sees that 
-the filename still existed of the source, so it won't consider that a 
-candidate for renames!
-
-I could perhaps look at making "git log --follow" also break up files that 
-got totally rewritten (git already has a notion of "-B" to do that), but 
-no, we don't do it right now. (But one of the advantages of the git model 
-is that none of this is hardcoded in the repository data itself, so we can 
-improve the rename following and it will automatically work with any repo, 
-even one created with older git versions)
-
-		Linus
