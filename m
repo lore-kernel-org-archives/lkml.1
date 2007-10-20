@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbXJUBxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbXJUBxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbXJUBxc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXJUBw3
+	id S1753192AbXJUBxp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXJUBwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:52:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56844 "EHLO
+	Sat, 20 Oct 2007 21:52:30 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56846 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752199AbXJUBw1 (ORCPT
+	with ESMTP id S1752195AbXJUBw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 20 Oct 2007 21:52:27 -0400
-Date: Sun, 21 Oct 2007 01:52:19 +0200 (CEST)
+Date: Sun, 21 Oct 2007 01:53:31 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 cc: James Morris <jmorris@namei.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 1/4] MultiAdmin 1.0.7
+Subject: [PATCH 3/4] MultiAdmin 1.0.7
 In-Reply-To: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0710210151530.1997@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0710210153250.1997@fbirervta.pbzchgretzou.qr>
 References: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,73 +25,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[PATCH 1/4] security_cap_extra() and more
+[PATCH 3/4] task_post_setgid()
 
-    -   Renames capable() to capable_light().
-        This function is used if only a capability is to be checked.
-
-    -   Implement a new capable that calls security_cap_extra().
-        Since a subadmin has almost the same capabilities as a
-        superadmin, an extra helper is needed to decide whether an
-        action is allowed, based on the philosophy of the LSM.
-
-    -   implement the .cap_extra LSM hook
+    -   Implement the task_post_setgid() LSM hook which is required by
+        MultiAdmin to switch between classes.
+        (task_post_setuid also switches between classes -- and already exists)
 
 
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>, May 01 2006
-July 11 2006
+Modified July 11 2006
 
 ---
- include/linux/capability.h |    2 ++
- include/linux/security.h   |   13 +++++++++++++
- kernel/capability.c        |   19 ++++++++++++++++++-
- security/dummy.c           |    6 ++++++
- 4 files changed, 39 insertions(+), 1 deletion(-)
+ include/linux/security.h |   13 +++++++++++++
+ kernel/sys.c             |   15 ++++++++++++---
+ security/dummy.c         |    7 +++++++
+ 3 files changed, 32 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.23.1/include/linux/capability.h
-===================================================================
---- linux-2.6.23.1.orig/include/linux/capability.h
-+++ linux-2.6.23.1/include/linux/capability.h
-@@ -358,6 +358,8 @@ static inline kernel_cap_t cap_invert(ke
- 
- #define cap_is_fs_cap(c)     (CAP_TO_MASK(c) & CAP_FS_MASK)
- 
-+bool capable_light(unsigned int);
-+bool __capable_light(struct task_struct *, unsigned int);
- int capable(int cap);
- int __capable(struct task_struct *t, int cap);
- 
 Index: linux-2.6.23.1/include/linux/security.h
 ===================================================================
 --- linux-2.6.23.1.orig/include/linux/security.h
 +++ linux-2.6.23.1/include/linux/security.h
-@@ -1399,6 +1399,7 @@ struct security_operations {
- 
+@@ -1400,6 +1400,7 @@ struct security_operations {
  #endif	/* CONFIG_KEYS */
  
-+	int (*cap_extra)(struct task_struct *, unsigned int);
+ 	int (*cap_extra)(struct task_struct *, unsigned int);
++	int (*task_post_setgid)(gid_t, gid_t, gid_t, unsigned int);
  };
  
  /* global variables */
-@@ -2132,6 +2133,12 @@ static inline void security_release_secc
- 	return security_ops->release_secctx(secdata, seclen);
+@@ -2139,6 +2140,12 @@ static inline int security_cap_extra(str
+ 	return security_ops->cap_extra(task, cap);
  }
  
-+static inline int security_cap_extra(struct task_struct *task,
-+    unsigned int cap)
++static inline int security_task_post_setgid(gid_t real, gid_t effective,
++    gid_t saved, unsigned int type)
 +{
-+	return security_ops->cap_extra(task, cap);
++	return security_ops->task_post_setgid(real, effective, saved, type);
 +}
 +
  /* prototypes */
  extern int security_init	(void);
  extern int register_security	(struct security_operations *ops);
-@@ -2786,6 +2793,12 @@ static inline int security_netlink_recv 
- 	return cap_netlink_recv (skb, cap);
+@@ -2799,6 +2806,12 @@ static inline int security_cap_extra(str
+ 	return 0;
  }
  
-+static inline int security_cap_extra(struct task_struct *task,
-+    unsigned int cap)
++static inline int security_task_post_setgid(gid_t real, gid_t effective,
++    gid_t saved, unsigned int type)
 +{
 +	return 0;
 +}
@@ -99,49 +79,77 @@ Index: linux-2.6.23.1/include/linux/security.h
  static inline struct dentry *securityfs_create_dir(const char *name,
  					struct dentry *parent)
  {
-Index: linux-2.6.23.1/kernel/capability.c
+Index: linux-2.6.23.1/kernel/sys.c
 ===================================================================
---- linux-2.6.23.1.orig/kernel/capability.c
-+++ linux-2.6.23.1/kernel/capability.c
-@@ -238,7 +238,7 @@ out:
- 
- int __capable(struct task_struct *t, int cap)
- {
--	if (security_capable(t, cap) == 0) {
-+	if (security_capable(t, cap) == 0 && security_cap_extra(t, cap) == 0) {
- 		t->flags |= PF_SUPERPRIV;
- 		return 1;
- 	}
-@@ -251,3 +251,20 @@ int capable(int cap)
- 	return __capable(current, cap);
+--- linux-2.6.23.1.orig/kernel/sys.c
++++ linux-2.6.23.1/kernel/sys.c
+@@ -1052,7 +1052,8 @@ asmlinkage long sys_setregid(gid_t rgid,
+ 	current->gid = new_rgid;
+ 	key_fsgid_changed(current);
+ 	proc_id_connector(current, PROC_EVENT_GID);
+-	return 0;
++	return security_task_post_setgid(old_rgid, old_egid,
++	       (gid_t)-1, LSM_SETID_RE);
  }
- EXPORT_SYMBOL(capable);
-+
-+bool __capable_light(struct task_struct *t, unsigned int cap)
-+{
-+	if (security_capable(t, cap) == 0) {
-+		t->flags |= PF_SUPERPRIV;
-+		return true;
-+	}
-+	return false;
-+}
-+EXPORT_SYMBOL(__capable_light);
-+
-+bool capable_light(unsigned int cap)
-+{
-+	return __capable_light(current, cap);
-+}
-+EXPORT_SYMBOL(capable_light);
-+
+ 
+ /*
+@@ -1062,6 +1063,7 @@ asmlinkage long sys_setregid(gid_t rgid,
+  */
+ asmlinkage long sys_setgid(gid_t gid)
+ {
++	gid_t old_rgid = current->gid;
+ 	int old_egid = current->egid;
+ 	int retval;
+ 
+@@ -1087,7 +1089,8 @@ asmlinkage long sys_setgid(gid_t gid)
+ 
+ 	key_fsgid_changed(current);
+ 	proc_id_connector(current, PROC_EVENT_GID);
+-	return 0;
++	return security_task_post_setgid(old_rgid, (gid_t)-1,
++	       (gid_t)-1, LSM_SETID_ID);
+ }
+   
+ static int set_user(uid_t new_ruid, int dumpclear)
+@@ -1290,6 +1293,9 @@ asmlinkage long sys_getresuid(uid_t __us
+  */
+ asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+ {
++	gid_t old_rgid = current->gid;
++	gid_t old_egid = current->egid;
++	gid_t old_sgid = current->sgid;
+ 	int retval;
+ 
+ 	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
+@@ -1322,7 +1328,8 @@ asmlinkage long sys_setresgid(gid_t rgid
+ 
+ 	key_fsgid_changed(current);
+ 	proc_id_connector(current, PROC_EVENT_GID);
+-	return 0;
++	return security_task_post_setgid(old_rgid, old_egid,
++	       old_sgid, LSM_SETID_RES);
+ }
+ 
+ asmlinkage long sys_getresgid(gid_t __user *rgid, gid_t __user *egid, gid_t __user *sgid)
+@@ -1391,6 +1398,8 @@ asmlinkage long sys_setfsgid(gid_t gid)
+ 		key_fsgid_changed(current);
+ 		proc_id_connector(current, PROC_EVENT_GID);
+ 	}
++	security_task_post_setgid(old_fsgid, (gid_t)-1,
++	                          (gid_t)-1, LSM_SETID_FS);
+ 	return old_fsgid;
+ }
+ 
 Index: linux-2.6.23.1/security/dummy.c
 ===================================================================
 --- linux-2.6.23.1.orig/security/dummy.c
 +++ linux-2.6.23.1/security/dummy.c
-@@ -693,6 +693,11 @@ static int dummy_netlink_recv (struct sk
+@@ -698,6 +698,12 @@ static int dummy_cap_extra(struct task_s
  	return 0;
  }
  
-+static int dummy_cap_extra(struct task_struct *task, unsigned int cap)
++static int dummy_task_post_setgid(gid_t real, gid_t effective,
++    gid_t saved, unsigned int type)
 +{
 +	return 0;
 +}
@@ -149,10 +157,10 @@ Index: linux-2.6.23.1/security/dummy.c
  #ifdef CONFIG_SECURITY_NETWORK
  static int dummy_unix_stream_connect (struct socket *sock,
  				      struct socket *other,
-@@ -1132,5 +1137,6 @@ void security_fixup_ops (struct security
- 	set_to_dummy_if_null(ops, key_permission);
+@@ -1138,5 +1144,6 @@ void security_fixup_ops (struct security
  #endif	/* CONFIG_KEYS */
  
-+	set_to_dummy_if_null(ops, cap_extra);
+ 	set_to_dummy_if_null(ops, cap_extra);
++	set_to_dummy_if_null(ops, task_post_setgid);
  }
  
