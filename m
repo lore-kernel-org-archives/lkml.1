@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbXJTFxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933110AbXJTFyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126AbXJTFxA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 01:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXJTFwx
+	id S933110AbXJTFyb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 01:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbXJTFyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 01:52:53 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:43768 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752575AbXJTFwx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 01:52:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=A3a5KfvRTYwNYEbPldOy2/2oSZR10jJiepjKLI/8VCdr93Nt9rG+y1rmYRza8MouemzxRhw6+EjIPc2Cg05dAitrYlhXx8Wul27zjV3axS7OzTIYVTeLeq+CgMe8yZOnhVN+RhzcXrHcGe9yDQvemCAd2Ef8WUZYYhKtj3Zefr0=  ;
-X-YMail-OSG: 9tL5U_kVM1m3yFDsVP4PlFDcuOK_doObXsCFREZbT6JrBbkoLPBJU1T1Yblmhg02YhKSnfA_iQ--
-Date: Fri, 19 Oct 2007 22:52:50 -0700
-From: David Brownell <david-b@pacbell.net>
-To: sam@ravnborg.org
-Subject: Re: [patch 2.6.23-git] toplevel Makefile/depmod bugfix
-Cc: linux-kernel@vger.kernel.org
-References: <20071020044224.DD48423A6FC@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20071020053642.GA4535@uranus.ravnborg.org>
-In-Reply-To: <20071020053642.GA4535@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Oct 2007 01:54:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39089 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752676AbXJTFyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 01:54:22 -0400
+Date: Sat, 20 Oct 2007 01:54:04 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ian Kent <raven@themaw.net>,
+       Christoph Hellwig <hch@lst.de>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: 2.6.23-mm1 - autofs broken
+Message-ID: <20071020015404.437b6937@bree.surriel.com>
+In-Reply-To: <20071019223900.edd04f65.akpm@linux-foundation.org>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<20071020011310.30abc16b@bree.surriel.com>
+	<20071019223900.edd04f65.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071020055251.1847823A75A@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > -	if [ -r System.map -a -x $(DEPMOD) -a "$(SUBARCH)" == "$(ARCH)" ]; then \
-> > +	if [ -r System.map -a -x $(DEPMOD) -a "$(SUBARCH)" = "$(ARCH)" ]; then \
->
-> Took a look at 'man bash' here.
-> bash --version
-> GNU bash, version 3.2.9(1)-release (x86_64-redhat-linux-gnu)
-> Copyright (C) 2005 Free Software Foundation, Inc.
->
-> Accoding to man bash "==" is used to test for equality and "=" is used for assignmnet.
+On Fri, 19 Oct 2007 22:39:00 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-"man test" shows that only "=" works ... that's for string equality,
-which is what's being tested there.  And "==" is undefined (error).
+> On Sat, 20 Oct 2007 01:13:10 -0400 Rik van Riel <riel@redhat.com>
+> wrote:
+> 
+> > On Thu, 11 Oct 2007 21:31:26 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > > 
+> > > - I've been largely avoiding applying anything since rc8-mm2 in an
+> > > attempt to stabilise things for the 2.6.23 merge.
+> > 
+> > Between rc8-mm2 and 2.6.23-mm1, autofs stopped working in the
+> > -mm kernel.
+> > 
+> > Instead of mounting my home directory, I get these messages in
+> > /var/log/messages:
+> > 
+> > Oct 20 00:38:52 kenny automount[2293]: cache_readlock: mapent cache
+> > rwlock lock failed
+> > Oct 20 00:38:52 kenny automount[2293]: unexpected pthreads error:
+> > 11 at 65 in cache.c
+> > 
+> > I am not sure if this is due to autofs changes or changes in some
+> > other code that was merged.  If you can think of any suspicious
+> > change that I should test, please let me know.
+> 
+> I don't think anything changed in autofs in that period.  I'd be
+> suspecting the r-o-bind-mounts patches, but they didn't change much
+> in that time either.
+> 
+> Does current mainline work OK?  If so, pretty much the only thing in
+> that area left unmerged is r-o-bind-mounts and hch's exportfs stuff.
 
-If "==" were to kick in that would be for an arithmetic expression;
-but "[" is (modulo wierdness) "test" not "expr".
+Yes, 2.6.23 mainline works fine.
 
-
-> I assume the above is a dash syntax error (dash is default on ubuntu IIRC).
-
-My $SHELL is /bin/bash:
-
-$ bash --version
-GNU bash, version 3.2.13(1)-release (x86_64-pc-linux-gnu)
-Copyright (C) 2005 Free Software Foundation, Inc.
-$
-
-
-> Is it truly protable with "=" or do we need to be more clever?
-
-I don't know how you managed to get it to work wtih "==".
-String equality should be "=" in all /bin/sh versions.
-It's been that way since it was written in pseudo-Algol.
-
-- Dave
-
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
