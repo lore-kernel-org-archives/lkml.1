@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbXJUBkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751483AbXJUBpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbXJUBkj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXJUBkb
+	id S1751483AbXJUBpv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXJUBpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:40:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:13386 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbXJUBka (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:40:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=YlTV0Wk9lNmskYVYGHgmqr/7GkkuVej+NHOHar+b9J8FGrEIJ4xZwA90iKqLZc8wXOYQtHpBDmoVTl7JtAjpm70t1Ir37F/7UjwpdzNQ0/Y5qvkxcg14MXkNLOv0ThSQpq/kSpQbWJaQ+LoSG03YtMXQniTEdGt1DwN0xSFF+Dk=
-Date: Sun, 21 Oct 2007 03:40:21 +0200
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Smackv8: Omit non-cipso labels in cipso_seq_start
-Message-ID: <20071021014021.GA3091@Ahmed>
-References: <47158CE4.30706@schaufler-ca.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47158CE4.30706@schaufler-ca.com>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Sat, 20 Oct 2007 21:45:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33668 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750708AbXJUBpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 21:45:42 -0400
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linas Vepstas <linas@austin.ibm.com>,
+       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
+       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
+       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
+In-Reply-To: <471911BE.2000405@garzik.org>
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+	 <20071019195749.GK29903@austin.ibm.com>  <471911BE.2000405@garzik.org>
+Content-Type: text/plain
+Date: Sun, 21 Oct 2007 08:03:26 +1000
+Message-Id: <1192917806.6745.23.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!,
 
-[Casey, sending patches in public to get an early review]
+On Fri, 2007-10-19 at 16:21 -0400, Jeff Garzik wrote:
+> Take a look at tg3.c net driver change 
+> 2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
+> 
+> However, it may turn out that removing the pci_intx() stuff as a
+> general 
+> rule is easier than quirking these devices, if enough of them turn
+> out 
+> to have this hardware bug.
 
-Omit non-cipso labels in cipso_seq_start().
+We'd have to count how many have this bug vs. how many will emit both
+intx and msi unless pci_intx is cleared, and then how many do that
+regardless of pci_intx :-)
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-stopping seq_show() if smk_cipso = NULL only fixes the bug 
-symptom. We'll issue a BUG() in that case cause it signals a
-serious misbehavior in the list entries.
+yuck
 
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 55ba2dc..b061cd0 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -297,14 +297,22 @@ void smk_cipso_doi(void)
- 
- /*
-  * Seq_file read operations for /smack/cipso
-+ *
-+ * Omit labels with no associated cipso values from being
-+ * displayed in seq_show()
-  */
- 
- static void *cipso_seq_start(struct seq_file *s, loff_t *pos)
- {
-+	struct smack_known *skp = smack_known;
-+
- 	if (*pos >= smack_cipso_count)
- 		return NULL;
- 
--	return smack_known;
-+	while (skp && !skp->smk_cipso)
-+		skp = skp->smk_next;
-+
-+	return skp;
- }
- 
- static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
-@@ -313,9 +321,6 @@ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
- 
- 	(*pos)++;
- 
--	/*
--	 * Omit labels with no associated cipso value
--	 */
- 	while (skp && !skp->smk_cipso)
- 		skp = skp->smk_next;
- 
-@@ -336,12 +341,11 @@ static int cipso_seq_show(struct seq_file *s, void *v)
- 	int i;
- 	unsigned char m;
- 
--	if (scp == NULL)
--		return 0;
-+	BUG_ON(!scp);
-+	cbp = scp->smk_catset;
- 
- 	seq_printf(s, "%s %3d", (char *)&skp->smk_known, scp->smk_level);
- 
--	cbp = scp->smk_catset;
- 	for (i = 0; i < SMK_LABELLEN; i++)
- 		for (m = 0x80; m != 0; m >>= 1) {
- 			if (m & cbp[i]) {
+Ben.
 
 
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
