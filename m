@@ -1,73 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765908AbXJTL6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762841AbXJTMOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765908AbXJTL6M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 07:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbXJTL56
+	id S1762841AbXJTMOz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 08:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXJTMOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 07:57:58 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:49161 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757379AbXJTL55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 07:57:57 -0400
-From: Nick Warne <nick@ukfsn.org>
-Reply-To: nick@ukfsn.org
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Kconfig bug
-Date: Sat, 20 Oct 2007 12:57:55 +0100
-User-Agent: KMail/1.9.7
+	Sat, 20 Oct 2007 08:14:45 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33291 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbXJTMOp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 08:14:45 -0400
+Date: Sat, 20 Oct 2007 14:14:42 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: hirofumi@mail.parknet.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vfat permissions
+Message-ID: <Pine.LNX.4.64.0710201413280.1997@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_D1eGHgukByqaSlN"
-Message-Id: <200710201257.55616.nick@ukfsn.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_D1eGHgukByqaSlN
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+[fs/fat/]: Refine chmod checks
 
-Hi all,
+Prohibit mode changes in non-quiet mode that cannot be stored reliably
+with the on-disk format.
 
-I noticed I had a module option being built that wasn't in menuconfig.
+Suppose a vfat filesystem is mounted with umask=0 and [not-quiet].
+Then all files will have mode 0777. Trying to change the owner will
+fail, because fat does not know about owners or groups. chmod 0770,
+on the other hand, will succeed, even though fat does not know about
+the permission triplet [user/group/other].
 
-It is missing description.  I also added a brief help message.
+So this patch changes fat's not-quiet behavior so that only UNIX
+modes are accepted that can be mapped lossless between the fat disk
+format and the local system. There is only one attribute, and that is
+the readonly attribute, which is mapped to the UNIX write permission
+bit(s). chmod 0555 is therefore valid (taking away the +w bits <=>
+setting the readonly attribute). Since chmod 0775 and chmod 0755 is
+an ambiguous case as to whether to set or clear the readonly bit,
+these modes are also denied.
 
-Signed off by:  Nick Warne <nick@ukfsn.org>
+In quiet mode, chmod and chown will continue to "succeed" as they did
+before, meaning that a subsequent stat() will temporarily return the
+new mode as long as the inode is not reread from disk, and chown will
+silently do nothing, not even return the new uid/gid in stat().
 
-Nick
--- 
-Free Software Foundation Associate Member 5508
+Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+Previously posted: http://lkml.org/lkml/2007/8/20/77
 
---Boundary-00=_D1eGHgukByqaSlN
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="scsi_wait.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="scsi_wait.patch"
+---
+ fs/fat/file.c |   47 ++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 44 insertions(+), 3 deletions(-)
 
---- linux-current/drivers/scsi/Kconfig_old	2007-10-20 12:44:50.000000000 +0100
-+++ linux-current/drivers/scsi/Kconfig	2007-10-20 12:57:13.000000000 +0100
-@@ -248,10 +248,17 @@
- 	  or async on the kernel's command line.
+Index: linux-2.6.22/fs/fat/file.c
+===================================================================
+--- linux-2.6.22.orig/fs/fat/file.c
++++ linux-2.6.22/fs/fat/file.c
+@@ -155,6 +155,42 @@ out:
+ 	return err;
+ }
  
- config SCSI_WAIT_SCAN
--	tristate
-+	tristate "Wait for SCSI scan completion"
- 	default m
- 	depends on SCSI
- 	depends on MODULES
-+	help
-+	  The SCSI subsystem can probe for devices while the rest of the
-+	  system continues booting, and even probe devices on different
-+	  busses in parallel, leading to a significant speed-up.
++static int check_mode(const struct msdos_sb_info *sbi, mode_t mode)
++{
++	mode_t req = mode & ~S_IFMT;
 +
-+	  You can load the scsi_wait_scan module to ensure that all scans
-+	  have completed.
++	/*
++	 * Of the r and x bits, all (subject to umask) must be present. Of the
++	 * w bits, either all (subject to umask) or none must be present.
++	 */
++
++	if (S_ISREG(mode)) {
++		req &= ~sbi->options.fs_fmask;
++
++		if ((req & (S_IRUGO | S_IXUGO)) !=
++		    ((S_IRUGO | S_IXUGO) & ~sbi->options.fs_fmask))
++			return -EPERM;
++
++		if ((req & S_IWUGO) != 0 &&
++		    (req & S_IWUGO) != (S_IWUGO & ~sbi->options.fs_fmask))
++			return -EPERM;
++	} else if (S_ISDIR(mode)) {
++		req &= ~sbi->options.fs_dmask;
++
++		if ((req & (S_IRUGO | S_IXUGO)) !=
++		    ((S_IRUGO | S_IXUGO) & ~sbi->options.fs_dmask))
++			return -EPERM;
++
++		if ((req & S_IWUGO) != 0 &&
++		    (req & S_IWUGO) != (S_IWUGO & ~sbi->options.fs_dmask))
++			return -EPERM;
++	} else {
++		return -EPERM;
++	}
++
++	return 0;
++}
++
+ int fat_notify_change(struct dentry *dentry, struct iattr *attr)
+ {
+ 	struct msdos_sb_info *sbi = MSDOS_SB(dentry->d_sb);
+@@ -186,9 +222,7 @@ int fat_notify_change(struct dentry *den
+ 	if (((attr->ia_valid & ATTR_UID) &&
+ 	     (attr->ia_uid != sbi->options.fs_uid)) ||
+ 	    ((attr->ia_valid & ATTR_GID) &&
+-	     (attr->ia_gid != sbi->options.fs_gid)) ||
+-	    ((attr->ia_valid & ATTR_MODE) &&
+-	     (attr->ia_mode & ~MSDOS_VALID_MODE)))
++	     (attr->ia_gid != sbi->options.fs_gid)))
+ 		error = -EPERM;
  
- menu "SCSI Transports"
- 	depends on SCSI
+ 	if (error) {
+@@ -196,6 +230,13 @@ int fat_notify_change(struct dentry *den
+ 			error = 0;
+ 		goto out;
+ 	}
++
++	if (attr->ia_valid & ATTR_MODE) {
++		error = check_mode(sbi, attr->ia_mode);
++		if (error != 0 && !sbi->options.quiet)
++			goto out;
++	}
++
+ 	error = inode_setattr(inode, attr);
+ 	if (error)
+ 		goto out;
 
---Boundary-00=_D1eGHgukByqaSlN--
