@@ -1,56 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbXJTAe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXJTAww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbXJTAe2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 20:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXJTAeU
+	id S1757527AbXJTAww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 20:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbXJTAwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 20:34:20 -0400
-Received: from web35709.mail.mud.yahoo.com ([66.163.179.163]:22201 "HELO
-	web35709.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750817AbXJTAeT (ORCPT
+	Fri, 19 Oct 2007 20:52:43 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31373 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbXJTAwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 20:34:19 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 20:34:19 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=6cluAqBIAe/8vUsDx13E2oAcsWvEeaMPJGjWiEMJ4yDk8HEMEpjURR7+6twQiv+0yPltcCFb9/wThaZaAe8Silct+Jn9q8SoYFPS/u8OelNK8iq1zO+gF+gI7mY5bBihS4MjdcL39O1gnzxY5T7FWawPCQ5a60HqnlhfQxxmZk0=;
-X-YMail-OSG: AUH02dEVM1lOrwlTDHK0XGPxvNiFq5jyWAhmhTsOu9sH3abje19ZeH7CkrjyN_2xaksJBBmY7vGOAJVr3UpiaVaOv3XUGkt5Myj2EXcHjwxtQ8Tygn0-
-Date: Fri, 19 Oct 2007 17:27:37 -0700 (PDT)
-From: Jim Brooks <jbrooks3d@yahoo.com>
-Subject: Re: how to use TLB to prevent Linux accessing a particular memory region
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Fri, 19 Oct 2007 20:52:43 -0400
+Date: Fri, 19 Oct 2007 17:50:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Avuton Olrich" <avuton@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysctl:  Don't compile sysctl_check when !CONFIG_SYSCTL
+Message-Id: <20071019175058.1f917007.randy.dunlap@oracle.com>
+In-Reply-To: <m1bqaueirm.fsf_-_@ebiederm.dsl.xmission.com>
+References: <3aa654a40710182127u529efe5flc01955f01b83b042@mail.gmail.com>
+	<20071019170111.94219a4e.randy.dunlap@oracle.com>
+	<m1bqaueirm.fsf_-_@ebiederm.dsl.xmission.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <754003.20445.qm@web35709.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Out of 32MB of DDR 8MB is reserved for use by DSP
-> processor. But the MIPS processor downloads firmware
-> into this reserved memory for the DSP.
->
-> Now, is it possible to use the TLB to prevent Linux
-> from accessing the reserved memory after the
-firmware
-> has been downloaded?
+On Fri, 19 Oct 2007 18:23:25 -0600 Eric W. Biederman wrote:
 
-Well, even if you did remap PTEs (TLBs are N/A),
-or claimed that special memory, that may be too late.
-The kernel might've already allocated
-and stomped over it.
+> Randy Dunlap <randy.dunlap@oracle.com> writes:
+> 
+> > On Thu, 18 Oct 2007 21:27:16 -0700 Avuton Olrich wrote:
+> >
+> >> Good Day,
+> >> 
+> >> My randconfig just caught an error on:
+> >> kernel/built-in.o: In function `sysctl_check_lookup':
+> >> sysctl_check.c:(.text+0x17db1): undefined reference to `sysctl_head_next'
+> >> sysctl_check.c:(.text+0x17dc7): undefined reference to `sysctl_head_finish'
+> >> 
+> >> Git bisect was unsuccessful due to too many unrelated errors trying to
+> >> track down the issue. I also couldn't track down the offending
+> >> function. Any idea of the issue?
+> >> 
+> >> Against this config: http://avuton.googlepages.com/sysctl-head-next.config
+> >> 
+> >> git master: 4fa4d23fa20de67df919030c1216295664866ad7
+> >
+> > Eric,
+> >
+> > Please have a look at this one.
+> >
+> > .config file link is above.
+> >
+> > # CONFIG_SYSCTL_SYSCALL is not set
+> > # CONFIG_PROC_SYSCTL is not set
+> >
+> 
+> Weird I thought I had written the makefile so this would be handled.
+> Oh well this should fix it.
+> 
+> Sorry about that.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  kernel/Makefile |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 05c3e6d..79f017e 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -9,8 +9,9 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+>  	    rcupdate.o extable.o params.o posix-timers.o \
+>  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+>  	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o \
+> -	    utsname.o sysctl_check.o notifier.o
+> +	    utsname.o notifier.o
+>  
+> +obj-$(CONFIG_SYSCTL) += sysctl_check.o
+>  obj-$(CONFIG_STACKTRACE) += stacktrace.o
+>  obj-y += time/
+>  obj-$(CONFIG_DEBUG_MUTEXES) += mutex-debug.o
+> -- 
 
-A reliable way is to redefine the kernel's "memory
-map"
-which takes effect during boot.
-Look for the memory map as a .h in arch/ (IIRC).
-
---
-Jim Brooks
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com> # and tested-by:
 
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+---
+~Randy
