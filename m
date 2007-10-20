@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbXJTCdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936463AbXJTCd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764821AbXJTCdk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 22:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbXJTCdb
+	id S936463AbXJTCd7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 22:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXJTCdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 22:33:31 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53980 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbXJTCda (ORCPT
+	Fri, 19 Oct 2007 22:33:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50001 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756978AbXJTCdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 22:33:30 -0400
-Date: Fri, 19 Oct 2007 22:33:05 -0400
-Message-Id: <200710200233.l9K2X5qx015844@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, bfields@fieldses.org,
-       nfs@lists.sourceforge.net, neilb@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: nfsv2 ref leak in 2.6.24? 
-In-reply-to: Your message of "Fri, 19 Oct 2007 17:52:32 EDT."
-             <1192830752.7466.32.camel@heimdal.trondhjem.org> 
-X-MailKey: Erez_Zadok
+	Fri, 19 Oct 2007 22:33:35 -0400
+Date: Fri, 19 Oct 2007 19:32:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: Trond Myklebust <Trond.Myklebust@netapp.com>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT] NFS client fixes for 2.6.23++ 
+In-Reply-To: <200710200219.l9K2JMI8015439@agora.fsl.cs.sunysb.edu>
+Message-ID: <alpine.LFD.0.999.0710191929340.3794@woody.linux-foundation.org>
+References: <200710200219.l9K2JMI8015439@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond, good news.  I was able to narrow down the problem to purely the
-client-side, probably dcache/readdir related, and I have a shell script that
-deterministically triggers the problem each time for me (this is a FC6 image
-under Vmware 6.0.1).  Here's a short shell script which reliably triggers
-the "lost files" problem -- I create a file via nfs2 on the client side, and
-sometimes it doesn't show up in readdir, but it is there if you stat it
-directly.
 
-BTW, since this is a client-side bug, I also tried your last set of posted
-client patches for Linus, but it didn't help.
 
-Happy hunting. :-)
+On Fri, 19 Oct 2007, Erez Zadok wrote:
+> 
+> Trond, with Linus's latest tree, you need to #include <linux/sched.h> in
+> fs/nfs/unlink.c, else I get:
+> 
+>   CC [M]  fs/nfs/unlink.o
+> fs/nfs/unlink.c: In function 'nfs_dec_sillycount':
+> fs/nfs/unlink.c:67: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in this function)
+...
 
-Erez.
+Hmm? Which architecture?
 
-##############################################################################
-#!/bin/sh
+That said, I do think that there is a distinct lack of proper includes in 
+that file. It seems to depend on getting much of the includes indirectly 
+from <linux/nfs_fs.h> and friends. And with different architectures having 
+different header files..
 
-dd if=/dev/zero of=/tmp/fs.$$.0 bs=1024k count=1 seek=100
-losetup /dev/loop0 /tmp/fs.$$.0
-mkfs -t ext2 -q /dev/loop0
-mkdir -p /n/export/b0
-mount -t ext2 /dev/loop0 /n/export/b0
-exportfs -o no_root_squash,rw localhost:/n/export/b0
-mkdir -p /n/client/b0
-mount -t nfs -o nfsvers=2 localhost:/n/export/b0 /n/client/b0
-
-count=0
-while true; do
-    cfile="/n/client/b0/F.$count"
-
-    if touch $cfile ; then
-	echo $cfile created
-    else
-	echo "touch $cfile failed"
-	exit 1
-    fi
-
-    if `ls -1 /n/client/b0 | egrep -q F.$count'$'` ; then
-	:
-    else
-	echo "$cfile doesn't exist (but it should)"
-	ls -l /n/client/b0
-	ls -l /n/export/b0
-	stat $cfile
-	exit 1
-    fi
-
-    let count=count+1
-done
-##############################################################################
+		Linus
