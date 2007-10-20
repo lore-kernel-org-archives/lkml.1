@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbXJTGOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765361AbXJTGb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765579AbXJTGOW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 02:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXJTGOO
+	id S1765361AbXJTGb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 02:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXJTGbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 02:14:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:32943 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752575AbXJTGON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 02:14:13 -0400
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <200710200806.41562.maximlevitsky@gmail.com>
-References: <1192670742.12879.5.camel@pasglop>
-	 <200710200736.22129.maximlevitsky@gmail.com>
-	 <1192859184.6745.8.camel@pasglop>
-	 <200710200806.41562.maximlevitsky@gmail.com>
-Content-Type: text/plain
-Date: Sat, 20 Oct 2007 16:13:31 +1000
-Message-Id: <1192860811.6745.11.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 20 Oct 2007 02:31:47 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34200 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753623AbXJTGbr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 02:31:47 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4719A0C4.3050301@s5r6.in-berlin.de>
+Date: Sat, 20 Oct 2007 08:31:32 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: VIA VT6307 OHCI version?
+References: <m3sl4ciz1h.fsf@maximus.localdomain>	<4714EF01.2060609@s5r6.in-berlin.de>	<m3d4vebylw.fsf@maximus.localdomain>	<471527E5.1050407@s5r6.in-berlin.de>	<m34pgpmszu.fsf@maximus.localdomain>	<47166C83.2050207@s5r6.in-berlin.de> <m3fy09ffp9.fsf@maximus.localdomain>
+In-Reply-To: <m3fy09ffp9.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Krzysztof Halasa wrote:
+> OTOH, it's no magic - they claim OHCI 1.1 and they do it. We don't
+> only know how to enable it with (only) software. I suspect all those
+> VT6306 could be "upgraded" as well.
 
-On Sat, 2007-10-20 at 08:06 +0200, Maxim Levitsky wrote:
-
-> 	/* Disable interrupts, DMA, and rest of the chip*/
-> 	saa_writel(SAA7134_IRQ1, 0);
-> 	saa_writel(SAA7134_IRQ2, 0);
-> 	saa_writel(SAA7134_MAIN_CTRL, 0);
-	
-> 	dev->insuspend = 1;
-> 	synchronize_irq(pci_dev->irq);
-> 
-> 	/* ACK pending interrupts just in case*/
-> 	saa_writel(SAA7134_IRQ_REPORT,saa_readl(SAA7134_IRQ_REPORT));
-> 
-> 	......
-> This should be bullet-proof.
-
-Hopefully :-)
-
-Cheers,
-Ben.
-
-
+What if we add a whitelisting in the driver which ignores the register
+contents which state OHCI 1.0 implementation level, and just treats
+these VIA chips as OHCI 1.1 implementations?
+-- 
+Stefan Richter
+-=====-=-=== =-=- =-=--
+http://arcgraph.de/sr/
