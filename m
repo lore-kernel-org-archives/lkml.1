@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXJUBwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbXJUBwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbXJUBwU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXJUBwI
+	id S1752469AbXJUBwg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXJUBwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:52:08 -0400
+	Sat, 20 Oct 2007 21:52:10 -0400
 Received: from sullivan.realtime.net ([205.238.132.226]:3759 "EHLO
 	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXJUBwH (ORCPT
+	with ESMTP id S1750851AbXJUBwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:52:07 -0400
-Date: Sat, 20 Oct 2007 14:48:47 -0500 (CDT)
-Message-Id: <200710201948.l9KJml5L008962@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
+	Sat, 20 Oct 2007 21:52:08 -0400
+Date: Sat, 20 Oct 2007 14:41:18 -0500 (CDT)
+From: "Milton D. Miller II" <miltonm@realtime.net>
+Message-Id: <200710201941.l9KJfIGL008482@sullivan.realtime.net>
 Subject: [PATCH] Fix sched_domain sysctl registration again
 To: Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -59,7 +59,6 @@ Fixes:
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-[resend with From set]
 against e8b8c977734193adedf2b0f607d6252c78e86394
 
 Before this patch on a 2-core 4-thread box compiled for SMT and NUMA,
