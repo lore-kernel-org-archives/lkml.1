@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbXJTRYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764121AbXJTRkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbXJTRYs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 13:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbXJTRYj
+	id S1764121AbXJTRkY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 13:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbXJTRkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 13:24:39 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:63499 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757332AbXJTRYi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 13:24:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=eZKid1RBVlPEs9jxIpSWTOL6mEsxtBxCOb4BpMdaQmzCmALiYpQkRxadimyfZNLWsAXxhZL1hR4dPMOC/jDONBxA7a7T9YEftNSk8+VFEiTQvZY2+bfwsbsK8AajOpgkDzbp53WxutgfFptXMrHCv6e55NMY4chdpKA0t6KTFwg=
-Message-ID: <471A39D2.1070303@gmail.com>
-Date: Sat, 20 Oct 2007 13:24:34 -0400
-From: emist <emistz@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sat, 20 Oct 2007 13:40:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:45971 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756564AbXJTRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 13:40:11 -0400
+Date: Sat, 20 Oct 2007 19:39:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git/cscope with x86 merge
+In-Reply-To: <20071020164752.GB6855@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.0.9999.0710201932470.22770@localhost.localdomain>
+References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com> <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org> <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com> <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org>
+ <20071020164752.GB6855@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Linux <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
-References: <200710201451.57138.elendil@planet.nl>
-In-Reply-To: <200710201451.57138.elendil@planet.nl>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> emist wrote:
->> The following patch fixes and issue in the s390 dcssblk driver. The
->> issue is caused when an unsuccessful attempt is made in order to change
->> a segment's type through the device attribute file "shared". This causes
->> the driver to remove the device in question, removing with it the device
->> attribute which is currently handling the call. The result is a hang on
->> the driver as it removes memory from under its feet.
->>
->> Not exactly sure if this explanation makes sense or its entirely
->> accurate. This is what I believe at this point from encountering and
->> fixing the error. Anyway here is the patch, hope it helps.
+On Sat, 20 Oct 2007, Sam Ravnborg wrote:
+> On Sat, Oct 20, 2007 at 08:56:18AM -0700, Linus Torvalds wrote:
+> > so it definitely works for me.
 > 
-> Hi,
+> But you do not see the rename arch/x86_64/kernel/{vmlinux.lds.S => vmlinux.lds.S}
+> And this is I thing the important step here.
 > 
-> If you don't get any reactions to your patch during the next few days, I 
-> suggest you resend it and then CC the linux-s390@vger.kernel.org list and 
-> possibly also the maintainer at linux390@de.ibm.com.
-> 
-> In general you should always try to CC the relevant list/people as listed in 
-> the MAINTAINERS file and not just the linux-kernel list, both for patches 
-> and when reporting problems.
-> 
-> Cheers,
-> Frans Pop
-> 
+> For vmlinux.lds.S we have two renames.
+> First the vmlinux.lds.S => vmlinux_64.lds.S
+> But this may be a copy instead of a rename thus preventing us
+> to see the old history of vmlinux.lds.S?
 
-Thanks Frans, I will do as you suggest.
+Yes, it's a copy. vmlinux.lds.S is one of the few source files, which
+needed a stub, which includes the 32/64 bit one to avoid a complete
+mess in tons of Kbuild/Makefiles.
 
-Have a good one,
-
-Igor H.
+     tglx
