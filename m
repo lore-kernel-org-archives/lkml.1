@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765525AbXJTRX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbXJTRYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765525AbXJTRX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 13:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbXJTRXu
+	id S932444AbXJTRYs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 13:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbXJTRYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 13:23:50 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:53303 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757143AbXJTRXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 13:23:49 -0400
-X-IronPort-AV: E=Sophos;i="4.21,304,1188802800"; 
-   d="scan'208";a="115462320"
-Subject: Re: [NFS] [GIT] NFS client fixes for 2.6.23++
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Olof Johansson <olof@lixom.net>
-Cc: Linus Torvalds <torvalds@osdl.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071020014149.GA19871@lixom.net>
-References: <1192828993.7466.18.camel@heimdal.trondhjem.org>
-	 <20071020014149.GA19871@lixom.net>
-Content-Type: text/plain
+	Sat, 20 Oct 2007 13:24:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:63499 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757332AbXJTRYi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 13:24:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=eZKid1RBVlPEs9jxIpSWTOL6mEsxtBxCOb4BpMdaQmzCmALiYpQkRxadimyfZNLWsAXxhZL1hR4dPMOC/jDONBxA7a7T9YEftNSk8+VFEiTQvZY2+bfwsbsK8AajOpgkDzbp53WxutgfFptXMrHCv6e55NMY4chdpKA0t6KTFwg=
+Message-ID: <471A39D2.1070303@gmail.com>
+Date: Sat, 20 Oct 2007 13:24:34 -0400
+From: emist <emistz@gmail.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Linux <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
+References: <200710201451.57138.elendil@planet.nl>
+In-Reply-To: <200710201451.57138.elendil@planet.nl>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sat, 20 Oct 2007 13:24:05 -0400
-Message-Id: <1192901045.7440.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-X-OriginalArrivalTime: 20 Oct 2007 17:23:48.0923 (UTC) FILETIME=[FA0E40B0:01C8133D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frans Pop wrote:
+> emist wrote:
+>> The following patch fixes and issue in the s390 dcssblk driver. The
+>> issue is caused when an unsuccessful attempt is made in order to change
+>> a segment's type through the device attribute file "shared". This causes
+>> the driver to remove the device in question, removing with it the device
+>> attribute which is currently handling the call. The result is a hang on
+>> the driver as it removes memory from under its feet.
+>>
+>> Not exactly sure if this explanation makes sense or its entirely
+>> accurate. This is what I believe at this point from encountering and
+>> fixing the error. Anyway here is the patch, hope it helps.
+> 
+> Hi,
+> 
+> If you don't get any reactions to your patch during the next few days, I 
+> suggest you resend it and then CC the linux-s390@vger.kernel.org list and 
+> possibly also the maintainer at linux390@de.ibm.com.
+> 
+> In general you should always try to CC the relevant list/people as listed in 
+> the MAINTAINERS file and not just the linux-kernel list, both for patches 
+> and when reporting problems.
+> 
+> Cheers,
+> Frans Pop
+> 
 
-On Fri, 2007-10-19 at 20:41 -0500, Olof Johansson wrote:
-> nfs: Fix build break with CONFIG_NFS_V4=n
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+Thanks Frans, I will do as you suggest.
 
-Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Have a good one,
 
-....with apologies.
-
-> ---
-> 
-> 
-> On Fri, Oct 19, 2007 at 05:23:13PM -0400, Trond Myklebust wrote:
-> > Hi Linus,
-> > 
-> > Please pull from the repository at
-> > 
-> >    git pull git://git.linux-nfs.org/pub/linux/nfs-2.6.git
-> > 
-> > This will update the following files through the appended changesets.
-> > 
-> [...]
-> > @@ -522,8 +522,12 @@ void put_nfs_open_context(struct nfs_open_context *ctx)
-> >  		return;
-> >  	list_del(&ctx->list);
-> >  	spin_unlock(&inode->i_lock);
-> > -	if (ctx->state != NULL)
-> > -		nfs4_close_state(&ctx->path, ctx->state, ctx->mode);
-> > +	if (ctx->state != NULL) {
-> > +		if (wait)
-> > +			nfs4_close_sync(&ctx->path, ctx->state, ctx->mode);
-> > +		else
-> > +			nfs4_close_state(&ctx->path, ctx->state, ctx->mode);
-> > +	}
-> >  	if (ctx->cred != NULL)
-> >  		put_rpccred(ctx->cred);
-> >  	dput(ctx->path.dentry);
-> 
-> This gives me build errors on most PPC defconfigs, which don't enable NFSv4.
-> 
-> This seems sufficient to fix it.
-> 
-> 
-> diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
-> index a4e3b96..b35069a 100644
-> --- a/fs/nfs/nfs4_fs.h
-> +++ b/fs/nfs/nfs4_fs.h
-> @@ -236,6 +236,7 @@ extern struct svc_version nfs4_callback_version1;
->  #else
->  
->  #define nfs4_close_state(a, b, c) do { } while (0)
-> +#define nfs4_close_sync(a, b, c) do { } while (0)
->  
->  #endif /* CONFIG_NFS_V4 */
->  #endif /* __LINUX_FS_NFS_NFS4_FS.H */
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >> http://get.splunk.com/
-> _______________________________________________
-> NFS maillist  -  NFS@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/nfs
+Igor H.
