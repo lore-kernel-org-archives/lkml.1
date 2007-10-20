@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbXJTSg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765985AbXJTSlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764654AbXJTSg5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 14:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXJTSgu
+	id S1765985AbXJTSlK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 14:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757772AbXJTSk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 14:36:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57078 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755968AbXJTSgt (ORCPT
+	Sat, 20 Oct 2007 14:40:57 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60343 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757306AbXJTSk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 14:36:49 -0400
-Message-ID: <471A49AA.6090407@zytor.com>
-Date: Sat, 20 Oct 2007 11:32:10 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sat, 20 Oct 2007 14:40:56 -0400
+Date: Sat, 20 Oct 2007 20:41:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       rt2400-devel@lists.sourceforge.net, mwallis@serialmonkey.com
+Subject: rt73usb: support for wireless in Kohjinsha subnotebook
+Message-ID: <20071020184100.GA11640@elf.ucw.cz>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
-References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org> <46F04D53.6040903@zytor.com> <46F050E8.5020206@goop.org> <20071020164721.GA6614@Krystal>
-In-Reply-To: <20071020164721.GA6614@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> 
-> I have tried generating asm-to-"register" c variables for char, short
-> and int on i386 and I do not see this happening. The char opcode is
-> always 1 byte, short 2 bytes and int 1 byte. Result:
-> 
+Hi!
 
-The comment was referring to x86-64, but I incorrectly remembered that 
-applying to "movq $imm,%reg" as opposed to loading from an absolute 
-address.  gas actually has a special opcode (movabs) for the 64-bit 
-version of the latter variant, which is only available with %rax and its 
-subregisters.
+Kohjinsha subnotebook seems to contain wifi with USB IDs 0x18e8,
+0x6206... I hope that to be compatible with
+net/wireless/rt2x00/rt73usb.c .
 
-Nevermind, in other words.  It's still true, though, that the immediate 
-will always be the last thing in the instruction -- that's a fixture of 
-the instruction format.
+[Sidenote: could we add some real author info into rt73usb.c?]
 
-> gcc version 4.1.3 20070812 (prerelease) (Debian 4.1.2-15)
-> 
->    8:   b3 02                   mov    $0x2,%bl
->    a:   b1 03                   mov    $0x3,%cl
->    c:   b2 04                   mov    $0x4,%dl
->    e:   b0 05                   mov    $0x5,%al
-> 
->   4f:   66 be 06 00             mov    $0x6,%si
->   53:   66 bb 07 00             mov    $0x7,%bx
->   57:   66 b9 08 00             mov    $0x8,%cx
->   5b:   66 ba 09 00             mov    $0x9,%dx
->   5f:   66 b8 0a 00             mov    $0xa,%ax
-> 
->   9f:   bb 0b 00 00 00          mov    $0xb,%ebx
->   a4:   be 0c 00 00 00          mov    $0xc,%esi
->   a9:   b9 0d 00 00 00          mov    $0xd,%ecx
->   ae:   ba 0e 00 00 00          mov    $0xe,%edx
->   b3:   b8 0f 00 00 00          mov    $0xf,%eax
-> 
-> 
-> I notice that having a "=r" inline assembly that outputs to the first
-> "register char" variable seems to be problematic. It fails with the
-> following error:
-> 
-> /tmp/ccy35Hq1.s: Assembler messages:
-> /tmp/ccy35Hq1.s:15: Error: bad register name `%sil'
+I did this on 2.6.23-rc8-mm1 kernel (The RT hack may not be
+neccessary), but then it oopses somewhere in softmac layer. I'll try
+to play with it some more.
 
-'r' is wrong for 8-bit variables on i386.  It needs to be 'q'.
+If you have any ideas, let me know.
+								Pavel
 
+--- clean-mm/drivers/net/wireless/rt2x00/rt73usb.c	2007-10-09 09:32:08.000000000 +0200
++++ linux-mm/drivers/net/wireless/rt2x00/rt73usb.c	2007-10-19 22:19:45.000000000 +0200
+@@ -1580,7 +1580,6 @@
+ 
+ 	if (!rt2x00_rev(&rt2x00dev->chip, 0x25730)) {
+ 		ERROR(rt2x00dev, "Invalid RT chipset detected.\n");
+-		return -ENODEV;
+ 	}
+ 
+ 	if (!rt2x00_rf(&rt2x00dev->chip, RF5226) &&
+@@ -1588,7 +1587,6 @@
+ 	    !rt2x00_rf(&rt2x00dev->chip, RF5225) &&
+ 	    !rt2x00_rf(&rt2x00dev->chip, RF2527)) {
+ 		ERROR(rt2x00dev, "Invalid RF chipset detected.\n");
+-		return -ENODEV;
+ 	}
+ 
+ 	/*
+@@ -2080,6 +2078,7 @@
+ 	{ USB_DEVICE(0x148f, 0x2671), USB_DEVICE_DATA(&rt73usb_ops) },
+ 	/* Qcom */
+ 	{ USB_DEVICE(0x18e8, 0x6196), USB_DEVICE_DATA(&rt73usb_ops) },
++	{ USB_DEVICE(0x18e8, 0x6206), USB_DEVICE_DATA(&rt73usb_ops) },
+ 	{ USB_DEVICE(0x18e8, 0x6229), USB_DEVICE_DATA(&rt73usb_ops) },
+ 	{ USB_DEVICE(0x18e8, 0x6238), USB_DEVICE_DATA(&rt73usb_ops) },
+ 	/* Senao */
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
