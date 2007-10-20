@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXJTCZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935280AbXJTC0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbXJTCZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 22:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbXJTCZT
+	id S935280AbXJTC0A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 22:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbXJTCZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 22:25:19 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53652 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbXJTCZS (ORCPT
+	Fri, 19 Oct 2007 22:25:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37629 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751642AbXJTCZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 22:25:18 -0400
-Date: Fri, 19 Oct 2007 22:19:22 -0400
-Message-Id: <200710200219.l9K2JMI8015439@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT] NFS client fixes for 2.6.23++ 
-In-reply-to: Your message of "Fri, 19 Oct 2007 17:23:13 EDT."
-             <1192828993.7466.18.camel@heimdal.trondhjem.org> 
-X-MailKey: Erez_Zadok
+	Fri, 19 Oct 2007 22:25:47 -0400
+Date: Fri, 19 Oct 2007 19:25:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: benh@kernel.crashing.org, akpm <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
+Message-ID: <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
+References: <1192670742.12879.5.camel@pasglop>
+ <200710200402.43106.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1192828993.7466.18.camel@heimdal.trondhjem.org>, Trond Myklebust writes:
-> Hi Linus,
-> 
-> Please pull from the repository at
-> 
->    git pull git://git.linux-nfs.org/pub/linux/nfs-2.6.git
-> 
-> This will update the following files through the appended changesets.
-> 
->   Cheers,
->     Trond
 
-Trond, with Linus's latest tree, you need to #include <linux/sched.h> in
-fs/nfs/unlink.c, else I get:
 
-  CC [M]  fs/nfs/unlink.o
-fs/nfs/unlink.c: In function 'nfs_dec_sillycount':
-fs/nfs/unlink.c:67: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in
-this function)
-fs/nfs/unlink.c:67: error: (Each undeclared identifier is reported only once
-fs/nfs/unlink.c:67: error: for each function it appears in.)
-fs/nfs/unlink.c:67: error: 'TASK_INTERRUPTIBLE' undeclared (first use in
-this function)
-fs/nfs/unlink.c: In function 'nfs_block_sillyrename':
-fs/nfs/unlink.c:196: error: 'TASK_UNINTERRUPTIBLE' undeclared (first use in
-this function)
-fs/nfs/unlink.c:196: error: implicit declaration of function 'schedule'
-make[2]: *** [fs/nfs/unlink.o] Error 1
-make[1]: *** [fs/nfs] Error 2
-make: *** [fs] Error 2
+On Sat, 20 Oct 2007, Maxim Levitsky wrote:
+> 
+> and the interrupt handler:
+> 
+> 	smp_rmb();
+> 	if (dev->insuspend)
+> 		goto out;
 
-Cheers,
-Erez.
+Something like that can work, yes. However, you need to make sure that:
+
+ - even when you ignore the interrupt (because the driver doesn't care, 
+   it's suspending), you need to make sure the hardware gets shut up by 
+   reading (or writing) the proper interrupt status register.
+
+   Otherwise, with a level interrupt, the interrupt will continue to be 
+   held active ("screaming") and the CPU will get interrupted over and 
+   over again, until the irq subsystem will just turn the irq off 
+   entirely.
+
+ - when you resume, make sure that you get the engine going again, with 
+   the understanding that some interrupts may have gotten ignored.
+
+Also, in general, these kinds of things shouldn't always even be 
+neicessary. If you use the suspend_late()/resume_early() hooks, those will 
+be called with interrupts off, and while they can be harder to debug (and 
+may be worth avoiding for non-critical drivers), they do allow for simpler 
+models partly exactly because they don't need to worry about interrupts 
+etc.
+
+		Linus
