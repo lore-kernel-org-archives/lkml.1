@@ -1,73 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbXJTTOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760490AbXJTTPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764147AbXJTTOV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 15:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXJTTOD
+	id S1760490AbXJTTPf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 15:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbXJTTP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 15:14:03 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40622 "EHLO pasmtpB.tele.dk"
+	Sat, 20 Oct 2007 15:15:27 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40835 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754532AbXJTTOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 15:14:01 -0400
-Date: Sat, 20 Oct 2007 21:15:34 +0200
+	id S1755549AbXJTTP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 15:15:26 -0400
+Date: Sat, 20 Oct 2007 21:17:00 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: git/cscope with x86 merge
-Message-ID: <20071020191534.GA8774@uranus.ravnborg.org>
-References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com> <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org> <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com> <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org> <20071020164752.GB6855@uranus.ravnborg.org> <alpine.LFD.0.999.0710201058300.3794@woody.linux-foundation.org> <alpine.LFD.0.999.0710201140550.3794@woody.linux-foundation.org>
+To: Henrik Carlqvist <hc1@poolhem.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+Message-ID: <20071020191700.GB8774@uranus.ravnborg.org>
+References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710201140550.3794@woody.linux-foundation.org>
+In-Reply-To: <20071020144238.4f258c8c.hc1@poolhem.se>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 20, 2007 at 11:49:51AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 20 Oct 2007, Linus Torvalds wrote:
-> > 
-> > I could perhaps look at making "git log --follow" also break up files that 
-> > got totally rewritten (git already has a notion of "-B" to do that), but 
-> > no, we don't do it right now. 
-> 
-> Ok, if you guys have a current git source, and want to try something out, 
-> this fairly small patch does this.
+On Sat, Oct 20, 2007 at 02:42:38PM +0200, Henrik Carlqvist wrote:
+> I think there is a need for Kconfig to specify that a functionality could
+> be built as a module or not built at all.
 
-I pulled next branch of git and applied your patch.
+I assume
+	depends on MODULES
 
-When running
- 	git log --follow -B arch/x86/kernel/vmlinux_64.lds.S
-
-I got no output at all (in a newly pulled linux kernel dir).
-When I ran
- 	git log arch/x86/kernel/vmlinux_64.lds.S
-I got:
-
-commit 250c22777fe1ccd7ac588579a6c16db4c0161cc5
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Thu Oct 11 11:17:24 2007 +0200
-
-    x86_64: move kernel
-    
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-With -B alone I got same output.
-When I add --follow I get no output.
-
-I could not get back to my previous git binary - I replaced it
-with the new one.
-
-cat ~/.gitconfig
-
-[diff]
-	renamelimit = 0
-
+should do the trick.
 
 	Sam
