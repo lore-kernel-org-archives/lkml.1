@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764173AbXJTFpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXJTFqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764173AbXJTFpG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 01:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbXJTFou
+	id S1765325AbXJTFqo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 01:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXJTFqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 01:44:50 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:37425 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbXJTFot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 01:44:49 -0400
-X-IronPort-AV: E=Sophos;i="4.21,302,1188802800"; 
-   d="scan'208";a="537724439"
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2.6.23-git] toplevel Makefile/depmod bugfix
-X-Message-Flag: Warning: May contain useful information
-References: <20071020044224.DD48423A6FC@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20071020053642.GA4535@uranus.ravnborg.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 19 Oct 2007 22:44:46 -0700
-In-Reply-To: <20071020053642.GA4535@uranus.ravnborg.org> (Sam Ravnborg's message of "Sat, 20 Oct 2007 07:36:42 +0200")
-Message-ID: <ada6412bar5.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Oct 2007 05:44:46.0454 (UTC) FILETIME=[52656160:01C812DC]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Sat, 20 Oct 2007 01:46:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49798 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754636AbXJTFqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 01:46:36 -0400
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <200710200736.22129.maximlevitsky@gmail.com>
+References: <1192670742.12879.5.camel@pasglop>
+	 <200710200624.58261.maximlevitsky@gmail.com>
+	 <1192856675.6745.5.camel@pasglop>
+	 <200710200736.22129.maximlevitsky@gmail.com>
+Content-Type: text/plain
+Date: Sat, 20 Oct 2007 15:46:24 +1000
+Message-Id: <1192859184.6745.8.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Accoding to man bash "==" is used to test for equality and "=" is used for assignmnet.
- > I assume the above is a dash syntax error (dash is default on ubuntu IIRC).
 
-My bash man page says the following under "CONDITIONAL EXPRESSIONS":
 
-       string1 == string2
-              True if the strings are equal.  = may be used in place
-              of == for strict POSIX compliance.
+> I probably need to add this synchronize_irq() logic in dmfe.c too, but I probably do it later,
+> I think I am overestimating this race, since most drivers don't do dev->insuspend checks in IRQ handler.
+> Maybe even just use free_irq() after all....
 
-This is bash 3.1 as packaged by Debian.
+Most drivers are probably underestimating the race :-)
 
-So I think "=" is the correct thing to use for compatibility with dash
-or other non-bash shells, since as far as I know, there are no
-situations where a comparison with "=" will fail but "==" will succed.
-(ie "=" is strictly more compatible).
+free_irq() would work provided that you did the masking on chip before
+(and unmask only after request_irq on the way back in). But it's a bit
+like using a 10 tons truck to crush an ant... 
 
- - R.
+Ben.
+
+
