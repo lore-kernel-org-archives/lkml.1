@@ -1,109 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764089AbXJTPv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbXJTP5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764089AbXJTPv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 11:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbXJTPvt
+	id S1764372AbXJTP5l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 11:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbXJTP5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 11:51:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:55391 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756001AbXJTPvs (ORCPT
+	Sat, 20 Oct 2007 11:57:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54394 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755764AbXJTP5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 11:51:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: [PATCH] compat_ioctl: introduce generic_compat_ioctl helper
-Date: Sat, 20 Oct 2007 17:50:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Philip Langdale <philipl@overt.org>, Jiri Kosina <jkosina@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <47100864.2090208@overt.org> <20071013000221.GC8181@ftp.linux.org.uk>
-In-Reply-To: <20071013000221.GC8181@ftp.linux.org.uk>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 20 Oct 2007 11:57:32 -0400
+Date: Sat, 20 Oct 2007 08:56:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git/cscope with x86 merge
+In-Reply-To: <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org>
+References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com> 
+ <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org>
+ <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710201750.58521.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+7X5Kd0W2OrslLzWoYpjw+Gh3EM5UJCmfTgWZ
- e/uGYZ28EydI3iAOFKaY0k18wRul2MlXJtVJsq0GwyTvZL9rqi
- NgnFoAm5GvRmQ+0P0oHsw==
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many drivers use only compatible ioctl numbers. In order to
-avoid having to write a special compat_ioctl handler for each
-of them or listing every ioctl number in fs/compat_ioctl.c,
-let's introduce a generic handler that simply calls the
-driver specific f_op->unlocked_ioctl() or f_op->ioctl() handler.
 
-Signed-off-by: Arnd Bergman <arnd@arndb.de>
----
-On Saturday 13 October 2007, Al Viro wrote:
-> Just how many instances of that sucker do we need?  It's nothing but
+
+On Sat, 20 Oct 2007, Yinghai Lu wrote:
 > 
->      struct inode *inode = file->f_path.dentry->d_inode;
->      return file->f_op->ioctl(inode, file, cmd, compat_ptr(arg));
+> git log -p --follow arch/x86/kernel/vmlinux_64.lds.S
+> 
+> can not trace to arch/x86_64/kernel/vmlinux.lds.S
 
-Is this what you had in mind? I've been meaning to do something like
-it for some time, but had forgotten about it.
+Hmm. I get:
 
-I guess we can kill a significant amount of COMPATIBLE_IOCTL
-lines in fs/compat_ioctl.c with this.
+	[torvalds@woody linux]$ git log --stat --follow arch/x86/kernel/vmlinux_64.lds.S
+	commit 250c22777fe1ccd7ac588579a6c16db4c0161cc5
+	Author: Thomas Gleixner <tglx@linutronix.de>
+	Date:   Thu Oct 11 11:17:24 2007 +0200
+	
+	    x86_64: move kernel
+	
+	    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+	
+	 arch/{x86_64 => x86}/kernel/vmlinux_64.lds.S |    0
+	 1 files changed, 0 insertions(+), 0 deletions(-)
+	
+	commit 13a9cd42466e12113859c4d7b41561e8bbcaf09d
+	Author: Thomas Gleixner <tglx@linutronix.de>
+	Date:   Thu Oct 11 11:14:21 2007 +0200
+	
+	    x86_64: prepare shared kernel/vmlinux.lds.S
+	
+	    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+	
+	 arch/x86_64/kernel/vmlinux_64.lds.S |  235 +++++++++++++++++++++++++++++++++++
+	 1 files changed, 235 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/fs/compat_ioctl.c
-===================================================================
---- linux-2.6.orig/fs/compat_ioctl.c
-+++ linux-2.6/fs/compat_ioctl.c
-@@ -1877,6 +1877,30 @@ lp_timeout_trans(unsigned int fd, unsign
- 	return sys_ioctl(fd, cmd, (unsigned long)tn);
- }
- 
-+/*
-+ * Helper function for device drivers that only have COMPATIBLE_IOCTL
-+ * numbers. This can be used as f_op->compat_ioctl without any #ifdef
-+ * and will simply call the native ioctl handler with the argument
-+ * pointer.
-+ * Don't use for drivers that interpret arg as an unsigned long instead
-+ * of a pointer.
-+ */
-+long generic_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	int ret = -ENOTTY;
-+	arg = (unsigned long)compat_ptr(arg);
-+
-+	if (file->f_op->unlocked_ioctl)
-+		ret = file->f_op->unlocked_ioctl(file, cmd, arg);
-+	else if (file->f_op->ioctl) {
-+		lock_kernel();
-+		ret = file->f_op->ioctl(file->f_dentry->d_inode, file, cmd, arg);
-+		unlock_kernel();
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(generic_compat_ioctl);
- 
- typedef int (*ioctl_trans_handler_t)(unsigned int, unsigned int,
- 					unsigned long, struct file *);
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -1807,6 +1807,12 @@ extern void do_generic_mapping_read(stru
- extern int generic_segment_checks(const struct iovec *iov,
- 		unsigned long *nr_segs, size_t *count, int access_flags);
- 
-+#ifdef CONFIG_COMPAT
-+extern long generic_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-+#else
-+#define generic_compat_ioctl (long (*)(struct file *, unsigned int, unsigned long))NULL
-+#endif
-+
- /* fs/splice.c */
- extern ssize_t generic_file_splice_read(struct file *, loff_t *,
- 		struct pipe_inode_info *, size_t, unsigned int);
+
+so it definitely works for me.
+
+But it might be the same old rename limit issue. Try doing
+
+	git config --global diff.renamelimit 0
+
+first,
+
+		Linus
