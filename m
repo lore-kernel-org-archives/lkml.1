@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763343AbXJTJa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbXJTJef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763343AbXJTJa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 05:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXJTJ3u
+	id S1762734AbXJTJef (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 05:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXJTJe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 05:29:50 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2144 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752707AbXJTJ3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 05:29:48 -0400
-Date: Thu, 18 Oct 2007 20:05:31 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression:  2.6.23-rc9 okay, 2.6.23.1 resume problems
-Message-ID: <20071018200531.GB6962@ucw.cz>
-References: <4712786B.3040009@rtr.ca>
+	Sat, 20 Oct 2007 05:34:27 -0400
+Received: from lazybastard.de ([212.112.238.170]:39910 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753760AbXJTJe0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 05:34:26 -0400
+Date: Sat, 20 Oct 2007 11:29:50 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [BLOCK2MTD] WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
+Message-ID: <20071020092950.GB32465@lazybastard.org>
+References: <20071019191433.GK26913@lazybastard.org> <200710192004.l9JK4Aju017839@agora.fsl.cs.sunysb.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4712786B.3040009@rtr.ca>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200710192004.l9JK4Aju017839@agora.fsl.cs.sunysb.edu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Since upgrading to 2.6.23.1 from 2.6.23-rc9, 
-> resume-from-RAM has been misbehaving here.
+On Fri, 19 October 2007 16:04:10 -0400, Erez Zadok wrote:
+> In message <20071019191433.GK26913@lazybastard.org>, =?utf-8?B?SsO2cm4=?= Engel writes:
+> > 
+> > Since when roughly?  2.6.20ish?  Before?
 > 
-> It takes much (+5-7 seconds) longer to resume 
-> *sometimes*, but not all/most of the time.
-> And sometimes I get get flashing keyboard LEDs and have 
-> to hold the power button
-> in for a full hard reset.
-> 
-> With 2.6.23-rc8/rc9, no such troubles.
-> 
-> Difficult to reproduce, other than perhaps once a day.
-> Anybody want to fess up with a likely candidate?
+> Yeah, I guess around that time.  If you want, I could go back and test each
+> of my backports and see if it has the lockdep message or not.
 
-Are there any .config differences between rc8 and .1?
+That's ok.  Just wanted to get a rough idea.
 
-Can you try disabling nohz?
+> > Side note: you don't need mtdblock:
+> > # cp jffs2-empty.img /tmp/foo
+> > # losetup /dev/loop0 /tmp/foo
+> > # modprobe block2mtd block2mtd=/dev/loop0,128ki
+> > # mount -t jffs2 mtd0 /n/lower/b0
+> > 
+> > It doesn't really hurt, 'tis just superfluous.
+> 
+> Neat.  Curious, but where does "mtd0" come from then?  It's not in my /dev
+> (which uses devfs on an FC6 system).
+
+JFFS2 interprets that itself.  The only reason why JFFS2 needed a block
+device was to determine the minor number of the mtd underneith.  So code
+was added to find the correct mtd from "mtd0" or "mtd:some_name"
+instead.  I believe you can even disable CONFIG_BLOCK now.
+
+And the code itself was moved to drivers/mtd/mtdsuper.c fairly recently.
+
+Jörn
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Joern's library part 2:
+http://www.art.net/~hopkins/Don/unix-haters/tirix/embarrassing-memo.html
