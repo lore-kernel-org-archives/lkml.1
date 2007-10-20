@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936631AbXJTABg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966878AbXJTACM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936631AbXJTABg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 20:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765037AbXJTAB1
+	id S966878AbXJTACM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 20:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765037AbXJTABz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 20:01:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34314
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757494AbXJTAB1 (ORCPT
+	Fri, 19 Oct 2007 20:01:55 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40925 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758208AbXJTABy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 20:01:27 -0400
-Date: Fri, 19 Oct 2007 17:01:40 -0700 (PDT)
-Message-Id: <20071019.170140.45897518.davem@davemloft.net>
-To: cebbert@redhat.com
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23] tasks stuck in running state?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47192D20.8090608@redhat.com>
-References: <47192763.9050004@redhat.com>
-	<47192999.6010607@garzik.org>
-	<47192D20.8090608@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 19 Oct 2007 20:01:54 -0400
+Date: Fri, 19 Oct 2007 17:01:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Avuton Olrich" <avuton@gmail.com>, ebiederm@xmission.com
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: In function sysctl_check_lookup: undef ref to sysctl_head_next
+Message-Id: <20071019170111.94219a4e.randy.dunlap@oracle.com>
+In-Reply-To: <3aa654a40710182127u529efe5flc01955f01b83b042@mail.gmail.com>
+References: <3aa654a40710182127u529efe5flc01955f01b83b042@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <cebbert@redhat.com>
-Date: Fri, 19 Oct 2007 18:18:08 -0400
+On Thu, 18 Oct 2007 21:27:16 -0700 Avuton Olrich wrote:
 
-> On 10/19/2007 06:03 PM, Jeff Garzik wrote:
-> >> [jgarzik@pretzel misc-2.6]$ strace -p8484
-> >> Process 8484 attached - interrupt to quit
-> > [sits there, chewing up CPU grepping a 47-line header file]
-> > 
+> Good Day,
 > 
-> And sysrq-p is pretty useless unless you can force the keyboard
-> interrupt and the spinning process onto the same CPU.
+> My randconfig just caught an error on:
+> kernel/built-in.o: In function `sysctl_check_lookup':
+> sysctl_check.c:(.text+0x17db1): undefined reference to `sysctl_head_next'
+> sysctl_check.c:(.text+0x17dc7): undefined reference to `sysctl_head_finish'
+> 
+> Git bisect was unsuccessful due to too many unrelated errors trying to
+> track down the issue. I also couldn't track down the offending
+> function. Any idea of the issue?
+> 
+> Against this config: http://avuton.googlepages.com/sysctl-head-next.config
+> 
+> git master: 4fa4d23fa20de67df919030c1216295664866ad7
 
-Yes, I find this a painful limitation too.
+Eric,
 
-Sparc64 used to dump the registers on all active cpus for show_regs()
-via a cross-call, and this was incredibly useful.  But I disabled that
-as soon as I started playing with Niagara because at 32 cpus and
-larger the output is just too voluminous to be useful.
+Please have a look at this one.
 
-What might be appropriate is just to get a one-line program counter
-dump on every cpu via some new sysrq keystroke.
+.config file link is above.
+
+# CONFIG_SYSCTL_SYSCALL is not set
+# CONFIG_PROC_SYSCTL is not set
+
+Thanks,
+---
+~Randy
