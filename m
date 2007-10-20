@@ -1,45 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764767AbXJTKvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764191AbXJTKyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764767AbXJTKvu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 06:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbXJTKvn
+	id S1764191AbXJTKyN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 06:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbXJTKx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 06:51:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:38670 "EHLO www.tglx.de"
+	Sat, 20 Oct 2007 06:53:59 -0400
+Received: from www.tglx.de ([62.245.132.106]:38713 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756964AbXJTKvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 06:51:43 -0400
-Date: Sat, 20 Oct 2007 12:50:03 +0200 (CEST)
+	id S1758149AbXJTKx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 06:53:58 -0400
+Date: Sat, 20 Oct 2007 12:53:52 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
-In-Reply-To: <47195763.1090803@ct.jp.nec.com>
-Message-ID: <alpine.LFD.0.9999.0710201249050.22770@localhost.localdomain>
-References: <47195763.1090803@ct.jp.nec.com>
+To: Chris Snook <csnook@redhat.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: unify a.out{,_32,_64}.h
+In-Reply-To: <20071020103701.GA2728@shell.boston.redhat.com>
+Message-ID: <alpine.LFD.0.9999.0710201252270.22770@localhost.localdomain>
+References: <20071020103701.GA2728@shell.boston.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Hiroshi Shimamoto wrote:
+On Sat, 20 Oct 2007, Chris Snook wrote:
 
-> Hi,
+> From: Chris Snook <csnook@redhat.com>
 > 
-> I made patches to unify crash_32/64.c.
-> There are three patches;
-> 1. add lapic_shutdown for x86_64
-> 2. add safe_smp_processor_id for x86_64
-> 3. unify crash_32/64.c
-> 
-> I'm not sure that it's good to split to these patches.
+> Unify x86 a.out_32.h and a.out_64.h
 
-It's fine. So the steps leading to unification are clear.
+The include/asm-x86/Kbuild fixup is missing. I fixed it up.
 
 Applied. Thanks,
 
 	 tglx
-
-
-	
