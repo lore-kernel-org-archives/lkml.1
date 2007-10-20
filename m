@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764611AbXJTLFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764765AbXJTLLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764611AbXJTLFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 07:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbXJTLFM
+	id S1764765AbXJTLLK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 07:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbXJTLKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 07:05:12 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48536 "EHLO
+	Sat, 20 Oct 2007 07:10:51 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35467 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbXJTLFK (ORCPT
+	with ESMTP id S1756453AbXJTLKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 07:05:10 -0400
-Date: Sat, 20 Oct 2007 13:05:09 +0200 (CEST)
+	Sat, 20 Oct 2007 07:10:50 -0400
+Date: Sat, 20 Oct 2007 13:10:48 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: LSM conversion to static interface
-In-Reply-To: <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com>
- <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
- <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+cc: Al Boldi <a1426z@gawab.com>, Bill Davidsen <davidsen@tmr.com>,
+       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFD] iptables: mangle table obsoletes filter table
+In-Reply-To: <26556.1192855654@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0710201310050.1997@fbirervta.pbzchgretzou.qr>
+References: <200710120031.42805.a1426z@gawab.com> <47168EA1.1080300@tmr.com>
+ <471699A0.3060303@tmr.com>            <200710200640.02012.a1426z@gawab.com>
+ <26556.1192855654@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Oct 19 2007 13:40, Linus Torvalds wrote:
->On Fri, 19 Oct 2007, Andreas Gruenbacher wrote:
->> 
->> Non-trivial modules (i.e., practically everything beyond capabilities) become 
->> effective only after loading policy, anyway. If you can load policy, you can 
->> as well first load a security module without making the system insecure.
+On Oct 20 2007 00:47, Valdis.Kletnieks@vt.edu wrote:
+>> Sure, the idea was to mark the filter table obsolete as to make people start 
+>> using the mangle table to do their filtering for new setups.  The filter 
+>> table would then still be available for legacy/special setups.  But this 
+>> would only be possible if we at least ported the REJECT target to mangle.
 >
->I'd like to note that I asked people who were actually affected, and had 
->examples of their real-world use to step forward and explain their use, 
->and that I explicitly mentioned that this is something we can easily 
->re-visit.
+>That's *half* the battle.  The other half is explaining why I should move
+>from a perfectly functional setup that uses the filter table.  What gains
+>do I get from doing so?  What isn't working that I don't know about? etc?
 >
+>In other words - why do I want to move from filter to mangle?
 
-I do have a pseudo LSM called "multiadm" at 
-http://freshmeat.net/p/multiadm/ , quoting:
+Packet processing time.
+Compare previous:
+	packet goes through mangle, then is dropped in filter
+Compare afterwards:
+	packet is already dropped in mangle
 
-	The MultiAdmin security framework kernel module provides a means 
-	to have multiple "root" users with unique UIDs. This bypasses 
-	collation order problems with NSCD, allows you to have files 
-	with unique owners, and allows you to track the quota usage for 
-	every "real" user. It also implements a "sub-admin", a partially 
-	restricted root user who has full read-only access to most 
-	subsystems, but write rights only to a limited subset, for 
-	example writing to files or killing processes only of certain 
-	users.
-
-The use case is so that profs (taking the role of sub-admins), can 
-operate on student's data/processes/etc. (quite often needed), but 
-without having the full root privileges.
-
-Policy is dead simple since it is based on UIDs. The UID ranges can be 
-set on module load time or during runtime (sysfs params). This LSM is 
-basically grants extra rights unlike most other LSMs[1], which is why 
-modprobe makes much more sense here. (It also does not have to do any 
-security labelling that would require it to be loaded at boot time 
-already.)
-
-Does that sound productive?
-
-
->The fact is, security people *are* insane. You just argue all the time, 
->instead fo doing anything productive. So please don't include me in the Cc 
->on your insane arguments - instead do something productive and I'm 
->interested.
-
-[1] SELinux: What I remember from coker.com.au's selinux test machine, 
-everyone had UID 0 and instead had powers revoked.
+=> less code to run through
