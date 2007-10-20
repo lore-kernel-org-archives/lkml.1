@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764547AbXJTFjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764173AbXJTFpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764547AbXJTFjj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 01:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXJTFjc
+	id S1764173AbXJTFpG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 01:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbXJTFou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 01:39:32 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45349 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752730AbXJTFjb (ORCPT
+	Sat, 20 Oct 2007 01:44:50 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:37425 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbXJTFot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 01:39:31 -0400
-Date: Fri, 19 Oct 2007 22:39:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Ian Kent <raven@themaw.net>,
-       Christoph Hellwig <hch@lst.de>, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: 2.6.23-mm1 - autofs broken
-Message-Id: <20071019223900.edd04f65.akpm@linux-foundation.org>
-In-Reply-To: <20071020011310.30abc16b@bree.surriel.com>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<20071020011310.30abc16b@bree.surriel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Oct 2007 01:44:49 -0400
+X-IronPort-AV: E=Sophos;i="4.21,302,1188802800"; 
+   d="scan'208";a="537724439"
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2.6.23-git] toplevel Makefile/depmod bugfix
+X-Message-Flag: Warning: May contain useful information
+References: <20071020044224.DD48423A6FC@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20071020053642.GA4535@uranus.ravnborg.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 19 Oct 2007 22:44:46 -0700
+In-Reply-To: <20071020053642.GA4535@uranus.ravnborg.org> (Sam Ravnborg's message of "Sat, 20 Oct 2007 07:36:42 +0200")
+Message-ID: <ada6412bar5.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Oct 2007 05:44:46.0454 (UTC) FILETIME=[52656160:01C812DC]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Oct 2007 01:13:10 -0400 Rik van Riel <riel@redhat.com> wrote:
+ > Accoding to man bash "==" is used to test for equality and "=" is used for assignmnet.
+ > I assume the above is a dash syntax error (dash is default on ubuntu IIRC).
 
-> On Thu, 11 Oct 2007 21:31:26 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
-> > 
-> > - I've been largely avoiding applying anything since rc8-mm2 in an
-> > attempt to stabilise things for the 2.6.23 merge.
-> 
-> Between rc8-mm2 and 2.6.23-mm1, autofs stopped working in the
-> -mm kernel.
-> 
-> Instead of mounting my home directory, I get these messages in
-> /var/log/messages:
-> 
-> Oct 20 00:38:52 kenny automount[2293]: cache_readlock: mapent cache
-> rwlock lock failed
-> Oct 20 00:38:52 kenny automount[2293]: unexpected pthreads error: 11 at
-> 65 in cache.c
-> 
-> I am not sure if this is due to autofs changes or changes in some other
-> code that was merged.  If you can think of any suspicious change that
-> I should test, please let me know.
+My bash man page says the following under "CONDITIONAL EXPRESSIONS":
 
-I don't think anything changed in autofs in that period.  I'd be suspecting
-the r-o-bind-mounts patches, but they didn't change much in that time
-either.
+       string1 == string2
+              True if the strings are equal.  = may be used in place
+              of == for strict POSIX compliance.
 
-Does current mainline work OK?  If so, pretty much the only thing in that
-area left unmerged is r-o-bind-mounts and hch's exportfs stuff.
+This is bash 3.1 as packaged by Debian.
 
+So I think "=" is the correct thing to use for compatibility with dash
+or other non-bash shells, since as far as I know, there are no
+situations where a comparison with "=" will fail but "==" will succed.
+(ie "=" is strictly more compatible).
+
+ - R.
