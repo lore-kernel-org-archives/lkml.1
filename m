@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbXJTFqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765114AbXJTFuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765325AbXJTFqo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 01:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXJTFqh
+	id S1765114AbXJTFuZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 01:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXJTFuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 01:46:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49798 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754636AbXJTFqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 01:46:36 -0400
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <200710200736.22129.maximlevitsky@gmail.com>
-References: <1192670742.12879.5.camel@pasglop>
-	 <200710200624.58261.maximlevitsky@gmail.com>
-	 <1192856675.6745.5.camel@pasglop>
-	 <200710200736.22129.maximlevitsky@gmail.com>
-Content-Type: text/plain
-Date: Sat, 20 Oct 2007 15:46:24 +1000
-Message-Id: <1192859184.6745.8.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 20 Oct 2007 01:50:14 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:15846 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbXJTFuM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 01:50:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZGaQnZuBM1BteOEzTDp37S4tdCmHeOYgfD/dnM24N8BE9v/fW9VDhLvwVphW8uqmLKL3ewECc9O7I6WFBZs4kxz3/qolq9jBkr3wtdQx/8jm/km8j6+XC4hCeHjHcoAATKCMDbzBvhqrCCDbbK6jSxICwiXJW4JJ/JtcA2vH5/c=
+Message-ID: <851fc09e0710192250k7c2d5269rf6bf1ec604a23603@mail.gmail.com>
+Date: Sat, 20 Oct 2007 13:50:10 +0800
+From: "huang ying" <huang.ying.caritas@gmail.com>
+To: "Phillip Susi" <psusi@cfl.rr.com>
+Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Pavel Machek" <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       "Kexec Mailing List" <kexec@lists.infradead.org>
+In-Reply-To: <47190B28.6070405@cfl.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1192068833.27482.13.camel@caritas-dev.intel.com>
+	 <47190B28.6070405@cfl.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/20/07, Phillip Susi <psusi@cfl.rr.com> wrote:
+> Huang, Ying wrote:
+> > The hibernation procedure with the patch set is as follow:
+> >
+> > 1. Boot a kernel A
+> >
+> > 2. Work under kernel A
+> >
+> > 3. Kexec another kernel B (crash dump enabled) in kernel A.
+> >
+> > 4. Save the memory image of kernel A through crash dump (such as "cp
+> >    /proc/vmcore ~"). Save the "jump back entry".
+>
+> Doesn't this also save the memory of kernel B?
 
+The memory area of kernel B is excluded from the elf header of
+/proc/vmcore. This is done in kexec-tools (/sbin/kexec) patches.
 
-> I probably need to add this synchronize_irq() logic in dmfe.c too, but I probably do it later,
-> I think I am overestimating this race, since most drivers don't do dev->insuspend checks in IRQ handler.
-> Maybe even just use free_irq() after all....
+> > 5. Shutdown or reboot
+> >
+> >
+> > The restore process with the patch set is as follow:
+> >
+> > 1. Boot a kernel C (crash dump enabled), the memory area used by
+> >    kernel C must be a subset of memory area used by kernel B.
+>
+> Why is a third kernel needed?  Why can't kernel B be used for this as
+> well?  In fact, if kernel A has been compiled to be relocatable and
+> crash dump enabled, why wouldn't it suffice for all 3 instances?
 
-Most drivers are probably underestimating the race :-)
+One kernel can be used for three situation. In fact, I use just one
+kernel for testing.
 
-free_irq() would work provided that you did the masking on chip before
-(and unmask only after request_irq on the way back in). But it's a bit
-like using a 10 tons truck to crush an ant... 
-
-Ben.
-
-
+Best Regards,
+Huang Ying
