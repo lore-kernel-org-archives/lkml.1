@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751483AbXJUBpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbXJUBs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751483AbXJUBpv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXJUBpo
+	id S1751439AbXJUBs1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXJUBsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:45:44 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33668 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbXJUBpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:45:42 -0400
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linas Vepstas <linas@austin.ibm.com>,
-       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
-       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
-       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
-In-Reply-To: <471911BE.2000405@garzik.org>
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-	 <20071019195749.GK29903@austin.ibm.com>  <471911BE.2000405@garzik.org>
-Content-Type: text/plain
-Date: Sun, 21 Oct 2007 08:03:26 +1000
-Message-Id: <1192917806.6745.23.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Oct 2007 21:48:20 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43304 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbXJUBsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 21:48:19 -0400
+Date: Sat, 20 Oct 2007 19:05:27 -0400
+Message-Id: <200710202305.l9KN5R0i008618@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org
+Subject: Re: what to call it after 2.6.23 but before 2.6.24-rc1? 
+In-reply-to: Your message of "Sat, 20 Oct 2007 15:26:45 PDT."
+             <alpine.LFD.0.999.0710201517530.10525@woody.linux-foundation.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In message <alpine.LFD.0.999.0710201517530.10525@woody.linux-foundation.org>, Linus Torvalds writes:
 
-On Fri, 2007-10-19 at 16:21 -0400, Jeff Garzik wrote:
-> Take a look at tg3.c net driver change 
-> 2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
+> On Sat, 20 Oct 2007, Erez Zadok wrote:
+[...]
+
+>  - if you are a git user, and got it that way, just use the git name, and 
+>    use "git describe" to get it.
 > 
-> However, it may turn out that removing the pci_intx() stuff as a
-> general 
-> rule is easier than quirking these devices, if enough of them turn
-> out 
-> to have this hardware bug.
+>    So my current head is called "v2.6.23-6562-g8add244" which tells you 
+>    three things:
+>      (a) it's based on 2.6.23
+>      (b) there's been 6562 commits since 2.6.23
+>      (c) the top-of-tree abbreviated commit is "8add244".
 
-We'd have to count how many have this bug vs. how many will emit both
-intx and msi unless pci_intx is cleared, and then how many do that
-regardless of pci_intx :-)
+Bingo.  git-describe is what I was looking for.  It's more accurate to use
+as a reference even after rcN come out.  My current cloned tree of yours
+sez:
 
-yuck
+	v2.6.23-6562-g8add244
 
-Ben.
+One more small git question: I keep a separate tree for unionfs, which I
+rebase often based on your tree.  But my tree sez:
 
+$ git-describe
+v2.6.21-rc1-22880-g3a1848d
 
+"v2.6.21-rc1"?  What am I missing (some tags I forgot to pull?)  Why isn't
+git-describe saying that I'm based on your latest tree?
+
+Thanks,
+Erez.
