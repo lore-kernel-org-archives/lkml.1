@@ -1,82 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbXJTPpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764089AbXJTPv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760725AbXJTPpL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 11:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbXJTPo7
+	id S1764089AbXJTPv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 11:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbXJTPvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 11:44:59 -0400
-Received: from tachyon.jukie.net ([205.150.199.214]:52817 "EHLO jukie.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755709AbXJTPo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 11:44:58 -0400
-Date: Sat, 20 Oct 2007 11:44:45 -0400
-From: Bart Trojanowski <bart@jukie.net>
-To: kvm-devel@lists.sourceforge.net
-Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.23.1 host freezes when running kvm
-Message-ID: <20071020154445.GA5254@jukie.net>
-References: <20071019202019.GW3962@jukie.net> <20071020000240.GX3962@jukie.net>
+	Sat, 20 Oct 2007 11:51:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:55391 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756001AbXJTPvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 11:51:48 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: [PATCH] compat_ioctl: introduce generic_compat_ioctl helper
+Date: Sat, 20 Oct 2007 17:50:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Philip Langdale <philipl@overt.org>, Jiri Kosina <jkosina@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <47100864.2090208@overt.org> <20071013000221.GC8181@ftp.linux.org.uk>
+In-Reply-To: <20071013000221.GC8181@ftp.linux.org.uk>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071020000240.GX3962@jukie.net>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200710201750.58521.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+7X5Kd0W2OrslLzWoYpjw+Gh3EM5UJCmfTgWZ
+ e/uGYZ28EydI3iAOFKaY0k18wRul2MlXJtVJsq0GwyTvZL9rqi
+ NgnFoAm5GvRmQ+0P0oHsw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bart Trojanowski <bart@jukie.net> [071019 20:03]:
-> * Bart Trojanowski <bart@jukie.net> [071019 17:00]:
-> <snip>
-> > 
-> > Once the system is booted, I attached using vnc, then I ssh in and ran
-> > 'svn update'... and the host machine froze.
-> > 
-> > The last messages I on my serial console are:
-> > 
-> > kvm: unhandled rdmsr: 0x417
-> > kvm: unhandled rdmsr: 0xc0000400
-> <snip>
-> > I noticed that linus merged a bunch of KVM changes last week.  I will
-> > try those out next.
+Many drivers use only compatible ioctl numbers. In order to
+avoid having to write a special compat_ioctl handler for each
+of them or listing every ioctl number in fs/compat_ioctl.c,
+let's introduce a generic handler that simply calls the
+driver specific f_op->unlocked_ioctl() or f_op->ioctl() handler.
+
+Signed-off-by: Arnd Bergman <arnd@arndb.de>
+---
+On Saturday 13 October 2007, Al Viro wrote:
+> Just how many instances of that sucker do we need?  It's nothing but
 > 
-> It looks like Linus' tree has the fix already.
+>      struct inode *inode = file->f_path.dentry->d_inode;
+>      return file->f_op->ioctl(inode, file, cmd, compat_ptr(arg));
 
-I spoke too soon.  The latest from Linus' tree also freezes... but it
-took overnight to get there.  There was no particular load on it.
+Is this what you had in mind? I've been meaning to do something like
+it for some time, but had forgotten about it.
 
-This system was previously running 2.6.22.y w/o problems with a similar
-kvm pattern.
+I guess we can kill a significant amount of COMPATIBLE_IOCTL
+lines in fs/compat_ioctl.c with this.
 
-This time it froze w/o showing any kvm rdmsr messages.  And while it
-froze sometime over night, I cannot be sure when.  Here is the SysRq's
-"showPc" output:
-
-SysRq : Show Regs
-CPU 2:
-Modules linked in: kvm_amd kvm rtc_cmos rtc_core rtc_lib
-cpufreq_userspace cpufreq_powersave cpufreq_conservative ipv6 bridge
-ext2 mbcache loop pcspkr button dm_mirror dm_snapshot dm_mod ide_generic
-ide_cd pata_acpi ata_generic serverworks generic ide_core
-Pid: 0, comm: swapper Not tainted 2.6.23-git-kvm-gc4ec2071 #1
-RIP: 0010:[<ffffffff8020b0db>]  [<ffffffff8020b0db>] default_idle+0x29/0x3d
-RSP: 0018:ffff810140a55f30  EFLAGS: 00000246
-RAX: 0000000000000000 RBX: ffffffff8066a040 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffffff805c3350
-RBP: ffffffff8066fa00 R08: ffff810140040560 R09: ffff8101006e7e70
-R10: ffff810143e0a900 R11: ffffffff8066fa00 R12: ffffffff8024bc8e
-R13: ffff810140a55ec8 R14: 000000000d6ed51a R15: ffffffff8066fa00
-FS:  00002aaea92f0bf0(0000) GS:ffff810140a1d300(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 00002add9e236140 CR3: 0000000143def000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-
-Call Trace:
- [<ffffffff8020b182>] cpu_idle+0x93/0xbb
-
-Are there things I should be looking for?
-
--Bart
-
--- 
-				WebSig: http://www.jukie.net/~bart/sig/
+Index: linux-2.6/fs/compat_ioctl.c
+===================================================================
+--- linux-2.6.orig/fs/compat_ioctl.c
++++ linux-2.6/fs/compat_ioctl.c
+@@ -1877,6 +1877,30 @@ lp_timeout_trans(unsigned int fd, unsign
+ 	return sys_ioctl(fd, cmd, (unsigned long)tn);
+ }
+ 
++/*
++ * Helper function for device drivers that only have COMPATIBLE_IOCTL
++ * numbers. This can be used as f_op->compat_ioctl without any #ifdef
++ * and will simply call the native ioctl handler with the argument
++ * pointer.
++ * Don't use for drivers that interpret arg as an unsigned long instead
++ * of a pointer.
++ */
++long generic_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	int ret = -ENOTTY;
++	arg = (unsigned long)compat_ptr(arg);
++
++	if (file->f_op->unlocked_ioctl)
++		ret = file->f_op->unlocked_ioctl(file, cmd, arg);
++	else if (file->f_op->ioctl) {
++		lock_kernel();
++		ret = file->f_op->ioctl(file->f_dentry->d_inode, file, cmd, arg);
++		unlock_kernel();
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(generic_compat_ioctl);
+ 
+ typedef int (*ioctl_trans_handler_t)(unsigned int, unsigned int,
+ 					unsigned long, struct file *);
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -1807,6 +1807,12 @@ extern void do_generic_mapping_read(stru
+ extern int generic_segment_checks(const struct iovec *iov,
+ 		unsigned long *nr_segs, size_t *count, int access_flags);
+ 
++#ifdef CONFIG_COMPAT
++extern long generic_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
++#else
++#define generic_compat_ioctl (long (*)(struct file *, unsigned int, unsigned long))NULL
++#endif
++
+ /* fs/splice.c */
+ extern ssize_t generic_file_splice_read(struct file *, loff_t *,
+ 		struct pipe_inode_info *, size_t, unsigned int);
