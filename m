@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765751AbXJTTFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbXJTTOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765751AbXJTTFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 15:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXJTTFE
+	id S1764147AbXJTTOV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 15:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXJTTOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 15:05:04 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51403 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758450AbXJTTFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 15:05:02 -0400
-Date: Sat, 20 Oct 2007 15:04:39 -0400
-Message-Id: <200710201904.l9KJ4d4Z019993@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, bfields@fieldses.org,
-       nfs@lists.sourceforge.net, neilb@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: nfsv2 ref leak in 2.6.24? 
-In-reply-to: Your message of "Sat, 20 Oct 2007 13:12:31 EDT."
-             <1192900351.7440.6.camel@heimdal.trondhjem.org> 
-X-MailKey: Erez_Zadok
+	Sat, 20 Oct 2007 15:14:03 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40622 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754532AbXJTTOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 15:14:01 -0400
+Date: Sat, 20 Oct 2007 21:15:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git/cscope with x86 merge
+Message-ID: <20071020191534.GA8774@uranus.ravnborg.org>
+References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com> <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org> <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com> <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org> <20071020164752.GB6855@uranus.ravnborg.org> <alpine.LFD.0.999.0710201058300.3794@woody.linux-foundation.org> <alpine.LFD.0.999.0710201140550.3794@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710201140550.3794@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1192900351.7440.6.camel@heimdal.trondhjem.org>, Trond Myklebust writes:
+On Sat, Oct 20, 2007 at 11:49:51AM -0700, Linus Torvalds wrote:
 > 
-> On Fri, 2007-10-19 at 22:33 -0400, Erez Zadok wrote:
-> > Trond, good news.  I was able to narrow down the problem to purely the
-> > client-side, probably dcache/readdir related, and I have a shell script that
-> > deterministically triggers the problem each time for me (this is a FC6 image
-> > under Vmware 6.0.1).  Here's a short shell script which reliably triggers
-> > the "lost files" problem -- I create a file via nfs2 on the client side, and
-> > sometimes it doesn't show up in readdir, but it is there if you stat it
-> > directly.
 > 
-> Ah... I got confused as to what you were measuring and where.
-
-Yeah, I wasn't sure myself until I narrowed it down to a small test case.
-
-> Looking at
-> nfs_proc_create(), there is indeed a missing call to
-> nfs_mark_for_revalidate(). The reason why you need such a call being the
-> usual one: NFSv2 doesn't provide post-op attributes for the directory.
+> On Sat, 20 Oct 2007, Linus Torvalds wrote:
+> > 
+> > I could perhaps look at making "git log --follow" also break up files that 
+> > got totally rewritten (git already has a notion of "-B" to do that), but 
+> > no, we don't do it right now. 
 > 
-> The patch below ought to fix the problem.
+> Ok, if you guys have a current git source, and want to try something out, 
+> this fairly small patch does this.
 
-It fixes some, but breaks others.  The test script I sent yesterday indeed
-passes.  And more of my unionfs-on-nfs2 tests pass, but not all.  Three of
-my unionfs tests (create w/ copyup, unlink open files, and unlink with a
-whiteout) fail b/c they detect leftover silly-renamed files.  Worse, now the
-same three tests also fail when I use unionfs on top of nfs3/nfs4: before
-the one line fix below, unionfs-on-nfsv3/4 worked fine.
+I pulled next branch of git and applied your patch.
 
-Was there any significant semantic change in the behaviour of silly-renamed
-files in nfs in 2.6.24?  If so, then I may have to change how unionfs
-handles refcounts and such.
+When running
+ 	git log --follow -B arch/x86/kernel/vmlinux_64.lds.S
 
-I'll try to dig deeper and see if I can come up with a small test case that
-doesn't involve unionfs.
+I got no output at all (in a newly pulled linux kernel dir).
+When I ran
+ 	git log arch/x86/kernel/vmlinux_64.lds.S
+I got:
 
-Thanks,
-Erez.
+commit 250c22777fe1ccd7ac588579a6c16db4c0161cc5
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Thu Oct 11 11:17:24 2007 +0200
 
-> Cheers
->   Trond
-> ---------------------- CUT HERE -----------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date: Sat, 20 Oct 2007 13:07:21 -0400
-> NFSv2: Ensure that the directory metadata gets revalidated on file create
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  fs/nfs/proc.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/nfs/proc.c b/fs/nfs/proc.c
-> index 97669ed..4f80d88 100644
-> --- a/fs/nfs/proc.c
-> +++ b/fs/nfs/proc.c
-> @@ -211,6 +211,7 @@ nfs_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
->  	nfs_fattr_init(&fattr);
->  	dprintk("NFS call  create %s\n", dentry->d_name.name);
->  	status = rpc_call_sync(NFS_CLIENT(dir), &msg, 0);
-> +	nfs_mark_for_revalidate(dir);
->  	if (status == 0)
->  		status = nfs_instantiate(dentry, &fhandle, &fattr);
->  	dprintk("NFS reply create: %d\n", status);
+    x86_64: move kernel
+    
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Erez.
+With -B alone I got same output.
+When I add --follow I get no output.
+
+I could not get back to my previous git binary - I replaced it
+with the new one.
+
+cat ~/.gitconfig
+
+[diff]
+	renamelimit = 0
+
+
+	Sam
