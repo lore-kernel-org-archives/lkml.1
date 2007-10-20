@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764146AbXJTNwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbXJTOR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764146AbXJTNwv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 09:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXJTNwo
+	id S1757772AbXJTOR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 10:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbXJTORu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 09:52:44 -0400
-Received: from rtr.ca ([76.10.145.34]:2985 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754643AbXJTNwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 09:52:43 -0400
-Message-ID: <471A082A.9040803@rtr.ca>
-Date: Sat, 20 Oct 2007 09:52:42 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sat, 20 Oct 2007 10:17:50 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:29439 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752151AbXJTORt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Oct 2007 10:17:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+  b=Y1mhKCqjiN83a/aS+FsXtzG1Agy3Kit9KB5vfBYQj3Ip9pYuFhzMelwBZkP5YQ/8ZOoA+R1ianliw0OvKVYrEsHvonljaQJX6htxxX+o/FCttLns9HRT4hKhgMyj55QDCnQtoV64qCUHJEVHzoQLxdPOCJoBBsytV1rvZf8V2ds=  ;
+X-YMail-OSG: RD8WXA8VM1kw2WKzymqrfQbHiqFFeM_iTtYZhC5upQ9pQRWbt7VK03ghVMH4qasIdAJFQD2X1w--
+Message-ID: <471A0DF4.50700@yahoo.com.au>
+Date: Sat, 20 Oct 2007 22:17:24 +0800
+From: Ben <benjg87@yahoo.com.au>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression:  2.6.23-rc9 okay, 2.6.23.1 resume problems
-References: <4712786B.3040009@rtr.ca> <20071018200531.GB6962@ucw.cz>
-In-Reply-To: <20071018200531.GB6962@ucw.cz>
+To: linux-kernel@vger.kernel.org
+Subject: Problem with reiserfs in 2.6.23-mm1
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->> Since upgrading to 2.6.23.1 from 2.6.23-rc9, 
->> resume-from-RAM has been misbehaving here.
->>
->> It takes much (+5-7 seconds) longer to resume 
->> *sometimes*, but not all/most of the time.
+Hello.
 
-I suspend those long delays may have something to do with USB,
-as it takes longer for my hub + mouse to come back to life
-during the sequence.
-
-But I have since then re-applied the powertop patches,
-and the long delays vanished.  Back with -rc9 I normally also
-had those powertop fixes, and so this problem could be much
-older and was never noticed until I ran without them.
-
-I'm no longer actively investigating, as the delays are
-gone (powertop patches), and the crashes are much less frequent
-since patching.
-
-Cheers
+Whenever I log into xfce with gdm my computer will freeze when i use 
+reiserfs as my /home on 2.6.23-mm1. Logging into the VT works perfectly 
+fine. Previously my system would crash when logging into the VT but the
+make-reiserfs-stop-using-struct-file-for-internal.patch patch fixed the 
+issue(and possibly introduced the issue I currently have). My system 
+works perfectly fine using 2.6.23-rc6-mm1 and prior. /home is mounted 
+with the following options: /dev/sda3 on /home type reiserfs 
+(rw,nosuid,nodev,noatime,acl)
