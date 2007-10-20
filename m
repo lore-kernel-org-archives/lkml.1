@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbXJUBxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbXJUByA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbXJUBxp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXJUBwa
+	id S1753334AbXJUByA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXJUBwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:52:30 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56846 "EHLO
+	Sat, 20 Oct 2007 21:52:31 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56845 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbXJUBw1 (ORCPT
+	with ESMTP id S1752211AbXJUBw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 20 Oct 2007 21:52:27 -0400
-Date: Sun, 21 Oct 2007 01:53:31 +0200 (CEST)
+Date: Sun, 21 Oct 2007 01:52:51 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 cc: James Morris <jmorris@namei.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 3/4] MultiAdmin 1.0.7
+Subject: Re: [PATCH 0/4] MultiAdmin 1.0.7
 In-Reply-To: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0710210153250.1997@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0710210152420.1997@fbirervta.pbzchgretzou.qr>
 References: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
