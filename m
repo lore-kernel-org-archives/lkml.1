@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbXJTBFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbXJTBH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbXJTBFJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 21:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXJTBEy
+	id S1761279AbXJTBH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 21:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXJTBHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 21:04:54 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49780 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbXJTBEx (ORCPT
+	Fri, 19 Oct 2007 21:07:13 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:41131 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751312AbXJTBHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 21:04:53 -0400
-Date: Fri, 19 Oct 2007 18:02:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, chas@cmf.nrl.navy.mil
-Subject: Re: atm: panic when loading clip 2nd time
-Message-Id: <20071019180236.cbc000a2.randy.dunlap@oracle.com>
-In-Reply-To: <29495f1d0710161433h6e4e90a6r32c89c2a89af2f90@mail.gmail.com>
-References: <47152758.5000900@oracle.com>
-	<29495f1d0710161433h6e4e90a6r32c89c2a89af2f90@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 19 Oct 2007 21:07:11 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Oct 2007 21:07:11 EDT
+X-YMail-OSG: zar.7OAVM1lrce4D6_cR9D1h_DCaxoPqY3QhPSDrVinjZPDPHb1MTcbU.xJcBZ2cosiCVgIqhwV6pXncZ0WVkmBXDfPwOf7Gujgk1C.qBKxwxWdBcg--
+Message-ID: <4719532A.6080704@andrei.myip.org>
+Date: Fri, 19 Oct 2007 18:00:26 -0700
+From: Florin Andrei <florin@andrei.myip.org>
+Reply-To: linux-kernel@vger.kernel.org
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] scripts: enhancements to the RPM spec file generator
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 14:33:38 -0700 Nish Aravamudan wrote:
+From: Florin Andrei <florin@andrei.myip.org>
 
-> On 10/16/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 2.6.23-git7, using SLAB (not SLUB) [config attached]:
-> >
-> > # modprobe clip
-> > # rmmod clip
-> > # modprobe clip
-> >
-> > results in panic:
-> >
-> > kmem_cache_create: duplicate cache clip_arp_cache
-> >
-> > Call Trace:
-> >  [<ffffffff8028c682>] kmem_cache_create+0x3bf/0x3fd
-> >  [<ffffffff8046ba1d>] neigh_table_init_no_netlink+0x6c/0x242
-> >  [<ffffffff8800a010>] :clip:atm_clip_init+0x10/0x8a
-> >  [<ffffffff80258ba4>] sys_init_module+0x146c/0x15cd
-> >  [<ffffffff8046be0a>] neigh_lookup+0x0/0xd5
-> >  [<ffffffff8020ef44>] syscall_trace_enter+0x95/0x99
-> >  [<ffffffff8020beec>] tracesys+0xdc/0xe1
-> >
-> > Kernel panic - not syncing: kmem_cache_create(): failed to create slab `clip_arp_cache'
-> 
-> >From a quick read through the code, looks like
-> net/core/neighbour.c:neigh_table_clear() needs a kmem_cache_destroy()?
-> 
-> I only see three callers of neight_table_clear() and they all seem to
-> be in exit routines, so that should be safe?
+"make rpm" creates a plain package that does not update grub.conf
+and does not create an initrd. This patch modifies scripts/package/mkspec
+to create an RPM spec file that updates grub.conf after install/uninstall
+and also that creates an initrd file after install. These new functions
+are activated via an environment variable (export RPM_RH5_STYLE=true)
+when running "make rpm".
 
-Hi Nish,
-
-Maybe.  I can't tell without knowing the code better.
-
-[make that patch, test it; test patch is below]
-
-Well, it survives light testing (boot/init and a tarball download),
-but I don't know how safe it is.
-
+Signed-off-by: Florin Andrei <florin@andrei.myip.org>
 ---
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-net/atm/clip.c crashes the kernel if it (module) is loaded, removed,
-and then loaded again.  Its exit call to neigh_table_clear()
-should destroy the cache after freeing it.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- net/core/neighbour.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- linux-2.6.23-git7.orig/net/core/neighbour.c
-+++ linux-2.6.23-git7/net/core/neighbour.c
-@@ -1436,6 +1436,9 @@ int neigh_table_clear(struct neigh_table
- 	free_percpu(tbl->stats);
- 	tbl->stats = NULL;
+--- linux-2.6.23.1.orig/scripts/package/mkspec  2007-10-19 02:07:58.000000000 -0700
++++ linux-2.6.23.1/scripts/package/mkspec       2007-10-19 05:42:47.000000000 -0700
+@@ -81,6 +81,11 @@ echo 'cp $KBUILD_IMAGE $RPM_BUILD_ROOT'"
+ echo "%endif"
+ echo "%endif"
  
-+	kmem_cache_destroy(tbl->kmem_cachep);
-+	tbl->kmem_cachep = NULL;
++if $RPM_RH5_STYLE; then
++echo 'touch $RPM_BUILD_ROOT'"/boot/initrd-$KERNELRELEASE.img"
++echo 'gzip -c9 < Module.symvers > $RPM_BUILD_ROOT'"/boot/symvers-$KERNELRELEASE.gz"
++fi
 +
- 	return 0;
- }
+ echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
  
+ echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
+@@ -88,9 +93,44 @@ echo ""
+ echo "%clean"
+ echo '#echo -rf $RPM_BUILD_ROOT'
+ echo ""
++
++if $RPM_RH5_STYLE; then
++cat <<RH5_POST_PREUN
++%post
++if [ `uname -i` == "x86_64" -o `uname -i` == "i386" ]; then
++  if [ -f /etc/sysconfig/kernel ]; then
++    /bin/sed -i -e 's/^DEFAULTKERNEL=kernel-smp$/DEFAULTKERNEL=kernel/' /etc/sysconfig/kernel || exit $?
++  fi
++fi
++/sbin/new-kernel-pkg --package kernel --mkinitrd --depmod --install $KERNELRELEASE || exit $?
++if [ -x /sbin/weak-modules ]
++then
++    /sbin/weak-modules --add-kernel $KERNELRELEASE || exit $?
++fi
++
++%preun
++/sbin/new-kernel-pkg --rminitrd --rmmoddep --remove $KERNELRELEASE || exit $?
++if [ -x /sbin/weak-modules ]
++then
++    /sbin/weak-modules --remove-kernel $KERNELRELEASE || exit $?
++fi
++
++RH5_POST_PREUN
++fi
++
+ echo "%files"
+ echo '%defattr (-, root, root)'
+ echo "%dir /lib/modules"
+ echo "/lib/modules/$KERNELRELEASE"
++if $RPM_RH5_STYLE; then
++cat <<RH5_FILES
++/boot/vmlinuz-$KERNELRELEASE
++/boot/System.map-$KERNELRELEASE
++/boot/symvers-$KERNELRELEASE.gz
++/boot/config-$KERNELRELEASE
++%ghost /boot/initrd-$KERNELRELEASE.img
++RH5_FILES
++else
+ echo "/boot/*"
++fi
+ echo ""
+
+
+-- 
+Florin Andrei
+
+http://florin.myip.org/
+
