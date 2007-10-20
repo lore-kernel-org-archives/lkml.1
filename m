@@ -1,23 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbXJUBiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXJUBi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735AbXJUBiL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbXJUBh6
+	id S1751958AbXJUBi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXJUBiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:37:58 -0400
+	Sat, 20 Oct 2007 21:38:02 -0400
 Received: from smtp2.linux-foundation.org ([207.189.120.14]:45411 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750871AbXJUBh5 (ORCPT
+	by vger.kernel.org with ESMTP id S1750885AbXJUBiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:37:57 -0400
-Date: Sat, 20 Oct 2007 15:26:45 -0700 (PDT)
+	Sat, 20 Oct 2007 21:38:00 -0400
+Date: Sat, 20 Oct 2007 14:45:52 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: what to call it after 2.6.23 but before 2.6.24-rc1?
-In-Reply-To: <200710202154.l9KLsZoF005751@agora.fsl.cs.sunysb.edu>
-Message-ID: <alpine.LFD.0.999.0710201517530.10525@woody.linux-foundation.org>
-References: <200710202154.l9KLsZoF005751@agora.fsl.cs.sunysb.edu>
+To: Andi Kleen <ak@suse.de>
+cc: Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git/cscope with x86 merge
+In-Reply-To: <200710202244.00671.ak@suse.de>
+Message-ID: <alpine.LFD.0.999.0710201430510.10525@woody.linux-foundation.org>
+References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com>
+ <20071020191534.GA8774@uranus.ravnborg.org>
+ <alpine.LFD.0.999.0710201232100.10525@woody.linux-foundation.org>
+ <200710202244.00671.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,45 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Sat, 20 Oct 2007, Erez Zadok wrote:
->
-> Linus, is there a preferred name to refer to the kernel version in your tree
-> after 2.6.23 is out (and the official 2.6.23.y git was created) but before
-> you release 2.6.24-rc1?
+On Sat, 20 Oct 2007, Andi Kleen wrote:
+> 
+> It's not only next. The latest release (1.5.3.4) has this problem.
 
-Well, since you can only get one of those kernels in two ways, there's a 
-very unambiguous naming policy.
+Yes. It's ok in the master branch, but due to unlucky timing with noticing 
+this bug, and Junio being away, no releases got cut with the fix. 
 
- - if you got one of the nightly snapshots, name it by the snapshot name 
-   (I still call them "nightly snapshots", but they do in fact happen 
-   twice a day if there have been changes, so that's not technically 
-   correct)
+In general, the kernel people haven't done many renames (I think it's 
+something we have avoided historically, just because it makes diffs almost 
+totally unreadable - even while git supports "rename diffs", they are 
+turned off by default just to be compatible with people who use quilt and 
+raw patch).
 
-   So the last snapshot would be linux-2.6.23-git15
+So we've basically had a "perfect storm" of (a) Junio being away, (b) a 
+really stupid bug that got introduced recently, (c) a few broken 
+heuristics that had little testing because the kernel almost never does 
+renames anyway and (d) suddenly lots of renames in the kernel all at once.
 
-   This is an exact name, because you can go to kernel.org and look up the 
-   exact commit ID that was used to generate it (there's an "ID" file 
-   associated with each snapshot there).
+(It's not even just the x86 stuff - we had all the watchdog drivers being 
+moved around too, so we probably had almost as many renames the last two 
+weeks than we've had in the two years preceding it ;)
 
-   For bonus points, if you report a bug against such a snapshot, look up 
-   the ID yourself, so that others don't have to do that..
-
- - if you are a git user, and got it that way, just use the git name, and 
-   use "git describe" to get it.
-
-   So my current head is called "v2.6.23-6562-g8add244" which tells you 
-   three things:
-     (a) it's based on 2.6.23
-     (b) there's been 6562 commits since 2.6.23
-     (c) the top-of-tree abbreviated commit is "8add244".
-
-> I've seen online references to it as "2.6.24", "2.6.24++", "2.6.24-rc0", 
-> etc.
-
-Yeah, please don't use those names. They don't actually tell anything 
-about where in the cycle it is, and as you can see above, there's been 
-6500+ commits since 2.6.23, so saying "2.6.23-rc0" or similar really isn't 
-very helpful if anybody actually cares about just where in the release 
-cycle you are.
+[ Just for fun, I checked. Yup. In the last two weeks, git finds 1120 
+  copies and renames. Over the last two and a half years (ie the whole git 
+  timeframe), we have 2136 of them. So we really have done more renames in 
+  the last two weeks than we have over the whole rest of the git history,
+  and it wasn't just my imagination ]
 
 			Linus
