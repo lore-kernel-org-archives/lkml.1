@@ -1,127 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751310AbXJUC0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752124AbXJUC3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751310AbXJUC0F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 22:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXJUCZ4
+	id S1752124AbXJUC3j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 22:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXJUC3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 22:25:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:51525 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbXJUCZy (ORCPT
+	Sat, 20 Oct 2007 22:29:33 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:14752 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbXJUC3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 22:25:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=aOxpeN+wMnb2RN40km8YC3Tvo2Yzu+JTTBOFGWIa7N5jMTq51cFK5XQdlzF3U5Zja276as3QNvRrXMEJwHcCVZlG3MpybwveL005acf4CUU6R4ikO5MVgoYsmaMXs8kTmAzMZG5dRgmKU/iID1Uz0SNzFF9VVW2ZV7QfdxepT50=
-Date: Sun, 21 Oct 2007 04:25:43 +0200
-To: Casey Schaufler <casey@schaufler-ca.com>, Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Smackv8: Safe lockless {cipso,load} read operation
-Message-ID: <20071021022543.GB3091@Ahmed>
-References: <47158CE4.30706@schaufler-ca.com> <20071021014021.GA3091@Ahmed>
+	Sat, 20 Oct 2007 22:29:32 -0400
+Message-ID: <9783dadb0710201352p28969b4bs573d817d70b1fff7@mail.gmail.com>
+Date: Sat, 20 Oct 2007 22:52:05 +0200
+From: "David Gaarenstroom" <david.gaarenstroom@gmail.com>
+To: "Shane Huang" <chunhao.huang@hotmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+Cc: "Linas Vepstas" <linas@austin.ibm.com>, davem@davemloft.net,
+       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       jgarzik@pobox.com
+In-Reply-To: <BLU120-W12C06900EC932864CC13A8E2980@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071021014021.GA3091@Ahmed>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+	 <20071019195749.GK29903@austin.ibm.com>
+	 <BLU120-W12C06900EC932864CC13A8E2980@phx.gbl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+If the pci_intx change will be applied to the SATA driver, can it be
+applied for the ATI USB-HCDs too? See
+http://lkml.org/lkml/2006/12/21/47 for more details. That should help
+most of the ATI MSI quirks. It helped me (Acer Aspire 502x laptop with
+ATI RS480/SB400).
 
-Utilizing Al's concers about using smack_cipso_count without locking,
-here's a patch that remove smack_cipso_count and uses simple list 
-traversing in read() without any counting mechanism.
 
-CC: Al Viro <viro@ftp.linux.org.uk>
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> When I used "here", I was just meaning our youthful linux southbridge
+> drivers team instead of the whole AMD. Sorry for the confusion to you.
 
----
-
-Please apply over omit-non-cipso-lables-in-cipso-seq-start.patch
-Using smack_{list,cipso}_count in the read context was useless
-anyway cause we were just traversing the list.
-
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index b061cd0..c38d0d0 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -63,16 +63,17 @@ int smack_cipso_direct = SMACK_CIPSO_DIRECT_DEFAULT;
- 
- static int smk_cipso_doi_value = SMACK_CIPSO_DOI_DEFAULT;
- static int smack_list_count;
--static int smack_cipso_count;
- struct smk_list_entry *smack_list;
- 
-+#define SEQ_READ_FINISHED	1
-+
- /*
-  * Seq_file read operations for /smack/load
-  */
- 
- static void *load_seq_start(struct seq_file *s, loff_t *pos)
- {
--	if (*pos >= smack_list_count)
-+	if (*pos == SEQ_READ_FINISHED)
- 		return NULL;
- 
- 	return smack_list;
-@@ -80,8 +81,13 @@ static void *load_seq_start(struct seq_file *s, loff_t *pos)
- 
- static void *load_seq_next(struct seq_file *s, void *v, loff_t *pos)
- {
--	(*pos)++;
--	return ((struct smk_list_entry *) v)->smk_next;
-+	struct smk_list_entry *skp = ((struct smk_list_entry *) v)->smk_next;
-+
-+	if (skp)
-+		return skp;
-+
-+	*pos = SEQ_READ_FINISHED;
-+	return NULL;
- }
- 
- static int load_seq_show(struct seq_file *s, void *v)
-@@ -306,7 +312,7 @@ static void *cipso_seq_start(struct seq_file *s, loff_t *pos)
- {
- 	struct smack_known *skp = smack_known;
- 
--	if (*pos >= smack_cipso_count)
-+	if (*pos == SEQ_READ_FINISHED)
- 		return NULL;
- 
- 	while (skp && !skp->smk_cipso)
-@@ -319,12 +325,14 @@ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
- {
- 	struct smack_known *skp = ((struct smack_known *) v)->smk_next;
- 
--	(*pos)++;
--
- 	while (skp && !skp->smk_cipso)
- 		skp = skp->smk_next;
- 
--	return skp;
-+	if (skp)
-+		return skp;
-+
-+	*pos = SEQ_READ_FINISHED;
-+	return NULL;
- }
- 
- /*
-@@ -488,7 +496,6 @@ static ssize_t smk_write_cipso(struct file *file, const char __user *buf,
- 				rc = -ENOMEM;
- 				break;
- 			}
--			++smack_cipso_count;
- 		} else
- 			scp = NULL;
- 
-
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+I am still somewhat confused: most people developing the Linux kernel
+are limited to look at this hardware from the outside. They had to
+find out by trial and error. I really hope your colleagues will be
+more actively helping your team and (other) Linux kernel developers.
+But I'm glad AMD has such a team.
+(So while you're at it, ask about the ATI USB HCDs and any other MSI quirk too)
