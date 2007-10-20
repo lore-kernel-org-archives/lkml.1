@@ -1,81 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936661AbXJTDKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXJTDVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936661AbXJTDKy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Oct 2007 23:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXJTDKp
+	id S932234AbXJTDVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 23:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbXJTDVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Oct 2007 23:10:45 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:34056 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbXJTDKo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Oct 2007 23:10:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=KY+kRkGatZiQgdQOKU7Ieb8qBFQBCiPmnv3SlncbLA6JmAd+I3Vjz5mu6+mHbLkcwG2S8NMWV9LpwX358vFxo7qRLIKrCxWLjaLzYIXh2NnfWSrvSw34PY3nEkLWWNPLt3sKLxEkglxUJPZsO0JGleeWBV+dNTABoMV9D6C2sSo=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Date: Sat, 20 Oct 2007 05:10:01 +0200
-User-Agent: KMail/1.9.6
-Cc: benh@kernel.crashing.org, akpm <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-References: <1192670742.12879.5.camel@pasglop> <200710200402.43106.maximlevitsky@gmail.com> <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710200510.01409.maximlevitsky@gmail.com>
+	Fri, 19 Oct 2007 23:21:43 -0400
+Received: from xenotime.net ([66.160.160.81]:57123 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751497AbXJTDVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Oct 2007 23:21:42 -0400
+Date: Fri, 19 Oct 2007 20:21:40 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, David Brownell <david-b@pacbell.net>
+Subject: Re: 2.6.23-git Kconfig regression
+Message-Id: <20071019202140.ecbc4a0d.rdunlap@xenotime.net>
+In-Reply-To: <20071019195535.0dbafd39.rdunlap@xenotime.net>
+References: <20071020012245.9B3FB23A5F7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20071019184607.06e1eef9.randy.dunlap@oracle.com>
+	<20071020015735.270C923A748@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<47196165.8070406@oracle.com>
+	<20071019195535.0dbafd39.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Fri__19_Oct_2007_20_21_40_-0700_gpHnn=U0bWF_a+k1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 October 2007 04:25:34 Linus Torvalds wrote:
+This is a multi-part message in MIME format.
+
+--Multipart=_Fri__19_Oct_2007_20_21_40_-0700_gpHnn=U0bWF_a+k1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+On Fri, 19 Oct 2007 19:55:35 -0700 Randy Dunlap wrote:
+
+> On Fri, 19 Oct 2007 19:01:09 -0700 Randy Dunlap wrote:
 > 
-> On Sat, 20 Oct 2007, Maxim Levitsky wrote:
+> > >>> I noticed a regression, visible in the drivers/usb/gadget Kconfig;
+> > >>> it seems to be quite recent.
+> > >>>
+> > >>> ...
+> > >> Hm, it does look very odd.  It looks like it has something to
+> > >> do with <choice> working differently for some reason.
+> > >>
+> > >> In xconfig, I set all of the View Options and when I click on one
+> > >> of the periph. controllers, it says
+> > >>
+> > >> 	depends on =y && PCI
+> > > 
+> > > That's what I saw too.  Looked dubious ... 
+> > > 
+> > > 
+> > >> but if I back up to -git7, it says
+> > >>
+> > >> 	depends on <choice> && PCI
+> > > 
+> > > And that git7 thing doesn't look _quite_ so odd.  Did git7 actually
+> > > let you configure a modular GOKU (for example), i.e. work correctly?
 > > 
-> > and the interrupt handler:
+> > Yes, -git9 does.
 > > 
-> > 	smp_rmb();
-> > 	if (dev->insuspend)
-> > 		goto out;
+> > Looks to me like it broke on -git10.  -git9 is OK.
+> > 
+> > >> I'll keep looking.
+> > > 
+> > > Thanks.  Kconfig is one of the areas I prefer to let others
+> > > be the experts.  :)
 > 
-> Something like that can work, yes. However, you need to make sure that:
+> [hm, odd email problems, changing SMTP]
 > 
->  - even when you ignore the interrupt (because the driver doesn't care, 
->    it's suspending), you need to make sure the hardware gets shut up by 
->    reading (or writing) the proper interrupt status register.
-I agree, but while device is powered off, its registers can't be accessed
-Thus, if I ack the IRQ every time the handler is called, I will access the 
-powered off device (this is probably won't hurt a lot, but a bit incorrectly)
+> David,
+> 
+> Just a small update.
+> 
+> If I set USB gadget support to Y instead of M and peripheral
+> controller menu item to Y instead of M, then I can select any of the
+> 4 periph. controllers that are available to me.  (on -git14)
+> I don't know why it's like this though.
 
-> 
->    Otherwise, with a level interrupt, the interrupt will continue to be 
->    held active ("screaming") and the CPU will get interrupted over and 
->    over again, until the irq subsystem will just turn the irq off 
->    entirely.
-> 
->  - when you resume, make sure that you get the engine going again, with 
->    the understanding that some interrupts may have gotten ignored.
-Here it isn't a problem, this is a video capture card, and I suspend it by just stopping dma
-on all active buffers even if in the middle of capture, and I send those buffers to card again
-to fill them from the beginning during the resume.
-> 
-> Also, in general, these kinds of things shouldn't always even be 
-> neicessary. If you use the suspend_late()/resume_early() hooks, those will 
-> be called with interrupts off, and while they can be harder to debug (and 
-> may be worth avoiding for non-critical drivers), they do allow for simpler 
-> models partly exactly because they don't need to worry about interrupts 
-> etc.
-Exactly, I am aware of suspend_late , but I don't want to abuse it.
-> 
-> 		Linus
-> 
+David,
 
+My (quick, meaning that I may have missed something) testing
+indicates that the problem is in the patches attached.
 
-Best regards,
-	Maxim Levitsky
+Can you revert them and test that?
 
+>From git:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a5bf3d891a6a0fb5aa122792d965e3774108b923
+
+Change kconfig behavior so that mixing bool and tristate config settings in
+a choice is possible and has the desired effect of offering just the
+tristate options individually if the choice gets set to M, and a normal
+boolean selection if the choice gets set to Y.
+
+Odd, I don't recall seeing this patch...
+
+---
+~Randy
+
+--Multipart=_Fri__19_Oct_2007_20_21_40_-0700_gpHnn=U0bWF_a+k1
+Content-Type: text/x-patch;
+ name="git9-10.diff"
+Content-Disposition: attachment;
+ filename="git9-10.diff"
+Content-Transfer-Encoding: 7bit
+
+diff -u b/Makefile b/Makefile
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -235,16 +235,23 @@ void menu_finalize(struct menu *parent)
+ 	sym = parent->sym;
+ 	if (parent->list) {
+ 		if (sym && sym_is_choice(sym)) {
+-			/* find the first choice value and find out choice type */
++			/* find out choice type */
++			enum symbol_type type = S_UNKNOWN;
++
+ 			for (menu = parent->list; menu; menu = menu->next) {
+-				if (menu->sym) {
+-					current_entry = parent;
+-					menu_set_type(menu->sym->type);
+-					current_entry = menu;
+-					menu_set_type(sym->type);
+-					break;
++				if (menu->sym && menu->sym->type != S_UNKNOWN) {
++					if (type == S_UNKNOWN)
++						type = menu->sym->type;
++					if (type != S_BOOLEAN)
++						break;
++					if (menu->sym->type == S_TRISTATE) {
++						type = S_TRISTATE;
++						break;
++					}
+ 				}
+ 			}
++			current_entry = parent;
++			menu_set_type(type);
+ 			parentdep = expr_alloc_symbol(sym);
+ 		} else if (parent->prompt)
+ 			parentdep = parent->prompt->visible.expr;
+@@ -253,7 +260,16 @@ void menu_finalize(struct menu *parent)
+ 
+ 		for (menu = parent->list; menu; menu = menu->next) {
+ 			basedep = expr_transform(menu->dep);
+-			basedep = expr_alloc_and(expr_copy(parentdep), basedep);
++			dep = parentdep;
++			if (sym && sym_is_choice(sym) && menu->sym) {
++				enum symbol_type type = menu->sym->type;
++
++				if (type == S_UNKNOWN)
++					type = sym->type;
++			     if (type != S_TRISTATE)
++					dep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
++			}
++			basedep = expr_alloc_and(expr_copy(dep), basedep);
+ 			basedep = expr_eliminate_dups(basedep);
+ 			menu->dep = basedep;
+ 			if (menu->sym)
+@@ -326,7 +342,8 @@ void menu_finalize(struct menu *parent)
+ 					    "values not supported");
+ 			}
+ 			current_entry = menu;
+-			menu_set_type(sym->type);
++			if (menu->sym->type == S_UNKNOWN)
++				menu_set_type(sym->type);
+ 			menu_add_symbol(P_CHOICE, sym, NULL);
+ 			prop = sym_get_choice_prop(sym);
+ 			for (ep = &prop->expr; *ep; ep = &(*ep)->left.expr)
+--- a/scripts/kconfig/util.c
++++ b/scripts/kconfig/util.c
+@@ -84,12 +84,15 @@ void str_free(struct gstr *gs)
+ /* Append to growable string */
+ void str_append(struct gstr *gs, const char *s)
+ {
+-	size_t l = strlen(gs->s) + strlen(s) + 1;
+-	if (l > gs->len) {
+-		gs->s   = realloc(gs->s, l);
+-		gs->len = l;
++	size_t l;
++	if (s) {
++		l = strlen(gs->s) + strlen(s) + 1;
++		if (l > gs->len) {
++			gs->s   = realloc(gs->s, l);
++			gs->len = l;
++		}
++		strcat(gs->s, s);
+ 	}
+-	strcat(gs->s, s);
+ }
+ 
+ /* Append printf formatted string to growable string */
+
+--Multipart=_Fri__19_Oct_2007_20_21_40_-0700_gpHnn=U0bWF_a+k1--
