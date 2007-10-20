@@ -1,396 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbXJUBvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXJUBwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbXJUBvl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbXJUBve
+	id S1752072AbXJUBwU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXJUBwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:51:34 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:7431 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbXJUBvd (ORCPT
+	Sat, 20 Oct 2007 21:52:08 -0400
+Received: from sullivan.realtime.net ([205.238.132.226]:3759 "EHLO
+	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbXJUBwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:51:33 -0400
-Date: Sun, 21 Oct 2007 03:55:46 +0400
-To: torvalds@osdl.org, akpm@osdl.org, viro@zeniv.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH 1/2] irq_flags_t: intro and core annotations
-Message-ID: <20071020235546.GB1825@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Sat, 20 Oct 2007 21:52:07 -0400
+Date: Sat, 20 Oct 2007 14:48:47 -0500 (CDT)
+Message-Id: <200710201948.l9KJml5L008962@sullivan.realtime.net>
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] Fix sched_domain sysctl registration again
+To: Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of type of bugs steadily being fought is the following one:
+commit  029190c515f15f512ac85de8fc686d4dbd0ae731 (cpuset
+sched_load_balance flag) was not tested SCHED_DEBUG enabled as
+committed as it dereferences NULL when used and it reordered
+the sysctl registration to cause it to never show any domains
+or their tunables.
 
-	unsigned int flags;
-	spin_lock_irqsave(&lock, flags);
+Fixes:
 
-where "flags" should be "unsigned long". Here is far from complete list of
-commits fixing such bugs:
+1) restore arch_init_sched_domains ordering
+	we can't walk the domains before we build them
 
-099575b6cb7eaf18211ba72de56264f67651b90b
-5efee174f8a101cafb1607d2b629bed353701457
-c53421b18f205c5f97c604ae55c6a921f034b0f6	(many)
-ca7e235f5eb960d83b45cef4384b490672538cd9
-361f6ed1d00f666a1a7c33f3e9aaccb713f9b9e4
+	presently we register cpus with empty directories (no domain
+	directories or files).
 
-So far remedies were:
-a) grep(1) -- obviously fragile. I tried at some point grepping for
-   spin_lock_irqsave(), found quite a few, but it became booooring quickly.
-b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
-   brutally broke some arches, survived one commit before revert :^)
-   Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
+2) make unregister_sched_domain_sysctl do nothing when already unregistered
+	detach_destroy_domains is now called one set of cpus at a time
+	unregister_syctl dereferences NULL if called with a null.
 
-So it would be nice to have something more robust.
+	While the the function would always dereference null if called
+	twice, in the previous code it was always called once and then
+	was followed a register.  So only the hidden bug of the
+	sysctl_root_table not being allocated followed by an attempt to
+	free it would have shown the error.
 
+3) always call unregister and register in partition_sched_domains
+	The code is "smart" about unregistering only needed domains.
+	Since we aren't guaranteed any calls to unregister, always 
+	unregister.   Without calling register on the way out we
+	will not have a table or any sysctl tree.
 
-
-			irq_flags_t
-	
-New type for use with spin_lock_irqsave() and friends.
-
-* irq_flags_t is unsigned long which shouldn't change any code 
-  (except broken one)
-* irq_flags_t is marked with __bitwise__ which means sparse(1) will warn
-  developer when he accidently uses wrong type or totally wrong variable.
-* irq_flags_t allows conversion to struct instead of typedef without flag day.
-  This will give compile-time breakage of buggy users later.
-* irq_flags_t allows arch maintainers to eventually switch to something
-  smaller than "unsigned long" if they want to.
-
-Typical code after conversion:
-
-	irq_flags_t flags;
-
-	spin_lock_irqsave(&lock, flags);
-	[stuff]
-	spin_unlock_irqrestore(&lock, flags);
-
-This patch adds type itself, annotates core locking functions in generic
-headers and i386 arch.
+4) warn if register is called without unregistering
+	The previous table memory is lost, leaving pointers to the
+	later freed memory in sysctl and leaking the memory of the
+	tables.
 
 
-P.S.: Anyone checking for differences in sparse logs -- don't panic,
-	just remove __bitwise__ .
+Signed-off-by: Milton Miller <miltonm@bga.com>
+--- 
+[resend with From set]
+against e8b8c977734193adedf2b0f607d6252c78e86394
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Before this patch on a 2-core 4-thread box compiled for SMT and NUMA,
+the domains appear empty (there are actually 3 levels per cpu).  And as
+soon as two domains a null pointer is dereferenced (unreliable in this
+case is stack garbage):
 
- include/asm-x86/irqflags_32.h    |   20 ++++++++++----------
- include/asm-x86/paravirt.h       |   14 +++++++-------
- include/linux/interrupt.h        |   10 +++++-----
- include/linux/irqflags.h         |    2 +-
- include/linux/spinlock_api_smp.h |   14 +++++++-------
- include/linux/spinlock_up.h      |    2 +-
- include/linux/types.h            |    1 +
- kernel/spinlock.c                |   24 ++++++++++++------------
- 8 files changed, 44 insertions(+), 43 deletions(-)
+bu19a:~# ls -R /proc/sys/kernel/sched_domain/
+/proc/sys/kernel/sched_domain/:
+cpu0  cpu1  cpu2  cpu3
 
---- a/include/asm-x86/irqflags_32.h
-+++ b/include/asm-x86/irqflags_32.h
-@@ -12,14 +12,14 @@
- #include <asm/processor-flags.h>
+/proc/sys/kernel/sched_domain/cpu0:
+
+/proc/sys/kernel/sched_domain/cpu1:
+
+/proc/sys/kernel/sched_domain/cpu2:
+
+/proc/sys/kernel/sched_domain/cpu3:
+
+bu19a:~# mkdir /dev/cpuset
+bu19a:~# mount -tcpuset cpuset /dev/cpuset/
+bu19a:~# cd /dev/cpuset/
+bu19a:/dev/cpuset# echo 0 > sched_load_balance 
+bu19a:/dev/cpuset# mkdir one
+bu19a:/dev/cpuset# echo 1 > one/cpus               
+bu19a:/dev/cpuset# echo 0 > one/sched_load_balance 
+Unable to handle kernel paging request for data at address 0x00000018
+Faulting instruction address: 0xc00000000006b608
+NIP: c00000000006b608 LR: c00000000006b604 CTR: 0000000000000000
+REGS: c000000018d973f0 TRAP: 0300   Not tainted  (2.6.23-bml)
+MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 28242442  XER: 00000000
+DAR: 0000000000000018, DSISR: 0000000040000000
+TASK = c00000001912e340[1987] 'bash' THREAD: c000000018d94000 CPU: 2
+..
+NIP [c00000000006b608] .unregister_sysctl_table+0x38/0x110
+LR [c00000000006b604] .unregister_sysctl_table+0x34/0x110
+Call Trace:
+[c000000018d97670] [c000000007017270] 0xc000000007017270 (unreliable)
+[c000000018d97720] [c000000000058710] .detach_destroy_domains+0x30/0xb0
+[c000000018d977b0] [c00000000005cf1c] .partition_sched_domains+0x1bc/0x230
+[c000000018d97870] [c00000000009fdc4] .rebuild_sched_domains+0xb4/0x4c0
+[c000000018d97970] [c0000000000a02e8] .update_flag+0x118/0x170
+[c000000018d97a80] [c0000000000a1768] .cpuset_common_file_write+0x568/0x820
+[c000000018d97c00] [c00000000009d95c] .cgroup_file_write+0x7c/0x180
+[c000000018d97cf0] [c0000000000e76b8] .vfs_write+0xe8/0x1b0
+[c000000018d97d90] [c0000000000e810c] .sys_write+0x4c/0x90
+[c000000018d97e30] [c00000000000852c] syscall_exit+0x0/0x40
+
+
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index afe76ec..2af50ec 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5463,11 +5463,12 @@ static void register_sched_domain_sysctl(void)
+ 	struct ctl_table *entry = sd_alloc_ctl_entry(cpu_num + 1);
+ 	char buf[32];
  
- #ifndef __ASSEMBLY__
--static inline unsigned long native_save_fl(void)
-+static inline irq_flags_t native_save_fl(void)
- {
--	unsigned long f;
-+	irq_flags_t f;
- 	asm volatile("pushfl ; popl %0":"=g" (f): /* no input */);
- 	return f;
++	WARN_ON(sd_ctl_dir[0].child);
++	sd_ctl_dir[0].child = entry;
++
+ 	if (entry == NULL)
+ 		return;
+ 
+-	sd_ctl_dir[0].child = entry;
+-
+ 	for_each_online_cpu(i) {
+ 		snprintf(buf, 32, "cpu%d", i);
+ 		entry->procname = kstrdup(buf, GFP_KERNEL);
+@@ -5475,14 +5476,19 @@ static void register_sched_domain_sysctl(void)
+ 		entry->child = sd_alloc_ctl_cpu_table(i);
+ 		entry++;
+ 	}
++
++	WARN_ON(sd_sysctl_header);
+ 	sd_sysctl_header = register_sysctl_table(sd_ctl_root);
  }
  
--static inline void native_restore_fl(unsigned long f)
-+static inline void native_restore_fl(irq_flags_t f)
++/* may be called multiple times per register */
+ static void unregister_sched_domain_sysctl(void)
  {
- 	asm volatile("pushl %0 ; popfl": /* no output */
- 			     :"g" (f)
-@@ -52,12 +52,12 @@ static inline void native_halt(void)
+-	unregister_sysctl_table(sd_sysctl_header);
++	if (sd_sysctl_header)
++		unregister_sysctl_table(sd_sysctl_header);
+ 	sd_sysctl_header = NULL;
+-	sd_free_ctl_entry(&sd_ctl_dir[0].child);
++	if (sd_ctl_dir[0].child)
++		sd_free_ctl_entry(&sd_ctl_dir[0].child);
+ }
  #else
- #ifndef __ASSEMBLY__
- 
--static inline unsigned long __raw_local_save_flags(void)
-+static inline irq_flags_t __raw_local_save_flags(void)
- {
- 	return native_save_fl();
- }
- 
--static inline void raw_local_irq_restore(unsigned long flags)
-+static inline void raw_local_irq_restore(irq_flags_t flags)
- {
- 	native_restore_fl(flags);
- }
-@@ -93,9 +93,9 @@ static inline void halt(void)
- /*
-  * For spinlocks, etc:
+ static void register_sched_domain_sysctl(void)
+@@ -6426,13 +6432,17 @@ static cpumask_t fallback_doms;
   */
--static inline unsigned long __raw_local_irq_save(void)
-+static inline irq_flags_t __raw_local_irq_save(void)
+ static int arch_init_sched_domains(const cpumask_t *cpu_map)
  {
--	unsigned long flags = __raw_local_save_flags();
-+	irq_flags_t flags = __raw_local_save_flags();
- 
- 	raw_local_irq_disable();
- 
-@@ -118,14 +118,14 @@ static inline unsigned long __raw_local_irq_save(void)
- #define raw_local_irq_save(flags) \
- 		do { (flags) = __raw_local_irq_save(); } while (0)
- 
--static inline int raw_irqs_disabled_flags(unsigned long flags)
-+static inline int raw_irqs_disabled_flags(irq_flags_t flags)
- {
--	return !(flags & X86_EFLAGS_IF);
-+	return !((unsigned long __force)flags & X86_EFLAGS_IF);
++	int err;
++
+ 	ndoms_cur = 1;
+ 	doms_cur = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
+ 	if (!doms_cur)
+ 		doms_cur = &fallback_doms;
+ 	cpus_andnot(*doms_cur, *cpu_map, cpu_isolated_map);
++	err = build_sched_domains(doms_cur);
+ 	register_sched_domain_sysctl();
+-	return build_sched_domains(doms_cur);
++
++	return err;
  }
  
- static inline int raw_irqs_disabled(void)
+ static void arch_destroy_sched_domains(const cpumask_t *cpu_map)
+@@ -6481,6 +6491,9 @@ void partition_sched_domains(int ndoms_new, cpumask_t *doms_new)
  {
--	unsigned long flags = __raw_local_save_flags();
-+	irq_flags_t flags = __raw_local_save_flags();
+ 	int i, j;
  
- 	return raw_irqs_disabled_flags(flags);
- }
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -136,8 +136,8 @@ struct pv_irq_ops {
- 	 * returned from save_fl are undefined, and may be ignored by
- 	 * restore_fl.
- 	 */
--	unsigned long (*save_fl)(void);
--	void (*restore_fl)(unsigned long);
-+	irq_flags_t (*save_fl)(void);
-+	void (*restore_fl)(irq_flags_t);
- 	void (*irq_disable)(void);
- 	void (*irq_enable)(void);
- 	void (*safe_halt)(void);
-@@ -1014,9 +1014,9 @@ struct paravirt_patch_site {
- extern struct paravirt_patch_site __parainstructions[],
- 	__parainstructions_end[];
- 
--static inline unsigned long __raw_local_save_flags(void)
-+static inline irq_flags_t __raw_local_save_flags(void)
- {
--	unsigned long f;
-+	irq_flags_t f;
- 
- 	asm volatile(paravirt_alt("pushl %%ecx; pushl %%edx;"
- 				  PARAVIRT_CALL
-@@ -1028,7 +1028,7 @@ static inline unsigned long __raw_local_save_flags(void)
- 	return f;
++	/* always unregister in case we don't destroy any domains */
++	unregister_sched_domain_sysctl();
++
+ 	if (doms_new == NULL) {
+ 		ndoms_new = 1;
+ 		doms_new = &fallback_doms;
+@@ -6516,6 +6529,8 @@ match2:
+ 		kfree(doms_cur);
+ 	doms_cur = doms_new;
+ 	ndoms_cur = ndoms_new;
++
++	register_sched_domain_sysctl();
  }
  
--static inline void raw_local_irq_restore(unsigned long f)
-+static inline void raw_local_irq_restore(irq_flags_t f)
- {
- 	asm volatile(paravirt_alt("pushl %%ecx; pushl %%edx;"
- 				  PARAVIRT_CALL
-@@ -1062,9 +1062,9 @@ static inline void raw_local_irq_enable(void)
- 		     : "memory", "eax", "cc");
- }
- 
--static inline unsigned long __raw_local_irq_save(void)
-+static inline irq_flags_t __raw_local_irq_save(void)
- {
--	unsigned long f;
-+	irq_flags_t f;
- 
- 	f = __raw_local_save_flags();
- 	raw_local_irq_disable();
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -122,7 +122,7 @@ static inline void disable_irq_nosync_lockdep(unsigned int irq)
- #endif
- }
- 
--static inline void disable_irq_nosync_lockdep_irqsave(unsigned int irq, unsigned long *flags)
-+static inline void disable_irq_nosync_lockdep_irqsave(unsigned int irq, irq_flags_t *flags)
- {
- 	disable_irq_nosync(irq);
- #ifdef CONFIG_LOCKDEP
-@@ -146,7 +146,7 @@ static inline void enable_irq_lockdep(unsigned int irq)
- 	enable_irq(irq);
- }
- 
--static inline void enable_irq_lockdep_irqrestore(unsigned int irq, unsigned long *flags)
-+static inline void enable_irq_lockdep_irqrestore(unsigned int irq, irq_flags_t *flags)
- {
- #ifdef CONFIG_LOCKDEP
- 	local_irq_restore(*flags);
-@@ -211,17 +211,17 @@ static inline void __deprecated sti(void)
- {
- 	local_irq_enable();
- }
--static inline void __deprecated save_flags(unsigned long *x)
-+static inline void __deprecated save_flags(irq_flags_t *x)
- {
- 	local_save_flags(*x);
- }
- #define save_flags(x) save_flags(&x)
--static inline void __deprecated restore_flags(unsigned long x)
-+static inline void __deprecated restore_flags(irq_flags_t x)
- {
- 	local_irq_restore(x);
- }
- 
--static inline void __deprecated save_and_cli(unsigned long *x)
-+static inline void __deprecated save_and_cli(irq_flags_t *x)
- {
- 	local_irq_save(*x);
- }
---- a/include/linux/irqflags.h
-+++ b/include/linux/irqflags.h
-@@ -84,7 +84,7 @@
- 
- #define irqs_disabled()						\
- ({								\
--	unsigned long flags;					\
-+	irq_flags_t flags;					\
- 								\
- 	raw_local_save_flags(flags);				\
- 	raw_irqs_disabled_flags(flags);				\
---- a/include/linux/spinlock_api_smp.h
-+++ b/include/linux/spinlock_api_smp.h
-@@ -30,13 +30,13 @@ void __lockfunc _write_lock_bh(rwlock_t *lock)		__acquires(lock);
- void __lockfunc _spin_lock_irq(spinlock_t *lock)	__acquires(lock);
- void __lockfunc _read_lock_irq(rwlock_t *lock)		__acquires(lock);
- void __lockfunc _write_lock_irq(rwlock_t *lock)		__acquires(lock);
--unsigned long __lockfunc _spin_lock_irqsave(spinlock_t *lock)
-+irq_flags_t __lockfunc _spin_lock_irqsave(spinlock_t *lock)
- 							__acquires(lock);
--unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
-+irq_flags_t __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
- 							__acquires(lock);
--unsigned long __lockfunc _read_lock_irqsave(rwlock_t *lock)
-+irq_flags_t __lockfunc _read_lock_irqsave(rwlock_t *lock)
- 							__acquires(lock);
--unsigned long __lockfunc _write_lock_irqsave(rwlock_t *lock)
-+irq_flags_t __lockfunc _write_lock_irqsave(rwlock_t *lock)
- 							__acquires(lock);
- int __lockfunc _spin_trylock(spinlock_t *lock);
- int __lockfunc _read_trylock(rwlock_t *lock);
-@@ -51,11 +51,11 @@ void __lockfunc _write_unlock_bh(rwlock_t *lock)	__releases(lock);
- void __lockfunc _spin_unlock_irq(spinlock_t *lock)	__releases(lock);
- void __lockfunc _read_unlock_irq(rwlock_t *lock)	__releases(lock);
- void __lockfunc _write_unlock_irq(rwlock_t *lock)	__releases(lock);
--void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
-+void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, irq_flags_t flags)
- 							__releases(lock);
--void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
-+void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, irq_flags_t flags)
- 							__releases(lock);
--void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
-+void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, irq_flags_t flags)
- 							__releases(lock);
- 
- #endif /* __LINUX_SPINLOCK_API_SMP_H */
---- a/include/linux/spinlock_up.h
-+++ b/include/linux/spinlock_up.h
-@@ -26,7 +26,7 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
- }
- 
- static inline void
--__raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
-+__raw_spin_lock_flags(raw_spinlock_t *lock, irq_flags_t flags)
- {
- 	local_irq_save(flags);
- 	lock->slock = 0;
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -188,6 +188,7 @@ typedef __u32 __bitwise __wsum;
- 
- #ifdef __KERNEL__
- typedef unsigned __bitwise__ gfp_t;
-+typedef unsigned long __bitwise__ irq_flags_t;
- 
- #ifdef CONFIG_RESOURCES_64BIT
- typedef u64 resource_size_t;
---- a/kernel/spinlock.c
-+++ b/kernel/spinlock.c
-@@ -76,9 +76,9 @@ void __lockfunc _read_lock(rwlock_t *lock)
- }
- EXPORT_SYMBOL(_read_lock);
- 
--unsigned long __lockfunc _spin_lock_irqsave(spinlock_t *lock)
-+irq_flags_t __lockfunc _spin_lock_irqsave(spinlock_t *lock)
- {
--	unsigned long flags;
-+	irq_flags_t flags;
- 
- 	local_irq_save(flags);
- 	preempt_disable();
-@@ -115,9 +115,9 @@ void __lockfunc _spin_lock_bh(spinlock_t *lock)
- }
- EXPORT_SYMBOL(_spin_lock_bh);
- 
--unsigned long __lockfunc _read_lock_irqsave(rwlock_t *lock)
-+irq_flags_t __lockfunc _read_lock_irqsave(rwlock_t *lock)
- {
--	unsigned long flags;
-+	irq_flags_t flags;
- 
- 	local_irq_save(flags);
- 	preempt_disable();
-@@ -145,9 +145,9 @@ void __lockfunc _read_lock_bh(rwlock_t *lock)
- }
- EXPORT_SYMBOL(_read_lock_bh);
- 
--unsigned long __lockfunc _write_lock_irqsave(rwlock_t *lock)
-+irq_flags_t __lockfunc _write_lock_irqsave(rwlock_t *lock)
- {
--	unsigned long flags;
-+	irq_flags_t flags;
- 
- 	local_irq_save(flags);
- 	preempt_disable();
-@@ -222,9 +222,9 @@ void __lockfunc _##op##_lock(locktype##_t *lock)			\
- 									\
- EXPORT_SYMBOL(_##op##_lock);						\
- 									\
--unsigned long __lockfunc _##op##_lock_irqsave(locktype##_t *lock)	\
-+irq_flags_t __lockfunc _##op##_lock_irqsave(locktype##_t *lock)		\
- {									\
--	unsigned long flags;						\
-+	irq_flags_t flags;						\
- 									\
- 	for (;;) {							\
- 		preempt_disable();					\
-@@ -254,7 +254,7 @@ EXPORT_SYMBOL(_##op##_lock_irq);					\
- 									\
- void __lockfunc _##op##_lock_bh(locktype##_t *lock)			\
- {									\
--	unsigned long flags;						\
-+	irq_flags_t flags;						\
- 									\
- 	/*							*/	\
- 	/* Careful: we must exclude softirqs too, hence the	*/	\
-@@ -341,7 +341,7 @@ void __lockfunc _read_unlock(rwlock_t *lock)
- }
- EXPORT_SYMBOL(_read_unlock);
- 
--void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
-+void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, irq_flags_t flags)
- {
- 	spin_release(&lock->dep_map, 1, _RET_IP_);
- 	_raw_spin_unlock(lock);
-@@ -368,7 +368,7 @@ void __lockfunc _spin_unlock_bh(spinlock_t *lock)
- }
- EXPORT_SYMBOL(_spin_unlock_bh);
- 
--void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
-+void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, irq_flags_t flags)
- {
- 	rwlock_release(&lock->dep_map, 1, _RET_IP_);
- 	_raw_read_unlock(lock);
-@@ -395,7 +395,7 @@ void __lockfunc _read_unlock_bh(rwlock_t *lock)
- }
- EXPORT_SYMBOL(_read_unlock_bh);
- 
--void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
-+void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, irq_flags_t flags)
- {
- 	rwlock_release(&lock->dep_map, 1, _RET_IP_);
- 	_raw_write_unlock(lock);
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
