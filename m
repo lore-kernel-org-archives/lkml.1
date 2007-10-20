@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbXJTOR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbXJTOX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757772AbXJTOR6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 10:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbXJTORu
+	id S1759202AbXJTOX0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 10:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXJTOXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 10:17:50 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:29439 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752151AbXJTORt (ORCPT
+	Sat, 20 Oct 2007 10:23:16 -0400
+Received: from mfbichi11.ns.itscom.net ([219.110.2.189]:52574 "EHLO
+	mfbichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751978AbXJTOXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 10:17:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
-  b=Y1mhKCqjiN83a/aS+FsXtzG1Agy3Kit9KB5vfBYQj3Ip9pYuFhzMelwBZkP5YQ/8ZOoA+R1ianliw0OvKVYrEsHvonljaQJX6htxxX+o/FCttLns9HRT4hKhgMyj55QDCnQtoV64qCUHJEVHzoQLxdPOCJoBBsytV1rvZf8V2ds=  ;
-X-YMail-OSG: RD8WXA8VM1kw2WKzymqrfQbHiqFFeM_iTtYZhC5upQ9pQRWbt7VK03ghVMH4qasIdAJFQD2X1w--
-Message-ID: <471A0DF4.50700@yahoo.com.au>
-Date: Sat, 20 Oct 2007 22:17:24 +0800
-From: Ben <benjg87@yahoo.com.au>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Sat, 20 Oct 2007 10:23:14 -0400
+X-Greylist: delayed 33908 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Oct 2007 10:23:14 EDT
+Date: Sat, 20 Oct 2007 13:57:54 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: oops in lbmIODone, fails to boot [Re: 2.6.23-mm1]
+Message-ID: <20071020045753.GA4660@inferi.kami.home>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Problem with reiserfs in 2.6.23-mm1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.23-rc1-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Oct 11, 2007 at 09:31:26PM -0700, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
 
-Whenever I log into xfce with gdm my computer will freeze when i use 
-reiserfs as my /home on 2.6.23-mm1. Logging into the VT works perfectly 
-fine. Previously my system would crash when logging into the VT but the
-make-reiserfs-stop-using-struct-file-for-internal.patch patch fixed the 
-issue(and possibly introduced the issue I currently have). My system 
-works perfectly fine using 2.6.23-rc6-mm1 and prior. /home is mounted 
-with the following options: /dev/sda3 on /home type reiserfs 
-(rw,nosuid,nodev,noatime,acl)
+Hey there!!
+fails to boot here with this friendly oops:
+http://oioio.altervista.org/linux/dsc01702.jpg
+
+.config: http://oioio.altervista.org/linux/config-2.6.23-mm1-1
+
+2.6.23-rc8-mm2 booted ok but had other problems I haven't reported yet
+(no s2ram with mysql running and some net WARNING).
+Let's see if .23-mm1 still has those first.
+
+I'm adding Cc: linux-scsi
+
+PS: I'll hardly be able to bisect in the next days... :P
+-- 
+mattia
+:wq!
