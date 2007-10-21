@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbXJULN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXJULQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbXJULN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXJULNG
+	id S1753358AbXJULQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXJULQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:13:06 -0400
-Received: from m-04.th.seeweb.it ([217.64.195.227]:40686 "EHLO
-	m-04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbXJULNE (ORCPT
+	Sun, 21 Oct 2007 07:16:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50329 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751511AbXJULQS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 07:13:04 -0400
-Message-ID: <471B32D8.6040508@users.sourceforge.net>
-Date: Sun, 21 Oct 2007 13:07:04 +0200
-From: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070908)
+	Sun, 21 Oct 2007 07:16:18 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX18smbdr36AsyZMO5raSMpXG9Qftjp3LOGmznYbdwG
+	rl3gljOgRxwbx5
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: cpu governor ondemand issue
+Date: Sun, 21 Oct 2007 13:16:14 +0200
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Laptop keyboard unusable when ACPI is active was Re: [2.6.22]
- i8042, ACPI, ipw2100 and issues reported by psmouse.c atkbd.c
-References: <47001841.1000107@users.sourceforge.net> <470DD906.9090504@users.sourceforge.net> <20071018195202.GA6962@ucw.cz>
-In-Reply-To: <20071018195202.GA6962@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200710211316.14955.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek ha scritto:
-> Hi!
->> egolas558@users.sourceforge.net ha scritto:
->>     
->>> Kernel: 2.6.22-r5
->>> Kernel option: i8042.nomux=1
->>>       
->> I am now using kernel 2.6.22-r8 (Gentoo) and the following kernel options:
->>
->> i8042.nomux=1 acpi=off
->>
->> I have tried kernel 2.6.23-rc9 but the problem is still there.
->>     
-> Try usb keyboard.
->   
-The USB keyboard is not affected by the problem, and more importantly it
-has not the latencies in ACPI mode which the embedded PS2 keyboard has.
+I use the following one liner for regression tests of the cpufreq governor and
+friends:
 
-> Try disabling lm_sensors.
->   
-lm_sensors was not installed at all. I have now enabled HWMON and other
-CONFIG_I2C_* kernel config parameters to use lm_sensors (without success).
+tfoerste@n22 ~ $ time factor 819734028463158891
 
-> Is it smp box?
->   
-It is not but from the sensors-detect's log seems like the motherboard
-supports it.
+which usually needs 5.5 secs to complete at 1.7 GHz of my pentium M processor.
 
-Best regards,
---
-  Daniele
+With the  current git sources (commit cfa76f0 at Sat Oct 20 20:19:15 2007 -0700)
+instead this command needs 3 times longer if I run the "distributed.net client"
+as a background process with nice level 19 b/c the cpu frequency still stays
+at 600 MHz.
+After stopping dnetc the cpu frequency governor ondemand works as expected again.
 
+Tested at my ThinkPad T41 with stable Gentoo:
 
+tfoerste@n22 ~ $ grep -e ^CONFIG_ACPI -e ^CONFIG_CPU_FREQ_GOV_ ~/devel/linux-2.6/.config
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_ACPI_AC=m
+CONFIG_ACPI_BATTERY=m
+CONFIG_ACPI_BUTTON=m
+CONFIG_ACPI_VIDEO=m
+CONFIG_ACPI_FAN=m
+CONFIG_ACPI_PROCESSOR=m
+CONFIG_ACPI_THERMAL=m
+CONFIG_ACPI_BLACKLIST_YEAR=0
+CONFIG_ACPI_EC=y
+CONFIG_ACPI_POWER=y
+CONFIG_ACPI_SYSTEM=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+
+-- 
+MfG/Sincerely
+
+Toralf Förster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
