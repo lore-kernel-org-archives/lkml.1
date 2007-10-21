@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751025AbXJUBim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbXJUBkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751025AbXJUBim (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 21:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXJUBiG
+	id S1751794AbXJUBkj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Oct 2007 21:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXJUBkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 21:38:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45411 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750994AbXJUBiE (ORCPT
+	Sat, 20 Oct 2007 21:40:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:13386 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbXJUBka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 21:38:04 -0400
-Date: Sat, 20 Oct 2007 12:36:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: git/cscope with x86 merge
-In-Reply-To: <20071020191534.GA8774@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.0.999.0710201232100.10525@woody.linux-foundation.org>
-References: <86802c440710151245s7d12a45fpfdaa041546d965e@mail.gmail.com>
- <alpine.LFD.0.999.0710151256260.6887@woody.linux-foundation.org>
- <86802c440710200240o7aae2760o5fa9c70e3b327097@mail.gmail.com>
- <alpine.LFD.0.999.0710200854550.3794@woody.linux-foundation.org>
- <20071020164752.GB6855@uranus.ravnborg.org>
- <alpine.LFD.0.999.0710201058300.3794@woody.linux-foundation.org>
- <alpine.LFD.0.999.0710201140550.3794@woody.linux-foundation.org>
- <20071020191534.GA8774@uranus.ravnborg.org>
+	Sat, 20 Oct 2007 21:40:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=YlTV0Wk9lNmskYVYGHgmqr/7GkkuVej+NHOHar+b9J8FGrEIJ4xZwA90iKqLZc8wXOYQtHpBDmoVTl7JtAjpm70t1Ir37F/7UjwpdzNQ0/Y5qvkxcg14MXkNLOv0ThSQpq/kSpQbWJaQ+LoSG03YtMXQniTEdGt1DwN0xSFF+Dk=
+Date: Sun, 21 Oct 2007 03:40:21 +0200
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Smackv8: Omit non-cipso labels in cipso_seq_start
+Message-ID: <20071021014021.GA3091@Ahmed>
+References: <47158CE4.30706@schaufler-ca.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47158CE4.30706@schaufler-ca.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!,
+
+[Casey, sending patches in public to get an early review]
+
+Omit non-cipso labels in cipso_seq_start().
+
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
+stopping seq_show() if smk_cipso = NULL only fixes the bug 
+symptom. We'll issue a BUG() in that case cause it signals a
+serious misbehavior in the list entries.
+
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 55ba2dc..b061cd0 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -297,14 +297,22 @@ void smk_cipso_doi(void)
+ 
+ /*
+  * Seq_file read operations for /smack/cipso
++ *
++ * Omit labels with no associated cipso values from being
++ * displayed in seq_show()
+  */
+ 
+ static void *cipso_seq_start(struct seq_file *s, loff_t *pos)
+ {
++	struct smack_known *skp = smack_known;
++
+ 	if (*pos >= smack_cipso_count)
+ 		return NULL;
+ 
+-	return smack_known;
++	while (skp && !skp->smk_cipso)
++		skp = skp->smk_next;
++
++	return skp;
+ }
+ 
+ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
+@@ -313,9 +321,6 @@ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
+ 
+ 	(*pos)++;
+ 
+-	/*
+-	 * Omit labels with no associated cipso value
+-	 */
+ 	while (skp && !skp->smk_cipso)
+ 		skp = skp->smk_next;
+ 
+@@ -336,12 +341,11 @@ static int cipso_seq_show(struct seq_file *s, void *v)
+ 	int i;
+ 	unsigned char m;
+ 
+-	if (scp == NULL)
+-		return 0;
++	BUG_ON(!scp);
++	cbp = scp->smk_catset;
+ 
+ 	seq_printf(s, "%s %3d", (char *)&skp->smk_known, scp->smk_level);
+ 
+-	cbp = scp->smk_catset;
+ 	for (i = 0; i < SMK_LABELLEN; i++)
+ 		for (m = 0x80; m != 0; m >>= 1) {
+ 			if (m & cbp[i]) {
 
 
-On Sat, 20 Oct 2007, Sam Ravnborg wrote:
-> 
-> I pulled next branch of git and applied your patch.
-> 
-> When running
->  	git log --follow -B arch/x86/kernel/vmlinux_64.lds.S
-> 
-> I got no output at all (in a newly pulled linux kernel dir).
-
-Try with "-p".
-
-It's possible (nay, likely) that "next" has the bug where "--follow" 
-without a patch generating thing (-p or --stat or one of the other flags 
-that enable diffs) doesn't work at all.
-
-It should be fixed in "master".
-
-Sadly, Junio has been away for personal reasons for two weeks, so we 
-haven't had that known bug fixed in the regular git tree. Shawn Pearce 
-maintains a repo with known fixes at "git://repo.or.cz/git/spearce.git" in 
-the meantime.
-
-			Linus
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
