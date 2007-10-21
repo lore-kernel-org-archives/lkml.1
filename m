@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbXJUHnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbXJUHwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751478AbXJUHnY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 03:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbXJUHnR
+	id S1751657AbXJUHwS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 03:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXJUHwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 03:43:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55803 "EHLO mx3.mail.elte.hu"
+	Sun, 21 Oct 2007 03:52:09 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:43208 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbXJUHnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 03:43:16 -0400
-Date: Sun, 21 Oct 2007 09:43:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Milton D. Miller II" <miltonm@realtime.net>
-Cc: Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix sched_domain sysctl registration again
-Message-ID: <20071021074301.GA14368@elte.hu>
-References: <200710201941.l9KJfIGL008482@sullivan.realtime.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710201941.l9KJfIGL008482@sullivan.realtime.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750987AbXJUHwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 03:52:08 -0400
+To: LKML <linux-kernel@vger.kernel.org>
+From: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 0/17] various irq handler cleanups
+Message-Id: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 03:52:07 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This series continues the work of running through irq handlers that use
+their 'irq' argument -- almost always for trivial (or even wrong)
+reasons.
 
-* Milton D. Miller II <miltonm@realtime.net> wrote:
+In many cases, this work eliminates some pointless code in the fastpath,
+and/or otherwise makes interrupt handling [ever so] slightly more
+efficient and clean.
 
-> commit 029190c515f15f512ac85de8fc686d4dbd0ae731 (cpuset 
-> sched_load_balance flag) was not tested SCHED_DEBUG enabled as 
-> committed as it dereferences NULL when used and it reordered the 
-> sysctl registration to cause it to never show any domains or their 
-> tunables.
-> 
-> Fixes:
-> 
-> 1) restore arch_init_sched_domains ordering
-> 	we can't walk the domains before we build them
-> 
-> 	presently we register cpus with empty directories (no domain
-> 	directories or files).
-> 
-> 2) make unregister_sched_domain_sysctl do nothing when already unregistered
-> 	detach_destroy_domains is now called one set of cpus at a time
-> 	unregister_syctl dereferences NULL if called with a null.
-> 
-> 	While the the function would always dereference null if called
-> 	twice, in the previous code it was always called once and then
-> 	was followed a register.  So only the hidden bug of the
-> 	sysctl_root_table not being allocated followed by an attempt to
-> 	free it would have shown the error.
-> 
-> 3) always call unregister and register in partition_sched_domains
-> 	The code is "smart" about unregistering only needed domains.
-> 	Since we aren't guaranteed any calls to unregister, always 
-> 	unregister.   Without calling register on the way out we
-> 	will not have a table or any sysctl tree.
-> 
-> 4) warn if register is called without unregistering
-> 	The previous table memory is lost, leaving pointers to the
-> 	later freed memory in sysctl and leaking the memory of the
-> 	tables.
+As usual, this work is being committed to the 'irq-cleanups' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-thanks, applied.
+which encompasses the following changes (includes some previously
+posted, and not re-posted in this series):
 
-	Ingo
+older cleanups:
+      [PARPORT] Consolidate code copies into a single generic irq handler
+      [PARPORT] Kill useful 'irq' arg from parport_{generic_irq,ieee1284_interru
+      [PARPORT] Remove unused 'irq' argument from parport irq functions
+      [BLUETOOTH] Eliminate checks for impossible conditions in irq handler
+      Eliminate pointless casts from void* in a few driver irq handlers.
+      [SPARC, XEN, NET/CXGB3] use irq_handler_t where appropriate
+      [NETDRVR] lib82596, netxen: delete pointless tests from irq handler
+      [SCSI] aha152x: delete pointless test in irq handler
+      [ATM, CHAR, TOUCHSCREEN] remove needless use of irq handler first arg
+
+new cleanups:
+      [IRQ ARG CLEANUP] more driver cleanups
+      drivers/char/ip2: split out irq core logic into separate function
+      drivers/char/ip2: separate polling and irq-driven work entry points
+      char/pcmcia/synclink_cs: trim trailing whitespace
+      drivers/char/pcmcia/synclink_cs.c: irq handler cleanups
+      drivers/char/riscom8: irq handler cleanups
+      drivers/char/{rio,specialix,sx}: irq handler cleanups
+      arch/x86/kernel/vm86_32.c: irq handler cleanup
+      drivers/char/{synclink,tpm}: irq handler cleanups
+      drivers/input/serio/i8042.c: irq handler clean
+      isdn/act2000: fix major bug. clean irq handler.
+      isdn/sc: irq handler clean
+      [netdrvr] driver irq handler cleanups
+      pcmcia/i82365: irq handler cleanups
+      serial, rtc/ds1374: irq handler cleanups
+      [SCSI] driver irq handler cleanups
+      RTC interrupt handling cleanups
+
