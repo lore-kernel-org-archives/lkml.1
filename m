@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbXJURzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbXJUR4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751798AbXJURzR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 13:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbXJURzF
+	id S1753663AbXJUR4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 13:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbXJUR4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 13:55:05 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:36687 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbXJURzE (ORCPT
+	Sun, 21 Oct 2007 13:56:05 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:51863 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751855AbXJUR4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 13:55:04 -0400
-Date: Sun, 21 Oct 2007 19:55:00 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cc-cross-prefix spelling (was: Re: [GI:wqT PULL] kbuild
- updates - second round)
-In-Reply-To: <20071019204415.GA623@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0710211953550.6155@anakin>
-References: <20071019204415.GA623@uranus.ravnborg.org>
+	Sun, 21 Oct 2007 13:56:04 -0400
+Message-ID: <471B9290.8050703@linux.vnet.ibm.com>
+Date: Sun, 21 Oct 2007 23:25:28 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: menage@google.com, Andrew Morton <akpm@linux-foundation.org>,
+       vatsa@linux.vnet.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fixing the warning in cgroup.c
+References: <471B8CAC.2070904@linux.vnet.ibm.com>
+In-Reply-To: <471B8CAC.2070904@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Sam Ravnborg wrote:
-> The cc-cross-prefix is new and developed on request from Geert Uytterhoeven.
+Kamalesh Babulal wrote:
+> Hi,
+> 
+> Removing the unused variable root.
+> 
+> kernel/cgroup.c: In function ‘proc_cgroupstats_show’:
+> kernel/cgroup.c:2405: warning: unused variable ‘root’
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> 
+> Index: linux-git/kernel/cgroup.c
+> ===================================================================
+> --- linux-git.orig/kernel/cgroup.c      2007-10-21 08:49:15.000000000 +0530
+> +++ linux-git/kernel/cgroup.c   2007-10-21 22:24:13.000000000 +0530
+> @@ -2402,7 +2402,6 @@ struct file_operations proc_cgroup_opera
+>  static int proc_cgroupstats_show(struct seq_file *m, void *v)
+>  {
+>         int i;
+> -       struct cgroupfs_root *root;
+> 
+>         seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\n");
+>         mutex_lock(&cgroup_mutex);
+> 
+> 
 
-Spelling fixes for cc-cross-prefix documentation
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- Documentation/kbuild/makefiles.txt |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Looks good to me!
 
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -519,17 +519,17 @@ more details, with real examples.
- 	to the user why it stops.
- 
-     cc-cross-prefix
--	cc-cross-prefix is used to check if there exist a $(CC) in path with
-+	cc-cross-prefix is used to check if there exists a $(CC) in path with
- 	one of the listed prefixes. The first prefix where there exist a
- 	prefix$(CC) in the PATH is returned - and if no prefix$(CC) is found
- 	then nothing is returned.
- 	Additional prefixes are separated by a single space in the
- 	call of cc-cross-prefix.
--	This functionality is usefull for architecture Makefile that try
--	to set CROSS_COMPILE to well know values but may have several
-+	This functionality is useful for architecture Makefiles that try
-+	to set CROSS_COMPILE to well-known values but may have several
- 	values to select between.
--	It is recommended only to try to set CROSS_COMPILE is it is a cross
--	build (host arch is different from target arch). And is CROSS_COMPILE
-+	It is recommended only to try to set CROSS_COMPILE if it is a cross
-+	build (host arch is different from target arch). And if CROSS_COMPILE
- 	is already set then leave it with the old value.
- 
- 	Example:
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
