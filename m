@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbXJUEeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751538AbXJUErv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbXJUEeR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 00:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbXJUEeE
+	id S1751538AbXJUErv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbXJUErp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 00:34:04 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:28075 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751011AbXJUEeD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 00:34:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=HYI3HyTGGKpesDehAirhmeM9BDha7gAHa0YhZQM+XuMe/FQ1yvMvBL9DPShx3ZhF9x4ibx7w5srclFi1dhe1y/56jTaR8xkX8bcw1C99Zp3ypOVK7e4jnBtLF9053+R9HpqaZDQ1z0eVZ0a4jf6t+dgeZj8WUj9Udezlu/Iksq4=  ;
-X-YMail-OSG: .qu3PkUVM1nEBZq0YV862ZCmAtRSEoy6r.HUPRSSRKnVo.Q4GBF.RPhk87Ccqq0qu..OY1njsQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] rd: Use a private inode for backing storage
-Date: Sun, 21 Oct 2007 14:28:55 +1000
-User-Agent: KMail/1.9.5
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710181126.10559.borntraeger@de.ibm.com> <m1lk9yen0h.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lk9yen0h.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710211428.55611.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 21 Oct 2007 00:47:45 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:57543 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbXJUEro (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 00:47:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Henrik Carlqvist <hc1@poolhem.se>, linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+In-Reply-To: Your message of "Sat, 20 Oct 2007 21:17:00 +0200."
+             <20071020191700.GB8774@uranus.ravnborg.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se>
+            <20071020191700.GB8774@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1192942058_3691P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 21 Oct 2007 00:47:38 -0400
+Message-ID: <26703.1192942058@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 October 2007 08:51, Eric W. Biederman wrote:
-> Currently the ramdisk tries to keep the block device page cache pages
-> from being marked clean and dropped from memory.  That fails for
-> filesystems that use the buffer cache because the buffer cache is not
-> an ordinary buffer cache user and depends on the generic block device
-> address space operations being used.
->
-> To fix all of those associated problems this patch allocates a private
-> inode to store the ramdisk pages in.
->
-> The result is slightly more memory used for metadata, an extra copying
-> when reading or writing directly to the block device, and changing the
-> software block size does not loose the contents of the ramdisk.  Most
-> of all this ensures we don't loose data during normal use of the
-> ramdisk.
->
-> I deliberately avoid the cleanup that is now possible because this
-> patch is intended to be a bug fix.
+--==_Exmh_1192942058_3691P
+Content-Type: text/plain; charset=us-ascii
 
-This just breaks coherency again like the last patch. That's a
-really bad idea especially for stable (even if nothing actually
-was to break, we'd likely never know about it anyway).
+On Sat, 20 Oct 2007 21:17:00 +0200, Sam Ravnborg said:
+> On Sat, Oct 20, 2007 at 02:42:38PM +0200, Henrik Carlqvist wrote:
+> > I think there is a need for Kconfig to specify that a functionality could
+> > be built as a module or not built at all.
+> 
+> I assume
+> 	depends on MODULES
+> 
+> should do the trick.
 
-Christian's patch should go upstream and into stable. For 2.6.25-6,
-my rewrite should just replace what's there. Using address spaces
-to hold the ramdisk pages just confuses the issue even if they
-*aren't* actually wired up to the vfs at all. Saving 20 lines is
-not a good reason to use them.
+Umm... I think that will work backwards, and give you CONFIG_FOO=y
+if.f the kernel *supports* modules. What he needs is to be able to say
+CONFIG_FOO=n or CONFIG_FOO=m, but *ban* CONFIG_FOO=y.
 
+(At least, in my kernel, I have MODULES=y, and several other things
+from init/Kconfig have 'depends on MODULES' and also end up 'y':
+
+% zgrep MODULE /proc/config.gz 
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_MODULE_VERIFY_ELF=y
+
+
+--==_Exmh_1192942058_3691P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHGtnpcC3lWbTT17ARAvmQAJ9fBPNVw5kRWI+fiw1KUalnhOHsggCguswj
+JZ37b9JXMWFaDwiZW3dZ2co=
+=Xyb4
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1192942058_3691P--
