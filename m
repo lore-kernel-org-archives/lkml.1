@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXJULJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbXJULJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbXJULJc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbXJULH5
+	id S1753254AbXJULJt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXJULH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:07:57 -0400
-Received: from il.qumranet.com ([82.166.9.18]:58442 "EHLO il.qumranet.com"
+	Sun, 21 Oct 2007 07:07:58 -0400
+Received: from il.qumranet.com ([82.166.9.18]:58443 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbXJULHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751478AbXJULHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 21 Oct 2007 07:07:54 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Eddie Dong <eddie.dong@intel.com>,
-       Qing He <qing.he@intel.com>, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 05/11] KVM: VMX: Reset mmu context when entering real mode
-Date: Sun, 21 Oct 2007 13:08:06 +0200
-Message-Id: <11929648922970-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng.yang@intel.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 06/11] KVM: x86 emulator: implement 'movnti mem, reg'
+Date: Sun, 21 Oct 2007 13:08:07 +0200
+Message-Id: <1192964892551-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <1192964892617-git-send-email-avi@qumranet.com>
 References: <1192964892617-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eddie Dong <eddie.dong@intel.com>
+From: Sheng Yang <sheng.yang@intel.com>
 
-Resetting an SMP guest will force AP enter real mode (RESET) with
-paging enabled in protected mode. While current enter_rmode() can
-only handle mode switch from nonpaging mode to real mode which leads
-to SMP reboot failure.
+Implement emulation of instruction:
+    movnti m32/m64, r32/r64
+    opcode: 0x0f 0xc3
 
-Fix by reloading the mmu context on entering real mode.
-
-Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
-Signed-off-by: Qing He <qing.he@intel.com>
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/mmu.c |    1 +
- drivers/kvm/vmx.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/kvm/x86_emulate.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 7171618..feb5ac9 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -1049,6 +1049,7 @@ int kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
- 	destroy_kvm_mmu(vcpu);
- 	return init_kvm_mmu(vcpu);
- }
-+EXPORT_SYMBOL_GPL(kvm_mmu_reset_context);
- 
- int kvm_mmu_load(struct kvm_vcpu *vcpu)
- {
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index bcc1e39..f130c01 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1128,6 +1128,7 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
- 	fix_rmode_seg(VCPU_SREG_GS, &vcpu->rmode.gs);
- 	fix_rmode_seg(VCPU_SREG_FS, &vcpu->rmode.fs);
- 
-+	kvm_mmu_reset_context(vcpu);
- 	init_rmode_tss(vcpu->kvm);
- }
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 80b1758..0a8696d 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -212,7 +212,8 @@ static u16 twobyte_table[256] = {
+ 	0, 0, ByteOp | DstReg | SrcMem | ModRM | Mov,
+ 	    DstReg | SrcMem16 | ModRM | Mov,
+ 	/* 0xC0 - 0xCF */
+-	0, 0, 0, 0, 0, 0, 0, ImplicitOps | ModRM, 0, 0, 0, 0, 0, 0, 0, 0,
++	0, 0, 0, DstMem | SrcReg | ModRM | Mov, 0, 0, 0, ImplicitOps | ModRM,
++	0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xD0 - 0xDF */
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xE0 - 0xEF */
+@@ -1501,6 +1502,10 @@ twobyte_insn:
+ 		dst.bytes = op_bytes;
+ 		dst.val = (d & ByteOp) ? (s8) src.val : (s16) src.val;
+ 		break;
++	case 0xc3:		/* movnti */
++		dst.bytes = op_bytes;
++		dst.val = (op_bytes == 4) ? (u32) src.val : (u64) src.val;
++		break;
+ 	}
+ 	goto writeback;
  
 -- 
 1.5.3
