@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbXJUJVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbXJUJVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbXJUJVm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 05:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXJUJVd
+	id S1752956AbXJUJVy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 05:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXJUJVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 21 Oct 2007 05:21:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:42801 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbXJUJVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60857 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbXJUJVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 21 Oct 2007 05:21:31 -0400
-Date: Sun, 21 Oct 2007 11:21:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Garzik <jeff@garzik.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 8/17] arch/x86/kernel/vm86_32.c: irq handler cleanup
-In-Reply-To: <20071021075230.DC55E19041B@havoc.gtf.org>
-Message-ID: <alpine.LFD.0.9999.0710211119020.22770@localhost.localdomain>
-References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org> <20071021075230.DC55E19041B@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 11:21:38 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: rt2400-devel@lists.sourceforge.net,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
+Subject: Re: [Rt2400-devel] rt73usb: support for wireless in Kohjinsha
+	subnotebook
+Message-ID: <20071021092138.GC25270@elf.ucw.cz>
+References: <20071020184100.GA11640@elf.ucw.cz> <200710210012.37547.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710210012.37547.IvDoorn@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007, Jeff Garzik wrote:
+Hi!
 
-> commit f57c82aa01f4387c8400acb43afa7fc580635e16
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Fri Oct 19 19:25:42 2007 -0400
+> > Kohjinsha subnotebook seems to contain wifi with USB IDs 0x18e8,
+> > 0x6206... I hope that to be compatible with
+> > net/wireless/rt2x00/rt73usb.c .
 > 
->     arch/x86/kernel/vm86_32.c: irq handler cleanup
->     
->     Obtain the data we want (irq number) via dev_id.
->     
->     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> Is there any reason you assume it is a rt73usb device,
+> or are you just making wild guesses about what the chipset is?
+
+Wild guess. I've seen 18e8:6XXX being handled by rt73usb, so..
+
+> > [Sidenote: could we add some real author info into rt73usb.c?]
 > 
->  arch/x86/kernel/vm86_32.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> f57c82aa01f4387c8400acb43afa7fc580635e16
-> diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
-> index 157e4be..336618b 100644
-> --- a/arch/x86/kernel/vm86_32.c
-> +++ b/arch/x86/kernel/vm86_32.c
-> @@ -739,8 +739,9 @@ static int irqbits;
->  	| (1 << SIGUSR1) | (1 << SIGUSR2) | (1 << SIGIO)  | (1 << SIGURG) \
->  	| (1 << SIGUNUSED) )
->  	
-> -static irqreturn_t irq_handler(int intno, void *dev_id)
-> +static irqreturn_t irq_handler(int dummy, void *dev_id)
->  {
-> +	int intno = (int)(unsigned long) dev_id;
->  	int irq_bit;
+> You mean expanding the project name to the full list of developers in
+> the project? I don't see any need for that.
 
-can we put the two ints into one line please. The typecast is ugly,
-but looking into the file itself it does not really increase the
-existing ugliness much.
+At least put name and email of lead developer there, or something.
 
-	Acked-by: Thomas Gleixner <tglx@linutronix.de>
-
+I do not think "copyright sourceforge project" is okay thing to do --
+unless the sf project legaly exists and you did some paperwork.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
