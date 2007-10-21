@@ -1,125 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbXJULeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbXJULhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbXJULeT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbXJULeN
+	id S1752866AbXJULhz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXJULhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:34:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40323 "EHLO mail.screens.ru"
+	Sun, 21 Oct 2007 07:37:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56574 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbXJULeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 07:34:12 -0400
-Date: Sun, 21 Oct 2007 15:39:17 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: [RFC PATCH 3/4] Replace per-subsystem mutexes with get_online_cpus
-Message-ID: <20071021113917.GA80@tv-sign.ru>
-References: <20071016103308.GA9907@in.ibm.com> <20071016103637.GC16570@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751460AbXJULhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 07:37:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: mysqld prevents s2ram [Re: 2.6.23-mm1]
+Date: Sun, 21 Oct 2007 13:53:57 +0200
+User-Agent: KMail/1.9.5
+Cc: Mattia Dongili <malattia@linux.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <20071021055816.GA4204@inferi.kami.home> <20071021095802.GA25669@elf.ucw.cz>
+In-Reply-To: <20071021095802.GA25669@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071016103637.GC16570@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200710211353.57770.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/16, Gautham R Shenoy wrote:
->
-> This patch converts the known per-subsystem cpu_hotplug mutexes to
-> get_online_cpus put_online_cpus.
-> It also eliminates the CPU_LOCK_ACQUIRE and CPU_LOCK_RELEASE hotplug
-> notification events.
+On Sunday, 21 October 2007 11:58, Pavel Machek wrote:
+> Hi!
+> 
+> > On Thu, Oct 11, 2007 at 09:31:26PM -0700, Andrew Morton wrote:
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > 
+> > Ok, now that it boots let's go for more.
+> > 
+> > I cannot suspend if mysqld is running. mysql isn't atually doing
+> > anything useful anyway.
+> 
+> I believe this is known and rafael already has a fix somewhere. The
+> "guilty" patch already hit mainline, not sure about the "fix" patch.
 
-Personally, I like the changes in workqueue.c very much, a couple of
-minor nits below.
+The fix has not been merged yet, but
+freezer-use-wait-queue-instead-of-busy-looping.patch has been dropped for
+another reason.
 
-> --- linux-2.6.23.orig/kernel/workqueue.c
-> +++ linux-2.6.23/kernel/workqueue.c
-> @@ -592,8 +592,6 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
->   * Returns zero on success.
->   * Returns -ve errno on failure.
->   *
-> - * Appears to be racy against CPU hotplug.
-> - *
+The mysqld problem seems to have been caused by another patch, though, and the
+fix is appended.
 
-see below,
+Greetings,
+Rafael
 
->   * schedule_on_each_cpu() is very slow.
->   */
->  int schedule_on_each_cpu(work_func_t func)
-> @@ -605,7 +603,7 @@ int schedule_on_each_cpu(work_func_t fun
->  	if (!works)
->  		return -ENOMEM;
->
-> -	preempt_disable();		/* CPU hotplug */
-> +	get_online_cpus();		/* CPU hotplug */
->  	for_each_online_cpu(cpu) {
->  		struct work_struct *work = per_cpu_ptr(works, cpu);
->
-> @@ -613,7 +611,7 @@ int schedule_on_each_cpu(work_func_t fun
->  		set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
->  		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), work);
->  	}
-> -	preempt_enable();
-> +	put_online_cpus();
->  	flush_workqueue(keventd_wq);
 
-Still racy. To kill the race, please move flush_workqueue() up, before
-put_online_cpus().
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> @@ -809,6 +809,7 @@ void destroy_workqueue(struct workqueue_
->  	struct cpu_workqueue_struct *cwq;
->  	int cpu;
->
-> +	get_online_cpus();
->  	mutex_lock(&workqueue_mutex);
->  	list_del(&wq->list);
->  	mutex_unlock(&workqueue_mutex);
-> @@ -817,6 +818,7 @@ void destroy_workqueue(struct workqueue_
->  		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
->  		cleanup_workqueue_thread(cwq, cpu);
->  	}
-> +	put_online_cpus();
+Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
+so that they will not race with the freezer (like mysqld, for example).
 
-Correct, but I'd suggest to do put_online_cpus() earlier, right after
-mutex_unlock(&workqueue_mutex).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/signal.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> @@ -830,22 +832,17 @@ static int __devinit workqueue_cpu_callb
->  	unsigned int cpu = (unsigned long)hcpu;
->  	struct cpu_workqueue_struct *cwq;
->  	struct workqueue_struct *wq;
-> +	int ret = NOTIFY_OK;
->
->  	action &= ~CPU_TASKS_FROZEN;
->
->  	switch (action) {
-> -	case CPU_LOCK_ACQUIRE:
-> -		mutex_lock(&workqueue_mutex);
-> -		return NOTIFY_OK;
-> -
-> -	case CPU_LOCK_RELEASE:
-> -		mutex_unlock(&workqueue_mutex);
-> -		return NOTIFY_OK;
->
-
-please remove this emtpy line
-
->  	case CPU_UP_PREPARE:
->  		cpu_set(cpu, cpu_populated_map);
->  	}
->
-> +	mutex_lock(&workqueue_mutex);
-
-We don't need workqueue_mutex here. With your patch workqueue_mutex protects
-list_head, nothing more. But all other callers (create/destroy) should take
-get_online_cpus() anyway. This means that we can convert workqueue_mutex to
-spinlock_t.
-
-Oleg.
-
+Index: linux-2.6.23-mm1/kernel/signal.c
+===================================================================
+--- linux-2.6.23-mm1.orig/kernel/signal.c
++++ linux-2.6.23-mm1/kernel/signal.c
+@@ -124,7 +124,7 @@ void recalc_sigpending_and_wake(struct t
+ 
+ void recalc_sigpending(void)
+ {
+-	if (!recalc_sigpending_tsk(current))
++	if (!recalc_sigpending_tsk(current) && !freezing(current))
+ 		clear_thread_flag(TIF_SIGPENDING);
+ 
+ }
