@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXJULyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXJUL6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbXJULyj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbXJULyb
+	id S1752346AbXJUL6Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXJUL6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:54:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39288 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbXJULya convert rfc822-to-8bit (ORCPT
+	Sun, 21 Oct 2007 07:58:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:8127 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbXJUL6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 07:54:30 -0400
-Message-ID: <471B3DD3.3080107@bull.net>
-Date: Sun, 21 Oct 2007 13:53:55 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: IceDove 1.5.0.12 (X11/20070606)
+	Sun, 21 Oct 2007 07:58:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=e6F2ZOSPJiQwp3Dpt4TPKvKDEGSdyn7CEOD2JLfyHER7D/Wu0gQQaJiJrx3bplkhQaDRaoCDTjBrTIKgVxpa2TEqWd8lv+rZdq174RJA/NzXgdQRTUwuWb3DHdbxYt/vKyM5b2HmhydEPNpkG58AeCggh7KoAkQe9TqP/bknWvI=
+Message-ID: <efe7343f0710210458haf18bf2u145402d0de8cf62d@mail.gmail.com>
+Date: Sun, 21 Oct 2007 12:58:15 +0100
+From: "Luis Correia" <luis.f.correia@gmail.com>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Subject: Re: [Rt2400-devel] rt73usb: support for wireless in Kohjinsha subnotebook
+Cc: "Pavel Machek" <pavel@ucw.cz>, rt2400-devel@lists.sourceforge.net,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
+In-Reply-To: <200710211609.27675.IvDoorn@gmail.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] KVM updates for Linux 2.6.24-rc review
-References: <1192964892617-git-send-email-avi@qumranet.com> <471B340C.5010800@qumranet.com>
-In-Reply-To: <471B340C.5010800@qumranet.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/10/2007 14:01:02,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/10/2007 14:01:03,
-	Serialize complete at 21/10/2007 14:01:03
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071020184100.GA11640@elf.ucw.cz>
+	 <200710211549.44955.IvDoorn@gmail.com>
+	 <20071021113815.GF25270@elf.ucw.cz>
+	 <200710211609.27675.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity a écrit :
-> Avi Kivity wrote:
->> The following patches fix fallout from the main 2.6.24 KVM merge.  An
->> exception is the movnti emulation patch, which adds support for Linux
->> 2.6.16 guests.
->>
->> The patches can be found in kvm.git in the branch kvm-updates-2.6.24.
->> There is also a branch kvm-updates-2.6.25 which will form the basis of
->> the next merge window submission.
->>
->> Please review the patches and let me know if something is wrong or if
->> a patch is missing.
->>
->>   
-> 
-> 
-> Laurent, I believe the following patch (in kvm-updates-2.6.25) needs to 
-> go into 2.6.24 as well.  Can you comment on this?
+Hi
 
-What kind of comment do you want ?
-What are the requirements to go in 2.6.24 instead of 2.6.25 ?
+On 10/21/07, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+> On Sunday 21 October 2007, Pavel Machek wrote:
+> > On Sun 2007-10-21 15:49:44, Ivo van Doorn wrote:
+> > > On Sunday 21 October 2007, Pavel Machek wrote:
+> > > > Hi!
+> > > >
+> > > > > > Kohjinsha subnotebook seems to contain wifi with USB IDs 0x18e8,
+> > > > > > 0x6206... I hope that to be compatible with
+> > > > > > net/wireless/rt2x00/rt73usb.c .
+> > > > >
+> > > > > Is there any reason you assume it is a rt73usb device,
+> > > > > or are you just making wild guesses about what the chipset is?
+> > > >
+> > > > Wild guess. I've seen 18e8:6XXX being handled by rt73usb, so..
+> > >
+> > > Thats an incorrect assumption. USB ID's listed in rt73usb don't even
+> > > guarentee that the device contains a rt73usb chipset since some manufacturers
+> > > produce cards with different chipsets while keeping the USB ID the same.
+> > > So the case that the card false in the 6xxx range says absolutely _nothing_.
+> >
+> > Well, see the other mail, it seems like rt73usb partially communicates
+> > with the card.
+>
+> If you add a USB ID to the driver, then you are telling it to communciate to
+> the device. It doesn't suddenly make the driver compatible with the device.
+>
+> > What info would be useful in determining what is this card similar to?
+> > Boot windows and look for driver name?
+>
+> Looking at the name of the windows driver is indeed usually a good start,
+> but you don't need to boot to windows to check that. How about looking
+> at the driver name on the driver CD, or on the support website of the
+> manufacturer.
 
-Is a bug correction enough ? :-P
+I'm currently going throught the manufacturer's website (in Japanese)
+to try and figure out which wireless chipset it is.
 
-This patch correct a bad behavior of x86_emulate_insn() in case of error with a 
-REP prefix.
+Only one driver to go and I'm not even sure it is the wireless driver...
 
-This patch is needed because, without it, when REP prefix is used with an 
-instruction failing for some reasons (like IO or page fault) we don't restore 
-all modified registers (like RSI and RDI), but only ECX and EIP, so when we 
-re-enter in x86_emulate_insn() we modify again an already modified value. 
-Moreover, this patch manages correctly the case where the instruction fails in 
-writeback().
-
-
->> commit 6de232e39be372f85bea96eb741962acc7fcb1f7
->> Author: Laurent Vivier <Laurent.Vivier@bull.net>
->> Date:   Mon Oct 1 11:01:06 2007 +0200
->>
->>     KVM: x86 emulator: Correct management of REP prefix
->>
->>     This patch corrects some errors appearing when we have an 
->> emulation failure
->>     on an operation using REP prefix.
->>
->>     When x86_emulate_insn() fails, saving EIP and ECX is not enough as 
->> emulation
->>     should have modified other registers like RSI or RDI. Moreover, 
->> the emulation
->>     can fail on the writeback, and in this case we are not able to 
->> restore
->>     registers.
->>
->>     At beginning of x86_emulate_insn(), we restore registers from vcpu 
->> as they were
->>     not modified by x86d_decode_insn() and we save EIP to be able to 
->> restore it
->>     in case of failure.
->>
-> 
-
-
--- 
----------------- Laurent.Vivier@bull.net  -----------------
-"Given enough eyeballs, all bugs are shallow" E. S. Raymond
-
+Luis Correia
