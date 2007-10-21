@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbXJULNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbXJULN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbXJULNL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXJULM6
+	id S1754110AbXJULN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXJULNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:12:58 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37630 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbXJULM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 07:12:57 -0400
-Message-ID: <471B340C.5010800@qumranet.com>
-Date: Sun, 21 Oct 2007 13:12:12 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 21 Oct 2007 07:13:06 -0400
+Received: from m-04.th.seeweb.it ([217.64.195.227]:40686 "EHLO
+	m-04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbXJULNE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 07:13:04 -0400
+Message-ID: <471B32D8.6040508@users.sourceforge.net>
+Date: Sun, 21 Oct 2007 13:07:04 +0200
+From: "legolas558@users.sourceforge.net" <legolas558@users.sourceforge.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070908)
 MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] KVM updates for Linux 2.6.24-rc review
-References: <1192964892617-git-send-email-avi@qumranet.com>
-In-Reply-To: <1192964892617-git-send-email-avi@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Laptop keyboard unusable when ACPI is active was Re: [2.6.22]
+ i8042, ACPI, ipw2100 and issues reported by psmouse.c atkbd.c
+References: <47001841.1000107@users.sourceforge.net> <470DD906.9090504@users.sourceforge.net> <20071018195202.GA6962@ucw.cz>
+In-Reply-To: <20071018195202.GA6962@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> The following patches fix fallout from the main 2.6.24 KVM merge.  An
-> exception is the movnti emulation patch, which adds support for Linux
-> 2.6.16 guests.
->
-> The patches can be found in kvm.git in the branch kvm-updates-2.6.24.
-> There is also a branch kvm-updates-2.6.25 which will form the basis of
-> the next merge window submission.
->
-> Please review the patches and let me know if something is wrong or if
-> a patch is missing.
->
+Pavel Machek ha scritto:
+> Hi!
+>> egolas558@users.sourceforge.net ha scritto:
+>>     
+>>> Kernel: 2.6.22-r5
+>>> Kernel option: i8042.nomux=1
+>>>       
+>> I am now using kernel 2.6.22-r8 (Gentoo) and the following kernel options:
+>>
+>> i8042.nomux=1 acpi=off
+>>
+>> I have tried kernel 2.6.23-rc9 but the problem is still there.
+>>     
+> Try usb keyboard.
 >   
+The USB keyboard is not affected by the problem, and more importantly it
+has not the latencies in ACPI mode which the embedded PS2 keyboard has.
 
+> Try disabling lm_sensors.
+>   
+lm_sensors was not installed at all. I have now enabled HWMON and other
+CONFIG_I2C_* kernel config parameters to use lm_sensors (without success).
 
-Laurent, I believe the following patch (in kvm-updates-2.6.25) needs to 
-go into 2.6.24 as well.  Can you comment on this?
+> Is it smp box?
+>   
+It is not but from the sensors-detect's log seems like the motherboard
+supports it.
 
-> commit 6de232e39be372f85bea96eb741962acc7fcb1f7
-> Author: Laurent Vivier <Laurent.Vivier@bull.net>
-> Date:   Mon Oct 1 11:01:06 2007 +0200
->
->     KVM: x86 emulator: Correct management of REP prefix
->
->     This patch corrects some errors appearing when we have an 
-> emulation failure
->     on an operation using REP prefix.
->
->     When x86_emulate_insn() fails, saving EIP and ECX is not enough as 
-> emulation
->     should have modified other registers like RSI or RDI. Moreover, 
-> the emulation
->     can fail on the writeback, and in this case we are not able to restore
->     registers.
->
->     At beginning of x86_emulate_insn(), we restore registers from vcpu 
-> as they were
->     not modified by x86d_decode_insn() and we save EIP to be able to 
-> restore it
->     in case of failure.
->
+Best regards,
+--
+  Daniele
 
--- 
-error compiling committee.c: too many arguments to function
 
