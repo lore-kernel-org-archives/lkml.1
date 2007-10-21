@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbXJUDsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751408AbXJUEHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbXJUDsh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Oct 2007 23:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXJUDsa
+	id S1751408AbXJUEHA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXJUEGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Oct 2007 23:48:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41094 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbXJUDs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Oct 2007 23:48:29 -0400
-Date: Sat, 20 Oct 2007 23:48:19 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/4] MultiAdmin 1.0.7
-Message-ID: <20071020234819.3da13b41@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0710210149270.1997@fbirervta.pbzchgretzou.qr>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Oct 2007 00:06:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50180 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXJUEGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 00:06:53 -0400
+Date: Sat, 20 Oct 2007 21:06:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Oops: [RFC] LinuxPPS (pre)patch
+Message-ID: <20071021040641.GB24869@kroah.com>
+References: <20071019174113.GE20509@enneenne.com> <20071019175323.GA20453@enneenne.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019175323.GA20453@enneenne.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007 01:51:50 +0200 (CEST)
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Fri, Oct 19, 2007 at 07:53:24PM +0200, Rodolfo Giometti wrote:
+> +/* The main struct */
+> +struct pps_device {
+> +	struct pps_source_info info;		/* PSS source info */
+> +
+> +	struct pps_kparams params;		/* PPS's current params */
+> +
+> +	__u32 assert_sequence;			/* PPS' assert event seq # */
+> +	__u32 clear_sequence;			/* PPS' clear event seq # */
+> +	struct pps_ktime assert_tu;
+> +	struct pps_ktime clear_tu;
+> +	int current_mode;			/* PPS mode at event time */
+> +
+> +	int go;					/* PPS event is arrived? */
+> +	wait_queue_head_t queue;		/* PPS event queue */
+> +
+> +	unsigned int id;			/* PPS source unique ID */
+> +	struct cdev cdev;
+> +	struct device *dev;
+> +	int devno;
+> +	struct fasync_struct *async_queue;	/* fasync method */
+> +	spinlock_t lock;
+> +
+> +	atomic_t usage;				/* usage count */
+> +	wait_queue_head_t usage_queue;
+> +
+> +	struct class_device class_dev;
+> +};
 
-> As per James's request, I am reposting the MultiAdmin LSM 
+Please use a 'struct class' instead of a 'struct class_device'.  We have
+almost rid the kernel of all usages of 'struct class_device' and want to
+remove that structure entirely soon.  I'm aiming for 2.6.25 and it's
+looking good.
 
-That's very nice, but ... what is it?
+So please don't add new instances of it, you can do all the same things
+with a 'struct device' and it should be a very trivial change.
 
-It would be really helpful if each patch series came with some
-kind of description of what problem the patches try to solve
-and how it solves it :)
+thanks,
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+greg k-h
