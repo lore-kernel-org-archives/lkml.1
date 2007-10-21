@@ -1,243 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbXJUH5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXJUH5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751869AbXJUH5a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 03:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXJUHw6
+	id S1753358AbXJUH5p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 03:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbXJUHw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 03:52:58 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:41069 "EHLO havoc.gtf.org"
+	Sun, 21 Oct 2007 03:52:59 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:47596 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676AbXJUHwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 03:52:55 -0400
+	id S1752688AbXJUHw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 03:52:57 -0400
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-scsi@vger.kernel.org
+Cc: a.zummo@towertech.it
 From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 16/17] SCSI: driver irq handler cleanups
+Subject: [PATCH 17/17] RTC interrupt handling cleanups
 References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
-Message-Id: <20071021075253.736AA19041C@havoc.gtf.org>
-Date: Sun, 21 Oct 2007 03:52:53 -0400 (EDT)
+Message-Id: <20071021075256.0975B19041E@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 03:52:56 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit c0847f02496b1b8feb64637fc8609500ff69b3f2
+commit f94d41db30d6430bc6d3e53602258d3933f93103
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 19:37:20 2007 -0400
+Date:   Sun Oct 21 01:51:50 2007 -0400
 
-    [SCSI] driver irq handler cleanups
+    RTC interrupt handling cleanups
     
-    Avoid the need to use 'irq' function arg to look up data (data we
-    already had, in every case).
+    arm/mach-integrator/time: arm_rtc_interrupt() never uses its arguments,
+    so pass NULL to make this explicit and potentially reduce future
+    confusion.
     
-    This permits the removal of arrays in some drivers that existed for the
-    sole purpose of looking up data we already knew.
+    hpet.c and rtc.c: pass rtc_int_flag through the standard data-passing
+    mechanism, dev_id (2nd arg).
+    
+    rtc-at32ap700x, rtc-m48t59.c: delete pointless cast from void*
+    
+    rtc-bfin: calling spin_lock_irq() in interrupt handler marked
+    IRQF_DISABLED is unwise.  Use safer spin_lock_irqsave() instead.
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/scsi/aha1542.c |   22 ++++++++--------------
- drivers/scsi/eata.c    |   11 ++++-------
- drivers/scsi/psi240i.c |   14 ++++----------
- drivers/scsi/u14-34f.c |    9 ++++-----
- 4 files changed, 20 insertions(+), 36 deletions(-)
+ arch/arm/mach-integrator/time.c |    2 +-
+ arch/x86/kernel/hpet.c          |    4 ++--
+ drivers/char/rtc.c              |    7 ++++---
+ drivers/rtc/rtc-at32ap700x.c    |    2 +-
+ drivers/rtc/rtc-bfin.c          |    5 +++--
+ drivers/rtc/rtc-m48t59.c        |    2 +-
+ 6 files changed, 12 insertions(+), 10 deletions(-)
 
-c0847f02496b1b8feb64637fc8609500ff69b3f2
-diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-index 961a188..97c660e 100644
---- a/drivers/scsi/aha1542.c
-+++ b/drivers/scsi/aha1542.c
-@@ -163,8 +163,6 @@ struct aha1542_hostdata {
+f94d41db30d6430bc6d3e53602258d3933f93103
+diff --git a/arch/arm/mach-integrator/time.c b/arch/arm/mach-integrator/time.c
+index 5278f58..5235f64 100644
+--- a/arch/arm/mach-integrator/time.c
++++ b/arch/arm/mach-integrator/time.c
+@@ -125,7 +125,7 @@ static int rtc_probe(struct amba_device *dev, void *id)
+ 	xtime.tv_sec = __raw_readl(rtc_base + RTC_DR);
  
- #define HOSTDATA(host) ((struct aha1542_hostdata *) &host->hostdata)
+ 	ret = request_irq(dev->irq[0], arm_rtc_interrupt, IRQF_DISABLED,
+-			  "rtc-pl030", dev);
++			  "rtc-pl030", NULL);
+ 	if (ret)
+ 		goto map_out;
  
--static struct Scsi_Host *aha_host[7];	/* One for each IRQ level (9-15) */
--
- static DEFINE_SPINLOCK(aha1542_lock);
- 
- 
-@@ -173,8 +171,7 @@ static DEFINE_SPINLOCK(aha1542_lock);
- 
- static void setup_mailboxes(int base_io, struct Scsi_Host *shpnt);
- static int aha1542_restart(struct Scsi_Host *shost);
--static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id);
--static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id);
-+static void aha1542_intr_handle(struct Scsi_Host *shost);
- 
- #define aha1542_intr_reset(base)  outb(IRST, CONTROL(base))
- 
-@@ -414,23 +411,19 @@ fail:
- }
- 
- /* A quick wrapper for do_aha1542_intr_handle to grab the spin lock */
--static irqreturn_t do_aha1542_intr_handle(int irq, void *dev_id)
-+static irqreturn_t do_aha1542_intr_handle(int dummy, void *dev_id)
- {
- 	unsigned long flags;
--	struct Scsi_Host *shost;
--
--	shost = aha_host[irq - 9];
--	if (!shost)
--		panic("Splunge!");
-+	struct Scsi_Host *shost = dev_id;
- 
- 	spin_lock_irqsave(shost->host_lock, flags);
--	aha1542_intr_handle(shost, dev_id);
-+	aha1542_intr_handle(shost);
- 	spin_unlock_irqrestore(shost->host_lock, flags);
- 	return IRQ_HANDLED;
- }
- 
- /* A "high" level interrupt handler */
--static void aha1542_intr_handle(struct Scsi_Host *shost, void *dev_id)
-+static void aha1542_intr_handle(struct Scsi_Host *shost)
- {
- 	void (*my_done) (Scsi_Cmnd *) = NULL;
- 	int errstatus, mbi, mbo, mbistatus;
-@@ -1224,7 +1217,8 @@ fail:
- 
- 			DEB(printk("aha1542_detect: enable interrupt channel %d\n", irq_level));
- 			spin_lock_irqsave(&aha1542_lock, flags);
--			if (request_irq(irq_level, do_aha1542_intr_handle, 0, "aha1542", NULL)) {
-+			if (request_irq(irq_level, do_aha1542_intr_handle, 0,
-+					"aha1542", shpnt)) {
- 				printk(KERN_ERR "Unable to allocate IRQ for adaptec controller.\n");
- 				spin_unlock_irqrestore(&aha1542_lock, flags);
- 				goto unregister;
-@@ -1241,7 +1235,7 @@ fail:
- 					enable_dma(dma_chan);
- 				}
- 			}
--			aha_host[irq_level - 9] = shpnt;
-+
- 			shpnt->this_id = scsi_id;
- 			shpnt->unique_id = base_io;
- 			shpnt->io_port = base_io;
-diff --git a/drivers/scsi/eata.c b/drivers/scsi/eata.c
-index 7ead521..302793d 100644
---- a/drivers/scsi/eata.c
-+++ b/drivers/scsi/eata.c
-@@ -2287,17 +2287,14 @@ static void flush_dev(struct scsi_device *dev, unsigned long cursec,
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 53303f2..7c07653 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -621,7 +621,7 @@ static void hpet_rtc_timer_reinit(void)
  	}
  }
  
--static irqreturn_t ihdlr(int irq, struct Scsi_Host *shost)
-+static irqreturn_t ihdlr(struct Scsi_Host *shost)
+-irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
++irqreturn_t hpet_rtc_interrupt(int dummy, void *dev_id)
  {
- 	struct scsi_cmnd *SCpnt;
- 	unsigned int i, k, c, status, tstatus, reg;
- 	struct mssp *spp;
- 	struct mscp *cpp;
- 	struct hostdata *ha = (struct hostdata *)shost->hostdata;
--
--	if (shost->irq != irq)
--		panic("%s: ihdlr, irq %d, shost->irq %d.\n", ha->board_name, irq,
--		      shost->irq);
-+	int irq = shost->irq;
+ 	struct rtc_time curr_time;
+ 	unsigned long rtc_int_flag = 0;
+@@ -651,7 +651,7 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
  
- 	/* Check if this board need to be serviced */
- 	if (!(inb(shost->io_port + REG_AUX_STATUS) & IRQ_ASSERTED))
-@@ -2536,7 +2533,7 @@ static irqreturn_t ihdlr(int irq, struct Scsi_Host *shost)
- 	return IRQ_NONE;
- }
- 
--static irqreturn_t do_interrupt_handler(int irq, void *shap)
-+static irqreturn_t do_interrupt_handler(int dummy, void *shap)
- {
- 	struct Scsi_Host *shost;
- 	unsigned int j;
-@@ -2549,7 +2546,7 @@ static irqreturn_t do_interrupt_handler(int irq, void *shap)
- 	shost = sh[j];
- 
- 	spin_lock_irqsave(shost->host_lock, spin_flags);
--	ret = ihdlr(irq, shost);
-+	ret = ihdlr(shost);
- 	spin_unlock_irqrestore(shost->host_lock, spin_flags);
- 	return ret;
- }
-diff --git a/drivers/scsi/psi240i.c b/drivers/scsi/psi240i.c
-index 899e89d..300ac9e 100644
---- a/drivers/scsi/psi240i.c
-+++ b/drivers/scsi/psi240i.c
-@@ -98,7 +98,6 @@ typedef struct
- 
- #define HOSTDATA(host) ((PADAPTER240I)&host->hostdata)
- 
--static struct	Scsi_Host *PsiHost[6] = {NULL,};  /* One for each IRQ level (10-15) */
- static			IDENTIFY_DATA	identifyData;
- static			SETUP			ChipSetup;
- 
-@@ -251,9 +250,9 @@ static ULONG DecodeError (struct Scsi_Host *pshost, UCHAR status)
-  *	Returns:		TRUE if drive is not ready in time.
-  *
-  ****************************************************************/
--static void Irq_Handler (int irq, void *dev_id)
-+static void Irq_Handler (struct Scsi_Host *shost_in)
- 	{
--	struct Scsi_Host *shost;	// Pointer to host data block
-+	struct Scsi_Host *shost = shost_in; // Pointer to host data block
- 	PADAPTER240I padapter;		// Pointer to adapter control structure
- 	USHORT *pports;			// I/O port array
- 	struct scsi_cmnd *SCpnt;
-@@ -262,10 +261,6 @@ static void Irq_Handler (int irq, void *dev_id)
- 
- 	DEB(printk ("\npsi240i received interrupt\n"));
- 
--	shost = PsiHost[irq - 10];
--	if ( !shost )
--		panic ("Splunge!");
--
- 	padapter = HOSTDATA(shost);
- 	pports = padapter->ports;
- 	SCpnt = padapter->SCpnt;
-@@ -367,13 +362,13 @@ irqerror:;
- 	SCpnt->scsi_done (SCpnt);
+ 	if (rtc_int_flag) {
+ 		rtc_int_flag |= (RTC_IRQF | (RTC_NUM_INTS << 8));
+-		rtc_interrupt(rtc_int_flag, dev_id);
++		rtc_interrupt(-1, (void *) rtc_int_flag);
  	}
- 
--static irqreturn_t do_Irq_Handler (int irq, void *dev_id)
-+static irqreturn_t do_Irq_Handler (int dummy, void *dev_id)
- {
- 	unsigned long flags;
- 	struct Scsi_Host *dev = dev_id;
- 	
- 	spin_lock_irqsave(dev->host_lock, flags);
--	Irq_Handler(irq, dev_id);
-+	Irq_Handler(dev);
- 	spin_unlock_irqrestore(dev->host_lock, flags);
  	return IRQ_HANDLED;
  }
-@@ -583,7 +578,6 @@ static int Psi240i_Detect (struct scsi_host_template *tpnt)
- 		if(pshost == NULL)
- 			goto host_init_failure;	
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index ec6b65e..533328b 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -233,7 +233,7 @@ static inline unsigned char rtc_is_updating(void)
+  *	(See ./arch/XXXX/kernel/time.c for the set_rtc_mmss() function.)
+  */
  
--		PsiHost[chipConfig.irq - 10] = pshost;
- 		pshost->unique_id = port;
- 		pshost->io_port = port;
- 		pshost->n_io_port = 16;  /* Number of bytes of I/O space used */
-diff --git a/drivers/scsi/u14-34f.c b/drivers/scsi/u14-34f.c
-index 7edd6ce..a2d704b 100644
---- a/drivers/scsi/u14-34f.c
-+++ b/drivers/scsi/u14-34f.c
-@@ -1716,13 +1716,12 @@ static void flush_dev(struct scsi_device *dev, unsigned long cursec, unsigned in
+-irqreturn_t rtc_interrupt(int irq, void *dev_id)
++irqreturn_t rtc_interrupt(int dummy, void *dev_id)
+ {
+ 	/*
+ 	 *	Can be an alarm interrupt, update complete interrupt,
+@@ -246,12 +246,13 @@ irqreturn_t rtc_interrupt(int irq, void *dev_id)
+ 	rtc_irq_data += 0x100;
+ 	rtc_irq_data &= ~0xff;
+ 	if (is_hpet_enabled()) {
++		unsigned long val = (unsigned long) dev_id;
+ 		/*
+ 		 * In this case it is HPET RTC interrupt handler
+ 		 * calling us, with the interrupt information
+-		 * passed as arg1, instead of irq.
++		 * passed as arg2 (dev_id)
+ 		 */
+-		rtc_irq_data |= (unsigned long)irq & 0xF0;
++		rtc_irq_data |= val & 0xF0;
+ 	} else {
+ 		rtc_irq_data |= (CMOS_READ(RTC_INTR_FLAGS) & 0xF0);
+ 	}
+diff --git a/drivers/rtc/rtc-at32ap700x.c b/drivers/rtc/rtc-at32ap700x.c
+index 2999214..2c1890f 100644
+--- a/drivers/rtc/rtc-at32ap700x.c
++++ b/drivers/rtc/rtc-at32ap700x.c
+@@ -167,7 +167,7 @@ static int at32_rtc_ioctl(struct device *dev, unsigned int cmd,
  
+ static irqreturn_t at32_rtc_interrupt(int irq, void *dev_id)
+ {
+-	struct rtc_at32ap700x *rtc = (struct rtc_at32ap700x *)dev_id;
++	struct rtc_at32ap700x *rtc = dev_id;
+ 	unsigned long isr = rtc_readl(rtc, ISR);
+ 	unsigned long events = 0;
+ 	int ret = IRQ_NONE;
+diff --git a/drivers/rtc/rtc-bfin.c b/drivers/rtc/rtc-bfin.c
+index 1aa709d..5afd24c 100644
+--- a/drivers/rtc/rtc-bfin.c
++++ b/drivers/rtc/rtc-bfin.c
+@@ -143,10 +143,11 @@ static irqreturn_t bfin_rtc_interrupt(int irq, void *dev_id)
+ 	struct bfin_rtc *rtc = platform_get_drvdata(pdev);
+ 	unsigned long events = 0;
+ 	u16 rtc_istat;
++	unsigned long flags;
+ 
+ 	stampit();
+ 
+-	spin_lock_irq(&rtc->lock);
++	spin_lock_irqsave(&rtc->lock, flags);
+ 
+ 	rtc_istat = bfin_read_RTC_ISTAT();
+ 
+@@ -168,7 +169,7 @@ static irqreturn_t bfin_rtc_interrupt(int irq, void *dev_id)
+ 
+ 	rtc_update_irq(rtc->rtc_dev, 1, events);
+ 
+-	spin_unlock_irq(&rtc->lock);
++	spin_unlock_irqrestore(&rtc->lock, flags);
+ 
+ 	return IRQ_HANDLED;
  }
- 
--static irqreturn_t ihdlr(int irq, unsigned int j) {
-+static irqreturn_t ihdlr(unsigned int j)
-+{
-    struct scsi_cmnd *SCpnt;
-    unsigned int i, k, c, status, tstatus, reg, ret;
-    struct mscp *spp, *cpp;
--
--   if (sh[j]->irq != irq)
--       panic("%s: ihdlr, irq %d, sh[j]->irq %d.\n", BN(j), irq, sh[j]->irq);
-+   int irq = sh[j]->irq;
- 
-    /* Check if this board need to be serviced */
-    if (!((reg = inb(sh[j]->io_port + REG_SYS_INTR)) & IRQ_ASSERTED)) goto none;
-@@ -1936,7 +1935,7 @@ static irqreturn_t do_interrupt_handler(int irq, void *shap) {
-    if ((j = (unsigned int)((char *)shap - sha)) >= num_boards) return IRQ_NONE;
- 
-    spin_lock_irqsave(sh[j]->host_lock, spin_flags);
--   ret = ihdlr(irq, j);
-+   ret = ihdlr(j);
-    spin_unlock_irqrestore(sh[j]->host_lock, spin_flags);
-    return ret;
- }
+diff --git a/drivers/rtc/rtc-m48t59.c b/drivers/rtc/rtc-m48t59.c
+index bf60d35..934405d 100644
+--- a/drivers/rtc/rtc-m48t59.c
++++ b/drivers/rtc/rtc-m48t59.c
+@@ -283,7 +283,7 @@ static int m48t59_rtc_proc(struct device *dev, struct seq_file *seq)
+  */
+ static irqreturn_t m48t59_rtc_interrupt(int irq, void *dev_id)
+ {
+-	struct device *dev = (struct device *)dev_id;
++	struct device *dev = dev_id;
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct m48t59_plat_data *pdata = pdev->dev.platform_data;
+ 	struct m48t59_private *m48t59 = platform_get_drvdata(pdev);
