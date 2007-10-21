@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbXJUWpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbXJUW7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751618AbXJUWpp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 18:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXJUWpi
+	id S1751708AbXJUW7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 18:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXJUW7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 18:45:38 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42406 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbXJUWph (ORCPT
+	Sun, 21 Oct 2007 18:59:18 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39759 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750872AbXJUW7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 18:45:37 -0400
-Message-ID: <471BD68B.9030408@tiscali.nl>
-Date: Mon, 22 Oct 2007 00:45:31 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 21 Oct 2007 18:59:17 -0400
+Date: Mon, 22 Oct 2007 00:59:46 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: James Morris <jmorris@namei.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LSM conversion to static interface
+Message-ID: <20071021225946.GF30533@stusta.de>
+References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] errors with assignments in if
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am not entirely certain about the third one:
+On Sun, Oct 21, 2007 at 08:57:06AM +1000, James Morris wrote:
+> On Sat, 20 Oct 2007, Jan Engelhardt wrote:
+> 
+> > >I'd like to note that I asked people who were actually affected, and had 
+> > >examples of their real-world use to step forward and explain their use, 
+> > >and that I explicitly mentioned that this is something we can easily 
+> > >re-visit.
+> > 
+> > I do have a pseudo LSM called "multiadm" at 
+> > http://freshmeat.net/p/multiadm/ , quoting:
+> 
+> Based on Linus' criteria, this appears to be a case for reverting the 
+> static LSM patch.
+>...
 
-from fs/udf/udf_sb.h:
+If you take it that strictly, the in-kernel root_plug LSM could have 
+been considered enough reason for reverting...
 
-#define UDF_SB_VAT(X)                           ( UDF_SB(X)->s_vat )
+The interesting question is IMHO still:
 
-if it's the desired behavior then I think this should at least be changed to
+Were Greg and Jan the only people to write such LSMs, or how many 
+non-abusive users that make sense as modules do really exist after
+5 years?
 
-UDF_SB_VAT(sb) = udf_iget(sb, ino);
-if (!(UDF_SB_VAT(sb)))
+Either you can count such real-world users with your fingers or there's 
+a reason why these modules didn't get included.
 
----
-    Errors with assignments in ifs
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-index d9af436..e6e85b7 100644
---- a/arch/arm/mach-omap2/clock.c
-+++ b/arch/arm/mach-omap2/clock.c
-@@ -651,7 +651,7 @@ static u32 omap2_get_clksel(u32 *div_sel, u32 *field_mask,
- 		break;
- 	case CM_SYSCLKOUT_SEL1:
- 		div_addr = (u32)&PRCM_CLKOUT_CTRL;
--		if ((div_off == 3) || (div_off = 11))
-+		if ((div_off == 3) || (div_off == 11))
- 			mask= 0x3;
- 		break;
- 	case CM_CORE_SEL1:
-diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
-index 948a9b2..ed610ed 100644
---- a/drivers/isdn/hisax/elsa.c
-+++ b/drivers/isdn/hisax/elsa.c
-@@ -883,7 +883,7 @@ setup_elsa_isa(struct IsdnCard *card)
- 	val += 'A' - 3;
- 	if (val == 'B' || val == 'C')
- 		val ^= 1;
--	if ((cs->subtyp == ELSA_PCFPRO) && (val = 'G'))
-+	if ((cs->subtyp == ELSA_PCFPRO) && (val == 'G'))
- 		val = 'C';
- 	printk(KERN_INFO
- 	       "Elsa: %s found at %#lx Rev.:%c IRQ %d\n",
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 4360c7a..353c9e8 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -1308,7 +1308,7 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
- 			if (j == UDF_SB_NUMPARTS(sb))
- 				return 1;
- 
--			if (!(UDF_SB_VAT(sb) = udf_iget(sb, ino)))
-+			if (!(UDF_SB_VAT(sb) == udf_iget(sb, ino)))
- 				return 1;
- 
- 			if (UDF_SB_PARTTYPE(sb, i) == UDF_VIRTUAL_MAP15) {
+IOW:
+Either the API has proven to not attract enough modular users or we are 
+having a to-be-fixed problem with getting the LSMs submitted and 
+included.
+
+> - James
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
