@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbXJUEyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbXJUEyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbXJUEyV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 00:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbXJUEyH
+	id S1752572AbXJUEyf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXJUEyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 00:54:07 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59519 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbXJUEyD (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 00:54:03 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Al Boldi <a1426z@gawab.com>
-Cc: Bill Davidsen <davidsen@tmr.com>, Patrick McHardy <kaber@trash.net>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFD] iptables: mangle table obsoletes filter table
-In-Reply-To: Your message of "Sun, 21 Oct 2007 07:31:58 +0300."
-             <200710210731.58959.a1426z@gawab.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200710120031.42805.a1426z@gawab.com> <200710200640.02012.a1426z@gawab.com> <26556.1192855654@turing-police.cc.vt.edu>
-            <200710210731.58959.a1426z@gawab.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1192942439_3691P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 21 Oct 2007 00:53:59 -0400
-Message-ID: <26984.1192942439@turing-police.cc.vt.edu>
+	Sun, 21 Oct 2007 00:54:15 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60945 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbXJUEyN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 00:54:13 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own mappings.
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<20071017213216.b2d0c4bd.akpm@linux-foundation.org>
+	<m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
+	<200710211424.46650.nickpiggin@yahoo.com.au>
+Date: Sat, 20 Oct 2007 22:53:16 -0600
+In-Reply-To: <200710211424.46650.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Sun, 21 Oct 2007 14:24:46 +1000")
+Message-ID: <m16411dq6b.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1192942439_3691P
-Content-Type: text/plain; charset=us-ascii
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-On Sun, 21 Oct 2007 07:31:58 +0300, Al Boldi said:
-> > Well, for example to stop any transient packets being forwarded.  You could 
-> > probably hack around this using mark's, but you can't stop the implied
-> > route lookup, unless you stop it in prerouting.
-> 
-> Basically, you have one big unintended gaping whole in your firewall, that 
-> could easily be exploited for DoS attacks at the least, unless you put in 
-> specific rules to limit this.
+> On Saturday 20 October 2007 07:27, Eric W. Biederman wrote:
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>> > I don't think we little angels want to tread here.  There are so many
+>> > weirdo things out there which will break if we bust the coherence between
+>> > the fs and /dev/hda1.
+>>
+>> We broke coherence between the fs and /dev/hda1 when we introduced
+>> the page cache years ago,
+>
+> Not for metadata. And I wouldn't expect many filesystem analysis
+> tools to care about data.
 
-OK, the light bulb just went on... ;)
+Well tools like dump certainly weren't happy when we made the change.
 
-We actually *do* have an issue with the flip side of that - it's a frikking
-pain to make packets that show up on eth0 with a destination of 127.0.0.1
-go away un-noticed - or at least I'm assuming it's the flip side of the same
-issue.
+>> and weird hacky cases like 
+>> unmap_underlying_metadata don't change that.
+>
+> unmap_underlying_metadata isn't about raw block device access at
+> all, though (if you write to the filesystem via the blockdevice
+> when it isn't expecting it, it's going to blow up regardless).
 
---==_Exmh_1192942439_3691P
-Content-Type: application/pgp-signature
+Well my goal with separating things is so that we could decouple two
+pieces of code that have different usage scenarios, and where
+supporting both scenarios simultaneously appears to me to needlessly
+complicate the code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Added to that we could then tune the two pieces of code for their
+different users.
 
-iD8DBQFHGttncC3lWbTT17ARAisTAKCHiAcF87qCKjCKtrQ2DNnYRVB80QCg3Qhy
-GkVtjY0WchJuTHYb/VNnF2c=
-=O+mL
------END PGP SIGNATURE-----
+>> Currently only 
+>> metadata is more or less in sync with the contents of /dev/hda1.
+>
+> It either is or it isn't, right? And it is, isn't it? (at least
+> for the common filesystems).
 
---==_Exmh_1192942439_3691P--
+ext2 doesn't store directories in the buffer cache.
+
+Journaling filesystems and filesystems that do ordered writes
+game the buffer cache.  Putting in data that should not yet
+be written to disk.  That gaming is where reiserfs goes BUG
+and where JBD moves the dirty bit to a different dirty bit.
+
+So as far as I can tell what is in the buffer cache is not really
+in sync with what should be on disk at any given movement except
+when everything is clean.
+
+My suspicion is that actually reading from disk is likely to
+give a more coherent view of things.  Because there at least
+we have the writes as they are expected to be seen by fsck
+to recover the data, and a snapshot there should at least
+be recoverable.  Whereas a snapshot provides not such guarantees.
+
+Eric
