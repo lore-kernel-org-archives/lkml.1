@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXJUFLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXJUFPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751664AbXJUFLQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 01:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXJUFLD
+	id S1752036AbXJUFPV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 01:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXJUFPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 01:11:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60206 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750788AbXJUFLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 01:11:02 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Use a private inode for backing storage
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710181126.10559.borntraeger@de.ibm.com>
-	<m1lk9yen0h.fsf_-_@ebiederm.dsl.xmission.com>
-	<200710211428.55611.nickpiggin@yahoo.com.au>
-Date: Sat, 20 Oct 2007 23:10:15 -0600
-In-Reply-To: <200710211428.55611.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Sun, 21 Oct 2007 14:28:55 +1000")
-Message-ID: <m1wsthcatk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 21 Oct 2007 01:15:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:33285 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751016AbXJUFPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 01:15:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Coly Li <coyli@suse.de>
+Subject: Re: PROBLEM: oops, Linus tree: 2.6.23-g4fa4d23f, BUG: unable to handle
+ kernel NULL pointer dereference at virtual address 00000004
+Date: Sun, 21 Oct 2007 13:16:32 +0800
+Message-ID: <471AE0B0.4060600@suse.de>
+References: <4719B727.7090908@oak.selfip.net>	 <Pine.LNX.4.64.0710201246540.18815@twin.jikos.cz> <3d8471ca0710200432h3607b0a0i9169884ebec3b940@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 221.217.208.92
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+In-Reply-To: <3d8471ca0710200432h3607b0a0i9169884ebec3b940@mail.gmail.com>
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+Guillaume Chazarain wrote:
+>>> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000004
+> 
+> This should be fixed in recent git by
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9b013e05e0289c190a53d78ca029e2f21c0e4485
+> 
+Maybe we encounter same condition, at least the symbol name is same -- sock_setsockopt.
 
-> On Saturday 20 October 2007 08:51, Eric W. Biederman wrote:
->> Currently the ramdisk tries to keep the block device page cache pages
->> from being marked clean and dropped from memory.  That fails for
->> filesystems that use the buffer cache because the buffer cache is not
->> an ordinary buffer cache user and depends on the generic block device
->> address space operations being used.
->>
->> To fix all of those associated problems this patch allocates a private
->> inode to store the ramdisk pages in.
->>
->> The result is slightly more memory used for metadata, an extra copying
->> when reading or writing directly to the block device, and changing the
->> software block size does not loose the contents of the ramdisk.  Most
->> of all this ensures we don't loose data during normal use of the
->> ramdisk.
->>
->> I deliberately avoid the cleanup that is now possible because this
->> patch is intended to be a bug fix.
->
-> This just breaks coherency again like the last patch. That's a
-> really bad idea especially for stable (even if nothing actually
-> was to break, we'd likely never know about it anyway).
+This happens in kernel bootup and makes network can not work properly -- I can not connect to
+internet the whole weekend. Same as you, I am not a network guy, I tried to understand what
+happened, but it seems not so easy for me ^_^.
 
-Not a chance.  The only way we make it to that inode is through block
-device I/O so it lives at exactly the same level in the hierarchy as
-a real block device.  My patch is the considered rewrite boiled down
-to it's essentials and made a trivial patch.
+Here is the oops message:
+[ 4327.550035] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000004
+[ 4327.550047] printing eip: c02ad991 *pdpt = 0000000006062001 <1>*pde = 0000000000000000
+[ 4327.550061] Oops: 0000 [#1] SMP
+[ 4327.550071] Modules linked in: arc4 ieee80211_crypt_wep af_packet ip6t_LOG nf_conntrack_ipv6
+xt_pkttype ipt_LOG xt_limit deflate zlib_deflate twofish twofish_common camellia serpent blowfish
+des_generic cbc ecb geode_aes blkcipher aes_i586 aes_generic xcbc sha256_generic sha1_generic
+crypto_null af_key snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device microcode ip6t_REJECT xt_tcpudp
+ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter ip6table_mangle
+nf_conntrack_ipv4 nf_conntrack ip_tables ip6table_filter ip6_tables x_tables ipv6
+cpufreq_conservative cpufreq_userspace cpufreq_powersave acpi_cpufreq speedstep_lib loop dm_mod
+pcmcia nsc_ircc parport_pc irda parport ipw2200 rtc_cmos ieee80211 yenta_socket rsrc_nonstatic
+crc_ccitt pcmcia_core thinkpad_acpi hwmon nvram rtc_core ieee80211_crypt firmware_class snd_intel8x0
+sdhci rtc_lib battery snd_intel8x0m snd_ac97_codec ac97_bus output ac mmc_core snd_pcm snd_timer snd
+soundcore sr_mod i2c_i801 i2c_core iTCO_wdt button snd_page_alloc iTCO_vendor_support cdrom
+intel_agp agpgart tg3 uinput sg ehci_hcd uhci_hcd sd_mod usbcore edd ext3 mbcache jbd fan ata_piix
+ahci libata scsi_mod thermal processor
+[ 4327.550286] CPU:    0
+[ 4327.550288] EIP:    0060:[<c02ad991>]    Not tainted VLI
+[ 4327.550291] EFLAGS: 00010282   (2.6.23-bigsmp-g4fa4d23f #6)
+[ 4327.550305] EIP is at sk_filter_delayed_uncharge+0x1/0x23
+[ 4327.550312] eax: c614f738   ebx: 00000000   ecx: 00000003   edx: 00000000
+[ 4327.550319] esi: c60d97b0   edi: c614f738   ebp: c61e2ef8   esp: c61e2ec8
+[ 4327.550326] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+[ 4327.550333] Process dhclient (pid: 7024, ti=c61e2000 task=c61e5120 task.ti=c61e2000)
+[ 4327.550338] Stack: c61e2ef8 c02adb57 00000002 00000001 c02adaff 00000068 c60d97c0 00000058
+[ 4327.550356]        00000000 c614f738 c61e2f24 c65c63f0 c61e2f48 c029c87f c61e2fb0 c030642f
+[ 4327.550374]        00000001 00000246 0000001a 8005000b fffffff2 8005000b c03042ae 8005000b
+[ 4327.550391] Call Trace:
+[ 4327.550396]  [<c010680b>] show_trace_log_lvl+0x1a/0x2f
+[ 4327.550409]  [<c01068bb>] show_stack_log_lvl+0x9b/0xa3
+[ 4327.550419]  [<c0106a7b>] show_registers+0x1b8/0x28a
+[ 4327.550429]  [<c0106c58>] die+0x10b/0x1ee
+[ 4327.550438]  [<c030679a>] do_page_fault+0x7d4/0x8b9
+[ 4327.550449]  [<c0304b72>] error_code+0x72/0x80
+[ 4327.550458]  [<c029c87f>] sock_setsockopt+0x46f/0x4c2
+[ 4327.550469]  [<c029952a>] sys_setsockopt+0x5a/0x90
+[ 4327.550478]  [<c029abba>] sys_socketcall+0x1e8/0x241
+[ 4327.550486]  [<c0105112>] syscall_call+0x7/0xb
+[ 4327.550495]  =======================
+[ 4327.550499] Code: 43 4e 39 d3 0f 8c 36 fe ff ff 0f b7 44 d1 f8 83 e0 07 83 f8 06 0f 94 c0 0f b6
+c0 48 83 e0 ea eb 05 b8 ea ff ff ff 5b 5e 5d c3 55 <8b> 4a 04 89 e5 8d 0c cd 10 00 00 00 90 29 88 cc
+00 00 00 8d 42
+[ 4327.550590] EIP: [<c02ad991>] sk_filter_delayed_uncharge+0x1/0x23 SS:ESP 0068:c61e2ec8
 
-It fundamentally fixes the problem, and doesn't attempt to reconcile
-the incompatible expectations of the ramdisk code and the buffer cache.
 
-> Christian's patch should go upstream and into stable. For 2.6.25-6,
-> my rewrite should just replace what's there. Using address spaces
-> to hold the ramdisk pages just confuses the issue even if they
-> *aren't* actually wired up to the vfs at all. Saving 20 lines is
-> not a good reason to use them.
 
-Well is more like saving 100 lines.  Not having to reexamine complicated
-infrastructure code and doing things the same way ramfs is.  I think
-that combination is a good reason.  Especially since I can do with a
-16 line patch as I just demonstrated.  It is a solid and simple
-incremental change.
 
-Eric
+
+> HTH.
+> 
+
