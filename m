@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbXJUQ6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbXJURZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbXJUQ6D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 12:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXJUQ5y
+	id S1752438AbXJURZY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 13:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXJURZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 12:57:54 -0400
-Received: from pat.uio.no ([129.240.10.15]:49153 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbXJUQ5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 12:57:53 -0400
-Subject: Re: nfsv2 ref leak in 2.6.24?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: bfields@fieldses.org, nfs@lists.sourceforge.net, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200710202135.l9KLZJIB023526@agora.fsl.cs.sunysb.edu>
-References: <200710202135.l9KLZJIB023526@agora.fsl.cs.sunysb.edu>
-Content-Type: text/plain
-Date: Sun, 21 Oct 2007 12:58:12 -0400
-Message-Id: <1192985892.7505.32.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 21 Oct 2007 13:25:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:39883 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751639AbXJURZL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 13:25:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NwJ8qm65Cp/fWoBDaXGUBRWg4u6d/5UC8kwuhMvXrYupqikQM71d2ts+RJ3fI9YSUJR+xnxMB9VwDZ1WKvQJoDZAEYqddU7dRJSFesj5Q//EhNGDc9V2mXdMkygX8j9bTgdP5GgSRo5M8pp/T58NOaLCee1/BtByF9D/PDJiK2M=
+Message-ID: <b647ffbd0710211025k1e5935a2ra6886724872437c8@mail.gmail.com>
+Date: Sun, 21 Oct 2007 19:25:10 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [2.6.23] tasks stuck in running state?
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47192999.6010607@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.082)
-X-UiO-Scanned: FED97B950C9E8DD9D61BFCEE36391DA31ED47C41
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 541 total 4619802 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <47192425.6020507@garzik.org> <47192763.9050004@redhat.com>
+	 <47192999.6010607@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20/10/2007, Jeff Garzik <jeff@garzik.org> wrote:
+> Chuck Ebbert wrote:
+> > On 10/19/2007 05:39 PM, Jeff Garzik wrote:
+> >> On my main devel box, vanilla 2.6.23 on x86-64/Fedora-7, I'm seeing a
+> >> certain behavior at least once a day.  I'll start a kernel build (make
+> >> -sj5 on this box), and it will "hang" in the following way:
+> >>
+> >
+> > Can you try to strace the hanging task?
+>
+> Well, to the system it's running, so that doesn't do much of anything...
+>
+> >
+> >  8482 pts/0    S+     0:00                          \_ /bin/sh /garz/repo/misc-2.6/scripts/hdrcheck.sh /garz/repo/misc-2.6/usr/include /garz/repo/misc-2.6/usr/include/linux/kernelcapi.h /garz/repo/misc-2.6/usr/include/linux/.check.kernelcapi.h
+> >  8484 pts/0    R+     3:10                              \_ grep ^[ \t]*#[ \t]*include[ \t]*< /garz/repo/misc-2.6/usr/include/linux/kernelcapi.h
+> >  8486 pts/0    S+     0:00                              \_ cut -f2 -d<
+> >  8487 pts/0    S+     0:00                              \_ cut -f1 -d>
+> >  8488 pts/0    S+     0:00                              \_ egrep ^linux|^asm
+> > [jgarzik@pretzel misc-2.6]$ strace -p8484
+> > Process 8484 attached - interrupt to quit
+> [sits there, chewing up CPU grepping a 47-line header file]
 
-On Sat, 2007-10-20 at 17:35 -0400, Erez Zadok wrote:
+I think, the following information would be helpful :
 
-> Trond, I verified that w/ the above patch the problem is w/ nfs: the client
-> leaves .nfsXXX files behind for every file unlinked while open.  Let me know
-> when you get a fix and I'll test it.
+(1)  # cat /proc/PID/stat ; sleep 5; cat /proc/PID/stat
 
-Doh... Another typo.
+as we could know :
 
-Trond
--------------------------- CUT HERE --------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Sun, 21 Oct 2007 12:02:22 -0400
-NFS: Fix a typo in nfs_call_unlink()
+- whether utime or/and stime keeps increasing ;
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+- one of the fields is actually 'eip' ... so we could, hopefully, more
+or less precisely localize the area of the code where it's looping.
 
- fs/nfs/unlink.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/nfs/unlink.c b/fs/nfs/unlink.c
-index ce558c2..233ad38 100644
---- a/fs/nfs/unlink.c
-+++ b/fs/nfs/unlink.c
-@@ -171,7 +171,7 @@ static int nfs_call_unlink(struct dentry *dentry, struct nfs_unlinkdata *data)
- 	if (parent == NULL)
- 		goto out_free;
- 	dir = parent->d_inode;
--	if (nfs_copy_dname(dentry, data) == 0)
-+	if (nfs_copy_dname(dentry, data) != 0)
- 		goto out_dput;
- 	/* Non-exclusive lock protects against concurrent lookup() calls */
- 	spin_lock(&dir->i_lock);
+(do_task_stat() in fs/proc/array.c)
 
 
+(2) # cat /proc/sched_debug;
+and
+# cat /proc/PID/sched
+
+(if your kernel has CONFIG_SCHED_DEBUG=y)
+
+
+(3) is anything else able to run on this CPU (as I understand it's
+SMP) or the task does completely locks it up.
+
+again, one of the fields of /proc/PID/stat is the CPU# on which the
+task is currently active.
+
+Let's start a buzy-loop task on this cpu and see wheather it's able to
+make any progress (TIME counter in 'ps')
+
+# taskset -c THIS_CPU some_busy_looping_prog
+
+TIA,
+
+-- 
+Best regards,
+Dmitry Adamushko
