@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXJUKUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbXJUKYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbXJUKUW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 06:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXJUKUI
+	id S1752586AbXJUKYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 06:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXJUKYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 06:20:08 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:58880 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbXJUKUG convert rfc822-to-8bit (ORCPT
+	Sun, 21 Oct 2007 06:24:08 -0400
+Received: from 133.90.227.87.static.ehn.siw.siwnet.net ([87.227.90.133]:49640
+	"EHLO 133.90.227.87.static.ehn.siw.siwnet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751401AbXJUKYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 06:20:06 -0400
-Date: Sun, 21 Oct 2007 12:17:02 +0200
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-To: Coly Li <coyli@suse.de>
-Cc: Jiri Kosina <jikos@jikos.cz>, Dave Haywood <tla@oak.selfip.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: PROBLEM: oops, Linus tree: 2.6.23-g4fa4d23f, BUG: unable to
- handle kernel NULL pointer dereference at virtual address 00000004
-Message-ID: <20071021121702.4816ca1f@inria.fr>
-In-Reply-To: <471AE0B0.4060600@suse.de>
-References: <4719B727.7090908@oak.selfip.net>
-	<Pine.LNX.4.64.0710201246540.18815@twin.jikos.cz>
-	<3d8471ca0710200432h3607b0a0i9169884ebec3b940@mail.gmail.com>
-	<471AE0B0.4060600@suse.de>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+	Sun, 21 Oct 2007 06:24:06 -0400
+Date: Sun, 21 Oct 2007 12:24:02 +0200
+From: Henrik Carlqvist <hc1@poolhem.se>
+To: linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+Message-Id: <20071021122402.2f0f3b40.hc1@poolhem.se>
+In-Reply-To: <26703.1192942058@turing-police.cc.vt.edu>
+References: <200710201257.55616.nick@ukfsn.org>
+	<20071020144238.4f258c8c.hc1@poolhem.se>
+	<20071020191700.GB8774@uranus.ravnborg.org>
+	<26703.1192942058@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 0.9.2 (GTK+ 1.2.10; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Sun, 21 Oct 2007 13:16:32 +0800,
-Coly Li <coyli@suse.de> a écrit :
+On Sun, 21 Oct 2007 00:47:38 -0400
+Valdis.Kletnieks@vt.edu wrote:
 
-> > This should be fixed in recent git by
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9b013e05e0289c190a53d78ca029e2f21c0e4485
+> On Sat, 20 Oct 2007 21:17:00 +0200, Sam Ravnborg said:
+> > I assume
+> > 	depends on MODULES
 > > 
-> Maybe we encounter same condition, at least the symbol name is same -- sock_setsockopt.
+> > should do the trick.
+> 
+> Umm... I think that will work backwards, and give you CONFIG_FOO=y
+> if.f the kernel *supports* modules. What he needs is to be able to say
+> CONFIG_FOO=n or CONFIG_FOO=m, but *ban* CONFIG_FOO=y.
 
-> [ 4327.550291] EFLAGS: 00010282   (2.6.23-bigsmp-g4fa4d23f #6)
+Yes, thats right, MODULES does not ban y as would be needed. As an example
+I tried to do a quick test, I edited drivers/scsi/qla2xxx/Kconfig to look
+like this:
 
-You are testing a kernel that does not contain the aforementioned fix,
-so you should update your git checkout (using a kernel that can connect
-to the Internet ;-) ) and test the new kernel.
+-8<-------------------------------------------------------
+config SCSI_QLA_FC
+        tristate "QLogic QLA2XXX Fibre Channel Support"
+        depends on PCI && SCSI && MODULES
+        select SCSI_FC_ATTRS
+        select FW_LOADER
+        ---help---
+        This qla2xxx driver supports all QLogic Fibre Channel
+        PCI and PCIe host adapters.
 
-Thanks.
+        By default, firmware for the ISP parts will be loaded
+        via the Firmware Loader interface.
 
--- 
-Guillaume
+        ISP               Firmware Filename
+        ----------        -----------------
+        21xx              ql2100_fw.bin
+        22xx              ql2200_fw.bin
+        2300, 2312, 6312  ql2300_fw.bin
+        2322, 6322        ql2322_fw.bin
+        24xx              ql2400_fw.bin
+
+        Upon request, the driver caches the firmware image until
+        the driver is unloaded.
+
+        Firmware images can be retrieved from:
+
+                ftp://ftp.qlogic.com/outgoing/linux/firmware/
+-8<-------------------------------------------------------
+
+The only thing that I did change was that I added "&& MODULES" to the
+depends line. However, this only causes the driver to be possible to build
+when you build a kernel with module support. Still tristate allows you to
+build it both as a module and as a driver built into the kernel. However,
+when built into the kernel the driver is unusable as it needs its firmware
+which it can't reach. 
+
+Is there any other way to specify that a functionality can only be built
+as a module, not built into the kernel?
+
+In my firsta attempts to post about these tests my post ended up not on
+the mailing list but as a reply to Sam Ravnborg only, apologies for
+that...
+
+Best regards Henrik
