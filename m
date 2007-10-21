@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXJUKJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXJUKUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbXJUKJk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 06:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXJUKJa
+	id S1751975AbXJUKUW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 06:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXJUKUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 06:09:30 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:25877 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbXJUKJ3 (ORCPT
+	Sun, 21 Oct 2007 06:20:08 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:58880 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751016AbXJUKUG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 06:09:29 -0400
-Date: Sun, 21 Oct 2007 12:09:26 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: emist <emistz@gmail.com>
-Cc: Linux <linux-kernel@vger.kernel.org>,
-       Gerald Schaefer <geraldsc@de.ibm.com>, Carsten Otte <cotte@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
-Message-ID: <20071021100926.GA4420@osiris.ibm.com>
-References: <200710201451.57138.elendil@planet.nl> <471A39D2.1070303@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471A39D2.1070303@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 21 Oct 2007 06:20:06 -0400
+Date: Sun, 21 Oct 2007 12:17:02 +0200
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Coly Li <coyli@suse.de>
+Cc: Jiri Kosina <jikos@jikos.cz>, Dave Haywood <tla@oak.selfip.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: PROBLEM: oops, Linus tree: 2.6.23-g4fa4d23f, BUG: unable to
+ handle kernel NULL pointer dereference at virtual address 00000004
+Message-ID: <20071021121702.4816ca1f@inria.fr>
+In-Reply-To: <471AE0B0.4060600@suse.de>
+References: <4719B727.7090908@oak.selfip.net>
+	<Pine.LNX.4.64.0710201246540.18815@twin.jikos.cz>
+	<3d8471ca0710200432h3607b0a0i9169884ebec3b940@mail.gmail.com>
+	<471AE0B0.4060600@suse.de>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 20, 2007 at 01:24:34PM -0400, emist wrote:
-> Frans Pop wrote:
-> > emist wrote:
-> >> The following patch fixes and issue in the s390 dcssblk driver. The
-> >> issue is caused when an unsuccessful attempt is made in order to change
-> >> a segment's type through the device attribute file "shared". This causes
-> >> the driver to remove the device in question, removing with it the device
-> >> attribute which is currently handling the call. The result is a hang on
-> >> the driver as it removes memory from under its feet.
-> >>
-> >> Not exactly sure if this explanation makes sense or its entirely
-> >> accurate. This is what I believe at this point from encountering and
-> >> fixing the error. Anyway here is the patch, hope it helps.
-> > 
-> > Hi,
-> > 
-> > If you don't get any reactions to your patch during the next few days, I 
-> > suggest you resend it and then CC the linux-s390@vger.kernel.org list and 
-> > possibly also the maintainer at linux390@de.ibm.com.
-> > 
-> > In general you should always try to CC the relevant list/people as listed in 
-> > the MAINTAINERS file and not just the linux-kernel list, both for patches 
-> > and when reporting problems.
-> > 
-> > Cheers,
-> > Frans Pop
-> > 
-> 
-> Thanks Frans, I will do as you suggest.
-> 
-> Have a good one,
-> 
-> Igor H.
+Le Sun, 21 Oct 2007 13:16:32 +0800,
+Coly Li <coyli@suse.de> a écrit :
 
-Gerald or Carsten (cc'ed) should look into this.
-Thanks for reporting.
+> > This should be fixed in recent git by
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9b013e05e0289c190a53d78ca029e2f21c0e4485
+> > 
+> Maybe we encounter same condition, at least the symbol name is same -- sock_setsockopt.
+
+> [ 4327.550291] EFLAGS: 00010282   (2.6.23-bigsmp-g4fa4d23f #6)
+
+You are testing a kernel that does not contain the aforementioned fix,
+so you should update your git checkout (using a kernel that can connect
+to the Internet ;-) ) and test the new kernel.
+
+Thanks.
+
+-- 
+Guillaume
