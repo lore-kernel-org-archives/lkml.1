@@ -1,165 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXJUR5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXJUR5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXJUR5K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 13:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXJUR44
+	id S1753983AbXJUR5d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 13:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbXJUR5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 13:56:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55824 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbXJUR4z (ORCPT
+	Sun, 21 Oct 2007 13:57:22 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:36601 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186AbXJUR5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 13:56:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Use a private inode for backing storage
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710211524.52595.nickpiggin@yahoo.com.au>
-	<m1d4v9c690.fsf@ebiederm.dsl.xmission.com>
-	<200710211939.04015.nickpiggin@yahoo.com.au>
-Date: Sun, 21 Oct 2007 11:56:08 -0600
-In-Reply-To: <200710211939.04015.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Sun, 21 Oct 2007 19:39:03 +1000")
-Message-ID: <m1ir50bbd3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 21 Oct 2007 13:57:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=qj+6Y5JGOo+6Trfd6ey7j3VxHyfIg7ihPEGn0M5EG+LEMxO+jgGn6U32m+xg0qay24GSsdE0L3Y1V9bgMrcxPqKu+tpc8k2tBaeErfW5FWF5XAdBvhtpmAh58FMzKVuepvfBZs5HDMwQ3eJr+wDm1PPLAC+dt8yjUGxj+mIBqzY=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 10/17] drivers/input/serio/i8042.c: irq handler clean
+Date: Sun, 21 Oct 2007 13:57:16 -0400
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org> <20071021075237.EC51B19041D@havoc.gtf.org>
+In-Reply-To: <20071021075237.EC51B19041D@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710211357.16794.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+Hi Jeff,
 
-> OK, I missed that you set the new inode's aops to the ramdisk_aops
-> rather than the bd_inode. Which doesn't make a lot of sense because
-> you just have a lot of useless aops there now.
+On Sunday 21 October 2007, Jeff Garzik wrote:
+> commit bdf311215ef8dbae0254c092deaed1d5928b013e
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Fri Oct 19 19:28:54 2007 -0400
+> 
+>     drivers/input/serio/i8042.c: irq handler clean
+>     
+>     * remove unnecessary prototype
+>     
+>     * distinguish between polled and irq-driven event handling
+>     
+>     * don't bother worrying about 'irq' function arg
 
-Not totally useless as you have mentioned they are accessed by
-the lru so we still need something there just not much.
+I don't like these 2 changes. When I ask for debug data I really
+want to know what interrupt (1 or 12) was raised in response to
+a command. Your changes remove this visibility.
 
->> Frankly I suspect the whole 
->> issue is to subtle and rare to make any backport make any sense.  My
->> apologies Christian.
->
-> It's a data corruption issue. I think it should be fixed.
+>     
+>     * dev_id passed to irq handlers is unused, to change the request_irq()
+>       argument to NULL
+>     
 
-Of course it should be fixed.  I just don't know if a backport
-makes sense.  The problem once understood is hard to trigger
-and easy to avoid.
+Does this really matter?
 
->> >> The only way we make it to that inode is through block
->> >> device I/O so it lives at exactly the same level in the hierarchy as
->> >> a real block device.
->> >
->> > No, it doesn't. A real block device driver does have its own
->> > buffer cache as it's backing store. It doesn't know about
->> > readpage or writepage or set_page_dirty or buffers or pagecache.
->>
->> Well those pages are only accessed through rd_blkdev_pagecache_IO
->> and rd_ioctl.
->
-> Wrong. It will be via the LRU, will get ->writepage() called,
-> block_invalidate_page, etc. And I guess also via sb->s_inodes, where
-> drop_pagecache_sb might do stuff to it (although it probably escapes
-> harm). But you're right that it isn't the obviously correct fix for
-> the problem.
+Thanks.
 
-Yes.  We will be accessed via the LRU.  Yes I knew that.  The truth is
-whatever we do we will be visible to the LRU.  My preferences run
-towards having something that is less of a special case then a new
-potentially huge cache that is completely unaccounted for, that we
-have to build and maintain all of the infrastructure for
-independently.  The ramdisk code doesn't seem interesting enough
-long term to get people to do independent maintenance.
-
-With my patch we are on the road to being just like the ramdisk
-for maintenance purposes code except having a different GFP mask.
-
-I think I might have to send in a patch that renames
-block_invalidatepage to block_invalidate_page which is how everyone
-seems to be spelling it. 
-
-Anyway nothing in the ramdisk code sets PagePrivate o
-block_invalidagepage should never be called, nor try_to_free_buffers
-for that matter.
-
->> >> My patch is the considered rewrite boiled down
->> >> to it's essentials and made a trivial patch.
->> >
->> > What's the considered rewrite here? The rewrite I posted is the
->> > only one so far that's come up that I would consider [worthy],
->> > while these patches are just more of the same wrongness.
->>
->> Well it looks like you were blind when you read the patch.
->
-> If you think it is a nice way to go, then I think you are
-> blind ;)
-
-Well we each have different tastes.  I think my patch
-is a sane sensible small incremental step that does just what
-is needed to fix the problem.   It doesn't drag a lot of other
-stuff into the problem like a rewrite would so we can easily verify
-it.
-
->> Because the semantics between the two are almost identical,
->> except I managed to implement BLKFLSBUF in a backwards compatible
->> way by flushing both the buffer cache and my private cache.  You
->> failed to flush the buffer cache in your implementation.
->
-> Obviously a simple typo that can be fixed by adding one line
-> of code.
-
-Quite true.  I noticed the breakage in mine because the patch
-was so simple, and I only had to worry about one aspect.  With
-a rewrite I missed it because there was so much other noise I
-couldn't see any issues.
-
-
->> Yes. I use an inode 99% for it's mapping and the mapping 99% for it's
->> radix_tree.  But having truncate_inode_pages and grab_cache_page
->> continue to work sure is convenient.
->
-> It's horrible. And using truncate_inode_pages / grab_cache_page and
-> new_inode is an incredible argument to save a few lines of code. You
-> obviously didn't realise your so called private pages would get
-> accessed via the LRU, for example. 
-
-I did but but that is relatively minor.  Using the pagecache this
-way for this purpose is a well established idiom in the kernel
-so I didn't figure I was introducing anything to hard to maintain.
-
-> This is making a relatively
-> larger logical change than my patch, because now as well as having
-> a separate buffer cache and backing store, you are also making the
-> backing store pages visible to the VM.
-
-I am continuing to have the backing store pages visible to the VM,
-and from that perspective it is a smaller change then where we are
-today.  Not that we can truly hide pages from the VM. 
-
->> I certainly think it makes it a 
->> lot simpler to audit the code to change just one thing at a time (the
->> backing store) then to rip out and replace everything and then try and
->> prove that the two patches are equivalent.
->
-> I think it's a bad idea just to stir the shit. We should take the
-> simple fix for the problem, and then fix it properly.
-
-The code in rd.c isn't terrible, and it isn't shit.  There is only one
-fundamental problem with it.  rd.c is fundamentally incompatible with
-the buffer cache.  Currently rd.c is a legitimate if a bit ugly
-user of the page cache.  The ugliness comes from working around
-the buffer cache placing buffer heads on it's pages.
-
-With my patch I stop using the same pages as the buffer cache which
-removes that one fundamental problem.
-
-Once we get the problem actually fixed I have no problem with
-cleaning up the code.  I even have patches queued I just believe
-in only changing one thing at a time if I can.
-
-Eric
+-- 
+Dmitry
