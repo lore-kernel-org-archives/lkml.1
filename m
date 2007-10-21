@@ -1,130 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbXJUUWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbXJUUmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753495AbXJUUWh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 16:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbXJUUWa
+	id S1752572AbXJUUmg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 16:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbXJUUma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 16:22:30 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:49226 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbXJUUW3 convert rfc822-to-8bit (ORCPT
+	Sun, 21 Oct 2007 16:42:30 -0400
+Received: from 133.90.227.87.static.ehn.siw.siwnet.net ([87.227.90.133]:52422
+	"EHLO 133.90.227.87.static.ehn.siw.siwnet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751855AbXJUUm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 16:22:29 -0400
-X-IronPort-AV: E=Sophos;i="4.21,307,1188802800"; 
-   d="scan'208";a="240444785"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Question about free/used memory on Linux
-Date: Sun, 21 Oct 2007 13:21:39 -0700
-Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <471BA1D1.5040905@linux.vnet.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Question about free/used memory on Linux
-Thread-Index: AcgUE7Wml5cZ/7q4SYC0uqo1F6fvIAABTQrw
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471BA1D1.5040905@linux.vnet.ibm.com>
-From: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Oct 2007 20:22:22.0423 (UTC) FILETIME=[16365E70:01C81420]
-Authentication-Results: sj-dkim-2; header.From=rarakali@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Sun, 21 Oct 2007 16:42:29 -0400
+Date: Sun, 21 Oct 2007 22:42:24 +0200
+From: Henrik Carlqvist <hc1@poolhem.se>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+Message-Id: <20071021224224.5a0bd1a1.hc1@poolhem.se>
+In-Reply-To: <20071021094517.78dd1916.rdunlap@xenotime.net>
+References: <200710201257.55616.nick@ukfsn.org>
+	<20071020144238.4f258c8c.hc1@poolhem.se>
+	<20071020191700.GB8774@uranus.ravnborg.org>
+	<26703.1192942058@turing-police.cc.vt.edu>
+	<20071021122402.2f0f3b40.hc1@poolhem.se>
+	<20071021094517.78dd1916.rdunlap@xenotime.net>
+X-Mailer: Sylpheed version 0.9.2 (GTK+ 1.2.10; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vaidy,
-Thanks for clarifying several of my doubts.
-
-To answer your question about my intention, we currently have a 
-system with 2 GB RAM and I need to find out the actual used and 
-free memory so that we can decide if the same setup(applications,
-tmpfs etc.) can run on another system with lesser memory.
-
-Is it correct to say that the "used" field "free -m" excluding
-buffers/caches would give the correct idea of used memory
-(I mean does it take care of shared memory, shared copies of 
-libraries etc.) ? I assume it does not include /dev/shm usage
-since that's also a tmpfs partition ?
-
-If so, then I can add the memory used by tmpfs partitions to
-the above and get the total memory used ?
-
-For eg. if my "free -m" appears as below:
-Linux(debug)# free -m
-             total       used       free     shared    buffers
-cached
-Mem:          2014        984       1030          0         80
-594
--/+ buffers/cache:        309       1705
-
-Can I say that 309MB + 350 MB(size of tmpfs partitions including
-/dev/shm)
-is the used memory on my system ?
-
-Thanks,
-Ravi
-
-
------Original Message-----
-From: Vaidyanathan Srinivasan [mailto:svaidy@linux.vnet.ibm.com] 
-Sent: Sunday, October 21, 2007 12:01 PM
-To: Ravinandan Arakali (rarakali)
-Cc: Linux Kernel
-Subject: Re: Question about free/used memory on Linux
-
-Ravinandan Arakali (rarakali) wrote:
-> Hi kernel gurus,
-> I am trying to find out the memory that's used on my linux box.
-> I find that there are quite a few confusing metrics. How do I find out
-
-> the "true" used memory ?
-
-pagecache pages may be the reason for the confusion.  Most free memory
-can be consumed under 'Cached' in /proc/meminfo
-
-Most of this memory is easily reclaimable and can be considered 'free'.
-However the cost of reclaim increases if the pages are memory mapped
-and/or dirty.
-
-Cached-Mapped-Dirty in /proc/meminfo can be seen as a easily freeable
-memory and can be added to the 'Free' in /proc/meminfo count
-
-What is your intention of finding free memory in the system?  Linux
-kernel takes the best decision of using available RAM for file cache or
-applications code/data as and when needed.  Ideally the 'Free' count
-will be  a very low value on a heavily used system.  If application
-needs more memory, then the kernel will shrink the caches and give the
-reclaimed memory to the application.
-
+> config FOO
+> 	depends on BAR && m
 > 
-> 1. For eg. "free -m" shows free memory (excluding buffers/caches) as 
-> 308 MB while I can see(from "df" output) that the the tmpfs partitions
+> restricts FOO to module-only.
 
-> take up about 400 MB. So, does "free -m" not consider the tmpfs 
-> partitions ?
+Thanks alot! That really did the trick! With the following file:
 
-Pages used from tmpfs should come under Mapped or Cached.  They are not
-counted as free.
+-8<-------------------------------
+config SCSI_QLA_FC
+        tristate "QLogic QLA2XXX Fibre Channel Support"
+        depends on PCI && SCSI && m
+        select SCSI_FC_ATTRS
+        select FW_LOADER
+        ---help---
+        This qla2xxx driver supports all QLogic Fibre Channel
+        PCI and PCIe host adapters.
 
-> 2. I try to add up RSS field of all processes reported by "ps aux" 
-> command. But is it true that this would be misleading in that, shared 
-> memory used by, say 2 processes would show up twice here although 
-> there's only one copy in memory. Also does this consider the fact that
+        By default, firmware for the ISP parts will be loaded
+        via the Firmware Loader interface.
 
-> there's only one copy of shared libraries ?
->
+        ISP               Firmware Filename
+        ----------        -----------------
+        21xx              ql2100_fw.bin
+        22xx              ql2200_fw.bin
+        2300, 2312, 6312  ql2300_fw.bin
+        2322, 6322        ql2322_fw.bin
+        24xx              ql2400_fw.bin
 
-RSS is from each process point of view.  If the page is present in RAM,
-it is counted.  If the pages is shared, then it is counted in both
-process address space.
+        Upon request, the driver caches the firmware image until
+        the driver is unloaded.
 
-> 3. I guess "free -m" and "top" commands use /proc/meminfo and hence 
-> all these outputs are same ?
+        Firmware images can be retrieved from:
 
-Yes, all of them parse /proc/meminfo
+                ftp://ftp.qlogic.com/outgoing/linux/firmware/
+-8<-------------------------------
 
---Vaidy
+It is now only possible to compile the driver as a module.
+
+Best regards Henrik
+-- 
+NOTE: Dear Outlook users: Please remove me from your address books.
+      Read this article and you know why:
+      http://newsforge.com/article.pl?sid=03/08/21/143258
