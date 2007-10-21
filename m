@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751515AbXJUKCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXJUKJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751515AbXJUKCa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 06:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXJUKCU
+	id S1752540AbXJUKJk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 06:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXJUKJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 06:02:20 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:29865 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751367AbXJUKCT (ORCPT
+	Sun, 21 Oct 2007 06:09:30 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:25877 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbXJUKJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 06:02:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Nt7huuXjv40Ogmug840GH8MDqVKCf789cI/cGd0ffxQZ8pbA2DG4OCI8gBNy8rNibCjXbm9Bg+NjiA3oYZSz2ImRVzOUDYTLqCFQQFIWtQz9u80WAB5XWxBvNEyTqQCIf7UFna5QRWIqAFL+amsfoQ/F2fHulMpna4vXQfMFVM0=  ;
-X-YMail-OSG: xBBl4B0VM1nZZaUBSV_M7CkvBKIFT1vkE8baQD0mAZYlGFmt
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: BUG at mm/filemap.c:1749 (2.6.24, jffs2, unionfs)
-Date: Sun, 21 Oct 2007 19:57:11 +1000
-User-Agent: KMail/1.9.5
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, jffs-dev@axis.com,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-References: <200710190605.l9J65kDe008069@agora.fsl.cs.sunysb.edu> <200710191716.53470.nickpiggin@yahoo.com.au> <1192956944.2672.6.camel@shinybook.infradead.org>
-In-Reply-To: <1192956944.2672.6.camel@shinybook.infradead.org>
+	Sun, 21 Oct 2007 06:09:29 -0400
+Date: Sun, 21 Oct 2007 12:09:26 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: emist <emistz@gmail.com>
+Cc: Linux <linux-kernel@vger.kernel.org>,
+       Gerald Schaefer <geraldsc@de.ibm.com>, Carsten Otte <cotte@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
+Message-ID: <20071021100926.GA4420@osiris.ibm.com>
+References: <200710201451.57138.elendil@planet.nl> <471A39D2.1070303@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710211957.11928.nickpiggin@yahoo.com.au>
+In-Reply-To: <471A39D2.1070303@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 October 2007 18:55, David Woodhouse wrote:
-> On Fri, 2007-10-19 at 17:16 +1000, Nick Piggin wrote:
-> >         if (writtenlen) {
-> > -               if (inode->i_size < (pg->index << PAGE_CACHE_SHIFT) +
-> > start + writtenlen) { -                       inode->i_size = (pg->index
-> > << PAGE_CACHE_SHIFT) + start + writtenlen; +               if
-> > (inode->i_size < pos + start + writtenlen) {
-> > +                       inode->i_size = pos + start + writtenlen;
->
-> This part seems wrong. Shouldn't it just be pos + writtenlen -- which is
-> basically what it was already: pos==(pg->index<<PAGE_CACHE_SHIFT)+start
+On Sat, Oct 20, 2007 at 01:24:34PM -0400, emist wrote:
+> Frans Pop wrote:
+> > emist wrote:
+> >> The following patch fixes and issue in the s390 dcssblk driver. The
+> >> issue is caused when an unsuccessful attempt is made in order to change
+> >> a segment's type through the device attribute file "shared". This causes
+> >> the driver to remove the device in question, removing with it the device
+> >> attribute which is currently handling the call. The result is a hang on
+> >> the driver as it removes memory from under its feet.
+> >>
+> >> Not exactly sure if this explanation makes sense or its entirely
+> >> accurate. This is what I believe at this point from encountering and
+> >> fixing the error. Anyway here is the patch, hope it helps.
+> > 
+> > Hi,
+> > 
+> > If you don't get any reactions to your patch during the next few days, I 
+> > suggest you resend it and then CC the linux-s390@vger.kernel.org list and 
+> > possibly also the maintainer at linux390@de.ibm.com.
+> > 
+> > In general you should always try to CC the relevant list/people as listed in 
+> > the MAINTAINERS file and not just the linux-kernel list, both for patches 
+> > and when reporting problems.
+> > 
+> > Cheers,
+> > Frans Pop
+> > 
+> 
+> Thanks Frans, I will do as you suggest.
+> 
+> Have a good one,
+> 
+> Igor H.
 
-Yeah you're right, thanks.
+Gerald or Carsten (cc'ed) should look into this.
+Thanks for reporting.
