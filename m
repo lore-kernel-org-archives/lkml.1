@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbXJUEJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbXJUEaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655AbXJUEJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 00:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXJUEJv
+	id S1751439AbXJUEaF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:30:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXJUE3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 00:09:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52243 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbXJUEJu (ORCPT
+	Sun, 21 Oct 2007 00:29:55 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:36819 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750788AbXJUE3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 00:09:50 -0400
-Date: Sat, 20 Oct 2007 21:07:57 -0700
-From: Greg KH <greg@kroah.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: request_firmware() and in-kernel modules
-Message-ID: <20071021040757.GC24869@kroah.com>
-References: <4718EAEA.9000609@freescale.com>
+	Sun, 21 Oct 2007 00:29:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=qfMOpfKth51daKS8ducZ9MrsvEsfJdO6bLDMZaPrkgMMtJ+rcEFe/aUEK4n5GtYITntRqZ7G0ZM3tL4oqukHZ1eCa+owhwopv+Xy2yQyU2TvyB+DpoLJFA5gEr+iyZnGccTq9XkPQ1lQ7VQ9DrUSEeW0RutMi3wVFi/mgHYI/Ow=  ;
+X-YMail-OSG: 5P2MC7MVM1kxlU2uhN74pmkewCuzOn3r1LCB5RDnDt3QRs477DJKbOLruvtZk6aC3hAsolVsmA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own mappings.
+Date: Sun, 21 Oct 2007 14:24:46 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+References: <200710151028.34407.borntraeger@de.ibm.com> <20071017213216.b2d0c4bd.akpm@linux-foundation.org> <m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4718EAEA.9000609@freescale.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200710211424.46650.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 12:35:38PM -0500, Timur Tabi wrote:
-> If my driver is compiled in-kernel (and I have module support turned off), 
-> can I still use request_firmware()?
+On Saturday 20 October 2007 07:27, Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> > I don't think we little angels want to tread here.  There are so many
+> > weirdo things out there which will break if we bust the coherence between
+> > the fs and /dev/hda1.
+>
+> We broke coherence between the fs and /dev/hda1 when we introduced
+> the page cache years ago,
 
-Yes.
+Not for metadata. And I wouldn't expect many filesystem analysis
+tools to care about data.
 
-> If my driver is loaded before the file system drivers are loaded, how
-> can a user process copy the firmware to the
-> /sys/class/firwmare/.../data device?
 
-I'd recommend using the non-blocking mode, that way, when userspace
-finally gets running, it can handle the firmware events properly, and
-your kernel code will have not timed out already.
+> and weird hacky cases like 
+> unmap_underlying_metadata don't change that.
 
-thanks,
+unmap_underlying_metadata isn't about raw block device access at
+all, though (if you write to the filesystem via the blockdevice
+when it isn't expecting it, it's going to blow up regardless).
 
-greg k-h
+
+> Currently only 
+> metadata is more or less in sync with the contents of /dev/hda1.
+
+It either is or it isn't, right? And it is, isn't it? (at least
+for the common filesystems).
