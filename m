@@ -1,153 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbXJUM5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXJUM6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbXJUM5B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 08:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbXJUM4y
+	id S1753640AbXJUM6X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 08:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXJUM6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 08:56:54 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:64630 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbXJUM4x (ORCPT
+	Sun, 21 Oct 2007 08:58:16 -0400
+Received: from mail02d.mail.t-online.hu ([84.2.42.7]:52449 "EHLO
+	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbXJUM6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 08:56:53 -0400
-Message-ID: <471B4BF2.2060205@freemail.hu>
-Date: Sun, 21 Oct 2007 14:54:10 +0200
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+	Sun, 21 Oct 2007 08:58:15 -0400
+Message-ID: <471B4C46.9030502@freemail.hu>
+Date: Sun, 21 Oct 2007 14:55:34 +0200
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>,
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Richard Purdie <rpurdie@rpsys.net>,
        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Richard Purdie <rpurdie@rpsys.net>
-CC: linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
-Subject: Re: [PATCH 2/3] leds-clevo-mail: hw accelerated LED blink extension
-References: <4718FCF3.4030401@freemail.hu>
-In-Reply-To: <4718FCF3.4030401@freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-2
+       linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
+Subject: Re: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
+References: <4718FD04.3080602@freemail.hu> <20071019133607.3419b00a.randy.dunlap@oracle.com> <471B4BA5.30100@freemail.hu>
+In-Reply-To: <471B4BA5.30100@freemail.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Márton Németh <nm127@freemail.hu>
 
-Extends the leds subsystem with a blink_set() callback function which can
-be optionally implemented by a LED driver. If implemented, the driver can use
-the hardware acceleration for blinking a LED.
+The driver supports the mail LED commonly found on different Clevo notebooks.
+The driver access the LED through the i8042 hardware and implements the support for
+hardware accelerated blink function.
 
 Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
 diff -uprN linux-2.6.23.orig/Documentation/leds-class.txt linux-2.6.23/Documentation/leds-class.txt
 --- linux-2.6.23.orig/Documentation/leds-class.txt	2007-10-09 22:31:38.000000000 +0200
 +++ linux-2.6.23/Documentation/leds-class.txt	2007-10-21 10:45:35.000000000 +0200
-@@ -47,6 +49,19 @@ overhead, I suggest these become part of
- above leaves scope for further attributes should they be needed.
+@@ -39,7 +39,9 @@ LED Device Naming
 
+ Is currently of the form:
 
-+
-+Hardware accelerated blink of LEDs
-+==================================
-+
-+Some LEDs can be programmed to blink without any CPU interaction. To
-+support this feature, a LED driver can optionally implement the
-+blink_set() function (see <linux/leds.h>). If implemeted, the
-+ledtrig-timer tries to use it. The blink_set() function should return
-+0 if the blink setting is supported, or -EINVAL otherwise, which means
-+that the LED will be turned on and off from software by the leds
-+subsystem.
-+
-+
- Known Issues
- ============
+-"devicename:colour"
++"devicename:colour" or
++"devicename:colour:type" or
++"devicename::type"
 
-@@ -55,10 +70,6 @@ would cause nightmare dependency issues.
- compared to the benefits the simple trigger functionality brings. The
- rest of the LED subsystem can be modular.
-
--Some leds can be programmed to flash in hardware. As this isn't a generic
--LED device property, this should be exported as a device specific sysfs
--attribute rather than part of the class if this functionality is required.
--
-
- Future Development
- ==================
+ There have been calls for LED properties such as colour to be exported as
+ individual led class attributes. As a solution which doesn't incur as much
 diff -uprN linux-2.6.23.orig/drivers/leds/Kconfig linux-2.6.23/drivers/leds/Kconfig
 --- linux-2.6.23.orig/drivers/leds/Kconfig	2007-10-09 22:31:38.000000000 +0200
 +++ linux-2.6.23/drivers/leds/Kconfig	2007-10-21 12:04:50.000000000 +0200
-@@ -115,7 +148,11 @@ config LEDS_TRIGGER_TIMER
- 	depends on LEDS_TRIGGERS
- 	help
- 	  This allows LEDs to be controlled by a programmable timer
--	  via sysfs. If unsure, say Y.
-+	  via sysfs. Some LED hardware can be programmed to start
-+	  blinking the LED without any further software interaction.
-+	  For more details read Documentation/leds-class.txt.
-+
-+	  If unsure, say Y.
+@@ -101,6 +101,39 @@ config LEDS_GPIO
+ 	  outputs. To be useful the particular board must have LEDs
+ 	  and they must be connected to the GPIO lines.
 
- config LEDS_TRIGGER_IDE_DISK
- 	bool "LED IDE Disk Trigger"
-diff -uprN linux-2.6.23.orig/drivers/leds/ledtrig-timer.c linux-2.6.23/drivers/leds/ledtrig-timer.c
---- linux-2.6.23.orig/drivers/leds/ledtrig-timer.c	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23/drivers/leds/ledtrig-timer.c	2007-10-18 18:21:34.000000000 +0200
-@@ -77,8 +77,21 @@ static ssize_t led_delay_on_store(struct
- 		count++;
++config LEDS_CLEVO_MAIL
++	tristate "Mail LED on Clevo notebook (EXPERIMENTAL)"
++	depends on LEDS_CLASS && X86 && SERIO_I8042 && DMI && EXPERIMENTAL
++	help
++	  This driver makes the mail LED accessible from userspace
++	  programs through the leds subsystem. This LED have three
++	  known mode: off, blink at 0.5Hz and blink at 1Hz.
++
++	  The driver supports two kinds of interface: using ledtrig-timer
++	  or through /sys/class/leds/clevo::mail/brightness. As this LED
++	  cannot change it's brightness it blinks instead. The brightness
++	  value 0 means off, 1..127 means blink at 0.5Hz and 128..255 means
++	  blink at 1Hz.
++
++	  Example to start blink at 0.5Hz:
++	    echo 1 >/sys/class/leds/clevo::mail/brightness
++	  - or -
++	    echo timer >/sys/class/leds/clevo::mail/trigger
++	    echo 1000 >/sys/class/leds/clevo::mail/delay_on
++	    echo 1000 >/sys/class/leds/clevo::mail/delay_off
++
++	  This module can drive the mail LED for the following notebooks:
++
++		Clevo D410J
++		Clevo D410V
++		Clevo D400V/D470V (not tested, but might work)
++		Clevo M540N
++		Clevo M5x0N (not tested, but might work)
++		Positivo Mobile (Clevo M5x0V)
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called leds-clevo-mail.
++
+ comment "LED Triggers"
 
- 	if (count == size) {
--		timer_data->delay_on = state;
--		mod_timer(&timer_data->timer, jiffies + 1);
-+		if (timer_data->delay_on != state) {
-+			/* the new value differs from the previous */
-+			timer_data->delay_on = state;
+ config LEDS_TRIGGERS
+diff -uprN linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c linux-2.6.23/drivers/leds/leds-clevo-mail.c
+--- linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.23/drivers/leds/leds-clevo-mail.c	2007-10-21 10:49:32.000000000 +0200
+@@ -0,0 +1,210 @@
 +
-+			/* deactivate previous settings */
-+			del_timer_sync(&timer_data->timer);
++#include <linux/module.h>
 +
-+			/* try to activate hardware acceleration, if any */
-+			if (!led_cdev->blink_set ||
-+			    led_cdev->blink_set(led_cdev,
-+				timer_data->delay_on, timer_data->delay_off)) {
-+				/* no hardware acceleration, blink via timer */
-+				mod_timer(&timer_data->timer, jiffies + 1);
-+			}
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/leds.h>
++
++#include <linux/io.h>
++#include <linux/dmi.h>
++
++#include <linux/i8042.h>
++
++#define HANDLED				0
++
++#define CLEVO_MAIL_LED_OFF		0x0084
++#define CLEVO_MAIL_LED_BLINK_1HZ	0x008A
++#define CLEVO_MAIL_LED_BLINK_0_5HZ	0x0083
++
++MODULE_AUTHOR("Márton Németh <nm127@freemail.hu>");
++MODULE_DESCRIPTION("Clevo mail LED driver");
++MODULE_LICENSE("GPL");
++
++static unsigned int __initdata nodetect;
++module_param_named(nodetect, nodetect, bool, 0);
++MODULE_PARM_DESC(nodetect, "Skip DMI hardware detection");
++
++static struct platform_device *pdev;
++
++static int __init clevo_mail_led_dmi_callback(struct dmi_system_id *id)
++{
++	printk(KERN_INFO KBUILD_MODNAME ": '%s' found\n", id->ident);
++	return 1;
++}
++
++/*
++ * struct mail_led_whitelist - List of known good models
++ *
++ * Contains the known good models this driver is compatible with.
++ * When adding a new model try to be as strict as possible. This
++ * makes it possible to keep the false positives (the model is
++ * detected as working, but in reality it is not) as low as
++ * possible.
++ */
++static struct dmi_system_id __initdata mail_led_whitelist[] = {
++	{
++		.callback = clevo_mail_led_dmi_callback,
++		.ident = "Clevo D410J",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "VIA"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "K8N800"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "VT8204B")
 +		}
- 		ret = count;
- 	}
-
-@@ -110,8 +123,21 @@ static ssize_t led_delay_off_store(struc
- 		count++;
-
- 	if (count == size) {
--		timer_data->delay_off = state;
--		mod_timer(&timer_data->timer, jiffies + 1);
-+		if (timer_data->delay_off != state) {
-+			/* the new value differs from the previous */
-+			timer_data->delay_off = state;
-+
-+			/* deactivate previous settings */
-+			del_timer_sync(&timer_data->timer);
-+
-+			/* try to activate hardware acceleration, if any */
-+			if (!led_cdev->blink_set ||
-+			    led_cdev->blink_set(led_cdev,
-+				timer_data->delay_on, timer_data->delay_off)) {
-+				/* no hardware acceleration, blink via timer */
-+				mod_timer(&timer_data->timer, jiffies + 1);
-+			}
++	},
++	{
++		.callback = clevo_mail_led_dmi_callback,
++		.ident = "Clevo M5x0N",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "CLEVO Co."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "M5x0N")
 +		}
- 		ret = count;
- 	}
-
-diff -uprN linux-2.6.23.orig/include/linux/leds.h linux-2.6.23/include/linux/leds.h
---- linux-2.6.23.orig/include/linux/leds.h	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23/include/linux/leds.h	2007-10-18 18:21:34.000000000 +0200
-@@ -37,6 +37,10 @@ struct led_classdev {
- 	void		(*brightness_set)(struct led_classdev *led_cdev,
- 					  enum led_brightness brightness);
-
-+	/* Activate hardware accelerated blink */
-+	int		(*blink_set)(struct led_classdev *led_cdev,
-+				     int delay_on, int delay_off);
++	},
++	{
++		.callback = clevo_mail_led_dmi_callback,
++		.ident = "Positivo Mobile",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "CLEVO Co. "),
++			DMI_MATCH(DMI_BOARD_NAME, "M5X0V "),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Positivo Mobile"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "VT6198")
++		}
++	},
++	{
++		.callback = clevo_mail_led_dmi_callback,
++		.ident = "Clevo D410V",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "Clevo, Co."),
++			DMI_MATCH(DMI_BOARD_NAME, "D400V/D470V"),
++			DMI_MATCH(DMI_BOARD_VERSION, "SS78B"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "Rev. A1")
++		}
++	},
++	{ }
++};
 +
- 	struct device		*dev;
- 	struct list_head	 node;			/* LED Device list */
- 	char			*default_trigger;	/* Trigger to use */
++static void clevo_mail_led_set(struct led_classdev *led_cdev,
++				enum led_brightness value)
++{
++	if (value == LED_OFF)
++		i8042_command(NULL, CLEVO_MAIL_LED_OFF);
++	else if (value <= LED_HALF)
++		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
++	else
++		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
++
++}
++
++static int clevo_mail_led_blink(struct led_classdev *led_cdev,
++				int delay_on, int delay_off)
++{
++	int status = -EINVAL;
++
++	if (delay_on == 500 /* ms */ && delay_off == 500 /* ms */) {
++		/* blink the led with 1Hz */
++		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_1HZ);
++		status = HANDLED;
++
++	} else if (delay_on == 1000 /* ms */ && delay_off == 1000 /* ms */) {
++		/* blink the led with 0.5Hz */
++		i8042_command(NULL, CLEVO_MAIL_LED_BLINK_0_5HZ);
++		status = HANDLED;
++
++	} else {
++		printk(KERN_DEBUG KBUILD_MODNAME
++		       ": clevo_mail_led_blink(..., %u, %u),"
++		       " returning -EINVAL (unsupported)\n",
++		       delay_on, delay_off);
++	}
++
++	return status;
++}
++
++static struct led_classdev clevo_mail_led = {
++	.name			= "clevo::mail",
++	.brightness_set		= clevo_mail_led_set,
++	.blink_set		= clevo_mail_led_blink,
++};
++
++static int __init clevo_mail_led_probe(struct platform_device *pdev)
++{
++	return led_classdev_register(&pdev->dev, &clevo_mail_led);
++}
++
++static int clevo_mail_led_remove(struct platform_device *pdev)
++{
++	led_classdev_unregister(&clevo_mail_led);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int clevo_mail_led_suspend(struct platform_device *dev,
++				  pm_message_t state)
++{
++	led_classdev_suspend(&clevo_mail_led);
++	return 0;
++}
++
++static int clevo_mail_led_resume(struct platform_device *dev)
++{
++	led_classdev_resume(&clevo_mail_led);
++	return 0;
++}
++#else
++#define clevo_mail_led_suspend    NULL
++#define clevo_mail_led_resume     NULL
++#endif
++
++static struct platform_driver clevo_mail_led_driver = {
++	.probe		= clevo_mail_led_probe,
++	.remove		= clevo_mail_led_remove,
++	.suspend	= clevo_mail_led_suspend,
++	.resume		= clevo_mail_led_resume,
++	.driver		= {
++		.name		= KBUILD_MODNAME,
++	},
++};
++
++static int __init clevo_mail_led_init(void)
++{
++	int error = 0;
++	int count = 0;
++
++	/* Check with the help of DMI if we are running on supported hardware */
++	if (!nodetect) {
++		count = dmi_check_system(mail_led_whitelist);
++	} else {
++		count = 1;
++		printk(KERN_ERR KBUILD_MODNAME ": Skipping DMI detection. "
++		       "If the driver works on your hardware please "
++		       "report model and the output of dmidecode in tracker "
++		       "at http://sourceforge.net/projects/clevo-mailled/\n");
++	}
++
++	if (!count)
++		return -ENODEV;
++
++	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
++	if (!IS_ERR(pdev)) {
++		error = platform_driver_probe(&clevo_mail_led_driver,
++					      clevo_mail_led_probe);
++		if (error) {
++			printk(KERN_ERR KBUILD_MODNAME
++			       ": Can't probe platform driver\n");
++			platform_device_unregister(pdev);
++		}
++	} else
++		error = PTR_ERR(pdev);
++
++	return error;
++}
++
++static void __exit clevo_mail_led_exit(void)
++{
++	platform_device_unregister(pdev);
++	platform_driver_unregister(&clevo_mail_led_driver);
++
++	clevo_mail_led_set(NULL, LED_OFF);
++}
++
++module_init(clevo_mail_led_init);
++module_exit(clevo_mail_led_exit);
+diff -uprN linux-2.6.23.orig/drivers/leds/Makefile linux-2.6.23/drivers/leds/Makefile
+--- linux-2.6.23.orig/drivers/leds/Makefile	2007-10-09 22:31:38.000000000 +0200
++++ linux-2.6.23/drivers/leds/Makefile	2007-10-18 18:21:37.000000000 +0200
+@@ -17,6 +17,7 @@ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
+ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o
+ obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
++obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
+
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
 
