@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXJUEac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXJUEcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752036AbXJUEac (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 00:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbXJUEaR
+	id S1751932AbXJUEcr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXJUEcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 00:30:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48904 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbXJUEaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 00:30:15 -0400
-Message-ID: <471AD5AD.9030000@zytor.com>
-Date: Sat, 20 Oct 2007 21:29:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 21 Oct 2007 00:32:36 -0400
+Received: from [212.12.190.249] ([212.12.190.249]:34264 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750754AbXJUEce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 00:32:34 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: [RFD] iptables: mangle table obsoletes filter table
+Date: Sun, 21 Oct 2007 07:31:58 +0300
+User-Agent: KMail/1.5
+Cc: Bill Davidsen <davidsen@tmr.com>, Patrick McHardy <kaber@trash.net>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200710120031.42805.a1426z@gawab.com> <200710200640.02012.a1426z@gawab.com> <26556.1192855654@turing-police.cc.vt.edu>
+In-Reply-To: <26556.1192855654@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: some kernel headers broken in current git ?
-References: <4719174A.7020004@googlemail.com>
-In-Reply-To: <4719174A.7020004@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200710210731.58959.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Hi,
+Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 20 Oct 2007 06:40:02 +0300, Al Boldi said:
+> > Sure, the idea was to mark the filter table obsolete as to make people
+> > start using the mangle table to do their filtering for new setups.  The
+> > filter table would then still be available for legacy/special setups. 
+> > But this would only be possible if we at least ported the REJECT target
+> > to mangle.
+>
+> That's *half* the battle.  The other half is explaining why I should move
+> from a perfectly functional setup that uses the filter table.  What gains
+> do I get from doing so?  What isn't working that I don't know about? etc?
+>
+> In other words - why do I want to move from filter to mangle?
+
+This has already been explained in this thread; here it is again:
+
+Al Boldi wrote:
+>>>The problem is that people think they are safe with the filter table,
+>>>when in fact they need the prerouting chain to seal things.  Right now
+>>>this is only possible in the mangle table.
+>>
+>>Why do they need PREROUTING?
 > 
-> usually I'll wait for rc1 and test compile external module to see which are broken and what need fixing
-> but while I need virtualbox for some tests I test compile it on current git and it failed badly.
-> 
-> Maybe something is missing from x86 merge ?
-> 
-> Here is what I get :
-> 
-> ...
-> 
-> /linux/memobj-r0drv-linux.c
-> In file included from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic_32.h:265,
->                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic.h:2,
->                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock_32.h:4,
->                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock.h:2,
->                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/linux/spinlock.h:87,
->                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/the-linux-kernel.h:53,
->                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/alloc-r0drv-linux.c:22:
-> /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm-generic/atomic.h:23: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'atomic_long_t'
+> Well, for example to stop any transient packets being forwarded.  You could 
+> probably hack around this using mark's, but you can't stop the implied
+> route lookup, unless you stop it in prerouting.
 
-I have been unable to make heads or tails of the maze of twisty 
-dependencies that VirtualBox wants, but the fact that it gets to line 23 
-of <asm-generic/atomic.h> means it has gotten past:
+Basically, you have one big unintended gaping whole in your firewall, that 
+could easily be exploited for DoS attacks at the least, unless you put in 
+specific rules to limit this.
 
-     21  #if BITS_PER_LONG == 64
-     22
-     23  typedef atomic64_t atomic_long_t;
+Plus, it's outrageously incorrect to accept invalid packets, just because 
+your filtering infrastructure can only reject packets after they have been 
+prerouted.
 
-BITS_PER_LONG was originally set in <asm/types.h>:
 
-     39  #ifdef CONFIG_X86_32
-     40  # define BITS_PER_LONG 32
-     41  #else
-     42  # define BITS_PER_LONG 64
-     43  #endif
+Thanks!
 
-The most obvious reason for failure is that the symbol CONFIG_X86_32 
-isn't being defined where expected.  From that point on everything goes 
-to hell.
-
-Have you done "make oldconfig && make prepare" in your kernel tree since 
-you last updated it?
-
-	-hpa
+--
+Al
 
