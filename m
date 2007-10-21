@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbXJUEaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXJUEac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439AbXJUEaF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 00:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXJUE3z
+	id S1752036AbXJUEac (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 00:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbXJUEaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 00:29:55 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:36819 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750788AbXJUE3y (ORCPT
+	Sun, 21 Oct 2007 00:30:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48904 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbXJUEaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 00:29:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qfMOpfKth51daKS8ducZ9MrsvEsfJdO6bLDMZaPrkgMMtJ+rcEFe/aUEK4n5GtYITntRqZ7G0ZM3tL4oqukHZ1eCa+owhwopv+Xy2yQyU2TvyB+DpoLJFA5gEr+iyZnGccTq9XkPQ1lQ7VQ9DrUSEeW0RutMi3wVFi/mgHYI/Ow=  ;
-X-YMail-OSG: 5P2MC7MVM1kxlU2uhN74pmkewCuzOn3r1LCB5RDnDt3QRs477DJKbOLruvtZk6aC3hAsolVsmA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC][PATCH] block: Isolate the buffer cache in it's own mappings.
-Date: Sun, 21 Oct 2007 14:24:46 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-References: <200710151028.34407.borntraeger@de.ibm.com> <20071017213216.b2d0c4bd.akpm@linux-foundation.org> <m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m11wbqg5he.fsf@ebiederm.dsl.xmission.com>
+	Sun, 21 Oct 2007 00:30:15 -0400
+Message-ID: <471AD5AD.9030000@zytor.com>
+Date: Sat, 20 Oct 2007 21:29:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: some kernel headers broken in current git ?
+References: <4719174A.7020004@googlemail.com>
+In-Reply-To: <4719174A.7020004@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710211424.46650.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 October 2007 07:27, Eric W. Biederman wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> > I don't think we little angels want to tread here.  There are so many
-> > weirdo things out there which will break if we bust the coherence between
-> > the fs and /dev/hda1.
->
-> We broke coherence between the fs and /dev/hda1 when we introduced
-> the page cache years ago,
+Gabriel C wrote:
+> Hi,
+> 
+> usually I'll wait for rc1 and test compile external module to see which are broken and what need fixing
+> but while I need virtualbox for some tests I test compile it on current git and it failed badly.
+> 
+> Maybe something is missing from x86 merge ?
+> 
+> Here is what I get :
+> 
+> ...
+> 
+> /linux/memobj-r0drv-linux.c
+> In file included from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic_32.h:265,
+>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic.h:2,
+>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock_32.h:4,
+>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock.h:2,
+>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/linux/spinlock.h:87,
+>                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/the-linux-kernel.h:53,
+>                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/alloc-r0drv-linux.c:22:
+> /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm-generic/atomic.h:23: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'atomic_long_t'
 
-Not for metadata. And I wouldn't expect many filesystem analysis
-tools to care about data.
+I have been unable to make heads or tails of the maze of twisty 
+dependencies that VirtualBox wants, but the fact that it gets to line 23 
+of <asm-generic/atomic.h> means it has gotten past:
 
+     21  #if BITS_PER_LONG == 64
+     22
+     23  typedef atomic64_t atomic_long_t;
 
-> and weird hacky cases like 
-> unmap_underlying_metadata don't change that.
+BITS_PER_LONG was originally set in <asm/types.h>:
 
-unmap_underlying_metadata isn't about raw block device access at
-all, though (if you write to the filesystem via the blockdevice
-when it isn't expecting it, it's going to blow up regardless).
+     39  #ifdef CONFIG_X86_32
+     40  # define BITS_PER_LONG 32
+     41  #else
+     42  # define BITS_PER_LONG 64
+     43  #endif
 
+The most obvious reason for failure is that the symbol CONFIG_X86_32 
+isn't being defined where expected.  From that point on everything goes 
+to hell.
 
-> Currently only 
-> metadata is more or less in sync with the contents of /dev/hda1.
+Have you done "make oldconfig && make prepare" in your kernel tree since 
+you last updated it?
 
-It either is or it isn't, right? And it is, isn't it? (at least
-for the common filesystems).
+	-hpa
+
