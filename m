@@ -1,201 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbXJUH43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbXJUH4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753752AbXJUH43 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 03:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXJUHws
+	id S1753482AbXJUH4o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 03:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXJUHwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 03:52:48 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:46908 "EHLO havoc.gtf.org"
+	Sun, 21 Oct 2007 03:52:51 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:37273 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbXJUHwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 03:52:46 -0400
+	id S1752598AbXJUHws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 03:52:48 -0400
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org
+Cc: linux-pcmcia@lists.infradead.org
 From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 13/17] netdrvr irq handler cleanups
+Subject: [PATCH 14/17] pcmcia/i82365: irq handler cleanups
 References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
-Message-Id: <20071021075245.A92B3190418@havoc.gtf.org>
-Date: Sun, 21 Oct 2007 03:52:45 -0400 (EDT)
+Message-Id: <20071021075248.40201190418@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 03:52:48 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit a9f06dc9fb3caea2c4e9b387974c9f4956434e28
+commit c94109209f6d3aa2ff8c6c458552775f693ad7ee
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 19:33:31 2007 -0400
+Date:   Fri Oct 19 19:34:33 2007 -0400
 
-    [netdrvr] driver irq handler cleanups
+    pcmcia/i82365: irq handler cleanups
     
-    * no need to use 'irq' function arg, its already stored in a data struct
-    
-    * whitespace cleanups
-    
-    * delete tests for impossible conditions
-    
-    * remove pointless casts from void*
+    * pass irq number to irq handler via dev_id
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/net/eexpress.c          |   11 ++++++-----
- drivers/net/irda/smsc-ircc2.c   |   17 ++++-------------
- drivers/net/irda/via-ircc.c     |   12 +++---------
- drivers/net/pcmcia/fmvj18x_cs.c |    7 +------
- drivers/net/wan/sdla.c          |    5 +++--
- 5 files changed, 17 insertions(+), 35 deletions(-)
+ drivers/pcmcia/i82365.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-a9f06dc9fb3caea2c4e9b387974c9f4956434e28
-diff --git a/drivers/net/eexpress.c b/drivers/net/eexpress.c
-index 9c85e50..007de3b 100644
---- a/drivers/net/eexpress.c
-+++ b/drivers/net/eexpress.c
-@@ -456,8 +456,9 @@ static int eexp_open(struct net_device *dev)
- 	if (!dev->irq || !irqrmap[dev->irq])
- 		return -ENXIO;
- 
--	ret = request_irq(dev->irq,&eexp_irq,0,dev->name,dev);
--	if (ret) return ret;
-+	ret = request_irq(dev->irq, &eexp_irq, 0, dev->name, dev);
-+	if (ret)
-+		return ret;
- 
- 	if (!request_region(ioaddr, EEXP_IO_EXTENT, "EtherExpress")) {
- 		printk(KERN_WARNING "EtherExpress io port %x, is busy.\n"
-@@ -768,7 +769,7 @@ static void eexp_cmd_clear(struct net_device *dev)
- 	}
- }
- 
--static irqreturn_t eexp_irq(int irq, void *dev_info)
-+static irqreturn_t eexp_irq(int dummy, void *dev_info)
+c94109209f6d3aa2ff8c6c458552775f693ad7ee
+diff --git a/drivers/pcmcia/i82365.c b/drivers/pcmcia/i82365.c
+index 839bb1c..330150e 100644
+--- a/drivers/pcmcia/i82365.c
++++ b/drivers/pcmcia/i82365.c
+@@ -82,7 +82,8 @@ module_param(pc_debug, int, 0644);
+ static irqreturn_t i365_count_irq(int, void *);
+ static inline int _check_irq(int irq, int flags)
  {
- 	struct net_device *dev = dev_info;
- 	struct net_local *lp;
-@@ -783,7 +784,7 @@ static irqreturn_t eexp_irq(int irq, void *dev_info)
- 	old_read_ptr = inw(ioaddr+READ_PTR);
- 	old_write_ptr = inw(ioaddr+WRITE_PTR);
+-    if (request_irq(irq, i365_count_irq, flags, "x", i365_count_irq) != 0)
++    if (request_irq(irq, i365_count_irq, flags, "x",
++    		    (void *)(unsigned long) irq) != 0)
+ 	return -1;
+     free_irq(irq, i365_count_irq);
+     return 0;
+@@ -497,8 +498,10 @@ static u_int __init set_bridge_opts(u_short s, u_short ns)
+ static volatile u_int irq_hits;
+ static u_short irq_sock;
  
--	outb(SIRQ_dis|irqrmap[irq],ioaddr+SET_IRQ);
-+	outb(SIRQ_dis|irqrmap[dev->irq],ioaddr+SET_IRQ);
- 
- 
- 	status = scb_status(dev);
-@@ -851,7 +852,7 @@ static irqreturn_t eexp_irq(int irq, void *dev_info)
- 
- 	eexp_cmd_clear(dev);
- 
--	outb(SIRQ_en|irqrmap[irq],ioaddr+SET_IRQ);
-+	outb(SIRQ_en|irqrmap[dev->irq],ioaddr+SET_IRQ);
- 
- #if NET_DEBUG > 6
- 	printk("%s: leaving eexp_irq()\n", dev->name);
-diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-index 7e7b582..1f26da7 100644
---- a/drivers/net/irda/smsc-ircc2.c
-+++ b/drivers/net/irda/smsc-ircc2.c
-@@ -1505,22 +1505,13 @@ static void smsc_ircc_sir_receive(struct smsc_ircc_cb *self)
-  *    An interrupt from the chip has arrived. Time to do some work
-  *
-  */
--static irqreturn_t smsc_ircc_interrupt(int irq, void *dev_id)
-+static irqreturn_t smsc_ircc_interrupt(int dummy, void *dev_id)
+-static irqreturn_t i365_count_irq(int irq, void *dev)
++static irqreturn_t i365_count_irq(int dummy, void *dev_id)
  {
--	struct net_device *dev = (struct net_device *) dev_id;
--	struct smsc_ircc_cb *self;
-+	struct net_device *dev = dev_id;
-+	struct smsc_ircc_cb *self = netdev_priv(dev);
- 	int iobase, iir, lcra, lsr;
- 	irqreturn_t ret = IRQ_NONE;
- 
--	if (dev == NULL) {
--		printk(KERN_WARNING "%s: irq %d for unknown device.\n",
--		       driver_name, irq);
--		goto irq_ret;
--	}
--
--	self = netdev_priv(dev);
--	IRDA_ASSERT(self != NULL, return IRQ_NONE;);
--
- 	/* Serialise the interrupt handler in various CPUs, stop Tx path */
- 	spin_lock(&self->lock);
- 
-@@ -1565,7 +1556,7 @@ static irqreturn_t smsc_ircc_interrupt(int irq, void *dev_id)
- 
-  irq_ret_unlock:
- 	spin_unlock(&self->lock);
-- irq_ret:
++    int irq = (int)(unsigned long) dev_id;
 +
- 	return ret;
- }
- 
-diff --git a/drivers/net/irda/via-ircc.c b/drivers/net/irda/via-ircc.c
-index 126ec7c..58e1287 100644
---- a/drivers/net/irda/via-ircc.c
-+++ b/drivers/net/irda/via-ircc.c
-@@ -1346,19 +1346,13 @@ static int RxTimerHandler(struct via_ircc_cb *self, int iobase)
-  *    An interrupt from the chip has arrived. Time to do some work
-  *
-  */
--static irqreturn_t via_ircc_interrupt(int irq, void *dev_id)
-+static irqreturn_t via_ircc_interrupt(int dummy, void *dev_id)
+     i365_get(irq_sock, I365_CSC);
+     irq_hits++;
+     debug(2, "-> hit on irq %d\n", irq);
+@@ -509,7 +512,7 @@ static u_int __init test_irq(u_short sock, int irq)
  {
--	struct net_device *dev = (struct net_device *) dev_id;
--	struct via_ircc_cb *self;
-+	struct net_device *dev = dev_id;
-+	struct via_ircc_cb *self = dev->priv;
- 	int iobase;
- 	u8 iHostIntType, iRxIntType, iTxIntType;
- 
--	if (!dev) {
--		IRDA_WARNING("%s: irq %d for unknown device.\n", driver_name,
--			     irq);
--		return IRQ_NONE;
--	}
--	self = (struct via_ircc_cb *) dev->priv;
- 	iobase = self->io.fir_base;
- 	spin_lock(&self->lock);
- 	iHostIntType = GetHostStatus(iobase);
-diff --git a/drivers/net/pcmcia/fmvj18x_cs.c b/drivers/net/pcmcia/fmvj18x_cs.c
-index 6284467..d251bd1 100644
---- a/drivers/net/pcmcia/fmvj18x_cs.c
-+++ b/drivers/net/pcmcia/fmvj18x_cs.c
-@@ -731,18 +731,13 @@ module_exit(exit_fmvj18x_cs);
+     debug(2, "  testing ISA irq %d\n", irq);
+     if (request_irq(irq, i365_count_irq, IRQF_PROBE_SHARED, "scan",
+-			i365_count_irq) != 0)
++		    (void *)(unsigned long) irq) != 0)
+ 	return 1;
+     irq_hits = 0; irq_sock = sock;
+     msleep(10);
+@@ -847,8 +850,9 @@ static void __init isa_probe(void)
  
  /*====================================================================*/
  
--static irqreturn_t fjn_interrupt(int irq, void *dev_id)
-+static irqreturn_t fjn_interrupt(int dummy, void *dev_id)
+-static irqreturn_t pcic_interrupt(int irq, void *dev)
++static irqreturn_t pcic_interrupt(int dummy, void *dev_id)
  {
-     struct net_device *dev = dev_id;
-     local_info_t *lp = netdev_priv(dev);
-     kio_addr_t ioaddr;
-     unsigned short tx_stat, rx_stat;
++    int irq = (int)(unsigned long) dev_id;
+     int i, j, csc;
+     u_int events, active;
+     u_long flags = 0;
+@@ -1293,7 +1297,8 @@ static int __init init_i82365(void)
  
--    if (lp == NULL) {
--        printk(KERN_NOTICE "fjn_interrupt(): irq %d for "
--	       "unknown device.\n", irq);
--        return IRQ_NONE;
--    }
-     ioaddr = dev->base_addr;
- 
-     /* avoid multiple interrupts */
-diff --git a/drivers/net/wan/sdla.c b/drivers/net/wan/sdla.c
-index 05df0a3..73e2f27 100644
---- a/drivers/net/wan/sdla.c
-+++ b/drivers/net/wan/sdla.c
-@@ -867,7 +867,7 @@ static void sdla_receive(struct net_device *dev)
- 	spin_unlock_irqrestore(&sdla_lock, flags);
- }
- 
--static irqreturn_t sdla_isr(int irq, void *dev_id)
-+static irqreturn_t sdla_isr(int dummy, void *dev_id)
- {
- 	struct net_device     *dev;
- 	struct frad_local *flp;
-@@ -879,7 +879,8 @@ static irqreturn_t sdla_isr(int irq, void *dev_id)
- 
- 	if (!flp->initialized)
- 	{
--		printk(KERN_WARNING "%s: irq %d for uninitialized device.\n", dev->name, irq);
-+		printk(KERN_WARNING "%s: irq %d for uninitialized device.\n",
-+		       dev->name, dev->irq);
- 		return IRQ_NONE;
- 	}
- 
+     /* Set up interrupt handler(s) */
+     if (grab_irq != 0)
+-	request_irq(cs_irq, pcic_interrupt, 0, "i82365", pcic_interrupt);
++	request_irq(cs_irq, pcic_interrupt, 0, "i82365",
++		    (void *)(unsigned long) cs_irq);
+     
+     /* register sockets with the pcmcia core */
+     for (i = 0; i < sockets; i++) {
