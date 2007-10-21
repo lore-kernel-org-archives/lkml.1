@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751858AbXJUIzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXJUJBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751858AbXJUIzz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 04:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbXJUIzr
+	id S1751978AbXJUJBx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 05:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbXJUJBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 04:55:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43498 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbXJUIzq (ORCPT
+	Sun, 21 Oct 2007 05:01:45 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:36812 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbXJUJBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 04:55:46 -0400
-Subject: Re: BUG at mm/filemap.c:1749 (2.6.24, jffs2, unionfs)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, jffs-dev@axis.com,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-In-Reply-To: <200710191716.53470.nickpiggin@yahoo.com.au>
-References: <200710190605.l9J65kDe008069@agora.fsl.cs.sunysb.edu>
-	 <200710191703.12026.nickpiggin@yahoo.com.au>
-	 <200710191716.53470.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Sun, 21 Oct 2007 09:55:44 +0100
-Message-Id: <1192956944.2672.6.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-8.fc8.dwmw2.1) 
+	Sun, 21 Oct 2007 05:01:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=TK0KGxfRfomdgrfUbUX2Y6WSrK+9wsuj1C/oCnyzgpSqCZ3E99RENhXuVbrZ+L5LRvicCzqyT8/vUrEJBnr3zGrSnBp7482yaYQvmHoGTiDBevNFsrNntu2sNMPxn7d5zjtTKZxIUmwcqJzp3m5s/c17FUYbYL9CFe8nSXdlrYc=
+Message-ID: <471B1573.8000501@gmail.com>
+Date: Sun, 21 Oct 2007 11:01:39 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/17] drivers/char/riscom8: irq handler cleanups
+References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org> <20071021075225.A1F9819041C@havoc.gtf.org>
+In-Reply-To: <20071021075225.A1F9819041C@havoc.gtf.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-19 at 17:16 +1000, Nick Piggin wrote:
+On 10/21/2007 09:52 AM, Jeff Garzik wrote:
+> commit 93ea6d56f83b7b614c103222fa098cb30d26f608
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Fri Oct 19 16:41:23 2007 -0400
 > 
->         if (writtenlen) {
-> -               if (inode->i_size < (pg->index << PAGE_CACHE_SHIFT) + start + writtenlen) {
-> -                       inode->i_size = (pg->index << PAGE_CACHE_SHIFT) + start + writtenlen;
-> +               if (inode->i_size < pos + start + writtenlen) {
-> +                       inode->i_size = pos + start + writtenlen;
+>     drivers/char/riscom8: irq handler cleanups
+>     
+>     No need to lookup board ptr, we already have it.
+>     
+>     Also, remove a few 'inline' markers and let the compiler make that
+>     decision.
+>     
+>     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-This part seems wrong. Shouldn't it just be pos + writtenlen -- which is
-basically what it was already: pos==(pg->index<<PAGE_CACHE_SHIFT)+start
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
 
+> 
+>  drivers/char/riscom8.c |   12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> 93ea6d56f83b7b614c103222fa098cb30d26f608
+> diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
+> index b37e626..d307320 100644
+> --- a/drivers/char/riscom8.c
+> +++ b/drivers/char/riscom8.c
+> @@ -537,16 +537,14 @@ static inline void rc_check_modem(struct riscom_board const * bp)
+>  }
+>  
+>  /* The main interrupt processing routine */
+> -static irqreturn_t rc_interrupt(int irq, void * dev_id)
+> +static irqreturn_t rc_interrupt(int dummy, void * dev_id)
+>  {
+>  	unsigned char status;
+>  	unsigned char ack;
+> -	struct riscom_board *bp;
+> +	struct riscom_board *bp = dev_id;
+>  	unsigned long loop = 0;
+>  	int handled = 0;
+>  
+> -	bp = IRQ_to_board[irq];
+> -
+
+Remove the declaration of the IRQ_to_board too, since we don't reference it
+anymore, we only set it up.
+
+regards,
 -- 
-dwmw2
-
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
