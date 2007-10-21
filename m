@@ -1,121 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751675AbXJUVgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbXJUV5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751675AbXJUVgB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 17:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbXJUVfy
+	id S1751510AbXJUV5R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 17:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXJUV5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 17:35:54 -0400
-Received: from mailout1.informatik.tu-muenchen.de ([131.159.0.12]:52227 "EHLO
-	mailout1.informatik.tu-muenchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750777AbXJUVfx (ORCPT
+	Sun, 21 Oct 2007 17:57:05 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:31275 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXJUV5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 17:35:53 -0400
-X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 17:35:53 EDT
-Message-ID: <471BC3C2.2050602@in.tum.de>
-Date: Sun, 21 Oct 2007 23:25:22 +0200
-From: Michael Weiss <weissm@in.tum.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Sun, 21 Oct 2007 17:57:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=BHoZjbmrCJiDH1jcA4F/oCZhwDCZUgqKSFNg2gr24CrPgnP350IdBSusKHbPG9M0JLaeLNfrbMJfJJJBSyIGMNE2Vue046kYRDWTgvFs1huJFdHu6pD7a6gjrDvfTN/W4bnKj6tW1ezW4GDvGX3WSK2ZWCNUPFKGBqsvwELUYQE=
+Message-ID: <471BCB22.3000202@googlemail.com>
+Date: Sun, 21 Oct 2007 23:56:50 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Problem running a task in ring 2 on x86
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=F4B35426;
-	url=http://home.in.tum.de/~weissm/Michael_Weiss_weissm@in.tum.de_(0xF4B35426)_pub.asc
-Content-Type: text/plain; charset=ISO-8859-15
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: some kernel headers broken in current git ?
+References: <4719174A.7020004@googlemail.com> <471AD5AD.9030000@zytor.com> <471B2918.5090502@googlemail.com> <471B487C.5080209@googlemail.com> <471BA564.3040305@zytor.com> <20071021200214.GA6250@uranus.ravnborg.org> <471BC326.50400@googlemail.com> <471BC416.4090705@zytor.com>
+In-Reply-To: <471BC416.4090705@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+H. Peter Anvin wrote:
+> Yeah, this is a VirtualBox problem.
+> 
+> At this point, this is clearly a matter for innotek, not for the 
+> mainstream kernel development community.
 
-I'm trying to get a process to ring level 2 on IA-32 architecture.
-Therefore I have patched the modify_ldt syscall in ldt.c to generate a
-new ldt entry with rpl 2 (patch below).
+Ok I will report that to Innotek , thanks for all the help and sorry for the noise.
 
-Now my problem is how to get the code segment with rpl2, located in
-the ldt at index 0,
-loaded by a syscall, so that the application is running in ring 2
-after return of that syscall.
+> 
+> 	-hpa
+> 
 
-Under kernel 2.0.x the following seemed to do this, if ptr is a
-pointer to a userstack allocated with malloc:
-
-asmlinkage int sys_set_rpl(long ptr) {
-
-   struct pt_regs *regs = (struct pt_regs *)&ptr;
-
-   regs->cs = 0x6;  /* first entry of ldt with rpl2 */
-   regs->ss = 0xE;  /* 2. entry of ldt with rpl2 */
-   current->tss.ss2 = 0xE;
-   current->tss.esp2 = ptr;
-
-   return(0);
-
-}
-
-Now there is no tss per task and no hw context switch in the newer
-kernels this isn't working in 2.6.
-
-So if any of you have an idea to get a solution for that problem I
-were very pleased.
-I need this for an memory protection implementation in my bachelor thesis.
-
-
-Thanks,
-Michael
-
-Here's the patch for modify_ldt:
-
-diff -ru /usr/src/linux-2.6.22.5/arch/i386/kernel/ldt.c
-arch/i386/kernel/ldt.c
---- /usr/src/linux-2.6.22.5/arch/i386/kernel/ldt.c      2007-08-23
-01:23:54.000000000 +0200
-+++ arch/i386/kernel/ldt.c      2007-10-21 22:29:12.000000000 +0200
-@@ -172,7 +172,7 @@
-        return err;
- }
-
--static int write_ldt(void __user * ptr, unsigned long bytecount, int
-oldmode)
-+static int write_ldt_mod(void __user * ptr, unsigned long bytecount,
-int oldmode, int rpl)
- {
-        struct mm_struct * mm = current->mm;
-        __u32 entry_1, entry_2;
-@@ -214,6 +214,11 @@
-
-        entry_1 = LDT_entry_a(&ldt_info);
-        entry_2 = LDT_entry_b(&ldt_info);
-+
-+       /* modify the rpl from 3 to 2 */
-+       if (rpl == 2)
-+               entry_2 &= ~(1 << 14);
-+
-        if (oldmode)
-                entry_2 &= ~(1 << 20);
-
-@@ -228,6 +233,10 @@
-        return error;
- }
-
-+static int write_ldt(void __user * ptr, unsigned long bytecount, int
-oldmode) {
-+       return write_ldt_mod(ptr, bytecount, oldmode, 3);
-+}
-+
- asmlinkage int sys_modify_ldt(int func, void __user *ptr, unsigned
-long bytecount)
- {
-        int ret = -ENOSYS;
-@@ -245,6 +254,10 @@
-        case 0x11:
-                ret = write_ldt(ptr, bytecount, 0);
-                break;
-+       /* create new ldt entry with rpl 2 */
-+       case 4:
-+               ret = write_ldt_mod(ptr, bytecount, 0, 2);
-+               break;
-        }
-        return ret;
- }
-
+Gabriel
