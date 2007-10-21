@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbXJUXFC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXJUXK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751521AbXJUXFC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 19:05:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXJUXEy
+	id S1752173AbXJUXK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 19:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXJUXKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 19:04:54 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15823 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbXJUXEx (ORCPT
+	Sun, 21 Oct 2007 19:10:20 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:53369 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbXJUXKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 19:04:53 -0400
-Date: Sun, 21 Oct 2007 17:02:55 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Uartlite: speed up console output
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk
-Message-id: <20071021230255.7066.64565.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-User-Agent: StGIT/0.12.1
+	Sun, 21 Oct 2007 19:10:19 -0400
+Message-ID: <471BDC55.8070900@tiscali.nl>
+Date: Mon, 22 Oct 2007 01:10:13 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] errors with assignments in if
+References: <471BD68B.9030408@tiscali.nl>
+In-Reply-To: <471BD68B.9030408@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Roel Kluin wrote:
+> I am not entirely certain about the third one:
+> 
+> from fs/udf/udf_sb.h:
+> 
+> #define UDF_SB_VAT(X)                           ( UDF_SB(X)->s_vat )
+> 
+> if it's the desired behavior then I think this should at least be changed to
+> 
+> UDF_SB_VAT(sb) = udf_iget(sb, ino);
+> if (!(UDF_SB_VAT(sb)))
 
-Change the wait_tx routine to call cpu_relax() instead of udelay() to
-reduce console output latency and test for the TXFULL bit instead of
-TXEMPTY.  That way the FIFO doesn't need to by 100% flushed before
-writing the next character.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+On a second glance, I think it's the desired behavior. Use this patch instead.
 ---
+    Errors with assignments in ifs
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
- drivers/serial/uartlite.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index dfef83f..a85f2d3 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -329,12 +329,14 @@ static struct uart_ops ulite_ops = {
- static void ulite_console_wait_tx(struct uart_port *port)
- {
- 	int i;
-+	u8 val;
- 
--	/* wait up to 10ms for the character(s) to be sent */
--	for (i = 0; i < 10000; i++) {
--		if (readb(port->membase + ULITE_STATUS) & ULITE_STATUS_TXEMPTY)
-+	/* Spin waiting for TX fifo to have space available */
-+	for (i = 0; i < 100000; i++) {
-+		val = readb(port->membase + ULITE_STATUS);
-+		if ((val & ULITE_STATUS_TXFULL) == 0)
- 			break;
--		udelay(1);
-+		cpu_relax();
- 	}
- }
- 
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index d9af436..e6e85b7 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -651,7 +651,7 @@ static u32 omap2_get_clksel(u32 *div_sel, u32 *field_mask,
+ 		break;
+ 	case CM_SYSCLKOUT_SEL1:
+ 		div_addr = (u32)&PRCM_CLKOUT_CTRL;
+-		if ((div_off == 3) || (div_off = 11))
++		if ((div_off == 3) || (div_off == 11))
+ 			mask= 0x3;
+ 		break;
+ 	case CM_CORE_SEL1:
+diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
+index 948a9b2..ed610ed 100644
+--- a/drivers/isdn/hisax/elsa.c
++++ b/drivers/isdn/hisax/elsa.c
+@@ -883,7 +883,7 @@ setup_elsa_isa(struct IsdnCard *card)
+ 	val += 'A' - 3;
+ 	if (val == 'B' || val == 'C')
+ 		val ^= 1;
+-	if ((cs->subtyp == ELSA_PCFPRO) && (val = 'G'))
++	if ((cs->subtyp == ELSA_PCFPRO) && (val == 'G'))
+ 		val = 'C';
+ 	printk(KERN_INFO
+ 	       "Elsa: %s found at %#lx Rev.:%c IRQ %d\n",
 
