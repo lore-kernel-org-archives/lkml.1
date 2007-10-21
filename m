@@ -1,115 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXJUKZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbXJUK73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbXJUKZm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 06:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXJUKZf
+	id S1751837AbXJUK73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 06:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXJUK7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 06:25:35 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:12759 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbXJUKZe (ORCPT
+	Sun, 21 Oct 2007 06:59:23 -0400
+Received: from smtp103.plus.mail.mud.yahoo.com ([68.142.206.236]:28797 "HELO
+	smtp103.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750987AbXJUK7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 06:25:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=GXdfFJkZskGUBf5NEdRO3FQs3fife++X6foGyLAepS+g9ZXzicoJJheglaUrpc9T0qpLQBlwNaw/tpjClni3pp01vwAzsZE1jnNSfHJvZ5L6fjzZSHTwMe/cL2FLo72hlLx/ENpdpjuUZvi05SFI4ylEW3jtAuQlkUOKFxoXOl0=
-Message-ID: <471B2918.5090502@googlemail.com>
-Date: Sun, 21 Oct 2007 12:25:28 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Sun, 21 Oct 2007 06:59:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:User-Agent;
+  b=aNDUnmGx6nQUxy7s8xNO4HIve8w+x2BVSCFlqSDMRIDY3AAN0phL7J/brrgXvLetMP+aodwBYf0Bf7auZYw4FQ8lDKQpyeayKncFBi0M5xBgM776FP/iXLbZnxO8C+zXdK3Oo+5p3ixgNlocY4FtDnzQqD0fJ05LI0y7Qm3+nTY=  ;
+X-YMail-OSG: eXoRssMVM1mbZu_N2zg_T3Glu3K7duqzzJlxn1KlpOos8XYstwBRfPftKrXXZNXGlBbV4uLOcleI.rvuVyolUUS1ngp5US4FWBrk7i_QsjIGvFJLaLs-
+Date: Sun, 21 Oct 2007 12:56:00 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: perex@perex.cz
+Subject: [PATCH] sound/core/control.c: hard-irq-safe -> hard-irq-unsafe
+	lock warning
+Message-ID: <20071021105600.GA4650@zmei.tnic>
+Reply-To: bbpetkov@yahoo.de
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Gabriel C <crazy@pimpmylinux.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: some kernel headers broken in current git ?
-References: <4719174A.7020004@googlemail.com> <471AD5AD.9030000@zytor.com>
-In-Reply-To: <471AD5AD.9030000@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Gabriel C wrote:
->> Hi,
->>
->> usually I'll wait for rc1 and test compile external module to see which are broken and what need fixing
->> but while I need virtualbox for some tests I test compile it on current git and it failed badly.
->>
->> Maybe something is missing from x86 merge ?
->>
->> Here is what I get :
->>
->> ...
->>
->> /linux/memobj-r0drv-linux.c
->> In file included from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic_32.h:265,
->>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/atomic.h:2,
->>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock_32.h:4,
->>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm/spinlock.h:2,
->>                  from /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/linux/spinlock.h:87,
->>                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/the-linux-kernel.h:53,
->>                  from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/r0drv/linux/alloc-r0drv-linux.c:22:
->> /lib/modules/2.6.23-g4fa4d23f-dirty/build/include/asm-generic/atomic.h:23: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'atomic_long_t'
-> 
-> I have been unable to make heads or tails of the maze of twisty 
-> dependencies that VirtualBox wants, but the fact that it gets to line 23 
-> of <asm-generic/atomic.h> means it has gotten past:
-> 
->      21  #if BITS_PER_LONG == 64
->      22
->      23  typedef atomic64_t atomic_long_t;
-> 
-> BITS_PER_LONG was originally set in <asm/types.h>:
-> 
->      39  #ifdef CONFIG_X86_32
->      40  # define BITS_PER_LONG 32
->      41  #else
->      42  # define BITS_PER_LONG 64
->      43  #endif
+Hi,
 
-User land does not know anything about 'CONFIG_X86_32' right ?
-
-I just changed some things manually to test , s/CONFIG_X86_32/__i386__/ in asm/types.h and worked fine 
-but subarch headers are still not included probably for the same reason. ( manually changed to test as well )
-
-After doing so , the part filed compiled.
-
-but next error a bit later :
-
-..
+I get this on current git: v2.6.23-6597-gcfa76f0:
 
 
-In file included from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/include/iprt/string.h:25,
-                 from /work/crazy/VBox/stable/virtualbox/src/VirtualBox-1.5.2_OSE/src/VBox/Runtime/assert.cpp:24:
-/lib/modules/2.6.23-rc0/build/include/linux/string.h:70: error: declaration of C function '__kernel_size_t strlen(const char*)' conflicts with
-/lib/modules/2.6.23-rc0/build/include/asm/string_64.h:53: error: previous declaration 'size_t strlen(const char*)' here
-/lib/modules/2.6.23-rc0/build/include/linux/string.h:101: error: declaration of C function 'int memcmp(const void*, const void*, __kernel_size_t)' conflicts with
-/lib/modules/2.6.23-rc0/build/include/asm/string_64.h:52: error: previous declaration 'int memcmp(const void*, const void*, size_t)' here
+Oct 21 08:50:12 zmei kernel: [  215.376967] ======================================================
+Oct 21 08:50:12 zmei kernel: [  215.376978] [ INFO: hard-safe -> hard-unsafe lock order detected ]
+Oct 21 08:50:12 zmei kernel: [  215.376984] 2.6.23 #11
+Oct 21 08:50:12 zmei kernel: [  215.376989] ------------------------------------------------------
+Oct 21 08:50:12 zmei kernel: [  215.376996] artsd/4129 [HC0[0]:SC0[0]:HE0:SE1] is trying to acquire:
+Oct 21 08:50:12 zmei kernel: [  215.377002]  (&ctl->read_lock){--..}, at: [<c027519b>] snd_ctl_notify+0x50/0x116
+Oct 21 08:50:12 zmei kernel: [  215.377024] 
+Oct 21 08:50:12 zmei kernel: [  215.377026] and this task is already holding:
+Oct 21 08:50:12 zmei kernel: [  215.377031]  (&substream->self_group.lock){++..}, at: [<c027bd9a>] snd_pcm_drop+0x78/0xbb
+Oct 21 08:50:12 zmei kernel: [  215.377048] which would create a new lock dependency:
+Oct 21 08:50:12 zmei kernel: [  215.377053]  (&substream->self_group.lock){++..} -> (&ctl->read_lock){--..}
+Oct 21 08:50:12 zmei kernel: [  215.377071] 
+Oct 21 08:50:12 zmei kernel: [  215.377072] but this new dependency connects a hard-irq-safe lock:
+Oct 21 08:50:12 zmei kernel: [  215.377079]  (&substream->self_group.lock){++..}
+Oct 21 08:50:12 zmei kernel: [  215.377086] ... which became hard-irq-safe at:
+Oct 21 08:50:12 zmei kernel: [  215.377092]   [<c01445fc>] __lock_acquire+0x423/0xc0a
+Oct 21 08:50:12 zmei kernel: [  215.377108]   [<c0145217>] lock_acquire+0x72/0x95
+Oct 21 08:50:12 zmei kernel: [  215.377121]   [<c02fd933>] _spin_lock+0x35/0x42
+Oct 21 08:50:12 zmei kernel: [  215.377136]   [<c0280646>] snd_pcm_period_elapsed+0x3a/0x1fd
+Oct 21 08:50:12 zmei kernel: [  215.377150]   [<c02a65ef>] snd_ymfpci_pcm_interrupt+0x85/0xfc
+Oct 21 08:50:12 zmei kernel: [  215.377165]   [<c02a70f5>] snd_ymfpci_interrupt+0x50/0x1d3
+Oct 21 08:50:12 zmei kernel: [  215.377179]   [<c0150991>] handle_IRQ_event+0x1a/0x4f
+Oct 21 08:50:12 zmei kernel: [  215.377192]   [<c0151a6c>] handle_fasteoi_irq+0xab/0xb8
+Oct 21 08:50:12 zmei kernel: [  215.377205]   [<c0106c65>] do_IRQ+0x7c/0x97
+Oct 21 08:50:12 zmei kernel: [  215.377218]   [<c0104c52>] common_interrupt+0x2e/0x34
+Oct 21 08:50:12 zmei kernel: [  215.377232]   [<ffffffff>] 0xffffffff
+Oct 21 08:50:12 zmei kernel: [  215.377249] 
+Oct 21 08:50:12 zmei kernel: [  215.377250] to a hard-irq-unsafe lock:
+Oct 21 08:50:12 zmei kernel: [  215.377255]  (&ctl->read_lock){--..}
+Oct 21 08:50:12 zmei kernel: [  215.377262] ... which became hard-irq-unsafe at:
+Oct 21 08:50:12 zmei kernel: [  215.377268] ...  [<c0144669>] __lock_acquire+0x490/0xc0a
+Oct 21 08:50:12 zmei kernel: [  215.377283]   [<c0145217>] lock_acquire+0x72/0x95
+Oct 21 08:50:12 zmei kernel: [  215.377296]   [<c02fd933>] _spin_lock+0x35/0x42
+Oct 21 08:50:12 zmei kernel: [  215.377309]   [<c0274cb6>] snd_ctl_empty_read_queue+0x12/0x48
+Oct 21 08:50:12 zmei kernel: [  215.377324]   [<c027643f>] snd_ctl_release+0xb3/0xd9
+Oct 21 08:50:12 zmei kernel: [  215.377338]   [<c01721ae>] __fput+0xb9/0x160
+Oct 21 08:50:12 zmei kernel: [  215.377352]   [<c017246f>] fput+0x17/0x19
+Oct 21 08:50:12 zmei kernel: [  215.377366]   [<c016fa18>] filp_close+0x54/0x5c
+Oct 21 08:50:12 zmei kernel: [  215.377381]   [<c0170cbd>] sys_close+0x76/0xb2
+Oct 21 08:50:12 zmei kernel: [  215.377394]   [<c0104202>] syscall_call+0x7/0xb
+Oct 21 08:50:12 zmei kernel: [  215.377407]   [<ffffffff>] 0xffffffff
+Oct 21 08:50:12 zmei kernel: [  215.377419] 
+Oct 21 08:50:12 zmei kernel: [  215.377421] other info that might help us debug this:
+Oct 21 08:50:12 zmei kernel: [  215.377423] 
+Oct 21 08:50:12 zmei kernel: [  215.377429] 4 locks held by artsd/4129:
+Oct 21 08:50:12 zmei kernel: [  215.377433]  #0:  (&card->power_lock){--..}, at: [<c027bd61>] snd_pcm_drop+0x3f/0xbb
+Oct 21 08:50:12 zmei kernel: [  215.377454]  #1:  (snd_pcm_link_rwlock){..++}, at: [<c027bd8d>] snd_pcm_drop+0x6b/0xbb
+Oct 21 08:50:12 zmei kernel: [  215.377474]  #2:  (&substream->self_group.lock){++..}, at: [<c027bd9a>] snd_pcm_drop+0x78/0xbb
+Oct 21 08:50:12 zmei kernel: [  215.377494]  #3:  (&card->ctl_files_rwlock){..?-}, at: [<c027516a>] snd_ctl_notify+0x1f/0x116
+Oct 21 08:50:12 zmei kernel: [  215.377514] 
+<snip for vger mail constraints>
 
-..
+The following patch fixes it for me.
 
-And again both 32/64 things are defined at the same time.
+---
+From: Borislav Petkov <bbpetkov@yahoo.de>
 
+The lock grabbed in snd_ctl_empty_read_queue() is hardirq-unsafe but we hold
+an hardirq-safe one already, so make the &ctl->read_lock also hard-irq-safe.
 
-> 
-> The most obvious reason for failure is that the symbol CONFIG_X86_32 
-> isn't being defined where expected.  From that point on everything goes 
-> to hell.
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 
-Yes you are right but as I said above I don't think user land understands CONFIG_X86_32.
-
-> 
-> Have you done "make oldconfig && make prepare" in your kernel tree since 
-> you last updated it?
-
-Yes I always do that.
-
-> 
-> 	-hpa
-> 
-> 
-
-Gabriel
+--
+diff --git a/sound/core/control.c b/sound/core/control.c
+index 4c3aa8e..df0774c 100644
+--- a/sound/core/control.c
++++ b/sound/core/control.c
+@@ -93,15 +93,16 @@ static int snd_ctl_open(struct inode *inode, struct file *file)
+ 
+ static void snd_ctl_empty_read_queue(struct snd_ctl_file * ctl)
+ {
++	unsigned long flags;
+ 	struct snd_kctl_event *cread;
+ 	
+-	spin_lock(&ctl->read_lock);
++	spin_lock_irqsave(&ctl->read_lock, flags);
+ 	while (!list_empty(&ctl->events)) {
+ 		cread = snd_kctl_event(ctl->events.next);
+ 		list_del(&cread->list);
+ 		kfree(cread);
+ 	}
+-	spin_unlock(&ctl->read_lock);
++	spin_unlock_irqrestore(&ctl->read_lock, flags);
+ }
+ 
+ static int snd_ctl_release(struct inode *inode, struct file *file)
