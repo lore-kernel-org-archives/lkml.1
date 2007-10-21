@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbXJVA0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbXJVAgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbXJVA0r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 20:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbXJVA0k
+	id S1752294AbXJVAgf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 20:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXJVAg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 20:26:40 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1190 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751067AbXJVA0j (ORCPT
+	Sun, 21 Oct 2007 20:36:27 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:44384 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750839AbXJVAg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 20:26:39 -0400
-Date: Sun, 21 Oct 2007 20:26:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
- devices
-In-Reply-To: <1192993396.3661.1.camel@lov.site>
-Message-ID: <Pine.LNX.4.44L0.0710212014130.25357-100000@netrider.rowland.org>
+	Sun, 21 Oct 2007 20:36:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=kdGqLDzgtrNG9ZgWG+1IBPjd7RRf/4G+7RLk/sLjxqxp06qYXa3wRQW6vE8e1Roh8eUhNQzqd5u4pRlxmtKN2iT8j2n0L01BWnBSuMlQdCBoW9/k3r+3XRZ2hF3JKnAeVwQ2ztREyuggHrIL25iaTyk/JxO1qRVUAkL38xwEdFU=  ;
+X-YMail-OSG: HL91HBIVM1moWevUtW_trAutSjk4rORS9LWiBYCxUWrmiL5g4gTlYRnxV2u0DSRmynvjVDplaw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Subject: Re: [PATCH 0/2] add new notifier function ,take2
+Date: Sun, 21 Oct 2007 22:00:03 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>, kdb@oss.sgi.com
+References: <471700F4.1080200@ah.jp.nec.com> <20071018080621.GB8779@in.ibm.com> <47171ED9.7010907@ah.jp.nec.com>
+In-Reply-To: <47171ED9.7010907@ah.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710212200.04361.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007, Kay Sievers wrote:
+On Thursday 18 October 2007 18:52, Takenori Nagano wrote:
+> Vivek Goyal wrote:
 
-> > [  458.013133] scsi_disk_release: disk sda, kobj ce8be990, refcount before put_disk 2
-> > [  458.032420] scsi_device_dev_release: rq cd9b2000
-> 
-> Hmm, I still don't see this without the final put.
+> > > My stance is that _all_ the RAS tools (kdb, kgdb, nlkd, netdump, lkcd,
+> > > crash, kdump etc.) should be using a common interface that safely puts
+> > > the entire system in a stopped state and saves the state of each cpu.
+> > > Then each tool can do what it likes, instead of every RAS tool doing
+> > > its own thing and they all conflict with each other, which is why this
+> > > thread started.
+> > >
+> > > It is not the kernel's job to decide which RAS tool runs first, second
+> > > etc., it is the user's decision to set that policy. Different sites
+> > > will want different orders, some will say "go straight to kdump", other
+> > > sites will want to invoke a debugger first. Sites must be able to
+> > > define that policy, but we hard code the policy into the kernel.
+>
+> I agreed with him and I made new notifier function that users can change
+> the order. Priority value in notifier blocks are hardcoded. If users want
+> to change list order, they have to rebuild kernel. I think it is very
+> unhappy.
 
-Yes, I see your point.  Suppose you try doing the exact same thing
-again, but this time un-comment the put_device() call so that the
-scsi_device does get released.  I predict that the log will show your
-request_queue drops its reference to the gendisk structure _after_ the
-gendisk has been released.  (If necessary I could send a patch with a
-printk at the crucial spot.)  That would prove something is going wrong
-on your system.
+Is it possible to use a single bit of common code and a single
+notifier for these things? Or is it too difficult?
 
-(BTW you don't need to include the log for when you plug in the USB
-drive; all that matters is what happens when you unplug it.)
-
-Alan Stern
-
+One thing I'd suggest is not to use debugfs, if it is going to
+be a useful end-user feature.
