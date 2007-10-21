@@ -1,204 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbXJUHy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbXJUHz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbXJUHy4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 03:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXJUHwh
+	id S1753664AbXJUHz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 03:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXJUHwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 03:52:37 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:38216 "EHLO havoc.gtf.org"
+	Sun, 21 Oct 2007 03:52:39 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:35359 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbXJUHwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 03:52:35 -0400
+	id S1752240AbXJUHwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 03:52:38 -0400
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: paulkf@microgate.com
+Cc: dtor@mail.ru
 From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 9/17] drivers/char/{synclink,tpm}: irq handler cleanups
+Subject: [PATCH 10/17] drivers/input/serio/i8042.c: irq handler clean
 References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
-Message-Id: <20071021075235.25BC519041C@havoc.gtf.org>
-Date: Sun, 21 Oct 2007 03:52:35 -0400 (EDT)
+Message-Id: <20071021075237.EC51B19041D@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 03:52:37 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 81ccec23142e4fe42b3f72faecccb7b64f84007e
+commit bdf311215ef8dbae0254c092deaed1d5928b013e
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 19:27:19 2007 -0400
+Date:   Fri Oct 19 19:28:54 2007 -0400
 
-    drivers/char/{synclink,tpm}: irq handler cleanups
+    drivers/input/serio/i8042.c: irq handler clean
     
-    * no need to use 'irq' function arg
+    * remove unnecessary prototype
     
-    * delete pointless test, pointless casts
+    * distinguish between polled and irq-driven event handling
     
-    * add KERN_xxx prefixes where appropriate
+    * don't bother worrying about 'irq' function arg
+    
+    * dev_id passed to irq handlers is unused, to change the request_irq()
+      argument to NULL
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/char/synclink.c    |   21 +++++++++------------
- drivers/char/synclink_gt.c |   13 ++++---------
- drivers/char/synclinkmp.c  |   22 +++++++++-------------
- drivers/char/tpm/tpm_tis.c |    2 +-
- 4 files changed, 23 insertions(+), 35 deletions(-)
+ drivers/input/serio/i8042.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-81ccec23142e4fe42b3f72faecccb7b64f84007e
-diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
-index 905d1f5..aa09909 100644
---- a/drivers/char/synclink.c
-+++ b/drivers/char/synclink.c
-@@ -1696,20 +1696,16 @@ static void mgsl_isr_transmit_dma( struct mgsl_struct *info )
-  * 	
-  * Return Value: None
+bdf311215ef8dbae0254c092deaed1d5928b013e
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index 11dafc0..51c57f0 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -102,8 +102,6 @@ static unsigned char i8042_aux_irq_registered;
+ static unsigned char i8042_suppress_kbd_ack;
+ static struct platform_device *i8042_platform_device;
+ 
+-static irqreturn_t i8042_interrupt(int irq, void *dev_id);
+-
+ /*
+  * The i8042_wait_read() and i8042_wait_write functions wait for the i8042 to
+  * be ready for reading values from it / writing values to it.
+@@ -288,7 +286,7 @@ static void i8042_stop(struct serio *serio)
+  * to the upper layers.
   */
--static irqreturn_t mgsl_interrupt(int irq, void *dev_id)
-+static irqreturn_t mgsl_interrupt(int dummy, void *dev_id)
+ 
+-static irqreturn_t i8042_interrupt(int irq, void *dev_id)
++static irqreturn_t __i8042_interrupt(bool polled)
  {
--	struct mgsl_struct * info;
-+	struct mgsl_struct *info = dev_id;
- 	u16 UscVector;
- 	u16 DmaVector;
+ 	struct i8042_port *port;
+ 	unsigned long flags;
+@@ -301,7 +299,7 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
+ 	str = i8042_read_status();
+ 	if (unlikely(~str & I8042_STR_OBF)) {
+ 		spin_unlock_irqrestore(&i8042_lock, flags);
+-		if (irq) dbg("Interrupt %d, without any data", irq);
++		if (!polled) dbg("Interrupt without any data");
+ 		ret = 0;
+ 		goto out;
+ 	}
+@@ -356,8 +354,8 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
  
- 	if ( debug_level >= DEBUG_LEVEL_ISR )	
--		printk("%s(%d):mgsl_interrupt(%d)entry.\n",
--			__FILE__,__LINE__,irq);
-+		printk(KERN_DEBUG "%s(%d):mgsl_interrupt(%d)entry.\n",
-+			__FILE__, __LINE__, info->irq_level);
+ 	port = &i8042_ports[port_no];
  
--	info = (struct mgsl_struct *)dev_id;	
--	if (!info)
--		return IRQ_NONE;
--		
- 	spin_lock(&info->irq_spinlock);
+-	dbg("%02x <- i8042 (interrupt, %d, %d%s%s)",
+-	    data, port_no, irq,
++	dbg("%02x <- i8042 (interrupt, %d, %s%s)",
++	    data, port_no,
+ 	    dfl & SERIO_PARITY ? ", bad parity" : "",
+ 	    dfl & SERIO_TIMEOUT ? ", timeout" : "");
  
- 	for(;;) {
-@@ -1733,8 +1729,8 @@ static irqreturn_t mgsl_interrupt(int irq, void *dev_id)
- 			mgsl_isr_receive_dma(info);
+@@ -375,6 +373,11 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
+ 	return IRQ_RETVAL(ret);
+ }
  
- 		if ( info->isr_overflow ) {
--			printk(KERN_ERR"%s(%d):%s isr overflow irq=%d\n",
--				__FILE__,__LINE__,info->device_name, irq);
-+			printk(KERN_ERR "%s(%d):%s isr overflow irq=%d\n",
-+				__FILE__, __LINE__, info->device_name, info->irq_level);
- 			usc_DisableMasterIrqBit(info);
- 			usc_DisableDmaInterrupts(info,DICR_MASTER);
- 			break;
-@@ -1756,8 +1752,9 @@ static irqreturn_t mgsl_interrupt(int irq, void *dev_id)
- 	spin_unlock(&info->irq_spinlock);
- 	
- 	if ( debug_level >= DEBUG_LEVEL_ISR )	
--		printk("%s(%d):mgsl_interrupt(%d)exit.\n",
--			__FILE__,__LINE__,irq);
-+		printk(KERN_DEBUG "%s(%d):mgsl_interrupt(%d)exit.\n",
-+			__FILE__, __LINE__, info->irq_level);
++static irqreturn_t i8042_interrupt(int dummy, void *dev_id)
++{
++	return __i8042_interrupt(false);
++}
 +
- 	return IRQ_HANDLED;
- }	/* end of mgsl_interrupt() */
- 
-diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
-index 64e835f..468dae1 100644
---- a/drivers/char/synclink_gt.c
-+++ b/drivers/char/synclink_gt.c
-@@ -492,7 +492,6 @@ static void isr_serial(struct slgt_info *info);
- static void isr_rdma(struct slgt_info *info);
- static void isr_txeom(struct slgt_info *info, unsigned short status);
- static void isr_tdma(struct slgt_info *info);
--static irqreturn_t slgt_interrupt(int irq, void *dev_id);
- 
- static int  alloc_dma_bufs(struct slgt_info *info);
- static void free_dma_bufs(struct slgt_info *info);
-@@ -2321,17 +2320,13 @@ static void isr_gpio(struct slgt_info *info, unsigned int changed, unsigned int
-  * 	irq	interrupt number
-  * 	dev_id	device ID supplied during interrupt registration
+ /*
+  * i8042_enable_kbd_port enables keybaord port on chip
   */
--static irqreturn_t slgt_interrupt(int irq, void *dev_id)
-+static irqreturn_t slgt_interrupt(int dummy, void *dev_id)
- {
--	struct slgt_info *info;
-+	struct slgt_info *info = dev_id;
- 	unsigned int gsr;
- 	unsigned int i;
+@@ -636,7 +639,7 @@ static int __devinit i8042_check_aux(void)
+ 	}
  
--	DBGISR(("slgt_interrupt irq=%d entry\n", irq));
--
--	info = dev_id;
--	if (!info)
--		return IRQ_NONE;
-+	DBGISR(("slgt_interrupt irq=%d entry\n", info->irq_level));
+ 	if (request_irq(I8042_AUX_IRQ, i8042_aux_test_irq, IRQF_SHARED,
+-			"i8042", i8042_platform_device))
++			"i8042", NULL))
+ 		goto out;
  
- 	spin_lock(&info->lock);
+ 	irq_registered = 1;
+@@ -939,7 +942,7 @@ static int i8042_resume(struct platform_device *dev)
+ 	if (i8042_ports[I8042_KBD_PORT_NO].serio)
+ 		i8042_enable_kbd_port();
  
-@@ -2380,7 +2375,7 @@ static irqreturn_t slgt_interrupt(int irq, void *dev_id)
+-	i8042_interrupt(0, NULL);
++	__i8042_interrupt(true);
  
- 	spin_unlock(&info->lock);
+ 	dev->dev.power.power_state = PMSG_ON;
  
--	DBGISR(("slgt_interrupt irq=%d exit\n", irq));
-+	DBGISR(("slgt_interrupt irq=%d exit\n", info->irq_level));
- 	return IRQ_HANDLED;
- }
+@@ -1090,7 +1093,7 @@ static int __devinit i8042_setup_aux(void)
+ 	}
  
-diff --git a/drivers/char/synclinkmp.c b/drivers/char/synclinkmp.c
-index c63013b..f79c8b2 100644
---- a/drivers/char/synclinkmp.c
-+++ b/drivers/char/synclinkmp.c
-@@ -2587,9 +2587,9 @@ void isr_io_pin( SLMP_INFO *info, u16 status )
-  * 	dev_id		device ID supplied during interrupt registration
-  * 	regs		interrupted processor context
-  */
--static irqreturn_t synclinkmp_interrupt(int irq, void *dev_id)
-+static irqreturn_t synclinkmp_interrupt(int dummy, void *dev_id)
- {
--	SLMP_INFO * info;
-+	SLMP_INFO *info = dev_id;
- 	unsigned char status, status0, status1=0;
- 	unsigned char dmastatus, dmastatus0, dmastatus1=0;
- 	unsigned char timerstatus0, timerstatus1=0;
-@@ -2598,12 +2598,8 @@ static irqreturn_t synclinkmp_interrupt(int irq, void *dev_id)
- 	unsigned short tmp;
+ 	error = request_irq(I8042_AUX_IRQ, i8042_interrupt, IRQF_SHARED,
+-			    "i8042", i8042_platform_device);
++			    "i8042", NULL);
+ 	if (error)
+ 		goto err_free_ports;
  
- 	if ( debug_level >= DEBUG_LEVEL_ISR )
--		printk("%s(%d): synclinkmp_interrupt(%d)entry.\n",
--			__FILE__,__LINE__,irq);
--
--	info = (SLMP_INFO *)dev_id;
--	if (!info)
--		return IRQ_NONE;
-+		printk(KERN_DEBUG "%s(%d): synclinkmp_interrupt(%d)entry.\n",
-+			__FILE__, __LINE__, info->irq_level);
+@@ -1116,7 +1119,7 @@ static int __devinit i8042_setup_kbd(void)
+ 		return error;
  
- 	spin_lock(&info->lock);
+ 	error = request_irq(I8042_KBD_IRQ, i8042_interrupt, IRQF_SHARED,
+-			    "i8042", i8042_platform_device);
++			    "i8042", NULL);
+ 	if (error)
+ 		goto err_free_port;
  
-@@ -2616,9 +2612,9 @@ static irqreturn_t synclinkmp_interrupt(int irq, void *dev_id)
- 		timerstatus0 = read_reg(info, ISR2);
- 
- 		if ( debug_level >= DEBUG_LEVEL_ISR )
--			printk("%s(%d):%s status0=%02x, dmastatus0=%02x, timerstatus0=%02x\n",
--				__FILE__,__LINE__,info->device_name,
--				status0,dmastatus0,timerstatus0);
-+			printk(KERN_DEBUG "%s(%d):%s status0=%02x, dmastatus0=%02x, timerstatus0=%02x\n",
-+				__FILE__, __LINE__, info->device_name,
-+				status0, dmastatus0, timerstatus0);
- 
- 		if (info->port_count == 4) {
- 			/* get status for SCA1 (ports 2-3) */
-@@ -2703,8 +2699,8 @@ static irqreturn_t synclinkmp_interrupt(int irq, void *dev_id)
- 	spin_unlock(&info->lock);
- 
- 	if ( debug_level >= DEBUG_LEVEL_ISR )
--		printk("%s(%d):synclinkmp_interrupt(%d)exit.\n",
--			__FILE__,__LINE__,irq);
-+		printk(KERN_DEBUG "%s(%d):synclinkmp_interrupt(%d)exit.\n",
-+			__FILE__, __LINE__, info->irq_level);
- 	return IRQ_HANDLED;
- }
- 
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index fd771a4..9e12638 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -399,7 +399,7 @@ static irqreturn_t tis_int_probe(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t tis_int_handler(int irq, void *dev_id)
-+static irqreturn_t tis_int_handler(int dummy, void *dev_id)
- {
- 	struct tpm_chip *chip = dev_id;
- 	u32 interrupt;
