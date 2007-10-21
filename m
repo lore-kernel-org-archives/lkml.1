@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXJUGVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXJUG3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbXJUGVh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 02:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXJUGVa
+	id S1752346AbXJUG3Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 02:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXJUG3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 02:21:30 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:31982 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750912AbXJUGV3 (ORCPT
+	Sun, 21 Oct 2007 02:29:19 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:59854 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbXJUG3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 02:21:29 -0400
-X-Greylist: delayed 1253 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 02:21:29 EDT
-Date: Sun, 21 Oct 2007 08:10:12 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben-linux-arm@fluff.org>
-Subject: [PATCH] s3c-rtc: remove unused variable
-Message-Id: <20071021081012.15682463.krzysztof.h1@poczta.fm>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: e8c0b138
+	Sun, 21 Oct 2007 02:29:19 -0400
+Date: Sun, 21 Oct 2007 15:28:47 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pavel@suse.cz
+Subject: Re: mysqld prevents s2ram [Re: 2.6.23-mm1]
+Message-ID: <20071021062847.GA3941@inferi.kami.home>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <20071021055816.GA4204@inferi.kami.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071021055816.GA4204@inferi.kami.home>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.23-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Sun, Oct 21, 2007 at 02:58:17PM +0900, Mattia Dongili wrote:
+> On Thu, Oct 11, 2007 at 09:31:26PM -0700, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> 
+> Ok, now that it boots let's go for more.
+> 
+> I cannot suspend if mysqld is running. mysql isn't atually doing
+> anything useful anyway.
+...
+> As suggested in a different post I'll try reverting
+> freezer-use-wait-queue-instead-of-busy-looping.patch and re-test
 
-This patch removes unused variable.
+great, that was the guilty patch in fact.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Acked-by: Ben Dooks <ben-linux@fluff.org> 
-
----
-This patch was done against the 2.6.23-git13 kernel.
-
-diff -urp linux-ref/drivers/rtc/rtc-s3c.c linux-new/drivers/rtc/rtc-s3c.c
---- linux-ref/drivers/rtc/rtc-s3c.c	2007-10-09 22:31:38.000000000 +0200
-+++ linux-new/drivers/rtc/rtc-s3c.c	2007-10-18 23:01:07.601674574 +0200
-@@ -542,8 +542,6 @@ static int s3c_rtc_probe(struct platform
- 
- /* RTC Power management control */
- 
--static struct timespec s3c_rtc_delta;
--
- static int ticnt_save;
- 
- static int s3c_rtc_suspend(struct platform_device *pdev, pm_message_t state)
-
-
-----------------------------------------------------------------------
-Kandydaci na ring! Zagraj 
-Kliknij >>> http://link.interia.pl/f1c32
-
+-- 
+mattia
+:wq!
