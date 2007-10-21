@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbXJUSIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbXJUSSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbXJUSIW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 14:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXJUSIP
+	id S1752563AbXJUSSn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 14:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbXJUSSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 14:08:15 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:32300 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751545AbXJUSIO (ORCPT
+	Sun, 21 Oct 2007 14:18:37 -0400
+Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:20687 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751563AbXJUSSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 14:08:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=oV2d++c6oS8/bcRYzucrzGEeXKhEUTzexoxyeQjAasdnP8KMeDP6v0QUAV3sf06DR8fb1c4+4YhJDXKXgkPfZXyASYCbDbThY9a3WX4pWygIkiKuz6uGrLj5oA3G3vPcJmLXmO41ZfTPhj4aAaWI6SDx0Xl7zdliPAnnYZH5dEI=  ;
-X-YMail-OSG: SpxPwtkVM1npsjkQJx_5Q_52V82KYHPxi.LAVTiFDaJBmkMvwexIZ3QJJWh9kgVv8XqtgiO5wzXh1JxLcE9b4EU33ySCJh1hctxAMtBuFuKvn8VlJTQ-
-Message-ID: <471B9584.4010701@yahoo.com.au>
-Date: Mon, 22 Oct 2007 02:08:04 +0800
-From: Ben <benjg87@yahoo.com.au>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem with reiserfs in 2.6.23-mm1
-References: <471A0DF4.50700@yahoo.com.au>
-In-Reply-To: <471A0DF4.50700@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Oct 2007 14:18:36 -0400
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: kbuild: disable depmod in cross-compile kernel build
+Cc: akuster@mvista.com, bunk@kernel.org, dsaxena@mvista.com,
+       linux-kernel@vger.kernel.org, nafallo@magicalforest.se,
+       sam@ravnborg.org
+In-reply-To: <Pine.LNX.4.64.0710211948450.6155@anakin>
+References: <200710192259.l9JMxENl018922@hera.kernel.org> <Pine.LNX.4.64.0710211948450.6155@anakin>
+Message-Id: <E1IjfNc-0006rv-9k@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Sun, 21 Oct 2007 20:18:28 +0200
+X-OriginalArrivalTime: 21 Oct 2007 18:18:30.0431 (UTC) FILETIME=[C86662F0:01C8140E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben wrote:
-> Hello.
->
-> Whenever I log into xfce with gdm my computer will freeze when i use 
-> reiserfs as my /home on 2.6.23-mm1. Logging into the VT works 
-> perfectly fine. Previously my system would crash when logging into the 
-> VT but the
-> make-reiserfs-stop-using-struct-file-for-internal.patch patch fixed 
-> the issue(and possibly introduced the issue I currently have). My 
-> system works perfectly fine using 2.6.23-rc6-mm1 and prior. /home is 
-> mounted with the following options: /dev/sda3 on /home type reiserfs 
-> (rw,nosuid,nodev,noatime,acl)
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-I just tried mainline 2.6.23 and I have no issues with that.
+Geert Uytterhoeven wrote:
+> Euh, is these really necessary?
+> 
+> At work I have no problems running depmod on an i386 system for ppc64
+> modules after I installed module-init-tools 3.3-pre2 (from Debian).
+
+That's right. I do depmod on i386 and amd64 for _all_ Debian architectures 
+without any problems and I don't see why it should be a problem when running 
+on other arches. It used to be a problem with depmod from modutils, but with 
+depmod from module-init-tools it works perfectly.
+
+All it needs is the -b option and correct kernel version.
