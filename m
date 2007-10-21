@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbXJUJVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752008AbXJUJZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752956AbXJUJVy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 05:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXJUJVd
+	id S1752008AbXJUJZb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 05:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXJUJZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 05:21:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60857 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbXJUJVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 05:21:31 -0400
-Date: Sun, 21 Oct 2007 11:21:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: rt2400-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
-Subject: Re: [Rt2400-devel] rt73usb: support for wireless in Kohjinsha
-	subnotebook
-Message-ID: <20071021092138.GC25270@elf.ucw.cz>
-References: <20071020184100.GA11640@elf.ucw.cz> <200710210012.37547.IvDoorn@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710210012.37547.IvDoorn@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 21 Oct 2007 05:25:24 -0400
+Received: from main.gmane.org ([80.91.229.2]:35498 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751220AbXJUJZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 05:25:23 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Subject: Re: [OOPS] 2.6.23.1 in ext2/pdflush (tainted)
+Date: Sun, 21 Oct 2007 15:25:05 +0600
+Message-ID: <471B1AF1.5060300@ums.usu.ru>
+References: <20071021083612.GC7554@hindley.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: mark@hindley.org.uk
+X-Gmane-NNTP-Posting-Host: 90.150.227.81
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
+In-Reply-To: <20071021083612.GC7554@hindley.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Mark Hindley wrote:
 
-> > Kohjinsha subnotebook seems to contain wifi with USB IDs 0x18e8,
-> > 0x6206... I hope that to be compatible with
-> > net/wireless/rt2x00/rt73usb.c .
-> 
-> Is there any reason you assume it is a rt73usb device,
-> or are you just making wild guesses about what the chipset is?
+> Unfortunately the kernel is tainted by madwifi modules. As it
+> is used headless as a wireless router, I can't remove them.
 
-Wild guess. I've seen 18e8:6XXX being handled by rt73usb, so..
+You can. That's what ath5k is for. The driver is available from svn, see 
+http://madwifi.org/browser/ath5k/trunk (aka "svn co 
+http://svn.madwifi.org/ath5k/trunk"), or from git.
 
-> > [Sidenote: could we add some real author info into rt73usb.c?]
-> 
-> You mean expanding the project name to the full list of developers in
-> the project? I don't see any need for that.
-
-At least put name and email of lead developer there, or something.
-
-I do not think "copyright sourceforge project" is okay thing to do --
-unless the sf project legaly exists and you did some paperwork.
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alexander E. Patrakov
+
