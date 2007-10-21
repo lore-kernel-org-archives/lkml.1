@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbXJULiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXJULie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbXJULiW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbXJULiJ
+	id S1753783AbXJULie (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbXJULiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:38:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:1800 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbXJULiH (ORCPT
+	Sun, 21 Oct 2007 07:38:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47762 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbXJULiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 07:38:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=cwOsJz/wrQ/xR9c5umVOZMh8Wmg4x6uhFDJhDX9QJqlyGRNJKrRcD8UdTagU1WW/vdQ9gXZ/VtEmtUsYKUBjjr0Q7BPb5kihgGXPKU2ug5ifGDSOtXzAraXQprVklDLrrvH9l/iT0yn7WJilNgYUrnIGXFhDcWUVxjtZq9QbpEs=
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Rt2400-devel] rt73usb: support for wireless in Kohjinsha subnotebook
-Date: Sun, 21 Oct 2007 15:56:29 +0200
-User-Agent: KMail/1.9.7
+	Sun, 21 Oct 2007 07:38:08 -0400
+Date: Sun, 21 Oct 2007 13:38:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ivo van Doorn <ivdoorn@gmail.com>
 Cc: rt2400-devel@lists.sourceforge.net,
        kernel list <linux-kernel@vger.kernel.org>,
        linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
-References: <20071020184100.GA11640@elf.ucw.cz> <200710210012.37547.IvDoorn@gmail.com> <20071021092048.GA25270@elf.ucw.cz>
-In-Reply-To: <20071021092048.GA25270@elf.ucw.cz>
+Subject: Re: [Rt2400-devel] rt73usb: support for wireless in Kohjinsha
+	subnotebook
+Message-ID: <20071021113815.GF25270@elf.ucw.cz>
+References: <20071020184100.GA11640@elf.ucw.cz> <200710210012.37547.IvDoorn@gmail.com> <20071021092138.GC25270@elf.ucw.cz> <200710211549.44955.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710211556.29469.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+In-Reply-To: <200710211549.44955.IvDoorn@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> > If rt2x00 is loaded and detected the device, it should print out a debug message that starts with:
-> > "Chipset detected - " What is in your case the complete line?
+On Sun 2007-10-21 15:49:44, Ivo van Doorn wrote:
+> On Sunday 21 October 2007, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Kohjinsha subnotebook seems to contain wifi with USB IDs 0x18e8,
+> > > > 0x6206... I hope that to be compatible with
+> > > > net/wireless/rt2x00/rt73usb.c .
+> > > 
+> > > Is there any reason you assume it is a rt73usb device,
+> > > or are you just making wild guesses about what the chipset is?
+> > 
+> > Wild guess. I've seen 18e8:6XXX being handled by rt73usb, so..
 > 
-> Ok, I guess I should include more complete debug output.
-> 
-> phy0 -> rt2x00usb_vendor_request: Error - Vendor Request 0x09 failed for offset 0x0000 with error -32
+> Thats an incorrect assumption. USB ID's listed in rt73usb don't even
+> guarentee that the device contains a rt73usb chipset since some manufacturers
+> produce cards with different chipsets while keeping the USB ID the same.
+> So the case that the card false in the 6xxx range says absolutely _nothing_.
 
-- Vendor requests error with the -32 errors often indicate the incorrect device.
+Well, see the other mail, it seems like rt73usb partially communicates
+with the card.
 
-> phy0 -> rt73usb_validate_eeprom: EEPROM recover - MAC: 66:76:2b:e8:68:e7
-
-- Incorrect MAC address read from the device. Another hint that the device is not rt73.
-
-> phy0 -> rt2x00usb_vendor_request: Error - Vendor Request 0x07 failed for offset 0x3000 with error -32
-> phy0 -> rt2x00_set_chip: Info - Chipset detected - rt: 1300, rf: 0000, rev: c03c0ae0
-
-- A incorrect RF chipset. (valid values are: 1, 2, 3 or 4). Another indication of a incorrect device.
-- A completely bogus chipset revision. A valid rt73 device has the revision "2573X" Where only the
-  X is a variable.
-
-> phy0 -> rt73usb_init_eeprom: Error - Invalid RF chipset detected
-> 
-> ...so, I think hardware is indeed quite similar to what rt73usb driver
-> expects...?
-
-No. You can assume you are forcing rt73 to control a non-rt73 device.
-The fact that you had to hack to bypass the RT and RF chipset validation also confirms that,
-those checks were there for a reason. Namely to make sure the corect driver was being used for the device.
-
-Ivo
+What info would be useful in determining what is this card similar to?
+Boot windows and look for driver name?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
