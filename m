@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbXJULIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbXJULIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbXJULIg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 07:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbXJULHz
+	id S1753539AbXJULIt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 07:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXJULH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 07:07:55 -0400
-Received: from il.qumranet.com ([82.166.9.18]:58415 "EHLO il.qumranet.com"
+	Sun, 21 Oct 2007 07:07:56 -0400
+Received: from il.qumranet.com ([82.166.9.18]:58418 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbXJULHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751457AbXJULHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 21 Oct 2007 07:07:53 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>,
+Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent.Vivier@bull.net>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 01/11] KVM: x86 emulator: fix merge screwup due to emulator split
-Date: Sun, 21 Oct 2007 13:08:02 +0200
-Message-Id: <11929648921865-git-send-email-avi@qumranet.com>
+Subject: [PATCH 02/11] KVM: x86 emulator: fix repne/repnz decoding
+Date: Sun, 21 Oct 2007 13:08:03 +0200
+Message-Id: <11929648921877-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <1192964892617-git-send-email-avi@qumranet.com>
 References: <1192964892617-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nitin A Kamble <nitin.a.kamble@intel.com>
+From: Laurent Vivier <Laurent.Vivier@bull.net>
 
-This code has gone to wrong place in the file. Moving it back to
-right location.
+The repnz/repne instructions must set rep_prefix to 1 like rep/repe/repz.
 
-Signed-off-by: Nitin A Kamble <nitin.a.kamble@intel.com>
+This patch correct the disk probe problem met with OpenBSD.
+
+This issue appears with commit e70669abd4e60dfea3ac1639848e20e2b8dd1255
+because before it, the decoding was done internally to kvm and after it
+is done by x86_emulate.c (which doesn't do it correctly).
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/x86_emulate.c |   51 +++++++++++++++++++++++----------------------
- 1 files changed, 26 insertions(+), 25 deletions(-)
+ drivers/kvm/x86_emulate.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 9737c3b..b1026d2 100644
+index b1026d2..80b1758 100644
 --- a/drivers/kvm/x86_emulate.c
 +++ b/drivers/kvm/x86_emulate.c
-@@ -1083,31 +1083,6 @@ push:
- 	case 0xd2 ... 0xd3:	/* Grp2 */
- 		src.val = _regs[VCPU_REGS_RCX];
- 		goto grp2;
--	case 0xe8: /* call (near) */ {
--		long int rel;
--		switch (op_bytes) {
--		case 2:
--			rel = insn_fetch(s16, 2, _eip);
+@@ -596,11 +596,10 @@ x86_emulate_memop(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 		case 0xf0:	/* LOCK */
+ 			lock_prefix = 1;
+ 			break;
++		case 0xf2:	/* REPNE/REPNZ */
+ 		case 0xf3:	/* REP/REPE/REPZ */
+ 			rep_prefix = 1;
+ 			break;
+-		case 0xf2:	/* REPNE/REPNZ */
 -			break;
--		case 4:
--			rel = insn_fetch(s32, 4, _eip);
--			break;
--		case 8:
--			rel = insn_fetch(s64, 8, _eip);
--			break;
--		default:
--			DPRINTF("Call: Invalid op_bytes\n");
--			goto cannot_emulate;
--		}
--		src.val = (unsigned long) _eip;
--		JMP_REL(rel);
--		goto push;
--	}
--	case 0xe9: /* jmp rel */
--	case 0xeb: /* jmp rel short */
--		JMP_REL(src.val);
--		no_wb = 1; /* Disable writeback. */
--		break;
- 	case 0xf6 ... 0xf7:	/* Grp3 */
- 		switch (modrm_reg) {
- 		case 0 ... 1:	/* test */
-@@ -1350,6 +1325,32 @@ special_insn:
- 	case 0xae ... 0xaf:	/* scas */
- 		DPRINTF("Urk! I don't handle SCAS.\n");
- 		goto cannot_emulate;
-+	case 0xe8: /* call (near) */ {
-+		long int rel;
-+		switch (op_bytes) {
-+		case 2:
-+			rel = insn_fetch(s16, 2, _eip);
-+			break;
-+		case 4:
-+			rel = insn_fetch(s32, 4, _eip);
-+			break;
-+		case 8:
-+			rel = insn_fetch(s64, 8, _eip);
-+			break;
-+		default:
-+			DPRINTF("Call: Invalid op_bytes\n");
-+			goto cannot_emulate;
-+		}
-+		src.val = (unsigned long) _eip;
-+		JMP_REL(rel);
-+		goto push;
-+	}
-+	case 0xe9: /* jmp rel */
-+	case 0xeb: /* jmp rel short */
-+		JMP_REL(src.val);
-+		no_wb = 1; /* Disable writeback. */
-+		break;
-+
- 
- 	}
- 	goto writeback;
+ 		default:
+ 			goto done_prefixes;
+ 		}
 -- 
 1.5.3
 
