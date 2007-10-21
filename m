@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbXJUGnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbXJUGpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbXJUGnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 02:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXJUGnK
+	id S1752620AbXJUGpS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 02:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXJUGpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 02:43:10 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:40273 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbXJUGnI (ORCPT
+	Sun, 21 Oct 2007 02:45:07 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40050 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbXJUGpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 02:43:08 -0400
-Message-ID: <471AF4DE.80705@linux.vnet.ibm.com>
-Date: Sun, 21 Oct 2007 12:12:38 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-mm1 - regression- PowerPC link failure at arch/powerpc/kernel/head_64.o
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <471465D8.9030100@linux.vnet.ibm.com> <20071016002850.4296827e.akpm@linux-foundation.org> <47146BD4.8000608@linux.vnet.ibm.com>
-In-Reply-To: <47146BD4.8000608@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Oct 2007 02:45:06 -0400
+Date: Sun, 21 Oct 2007 07:45:03 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [GIT PULL] audit updates
+Message-ID: <20071021064503.GV8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Andrew Morton wrote:
->> On Tue, 16 Oct 2007 12:48:48 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>
->>> Hi Andrew,
->>>
->>> The link failure while compiling the kernel with allyesconfig over the lpar, 
->>> which was seen in 2.6.23-rc8-mm2 (http://lkml.org/lkml/2007/9/30/2) is still 
->>> seen in 2.6.23-mm1, the link failure is
->>>
->>> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->>> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->>> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
->>> ld: final link failed: Bad value
->>> make: *** [.tmp_vmlinux1] Error 1
->>>
->>> # gcc -v
->>> Using built-in specs.
->>> Target: powerpc64-suse-linux
->>> Configured with: ../configure --enable-threads=posix --prefix=/usr --with-local-prefix=/usr/local --infodir=/usr/share/info --mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib --enable-languages=c,c++,objc,fortran,obj-c++,java,ada --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 --enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib --with-system-zlib --enable-shared --enable-__cxa_atexit --enable-libstdcxx-allocator=new --program-suffix=-4.1 --enable-version-specific-runtime-libs --without-system-libunwind --with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
->>> Thread model: posix
->>> gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
->>>
->>> ld -v
->>> GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
->>>
->>>
->>> Anything I can provide to help diagnose this?
->>>
->> Did we work out which patch is causing this?
->> -
-> Hi Andrew,
-> No, we did not work out on which patch is causing this ! I will try a bisect to find the patch causing this issue.
-> 
-Hi Andrew,
+Please pull audit updates (predicate for watching subtrees) from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b43
 
-After the bisecting, i found that the patch git-net.patch is the cause for the link failure.
+When that gets merged, mm.b41 can be dropped from -mm tree.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Shortlog:
+
+Author: Al Viro <viro@zeniv.linux.org.uk>
+    [PATCH] pass dentry to audit_inode()/audit_inode_child()
+    [PATCH] new helpers - collect_mounts() and release_collected_mounts()
+    [PATCH] new helper - inotify_clone_watch()
+    [PATCH] new helper - inotify_evict_watch()
+    [PATCH] audit: watching subtrees
+
+Diffstat:
+ fs/dcache.c              |    2 +-
+ fs/debugfs/inode.c       |    2 +-
+ fs/inotify.c             |   43 +++
+ fs/namei.c               |   10 +-
+ fs/namespace.c           |   22 +-
+ fs/open.c                |    4 +-
+ fs/pnode.h               |    1 +
+ fs/xattr.c               |    8 +-
+ include/linux/audit.h    |   19 +-
+ include/linux/dcache.h   |    1 +
+ include/linux/fs.h       |    2 +
+ include/linux/fsnotify.h |    9 +-
+ include/linux/inotify.h  |    2 +
+ init/Kconfig             |    4 +
+ ipc/mqueue.c             |    8 +-
+ kernel/Makefile          |    1 +
+ kernel/audit.c           |   87 +++++
+ kernel/audit.h           |   34 ++-
+ kernel/audit_tree.c      |  903 ++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/auditfilter.c     |   64 +++-
+ kernel/auditsc.c         |  225 ++++++++++++-
+ 21 files changed, 1411 insertions(+), 40 deletions(-)
+ create mode 100644 kernel/audit_tree.c
+
