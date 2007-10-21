@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXJUGAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXJUGVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbXJUGAe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 02:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXJUGA1
+	id S1751898AbXJUGVh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 02:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXJUGVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 02:00:27 -0400
-Received: from bay0-omc2-s19.bay0.hotmail.com ([65.54.246.155]:4365 "EHLO
-	bay0-omc2-s19.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750888AbXJUGA0 (ORCPT
+	Sun, 21 Oct 2007 02:21:30 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:31982 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750912AbXJUGV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 02:00:26 -0400
-Message-ID: <BLU120-W37C7D4E7CA468756AA61EFE2990@phx.gbl>
-X-Originating-IP: [222.67.15.20]
-From: Shane Huang <chunhao.huang@hotmail.com>
-To: David Gaarenstroom <david.gaarenstroom@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, Linas Vepstas <linas@austin.ibm.com>,
-       <davem@davemloft.net>, <gregkh@suse.de>, <htejun@gmail.com>,
-       <brice.goglin@gmail.com>, <linux-pci@atrey.karlin.mff.cuni.cz>,
-       <shane.huang@amd.com>, <jgarzik@pobox.com>, <chunhao.huang@hotmail.com>
-Subject: RE: [patch] PCI: disable MSI on more ATI NorthBridges
-Date: Sun, 21 Oct 2007 14:00:25 +0800
-Importance: Normal
-In-Reply-To: <9783dadb0710201352p28969b4bs573d817d70b1fff7@mail.gmail.com>
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-	 <20071019195749.GK29903@austin.ibm.com>
- 	 <BLU120-W12C06900EC932864CC13A8E2980@phx.gbl> 
- <9783dadb0710201352p28969b4bs573d817d70b1fff7@mail.gmail.com>
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
-MIME-Version: 1.0
-X-OriginalArrivalTime: 21 Oct 2007 06:00:26.0023 (UTC) FILETIME=[ACD5FB70:01C813A7]
+	Sun, 21 Oct 2007 02:21:29 -0400
+X-Greylist: delayed 1253 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 02:21:29 EDT
+Date: Sun, 21 Oct 2007 08:10:12 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: linux-kernel@vger.kernel.org
+Cc: Ben Dooks <ben-linux-arm@fluff.org>
+Subject: [PATCH] s3c-rtc: remove unused variable
+Message-Id: <20071021081012.15682463.krzysztof.h1@poczta.fm>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: e8c0b138
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Hi David
+This patch removes unused variable.
 
->> When I used "here", I was just meaning our youthful linux southbridge
->> drivers team instead of the whole AMD. Sorry for the confusion to you.
->
-> I am still somewhat confused: most people developing the Linux kernel
-> are limited to look at this hardware from the outside. They had to
-> find out by trial and error. I really hope your colleagues will be
-> more actively helping your team and (other) Linux kernel developers.
-> But I'm glad AMD has such a team.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Acked-by: Ben Dooks <ben-linux@fluff.org> 
 
-Well... I think the cooperation will become more and more smoothly as
-time goes by. In fact, other teams are always helping us.
+---
+This patch was done against the 2.6.23-git13 kernel.
 
-As to the other problems such as USB-HCD, we need some investigation
-before I can send you any response.
+diff -urp linux-ref/drivers/rtc/rtc-s3c.c linux-new/drivers/rtc/rtc-s3c.c
+--- linux-ref/drivers/rtc/rtc-s3c.c	2007-10-09 22:31:38.000000000 +0200
++++ linux-new/drivers/rtc/rtc-s3c.c	2007-10-18 23:01:07.601674574 +0200
+@@ -542,8 +542,6 @@ static int s3c_rtc_probe(struct platform
+ 
+ /* RTC Power management control */
+ 
+-static struct timespec s3c_rtc_delta;
+-
+ static int ticnt_save;
+ 
+ static int s3c_rtc_suspend(struct platform_device *pdev, pm_message_t state)
 
 
-Thanks
-Best Regards
+----------------------------------------------------------------------
+Kandydaci na ring! Zagraj 
+Kliknij >>> http://link.interia.pl/f1c32
 
-Shane
-
-_________________________________________________________________
-Discover the new Windows Vista
-http://search.msn.com/results.aspx?q=windows+vista&mkt=en-US&form=QBRE
