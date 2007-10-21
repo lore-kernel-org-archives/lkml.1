@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXJUQX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbXJUQkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbXJUQX5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 12:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbXJUQXv
+	id S1752146AbXJUQkb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 12:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXJUQkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 12:23:51 -0400
-Received: from mail.musicgenome.com ([212.150.69.147]:55272 "EHLO
-	mail.musicgenome.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbXJUQXu (ORCPT
+	Sun, 21 Oct 2007 12:40:24 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:42696 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbXJUQkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 12:23:50 -0400
-X-Greylist: delayed 890 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 12:23:49 EDT
-Date: Sun, 21 Oct 2007 17:53:37 +0200
-From: Tal Kelrich <tal@musicgenome.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.4/2.6 local TCP connect oddity
-Message-ID: <20071021175337.605e843e@shodan.orpak.com>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.6.10; i686-redhat-linux-gnu)
-X-Habeas-SWE-1: winter into spring
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Oct 2007 12:40:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dfVC5Rr4qgCjUjph7XsGlu/agBlF8ml4KUGsVKVOdWguP/C1+Z5C1nTz02UVbD0l0QNHUjCA0X3umvkJNZRvsvl4iFxW5bHP959YJGC7myqbEFEHGGoAlZLGkYUbLqZFxPhPjOwbI+EJwXJXVCgPoPpNunoO9DsIP+WrqRI+5X4=
+Message-ID: <8bd0f97a0710210940k6eeae8f2o67d63eee148dcbe5@mail.gmail.com>
+Date: Sun, 21 Oct 2007 12:40:22 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH 17/17] RTC interrupt handling cleanups
+Cc: LKML <linux-kernel@vger.kernel.org>, a.zummo@towertech.it
+In-Reply-To: <20071021075256.0975B19041E@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Musicgenome-MailScanner-Information: Please contact the ISP for more information
-X-Musicgenome-MailScanner: Found to be clean
-X-Musicgenome-MailScanner-SpamCheck: not spam, SpamAssassin (score=-5.899,
-	required 6, autolearn=not spam, ALL_TRUSTED -3.30, BAYES_00 -2.60)
-X-Musicgenome-MailScanner-From: tal@musicgenome.com
+Content-Disposition: inline
+References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
+	 <20071021075256.0975B19041E@havoc.gtf.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 10/21/07, Jeff Garzik <jeff@garzik.org> wrote:
+> commit f94d41db30d6430bc6d3e53602258d3933f93103
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Sun Oct 21 01:51:50 2007 -0400
+>
+>     RTC interrupt handling cleanups
+>
+>     rtc-bfin: calling spin_lock_irq() in interrupt handler marked
+>     IRQF_DISABLED is unwise.  Use safer spin_lock_irqsave() instead.
 
-I've run into a problem where a process trying to connect to a local
-port within the local port range eventually ends up connected to itself,
-with source port = dest port.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-similar behavior can be gotten by running netcat as follows:
-nc -p 1025 localhost 1025
-
-I'm not really sure if that's a bug, but the original case was at least
-unexpected.
-
-Regards,
-	Tal Kelrich
-
--- 
-Tal Kelrich
-PGP fingerprint: 3EDF FCC5 60BB 4729 AB2F  CAE6 FEC1 9AAC 12B9 AA69
-Key Available at: http://www.hasturkun.com/pub.txt
-----
-Administration:  An ingenious abstraction in politics, designed to
-receive the kicks and cuffs due to the premier or president.
--- Ambrose Bierce
-----
-
+thanks :)
+-mike
