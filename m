@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751532AbXJUWRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbXJUWpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751532AbXJUWRn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 18:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXJUWRg
+	id S1751618AbXJUWpp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 18:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXJUWpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 18:17:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53649 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbXJUWRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 18:17:35 -0400
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs@oss.sgi.com,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
-       Morten =?ISO-8859-1?Q?B=C3=B8geskov?= 
-	<xen-users@morten.bogeskov.dk>,
-       xfs-masters@oss.sgi.com
-In-Reply-To: <20071015110735.GA11748@one.firstfloor.org>
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com>
-	 <p731wbw4t3h.fsf@bingen.suse.de>
-	 <200710160056.47458.nickpiggin@yahoo.com.au>
-	 <20071015110735.GA11748@one.firstfloor.org>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 08:16:01 +1000
-Message-Id: <1193004961.6745.42.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 21 Oct 2007 18:45:38 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42406 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbXJUWph (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 18:45:37 -0400
+Message-ID: <471BD68B.9030408@tiscali.nl>
+Date: Mon, 22 Oct 2007 00:45:31 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] errors with assignments in if
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am not entirely certain about the third one:
 
-On Mon, 2007-10-15 at 13:07 +0200, Andi Kleen wrote:
-> On Tue, Oct 16, 2007 at 12:56:46AM +1000, Nick Piggin wrote:
-> > Is this true even if you don't write through those old mappings?
-> 
-> I think it happened for reads too.  It is a little counter intuitive
-> because in theory the CPU doesn't need to write back non dirty lines,
-> but in the one case which took so long to debug exactly this happened
-> somehow.
+from fs/udf/udf_sb.h:
 
-The problem exist also on ppc, and afaik, is due to the line being in
-the cache at all (either dirty (write) or not (read)), thus causing the
-snoop logic to hit, that is what's causing the problem vs. non cached
-accesses.
+#define UDF_SB_VAT(X)                           ( UDF_SB(X)->s_vat )
 
-Also, on some processors, the simple fact of having the page mapped can
-cause the CPU to prefetch from it even if it's not actually accessed
-(speculative prefetch can cross page boundaries if things are mapped).
+if it's the desired behavior then I think this should at least be changed to
 
-Ben.
+UDF_SB_VAT(sb) = udf_iget(sb, ino);
+if (!(UDF_SB_VAT(sb)))
 
-
+---
+    Errors with assignments in ifs
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index d9af436..e6e85b7 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -651,7 +651,7 @@ static u32 omap2_get_clksel(u32 *div_sel, u32 *field_mask,
+ 		break;
+ 	case CM_SYSCLKOUT_SEL1:
+ 		div_addr = (u32)&PRCM_CLKOUT_CTRL;
+-		if ((div_off == 3) || (div_off = 11))
++		if ((div_off == 3) || (div_off == 11))
+ 			mask= 0x3;
+ 		break;
+ 	case CM_CORE_SEL1:
+diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
+index 948a9b2..ed610ed 100644
+--- a/drivers/isdn/hisax/elsa.c
++++ b/drivers/isdn/hisax/elsa.c
+@@ -883,7 +883,7 @@ setup_elsa_isa(struct IsdnCard *card)
+ 	val += 'A' - 3;
+ 	if (val == 'B' || val == 'C')
+ 		val ^= 1;
+-	if ((cs->subtyp == ELSA_PCFPRO) && (val = 'G'))
++	if ((cs->subtyp == ELSA_PCFPRO) && (val == 'G'))
+ 		val = 'C';
+ 	printk(KERN_INFO
+ 	       "Elsa: %s found at %#lx Rev.:%c IRQ %d\n",
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index 4360c7a..353c9e8 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -1308,7 +1308,7 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
+ 			if (j == UDF_SB_NUMPARTS(sb))
+ 				return 1;
+ 
+-			if (!(UDF_SB_VAT(sb) = udf_iget(sb, ino)))
++			if (!(UDF_SB_VAT(sb) == udf_iget(sb, ino)))
+ 				return 1;
+ 
+ 			if (UDF_SB_PARTTYPE(sb, i) == UDF_VIRTUAL_MAP15) {
