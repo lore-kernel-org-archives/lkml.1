@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbXJUGpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbXJUGtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752620AbXJUGpS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 02:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXJUGpH
+	id S1752629AbXJUGtw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 02:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbXJUGtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 02:45:07 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40050 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbXJUGpG (ORCPT
+	Sun, 21 Oct 2007 02:49:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59541 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbXJUGtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 02:45:06 -0400
-Date: Sun, 21 Oct 2007 07:45:03 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [GIT PULL] audit updates
-Message-ID: <20071021064503.GV8181@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Sun, 21 Oct 2007 02:49:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+Subject: Re: [PATCH] rd: Use a private inode for backing storage
+References: <200710151028.34407.borntraeger@de.ibm.com>
+	<200710211428.55611.nickpiggin@yahoo.com.au>
+	<m1wsthcatk.fsf@ebiederm.dsl.xmission.com>
+	<200710211524.52595.nickpiggin@yahoo.com.au>
+Date: Sun, 21 Oct 2007 00:48:59 -0600
+In-Reply-To: <200710211524.52595.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Sun, 21 Oct 2007 15:24:52 +1000")
+Message-ID: <m1d4v9c690.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull audit updates (predicate for watching subtrees) from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b43
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-When that gets merged, mm.b41 can be dropped from -mm tree.
+> Yes it does. It is exactly breaking the coherency between block
+> device and filesystem metadata coherency that Andrew cared about.
+> Whether or not that matters, that is a much bigger conceptual
+> change than simply using slightly more (reclaimable) memory in
+> some situations that my patch does.
+>
+> If you want to try convincing people to break that coherency,
+> fine, but it has to be done consistently and everywhere rather than
+> for a special case in rd.c.
 
-Shortlog:
+Nick.  Reread the patch.  The only thing your arguments have
+established for me is that this patch is not obviously correct.  Which
+makes it ineligible for a back port.  Frankly I suspect the whole
+issue is to subtle and rare to make any backport make any sense.  My
+apologies Christian.
 
-Author: Al Viro <viro@zeniv.linux.org.uk>
-    [PATCH] pass dentry to audit_inode()/audit_inode_child()
-    [PATCH] new helpers - collect_mounts() and release_collected_mounts()
-    [PATCH] new helper - inotify_clone_watch()
-    [PATCH] new helper - inotify_evict_watch()
-    [PATCH] audit: watching subtrees
+>> The only way we make it to that inode is through block 
+>> device I/O so it lives at exactly the same level in the hierarchy as
+>> a real block device.
+>
+> No, it doesn't. A real block device driver does have its own
+> buffer cache as it's backing store. It doesn't know about
+> readpage or writepage or set_page_dirty or buffers or pagecache.
 
-Diffstat:
- fs/dcache.c              |    2 +-
- fs/debugfs/inode.c       |    2 +-
- fs/inotify.c             |   43 +++
- fs/namei.c               |   10 +-
- fs/namespace.c           |   22 +-
- fs/open.c                |    4 +-
- fs/pnode.h               |    1 +
- fs/xattr.c               |    8 +-
- include/linux/audit.h    |   19 +-
- include/linux/dcache.h   |    1 +
- include/linux/fs.h       |    2 +
- include/linux/fsnotify.h |    9 +-
- include/linux/inotify.h  |    2 +
- init/Kconfig             |    4 +
- ipc/mqueue.c             |    8 +-
- kernel/Makefile          |    1 +
- kernel/audit.c           |   87 +++++
- kernel/audit.h           |   34 ++-
- kernel/audit_tree.c      |  903 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/auditfilter.c     |   64 +++-
- kernel/auditsc.c         |  225 ++++++++++++-
- 21 files changed, 1411 insertions(+), 40 deletions(-)
- create mode 100644 kernel/audit_tree.c
+Well those pages are only accessed through rd_blkdev_pagecache_IO
+and rd_ioctl.
 
+The address space operations can (after my patch) be deleted or
+be replaced by their generic versions.  I just didn't take that
+step because it was an unnecessary change and I wanted the minimal
+change for a backport.
+
+>> My patch is the considered rewrite boiled down 
+>> to it's essentials and made a trivial patch.
+>
+> What's the considered rewrite here? The rewrite I posted is the
+> only one so far that's come up that I would consider [worthy],
+> while these patches are just more of the same wrongness.
+
+Well it looks like you were blind when you read the patch.
+
+Because the semantics between the two are almost identical,
+except I managed to implement BLKFLSBUF in a backwards compatible
+way by flushing both the buffer cache and my private cache.  You
+failed to flush the buffer cache in your implementation.
+
+Yes. I use an inode 99% for it's mapping and the mapping 99% for it's
+radix_tree.  But having truncate_inode_pages and grab_cache_page
+continue to work sure is convenient.  I certainly think it makes it a
+lot simpler to audit the code to change just one thing at a time (the
+backing store) then to rip out and replace everything and then try and
+prove that the two patches are equivalent.
+
+Eric
