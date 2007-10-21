@@ -1,132 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbXJUHz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbXJUHzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbXJUHz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 03:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXJUHwj
+	id S1753475AbXJUHzo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 03:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXJUHwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 03:52:39 -0400
+	Sun, 21 Oct 2007 03:52:42 -0400
 Received: from havoc.gtf.org ([69.61.125.42]:35359 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbXJUHwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 03:52:38 -0400
+	id S1752459AbXJUHwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 03:52:41 -0400
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: dtor@mail.ru
+Cc: akpm@linux-foundation.org, kkeil@suse.de
 From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 10/17] drivers/input/serio/i8042.c: irq handler clean
+Subject: [PATCH 11/17] isdn/act2000: fix major bug. clean irq handler
 References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org>
-Message-Id: <20071021075237.EC51B19041D@havoc.gtf.org>
-Date: Sun, 21 Oct 2007 03:52:37 -0400 (EDT)
+Message-Id: <20071021075240.84F85190418@havoc.gtf.org>
+Date: Sun, 21 Oct 2007 03:52:40 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit bdf311215ef8dbae0254c092deaed1d5928b013e
+commit e295b1287f0f559f4795ae75acb793b480594a04
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Oct 19 19:28:54 2007 -0400
+Date:   Fri Oct 19 19:30:28 2007 -0400
 
-    drivers/input/serio/i8042.c: irq handler clean
+    isdn/act2000: fix major bug. clean irq handler.
     
-    * remove unnecessary prototype
+    * invert sense of request_irq() test.  otherwise we will always fail,
+      when IRQ is available.
     
-    * distinguish between polled and irq-driven event handling
-    
-    * don't bother worrying about 'irq' function arg
-    
-    * dev_id passed to irq handlers is unused, to change the request_irq()
-      argument to NULL
+    * no need to use 'irq' function arg, its stored in a data struct already
     
     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
- drivers/input/serio/i8042.c |   23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ drivers/isdn/act2000/act2000_isa.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-bdf311215ef8dbae0254c092deaed1d5928b013e
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index 11dafc0..51c57f0 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -102,8 +102,6 @@ static unsigned char i8042_aux_irq_registered;
- static unsigned char i8042_suppress_kbd_ack;
- static struct platform_device *i8042_platform_device;
- 
--static irqreturn_t i8042_interrupt(int irq, void *dev_id);
--
- /*
-  * The i8042_wait_read() and i8042_wait_write functions wait for the i8042 to
-  * be ready for reading values from it / writing values to it.
-@@ -288,7 +286,7 @@ static void i8042_stop(struct serio *serio)
-  * to the upper layers.
-  */
- 
--static irqreturn_t i8042_interrupt(int irq, void *dev_id)
-+static irqreturn_t __i8042_interrupt(bool polled)
- {
- 	struct i8042_port *port;
- 	unsigned long flags;
-@@ -301,7 +299,7 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
- 	str = i8042_read_status();
- 	if (unlikely(~str & I8042_STR_OBF)) {
- 		spin_unlock_irqrestore(&i8042_lock, flags);
--		if (irq) dbg("Interrupt %d, without any data", irq);
-+		if (!polled) dbg("Interrupt without any data");
- 		ret = 0;
- 		goto out;
- 	}
-@@ -356,8 +354,8 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
- 
- 	port = &i8042_ports[port_no];
- 
--	dbg("%02x <- i8042 (interrupt, %d, %d%s%s)",
--	    data, port_no, irq,
-+	dbg("%02x <- i8042 (interrupt, %d, %s%s)",
-+	    data, port_no,
- 	    dfl & SERIO_PARITY ? ", bad parity" : "",
- 	    dfl & SERIO_TIMEOUT ? ", timeout" : "");
- 
-@@ -375,6 +373,11 @@ static irqreturn_t i8042_interrupt(int irq, void *dev_id)
- 	return IRQ_RETVAL(ret);
+e295b1287f0f559f4795ae75acb793b480594a04
+diff --git a/drivers/isdn/act2000/act2000_isa.c b/drivers/isdn/act2000/act2000_isa.c
+index 819ea85..1bd8960 100644
+--- a/drivers/isdn/act2000/act2000_isa.c
++++ b/drivers/isdn/act2000/act2000_isa.c
+@@ -61,7 +61,7 @@ act2000_isa_detect(unsigned short portbase)
  }
  
-+static irqreturn_t i8042_interrupt(int dummy, void *dev_id)
-+{
-+	return __i8042_interrupt(false);
-+}
+ static irqreturn_t
+-act2000_isa_interrupt(int irq, void *dev_id)
++act2000_isa_interrupt(int dummy, void *dev_id)
+ {
+         act2000_card *card = dev_id;
+         u_char istatus;
+@@ -80,7 +80,7 @@ act2000_isa_interrupt(int irq, void *dev_id)
+                 printk(KERN_WARNING "act2000: errIRQ\n");
+         }
+ 	if (istatus)
+-		printk(KERN_DEBUG "act2000: ?IRQ %d %02x\n", irq, istatus);
++		printk(KERN_DEBUG "act2000: ?IRQ %d %02x\n", card->irq, istatus);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -131,6 +131,8 @@ act2000_isa_enable_irq(act2000_card * card)
+ int
+ act2000_isa_config_irq(act2000_card * card, short irq)
+ {
++	int old_irq;
 +
- /*
-  * i8042_enable_kbd_port enables keybaord port on chip
-  */
-@@ -636,7 +639,7 @@ static int __devinit i8042_check_aux(void)
- 	}
+         if (card->flags & ACT2000_FLAGS_IVALID) {
+                 free_irq(card->irq, card);
+         }
+@@ -139,8 +141,10 @@ act2000_isa_config_irq(act2000_card * card, short irq)
+         if (!irq)
+                 return 0;
  
- 	if (request_irq(I8042_AUX_IRQ, i8042_aux_test_irq, IRQF_SHARED,
--			"i8042", i8042_platform_device))
-+			"i8042", NULL))
- 		goto out;
- 
- 	irq_registered = 1;
-@@ -939,7 +942,7 @@ static int i8042_resume(struct platform_device *dev)
- 	if (i8042_ports[I8042_KBD_PORT_NO].serio)
- 		i8042_enable_kbd_port();
- 
--	i8042_interrupt(0, NULL);
-+	__i8042_interrupt(true);
- 
- 	dev->dev.power.power_state = PMSG_ON;
- 
-@@ -1090,7 +1093,7 @@ static int __devinit i8042_setup_aux(void)
- 	}
- 
- 	error = request_irq(I8042_AUX_IRQ, i8042_interrupt, IRQF_SHARED,
--			    "i8042", i8042_platform_device);
-+			    "i8042", NULL);
- 	if (error)
- 		goto err_free_ports;
- 
-@@ -1116,7 +1119,7 @@ static int __devinit i8042_setup_kbd(void)
- 		return error;
- 
- 	error = request_irq(I8042_KBD_IRQ, i8042_interrupt, IRQF_SHARED,
--			    "i8042", i8042_platform_device);
-+			    "i8042", NULL);
- 	if (error)
- 		goto err_free_port;
- 
+-	if (!request_irq(irq, &act2000_isa_interrupt, 0, card->regname, card)) {
+-		card->irq = irq;
++	old_irq = card->irq;
++	card->irq = irq;
++	if (request_irq(irq, &act2000_isa_interrupt, 0, card->regname, card)) {
++		card->irq = old_irq;
+ 		card->flags |= ACT2000_FLAGS_IVALID;
+                 printk(KERN_WARNING
+                        "act2000: Could not request irq %d\n",irq);
