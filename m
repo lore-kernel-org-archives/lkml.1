@@ -1,115 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbXJVJ4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbXJVJ4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751547AbXJVJ4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXJVJzg
+	id S1755103AbXJVJ4t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXJVJ4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:55:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35781 "EHLO mx2.redhat.com"
+	Mon, 22 Oct 2007 05:56:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35861 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752811AbXJVJzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:55:33 -0400
-Message-Id: <20071022095658.491284000@chello.nl>
-References: <20071022095054.393085000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Mon, 22 Oct 2007 11:50:55 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC/PATCH 1/3] rt: rename rt_mutex_setprio to task_setprio
-Content-Disposition: inline; filename=rt_mutex_setprio.patch
+	id S1754836AbXJVJ43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 05:56:29 -0400
+Date: Mon, 22 Oct 2007 11:56:25 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng 2.13.0.1
+Message-ID: <20071022095625.GU6325@petra.dvoda.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With there being multiple non-mutex users of this function its past time it
-got renamed.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h     |    7 ++++++-
- kernel/rcupreempt-boost.c |    4 ++--
- kernel/sched.c            |    8 ++------
- 3 files changed, 10 insertions(+), 9 deletions(-)
+The stable util-linux-ng 2.13.0.1 release is available at
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1655,9 +1655,14 @@ extern unsigned int sysctl_sched_compat_
- extern unsigned int sysctl_sched_child_runs_first;
- extern unsigned int sysctl_sched_features;
- 
-+extern void task_setprio(struct task_struct *p, int prio);
-+
- #ifdef CONFIG_RT_MUTEXES
- extern int rt_mutex_getprio(struct task_struct *p);
--extern void rt_mutex_setprio(struct task_struct *p, int prio);
-+static inline void rt_mutex_setprio(struct task_struct *p, int prio)
-+{
-+	task_setprio(p, prio);
-+}
- extern void rt_mutex_adjust_pi(struct task_struct *p);
- #else
- static inline int rt_mutex_getprio(struct task_struct *p)
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -4445,10 +4445,8 @@ long __sched sleep_on_timeout(wait_queue
- }
- EXPORT_SYMBOL(sleep_on_timeout);
- 
--#ifdef CONFIG_RT_MUTEXES
--
- /*
-- * rt_mutex_setprio - set the current priority of a task
-+ * task_setprio - set the current priority of a task
-  * @p: task
-  * @prio: prio value (kernel-internal form)
-  *
-@@ -4457,7 +4455,7 @@ EXPORT_SYMBOL(sleep_on_timeout);
-  *
-  * Used by the rt_mutex code to implement priority inheritance logic.
-  */
--void rt_mutex_setprio(struct task_struct *p, int prio)
-+void task_setprio(struct task_struct *p, int prio)
- {
- 	unsigned long flags;
- 	int oldprio, prev_resched, on_rq;
-@@ -4522,8 +4520,6 @@ out_unlock:
- 	task_rq_unlock(rq, &flags);
- }
- 
--#endif
--
- void set_user_nice(struct task_struct *p, long nice)
- {
- 	int old_prio, delta, on_rq;
-Index: linux-2.6/kernel/rcupreempt-boost.c
-===================================================================
---- linux-2.6.orig/kernel/rcupreempt-boost.c
-+++ linux-2.6/kernel/rcupreempt-boost.c
-@@ -233,7 +233,7 @@ static void rcu_boost_task(struct task_s
- 
- 	if (task->rcu_prio < task->prio) {
- 		rcu_trace_boost_task_boosted(RCU_BOOST_ME);
--		rt_mutex_setprio(task, task->rcu_prio);
-+		task_setprio(task, task->rcu_prio);
- 	}
- }
- 
-@@ -325,7 +325,7 @@ void __rcu_preempt_unboost(void)
- 
- 	spin_lock(&curr->pi_lock);
- 	prio = rt_mutex_getprio(curr);
--	rt_mutex_setprio(curr, prio);
-+	task_setprio(curr, prio);
- 
- 	curr->rcub_rbdp = NULL;
- 
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
 
---
 
+Release Notes
+=============
+
+Fixed security issue:
+--------------------
+
+ CVE-2007-5191 - mount: doesn't drop privileges properly when calling helpers
+
+
+Changelog:
+---------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
+
+
+docs:
+   - add info about .bugfix releases and branches  [Karel Zak]
+mount:
+   - doesn't drop privileges properly when calling helpers  [Ludwig Nussel]
+
+-- 
+ Karel Zak  <kzak@redhat.com>
