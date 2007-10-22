@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbXJVHDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbXJVHEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbXJVHDr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXJVHDi
+	id S1755354AbXJVHEc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbXJVHEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:03:38 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:59677 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751798AbXJVHDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:03:37 -0400
-Date: Mon, 22 Oct 2007 12:33:29 +0530
+	Mon, 22 Oct 2007 03:04:24 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49641 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbXJVHEX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 03:04:23 -0400
+Date: Mon, 22 Oct 2007 12:34:19 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jan Blunck <jblunck@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        Christoph Hellwig <hch@lst.de>, viro@zeniv.linux.org.uk,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 12/13] Use struct path argument in proc_get_link()
-Message-ID: <20071022070329.GM6489@in.ibm.com>
+Subject: [PATCH 13/13] Rename {__}d_path() to {__}print_path() and fix comments
+Message-ID: <20071022070419.GN6489@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20071022065352.GA6489@in.ibm.com>
 MIME-Version: 1.0
@@ -27,242 +28,255 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace the (vfsmnt, dentry) arguments in proc_inode operation proc_get_link()
-by struct path.
-
-Also, this should eventually allow do_proc_readlink() to call d_path() with
-a struct path argument.
+Changes the name of d_path() and __d_path() to print_path() and __print_path()
+respectively and fixes the kerneldoc comments for print_path().
 
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- fs/proc/base.c          |   60 +++++++++++++++++++++---------------------------
- fs/proc/internal.h      |    2 -
- fs/proc/task_mmu.c      |    6 ++--
- fs/proc/task_nommu.c    |    6 ++--
- include/linux/proc_fs.h |    2 -
- 5 files changed, 35 insertions(+), 41 deletions(-)
+ arch/blackfin/kernel/traps.c      |    2 -
+ drivers/md/bitmap.c               |    2 -
+ drivers/usb/gadget/file_storage.c |    4 +--
+ fs/compat_ioctl.c                 |    3 +-
+ fs/dcache.c                       |   41 +++++++++++++++++---------------------
+ fs/dcookies.c                     |    2 -
+ fs/ecryptfs/super.c               |    2 -
+ fs/nfsd/export.c                  |    2 -
+ fs/proc/base.c                    |    2 -
+ fs/seq_file.c                     |    2 -
+ fs/sysfs/file.c                   |    2 -
+ fs/unionfs/super.c                |    2 -
+ include/linux/dcache.h            |    2 -
+ kernel/audit.c                    |    2 -
+ 14 files changed, 34 insertions(+), 36 deletions(-)
 
+--- a/arch/blackfin/kernel/traps.c
++++ b/arch/blackfin/kernel/traps.c
+@@ -102,7 +102,7 @@ static int printk_address(unsigned long 
+ 				struct file *file = vma->vm_file;
+ 				if (file) {
+ 					char _tmpbuf[256];
+-					name = d_path(file->f_dentry,
++					name = print_path(file->f_dentry,
+ 					              file->f_vfsmnt,
+ 					              _tmpbuf,
+ 					              sizeof(_tmpbuf));
+--- a/drivers/md/bitmap.c
++++ b/drivers/md/bitmap.c
+@@ -215,7 +215,7 @@ char *file_path(struct file *file, char 
+ 	d = file->f_path.dentry;
+ 	v = file->f_path.mnt;
+ 
+-	buf = d_path(d, v, buf, count);
++	buf = print_path(d, v, buf, count);
+ 
+ 	return IS_ERR(buf) ? NULL : buf;
+ }
+--- a/drivers/usb/gadget/file_storage.c
++++ b/drivers/usb/gadget/file_storage.c
+@@ -3567,7 +3567,7 @@ static ssize_t show_file(struct device *
+ 
+ 	down_read(&fsg->filesem);
+ 	if (backing_file_is_open(curlun)) {	// Get the complete pathname
+-		p = d_path(curlun->filp->f_path.dentry,
++		p = print_path(curlun->filp->f_path.dentry,
+ 				curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
+ 		if (IS_ERR(p))
+ 			rc = PTR_ERR(p);
+@@ -3985,7 +3985,7 @@ static int __init fsg_bind(struct usb_ga
+ 		if (backing_file_is_open(curlun)) {
+ 			p = NULL;
+ 			if (pathbuf) {
+-				p = d_path(curlun->filp->f_path.dentry,
++				p = print_path(curlun->filp->f_path.dentry,
+ 					curlun->filp->f_path.mnt,
+ 					pathbuf, PATH_MAX);
+ 				if (IS_ERR(p))
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -3544,7 +3544,8 @@ static void compat_ioctl_error(struct fi
+ 	/* find the name of the device. */
+ 	path = (char *)__get_free_page(GFP_KERNEL);
+ 	if (path) {
+-		fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
++		fn = print_path(filp->f_path.dentry, filp->f_path.mnt,
++				path, PAGE_SIZE);
+ 		if (IS_ERR(fn))
+ 			fn = "?";
+ 	}
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1762,23 +1762,7 @@ shouldnt_be_hashed:
+ 	goto shouldnt_be_hashed;
+ }
+ 
+-/**
+- * d_path - return the path of a dentry
+- * @dentry: dentry to report
+- * @vfsmnt: vfsmnt to which the dentry belongs
+- * @root: root dentry
+- * @rootmnt: vfsmnt to which the root dentry belongs
+- * @buffer: buffer to return value in
+- * @buflen: buffer length
+- *
+- * Convert a dentry into an ASCII path name. If the entry has been deleted
+- * the string " (deleted)" is appended. Note that this is ambiguous.
+- *
+- * Returns the buffer or an error code if the path was too long.
+- *
+- * "buflen" should be positive. Caller holds the dcache_lock.
+- */
+-static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
++static char *__print_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+ 			struct path *root, char *buffer, int buflen)
+ {
+ 	char * end = buffer+buflen;
+@@ -1845,8 +1829,21 @@ Elong:
+ 	return ERR_PTR(-ENAMETOOLONG);
+ }
+ 
+-/* write full pathname into buffer and return start of pathname */
+-char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++/**
++ * print_path - return the path of a dentry
++ * @dentry: dentry to report
++ * @vfsmnt: vfsmnt to which the dentry belongs
++ * @buffer: buffer to return value in
++ * @buflen: buffer length
++ *
++ * Convert a dentry into an ASCII path name. If the entry has been deleted
++ * the string " (deleted)" is appended. Note that this is ambiguous.
++ *
++ * Returns the buffer or an error code if the path was too long.
++ *
++ * "buflen" should be positive.
++ */
++char *print_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+ 				char *buf, int buflen)
+ {
+ 	char *res;
+@@ -1867,7 +1864,7 @@ char * d_path(struct dentry *dentry, str
+ 	path_get(&current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
++	res = __print_path(dentry, vfsmnt, &root, buf, buflen);
+ 	spin_unlock(&dcache_lock);
+ 	path_put(&root);
+ 	return res;
+@@ -1935,7 +1932,7 @@ asmlinkage long sys_getcwd(char __user *
+ 		unsigned long len;
+ 		char * cwd;
+ 
+-		cwd = __d_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
++		cwd = __print_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
+ 		spin_unlock(&dcache_lock);
+ 
+ 		error = PTR_ERR(cwd);
+@@ -2179,7 +2176,7 @@ EXPORT_SYMBOL(d_invalidate);
+ EXPORT_SYMBOL(d_lookup);
+ EXPORT_SYMBOL(d_move);
+ EXPORT_SYMBOL_GPL(d_materialise_unique);
+-EXPORT_SYMBOL(d_path);
++EXPORT_SYMBOL(print_path);
+ EXPORT_SYMBOL(d_prune_aliases);
+ EXPORT_SYMBOL(d_rehash);
+ EXPORT_SYMBOL(d_splice_alias);
+--- a/fs/dcookies.c
++++ b/fs/dcookies.c
+@@ -174,7 +174,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
+ 		goto out;
+ 
+ 	/* FIXME: (deleted) ? */
+-	path = d_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
++	path = print_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
+ 
+ 	if (IS_ERR(path)) {
+ 		err = PTR_ERR(path);
+--- a/fs/ecryptfs/super.c
++++ b/fs/ecryptfs/super.c
+@@ -174,7 +174,7 @@ static int ecryptfs_show_options(struct 
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+-	path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
++	path = print_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
+ 	if (IS_ERR(path)) {
+ 		rc = PTR_ERR(path);
+ 		goto out;
+--- a/fs/nfsd/export.c
++++ b/fs/nfsd/export.c
+@@ -349,7 +349,7 @@ static void svc_export_request(struct ca
+ 	char *pth;
+ 
+ 	qword_add(bpp, blen, exp->ex_client->name);
+-	pth = d_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
++	pth = print_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
+ 	if (IS_ERR(pth)) {
+ 		/* is this correct? */
+ 		(*bpp)[0] = '\n';
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
-@@ -153,7 +153,7 @@ static int get_nr_threads(struct task_st
- 	return count;
- }
- 
--static int proc_cwd_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
-+static int proc_cwd_link(struct inode *inode, struct path *path)
- {
- 	struct task_struct *task = get_proc_task(inode);
- 	struct fs_struct *fs = NULL;
-@@ -165,8 +165,8 @@ static int proc_cwd_link(struct inode *i
- 	}
- 	if (fs) {
- 		read_lock(&fs->lock);
--		*mnt = mntget(fs->pwd.mnt);
--		*dentry = dget(fs->pwd.dentry);
-+		*path = fs->pwd;
-+		path_get(path);
- 		read_unlock(&fs->lock);
- 		result = 0;
- 		put_fs_struct(fs);
-@@ -174,7 +174,7 @@ static int proc_cwd_link(struct inode *i
- 	return result;
- }
- 
--static int proc_root_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
-+static int proc_root_link(struct inode *inode, struct path *path)
- {
- 	struct task_struct *task = get_proc_task(inode);
- 	struct fs_struct *fs = NULL;
-@@ -186,8 +186,8 @@ static int proc_root_link(struct inode *
- 	}
- 	if (fs) {
- 		read_lock(&fs->lock);
--		*mnt = mntget(fs->root.mnt);
--		*dentry = dget(fs->root.dentry);
-+		*path = fs->root;
-+		path_get(path);
- 		read_unlock(&fs->lock);
- 		result = 0;
- 		put_fs_struct(fs);
-@@ -1039,34 +1039,32 @@ static void *proc_pid_follow_link(struct
- 	if (!proc_fd_access_allowed(inode))
- 		goto out;
- 
--	error = PROC_I(inode)->op.proc_get_link(inode, &nd->path.dentry,
--						&nd->path.mnt);
-+	error = PROC_I(inode)->op.proc_get_link(inode, &nd->path);
- 	nd->last_type = LAST_BIND;
- out:
- 	return ERR_PTR(error);
- }
- 
--static int do_proc_readlink(struct dentry *dentry, struct vfsmount *mnt,
--			    char __user *buffer, int buflen)
-+static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
- {
- 	struct inode * inode;
- 	char *tmp = (char*)__get_free_page(GFP_TEMPORARY);
--	char *path;
-+	char *pathname;
- 	int len;
- 
- 	if (!tmp)
+@@ -1056,7 +1056,7 @@ static int do_proc_readlink(struct path 
  		return -ENOMEM;
  
--	inode = dentry->d_inode;
--	path = d_path(dentry, mnt, tmp, PAGE_SIZE);
--	len = PTR_ERR(path);
--	if (IS_ERR(path))
-+	inode = path->dentry->d_inode;
-+	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
-+	len = PTR_ERR(pathname);
-+	if (IS_ERR(pathname))
+ 	inode = path->dentry->d_inode;
+-	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
++	pathname = print_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
+ 	len = PTR_ERR(pathname);
+ 	if (IS_ERR(pathname))
  		goto out;
--	len = tmp + PAGE_SIZE - 1 - path;
-+	len = tmp + PAGE_SIZE - 1 - pathname;
- 
- 	if (len > buflen)
- 		len = buflen;
--	if (copy_to_user(buffer, path, len))
-+	if (copy_to_user(buffer, pathname, len))
- 		len = -EFAULT;
-  out:
- 	free_page((unsigned long)tmp);
-@@ -1077,20 +1075,18 @@ static int proc_pid_readlink(struct dent
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -355,7 +355,7 @@ int seq_path(struct seq_file *m,
  {
- 	int error = -EACCES;
- 	struct inode *inode = dentry->d_inode;
--	struct dentry *de;
--	struct vfsmount *mnt = NULL;
-+	struct path path;
+ 	if (m->count < m->size) {
+ 		char *s = m->buf + m->count;
+-		char *p = d_path(dentry, mnt, s, m->size - m->count);
++		char *p = print_path(dentry, mnt, s, m->size - m->count);
+ 		if (!IS_ERR(p)) {
+ 			while (s <= p) {
+ 				char c = *p++;
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -355,7 +355,7 @@ static int sysfs_open_file(struct inode 
+ 	int error;
+ 	char *p;
  
- 	/* Are we allowed to snoop on the tasks file descriptors? */
- 	if (!proc_fd_access_allowed(inode))
- 		goto out;
+-	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
++	p = print_path(file->f_dentry, sysfs_mount, last_sysfs_file,
+ 		   sizeof(last_sysfs_file));
+ 	if (p)
+ 		memmove(last_sysfs_file, p, strlen(p) + 1);
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -975,7 +975,7 @@ static int unionfs_show_options(struct s
  
--	error = PROC_I(inode)->op.proc_get_link(inode, &de, &mnt);
-+	error = PROC_I(inode)->op.proc_get_link(inode, &path);
- 	if (error)
- 		goto out;
+ 	seq_printf(m, ",dirs=");
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+-		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
++		path = print_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
+ 			      unionfs_lower_mnt_idx(sb->s_root, bindex),
+ 			      tmp_page, PAGE_SIZE);
+ 		if (IS_ERR(path)) {
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -300,7 +300,7 @@ extern int d_validate(struct dentry *, s
+  */
+ extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
  
--	error = do_proc_readlink(de, mnt, buffer, buflen);
--	dput(de);
--	mntput(mnt);
-+	error = do_proc_readlink(&path, buffer, buflen);
-+	path_put(&path);
- out:
- 	return error;
- }
-@@ -1317,8 +1313,7 @@ out:
+-extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
++extern char *print_path(struct dentry *, struct vfsmount *, char *, int);
+   
+ /* Allocation counts.. */
  
- #define PROC_FDINFO_MAX 64
- 
--static int proc_fd_info(struct inode *inode, struct dentry **dentry,
--			struct vfsmount **mnt, char *info)
-+static int proc_fd_info(struct inode *inode, struct path *path, char *info)
- {
- 	struct task_struct *task = get_proc_task(inode);
- 	struct files_struct *files = NULL;
-@@ -1337,10 +1332,10 @@ static int proc_fd_info(struct inode *in
- 		spin_lock(&files->file_lock);
- 		file = fcheck_files(files, fd);
- 		if (file) {
--			if (mnt)
--				*mnt = mntget(file->f_path.mnt);
--			if (dentry)
--				*dentry = dget(file->f_path.dentry);
-+			if (path) {
-+				*path = file->f_path;
-+				path_get(path);
-+			}
- 			if (info)
- 				snprintf(info, PROC_FDINFO_MAX,
- 					 "pos:\t%lli\n"
-@@ -1357,10 +1352,9 @@ static int proc_fd_info(struct inode *in
- 	return -ENOENT;
- }
- 
--static int proc_fd_link(struct inode *inode, struct dentry **dentry,
--			struct vfsmount **mnt)
-+static int proc_fd_link(struct inode *inode, struct path *path)
- {
--	return proc_fd_info(inode, dentry, mnt, NULL);
-+	return proc_fd_info(inode, path, NULL);
- }
- 
- static int tid_fd_revalidate(struct dentry *dentry, struct nameidata *nd)
-@@ -1554,7 +1548,7 @@ static ssize_t proc_fdinfo_read(struct f
- 				      size_t len, loff_t *ppos)
- {
- 	char tmp[PROC_FDINFO_MAX];
--	int err = proc_fd_info(file->f_path.dentry->d_inode, NULL, NULL, tmp);
-+	int err = proc_fd_info(file->f_path.dentry->d_inode, NULL, tmp);
- 	if (!err)
- 		err = simple_read_from_buffer(buf, len, ppos, tmp, strlen(tmp));
- 	return err;
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -45,7 +45,7 @@ extern int nommu_vma_show(struct seq_fil
- extern int maps_protect;
- 
- extern void create_seq_entry(char *name, mode_t mode, const struct file_operations *f);
--extern int proc_exe_link(struct inode *, struct dentry **, struct vfsmount **);
-+extern int proc_exe_link(struct inode *, struct path *);
- extern int proc_tid_stat(struct task_struct *,  char *);
- extern int proc_tgid_stat(struct task_struct *, char *);
- extern int proc_pid_status(struct task_struct *, char *);
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -73,7 +73,7 @@ int task_statm(struct mm_struct *mm, int
- 	return mm->total_vm;
- }
- 
--int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
-+int proc_exe_link(struct inode *inode, struct path *path)
- {
- 	struct vm_area_struct * vma;
- 	int result = -ENOENT;
-@@ -96,8 +96,8 @@ int proc_exe_link(struct inode *inode, s
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
+ 		audit_log_format(ab, "<no memory>");
+ 		return;
  	}
- 
- 	if (vma) {
--		*mnt = mntget(vma->vm_file->f_path.mnt);
--		*dentry = dget(vma->vm_file->f_path.dentry);
-+		*path = vma->vm_file->f_path;
-+		path_get(path);
- 		result = 0;
- 	}
- 
---- a/fs/proc/task_nommu.c
-+++ b/fs/proc/task_nommu.c
-@@ -104,7 +104,7 @@ int task_statm(struct mm_struct *mm, int
- 	return size;
- }
- 
--int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
-+int proc_exe_link(struct inode *inode, struct path *path)
- {
- 	struct vm_list_struct *vml;
- 	struct vm_area_struct *vma;
-@@ -127,8 +127,8 @@ int proc_exe_link(struct inode *inode, s
- 	}
- 
- 	if (vma) {
--		*mnt = mntget(vma->vm_file->f_path.mnt);
--		*dentry = dget(vma->vm_file->f_path.dentry);
-+		*path = vma->vm_file->f_path;
-+		path_get(path);
- 		result = 0;
- 	}
- 
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -257,7 +257,7 @@ extern void kclist_add(struct kcore_list
- #endif
- 
- union proc_op {
--	int (*proc_get_link)(struct inode *, struct dentry **, struct vfsmount **);
-+	int (*proc_get_link)(struct inode *, struct path *);
- 	int (*proc_read)(struct task_struct *task, char *page);
- };
- 
+-	p = d_path(dentry, vfsmnt, path, PATH_MAX+11);
++	p = print_path(dentry, vfsmnt, path, PATH_MAX+11);
+ 	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
+ 		/* FIXME: can we save some information here? */
+ 		audit_log_format(ab, "<too long>");
