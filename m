@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbXJVMPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbXJVMSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbXJVMPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 08:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXJVMPs
+	id S1752765AbXJVMSt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 08:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXJVMSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 08:15:48 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42986 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752008AbXJVMPr (ORCPT
+	Mon, 22 Oct 2007 08:18:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48593 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbXJVMSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 08:15:47 -0400
-Date: Mon, 22 Oct 2007 14:16:16 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fix CONFIG_TUNER_TEA5761=m
-Message-ID: <20071022121616.GN30533@stusta.de>
-References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <471C19F1.8090505@linuxtv.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 22 Oct 2007 08:18:42 -0400
+Subject: [RFC/PATCH 5/3] rt: PI-workqueue: fixup the barrier prio
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <1193053713.27435.172.camel@twins>
+References: <20071022095054.393085000@chello.nl>
+	 <20071022095659.005996000@chello.nl>  <1193053713.27435.172.camel@twins>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 14:18:33 +0200
+Message-Id: <1193055513.27435.179.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 21, 2007 at 11:33:05PM -0400, Michael Krufky wrote:
-> Adrian Bunk wrote:
-> > This patch fixes CONFIG_TUNER_TEA5761=m broken by
-> > commit ca805d57cf5ea7482ed3da28653f30621249ee45.
-> >
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> >
-> > ---
-> >
-> >  drivers/media/video/tuner-core.c |    6 ------
-> >  1 file changed, 6 deletions(-)
-> >
-> > 26336c30e76c37bda368a24b8b12978388a18cf3 
-> > diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
-> > index 9484308..1795b78 100644
-> > --- a/drivers/media/video/tuner-core.c
-> > +++ b/drivers/media/video/tuner-core.c
-> > @@ -30,9 +30,7 @@
-> >  
-> >  /* standard i2c insmod options */
-> >  static unsigned short normal_i2c[] = {
-> > -#ifdef CONFIG_TUNER_TEA5761
-> >  	0x10,
-> > -#endif
-> >   
-> ^^^ I believe that we want to keep these #ifdef's above...  The removals
-> below are fine.
->...
+Steven is right in that I did over-user normal_prio a bit.
+the barriers should use the boosted prio.
 
-If it's required, then we need
-  #if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
-here for getting the modular case working.
+---
 
-But at least at first glance it seems the code already tries to handle 
-the cases when tea5761_{attach,autodetection}() fail?
+Index: linux-2.6/kernel/workqueue.c
+===================================================================
+--- linux-2.6.orig/kernel/workqueue.c
++++ linux-2.6/kernel/workqueue.c
+@@ -387,7 +387,7 @@ static void insert_wq_barrier(struct cpu
+ 
+ 	init_completion(&barr->done);
+ 
+-	insert_work(cwq, &barr->work, 0, current->normal_prio, tail);
++	insert_work(cwq, &barr->work, 0, current->prio, tail);
+ }
+ 
+ static void wq_full_barrier_func(struct work_struct *work)
+@@ -418,9 +418,9 @@ static void insert_wq_full_barrier(struc
+ 	plist_head_splice(&cwq->worklist, &barr->worklist);
+ 	barr->cwq = cwq;
+ 	init_completion(&barr->done);
+-	barr->waiter_prio = current->normal_prio;
++	barr->waiter_prio = current->prio;
+ 
+-	insert_work(cwq, &barr->work, 0, current->normal_prio, 1);
++	insert_work(cwq, &barr->work, 0, current->prio, 1);
+ }
+ 
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
 
-> Regards,
-> 
-> Mike Krufky
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
