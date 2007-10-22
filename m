@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbXJVOyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXJVPLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbXJVOyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 10:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbXJVOyb
+	id S1752790AbXJVPLV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 11:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbXJVPLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 10:54:31 -0400
-Received: from cavan.codon.org.uk ([78.32.9.130]:34933 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbXJVOya (ORCPT
+	Mon, 22 Oct 2007 11:11:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:30153 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbXJVPLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 10:54:30 -0400
-Date: Mon, 22 Oct 2007 15:54:16 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: John Belmonte <john@neggie.net>
-Cc: Jonathan McDowell <noodles@earth.li>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20071022145415.GA4912@srcf.ucam.org>
-References: <20071021173529.GH1880@earth.li> <471C88E2.3020102@neggie.net>
+	Mon, 22 Oct 2007 11:11:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=gJKcMzBAFh59UJbRirGVvl/TJWhKAb/mkCmaJzMSdUrnGwWu1GRC+vSPowaHygjL+zL4N6b1vB1/dDaZJqg8e3SWnub0GdBADPTr7L8xkTPY/JjIRkNbDBnDrGlZAvEhZ35YIG7RcAXbK5767F3UZz8xU9hgY8BZUrpmWL0csoU=
+Message-ID: <471CBD76.6030205@googlemail.com>
+Date: Mon, 22 Oct 2007 17:10:46 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471C88E2.3020102@neggie.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Add bluetooth support to toshiba-acpi driver
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Nick <nickwinlund@comcast.net>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: appletalk bugs
+References: <471CB159.1070706@googlemail.com> <1193064745.20114.3.camel@stingray>
+In-Reply-To: <1193064745.20114.3.camel@stingray>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 07:26:26AM -0400, John Belmonte wrote:
+Nick wrote:
+[ restoring CC ]
 
-> The /proc/acpi/toshiba interface should not be expanded-- do not apply
-> this patch.  If any patch is applied, it would be to optionally
-> implement the generic /dev/toshiba interface so that user space tools
-> like toshset can operate.
+> Fascinating ... Are you using chooser or NetInfo?
 
-The correct interface is rfkill, which will require this functionality 
-to be in-kernel anyway. I can see the argument against implementing it 
-in /proc/acpi/toshiba (further proc interface bloat), but not against 
-doing it in-kernel. 
+No I don't.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I fact I don't even know why that module got loaded. 
+
+
+> On Mon, 2007-10-22 at 16:19 +0200, Gabriel C wrote:
+>> Hi,
+>>
+>> modprobing appletalk on current git gives a warning in dmesg :
+>>
+>> [38506.600269] sysctl table check failed: /net/appletalk .3.7 procname does not match binary path procname
+>>
+>> on rmmod appletalk I get an Oops :
+>>
+>>
+>> [38541.525258] BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000c
+>> [38541.525266] printing eip: c011d4f0 *pde = 00000000 
+>> [38541.525274] Oops: 0000 [#1] PREEMPT SMP 
+>> [38541.525282] Modules linked in: appletalk psnap llc pc87360 hwmon_vid eeprom adm1021 sr_mod shpchp pci_hotplug iTCO_wdt iTCO_vendor_support intel_agp i82860_edac i2c_i801 edac_core cdrom agpgart 3c59x mii ext4dev jbd2 crc16 loop lp parport_pc parport evdev
+>> [38541.525312] 
+>> [38541.525316] Pid: 28887, comm: rmmod Not tainted (2.6.23-gcfa76f02 #341)
+>> [38541.525321] EIP: 0060:[<c011d4f0>] EFLAGS: 00010202 CPU: 0
+>> [38541.525334] EIP is at unregister_sysctl_table+0x11/0x70
+>> [38541.525339] EAX: 00000001 EBX: e8ef2180 ECX: 00000002 EDX: 00000000
+>> [38541.525343] ESI: 00000000 EDI: 00000880 EBP: cc094000 ESP: cc095f38
+>> [38541.525347]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> 
+>> [38541.525389] Call Trace:
+>> [38541.525395]  [<e8eed5b1>] atalk_exit+0x5/0x4b [appletalk]
+>> [38541.525410]  [<c01353b2>] sys_delete_module+0x187/0x1b5
+>> [38541.525420]  [<c01101fd>] do_page_fault+0x18b/0x51a
+>> [38541.525426]  [<c0148684>] do_munmap+0x19b/0x1b4
+>> [38541.525437]  [<c01026fa>] sysenter_past_esp+0x5f/0x85
+> 
+> 
+> 
