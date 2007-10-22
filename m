@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbXJVVLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbXJVVN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751438AbXJVVLI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbXJVVK4
+	id S1751884AbXJVVN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXJVVNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:10:56 -0400
-Received: from sa15.bezeqint.net ([192.115.104.30]:35896 "EHLO
-	sa15.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbXJVVK4 (ORCPT
+	Mon, 22 Oct 2007 17:13:19 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48344 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbXJVVNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:10:56 -0400
-Message-ID: <471D11DC.20007@panasas.com>
-Date: Mon, 22 Oct 2007 23:10:52 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 22 Oct 2007 17:13:18 -0400
+Date: Mon, 22 Oct 2007 23:13:25 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dan Williams <dcbw@redhat.com>
+Cc: Luis Correia <luis.f.correia@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       mwallis@serialmonkey.com
+Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
+Message-ID: <20071022211325.GF28190@elf.ucw.cz>
+References: <20071020184100.GA11640@elf.ucw.cz> <efe7343f0710210802v6abc54d9k19293942477dabcc@mail.gmail.com> <20071022000919.GB29024@elf.ucw.cz> <1193067896.30205.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 08/10] [SG] Update arch/ to use sg helpers
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-9-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1193076664-13652-9-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193067896.30205.9.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It looks like it could be nice to define and use a helper for
-page_address(sg_page(sg)) (although 11 call sites could use it
-after this patch)
+Hi!
 
-#define sg_pgaddr(sg) page_address(sg_page(sg))
+> > > This device is NOT a Ralink USB wifi adapter!
+> > > 
+> > > Get the windows driver in this link and see for yourself.
+> > > http://www.conitech.it/conitech/ita/risorse.asp?cod=CN402USB
+> > > (ISSC W89C35 802.11bg WLAN USB Adapters (Native Wifi driver))
+> > 
+> > Thanks a lot. With some patches, I got driver from conitech.it to
+> > compile and partly work on 2.6.23. I can now transmit packets but not
+> > yet receive them.
+> > 
+> > (use Makefile.26 instead of Makefile)
+> 
+> I couldn't find any license info immediately visible; are you sure it's
+> GPL?
 
-Note that mips sg_{un,}map_sg checked for page_address(sg->page) != 0
-before calling __dma_sync(addr + sg->offset, sg->length, direction)
-and you changed it to addr = (unsigned long) sg_virt(sg) which
-takes sg->offset into account.  That said I'm not sure if the original
-code was correct for the (page_address(sg->page) == 0 && sg->offset != 0)
-case...
+Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
+								Pavel
 
-
-On Oct. 22, 2007, 20:11 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-<snip>
-
-> diff --git a/arch/mips/mm/dma-default.c b/arch/mips/mm/dma-default.c
-> index 98b5e5b..b0b034c 100644
-> --- a/arch/mips/mm/dma-default.c
-> +++ b/arch/mips/mm/dma-default.c
-> @@ -165,12 +165,11 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
->  	for (i = 0; i < nents; i++, sg++) {
->  		unsigned long addr;
->  
-> -		addr = (unsigned long) page_address(sg->page);
-> +		addr = (unsigned long) sg_virt(sg);
->  		if (!plat_device_is_coherent(dev) && addr)
-> -			__dma_sync(addr + sg->offset, sg->length, direction);
-> +			__dma_sync(addr, sg->length, direction);
->  		sg->dma_address = plat_map_dma_mem(dev,
-> -				                   (void *)(addr + sg->offset),
-> -						   sg->length);
-> +				                   (void *)addr, sg->length);
->  	}
->  
->  	return nents;
-> @@ -223,10 +222,9 @@ void dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
->  	for (i = 0; i < nhwentries; i++, sg++) {
->  		if (!plat_device_is_coherent(dev) &&
->  		    direction != DMA_TO_DEVICE) {
-> -			addr = (unsigned long) page_address(sg->page);
-> +			addr = (unsigned long) sg_virt(sg);
->  			if (addr)
-> -				__dma_sync(addr + sg->offset, sg->length,
-> -				           direction);
-> +				__dma_sync(addr, sg->length, direction);
->  		}
->  		plat_unmap_dma_mem(sg->dma_address);
->  	}
-
-<snip>
-
-> diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-> index 5098f58..1a20fe3 100644
-> --- a/arch/x86/kernel/pci-calgary_64.c
-> +++ b/arch/x86/kernel/pci-calgary_64.c
-> @@ -411,8 +411,10 @@ static int calgary_nontranslate_map_sg(struct device* dev,
->  	int i;
->  
->  	for_each_sg(sg, s, nelems, i) {
-> -		BUG_ON(!s->page);
-> -		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
-> +		struct page *p = sg_page(s);
-> +
-> +		BUG_ON(!p);
-
-why not just BUG_ON(!sg_page(s))?
-
-> +		s->dma_address = virt_to_bus(sg_virt(s));
->  		s->dma_length = s->length;
->  	}
->  	return nelems;
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
