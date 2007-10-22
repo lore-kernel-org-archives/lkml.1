@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbXJVVN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXJVVQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884AbXJVVN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXJVVNT
+	id S1752068AbXJVVQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXJVVQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:13:19 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48344 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbXJVVNS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:13:18 -0400
-Date: Mon, 22 Oct 2007 23:13:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       mwallis@serialmonkey.com
-Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
-Message-ID: <20071022211325.GF28190@elf.ucw.cz>
-References: <20071020184100.GA11640@elf.ucw.cz> <efe7343f0710210802v6abc54d9k19293942477dabcc@mail.gmail.com> <20071022000919.GB29024@elf.ucw.cz> <1193067896.30205.9.camel@localhost.localdomain>
+	Mon, 22 Oct 2007 17:16:35 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1704 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750923AbXJVVQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 17:16:34 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kernel panic when running tcpdump
+Date: Mon, 22 Oct 2007 23:16:22 +0200
+User-Agent: KMail/1.9.7
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-ppp@vger.kernel.org
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <200710222040.19921.m.kozlowski@tuxland.pl> <20071022120359.26403bf0.akpm@linux-foundation.org>
+In-Reply-To: <20071022120359.26403bf0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193067896.30205.9.camel@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710222316.22922.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > This device is NOT a Ralink USB wifi adapter!
-> > > 
-> > > Get the windows driver in this link and see for yourself.
-> > > http://www.conitech.it/conitech/ita/risorse.asp?cod=CN402USB
-> > > (ISSC W89C35 802.11bg WLAN USB Adapters (Native Wifi driver))
-> > 
-> > Thanks a lot. With some patches, I got driver from conitech.it to
-> > compile and partly work on 2.6.23. I can now transmit packets but not
-> > yet receive them.
-> > 
-> > (use Makefile.26 instead of Makefile)
+> > 	I'm seeing reproducible oops on 2.6.23-mm1 when trying to run tcpdump
+> > over ppp0 interface.
 > 
-> I couldn't find any license info immediately visible; are you sure it's
-> GPL?
+> Can you please test the latest Linus kernel from
+> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/?
 
-Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
-								Pavel
+Sure.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Because all netwrking things which were in 2.6.23-mm1 are now in mainline.
+> So if mainline is OK then that bug presumably got fixed.
+
+You're right. 2.6.23-git17 runs fine so the bug must have been fixed.
+
+Regards,
+
+	Mariusz
