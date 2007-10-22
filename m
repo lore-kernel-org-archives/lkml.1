@@ -1,74 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXJVPLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXJVPM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbXJVPLV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 11:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbXJVPLI
+	id S1753532AbXJVPM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 11:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXJVPMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 11:11:08 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:30153 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbXJVPLG (ORCPT
+	Mon, 22 Oct 2007 11:12:22 -0400
+Received: from server03.ke-net.com ([84.19.168.8]:56774 "EHLO
+	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbXJVPMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 11:11:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=gJKcMzBAFh59UJbRirGVvl/TJWhKAb/mkCmaJzMSdUrnGwWu1GRC+vSPowaHygjL+zL4N6b1vB1/dDaZJqg8e3SWnub0GdBADPTr7L8xkTPY/JjIRkNbDBnDrGlZAvEhZ35YIG7RcAXbK5767F3UZz8xU9hgY8BZUrpmWL0csoU=
-Message-ID: <471CBD76.6030205@googlemail.com>
-Date: Mon, 22 Oct 2007 17:10:46 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
-MIME-Version: 1.0
-To: Nick <nickwinlund@comcast.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: appletalk bugs
-References: <471CB159.1070706@googlemail.com> <1193064745.20114.3.camel@stingray>
-In-Reply-To: <1193064745.20114.3.camel@stingray>
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 22 Oct 2007 11:12:21 -0400
+X-Greylist: delayed 1883 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Oct 2007 11:12:21 EDT
+Subject: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+From: Stefani Seibold <stefani@seibold.net>
+Reply-To: stefani@seibold.net
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 16:40:57 +0200
+Message-Id: <1193064057.16541.1.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick wrote:
-[ restoring CC ]
+Hi,
 
-> Fascinating ... Are you using chooser or NetInfo?
+i have a problem with vmalloc() and vm_ops.page_mkwrite().
 
-No I don't.
+ReadOnly access works, but on a write access the VM will
+endless invoke the vm_ops.page_mkwrite() handler.
 
-I fact I don't even know why that module got loaded. 
+I tracked down the problem to the
+	struct page.mapping pointer,
+which is NULL.
+
+The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
+This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
+which will be in an extra thread handled, to perform the IO and clean and
+write protect all pages with page_clean().
+
+I am not sure if the is a feature of the new rmap code or a bug.
+
+Is there an way to get a similar functionality? Currently, i have no
+idea
+how to get the ptep from a page alloced with vmalloc().
+
+Greetings,
+Stefani
+
+Here is a small sample driver:
+
+#include <linux/module.h>
+#include <linux/errno.h>
+#include <linux/string.h>
+#include <linux/mm.h>
+#include <linux/vmalloc.h>
+#include <linux/fs.h>
+
+#define	DEVICE_NAME	"mydrv"
+#define	DEVICE_MAJOR	240
+
+static u8 *mydrv_memory;
+static const u_long mydrv_memory_size=1024*1024; // 1 Megabyte
+
+#ifdef MODULE
+static u_long vmas=0;
+#endif
+
+static void mydrv_vma_open(struct vm_area_struct *vma)
+{
+#ifdef MODULE
+	if (vmas++==0)
+		try_module_get(THIS_MODULE);
+#endif
+}
+
+static void mydrv_vma_close(struct vm_area_struct *vma)
+{
+#ifdef MODULE
+	if (--vmas==0)
+		module_put(THIS_MODULE);
+#endif
+}
+
+struct page *mydrv_vma_nopage(struct vm_area_struct *vma,unsigned long
+address,int *type)
+{
+	unsigned long offset;
+	struct page *page;
+
+	offset = (address - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
+	printk("--> mydrv_vma_nopage:%lu(%08lx)\n",offset,offset);
+
+	if (offset >= mydrv_memory_size)
+		return NOPAGE_SIGBUS;
+
+	page = vmalloc_to_page(mydrv_memory + offset);
+	if (!page)
+		return NOPAGE_OOM;
+
+	get_page(page);
+	if (type)
+		*type = VM_FAULT_MINOR;
+	return page;
+}
+
+int mydrv_mkwrite(struct vm_area_struct *vma,struct page *page)
+{
+	printk("--> mydrv_mkwrite:%p\n",page->mapping);
+
+	return 0;
+}
+
+struct vm_operations_struct mydrv_vm_ops = {
+	.open =		mydrv_vma_open,
+	.close =	mydrv_vma_close,
+	.nopage =	mydrv_vma_nopage,
+	.page_mkwrite =	mydrv_mkwrite,
+};
+
+static int mydrv_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	vma->vm_ops = &mydrv_vm_ops;
+	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
+	vma->vm_private_data = 0;
+	mydrv_vma_open(vma);
+	return 0;
+}
+
+int mydrv_open(struct inode *inode, struct file *file)
+{
+	int		minor;
+
+	minor=MINOR(file->f_dentry->d_inode->i_rdev);
+	printk("--> mydrv_open called for minor: %d\n", minor);
+
+	if (minor>0) {
+		printk("--> mydrv_open minor %d failed\n",minor);
+		return -ENODEV;
+	}
+
+	printk("--> mydrv_open o.K.\n");
+	return 0;
+}
 
 
-> On Mon, 2007-10-22 at 16:19 +0200, Gabriel C wrote:
->> Hi,
->>
->> modprobing appletalk on current git gives a warning in dmesg :
->>
->> [38506.600269] sysctl table check failed: /net/appletalk .3.7 procname does not match binary path procname
->>
->> on rmmod appletalk I get an Oops :
->>
->>
->> [38541.525258] BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000c
->> [38541.525266] printing eip: c011d4f0 *pde = 00000000 
->> [38541.525274] Oops: 0000 [#1] PREEMPT SMP 
->> [38541.525282] Modules linked in: appletalk psnap llc pc87360 hwmon_vid eeprom adm1021 sr_mod shpchp pci_hotplug iTCO_wdt iTCO_vendor_support intel_agp i82860_edac i2c_i801 edac_core cdrom agpgart 3c59x mii ext4dev jbd2 crc16 loop lp parport_pc parport evdev
->> [38541.525312] 
->> [38541.525316] Pid: 28887, comm: rmmod Not tainted (2.6.23-gcfa76f02 #341)
->> [38541.525321] EIP: 0060:[<c011d4f0>] EFLAGS: 00010202 CPU: 0
->> [38541.525334] EIP is at unregister_sysctl_table+0x11/0x70
->> [38541.525339] EAX: 00000001 EBX: e8ef2180 ECX: 00000002 EDX: 00000000
->> [38541.525343] ESI: 00000000 EDI: 00000880 EBP: cc094000 ESP: cc095f38
->> [38541.525347]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> 
->> [38541.525389] Call Trace:
->> [38541.525395]  [<e8eed5b1>] atalk_exit+0x5/0x4b [appletalk]
->> [38541.525410]  [<c01353b2>] sys_delete_module+0x187/0x1b5
->> [38541.525420]  [<c01101fd>] do_page_fault+0x18b/0x51a
->> [38541.525426]  [<c0148684>] do_munmap+0x19b/0x1b4
->> [38541.525437]  [<c01026fa>] sysenter_past_esp+0x5f/0x85
-> 
-> 
-> 
+int mydrv_close(struct inode *inode, struct file *file)
+{
+	int		minor;
+
+	minor=MINOR(file->f_dentry->d_inode->i_rdev);
+	printk("--> mydrv_close for minor: %d\n", minor);
+	return 0;
+}
+
+struct file_operations mydrv_fops = {
+	.owner=THIS_MODULE,
+	.mmap=mydrv_mmap,
+	.open=mydrv_open,
+	.release=mydrv_close,
+};
+
+int init_module(void)
+{
+	printk("--> init_module called\n");
+
+	if (!(mydrv_memory = vmalloc(mydrv_memory_size)))
+		return -ENOMEM;
+
+	if (register_chrdev(DEVICE_MAJOR, DEVICE_NAME, &mydrv_fops) < 0) {
+		printk("--> Error registering driver.\n");
+		return -ENODEV;
+	}
+
+	memset(mydrv_memory, 0, mydrv_memory_size);
+	printk("--> init_module done\n");
+	return 0;
+}
+
+
+void cleanup_module(void)
+{
+	printk("--> cleanup_module called\n");
+	unregister_chrdev(DEVICE_MAJOR,DEVICE_NAME);
+	vfree(mydrv_memory);
+	printk("--> cleanup_module done\n");
+}
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Stefan Seibold <Stefani@Seibold.net>");
+MODULE_DESCRIPTION("Test Driver");
+
+
