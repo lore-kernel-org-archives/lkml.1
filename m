@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbXJVTHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbXJVTLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbXJVTHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXJVTHo
+	id S1754026AbXJVTLq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbXJVTLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:07:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40939 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbXJVTHn (ORCPT
+	Mon, 22 Oct 2007 15:11:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:59671 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbXJVTLg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:07:43 -0400
-Date: Mon, 22 Oct 2007 21:07:40 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, dean gaudet <dean@arctic.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
-       David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?iso-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
-       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-Message-ID: <20071022190740.GA1695@one.firstfloor.org>
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com> <4712A254.4090604@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org> <471C1A61.1010001@goop.org> <p73sl439s7k.fsf@bingen.suse.de> <471CEEB4.9040807@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 22 Oct 2007 15:11:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+Date: Mon, 22 Oct 2007 21:10:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Ralf Baechle <ralf@linux-mips.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <20071022152912.GA841@linux-mips.org> <20071022112110.105b8e11.akpm@linux-foundation.org>
+In-Reply-To: <20071022112110.105b8e11.akpm@linux-foundation.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <471CEEB4.9040807@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710222110.34768.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/6vDUutDWMudy3o1auOmrXxdeevSbU2Pgyo1z
+ Wbhd4L161XlHCjlyIlrLU6X7BEY/zId1onChPLCS6ns4xdCnfS
+ hlhayvy9qVCG3vHE069+g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 11:40:52AM -0700, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > Jeremy Fitzhardinge <jeremy@goop.org> writes:
-> >   
-> >> Yes, that's precisely the problem.  xfs does delay the unmap, leaving
-> >> stray mappings, which upsets Xen.
-> >>     
-> >
-> > Again it not just upsets Xen, keeping mappings to freed pages is wrong generally 
-> > and violates the x86 (and likely others like PPC) architecture because it can 
-> > cause illegal caching attribute aliases.
-> >
-> > The patch that went into the tree was really not correct -- this
-> > bogus optimization should have been unconditionally removed
-> > or if you really wanted an ifdef made dependent on !CONFIG_XEN &&
-> > !CONFIG_AGP (and likely && !CONFIG_DRM && !CONFIG_anything else that
-> > uses uncached mappings in memory). 
-> >
-> > You just worked around the obvious failure and leave the non obvious
-> > rare corruptions in, which isn't a good strategy.
+On Monday 22 October 2007, Andrew Morton wrote:
+> Yes, it's always been ugly that we use unsigned long for this rather than
+> abstracting it properly.
 > 
-> Well, at least it becomes a known issue and/or placeholder for when Nick
+> However I'd prefer that we have some really good reason for introducing
+> irq_flags_t now.  Simply so that I don't needlessly spend the next two
+> years wrestling with literally thousands of convert-to-irq_flags_t patches
+> and having to type "please use irq_flags_t here" in hundreds of patch
+> reviews. (snivel, wimper)
 
-It's hidden now so it causes any obvious failures any more. Just
-subtle ones which is much worse.
+On a related note, should we encourage the use of spin_lock() and
+spin_lock_irq() instead of spin_lock_irqsave() where possible?
 
-But why not just disable it?  It's not critical functionality,
-just a optimization that unfortunately turned out to be incorrect.
+On some architectures, accessing the interrupt flag is a heavyweight
+operation, especially when running under a hypervisor, so a number
+of drivers could benefit from being converted to not save the flags
+at all instead of just changing the type of the flags variable.
 
-It could be made correct short term by not freeing the pages until
-vunmap for example.
-
-> does his grand unified vmap manager.  I guess a clean workaround would
-> be to add a CONFIG_XFS_LAZY_UNMAP, and do it at the Kconfig level... 
-> I'll cook up a patch.
-
-This option could only be safely set in architectures that don't
-care about caching attribute aliases or never remap kernel pages
-uncached. That's not x86, powerpc, ia64 at a minimum.
-
-I think the only good short term fix is to turn your ifdef CONFIG_XEN
-into a #if 0
-
--Andi
-
+	Arnd <><
