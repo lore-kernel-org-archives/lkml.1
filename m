@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbXJVDV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXJVDda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbXJVDV7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 23:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXJVDVw
+	id S1753997AbXJVDda (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 23:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXJVDdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 23:21:52 -0400
-Received: from 1wt.eu ([62.212.114.60]:3477 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbXJVDVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 23:21:51 -0400
-Date: Mon, 22 Oct 2007 05:21:45 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Tal Kelrich <tal@musicgenome.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.4/2.6 local TCP connect oddity
-Message-ID: <20071022032145.GA14735@1wt.eu>
-References: <20071021175337.605e843e@shodan.orpak.com> <20071021172901.GV10199@1wt.eu> <20071021225329.1a971751@shodan.orpak.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071021225329.1a971751@shodan.orpak.com>
-User-Agent: Mutt/1.5.11
+	Sun, 21 Oct 2007 23:33:23 -0400
+Received: from host06.hostingexpert.com ([216.80.70.60]:45709 "EHLO
+	host06.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbXJVDdW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 23:33:22 -0400
+Message-ID: <471C19F1.8090505@linuxtv.org>
+Date: Sun, 21 Oct 2007 23:33:05 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fix CONFIG_TUNER_TEA5761=m
+References: <20071022024755.GJ30533@stusta.de>
+In-Reply-To: <20071022024755.GJ30533@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - host06.hostingexpert.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linuxtv.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 21, 2007 at 10:53:29PM +0200, Tal Kelrich wrote:
-> On Sun, 21 Oct 2007 19:29:02 +0200
-> Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > Hi,
-> > 
-> > On Sun, Oct 21, 2007 at 05:53:37PM +0200, Tal Kelrich wrote:
-> > > Hi,
-> > > 
-> > > I've run into a problem where a process trying to connect to a local
-> > > port within the local port range eventually ends up connected to
-> > > itself, with source port = dest port.
-> > > 
-> > > similar behavior can be gotten by running netcat as follows:
-> > > nc -p 1025 localhost 1025
-> > > 
-> > > I'm not really sure if that's a bug, but the original case was at
-> > > least unexpected.
-> > 
-> > It is not a bug, it is caused by the "simultaneous connect" feature of
-> > TCP. Although rarely used, in TCP you can connect two clients
-> > together. They just have to exchange their SYN, SYN/ACK then ACK and
-> > bingo, they're connected. In fact, you found the easiest way to
-> > achieve it, by using the same port. To demonstrate the feature, I'm
-> > used to either temporarily block SYNs with iptables, or by unplugging
-> > the cable between two machines.
-> > 
-> 
-> Hi,
-> 
-> It still seems confusing that a connect against localhost may
-> randomly succeed.
-> 
-> Here's a better example, if somewhat violent. eventually succeeds.
-> (p=$((`cat /proc/sys/net/ipv4/ip_local_port_range|cut -f1`+1)); while
-> true ; do nc -v -v 127.0.0.1 $p ; done)
+Adrian Bunk wrote:
+> This patch fixes CONFIG_TUNER_TEA5761=m broken by
+> commit ca805d57cf5ea7482ed3da28653f30621249ee45.
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> ---
+>
+>  drivers/media/video/tuner-core.c |    6 ------
+>  1 file changed, 6 deletions(-)
+>
+> 26336c30e76c37bda368a24b8b12978388a18cf3 
+> diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+> index 9484308..1795b78 100644
+> --- a/drivers/media/video/tuner-core.c
+> +++ b/drivers/media/video/tuner-core.c
+> @@ -30,9 +30,7 @@
+>  
+>  /* standard i2c insmod options */
+>  static unsigned short normal_i2c[] = {
+> -#ifdef CONFIG_TUNER_TEA5761
+>  	0x10,
+> -#endif
+>   
+^^^ I believe that we want to keep these #ifdef's above...  The removals
+below are fine.
 
-Of course, for the same reason. If you reduce the ip_local_port_range, it
-will even succeed more often. This is because the source port is choosen
-before the first packet is sent, so when it is sent, it reaches a pending
-connection (itself).
 
-I can understand that it is confusing when you see it as a single
-connection, but try to imagine (or reproduce) with 2 machines, then
-translate that to the localhost with a single and same connection.
-You may even draw the exchanges on paper, an you will notice that
-"each end" of the connection gets its SYN-SYN/ACK-ACK sequence.
-
-You may also tcpdump on loopback if that helps.
-
+>  	0x42, 0x43, 0x4a, 0x4b,			/* tda8290 */
+>  	0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+>  	0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+> @@ -292,7 +290,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
+>  		}
+>  		t->mode_mask = T_RADIO;
+>  		break;
+> -#ifdef CONFIG_TUNER_TEA5761
+>  	case TUNER_TEA5761:
+>  		if (tea5761_attach(&t->fe, t->i2c.adapter, t->i2c.addr) == NULL) {
+>  			t->type = TUNER_ABSENT;
+> @@ -301,7 +298,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
+>  		}
+>  		t->mode_mask = T_RADIO;
+>  		break;
+> -#endif
+>  	case TUNER_PHILIPS_FMD1216ME_MK3:
+>  		buffer[0] = 0x0b;
+>  		buffer[1] = 0xdc;
+> @@ -594,7 +590,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
+>  	/* autodetection code based on the i2c addr */
+>  	if (!no_autodetect) {
+>  		switch (addr) {
+> -#ifdef CONFIG_TUNER_TEA5761
+>  		case 0x10:
+>  			if (tea5761_autodetection(t->i2c.adapter, t->i2c.addr) != EINVAL) {
+>  				t->type = TUNER_TEA5761;
+> @@ -606,7 +601,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
+>  				goto register_client;
+>  			}
+>  			break;
+> -#endif
+>  		case 0x42:
+>  		case 0x43:
+>  		case 0x4a:
+>
+>   
 Regards,
-Willy
 
+Mike Krufky
