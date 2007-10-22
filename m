@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbXJVHQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbXJVHQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216AbXJVHQb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbXJVHP6
+	id S1754695AbXJVHQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXJVHQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:15:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43276 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754272AbXJVHP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:15:57 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 22 Oct 2007 17:15:50 +1000
-Message-Id: <1071022071550.31281@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Stable <stable@kernel.org>
-Subject: [PATCH 002 of 2] md: raid5: fix clearing of biofill operations
-References: <20071022171426.31103.patches@notabene>
+	Mon, 22 Oct 2007 03:16:39 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:44581 "EHLO
+	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742AbXJVHQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 03:16:36 -0400
+X-Greylist: delayed 47935 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Oct 2007 03:16:35 EDT
+Date: Mon, 22 Oct 2007 09:16:27 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>, Rob Landley <rob@landley.net>
+Subject: Re: [PATCH] m68k: Use cc-cross-prefix (was: Re: [GI:wqT PULL] kbuild
+ updates - second round)
+In-Reply-To: <alpine.LNX.0.9999.0710220303400.27496@firda.kolla.no>
+Message-ID: <Pine.LNX.4.64.0710220915160.6155@anakin>
+References: <20071019204415.GA623@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0710211956280.6155@anakin> <20071021182245.GA5840@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0710212028560.6155@anakin> <alpine.LNX.0.9999.0710220303400.27496@firda.kolla.no>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-1399845207-1193037340=:6155"
+Content-ID: <Pine.LNX.4.64.0710220915450.6155@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-From: Dan Williams <dan.j.williams@intel.com>
+---1463808512-1399845207-1193037340=:6155
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0710220915451.6155@anakin>
 
-ops_complete_biofill() runs outside of spin_lock(&sh->lock) and clears the
-'pending' and 'ack' bits.  Since the test_and_ack_op() macro only checks
-against 'complete' it can get an inconsistent snapshot of pending work.
+On Mon, 22 Oct 2007, Kolbjørn Barmen wrote:
+> On Sun, 21 Oct 2007, Geert Uytterhoeven wrote:
+> > +ifneq ($(SUB_ARCH),$(ARCH))
+> > +     ifeq ($(CROSS_COMPILE),)
+> > +            CROSS_COMPILE := $(call cc-cross-prefix, m68k-linux-gnu- m68k-linux-)
+> 
+> I've not paid much attention to discussion over this (I tend to build
+> natively, less stress :) ), so pardon my ignorance. Does the above make
+> any difference for me when I use CROSS_COMPILE=m68k-unknown-linux-gnu-,
+> or does it just detect m68k-linux-gnu- and m68k-linux-?
 
-Move the clearing of these bits to handle_stripe5(), under the lock.
+No, it makes no difference if you explicitly pass
+CROSS_COMPILE=m68k-unknown-linux-gnu-.
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Tested-by: Joël Bertrand <joel.bertrand@systella.fr>
-Signed-off-by: Neil Brown <neilb@suse.de>
-Cc: Stable <stable@kernel.org>
+If you want, we can add m68k-unknown-linux-gnu- to the list in
+arch/m68k/Makefile, so it cab be autodetected.
 
-### Diffstat output
- ./drivers/md/raid5.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+Gr{oetje,eeting}s,
 
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2007-10-22 16:55:49.000000000 +1000
-+++ ./drivers/md/raid5.c	2007-10-22 16:57:41.000000000 +1000
-@@ -665,7 +665,12 @@ static unsigned long get_stripe_work(str
- 		ack++;
- 
- 	sh->ops.count -= ack;
--	BUG_ON(sh->ops.count < 0);
-+	if (unlikely(sh->ops.count < 0)) {
-+		printk(KERN_ERR "pending: %#lx ops.pending: %#lx ops.ack: %#lx "
-+			"ops.complete: %#lx\n", pending, sh->ops.pending,
-+			sh->ops.ack, sh->ops.complete);
-+		BUG();
-+	}
- 
- 	return pending;
- }
-@@ -842,8 +847,7 @@ static void ops_complete_biofill(void *s
- 			}
- 		}
- 	}
--	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
--	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
-+	set_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
- 
- 	return_io(return_bi);
- 
-@@ -3130,6 +3134,13 @@ static void handle_stripe5(struct stripe
- 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
- 	/* Now to look around and see what can be done */
- 
-+	/* clean-up completed biofill operations */
-+	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
-+	}
-+
- 	rcu_read_lock();
- 	for (i=disks; i--; ) {
- 		mdk_rdev_t *rdev;
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-1399845207-1193037340=:6155--
