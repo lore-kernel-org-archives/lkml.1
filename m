@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXJVN3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbXJVN32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXJVN3Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 09:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbXJVN3C
+	id S1755173AbXJVN32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 09:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXJVN3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 09:29:02 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:34045 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbXJVN3A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 09:29:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=G/6hmIkkK19mrzBnJRo6Bj/fwLSbvsya7uPx3UCqrrddrS4T0Fq7AhClr5AFjNK29iIEYMvNOz2if27Pzx3ti3Qiuzlc3W+0YqWRCg7IWLtFWCf+rEwuUjojfgDDgHMj+0FPeipBWjH6eYyQezJx5bN3grnrHuaggA167M8aGCc=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: 100% iowait on one of cpus in current -git
-Date: Mon, 22 Oct 2007 15:28:20 +0200
-User-Agent: KMail/1.9.6
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200710220822.52370.maximlevitsky@gmail.com> <200710221505.35397.maximlevitsky@gmail.com> <393058650.02921@ustc.edu.cn>
-In-Reply-To: <393058650.02921@ustc.edu.cn>
+	Mon, 22 Oct 2007 09:29:11 -0400
+Received: from tachyon.jukie.net ([205.150.199.214]:57992 "EHLO jukie.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752914AbXJVN3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 09:29:10 -0400
+Date: Mon, 22 Oct 2007 09:28:20 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
+Cc: kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [BUG] 2.6.23.1 host freezes when running kvm
+Message-ID: <20071022132820.GA3962@jukie.net>
+References: <20071019202019.GW3962@jukie.net> <20071020000240.GX3962@jukie.net> <20071020154445.GA5254@jukie.net> <471B366B.7040706@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710221528.20369.maximlevitsky@gmail.com>
+In-Reply-To: <471B366B.7040706@qumranet.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007 15:10:45 Fengguang Wu wrote:
-> On Mon, Oct 22, 2007 at 03:05:35PM +0200, Maxim Levitsky wrote:
-> > Hi,
-> > Thank you very much too, for helping me.
+* Avi Kivity <avi@qumranet.com> [071021 07:23]:
+> Does 2.6.23 hang immediately?  If so, these may be two separate problems 
+> and it's worth bisecting to find out what's the fix in 2.6.24-rc.
 > 
-> You are welcome :-)
-> 
-> > Applied.
-> > Had to kill klogd, since kernel generates tons of redirtied inode messages.
-> > Size of the kern.log is 863 KB, thus I I don't think it is polite to attachit.
-> > Don't know whenever it is ok to put it on pastebin too.
-> > 
-> > Anyway, it shows lots of redirtied inode... messages,
-> > and while most of them are "at 08:02(sda2)" , my reiserfs root partition, some are
-> > 
-> > "Oct 22 14:50:27 MAIN kernel: [   73.643794] redirtied inode 2582 size 0 at 00:0f(tmpfs), line 300."
-> > 
-> > " line 300" is shown always
-> > 
-> > (I have /var/run, /var/lock, /dev mounted as tmpfs, default kubuntu setup)
-> 
-> Thank you for the testing out.
-> 
-> Hmm, Maybe it's an reiserfs related issue.  Do you have the full log file?
-No, I don't think so, like I said it sometimes shows the same message on tmpfs
-> 
-> Thank you,
-> Fengguang
-> 
-> 
-Best Regards,
-	Maxim Levitsky
+> Of course we'll have to address the later hang as well.
+
+Avi,
+
+it does not hang immediately.  It seems to wait until I go to bed to
+hang -- so it's going to be really fun to rebase.  It could be triggered
+by something that runs off cron in the guest or host.  I am not sure.  
+
+At this point I know that 2.6.23 and 2.6.24-rc0 hung, and 2.6.22.10
+(with kvm-userspace.git) ran overnight.
+
+I will try some of the 23-rc's next.
+
+-Bart
+
+-- 
+				WebSig: http://www.jukie.net/~bart/sig/
