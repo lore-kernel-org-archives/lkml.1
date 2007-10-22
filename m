@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXJVKOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbXJVKO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbXJVKOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 06:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXJVKOe
+	id S1751742AbXJVKO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 06:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXJVKOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 06:14:34 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:19881 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbXJVKOd (ORCPT
+	Mon, 22 Oct 2007 06:14:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46223 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbXJVKOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 06:14:33 -0400
-Message-ID: <471C75AB.8010608@yandex.ru>
-Date: Mon, 22 Oct 2007 13:04:27 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: forcing write-back from FS - again
-References: <471BB45D.8070509@nokia.com>        <20071021135526.57db7519.akpm@linux-foundation.org>        <471C64D1.3020904@yandex.ru>        <20071022020559.aa3fc59c.akpm@linux-foundation.org>        <471C6FA8.30500@yandex.ru> <20071022025516.848198f3.akpm@linux-foundation.org>
-In-Reply-To: <20071022025516.848198f3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 22 Oct 2007 10:04:27.0609 (UTC) FILETIME=[EE507490:01C81492]
-X-Nokia-AV: Clean
+	Mon, 22 Oct 2007 06:14:48 -0400
+Date: Mon, 22 Oct 2007 11:14:43 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Christoph Hellwig <hch@lst.de>,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/13] Rename {__}d_path() to {__}print_path() and fix comments
+Message-ID: <20071022101443.GB20690@infradead.org>
+References: <20071022065352.GA6489@in.ibm.com> <20071022070419.GN6489@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071022070419.GN6489@in.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> take a look at struct writeback_control:
-> 
->         unsigned nonblocking:1;         /* Don't get stuck on request queues */
->         unsigned encountered_congestion:1; /* An output: a queue is full */
->         unsigned for_kupdate:1;         /* A kupdate writeback */
->         unsigned for_reclaim:1;         /* Invoked from the page allocator */
->         unsigned for_writepages:1;      /* This is a writepages() call */
->         unsigned range_cyclic:1;        /* range_start is cyclic */
->         unsigned more_io:1;             /* more io to be dispatched */
-> 
-> Add another one...
+On Mon, Oct 22, 2007 at 12:34:19PM +0530, Bharata B Rao wrote:
+> Changes the name of d_path() and __d_path() to print_path() and __print_path()
+> respectively and fixes the kerneldoc comments for print_path().
 
-Ups, OK! Thanks again!
+I don't think we want to put in this rename until d_path is changed to
+actually take a struct path * describing the path to be printed.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
