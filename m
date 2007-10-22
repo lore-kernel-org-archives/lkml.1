@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbXJVBxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbXJVB4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbXJVBxo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 21:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXJVBxi
+	id S1753825AbXJVB4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 21:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVB4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 21:53:38 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:43086 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbXJVBxh (ORCPT
+	Sun, 21 Oct 2007 21:56:01 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:25641 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbXJVB4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 21:53:37 -0400
-Message-ID: <471C029A.9050500@tiscali.nl>
-Date: Mon, 22 Oct 2007 03:53:30 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 21 Oct 2007 21:56:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bdYLlLxLi8Q9F59tvQoMlk4D8+8Q+XnKwGmKr3x7WQCuTWmQFGu1joDP2SaBan5hrFmp2MB7JO3QrjsXIK5Vxp4bE1rkSZ+WNrnoOEM5jERc3lJ6yJSemIAXkWqyGDlSP7fQuU//9B2tWLaPP1uB8SLOuXmYF0znLyzZa7DdXpA=
+Message-ID: <cfaab6210710211855q7a2de35co13d3017b2a07d4cc@mail.gmail.com>
+Date: Mon, 22 Oct 2007 09:55:58 +0800
+From: "peer chen" <peerchen@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       "Kuan Luo" <kluo@nvidia.com>
+In-Reply-To: <47185BFD.2010909@garzik.org>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] return hidden bug
-References: <471BF741.2020501@tiscali.nl> <20071021214209.1a7567d7@bree.surriel.com>
-In-Reply-To: <20071021214209.1a7567d7@bree.surriel.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>
+	 <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>
+	 <47181CE1.4000802@garzik.org>
+	 <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>
+	 <47185BFD.2010909@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Mon, 22 Oct 2007 03:05:05 +0200
-> Roel Kluin <12o3l@tiscali.nl> wrote:
-> 
->>     return hidden bug
->>     
->>     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->>
->> diff --git a/arch/alpha/kernel/pci_iommu.c
->> b/arch/alpha/kernel/pci_iommu.c index e1c4707..6a69425 100644
->> --- a/arch/alpha/kernel/pci_iommu.c
->> +++ b/arch/alpha/kernel/pci_iommu.c
->> @@ -365,8 +365,8 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t
->> dma_addr, size_t size, printk(KERN_ERR "Bogus pci_unmap_single:
->> dma_addr %lx " " base %lx size %x\n", dma_addr, arena->dma_base,
->>  		       arena->size);
->> -		return;
->>  		BUG();
->> +		return;
->>  	}
->>  
->>  	npages = calc_npages((dma_addr & ~PAGE_MASK) + size);
-> 
-> BUG() will terminate the process that runs into it, so you can
-> just remove the return alltogether.  If BUG() is hit, the return
-> will never be reached.
-> 
----
-    hidden bug returns
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-index e1c4707..ca55c33 100644
---- a/arch/alpha/kernel/pci_iommu.c
-+++ b/arch/alpha/kernel/pci_iommu.c
-@@ -365,7 +365,6 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t dma_addr, size_t size,
- 		printk(KERN_ERR "Bogus pci_unmap_single: dma_addr %lx "
- 		       " base %lx size %x\n", dma_addr, arena->dma_base,
- 		       arena->size);
--		return;
- 		BUG();
- 	}
- 
+Yes, link - http://lkml.org/lkml/2007/10/8/93 add the AHCI legacy
+support to sata_nv when IDE/RAID mode been set in SBIOS and Device IDs
+are not in ahci.c at this moment. To do so, when a new chipset come
+out and DIDs haven't been submited to LKML,user still can use ahci
+driver to handle it when setting AHCI mode in BIOS, using sata_nv when
+setting RAID/IDE in BIOS.
+For example, ahci driver in Fedora 7 doesn't include the DIDs of
+MCP78, so if you set the IDE/RAID mode in BIOS, os installation onto
+SATA drive will fail. But if Fedora 7 include this patch, installation
+will be successful.
 
+2007/10/19, Jeff Garzik <jeff@garzik.org>:
+> peer chen wrote:
+> > Ok,I agree to use AHCI driver for our AHCI controllers no matter their
+> > class codes are IDE/RAID/AHCI. But for those new or upcoming AHCI
+> > controller which DIDs are not included in ahci.c and also IDE/RAID
+> > mode being set in BIOS, no driver will be loaded currently, so I hope
+> > the first patch http://lkml.org/lkml/2007/10/8/93 can be appied for
+> > this case. Any comments?
+>
+> hmmm is that the correct URL?  That one updates sata_nv to support AHCI
+> controllers?.
+>
+> I would think you would want to add the RAID class code to ahci.c
+> instead?  And just some regular PCI IDs?
+>
+>        Jeff
+>
+>
+>
