@@ -1,59 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbXJVQ5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbXJVRBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbXJVQ5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 12:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXJVQ5J
+	id S1753255AbXJVRBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 13:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJVRBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 12:57:09 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:56056 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbXJVQ5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 12:57:08 -0400
-Date: Mon, 22 Oct 2007 18:57:04 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Esben Stien <b0ef@esben-stien.name>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: USB Disconnect BUG with RT Kernels (linux-2.6.23-rt1)
-In-Reply-To: <87640zgid6.fsf@esben-stien.name>
-Message-ID: <Pine.LNX.4.64.0710221855220.18815@twin.jikos.cz>
-References: <87640zgid6.fsf@esben-stien.name>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Oct 2007 13:01:08 -0400
+Received: from ruby.spiritone.com ([216.99.193.130]:58041 "EHLO
+	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbXJVRBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 13:01:07 -0400
+Date: Mon, 22 Oct 2007 10:00:46 -0700
+Message-Id: <200710221700.l9MH0klg006152@sapphire.spiritone.com>
+From: "Thomas Fricaccia" <thomas_fricacci@yahoo.com>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       Crispin Cowan <crispin@crispincowan.com>
+Reply-To: "Thomas Fricaccia" <thomas_fricacci@yahoo.com>
+Subject: Re: LSM conversion to static interface
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Esben Stien wrote:
+Some well-respected contributors have taken exception my amplification
+of Crispin Cowan's point about the patch that closes LSM.
 
->  [<c0319a64>] input_unregister_device+0x67/0xfc
->  [<c032a139>] hidinput_disconnect+0x2e/0x47
->  [<c032d697>] hid_disconnect+0x76/0xce
->  [<c02fd799>] usb_unbind_interface+0x2d/0x6e
->  [<c02b7ba4>] __device_release_driver+0x71/0x8e
->  [<c02b7c65>] device_release_driver+0x18/0x21
->  [<c02b76f3>] bus_remove_device+0x70/0x80
->  [<c02b5ddf>] device_del+0x1bb/0x22f
->  [<c02fb4f1>] usb_disable_device+0x5c/0xbb
->  [<c02f807d>] usb_disconnect+0x7a/0xd3
->  [<c02f85a9>] hub_thread+0x30f/0x9ea
->  [<c010d79a>] update_stats_wait_end+0x9b/0xbe
->  [<c03c4c32>] __schedule+0x27e/0x36d
->  [<c01214e5>] autoremove_wake_function+0x0/0x35
->  [<c02f829a>] hub_thread+0x0/0x9ea
->  [<c012142e>] kthread+0x36/0x5c
->  [<c01213f8>] kthread+0x0/0x5c
->  [<c0102913>] kernel_thread_helper+0x7/0x10
->  =======================
-> Code: e8 3c c5 ff ff 8b 5e 64 eb 1b 8d 83 08 04 00 00 b9 06 00 02 00 ba 1d 00 00 00 e8 d7 fc e3 ff 8b 9b 10 04 00 00 81 eb 10 04 00 00 <8b> 83 10 04 00 00 0f 18 00 90 8d 93 10 04 00 00 8d 46 64 39 c2 
-> EIP: [<c031c3d9>] evdev_disconnect+0x5b/0x96 SS:ESP 0068:c1e07e84
+Crispin Cowan <crispin@crispincowan.com> wrote:
+>     * It prevents enterprise users, and in fact anyone who isn't
+>       comfortable compiling their own kernel, from ever trying out any
+>       security module that their distro vendor of choice did not ship.
 
-Please try the latest git. Dmitry has pushed patches that implement proper 
-locking in input layer, which are very likely going to fix the bug you are 
-seeing.
+I extended this point by observing that regulatory laws make it difficult
+for enterprise customers to compile their own kernels, mentioning one
+of the more invasive statutes, Sarbanes-Oxley.
 
-Namely commits 8006479, 6addb1d and 464b241, so please try to reproduce 
-with any kernel that has them.
+In reply, "Alan Cox" <alan@lxorguk.ukuu.org.uk> writes:
+> Crispin at least is providing genuine discussion points. Sarbox has
+> nothing to say on "using vendor linux kernels".
 
-Thanks,
+And just previously, "Greg KH" <greg@kroah.com> had written:
+> Since when does Sarbanes-Oxley decree that a company must use a
+> "standard kernel"?  And just exactly what defines such "standard
+> kernel"?  Can you point out where in that bill it requires such a
+> thing?
 
--- 
-Jiri Kosina
+I was actually talking about the *effects* of regulatory law, rather
+than the wording in the text of the statutes.  The misunderstanding
+could be partially my fault, as my exact words were 
+
+   As Sarbanes-Oxley and other regulatory laws require these
+   customers to use "standard kernels" ....
+
+which may not have been as unambiguously clear as I intended.
+
+But as long as we're here, let me elaborate on the point I tried to make.
+
+SOX and other laws require enterprise customers to keep specified
+controls on their internal processing procedures, and keep documentation
+that can be audited to prove compliance.  The auditing requirements
+are extensive and detailed, and certainly include the kernel of an
+operating system used to process business and/or financial transactions.
+
+It is within this framework that enterprise customers conclude something
+like (and this is vernacular, not the language within the statutes) "if
+we use any kernel other than that supplied by our distributor, the
+SOX auditing paperwork will be a nightmare."  (I've actually heard
+statements similar to this, and so believe that it is an accurate
+portrayal of the perception of the effects of regulatory law.  I'm not
+a lawyer.)
+
+As I said at the beginning, I meant to amplify Crispin's observation
+that enterprise customers are reluctant to compile their own kernels
+with the additional observation that the complexities of regulatory
+law create obstacles that are significant contributors to that reluctance.
+
+I'll not belabor the unfortunate non sequitur further.  You can find
+plenty of documentation of auditing requirements with by Googling
+combinations of "Sarbanes-Oxley," "operating system integrity", etc.
+This is a big-business topic of wide concern.
+
+ =========
+
+So where were we before that detour?  Oh yes, 
+
+The point of contention:  closing LSM significantly reduces the freedom
+of an important class of Linux users, the commercial enterprises, to
+use whatever security framework they desire.  Greg and Alan didn't
+address this, and neither has anyone else.  Crispin's concluding remark
+on the patch closing LSM to modules has also not been addressed:
+
+> So I don't think I am being self-serving in arguing against this
+> patch. I just think it is bad for Linux.
+
+Yes.  Why indeed should Linux, justly famous for being configurable
+to many disparate purposes, close down an important subsystem so that
+only a few types of security frameworks are possible?
+
+Why can't a CONFIG_ system be developed that can give everyone pretty
+much what he wants?  It should be possible to develop a system
+permitting much flexibility wrt security frameworks:
+ 1.  a kernel configured with statically-linked hooks into exactly
+      one framework.
+                     --- OR ---
+ 2.  a kernel configured with an in-tree framework, but which uses
+      an LSM "security_operations" table.  (This is what we pretty much
+      have in 2.6.23).  In addition, a new boot parameter could let the
+      end user name the framework to use, which would completely
+      replace the in-tree default framework at boot time.
+
+
+To possibly save bandwidth, I'll also respond to another of Greg's points:
+
+"Greg KH" <greg@kroah.com> wrote:
+> Any "customer" using a security model other than provided by their Linux
+> distributor instantly voided all support from that distro by doing that.
+
+This isn't necessarily true.  In fact, I don't think it's even _remotely_
+likely to be typical.
+
+Security is big business, as is compliance with regulatory law.  Large
+enterprise customers are NOT going to either void their system support
+contracts, or place themselves in jeopardy of failing a SOX audit.
+Much more likely would be negotiated collaboration between some Linux
+distributors and security software firms that will permit enterprise
+customers to purchase, in a bundle, the security software products
+they require, along with the documentation needed to prove compliance
+with regulatory law.
+
+At least, this seems to be what the market demands, or is beginning to
+demand.  Will there be a supply?  Probably, as there is money ready to buy
+it.  Can closure of the LSM stop it?  Probably not, but I think that closing
+LSM to out-of-tree security modules substantially reduces the viability
+of Linux technology, as it fails to address the the needs of an important
+class of Linux user, the commercial enterprises.  As I said previously,
+I think it will irritate them quite a lot.
+
+Is this really a good idea?  Why is it a good idea to strip important
+freedoms from _any_ end user?  Much less a whole class of commercially
+important end users?
+
+Furthermore, I don't think it's **necessary** to do an absolute closure in
+order to meet the stringent needs of those who demand a single, hard-wired
+security framework, such as has been proposed by James Morris.  The KBuild
+system seems aptly suited to address the different needs of different users.
+
+ ==========
+
+This just in.  On the issue of making LSM much less available (please
+forgive me if I've inaccurately summarized), Crispin just now wrote:
+
+> That is not a catastrophe, it is just tedious. It does not kill baby
+> seals, and it does not make Linux utterly useless. OTOH, I think it is
+> strictly negative: it takes away user choice in 2 dimensions, and adds
+> zero value. So apply it if you must to bake the kernel developer's lives
+> easier, but it really is a net loss in Linux kernel capability.
+
+I think that's a pretty good formulation of my points:  user choice is
+taken away, leaving a net loss in the capability of Linux, and that
+it's not at all necessary.
+
+In the same note, he agreed with Alan that "SarBox is not really the issue
+here."  Well, I'm pretty certain that regulatory law strongly shapes
+market forces and enterprise needs.  In particular, I've heard several
+times that enterprises users  really want to just BUY all their security
+products, and that these products must be accompanied by documentation for
+any audits.  So, I'm pretty sure that if it is "not ... the issue", it
+strongly influences the issue.
+
+Thanks for your consideration,
+
+Tommy F.
+
