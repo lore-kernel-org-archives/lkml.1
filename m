@@ -1,94 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbXJVKlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXJVKxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbXJVKlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 06:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXJVKlG
+	id S1752684AbXJVKxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 06:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXJVKxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 06:41:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:11071 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523AbXJVKlD (ORCPT
+	Mon, 22 Oct 2007 06:53:14 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:8516 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751514AbXJVKxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 06:41:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=qmdrvIYq+FusQPokqjqO8O9E5ElyyuRPRQ5ejPWtOjdHcoTOCNnoDTjEuySppVj5cYxxeHjHARP240GLsM84ytK8Jry1BarRuXYJreL3UWSX+XPdIe2Xe8xrp4r/mTgYtBfsjjwNsziywBK73Qu3IgnmO2uLREOGfjJbq1qRvYk=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 100% iowait on one of cpus in current -git
-Date: Mon, 22 Oct 2007 12:40:24 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Fengguang Wu <fengguang.wu@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200710220822.52370.maximlevitsky@gmail.com> <200710221159.19364.maximlevitsky@gmail.com> <1193048530.27435.169.camel@twins>
-In-Reply-To: <1193048530.27435.169.camel@twins>
+	Mon, 22 Oct 2007 06:53:14 -0400
+Message-ID: <471C8114.7020702@panasas.com>
+Date: Mon, 22 Oct 2007 12:53:08 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Shreyansh Jain <shreyansh.jain@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Query about Bio submission / Direct IO
+References: <loom.20071019T055230-553@post.gmane.org>
+In-Reply-To: <loom.20071019T055230-553@post.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710221240.24386.maximlevitsky@gmail.com>
+X-OriginalArrivalTime: 22 Oct 2007 10:53:09.0511 (UTC) FILETIME=[BBE75170:01C81499]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007 12:22:10 Peter Zijlstra wrote:
-> On Mon, 2007-10-22 at 11:59 +0200, Maxim Levitsky wrote:
-> > On Monday 22 October 2007 11:41:57 Peter Zijlstra wrote:
-> > > On Mon, 2007-10-22 at 08:22 +0200, Maxim Levitsky wrote:
-> > > > Hi,
-> > > > 
-> > > > I found a bug in current -git:
-> > > > 
-> > > > On my system on of cpus stays 100% in iowait mode (I have core 2 duo)
-> > > > Otherwise the system works OK, no disk activity and/or slowdown.
-> > > > Suspecting that this is a swap-related problem I tried to turn swap of, but it doesn't affect anything.
-> > > > It is probably some accounting bug.
-> > > > 
-> > > > If I start with init=/bin/bash, then this disappears.
-> > > > I tried then to start usual /etc/init.d scripts then, and first one to show this bug was gpm.
-> > > > but then I rebooted the system to X without gpm, and I still see 100% iowait.
-> > > > 
-> > > > No additional messages in dmesg.
-> > > 
-> > > does sysrq-t show any D state tasks?
-> > > 
-> > > 
-> > This one:
-> > Probably per-block device dirty writeback?
-> > I am compiling now revision 1f7d6668c29b1dfa307a44844f9bb38356fc989b
-> > Thanks for the pointer.
-> > 
-> > 
-> > 
-> > [  673.365631] pdflush       D c21bdecc     0   221      2
-> > [  673.365635]        c21bdee0 00000046 00000002 c21bdecc c21bdec4 00000000 c21b3000 00000002
-> > [  673.365643]        c0134892 c21b3164 c1e00200 00000001 c7109280 c21bdec0 c03ff849 c21bdef0
-> > [  673.365650]        00052974 00000000 000000ff 00000000 00000000 00000000 c21bdef0 000529dc
-> > [  673.365657] Call Trace:
-> > [  673.365659]  [<c03fd728>] schedule_timeout+0x48/0xc0
-> > [  673.365663]  [<c03fd50e>] io_schedule_timeout+0x5e/0xb0
-> > [  673.365667]  [<c0170d11>] congestion_wait+0x71/0x90
-> > [  673.365671]  [<c016b92e>] wb_kupdate+0x9e/0xf0
-> > [  673.365675]  [<c016beb2>] pdflush+0x102/0x1d0
-> > [  673.365679]  [<c013fa82>] kthread+0x42/0x70
-> > [  673.365683]  [<c01050df>] kernel_thread_helper+0x7/0x18
-> > 
+On Fri, Oct 19 2007 at 8:17 +0200, Shreyansh Jain <shreyansh.jain@gmail.com> wrote:
+> Hi List,
 > 
-> That looks more like the inode writeback patches from Wu than the per
-> bdi dirty stuff. The later typically hangs in balance_dirty_pages().
+> I have tried this on kernelnewbies
+> <http://article.gmane.org/gmane.linux.kernel.kernelnewbies/23166> but it seems 
+> I am not good at explaining well. trying here again.
+> 
+> Question:
+> Is there a limitation (some kind of caveat) when direct IO pages are added to 
+> a bio (multiple pages per bio) and if the total length or offset of some of 
+> the vectors is not aligned (PAGE_SIZE or sector size)?
+> 
+> My scenario:
+> 1. I have a filesystem in which I create bio for submission to a SCSI disk 
+>    connected in a SAN via a FC switch. 
+> 2. This is a direct IO request where in multiple pages are being added in a bio
+>    (bio_map_user). Also, as the user buffer I get is unaligned, I am changing
+>     bio's first vector offset (as well as len, bi_size accordingly).
+> 
+> What I observe is:
+> 
+> 1. IO is performed perfectly (as expected) in case there are no SCSI failure.
+>    end_bio gets called as expected and the user app is happy.
+> 2. In case I  disconnect the SCSI device from switch, my end_bio function 
+>    keeps on getting sub-completion bio (bi_size > 0 and uptodate cleared,
+>    error set to -5).
+> 3. For capturing and ignoring sub-completion returns from block layer, 
+>    using other kernel end_bio implementation as example I had a code like
+> 
+>     if(bio->bi_size > 0)
+>        return 1;
+> 
+>    as the starting lines of the end_bio routine. Thus, my user space goes off 
+>    to disk sleep and kernel log keeps on spweing messages like 
+> 
+> ...
+> Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+> Oct 17 21:56:07 mgs02 kernel: sd 2:0:0:8: SCSI error: return code = 0x10000
+> Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+> Oct 17 21:56:07 mgs02 kernel: sd 2:0:0:8: SCSI error: return code = 0x10000
+> Oct 17 21:56:07 mgs02 kernel: end_request: I/O error, dev sdl, sector 33639
+> ...
+> 
+> till i connect the switch back - even if that is one hour after disconnecting it.
+> 
+> Best part - it works amazingly well in case I keep the offset of the first page
+> aligned (somehow, at expense of corrupted data copy) - failure of SCSI disk
+> (end_bio returns, bi_size=0, my code captures error) or no failure.
+> 
+> I have tried this on 2.6.5 and 2.6.16.27 (I agree they are old, but that is 
+> what I have to work  on :( ). It is a qlogic SCSI HBA. I have created the bio
+>  just like other kernel subsystems do.
+> 
+> Only thing I am not sure is whether there is something special that needs to 
+> be done in case of direct IO which I am missing.
+> 
+> biodoc.txt states that:
+> "Note: Right now the only user of bios with more than one page is ll_rw_kio,
+>  which in turn means that only raw I/O uses it (direct i/o may not work right
+>  now)."
+> 
+> Any idea why it doesn't work (though I am expecting that this doc is 2.6
+> starting era and things might have changed a lot now).
+> 
+> Any help would be highly appreciated. Apologies if my channel of approach is
+> wrong and if this post is huge (couldn't keep it shorter than this).
+> 
+> Shreyansh
 > 
 > 
+> [PS: Is this situation something to do with request flags REQ_PC /
+> REQ_BLOCK_PC?? While searching code, I found these somewhere connected to 
+> direct IO (bio_add_pc_page) and could find more about them]
 > 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Yes, you are right,
+There was a related fix to a similar problem by Mike Christie, in resent
+Kernels, If there is no chance for you working on newer kernels, than you
+will have to back port it.
 
-both revisions 1f7d6668c29b1dfa307a44844f9bb38356fc989b and 3e26c149c358529b1605f8959341d34bc4b880a3 work fine
-But I didn't pay attention that those are before f4a1c2bce002f683801bcdbbc9fd89804614fb6b.
-So, back to the drawing board.... :-)
+it is:
+commit bd441deaf341c524b28fd72831ebf6fef88f1c41
+Author: Mike Christie <michaelc@cs.wisc.edu>
+Date:   Tue Mar 13 12:52:29 2007 -0500
 
-Will test revision 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b, just after writeback patches.
-Thanks,
-	Best regards,
-		Maxim Levitsky
-		
+    [SCSI] fix write buffer length in scsi_req_map_sg()
+
+ 
+look it up the git trees on kernel.org
+
+Boaz
