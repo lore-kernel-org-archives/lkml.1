@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXJVTpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbXJVTrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbXJVTpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXJVTpq
+	id S1755510AbXJVTrZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbXJVTrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:45:46 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:19918 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbXJVTpo (ORCPT
+	Mon, 22 Oct 2007 15:47:17 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58494 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbXJVTrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:45:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=IC/YohGaZCoRO36vShHyKyKPA+aXcLAa4GKfpv1bhXO9jgVQpF1091yZLfwQ/CCR7v/Tn9/6hhsREVWvK9QuU9PIBHPXwmx1T7DWpxKGe6c34DO44rz3tT8/Je3AnmOZQLqB2PgumsyjqKdrgxE/Mu4cJe/JSXCu6u+Mmc4Vah0=
-Message-ID: <471CFDCE.9090702@googlemail.com>
-Date: Mon, 22 Oct 2007 21:45:18 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+	Mon, 22 Oct 2007 15:47:15 -0400
+Date: Mon, 22 Oct 2007 13:47:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+Message-ID: <20071022194714.GI27248@parisc-linux.org>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <20071022152912.GA841@linux-mips.org> <20071022112110.105b8e11.akpm@linux-foundation.org> <200710222110.34768.arnd@arndb.de>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: appletalk bugs
-References: <471CB159.1070706@googlemail.com> <m18x5vasif.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m18x5vasif.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200710222110.34768.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Gabriel C <nix.or.die@googlemail.com> writes:
-> 
->> Hi,
->>
->> modprobing appletalk on current git gives a warning in dmesg :
->>
->> [38506.600269] sysctl table check failed: /net/appletalk .3.7 procname does not
->> match binary path procname
-> 
-> Oops.  My apologies it appears I made a mistake when creating my
-> table to check up on sysctl values.
-> 
-> This should fix it.
+On Mon, Oct 22, 2007 at 09:10:34PM +0200, Arnd Bergmann wrote:
+> On a related note, should we encourage the use of spin_lock() and
+> spin_lock_irq() instead of spin_lock_irqsave() where possible?
 
-Yes it does, thx.
+spin_lock(), certainly.  On PowerPC, I'm reliably informed it's fewer
+instructions to save/restore than it is to disable/enable.  So no clear
+advantage there.
 
-> 
-> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> 
-> ---
-> 
-> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-> index 3c9ef5a..ed6fe51 100644
-> --- a/kernel/sysctl_check.c
-> +++ b/kernel/sysctl_check.c
-> @@ -731,7 +731,7 @@ static struct trans_ctl_table trans_net_table[] = {
->  	{ NET_UNIX,		"unix",		trans_net_unix_table },
->  	{ NET_IPV4,		"ipv4",		trans_net_ipv4_table },
->  	{ NET_IPX,		"ipx",		trans_net_ipx_table },
-> -	{ NET_ATALK,		"atalk",	trans_net_atalk_table },
-> +	{ NET_ATALK,		"appletalk",	trans_net_atalk_table },
->  	{ NET_NETROM,		"netrom",	trans_net_netrom_table },
->  	{ NET_AX25,		"ax25",		trans_net_ax25_table },
->  	{ NET_BRIDGE,		"bridge",	trans_net_bridge_table },
-> 
+> On some architectures, accessing the interrupt flag is a heavyweight
+> operation, especially when running under a hypervisor, so a number
+> of drivers could benefit from being converted to not save the flags
+> at all instead of just changing the type of the flags variable.
+
+We certainly don't want to encourage people to blindly make those
+conversions ... and I've seen the results of encouraging kernel janitors
+to do things a certain way.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
