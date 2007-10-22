@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXJVNK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbXJVNPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXJVNK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 09:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXJVNKu
+	id S1754430AbXJVNPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 09:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXJVNO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 09:10:50 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:52539 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751899AbXJVNKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 09:10:49 -0400
-Message-ID: <393058650.02921@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 22 Oct 2007 21:10:45 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 100% iowait on one of cpus in current -git
-Message-ID: <20071022131045.GA5357@mail.ustc.edu.cn>
-References: <200710220822.52370.maximlevitsky@gmail.com> <200710221421.21439.maximlevitsky@gmail.com> <393056632.00561@ustc.edu.cn> <200710221505.35397.maximlevitsky@gmail.com>
+	Mon, 22 Oct 2007 09:14:56 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:34593 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbXJVNO4 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 09:14:56 -0400
+Message-ID: <471CA245.2070103@de.ibm.com>
+Date: Mon, 22 Oct 2007 15:14:45 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710221505.35397.maximlevitsky@gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Avi Kivity <avi@qumranet.com>
+CC: carsteno@de.ibm.com, carsteno@linux.vnet.ibm.com,
+       "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com> <4718C9A1.3010703@qumranet.com> <471C821A.8020500@de.ibm.com> <471C8E28.9020707@qumranet.com>
+In-Reply-To: <471C8E28.9020707@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 03:05:35PM +0200, Maxim Levitsky wrote:
-> Hi,
-> Thank you very much too, for helping me.
-
-You are welcome :-)
-
-> Applied.
-> Had to kill klogd, since kernel generates tons of redirtied inode messages.
-> Size of the kern.log is 863 KB, thus I I don't think it is polite to attachit.
-> Don't know whenever it is ok to put it on pastebin too.
-> 
-> Anyway, it shows lots of redirtied inode... messages,
-> and while most of them are "at 08:02(sda2)" , my reiserfs root partition, some are
-> 
-> "Oct 22 14:50:27 MAIN kernel: [   73.643794] redirtied inode 2582 size 0 at 00:0f(tmpfs), line 300."
-> 
-> " line 300" is shown always
-> 
-> (I have /var/run, /var/lock, /dev mounted as tmpfs, default kubuntu setup)
-
-Thank you for the testing out.
-
-Hmm, Maybe it's an reiserfs related issue.  Do you have the full log file?
-
-Thank you,
-Fengguang
-
+Avi Kivity wrote:
+> I pulled yesterday so it should be all right (and you don't need me for 
+> that; you can pull from Linus on top of kvm.git).
+Thanks :-).
