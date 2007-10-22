@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbXJVHQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbXJVHSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbXJVHQw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXJVHQj
+	id S1754916AbXJVHSE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbXJVHRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:16:39 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:44581 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742AbXJVHQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:16:36 -0400
-X-Greylist: delayed 47935 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Oct 2007 03:16:35 EDT
-Date: Mon, 22 Oct 2007 09:16:27 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>, Rob Landley <rob@landley.net>
-Subject: Re: [PATCH] m68k: Use cc-cross-prefix (was: Re: [GI:wqT PULL] kbuild
- updates - second round)
-In-Reply-To: <alpine.LNX.0.9999.0710220303400.27496@firda.kolla.no>
-Message-ID: <Pine.LNX.4.64.0710220915160.6155@anakin>
-References: <20071019204415.GA623@uranus.ravnborg.org>
- <Pine.LNX.4.64.0710211956280.6155@anakin> <20071021182245.GA5840@uranus.ravnborg.org>
- <Pine.LNX.4.64.0710212028560.6155@anakin> <alpine.LNX.0.9999.0710220303400.27496@firda.kolla.no>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-1399845207-1193037340=:6155"
-Content-ID: <Pine.LNX.4.64.0710220915450.6155@anakin>
+	Mon, 22 Oct 2007 03:17:52 -0400
+Received: from mga03.intel.com ([143.182.124.21]:3675 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbXJVHRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 03:17:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,309,1188802800"; 
+   d="scan'208";a="303143721"
+Subject: [PATCH -v6 0/3] x86 boot: 32-bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 22 Oct 2007 15:16:48 +0800
+Message-Id: <1193037408.23935.21.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 22 Oct 2007 07:14:09.0059 (UTC) FILETIME=[23957730:01C8147B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This patchset defines a 32-bit boot protocol for x86 platform,
+adds an extensible boot parameter passing mechanism, export the boot
+parameters via sysfs.
 
----1463808512-1399845207-1193037340=:6155
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0710220915451.6155@anakin>
+The patchset has been tested against kernel of git version
+v2.6.23-6623-g55b70a0 on x86_64 and i386.
 
-On Mon, 22 Oct 2007, Kolbjørn Barmen wrote:
-> On Sun, 21 Oct 2007, Geert Uytterhoeven wrote:
-> > +ifneq ($(SUB_ARCH),$(ARCH))
-> > +     ifeq ($(CROSS_COMPILE),)
-> > +            CROSS_COMPILE := $(call cc-cross-prefix, m68k-linux-gnu- m68k-linux-)
-> 
-> I've not paid much attention to discussion over this (I tend to build
-> natively, less stress :) ), so pardon my ignorance. Does the above make
-> any difference for me when I use CROSS_COMPILE=m68k-unknown-linux-gnu-,
-> or does it just detect m68k-linux-gnu- and m68k-linux-?
+This patchset is based on the proposal of Peter Anvin.
 
-No, it makes no difference if you explicitly pass
-CROSS_COMPILE=m68k-unknown-linux-gnu-.
 
-If you want, we can add m68k-unknown-linux-gnu- to the list in
-arch/m68k/Makefile, so it cab be autodetected.
+v6:
 
-Gr{oetje,eeting}s,
+- The linked list of setup_data is copied to memory area right after
+  the kernel _end during early kernel bootstrap to solve the issue
+  that where the safe place is to place linked list of setup_data.
 
-						Geert
+v5:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- Use bt_ioremap/bt_iounmap in copy_setup_data.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
----1463808512-1399845207-1193037340=:6155--
+v4:
+
+- Reserve setup_data and boot parameters for accessing during
+  runtime.
+- Export boot parameters via sysfs.
+
+v3:
+
+- Move hd0_info and hd1_info back to zero page for compatibility.
+
+v2:
+
+- Increase the boot protocol version number
+- Check version number before parsing setup data.
+- Revise zero page description according to the source code and move
+  them to zero-page.txt.
+
+
+Best Regards,
+Huang Ying
