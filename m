@@ -1,76 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXJVFZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbXJVFaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbXJVFZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 01:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXJVFZP
+	id S1754076AbXJVFaA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 01:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXJVF3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 01:25:15 -0400
-Received: from smtp125.plus.mail.mud.yahoo.com ([209.191.106.156]:44056 "HELO
-	smtp125.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751139AbXJVFZO (ORCPT
+	Mon, 22 Oct 2007 01:29:53 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:59415 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbXJVF3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 01:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=XDbtr0fm3lBLVjQk6vbVjzMePTDr9W1M2eH2cONOA3lf1014JsRKz5fGfBwMwuHZEprNLYI1F6HOcvl2nZeQCVgI0j/7crxU4hPD3mLC5W0jZKUR3fUI06fePHxJAHizIYOheLX2ARm6i4GxUiqBgWt52vqBnzsEGFfwEWKFqSU=  ;
-X-YMail-OSG: IBFGgp0VM1madP.z1xR99G_ivvLmGb9llhGl0qtZR0tz2E7sYVu9AoxpvQDFk3t8CK0SpD50LA--
-Date: Mon, 22 Oct 2007 07:22:55 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] fs/partitions/check.c: add error handling for kobject_add
-Message-ID: <20071022052255.GA9095@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
+	Mon, 22 Oct 2007 01:29:52 -0400
+Date: Sun, 21 Oct 2007 22:29:51 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Michael Krufky <mkrufky@linuxtv.org>
+cc: Adrian Bunk <bunk@kernel.org>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] fix CONFIG_TUNER_TEA5761=m
+In-Reply-To: <471C19F1.8090505@linuxtv.org>
+Message-ID: <Pine.LNX.4.58.0710212201060.16052@shell4.speakeasy.net>
+References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <bbpetkov@yahoo.de>
+On Sun, 21 Oct 2007, Michael Krufky wrote:
+> Adrian Bunk wrote:
+> > This patch fixes CONFIG_TUNER_TEA5761=m broken by
+> > commit ca805d57cf5ea7482ed3da28653f30621249ee45.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> >
+> > ---
+> >
+> >  drivers/media/video/tuner-core.c |    6 ------
+> >  1 file changed, 6 deletions(-)
+> >
+> > 26336c30e76c37bda368a24b8b12978388a18cf3
+> > diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+> > index 9484308..1795b78 100644
+> > --- a/drivers/media/video/tuner-core.c
+> > +++ b/drivers/media/video/tuner-core.c
+> > @@ -30,9 +30,7 @@
+> >
+> >  /* standard i2c insmod options */
+> >  static unsigned short normal_i2c[] = {
+> > -#ifdef CONFIG_TUNER_TEA5761
+> >  	0x10,
+> > -#endif
+> >
+> ^^^ I believe that we want to keep these #ifdef's above...  The removals
+> below are fine.
 
-Add error handling to the kobject_add()-call and signal (the even highly
-unlikely) error condition.
+Won't leaving in the call to tea5761_autodetection() when tea5761 is not
+compiled in result in an undefined symbol error?
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+I think what we want to do put in the typical if(TEA5761 >= TUNER) include tea5761
+code in tuner logic that the rest of the selectable sub-driver use.
 
---
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 722e12e..5490e33 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -371,11 +371,12 @@ void delete_partition(struct gendisk *disk, int part)
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
- 	struct hd_struct *p;
-+	int err = -EINVAL;
- 
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
- 		return;
--	
-+
- 	p->start_sect = start;
- 	p->nr_sects = len;
- 	p->partno = part;
-@@ -390,7 +391,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+
-+	err = kobject_add(&p->kobj);
-+	if (err) {
-+		pr_err("%s: Error adding %s to sysfs\n", __FUNCTION__,
-+				kobject_name(&p->kobj));
-+	}
-+
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
- 	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
--- 
-Regards/Gruß,
-    Boris.
+#if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
+
+Of course compiling TEA5761 lower than TUNER doesn't make any sense now
+since the only thing that uses tea5761 is the tuner.  But it's still
+possible, you just end up with a tuner that doesn't support tea5761 and a
+tea5761 module that isn't needed by anything.
+
+>
+>
+> >  	0x42, 0x43, 0x4a, 0x4b,			/* tda8290 */
+> >  	0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+> >  	0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+> > @@ -292,7 +290,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
+> >  		}
+> >  		t->mode_mask = T_RADIO;
+> >  		break;
+> > -#ifdef CONFIG_TUNER_TEA5761
+> >  	case TUNER_TEA5761:
+> >  		if (tea5761_attach(&t->fe, t->i2c.adapter, t->i2c.addr) == NULL) {
+> >  			t->type = TUNER_ABSENT;
+> > @@ -301,7 +298,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
+> >  		}
+> >  		t->mode_mask = T_RADIO;
+> >  		break;
+> > -#endif
+> >  	case TUNER_PHILIPS_FMD1216ME_MK3:
+> >  		buffer[0] = 0x0b;
+> >  		buffer[1] = 0xdc;
+> > @@ -594,7 +590,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
+> >  	/* autodetection code based on the i2c addr */
+> >  	if (!no_autodetect) {
+> >  		switch (addr) {
+> > -#ifdef CONFIG_TUNER_TEA5761
+> >  		case 0x10:
+> >  			if (tea5761_autodetection(t->i2c.adapter, t->i2c.addr) != EINVAL) {
+> >  				t->type = TUNER_TEA5761;
+> > @@ -606,7 +601,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
+> >  				goto register_client;
+> >  			}
+> >  			break;
+> > -#endif
+> >  		case 0x42:
+> >  		case 0x43:
+> >  		case 0x4a:
+> >
+> >
+> Regards,
+>
+> Mike Krufky
+>
+> _______________________________________________
+> v4l-dvb-maintainer mailing list
+> v4l-dvb-maintainer@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
+>
