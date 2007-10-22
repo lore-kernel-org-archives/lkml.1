@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752186AbXJVJIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbXJVJLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752186AbXJVJIq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbXJVJIj
+	id S1752302AbXJVJLb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXJVJLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:08:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60930
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869AbXJVJIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:08:38 -0400
-Date: Mon, 22 Oct 2007 02:09:00 -0700 (PDT)
-Message-Id: <20071022.020900.41634188.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH]: Fix IDE host_flags regression.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Oct 2007 05:11:24 -0400
+Received: from il.qumranet.com ([82.166.9.18]:38787 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750850AbXJVJLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 05:11:23 -0400
+Message-ID: <471C690D.7080908@qumranet.com>
+Date: Mon, 22 Oct 2007 11:10:37 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: kvm-devel@lists.sourceforge.net, Laurent Vivier <Laurent.Vivier@bull.net>,
+       linux-kernel@vger.kernel.org, borntraeger@de.ibm.com
+Subject: Re: [kvm-devel] [PATCH] move kvm_guest_exit() after	local_irq_enable()
+References: <47135D1B.1060004@bull.net>	<11927135412363-git-send-email-Laurent.Vivier@bull.net>	<20071022082604.GA28528@elte.hu> <471C647A.50908@qumranet.com> <20071022085703.GA2781@elte.hu>
+In-Reply-To: <20071022085703.GA2781@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+>>
+>> Note the kvm part is already in my 2.6.24 queue.
+>>     
+>
+> ok, then please push the whole patch to Linus, the scheduler bits are:
+>
+>   Acked-by: Ingo Molnar <mingo@elte.hu>
+>   
 
-Bart, please test your changes.
+Sure, thanks.
 
-Thank you.
+-- 
+error compiling committee.c: too many arguments to function
 
-[IDE]: Expand hwif->host_flags so that it fits new flags.
-
-This fixes regressions added by:
-238e4f142c33bb34440cc64029dde7b9fbc4e65f
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 2e4b8dd..4ed4777 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -667,7 +667,7 @@ typedef struct hwif_s {
- 	u8 straight8;	/* Alan's straight 8 check */
- 	u8 bus_state;	/* power state of the IDE bus */
- 
--	u16 host_flags;
-+	u32 host_flags;
- 
- 	u8 pio_mask;
- 
