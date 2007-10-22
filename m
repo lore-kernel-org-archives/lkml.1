@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbXJVEK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbXJVELU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752733AbXJVEK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 00:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbXJVEKu
+	id S1754350AbXJVELU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 00:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXJVELI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 00:10:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58135 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbXJVEKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 00:10:49 -0400
-Date: Mon, 22 Oct 2007 00:10:45 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unlock before bug returns
-Message-ID: <20071022001045.131ea465@bree.surriel.com>
-In-Reply-To: <471C11E5.2000003@tiscali.nl>
-References: <471C0697.1040906@tiscali.nl>
-	<471C11E5.2000003@tiscali.nl>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 00:11:08 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:38784 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbXJVELH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 00:11:07 -0400
+Date: Sun, 21 Oct 2007 23:10:57 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH] IPMI: fix comparison in demangle_device_id
+To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Stian Jordet <liste@jordet.net>
+Reply-to: minyard@acm.org
+Message-id: <20071022041057.GA11676@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 04:58:45 +0200
-Roel Kluin <12o3l@tiscali.nl> wrote:
+From: Corey Minyard <cminyard@mvista.com>
 
-> Roel Kluin wrote:
-> 
-> >     unlock before bug returns
-> 
-> >  	if (cs >= GPMC_CS_NUM || !gpmc_cs_reserved(cs)) {
-> >  		printk(KERN_ERR "Trying to free non-reserved GPMC
-> > CS%d\n", cs);
-> > -		BUG();
-> >  		spin_unlock(&gpmc_mem_lock);
-> > -		return;
-> > +		BUG();
-> 
-> 
-> should we bother to unlock before panicking, or is the unlock not
-> required either?
+Coverity spotted some incorrect code in a recent change to the IPMI
+driver; this patch make sure the data is really long enough to pull
+the manufacturer id and product id out of a get device id message.
 
-BUG() kills the current process, but not the whole system.
-
-Unlocking the lock means that the rest of the system has somewhat
-of a chance of surviving.  Not unlocking means a guaranteed hang
-for the rest of the system, making a BUG() no better than panic.
-
-Please keep the unlock.
-
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+Cc: Adrian Bunk <bunk@kernel.org>
+Cc: Stian Jordet <liste@jordet.net>
+---
+Index: linux-2.6.23/include/linux/ipmi_smi.h
+===================================================================
+--- linux-2.6.23.orig/include/linux/ipmi_smi.h
++++ linux-2.6.23/include/linux/ipmi_smi.h
+@@ -173,7 +173,7 @@ static inline int ipmi_demangle_device_i
+ 	id->firmware_revision_2 = data[3];
+ 	id->ipmi_version = data[4];
+ 	id->additional_device_support = data[5];
+-	if (data_len >= 6) {
++	if (data_len >= 11) {
+ 		id->manufacturer_id = (data[6] | (data[7] << 8) |
+ 				       (data[8] << 16));
+ 		id->product_id = data[9] | (data[10] << 8);
