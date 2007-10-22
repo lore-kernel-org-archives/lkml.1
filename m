@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbXJVPgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbXJVPh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbXJVPgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 11:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXJVPgr
+	id S1754755AbXJVPh1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 11:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXJVPhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 11:36:47 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55214 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbXJVPgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 11:36:47 -0400
-Subject: Re: [RFC/PATCH 2/3] rt: PI-workqueue support
-From: Daniel Walker <dwalker@mvista.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <1193055303.27435.176.camel@twins>
-References: <20071022095054.393085000@chello.nl>
-	 <20071022095658.745030000@chello.nl>
-	 <Pine.LNX.4.58.0710220754440.10836@gandalf.stny.rr.com>
-	 <1193055303.27435.176.camel@twins>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 08:33:31 -0700
-Message-Id: <1193067211.5028.55.camel@imap.mvista.com>
+	Mon, 22 Oct 2007 11:37:15 -0400
+Received: from xenotime.net ([66.160.160.81]:45457 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752638AbXJVPhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 11:37:13 -0400
+Date: Mon, 22 Oct 2007 08:37:08 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: James.Bottomley@HansenPartnership.com
+Subject: [PATCH] voyager: use struct instead of PARAM
+Message-Id: <20071022083708.54669a86.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-22 at 14:15 +0200, Peter Zijlstra wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Daniel wrote this bit, but I tend to agree with him, but can't give his
-> rationale. Mine is that worklets are typically asynchonous and thus its
-> prio should not depend on temporal things like boosting.
-> 
-> OTOH it would probably make sense to allow it to depend on it through
-> the barrier constructs, but for that I have to hook the completions into
-> the PI chain. Something that needs more thought.
+Use struct boot_params instead of PARAM + 0xoffsets.
+Fixes one of many Voyager build problems.
 
-Yeah, I think Peter summarized it .. Since the task isn't waiting on
-work when it's inserted it didn't seem right to use a priority that may
-be boosted, since the work isn't preventing completion .. I think the
-only time you would want to transfer the boosted priority is when a task
-gets blocked, which does happen when you flush the workqueue.
+arch/x86/kernel/setup_32.c:543: error: 'PARAM' undeclared (first use in this function)
 
-Although, If there is one area of this code that needs attention I think
-it's the PI stuff, it wasn't my first priority at the time .. I also
-recall Oleg find some issue with it ..
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/asm-x86/mach-voyager/setup_arch.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Daniel
-
+--- linux-2623-g14-x32.orig/include/asm-x86/mach-voyager/setup_arch.h
++++ linux-2623-g14-x32/include/asm-x86/mach-voyager/setup_arch.h
+@@ -1,5 +1,7 @@
+ #include <asm/voyager.h>
+-#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *)(PARAM+0x40))
++#include <asm/setup_32.h>
++#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *) \
++			(&boot_params.apm_bios_info))
+ 
+ /* Hook to call BIOS initialisation function */
+ 
