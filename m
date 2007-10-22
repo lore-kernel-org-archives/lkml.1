@@ -1,128 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbXJVGiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbXJVGnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbXJVGiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 02:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJVGiM
+	id S1753561AbXJVGnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 02:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXJVGnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 02:38:12 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:27685 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbXJVGiL convert rfc822-to-8bit (ORCPT
+	Mon, 22 Oct 2007 02:43:12 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:59693 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXJVGnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 02:38:11 -0400
-X-Greylist: delayed 568 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Oct 2007 02:38:11 EDT
-X-IronPort-AV: E=Sophos;i="4.21,309,1188802800"; 
-   d="scan'208";a="408794212"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 22 Oct 2007 02:43:11 -0400
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Jeff Dike <jdike@addtoit.com>,
+       Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+References: <200710111754.46854.rob@landley.net>
+	<200710200252.37919.p.giarrusso@gmail.com>
+	<87y7dyhv2u.fsf@hades.wkstn.nix> <20071021114854.GF2455@hacking>
+	<20071021130848.GA4621@c2.user-mode-linux.org>
+	<20071021132031.GI2455@hacking>
+	<20071021154346.GW8181@ftp.linux.org.uk>
+	<20071022043746.GF2998@hacking>
+	<20071022052214.GY8181@ftp.linux.org.uk>
+	<20071022061245.GG2998@hacking>
+From: Nix <nix@esperi.org.uk>
+Emacs: the definitive fritterware.
+Date: Mon, 22 Oct 2007 07:42:33 +0100
+In-Reply-To: <20071022061245.GG2998@hacking> (WANG Cong's message of "Mon, 22 Oct 2007 14:12:46 +0800")
+Message-ID: <87d4v7fy5i.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Question about free/used memory on Linux
-Date: Sun, 21 Oct 2007 23:28:37 -0700
-Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847E@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <471C3A17.5020400@linux.vnet.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Question about free/used memory on Linux
-Thread-Index: AcgUbo1/W9olNXFIQ4WY88MpvUMGWgABgmsw
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471BA1D1.5040905@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com> <471C3A17.5020400@linux.vnet.ibm.com>
-From: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 22 Oct 2007 06:28:37.0712 (UTC) FILETIME=[C792FD00:01C81474]
-Authentication-Results: sj-dkim-4; header.From=rarakali@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=us-ascii
+X-DCC-sonic.net-Metrics: hades 1156; Body=7 Fuz1=7 Fuz2=7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vaidy,
-I will use the metric you have suggested.
+On 22 Oct 2007, WANG Cong uttered the following:
+> I build UML for non-SMP x86. But I don't know about UML_NET_VDE. ;(
+>
+> Errors threw out by gcc (too many) are put here:
+> 	http://wangcong.org/down/errors.txt
 
-Thanks,
-Ravi
+It's hard to tell without LOCALE=C, but those are the sorts of results
+I'd expect if you had run make {old,menu,x}config without specifying
+ARCH=um, so you've configured for one architecture and are now trying
+to build another.
 
+Where is the include/asm symlink pointing to in your build tree?
 
------Original Message-----
-From: Vaidyanathan Srinivasan [mailto:svaidy@linux.vnet.ibm.com] 
-Sent: Sunday, October 21, 2007 10:50 PM
-To: Ravinandan Arakali (rarakali)
-Cc: Linux Kernel
-Subject: Re: Question about free/used memory on Linux
+(FWIW I get a coredump if I try to use the skas patch, but with noprocmm
+UML in 2.6.23.1 builds and runs perfectly well on x86-32. I haven't
+tried 2.6.23, but I see no reason why it should act any differently.)
 
-
-Ravinandan Arakali (rarakali) wrote:
-> Hi Vaidy,
-> Thanks for clarifying several of my doubts.
-> 
-> To answer your question about my intention, we currently have a system
-
-> with 2 GB RAM and I need to find out the actual used and free memory 
-> so that we can decide if the same setup(applications, tmpfs etc.) can 
-> run on another system with lesser memory.
-> 
-> Is it correct to say that the "used" field "free -m" excluding 
-> buffers/caches would give the correct idea of used memory (I mean does
-
-> it take care of shared memory, shared copies of libraries etc.) ? I 
-> assume it does not include /dev/shm usage since that's also a tmpfs 
-> partition ?
-
-Thats correct. The used excluding the buffer caches gives most of the
-memory used by the system.  You have excludes _all_ file backed memory
-including shm.
-
-> 
-> If so, then I can add the memory used by tmpfs partitions to the above
-
-> and get the total memory used ?
-> 
-> For eg. if my "free -m" appears as below:
-> Linux(debug)# free -m
->              total       used       free     shared    buffers
-> cached
-> Mem:          2014        984       1030          0         80
-> 594
-> -/+ buffers/cache:        309       1705
-> 
-> Can I say that 309MB + 350 MB(size of tmpfs partitions including
-> /dev/shm)
-> is the used memory on my system ?
-
-Two problems with this logic:
-
-1. all of tmpfs may not be really used.  You are over committing.
-2. You still miss the pages needed to map the program code.  They are
-file backed too. Though this will be very less amount of memory compared
-to data  and shared memory.
-
-Let me suggest a metric:
-
-1. Take the used part excluding the buffers (309MB) in your case and add
-'Mapped' and 'Dirty' from /proc/meminfo
-
-This may be better than adding tmpfs/shmdev size.
-
-2. Once your system is running will all applications loaded, cleanup the
-pagecache (file data cached in memory)
-
-sync
-echo 1 > /proc/sys/vm/drop_caches
-
-The first sync will bring down 'Dirty' count and drop_caches will
-reclaim all 'not needed' file cache memory.
-
-Now if you use 'free' and take the used count _with_ the buffers and
-file cache, this will provide a realistic value. (Actually Free in
-/proc/meminfo)
-
-Do not exclude buffers they are _needed_ for optimum system operation.
-With the above figure you can probably add 10% or more memory as extra
-memory for file cache when the system is operating with full load.
-
-If you want to be sure of these experiments boot you system with less
-memory using mem=xxx kernel parameter and run some performance tests to
-ensure the degradation is under acceptable limits.
-
---Vaidy
+-- 
+`Some people don't think performance issues are "real bugs", and I think 
+such people shouldn't be allowed to program.' --- Linus Torvalds
