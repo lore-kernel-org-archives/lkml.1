@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXJVWB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbXJVWDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbXJVWB5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXJVWBu
+	id S1753085AbXJVWDW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXJVWDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 18:01:50 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:52449 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbXJVWBt (ORCPT
+	Mon, 22 Oct 2007 18:03:15 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:33679 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbXJVWDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 18:01:49 -0400
-Message-ID: <471D1DC8.5090802@freescale.com>
-Date: Mon, 22 Oct 2007 17:01:44 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: request_firmware() and in-kernel modules
-References: <4718EAEA.9000609@freescale.com> <20071021040757.GC24869@kroah.com>
-In-Reply-To: <20071021040757.GC24869@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 22 Oct 2007 18:03:14 -0400
+Subject: Re: 2.6.23-mm1 - autofs broken
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ian Kent <raven@themaw.net>, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20071020105615.3e74c192@bree.surriel.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	 <20071020011310.30abc16b@bree.surriel.com>
+	 <20071019223900.edd04f65.akpm@linux-foundation.org>
+	 <20071020015404.437b6937@bree.surriel.com>
+	 <20071020015445.0c0dcda6@bree.surriel.com>
+	 <20071020105615.3e74c192@bree.surriel.com>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 15:03:10 -0700
+Message-Id: <1193090590.17464.113.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
+On Sat, 2007-10-20 at 10:56 -0400, Rik van Riel wrote:
+> I just tried it.  In the latest git tree, autofs still works.
+> 
+> The regression is in -mm only.
 
-> I'd recommend using the non-blocking mode, that way, when userspace
-> finally gets running, it can handle the firmware events properly, and
-> your kernel code will have not timed out already.
+Andrew,
 
-Thanks Greg, that did the trick.
+Rik tracked it down to an interaction with futexes from the pid
+namespace code.  I believe r/o bind mounts are innocent for now.
 
-What the value of FW_ACTION_NOHOTPLUG?  If I specify that instead of 
-FW_ACTION_HOTPLUG, I presume I don't get automatic loading of the firwmare via 
-the hotplug subsystem, but request_firmware() still times out.  Why would I ever 
-not want to take advantage of hotplug?
+-- Dave
 
