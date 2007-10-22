@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXJVSDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbXJVSHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbXJVSDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXJVSDi
+	id S1753623AbXJVSHr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXJVSHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:03:38 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:54666 "EHLO smtp.drzeus.cx"
+	Mon, 22 Oct 2007 14:07:41 -0400
+Received: from main.gmane.org ([80.91.229.2]:52026 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbXJVSDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:03:38 -0400
-Date: Mon, 22 Oct 2007 20:03:35 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmc_spi stopped working
-Message-ID: <20071022200335.7c1eca12@poseidon.drzeus.cx>
-In-Reply-To: <20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20071017211923.31fde15e@poseidon.drzeus.cx>
-	<20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	id S1752077AbXJVSHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:07:40 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Parag Warudkar <parag.warudkar@gmail.com>
+Subject: Re: 2.6.23 - MacMini - snd-hda-intel stopped working
+Date: Mon, 22 Oct 2007 18:07:29 +0000 (UTC)
+Message-ID: <loom.20071022T180112-37@post.gmane.org>
+References: <82e4877d0710212008m335c5f15s88963aaebf2f6d4a@mail.gmail.com> <20071022100629.GA11114@dose.home.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 76.112.242.207 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.8) Gecko/20071008 Firefox/2.0.0.8)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Oct 2007 12:37:13 -0700
-David Brownell <david-b@pacbell.net> wrote:
+Tino Keitel <tino.keitel <at> gmx.de> writes:
 
-> When enumerating MMC cards using SPI, don't support the "just probe"
-> mechanism since it doesn't always work.  Instead, always wait for the
-> reset to complete before issuing the next request.
-> 
-> This is a regression ... this SanDisk MMC card used to enumerate with
-> no trouble, despite this particular spec violation.
+
+> Not that this would help you a lot, but it worked with a stock 2.6.23 kernel
+> here:
 > 
 
-I've been testing a bit more here, and I can't get this particular bug. I have others though:
+Right. As was pointed in previous email the bug was introduced in post 2.6.23
+updates (I was running git but Makefile version was still 2.6.23). 
 
-Out of my five MMC cards, only two work properly. One doesn't respond to SPI commands at all, and two hang on a second CMD0 and return ILLEGAL_COMMAND on a second run of CMD1. All of this is of course wildly out of spec. SPI seems to be a bonus, not a given. :/
+Looks like we have a fix that'll go to Linus shortly. I'll go back to released
+2.6.23.1 for the time being.
 
-As for your card, could you send me a dump as I'm unable to produce the issue here?
+> 
+> What model do you have? Mine is the first dual core version (1,66 GHz,
+> Superdrive)
 
-Rgds
--- 
-     -- Pierre Ossman
+Same model I have, BTW.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Thanks
+
+Parag
+
