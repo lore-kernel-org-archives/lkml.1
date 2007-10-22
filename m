@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbXJVMfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXJVMh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbXJVMfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 08:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbXJVMfY
+	id S1754927AbXJVMh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 08:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXJVMhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 08:35:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35019 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbXJVMfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 08:35:23 -0400
-Date: Mon, 22 Oct 2007 14:35:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Use show_regs() to improve __schedule_bug()
-	output
-Message-ID: <20071022123506.GB4990@elte.hu>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <alpine.LFD.0.999.0709020439290.20781@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0709021803060.24993@enigma.security.iitk.ac.in> <20070902122835.GA27438@elte.hu> <alpine.LFD.0.999.0709061208120.26804@enigma.security.iitk.ac.in>
+	Mon, 22 Oct 2007 08:37:13 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:51641 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752364AbXJVMhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 08:37:12 -0400
+Message-ID: <393056632.00561@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 22 Oct 2007 20:37:07 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 100% iowait on one of cpus in current -git
+Message-ID: <20071022123707.GA4240@mail.ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221258.11384.maximlevitsky@gmail.com> <393051953.24752@ustc.edu.cn> <200710221421.21439.maximlevitsky@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709061208120.26804@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200710221421.21439.maximlevitsky@gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Satyam Sharma <satyam@infradead.org> wrote:
-
-> BTW would something similar would be useful in __schedule_bug() too? I 
-> sure think so -- I'm not sure if EIP holds anything useful there, but 
-> CPU#, EFLAGS and the init_utsname() stuff would be definitely helpful 
-> ...
+On Mon, Oct 22, 2007 at 02:21:21PM +0200, Maxim Levitsky wrote:
+> I Bisected this bug to exactly this commit:
 > 
-> [PATCH] sched: Use show_regs() to improve __schedule_bug() output
+> 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b
+> writeback: introduce writeback_control.more_io to indicate more io
 > 
-> A full register dump along with stack backtrace would make the 
-> "scheduling while atomic" message more helpful. Use show_regs() 
-> instead of dump_stack() for this. We already know we're atomic in here 
-> (that is why this function was called) so show_regs()'s atomicity 
-> expectations are guaranteed.
-> 
-> Also, modify the output of the "BUG: scheduling while atomic:" header 
-> a bit to keep task->comm and task->pid together and preempt_count() 
-> after them.
+> Reverting it and compiling latest git shows no more signs of that bug.
 
-thanks, applied.
+Thank you very much.
 
-	Ingo
+I guess your system has some difficulty in writing back some inodes.
+(i.e. a bug disclosed by this patch, the 100% iowait only makes it
+more obvious)
+
+I cannot reproduce it with your .config, so would you recompile and
+run the kernel with the above commit _and_ the below debugging patch?
+
+Thank you,
+Fengguang
+---
+
+ fs/fs-writeback.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+--- linux-2.6.23-git17.orig/fs/fs-writeback.c
++++ linux-2.6.23-git17/fs/fs-writeback.c
+@@ -164,12 +164,25 @@ static void redirty_tail(struct inode *i
+ 	list_move(&inode->i_list, &sb->s_dirty);
+ }
+ 
++#define requeue_io(inode)						\
++	do {								\
++		__requeue_io(inode, __LINE__);				\
++	} while (0)
++
+ /*
+  * requeue inode for re-scanning after sb->s_io list is exhausted.
+  */
+-static void requeue_io(struct inode *inode)
++static void __requeue_io(struct inode *inode, int line)
+ {
+ 	list_move(&inode->i_list, &inode->i_sb->s_more_io);
++
++	printk(KERN_DEBUG "redirtied inode %lu size %llu at %02x:%02x(%s), line %d.\n",
++			inode->i_ino,
++			i_size_read(inode),
++			MAJOR(inode->i_sb->s_dev),
++			MINOR(inode->i_sb->s_dev),
++			inode->i_sb->s_id,
++			line);
+ }
+ 
+ static void inode_sync_complete(struct inode *inode)
+
