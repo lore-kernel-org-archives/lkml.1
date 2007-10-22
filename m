@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751207AbXJVUss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbXJVUtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751207AbXJVUss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 16:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXJVUsj
+	id S1753064AbXJVUtZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 16:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXJVUtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 16:48:39 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:18594 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbXJVUsi (ORCPT
+	Mon, 22 Oct 2007 16:49:18 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:46982 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbXJVUtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 16:48:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JBzVh9rSSw6H71OX4TK4F9nf2Ybm3/YkH73CCcKtbK8n+HtORpc3Jc55ncV1OpdbRjxxOQKFVVTfwpk3v8BWdmJeq9Zb5E8k+iQ2349DkNfNUVsvJAzkmOij6enMe+rs2Wg+nYIQpLLkXrReebT8FM4ahVqoF3Uh0apckX0j4Tk=
-Message-ID: <84144f020710221348x297795c0qda61046ec69a7178@mail.gmail.com>
-Date: Mon, 22 Oct 2007 23:48:37 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, "Ryan Finnie" <ryan@finnie.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       cjwatson@ubuntu.com, linux-mm@kvack.org, neilb@suse.de
-In-Reply-To: <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI>
-	 <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
-	 <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
-	 <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
-X-Google-Sender-Auth: 6efe49e322c0f98c
+	Mon, 22 Oct 2007 16:49:17 -0400
+To: riel@redhat.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, xemul@openvz.org
+In-reply-to: <20071022145321.195d929b@bree.surriel.com> (message from Rik van
+	Riel on Mon, 22 Oct 2007 14:53:21 -0400)
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu> <20071022145321.195d929b@bree.surriel.com>
+Message-Id: <E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 22 Oct 2007 22:48:51 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+> > I'm getting a process stuck in pthread_rwlock_wrlock(), even though it
+> > looks like the lock is not held by anybody.
+> > 
+> > I think the last -mm was OK.  Any ideas?
+> > 
+> > If not, I'll go searching for the offending patch.
+> 
+> I wonder if that's the same bug that's breaking autofs for me.
 
-On Mon, 15 Oct 2007, Pekka Enberg wrote:
-> > I wonder whether _not setting_ BDI_CAP_NO_WRITEBACK implies that
-> > ->writepage() will never return AOP_WRITEPAGE_ACTIVATE for
-> > !wbc->for_reclaim case which would explain why we haven't hit this bug
-> > before. Hugh, Andrew?
+Probably.
 
-On 10/22/07, Hugh Dickins <hugh@veritas.com> wrote:
-> Only ramdisk and shmem have been returning AOP_WRITEPAGE_ACTIVATE.
-> Both of those set BDI_CAP_NO_WRITEBACK.  ramdisk never returned it
-> if !wbc->for_reclaim.  I contend that shmem shouldn't either: it's
-> a special code to get the LRU rotation right, not useful elsewhere.
-> Though Documentation/filesystems/vfs.txt does imply wider use.
->
-> I think this is where people use the phrase "go figure" ;)
+> Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent cache
+> rwlock lock failed
+> Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error: 11 at
+> 65 in cache.c
+> 
+> I'm bisecting 2.6.23-mm1 today to find the problem patch, with
+> some luck I'll have it this afternoon.
+> 
+> With the series applied up to whitespace-fixes-task-exit-handling.patch
+> things work.
+> 
+> It breaks before kswapd-should-only-wait-on-io-if-there-is-io.patch
+> 
+> That leaves only about 60-80 patches to look at :)
 
-Heh. As far as I can tell, the implication of "wider use" was added by
-Neil in commit "341546f5ad6fce584531f744853a5807a140f2a9 Update some
-VFS documentation", so perhaps he might know? Neil?
+OK, the first patch that breaks something for me is:
 
-                               Pekka
+  pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
+
+Miklos
