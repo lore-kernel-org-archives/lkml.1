@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbXJVJtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXJVJvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751777AbXJVJtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXJVJtG
+	id S1754500AbXJVJvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXJVJvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:49:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38784 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbXJVJtF (ORCPT
+	Mon, 22 Oct 2007 05:51:11 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:18948 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbXJVJvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:49:05 -0400
-Date: Mon, 22 Oct 2007 11:49:01 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       xfs@oss.sgi.com, Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
-       Morten =?iso-8859-1?B?QsO4Z2Vza292?= 
-	<xen-users@morten.bogeskov.dk>,
-       xfs-masters@oss.sgi.com
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-Message-ID: <20071022094901.GA28174@one.firstfloor.org>
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com> <p731wbw4t3h.fsf@bingen.suse.de> <200710160056.47458.nickpiggin@yahoo.com.au> <20071015110735.GA11748@one.firstfloor.org> <1193004961.6745.42.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193004961.6745.42.camel@pasglop>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 22 Oct 2007 05:51:10 -0400
+Message-ID: <471C6FA8.30500@yandex.ru>
+Date: Mon, 22 Oct 2007 12:38:48 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: forcing write-back from FS - again
+References: <471BB45D.8070509@nokia.com>        <20071021135526.57db7519.akpm@linux-foundation.org>        <471C64D1.3020904@yandex.ru> <20071022020559.aa3fc59c.akpm@linux-foundation.org>
+In-Reply-To: <20071022020559.aa3fc59c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 22 Oct 2007 09:38:49.0769 (UTC) FILETIME=[59B0B190:01C8148F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 08:16:01AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-10-15 at 13:07 +0200, Andi Kleen wrote:
-> > On Tue, Oct 16, 2007 at 12:56:46AM +1000, Nick Piggin wrote:
-> > > Is this true even if you don't write through those old mappings?
-> > 
-> > I think it happened for reads too.  It is a little counter intuitive
-> > because in theory the CPU doesn't need to write back non dirty lines,
-> > but in the one case which took so long to debug exactly this happened
-> > somehow.
+Andrew Morton wrote:
+>> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+>> @@ -28,6 +28,7 @@ static inline int task_is_pdflush(struct task_struct *task)
+>>    */
+>>   enum writeback_sync_modes {
+>>          WB_SYNC_NONE,   /* Don't wait on anything */
+>> +       WB_SYNC_NONE_PG,/* Don't wait on anything, don't touch locked pages */
+>>          WB_SYNC_ALL,    /* Wait on every mapping */
+>>          WB_SYNC_HOLD,   /* Hold the inode on sb_dirty for sys_sync() */
+>>   };
 > 
-> The problem exist also on ppc, and afaik, is due to the line being in
-> the cache at all (either dirty (write) or not (read)), thus causing the
-> snoop logic to hit, that is what's causing the problem vs. non cached
-> accesses.
+> It would be simpler/safer/saner to add a new bitflag to writeback_control
+> and use that directly.  The WB_SYNC_foo flags are a holdover from an
+> earlier time and really should be made to go away, in favour of directly
+> setting up an appropriate writeback_control.
 
-That makes sense. Snoop can effectively turn a read into a write.
+You mean something like (wbc->flags & WB_SYNC_NONE) etc? But below you used 
+wbc->skip_locked_pages, I'm confused.
 
-> Also, on some processors, the simple fact of having the page mapped can
-> cause the CPU to prefetch from it even if it's not actually accessed
-> (speculative prefetch can cross page boundaries if things are mapped).
+> The code you have there looks racy: if someone else locks the page in that
+> little window after the PageLocked() test we'll still block in lock_page().
+>  That's unlikely to happen in your application (apart from a remaining
+> ab/ba scenario) but we should make it robust:
+> 
+> 	if (wbc->skip_locked_pages) {
+> 		if (TestSetPageLocked(page))
+> 			continue;
+> 	} else {
+> 		lock_page(page);
+> 	}
 
-Exactly that happens on x86. Normally prefetches stop on TLB miss,
-but the CPU can do speculative TLB fetches too.
+Yeah, thanks for the pointer! Thank you for your help on the issue!
 
-Also even without any prefetching the CPU does speculative execution
-and that can lead to random addresses being followed.
-
--Andi
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
