@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbXJVS3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbXJVSdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbXJVS3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbXJVS3s
+	id S1755153AbXJVSdL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXJVSc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:29:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57335 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbXJVS3r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:29:47 -0400
-Subject: Re: [v4l-dvb-maintainer] DVB: BANDWIDTH_TO_KHZ strangeness
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Patrick Boettcher <patrick.boettcher@desy.de>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0710221657450.21323@pub1.ifh.de>
-References: <20071014175055.GJ4211@stusta.de>
-	 <Pine.LNX.4.64.0710221657450.21323@pub1.ifh.de>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 16:29:36 -0200
-Message-Id: <1193077776.15350.22.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Mon, 22 Oct 2007 14:32:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:49695 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753198AbXJVSc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:32:58 -0400
+Message-ID: <471CECD9.3010409@goop.org>
+Date: Mon, 22 Oct 2007 11:32:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: dean gaudet <dean@arctic.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
+       xfs@oss.sgi.com, Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
+       =?ISO-8859-1?Q?Morten_?= =?ISO-8859-1?Q?B=F8geskov?= 
+	<xen-users@morten.bogeskov.dk>,
+       xfs-masters@oss.sgi.com
+Subject: Re: Interaction between Xen and XFS: stray RW mappings
+References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com> <4712A254.4090604@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org> <471C1A61.1010001@goop.org> <alpine.DEB.0.9999.0710212128180.2320@twinlark.arctic.org>
+In-Reply-To: <alpine.DEB.0.9999.0710212128180.2320@twinlark.arctic.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+dean gaudet wrote:
+> sounds like a bug in xen to me :)
+>   
 
-> I know that in the future the linux-dvb-API will also support other 
-> bandwidths so I'm begging for mercy for those 3 things here to not get too 
-> much out-of-sync with our internal code.
+I explained at the head of this thread how and why Xen works in this
+manner.  It's certainly a change from native execution; whether you
+consider it to be a bug is a different matter.
 
-I don't see much problem on keeping this for a while. 
+But it turns out that leaving stray mappings around on pages which get
+later used in special ways is a bad idea, and can manifest in all kinds
+of random unpleasant ways.  Getting a clear error out of Xen is probably
+nicest way to discover and debug this problem.
 
-However, if not causing to much troubles for you to manage, I would to
-this, instead:
-#if 0
-	/* Currently, DVB API allows only bandwidths starting from 5 GHz */
-        factor = BANDWIDTH_TO_KHZ(ch->u.ofdm.bandwidth);
-        if (factor >= 5000)
-                factor = 1;
-        else
-                factor = 6;
-#else
-	factor = 6;
-#endif
-
-With the above code, gentree.pl scripts will automatically remove the
-dead code from the Kernel, while keeping it defined at the development
-environment.
-
-If you want, you may also replace the #if 0 by something like:
-
-#ifdef API_SUPPORTS_LOW_BANDWIDTH
-
-In this case, by adding API_SUPPORTS_LOW_BANDWIDTH to gentree.pl, the
-same effect of eliminating the dead code from kernel can be produced,
-since gentree.pl is capable of evaluating cpp macros like the above to 0
-(or 1) for the constants declared on a table inside its code.
-
--- 
-Cheers,
-Mauro
-
+    J
