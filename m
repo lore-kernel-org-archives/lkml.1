@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbXJVQys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXJVQ4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752765AbXJVQys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 12:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXJVQyi
+	id S1753364AbXJVQ4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 12:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXJVQ4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 12:54:38 -0400
-Received: from waste.org ([66.93.16.53]:46531 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbXJVQyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 12:54:37 -0400
-Date: Mon, 22 Oct 2007 11:54:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] remove netpoll receive code
-Message-ID: <20071022165423.GG17536@waste.org>
-References: <20071017132131.1992bedd@freepuppy.rosehill>
+	Mon, 22 Oct 2007 12:56:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49680 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbXJVQ4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 12:56:33 -0400
+Date: Mon, 22 Oct 2007 09:56:21 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Crispin Cowan <crispin@crispincowan.com>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       linux-kernel@vger.kernel.org,
+       LSM ML <linux-security-module@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: LSM conversion to static interface
+Message-ID: <20071022165621.GC29876@kroah.com>
+References: <200710220224.l9M2Og5t020815@sapphire.spiritone.com> <20071022110718.3f781108@the-village.bc.nu> <471CCB77.3040004@crispincowan.com> <20071022175043.0aa65957@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071017132131.1992bedd@freepuppy.rosehill>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071022175043.0aa65957@the-village.bc.nu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[annoyed as ever about never being cc:ed on this stuff]
+On Mon, Oct 22, 2007 at 05:50:43PM +0100, Alan Cox wrote:
+> 
+> For that reason I think keeping LSM is the right thing to do.
 
-On Wed, Oct 17, 2007 at 01:21:31PM -0700, Stephen Hemminger wrote:
-> The netpoll receive code is:
-> 1. Not used by any in-tree features, it is used by kgdb-over-ether.
+Wait, we aren't talking about dropping LSM at all, just the "LSM is a
+module" option.  That's it.  And by making LSM not a module, we can then
+go on to fix some of the reported speed issues that are present with the
+LSM option enabled right now.
 
-And various crashdump over network tools.
+thanks,
 
-> 2. A nice hook for people doing nasty things like private binary network stacks or rootkits.
-
-It's a completely useless hook for a binary network stack. It only
-supports UDP and only point to point. And it will have crap
-performance. It's much less useful here than, say, TUN/TAP.
-
-It doesn't buy anything for a rootkit either, which will continue to
-trivially hide servers in userspace as they already do.
-
-This point is completely FUD.
-
-> 3. Unsecured by any of the normal firewalling code.
-
-This is correct. It also applies to the TX side of things. The point,
-of course, is to bypass as much of the stack as possible so that when
-the kernel crashes, we're more likely to actually get our netpoll
-data.
-
-> I propose that we take out all the whole netpoll rx path. If/when
-> kgdb gets submitted a better and alternative receive path can be
-> added.
-
-Let's hear about this better alternative first, shall we? I for one am
-a little skeptical of its existence. Going through a larger fraction
-of the network stack, running softirqs, etc., are all big (potentially
-fatal) steps backward from the point of view of a debugger.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+greg k-h
