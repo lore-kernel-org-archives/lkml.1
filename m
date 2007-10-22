@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbXJVFVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXJVFW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbXJVFVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 01:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXJVFVN
+	id S1754717AbXJVFW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 01:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbXJVFWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 01:21:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:61011 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbXJVFVM (ORCPT
+	Mon, 22 Oct 2007 01:22:22 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36473 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbXJVFWV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 01:21:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kJPlHiZO+VZ6JdPDdDyPHaAgu5ELGBWHvA8TC4m4QrabSI64fnYRPD/BBeL5/jL4w9qjmWFoZEGMV6nwzgH4UELzrWbuNWgwm1DFe/xmPtnVZ9+L2pttL2Nbh/AcajpizlXkRfdmpwmDthfaAmogiPxP7T+S+Cqijo263STRukM=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 1/1] INPUT/BF54x-KEYPAD driver:  Remove useless line -errno returned by irq_request
-Date: Mon, 22 Oct 2007 01:21:06 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       Andrey Panin <pazke@donpac.ru>,
-       Michael Hennerich <michael.hennerich@analog.com>
-References: <1192687055-11935-1-git-send-email-bryan.wu@analog.com>
-In-Reply-To: <1192687055-11935-1-git-send-email-bryan.wu@analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 01:22:21 -0400
+Date: Mon, 22 Oct 2007 06:22:14 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Jeff Dike <jdike@addtoit.com>, Nix <nix@esperi.org.uk>,
+       Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+Message-ID: <20071022052214.GY8181@ftp.linux.org.uk>
+References: <200710111754.46854.rob@landley.net> <200710200252.37919.p.giarrusso@gmail.com> <87y7dyhv2u.fsf@hades.wkstn.nix> <20071021114854.GF2455@hacking> <20071021130848.GA4621@c2.user-mode-linux.org> <20071021132031.GI2455@hacking> <20071021154346.GW8181@ftp.linux.org.uk> <20071022043746.GF2998@hacking>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710220121.07148.dmitry.torokhov@gmail.com>
+In-Reply-To: <20071022043746.GF2998@hacking>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 October 2007, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+On Mon, Oct 22, 2007 at 12:37:46PM +0800, WANG Cong wrote:
+> >Fallout continues; I've got a preliminary patch for it.  Basically, we
+> >need to stop doing -U__i386__ et.al.
+> >
 > 
-> Cc: Andrey Panin <pazke@donpac.ru>
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Hi, Al.
+> 
+> I applied your patch and recompiled the kernel. But it failed again.
+> ;(
 
-Applied, thank you Michael, Bryan.
+Details would be welcome...  Notes: SMP on UML is no more; UML_NET_VDE
+depends on having some userland library installed.  Aside of those two
+it ought to build.
 
--- 
-Dmitry
+Build log on failing build would be nice, along with .config.
