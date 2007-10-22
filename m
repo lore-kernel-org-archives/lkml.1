@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbXJVQrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbXJVQys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbXJVQrq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 12:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXJVQri
+	id S1752765AbXJVQys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 12:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXJVQyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 12:47:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59053 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751553AbXJVQrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 12:47:37 -0400
-Date: Mon, 22 Oct 2007 17:50:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Crispin Cowan <crispin@crispincowan.com>
-Cc: Thomas Fricaccia <thomas_fricacci@yahoo.com>, linux-kernel@vger.kernel.org,
-       LSM ML <linux-security-module@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: LSM conversion to static interface
-Message-ID: <20071022175043.0aa65957@the-village.bc.nu>
-In-Reply-To: <471CCB77.3040004@crispincowan.com>
-References: <200710220224.l9M2Og5t020815@sapphire.spiritone.com>
-	<20071022110718.3f781108@the-village.bc.nu>
-	<471CCB77.3040004@crispincowan.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 12:54:38 -0400
+Received: from waste.org ([66.93.16.53]:46531 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751651AbXJVQyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 12:54:37 -0400
+Date: Mon, 22 Oct 2007 11:54:23 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] remove netpoll receive code
+Message-ID: <20071022165423.GG17536@waste.org>
+References: <20071017132131.1992bedd@freepuppy.rosehill>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017132131.1992bedd@freepuppy.rosehill>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Crispin at least is providing genuine discussion points. Sarbox has
-> > nothing to say on "using vendor linux kernels".
-> >   
-> I agree that SarBox is not really the issue here. Partially related is
-> enterprise rules about what kernels one is allowed to load. More
-> generally, this change forces users who want to use a different LSM than
-> their vendor provides to recompile their kernel, where they did not have
-> to recompile before. It forces LSM module developers who want to modify
-> their LSM to reboot, where they didn't necessarily have to reboot before.
+[annoyed as ever about never being cc:ed on this stuff]
 
-The moment they load a module from a third party they usually hit support
-issues, unless there is some kind of arrangement between the parties.
+On Wed, Oct 17, 2007 at 01:21:31PM -0700, Stephen Hemminger wrote:
+> The netpoll receive code is:
+> 1. Not used by any in-tree features, it is used by kgdb-over-ether.
 
-> 
-> That is not a catastrophe, it is just tedious. It does not kill baby
-> seals, and it does not make Linux utterly useless. OTOH, I think it is
-> strictly negative: it takes away user choice in 2 dimensions, and adds
-> zero value. So apply it if you must to bake the kernel developer's lives
-> easier, but it really is a net loss in Linux kernel capability.
+And various crashdump over network tools.
 
-Frankly I don't care about apparmor, I don't see it as a serious project.
-Smack is kind of neat but looks like a nicer way to specify selinux rules.
+> 2. A nice hook for people doing nasty things like private binary network stacks or rootkits.
 
-What I do care about is that at some point something is going to appear
-which is based on all the same good practice and experience and forty
-years of research that leads towards SELinux, and which is much better. At
-that point there will be a changeover phase and the LSM is exactly what
-is needed for this.
+It's a completely useless hook for a binary network stack. It only
+supports UDP and only point to point. And it will have crap
+performance. It's much less useful here than, say, TUN/TAP.
 
-The fact it allows people to play with toy security systems, propose new
-ones like SMACK, and do research and PhD work on Linux into security is a
-convenient and very good side effect.
+It doesn't buy anything for a rootkit either, which will continue to
+trivially hide servers in userspace as they already do.
 
-For that reason I think keeping LSM is the right thing to do.
+This point is completely FUD.
 
-Alan
+> 3. Unsecured by any of the normal firewalling code.
+
+This is correct. It also applies to the TX side of things. The point,
+of course, is to bypass as much of the stack as possible so that when
+the kernel crashes, we're more likely to actually get our netpoll
+data.
+
+> I propose that we take out all the whole netpoll rx path. If/when
+> kgdb gets submitted a better and alternative receive path can be
+> added.
+
+Let's hear about this better alternative first, shall we? I for one am
+a little skeptical of its existence. Going through a larger fraction
+of the network stack, running softirqs, etc., are all big (potentially
+fatal) steps backward from the point of view of a debugger.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
