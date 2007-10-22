@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbXJVDoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbXJVDpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbXJVDoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 23:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXJVDoW
+	id S1754600AbXJVDpg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 23:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXJVDp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 23:44:22 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:14471 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbXJVDoW (ORCPT
+	Sun, 21 Oct 2007 23:45:28 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43451 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751532AbXJVDp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 23:44:22 -0400
-X-IronPort-AV: i="4.21,309,1188792000"; 
-   d="scan'208"; a="42169170:sNHT27088467"
-Subject: [GIT PULL Part #3] Blackfin arch bug fixing for merge window
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Sam Ravnborg <sam@ravnborg.org>
+	Sun, 21 Oct 2007 23:45:28 -0400
+X-Sasl-enc: b40J+nsLDhnMt1A5Xmr4xm4CpqTqKafl5O841d2uHQrc 1193024726
+Subject: Re: 2.6.23-mm1 - autofs broken
+From: Ian Kent <raven@themaw.net>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071020011310.30abc16b@bree.surriel.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	 <20071020011310.30abc16b@bree.surriel.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Mon, 22 Oct 2007 11:44:16 +0800
-Message-Id: <1193024656.19886.4.camel@roc-laptop>
+Date: Mon, 22 Oct 2007 11:45:19 +0800
+Message-Id: <1193024720.3197.13.camel@raven.themaw.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 22 Oct 2007 03:44:20.0582 (UTC) FILETIME=[D4445060:01C8145D]
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, 2007-10-20 at 01:13 -0400, Rik van Riel wrote:
+> On Thu, 11 Oct 2007 21:31:26 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23/2.6.23-mm1/
+> > 
+> > - I've been largely avoiding applying anything since rc8-mm2 in an
+> > attempt to stabilise things for the 2.6.23 merge.
+> 
+> Between rc8-mm2 and 2.6.23-mm1, autofs stopped working in the
+> -mm kernel.
+> 
+> Instead of mounting my home directory, I get these messages in
+> /var/log/messages:
+> 
+> Oct 20 00:38:52 kenny automount[2293]: cache_readlock: mapent cache
+> rwlock lock failed
 
-Please pull from 'for-linus' branch of
+This is quite strange, normally it should never fail and, in all the
+time version 5 has been available the maximum number of read locks has
+never been exceeded.
 
-master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git
-for-linus
+Is there anything unusual going on like a server down causing autofs to
+issue a number of mounts that are all waiting to time out?
 
-to receive the following updates:
+> Oct 20 00:38:52 kenny automount[2293]: unexpected pthreads error: 11 at
+> 65 in cache.c
 
- arch/blackfin/Makefile       |    4 ++--
- arch/blackfin/kernel/setup.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Mmm .. if this is a genuine autofs issue maybe I need to handle EAGAIN
+returns but that would mean blocking which probably isn't good and I'd
+rather not if we can avoid it.
 
-Bryan Wu (1):
-      Blackfin arch: use KBUILD_CFLAGS and KBUILD_AFLAGS in Makefile
+> 
+> I am not sure if this is due to autofs changes or changes in some other
+> code that was merged.  If you can think of any suspicious change that
+> I should test, please let me know.
+> 
 
-Mike Frysinger (1):
-      Blackfin arch: Javier Herrer writes: fix building when icache and
-dcache is disabled
+Is there anything in the log, an autofs4 kernel trace perhaps?
 
-diff --git a/arch/blackfin/Makefile b/arch/blackfin/Makefile
-index 3c87291..f7cac7c 100644
---- a/arch/blackfin/Makefile
-+++ b/arch/blackfin/Makefile
-@@ -12,8 +12,8 @@ LDFLAGS_vmlinux  := -X
- OBJCOPYFLAGS     := -O binary -R .note -R .comment -S
- GZFLAGS          := -9
- 
--CFLAGS           += $(call cc-option,-mno-fdpic)
--AFLAGS           += $(call cc-option,-mno-fdpic)
-+KBUILD_CFLAGS           += $(call cc-option,-mno-fdpic)
-+KBUILD_AFLAGS           += $(call cc-option,-mno-fdpic)
- CFLAGS_MODULE    += -mlong-calls
- KALLSYMS         += --symbol-prefix=_
- 
-diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-index 0e74644..f1b059e 100644
---- a/arch/blackfin/kernel/setup.c
-+++ b/arch/blackfin/kernel/setup.c
-@@ -501,7 +501,7 @@ EXPORT_SYMBOL(sclk_to_usecs);
- 
- unsigned long usecs_to_sclk(unsigned long usecs)
- {
--	return get_sclk() / (USEC_PER_SEC * (u64)usecs);
-+	return (get_sclk() * (u64)usecs) / USEC_PER_SEC;
- }
- EXPORT_SYMBOL(usecs_to_sclk);
- 
-@@ -589,7 +589,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- #elif defined CONFIG_BFIN_WT
- 		"wt"
- #endif
--		, 0);
-+		"", 0);
- 
- 	seq_printf(m, "%s\n", cache);
- 
+Ian
+
