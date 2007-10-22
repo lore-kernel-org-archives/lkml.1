@@ -1,58 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbXJVTLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXJVTMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbXJVTLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbXJVTLh
+	id S1755896AbXJVTMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbXJVTML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:11:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:59671 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbXJVTLg convert rfc822-to-8bit (ORCPT
+	Mon, 22 Oct 2007 15:12:11 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:38400 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755099AbXJVTMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:11:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
-Date: Mon, 22 Oct 2007 21:10:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Ralf Baechle <ralf@linux-mips.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <20071022152912.GA841@linux-mips.org> <20071022112110.105b8e11.akpm@linux-foundation.org>
-In-Reply-To: <20071022112110.105b8e11.akpm@linux-foundation.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Mon, 22 Oct 2007 15:12:08 -0400
+Message-ID: <471CF605.6090307@tiscali.nl>
+Date: Mon, 22 Oct 2007 21:12:05 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710222110.34768.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/6vDUutDWMudy3o1auOmrXxdeevSbU2Pgyo1z
- Wbhd4L161XlHCjlyIlrLU6X7BEY/zId1onChPLCS6ns4xdCnfS
- hlhayvy9qVCG3vHE069+g==
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH retry] return hidden bug and unlock bugs
+References: <471CE31E.8020009@tiscali.nl>
+In-Reply-To: <471CE31E.8020009@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007, Andrew Morton wrote:
-> Yes, it's always been ugly that we use unsigned long for this rather than
-> abstracting it properly.
+Roel Kluin wrote:
+> This patches shouldn't alter behavior when CONFIG_BUG is disabled. It is meant
+> as a replacement for the previous patches.
 > 
-> However I'd prefer that we have some really good reason for introducing
-> irq_flags_t now.  Simply so that I don't needlessly spend the next two
-> years wrestling with literally thousands of convert-to-irq_flags_t patches
-> and having to type "please use irq_flags_t here" in hundreds of patch
-> reviews. (snivel, wimper)
+> Concerning the patch changing fs/buffer.c, I am still wondering whether
+> "page_cache_release(page)" should be placed before or after the BUG().
 
-On a related note, should we encourage the use of spin_lock() and
-spin_lock_irq() instead of spin_lock_irqsave() where possible?
+...
 
-On some architectures, accessing the interrupt flag is a heavyweight
-operation, especially when running under a hypervisor, so a number
-of drivers could benefit from being converted to not save the flags
-at all instead of just changing the type of the flags variable.
+> @@ -365,8 +365,8 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t dma_addr, size_t size,
+>  		printk(KERN_ERR "Bogus pci_unmap_single: dma_addr %lx "
+>  		       " base %lx size %x\n", dma_addr, arena->dma_base,
+>  		       arena->size);
+> -		return;
+>  		BUG();
+> +		return;
+>  	}
 
-	Arnd <><
+As suggested by Ray Lee, BUG() is changed into WARN_ON(1)
+
+--
+    Unlock before BUG(), but don't change behavior in the case when
+    CONFIG_BUG is disabled. Also changes a return-hidden BUG() in
+    a WARN_ON(1)
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index e1c4707..d04f151 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -365,8 +365,8 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t dma_addr, size_t size,
+ 		printk(KERN_ERR "Bogus pci_unmap_single: dma_addr %lx "
+ 		       " base %lx size %x\n", dma_addr, arena->dma_base,
+ 		       arena->size);
++		WARN_ON(1);
+ 		return;
+-		BUG();
+ 	}
+ 
+ 	npages = calc_npages((dma_addr & ~PAGE_MASK) + size);
+diff --git a/arch/arm/mach-omap2/gpmc.c b/arch/arm/mach-omap2/gpmc.c
+index 5a4cc20..12bd0eb 100644
+--- a/arch/arm/mach-omap2/gpmc.c
++++ b/arch/arm/mach-omap2/gpmc.c
+@@ -357,8 +357,8 @@ void gpmc_cs_free(int cs)
+ 	spin_lock(&gpmc_mem_lock);
+ 	if (cs >= GPMC_CS_NUM || !gpmc_cs_reserved(cs)) {
+ 		printk(KERN_ERR "Trying to free non-reserved GPMC CS%d\n", cs);
+-		BUG();
+ 		spin_unlock(&gpmc_mem_lock);
++		BUG();
+ 		return;
+ 	}
+ 	gpmc_cs_disable_mem(cs);
+diff --git a/drivers/mtd/ubi/vmt.c b/drivers/mtd/ubi/vmt.c
+index 88629a3..e72bead 100644
+--- a/drivers/mtd/ubi/vmt.c
++++ b/drivers/mtd/ubi/vmt.c
+@@ -100,8 +100,11 @@ static ssize_t vol_attribute_show(struct device *dev,
+ 		ret = sprintf(buf, "%lld\n", vol->used_bytes);
+ 	else if (attr == &attr_vol_upd_marker)
+ 		ret = sprintf(buf, "%d\n", vol->upd_marker);
+-	else
++	else {
++		spin_unlock(&vol->ubi->volumes_lock);
+ 		BUG();
++		return -EINVAL;
++	}
+ 	spin_unlock(&vol->ubi->volumes_lock);
+ 	return ret;
+ }
+diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+index e3c8284..f337578 100644
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -8722,7 +8722,9 @@ static int ipw_wx_get_freq(struct net_device *dev,
+ 			break;
+ 
+ 		default:
++			mutex_unlock(&priv->mutex);
+ 			BUG();
++			return -EINVAL;
+ 		}
+ 	} else
+ 		wrqu->freq.m = 0;
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 7249e01..90a3785 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1051,9 +1051,9 @@ grow_dev_page(struct block_device *bdev, sector_t block,
+ 	return page;
+ 
+ failed:
+-	BUG();
+ 	unlock_page(page);
+ 	page_cache_release(page);
++	BUG();
+ 	return NULL;
+ }
+ 
+diff --git a/mm/slab.c b/mm/slab.c
+index cfa6be4..2dd48c1 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1604,11 +1604,16 @@ void __init kmem_cache_init(void)
+ 	/* 6) resize the head arrays to their final sizes */
+ 	{
+ 		struct kmem_cache *cachep;
++		int fail = 0;
+ 		mutex_lock(&cache_chain_mutex);
+ 		list_for_each_entry(cachep, &cache_chain, next)
+-			if (enable_cpucache(cachep))
++			if (enable_cpucache(cachep)) {
++				fail = 1;
++				mutex_unlock(&cache_chain_mutex);
+ 				BUG();
+-		mutex_unlock(&cache_chain_mutex);
++			}
++		if (fail != 1)
++			mutex_unlock(&cache_chain_mutex);
+ 	}
+ 
+ 	/* Annotate slab for lockdep -- annotate the malloc caches */
+diff --git a/net/rxrpc/ar-ack.c b/net/rxrpc/ar-ack.c
+index 657ee69..e551b0b 100644
+--- a/net/rxrpc/ar-ack.c
++++ b/net/rxrpc/ar-ack.c
+@@ -752,8 +752,11 @@ all_acked:
+ 		sp->call = call;
+ 		rxrpc_get_call(call);
+ 		spin_lock_bh(&call->lock);
+-		if (rxrpc_queue_rcv_skb(call, skb, true, true) < 0)
++		if (rxrpc_queue_rcv_skb(call, skb, true, true) < 0) {
++			spin_unlock_bh(&call->lock);
+ 			BUG();
++			goto process_further;
++		}
+ 		spin_unlock_bh(&call->lock);
+ 		goto process_further;
+ 	}
+diff --git a/net/rxrpc/ar-call.c b/net/rxrpc/ar-call.c
+index 3c04b00..48804e1 100644
+--- a/net/rxrpc/ar-call.c
++++ b/net/rxrpc/ar-call.c
+@@ -426,9 +426,12 @@ void rxrpc_release_call(struct rxrpc_call *call)
+ 	       call->rx_first_oos);
+ 
+ 	spin_lock_bh(&call->lock);
+-	if (test_and_set_bit(RXRPC_CALL_RELEASED, &call->flags))
++	if (test_and_set_bit(RXRPC_CALL_RELEASED, &call->flags)) {
++		spin_unlock_bh(&call->lock);
+ 		BUG();
+-	spin_unlock_bh(&call->lock);
++	} else {
++		spin_unlock_bh(&call->lock);
++	}
+ 
+ 	/* dissociate from the socket
+ 	 * - the socket's ref on the call is passed to the death timer
+
