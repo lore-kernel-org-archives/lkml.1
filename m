@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbXJVTng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXJVTo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbXJVTng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJVTn0
+	id S1753520AbXJVTo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJVTou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:43:26 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:60173 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbXJVTnZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:43:25 -0400
-Date: Mon, 22 Oct 2007 20:42:20 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-Reply-To: <200710141723.l9EHNowh015023@agora.fsl.cs.sunysb.edu>
-Message-ID: <Pine.LNX.4.64.0710222019020.23513@blonde.wat.veritas.com>
-References: <200710141723.l9EHNowh015023@agora.fsl.cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Oct 2007 15:44:50 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:55818 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752199AbXJVTou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 15:44:50 -0400
+Date: Mon, 22 Oct 2007 21:44:26 +0200 (MEST)
+Message-Id: <200710221944.l9MJiQnJ028744@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Deepak Saxena <dsaxena@plexity.net>
+Subject: [PATCH 2.6.23] uninitialised variable in ARM/ixp4xx clockevents code
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for my delay, here are a few replies.
+Compiling kernel 2.6.23 for an ARM/ixp4xx machine results in:
 
-On Sun, 14 Oct 2007, Erez Zadok wrote:
-> In message <84144f020710141009xbc5bb71w64e8288f364ab491@mail.gmail.com>, "Pekka Enberg" writes:
-> > 
-> > However, I don't think the mapping_cap_writeback_dirty() check in
-> > __filemap_fdatawrite_range() works as expected when tmpfs is a lower
-> > mount for an unionfs mount. There's no BDI_CAP_NO_WRITEBACK capability
-> > for unionfs mappings so do_fsync() will call write_cache_pages() that
-> > unconditionally invokes shmem_writepage() via unionfs_writepage().
-> > Unless, of course, there's some other unionfs magic I am missing.
+arch/arm/mach-ixp4xx/common.c: In function 'ixp4xx_set_mode':
+arch/arm/mach-ixp4xx/common.c:445: warning: 'opts' may be used uninitialized in this function
 
-Thanks, Pekka, yes that made a lot of sense.
+The warning is valid: if ixp4xx_set_mode() is called with mode
+CLOCK_EVT_MODE_RESUME, then 'opts' will be uninitialised at the
+'*IXP4XX_OSRT1 = osrt | opts;' statement.
 
-> 
-> In unionfs_writepage() I tried to emulate as best possible what the lower
-> f/s will have returned to the VFS.  Since tmpfs's ->writepage can return
-> AOP_WRITEPAGE_ACTIVATE and re-mark its page as dirty, I did the same in
-> unionfs: mark again my page as dirty, and return AOP_WRITEPAGE_ACTIVATE.
+Initialising opts to zero in this case may not be correct, but
+at least it's better than writing random junk to the hardware.
 
-I think that's inappropriate.  Why should unionfs_writepage re-mark its
-page as dirty when the lower level does so?  Unionfs has successfully
-done its write to the lower level, what the lower level then gets up to
-(writing then or not) is its own business: needn't be propagated upwards.
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+--
+I'm not cc:ing linux-arm-kernel since that's subscribers-only.
+This code hasn't changed in 2.6.23-git17.
 
-The fewer places that supply AOP_WRITEPAGE_ACTIVATE the better.
-What I'd like most of all is to eliminate it, in favour of vmscan.c
-working out the condition for itself: but I've given that no thought,
-it may not be reasonable.
+ arch/arm/mach-ixp4xx/common.c |    1 +
+ 1 files changed, 1 insertion(+)
 
-unionfs_writepage also sets AOP_WRITEPAGE_ACTIVATE when it cannot
-find_lock_page: that case may be appropriate.  Though I don't really
-understand it: seems dangerous to be relying upon the lower level page
-just happening to be there already.  Isn't memory pressure then likely
-to clog up with lots of upper level dirty pages which cannot get
-written out to the lower level?
-
-> 
-> Should I be doing something different when unionfs stacks on top of tmpfs?
-
-I think not.
-
-> (BTW, this is probably also relevant to ecryptfs.)
-
-You're both agreed on that, but I don't see how: ecryptfs writes the
-lower level via vfs_write, it's not using the lower level's writepage,
-is it?
-
-Hugh
+--- linux-2.6.23/arch/arm/mach-ixp4xx/common.c.~1~	2007-10-22 20:26:50.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-ixp4xx/common.c	2007-10-22 21:22:10.000000000 +0200
+@@ -460,6 +460,7 @@ static void ixp4xx_set_mode(enum clock_e
+ 		osrt = opts = 0;
+ 		break;
+ 	case CLOCK_EVT_MODE_RESUME:
++		opts = 0;
+ 		break;
+ 	}
+ 
