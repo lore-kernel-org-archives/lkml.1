@@ -1,32 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbXJVN6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbXJVOBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbXJVN6l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 09:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXJVN6e
+	id S1753228AbXJVOBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 10:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXJVOBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 09:58:34 -0400
-Received: from verein.lst.de ([213.95.11.210]:35298 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751804AbXJVN6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 09:58:34 -0400
-Date: Mon, 22 Oct 2007 15:57:58 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, Christoph Hellwig <hch@lst.de>,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
-Message-ID: <20071022135758.GA17051@lst.de>
-References: <20071022065352.GA6489@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022065352.GA6489@in.ibm.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_40
+	Mon, 22 Oct 2007 10:01:06 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53311 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751840AbXJVOBF (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 10:01:05 -0400
+Message-ID: <471CACFA.8070501@de.ibm.com>
+Date: Mon, 22 Oct 2007 16:00:26 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Avi Kivity <avi@qumranet.com>
+CC: carsteno@linux.vnet.ibm.com,
+       "kvm-devel@lists.sourceforge.net" <kvm-devel@lists.sourceforge.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] severe bug in 2.6.23+ kvm.git
+References: <47189371.7080104@de.ibm.com> <4718C9A1.3010703@qumranet.com> <471C821A.8020500@de.ibm.com> <471C8E28.9020707@qumranet.com>
+In-Reply-To: <471C8E28.9020707@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Any reason we've got this patchset posted by three people now? :)
-
+Avi Kivity wrote:
+> I pulled yesterday so it should be all right (and you don't need me for 
+> that; you can pull from Linus on top of kvm.git).
+The machine runs kvm.git for a while now, seems to work ok.
