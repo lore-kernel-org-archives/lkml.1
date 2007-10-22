@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXJVSlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXJVSmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbXJVSlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbXJVSky
+	id S1755471AbXJVSmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbXJVSml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:40:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:52442 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755406AbXJVSkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:40:53 -0400
-Message-ID: <471CEEB4.9040807@goop.org>
-Date: Mon, 22 Oct 2007 11:40:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Mon, 22 Oct 2007 14:42:41 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35216 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753008AbXJVSml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:42:41 -0400
+Message-ID: <471CEEFA.60001@zytor.com>
+Date: Mon, 22 Oct 2007 11:42:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: dean gaudet <dean@arctic.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
-       David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
-       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com>	<4712A254.4090604@goop.org>	<200710151415.07248.nickpiggin@yahoo.com.au>	<alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org>	<471C1A61.1010001@goop.org> <p73sl439s7k.fsf@bingen.suse.de>
-In-Reply-To: <p73sl439s7k.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Huang, Ying" <ying.huang@intel.com>
+CC: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -v6 0/3] x86 boot: 32-bit boot protocol
+References: <1193037408.23935.21.camel@caritas-dev.intel.com>
+In-Reply-To: <1193037408.23935.21.camel@caritas-dev.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->   
->> Yes, that's precisely the problem.  xfs does delay the unmap, leaving
->> stray mappings, which upsets Xen.
->>     
->
-> Again it not just upsets Xen, keeping mappings to freed pages is wrong generally 
-> and violates the x86 (and likely others like PPC) architecture because it can 
-> cause illegal caching attribute aliases.
->
-> The patch that went into the tree was really not correct -- this
-> bogus optimization should have been unconditionally removed
-> or if you really wanted an ifdef made dependent on !CONFIG_XEN &&
-> !CONFIG_AGP (and likely && !CONFIG_DRM && !CONFIG_anything else that
-> uses uncached mappings in memory). 
->
-> You just worked around the obvious failure and leave the non obvious
-> rare corruptions in, which isn't a good strategy.
+Huang, Ying wrote:
+> This patchset defines a 32-bit boot protocol for x86 platform,
+> adds an extensible boot parameter passing mechanism, export the boot
+> parameters via sysfs.
+> 
+> The patchset has been tested against kernel of git version
+> v2.6.23-6623-g55b70a0 on x86_64 and i386.
+> 
 
-Well, at least it becomes a known issue and/or placeholder for when Nick
-does his grand unified vmap manager.  I guess a clean workaround would
-be to add a CONFIG_XFS_LAZY_UNMAP, and do it at the Kconfig level... 
-I'll cook up a patch.
+Hi Huang,
 
-    J
+This patchset should be rebased on top of Rusty's changes; the rebase is 
+  fairly trivial and I was originally intending to simply commit the 
+rebase as-is, with the boot protocol version bumped to 2.08.
+
+However, the documentation section is simply wrong in a number of 
+places.  In particular:
+
++In 32-bit boot protocol, the first step in loading a Linux kernel
++should still be to load the real-mode code and then examine the kernel
++header at offset 0x01f1. But, it is not necessary to load all
++real-mode code, just first 4K bytes traditionally known as "zero page"
++is needed.
+
+This is incorrect.  The zeropage (which really is better referred to as 
+struct boot_param) should be initialized to all zero, except for the 
+setup header (starting at offset 0x1f0 or 0x1f1(*)) to the length 
+specified either by boot protocol version or by the byte at offset 0x201.
+
++At entry, the CPU must be in 32-bit protected mode with paging
++disabled; the CS and DS must be 4G flat segments; %esi holds the base
++address of the "zero page"; %esp, %ebp, %edi should be zero.
+
+You also need to have a GDT loaded with the selectors for __BOOT_CS 
+(0x10) and __BOOT_DS (0x18) containing appropriate values, and you 
+should enter with interrupts disabled.  For safety, set up ES and SS as 
+well as DS.
+
+The bit about %esp, %ebp and %edi being zero is nonsense, although 
+specifying at least %ebp == %edi == 0 for future use isn't a bad idea. 
+On the other hand, %ebx *is* supposed to be zero.
+
+The documentation in zero-page.txt is wrong when it comes to protocol 
+versions.  Most of these fields are ancient, and only a handful of the 
+remainder can be tied to specific protocol versions.
+
++  struct setup_data {
++	  u64 next;
++	  u32 type;
++	  u32 len;
++	  u8  data[0];
++  } __attribute__((packed));
+
+Why packed?
+
+Time permitting, I might rewrite this myself, but it may be quicker for 
+you to update it.
+
+	-hpa
+
