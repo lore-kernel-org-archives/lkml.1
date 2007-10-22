@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbXJVR6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXJVSDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbXJVR6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 13:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXJVR6Q
+	id S1753267AbXJVSDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXJVSDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 13:58:16 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:57159 "EHLO mail.screens.ru"
+	Mon, 22 Oct 2007 14:03:38 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:54666 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbXJVR6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 13:58:15 -0400
-Date: Mon, 22 Oct 2007 22:02:59 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] flush_work_sync vs. flush_scheduled_work Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071022180259.GA967@tv-sign.ru>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <20071018063157.GA1694@ff.dom.local> <20071018070531.GA2065@ff.dom.local> <20071018154819.GA425@tv-sign.ru> <20071019075014.GA1765@ff.dom.local> <20071022061143.GA973@ff.dom.local>
+	id S1751834AbXJVSDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:03:38 -0400
+Date: Mon, 22 Oct 2007 20:03:35 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmc_spi stopped working
+Message-ID: <20071022200335.7c1eca12@poseidon.drzeus.cx>
+In-Reply-To: <20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20071017211923.31fde15e@poseidon.drzeus.cx>
+	<20071017193713.38D3923A5D5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022061143.GA973@ff.dom.local>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22, Jarek Poplawski wrote:
->
-> On Fri, Oct 19, 2007 at 09:50:14AM +0200, Jarek Poplawski wrote:
-> > On Thu, Oct 18, 2007 at 07:48:19PM +0400, Oleg Nesterov wrote:
-> > > On 10/18, Jarek Poplawski wrote:
-> > > >
-> > > > +/**
-> > > > + * flush_work_sync - block until a work_struct's callback has terminated
-> > >                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > > Hmm...
-> > > 
-> > > > + * Similar to cancel_work_sync() but will only busy wait (without cancel)
-> > > > + * if the work is queued.
-> > > 
-> > > Yes, it won't block, but will spin in busy-wait loop until all other works
-> > > scheduled before this work are finished. Not good. After that it really
-> > > blocks waiting for this work to complete.
-> > > 
-> > > And I am a bit confused. We can't use flush_workqueue() because some of the
-> > > queued work_structs may take rtnl_lock, yes? But in that case we can't use
-> > > the new flush_work_sync() helper as well, no?
+On Wed, 17 Oct 2007 12:37:13 -0700
+David Brownell <david-b@pacbell.net> wrote:
+
+> When enumerating MMC cards using SPI, don't support the "just probe"
+> mechanism since it doesn't always work.  Instead, always wait for the
+> reset to complete before issuing the next request.
 > 
-> OK, I know I'm dumber and dumber everyday,
+> This is a regression ... this SanDisk MMC card used to enumerate with
+> no trouble, despite this particular spec violation.
+> 
 
-You are not alone. I have the same feeling about myself!
+I've been testing a bit more here, and I can't get this particular bug. I have others though:
 
-> these all flushes are
-> rtnl lockup vulnerable wrt. other work functions, but cancel_work_sync
-> looks perfectly fine
+Out of my five MMC cards, only two work properly. One doesn't respond to SPI commands at all, and two hang on a second CMD0 and return ILLEGAL_COMMAND on a second run of CMD1. All of this is of course wildly out of spec. SPI seems to be a bonus, not a given. :/
 
-Yes,
+As for your card, could you send me a dump as I'm unable to produce the issue here?
 
-> Then, if by any chance I'm right, something like flush_work_sync
-> (or changed flush_scheduled_work, if there is no problem with such
-> a change of implementation) could be safely (if it's called without
-> locks used by flushed work only) done cancel_work_sync() way, by
-> running a work function after try_to_grab_pending() returns 1
+Rgds
+-- 
+     -- Pierre Ossman
 
-If this work doesn't rearm itself - yes. (otherwise, the same ->func
-can run twice _at the same time_)
-
-But again, in this case wait_on_work() after try_to_grab_pending() == 1
-doesn't block, so we can just do
-
-	if (cancel_work_sync(w))
-		w->func();
-
-Oleg.
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
