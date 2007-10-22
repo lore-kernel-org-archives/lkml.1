@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbXJVJnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbXJVJoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbXJVJnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbXJVJnF
+	id S1753728AbXJVJoG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXJVJn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:43:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34919 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751526AbXJVJnC (ORCPT
+	Mon, 22 Oct 2007 05:43:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:4404 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbXJVJnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:43:02 -0400
-Date: Mon, 22 Oct 2007 10:46:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Federico Sevilla III <jijo@fs3.ph>
+	Mon, 22 Oct 2007 05:43:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=NiSEzWOVkEExGAEQ7wZsuHAjWMtM2TasubhmdRmPHOEYFhF/nKFKltjfyq5/IRO6rSIgqKa5z6MqjWhwVZ/jFWYP4vvrxZ0JrkwRv8pWIDB6zwUgkt+WziDpAp1QDvHoa1N+FhKr9ddo7YxZn8K2+S/iqZ/htWwsXsBxpZprYCE=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Paolo Ornati <ornati@fastwebnet.it>
+Subject: Re: 100% iowait on one of cpus in current -git
+Date: Mon, 22 Oct 2007 11:43:18 +0200
+User-Agent: KMail/1.9.6
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: "spurious completions during NCQ" with 2.6.23.1 and DVD
- Multi-Recorder on Thinkpad T61
-Message-ID: <20071022104619.0a554cea@the-village.bc.nu>
-In-Reply-To: <1193018170.4672.20.camel@humanitas.fs3.ph>
-References: <1193018170.4672.20.camel@humanitas.fs3.ph>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <200710220822.52370.maximlevitsky@gmail.com> <20071022111152.12ca0425@localhost>
+In-Reply-To: <20071022111152.12ca0425@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710221143.18356.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 09:56:10 +0800
-Federico Sevilla III <jijo@fs3.ph> wrote:
-
-> Hi,
+On Monday 22 October 2007 11:11:52 Paolo Ornati wrote:
+> On Mon, 22 Oct 2007 08:22:52 +0200
+> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 > 
-> Using the 2.6.23.1 kernel and Debian Etch on a Lenovo Thinkpad T61
-> 7659A21, I am getting two weird errors, as follows:
+> > I tried to bisect this, but eventually I run into other bugs that cause system to oops early.
+> 
+> You can pick a different revision to test with:
+> 	git-reset --hard  "SHA1"
+> 
+> Choose one with "git-bisect visualize".
+> 
 
-Turn off bluetooth and you may find the stuck IRQ goes away - at least on
-some thinkpads there are weird extra IRQs when bluetooth is running which
-break stuff.
+Well, I know that, and I did try this a lot.
 
-Alan
+The problem is that between good and bad revisions there are few bugs that cause the system to oops early,
+thus I can't tell whenever the 100% iowait bug is present or not.
+
+Best regards,
+	Maxim Levitsky
