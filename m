@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbXJVWcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXJVWdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbXJVWcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXJVWcm
+	id S1753358AbXJVWdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbXJVWdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 18:32:42 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:55714 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbXJVWcl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 18:32:41 -0400
-Date: Mon, 22 Oct 2007 15:32:40 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: [i2c] [PATCH] I2C: add support for the PCF8575 chip
-In-Reply-To: <20071022145814.84e46287.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0710221522350.16052@shell4.speakeasy.net>
-References: <e2e108260710050232s1b0a9cb7u604ab7e20b61646e@mail.gmail.com>
- <20071022145814.84e46287.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Oct 2007 18:33:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50949 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750971AbXJVWdF (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 18:33:05 -0400
+Date: Tue, 23 Oct 2007 08:32:25 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, dean gaudet <dean@arctic.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
+       David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>
+Subject: Re: Interaction between Xen and XFS: stray RW mappings
+Message-ID: <20071022223224.GC995458@sgi.com>
+References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com> <4712A254.4090604@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org> <471C1A61.1010001@goop.org> <p73sl439s7k.fsf@bingen.suse.de> <471CEEB4.9040807@goop.org> <20071022190740.GA1695@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071022190740.GA1695@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Andrew Morton wrote:
-> On Fri, 5 Oct 2007 11:32:35 +0200
-> "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
-> > +#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 20)
-> > +static unsigned short normal_i2c_range[] = { I2C_CLIENT_END };
-> > +#endif
->
-> Please remove all the LINUX_VERSION_CODE tests and target only the current
-> mainline tree.
+On Mon, Oct 22, 2007 at 09:07:40PM +0200, Andi Kleen wrote:
+> On Mon, Oct 22, 2007 at 11:40:52AM -0700, Jeremy Fitzhardinge wrote:
+> > Andi Kleen wrote:
+> > > Jeremy Fitzhardinge <jeremy@goop.org> writes:
+> > >   
+> > >> Yes, that's precisely the problem.  xfs does delay the unmap, leaving
+> > >> stray mappings, which upsets Xen.
+> > >>     
+> > >
+> > > Again it not just upsets Xen, keeping mappings to freed pages is wrong generally 
+> > > and violates the x86 (and likely others like PPC) architecture because it can 
+> > > cause illegal caching attribute aliases.
+> > >
+> > > The patch that went into the tree was really not correct -- this
+> > > bogus optimization should have been unconditionally removed
+> > > or if you really wanted an ifdef made dependent on !CONFIG_XEN &&
+> > > !CONFIG_AGP (and likely && !CONFIG_DRM && !CONFIG_anything else that
+> > > uses uncached mappings in memory). 
+> > >
+> > > You just worked around the obvious failure and leave the non obvious
+> > > rare corruptions in, which isn't a good strategy.
+> > 
+> > Well, at least it becomes a known issue and/or placeholder for when Nick
+> 
+> It's hidden now so it causes any obvious failures any more. Just
+> subtle ones which is much worse.
 
-If you want to have a module that can be compiled out of tree and support
-multiple kernel versions, there is a script used in the v4l-dvb out of tree
-build system that can make it easier.
+There's no evidence of any problems ever being caused by this code.
+It's been there for years.
 
-http://linuxtv.org/hg/v4l-dvb/raw-file/4ae65d0844cf/v4l/scripts/gentree.pl
+> But why not just disable it?  It's not critical functionality,
+> just a optimization that unfortunately turned out to be incorrect.
 
-This script will process #if/#ifdef/#elif/etc.  directives and remove them
-from the source.  It is smart enough to understand LINUX_KERNEL_VERSION
-tests, && ||, constants, complex expression, etc.  It also knows when the
-result of an expression isn't known and will leave it in the code in that
-case.  We use it to strip the compat code from the source when it's sent to
-the kernel.
+It is critical functionality for larger machines because vmap()/vunmap()
+really does suck in terms of scalability.
+
+> It could be made correct short term by not freeing the pages until
+> vunmap for example.
+
+Could vmap()/vunmap() take references to the pages that are
+mapped? That way delaying the unmap would also delay the freeing
+of the pages and hence we'd have no problems with the pages
+being reused before the mapping is torn down. That'd work for
+Xen even with XFS's lazy unmapping scheme, and would allow
+Nick's more advanced methods to work as well....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
