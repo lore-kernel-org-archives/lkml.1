@@ -1,72 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751155AbXJVV3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbXJVVbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751155AbXJVV3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbXJVV3i
+	id S1752714AbXJVVbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXJVVbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:29:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41461 "EHLO mx1.redhat.com"
+	Mon, 22 Oct 2007 17:31:07 -0400
+Received: from iabervon.org ([66.92.72.58]:43187 "EHLO iabervon.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbXJVV3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:29:37 -0400
-Date: Mon, 22 Oct 2007 17:29:26 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, xemul@openvz.org,
-       Ian Kent <raven@themaw.net>
-Subject: Re: futex strangeness in 2.6.23-mm1/UML
-Message-ID: <20071022172926.03ca122a@bree.surriel.com>
-In-Reply-To: <E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
-References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
-	<20071022145321.195d929b@bree.surriel.com>
-	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751162AbXJVVbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 17:31:05 -0400
+Date: Mon, 22 Oct 2007 17:31:04 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Linas Vepstas <linas@austin.ibm.com>,
+       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
+       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
+       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
+Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
+In-Reply-To: <471D0ADC.7000005@garzik.org>
+Message-ID: <Pine.LNX.4.64.0710221700120.32497@iabervon.org>
+References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
+ <20071019195749.GK29903@austin.ibm.com> <471911BE.2000405@garzik.org>
+ <Pine.LNX.4.64.0710221555190.32497@iabervon.org> <471D0ADC.7000005@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 22:48:51 +0200
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Mon, 22 Oct 2007, Jeff Garzik wrote:
 
-> > > I'm getting a process stuck in pthread_rwlock_wrlock(), even
-> > > though it looks like the lock is not held by anybody.
-> > > 
-> > > I think the last -mm was OK.  Any ideas?
-> > > 
-> > > If not, I'll go searching for the offending patch.
+> Daniel Barkalow wrote:
+> > On Fri, 19 Oct 2007, Jeff Garzik wrote:
 > > 
-> > I wonder if that's the same bug that's breaking autofs for me.
+> > > Linas Vepstas wrote:
+> > > > On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
+> > > > > Since we have little experience on PCI and MSI here, we had to try to
+> > > > As someone else pointed out, AMD should have *lots* of people with
+> > > > pci and msi experience on the payroll.  (Folks here buy AMD-designed pci
+> > > > chips ...)
+> > > >
+> > > > > ONLY
+> > > > > comment out the pci_intx() call in drivers/ata/ahci.c
+> > > > > My system can boot up too with MSI enabled!
+> > > > >
+> > > > > So does it mean that the root cause is our SB700 SATA controller
+> > > > > has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
+> > > > > register masks MSI interrupts too? 
+> > > > That's what it sounds like, to me.
+> > > >
+> > > > > And what is the software solution or workaround?
+> > > > Not sure. Sounds like the device driver needs a quirk for this part.
+> > >
+> > > Take a look at tg3.c net driver change
+> > > 2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
+> > >
+> > > However, it may turn out that removing the pci_intx() stuff as a general
+> > > rule
+> > > is easier than quirking these devices, if enough of them turn out to have
+> > > this
+> > > hardware bug.
+> > 
+> > At a first approximation, ATI/AMD devices don't send any interrupts if intx
+> > is disabled, nVidia devices send legacy interrupts in addition to MSI ones
+> > if intx isn't disabled, and Intel devices actually work correctly. So we
+> > need at least one kind of device quirk for intx and msi. (And doing it in
+> > the drivers doesn't work, since everybody is making things driven by
+> > snd_hda_intel and would like msi, afaict)
 > 
-> Probably.
-> 
-> > Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent cache
-> > rwlock lock failed
-> > Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error:
-> > 11 at 65 in cache.c
-> > 
-> > I'm bisecting 2.6.23-mm1 today to find the problem patch, with
-> > some luck I'll have it this afternoon.
-> > 
-> > With the series applied up to
-> > whitespace-fixes-task-exit-handling.patch things work.
-> > 
-> > It breaks before kswapd-should-only-wait-on-io-if-there-is-io.patch
-> > 
-> > That leaves only about 60-80 patches to look at :)
-> 
-> OK, the first patch that breaks something for me is:
-> 
->   pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
+> Note that INTX_DISABLE is a recent addition to PCI.  Older PCI devices support
+> neither MSI nor INTX-disable, so make sure such devices don't creep into your
+> sample.
 
-Confirmed.  That same patch is the point where the bisect
-here starts breaking autofs.
+I have a device that supports MSI and INTX-disable, and, with MSI on (and 
+delivering interrupts successfully) also sends legacy interrupts (on 
+the IRQ that is no longer associated with the device) unless INTX is 
+disabled. Without the intx_disable(), the kernel disables the IRQ 
+entirely and breaks a random other device in my system.
 
-Ian, it looks like the autofs code is innocent :)
+It's:
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+00:07.0 Bridge: nVidia Corporation MCP61 Ethernet (rev a2)
+
+I haven't tried MSI with the other devices in the system, but I expect 
+that this:
+
+00:05.0 Audio device: nVidia Corporation MCP61 High Definition Audio (rev a2)
+
+will have the same issue, and use a multi-vendor driver.
+
+> In general it is documented that INTX_DISABLE should apply only to INTx# so
+> devices that disable MSI based on that bit are out of spec.  But unfortunately
+> that is rather irrelevant, since we see these out-of-spec devices in the field
+> today.
+
+It's likewise documented (although maybe arguable in wording) that the 
+device shouldn't send legacy interrupts if MSI is in use, regardless of 
+INTX_DISABLE, but this also happens in the field.
+
+I think that the current Linux behavior with respect to INTX_DISABLE is 
+simply due to which hardware bug was present in the device whose driver 
+first got Linux support, but one or the other or both needs a quirk, since 
+there's no behavior that works with everything. And it's still impossible 
+to tell which bug is more common, since MSI isn't used most of the time, 
+even if the hardware supports it, so it's pretty arbitrary which way Linux 
+goes in the non-quirk case.
+
+	-Daniel
+*This .sig left intentionally blank*
