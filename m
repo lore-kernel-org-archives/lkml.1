@@ -1,38 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbXJVLKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXJVLVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbXJVLKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 07:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXJVLKk
+	id S1752821AbXJVLVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 07:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXJVLVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 07:10:40 -0400
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:11242 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751665AbXJVLKk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 07:10:40 -0400
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: latest 2.6.23 git missing ACPI POWER_SUPPLY
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-To: <b6a2187b0710220045q2920c0dat9ebe4850b02d1bbf@mail.gmail.com>
-References: <b6a2187b0710220045q2920c0dat9ebe4850b02d1bbf@mail.gmail.com>
-Message-Id: <E1IjvB3-0005oG-N9@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Mon, 22 Oct 2007 13:10:33 +0200
-X-OriginalArrivalTime: 22 Oct 2007 11:10:35.0961 (UTC) FILETIME=[2BA2EA90:01C8149C]
+	Mon, 22 Oct 2007 07:21:45 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:45036 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751922AbXJVLVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 07:21:43 -0400
+Message-ID: <393051953.24752@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 22 Oct 2007 19:19:08 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 100% iowait on one of cpus in current -git
+Message-ID: <20071022111907.GA21640@mail.ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221240.24386.maximlevitsky@gmail.com> <393050530.03287@ustc.edu.cn> <200710221258.11384.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710221258.11384.maximlevitsky@gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> Just pulled latest linux-2.6, and couldn't get ACPI to detect
-> ACPI_BATTERY and ACPI_AC.
+On Mon, Oct 22, 2007 at 12:58:11PM +0200, Maxim Levitsky wrote:
+> On Monday 22 October 2007 12:55:25 Fengguang Wu wrote:
+> > On Mon, Oct 22, 2007 at 12:40:24PM +0200, Maxim Levitsky wrote:
+> > > On Monday 22 October 2007 12:22:10 Peter Zijlstra wrote:
+> > > > > [  673.365631] pdflush       D c21bdecc     0   221      2
+> > > > > [  673.365635]        c21bdee0 00000046 00000002 c21bdecc c21bdec4 00000000 c21b3000 00000002
+> > > > > [  673.365643]        c0134892 c21b3164 c1e00200 00000001 c7109280 c21bdec0 c03ff849 c21bdef0
+> > > > > [  673.365650]        00052974 00000000 000000ff 00000000 00000000 00000000 c21bdef0 000529dc
+> > > > > [  673.365657] Call Trace:
+> > > > > [  673.365659]  [<c03fd728>] schedule_timeout+0x48/0xc0
+> > > > > [  673.365663]  [<c03fd50e>] io_schedule_timeout+0x5e/0xb0
+> > > > > [  673.365667]  [<c0170d11>] congestion_wait+0x71/0x90
+> > > > > [  673.365671]  [<c016b92e>] wb_kupdate+0x9e/0xf0
+> > > > > [  673.365675]  [<c016beb2>] pdflush+0x102/0x1d0
+> > > > > [  673.365679]  [<c013fa82>] kthread+0x42/0x70
+> > > > > [  673.365683]  [<c01050df>] kernel_thread_helper+0x7/0x18
+> > > > > 
+> > > > 
+> > > > That looks more like the inode writeback patches from Wu than the per
+> > > > bdi dirty stuff. The later typically hangs in balance_dirty_pages().
+> > > > 
+> > > > 
+> > > > 
+> > > 
+> > > Yes, you are right,
+> > > 
+> > > both revisions 1f7d6668c29b1dfa307a44844f9bb38356fc989b and 3e26c149c358529b1605f8959341d34bc4b880a3 work fine
+> > > But I didn't pay attention that those are before f4a1c2bce002f683801bcdbbc9fd89804614fb6b.
+> > > So, back to the drawing board.... :-)
+> > > 
+> > > Will test revision 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b, just after writeback patches.
+> > 
+> > Thank you. I'll try if I can reproduce it locally...
+> > 
+> > Fengguang
+> > 
+> > 
 > 
-> It seems ACPI POWER_SUPPLY is still missing.
+> Bingo,
+> 
+> Revision 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b shows this bug.
+> 
+> I will now bisect to find exact patch that caused this bug,
 
-I had the same problem. It turns out you need to enable
-   drivers -> Power supply class support
-(either built in or as module) to get ACPI AC/Battery support.
+This one is most relevant:
 
-I must say that having these relatively top-level ACPI settings depending on something that is relatively buried away is not very intuitive!
-Especially not since at first glance you don't really seem to need that option except for some weird hardware.
+1f7decf6d9f06dac008b8d66935c0c3b18e564f9
+writeback: introduce writeback_control.more_io to indicate more io
 
-CC'ing ACPI mailing list for other opinions.
+Still compiling the kernel...
+
+Thank you,
+Fengguang
+
