@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXJVTjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbXJVTlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbXJVTjx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbXJVTjp
+	id S1755134AbXJVTlk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbXJVTlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:39:45 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:48921 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbXJVTjo (ORCPT
+	Mon, 22 Oct 2007 15:41:32 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58995 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753008AbXJVTlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:39:44 -0400
-Date: Mon, 22 Oct 2007 21:39:39 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-Message-ID: <Pine.LNX.4.64.0710222137520.7105@anakin>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
- <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+	Mon, 22 Oct 2007 15:41:31 -0400
+Date: Mon, 22 Oct 2007 21:42:00 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: char/cyclades.c: inconsequent NULL checking
+Message-ID: <20071022194200.GO30533@stusta.de>
+References: <20071022024734.GI30533@stusta.de> <471CF4AC.6060603@gmail.com> <Pine.LNX.4.64.0710222112070.18815@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710222112070.18815@twin.jikos.cz>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Jens Axboe wrote:
-> Change the page member of the scatterlist structure to be an unsigned
-> long, and encode more stuff in the lower bits:
+On Mon, Oct 22, 2007 at 09:12:23PM +0200, Jiri Kosina wrote:
+> On Mon, 22 Oct 2007, Jiri Slaby wrote:
 > 
-> - Bits 0 and 1 zero: this is a normal sg entry. Next sg entry is located
->   at sg + 1.
-> - Bit 0 set: this is a chain entry, the next real entry is at ->page_link
->   with the two low bits masked off.
-> - Bit 1 set: this is the final entry in the sg entry. sg_next() will return
->   NULL when passed such an entry.
+> > > The Coverity checker spotted the following inconsequent NULL checking in 
+> > Where can one obtain such a checker?
+> 
+> That's a commercial proprietary thingie.
+> 
+> http://www.coverity.com/
 
-Better safe than sorry...
+A bit more of background:
 
-Is it possible that a chain entry pointer has bit 1 set on architectures
-(e.g. m68k) where the natural alignment of 32-bit quantities is _2_ bytes,
-not 4?
+The US Department of Homeland Security pays them some money for scanning 
+open source projects, the Linux kernel is one of these projects, and 
+kernel developers can therefore get access to the database with the
+results from their regular scans of Linus' tree.
 
-Gr{oetje,eeting}s,
+I'm not a fan of proprietary software, but I'm simply considering their 
+results as bug reports that are worth looking at.
 
-						Geert
+> Jiri Kosina
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+cu
+Adrian
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
