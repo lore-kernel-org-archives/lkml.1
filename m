@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXJVW5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817AbXJVW5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbXJVW5B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJVW4x
+	id S1751817AbXJVW5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJVW5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 18:56:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60116 "EHLO
+	Mon, 22 Oct 2007 18:57:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42878 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751573AbXJVW4v (ORCPT
+	by vger.kernel.org with ESMTP id S1753010AbXJVW5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 18:56:51 -0400
-Date: Mon, 22 Oct 2007 15:56:34 -0700
+	Mon, 22 Oct 2007 18:57:06 -0400
+Date: Mon, 22 Oct 2007 15:56:47 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
+To: Christoph Hellwig <hch@infradead.org>
 Cc: bharata@linux.vnet.ibm.com, jblunck@suse.de, agruen@suse.de, hch@lst.de,
        viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
-Message-Id: <20071022155634.f61c9d43.akpm@linux-foundation.org>
-In-Reply-To: <20071022135758.GA17051@lst.de>
+Subject: Re: [PATCH 13/13] Rename {__}d_path() to {__}print_path() and fix
+ comments
+Message-Id: <20071022155647.489a634f.akpm@linux-foundation.org>
+In-Reply-To: <20071022101443.GB20690@infradead.org>
 References: <20071022065352.GA6489@in.ibm.com>
-	<20071022135758.GA17051@lst.de>
+	<20071022070419.GN6489@in.ibm.com>
+	<20071022101443.GB20690@infradead.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,24 +29,14 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 15:57:58 +0200
-Christoph Hellwig <hch@lst.de> wrote:
+On Mon, 22 Oct 2007 11:14:43 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
 
+> On Mon, Oct 22, 2007 at 12:34:19PM +0530, Bharata B Rao wrote:
+> > Changes the name of d_path() and __d_path() to print_path() and __print_path()
+> > respectively and fixes the kerneldoc comments for print_path().
 > 
-> Any reason we've got this patchset posted by three people now? :)
+> I don't think we want to put in this rename until d_path is changed to
+> actually take a struct path * describing the path to be printed.
 
-presumably because I haven't been merging it.
-
-I was in bugfix-only mode from a week prior to 2.6.24 release and during
-the merge window.  Partly caused by the already-idiotic amount of stuff we
-had queued for 2.6.24, partly because we needed to concentrate on
-stabilising the 2.6.25 patchpile rather than writing new stuff.
-
-And partly to send the signal that rather than beavering away on new
-features all the time, we should also be spending some (more) time testing,
-reviewing and bugfixing the current and soon-to-be-current code.
-
-Probably I should have been more explicit about it, but it wasn't really
-planned.  Next time I'll send more "thanks, I parked this for consideration
-at a more appropriate time" emails.
-
+I didn't merge this one.
