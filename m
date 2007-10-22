@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbXJVCCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbXJVCKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbXJVCCr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 22:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVCCj
+	id S1753923AbXJVCKp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 22:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbXJVCKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 22:02:39 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35965 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751162AbXJVCCj (ORCPT
+	Sun, 21 Oct 2007 22:10:38 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:33658 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbXJVCKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 22:02:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=04Z9zZ8A9PpLSjEuncoIfEs9m/xQFQC/0PUR2tMLmxEWIEfkHK3NGwVGNykmos4lapLs2TKu55dI7Fp/aiI7PdRkp/dmn2oJepR85ZueCC+ThqBC67ogTAv3/goAs5FJ57Ivy+spHrcvR9kQ8MAaAf/QY7B5jORkTOr7DMphvwc=  ;
-X-YMail-OSG: _ymuY7UVM1lpVL6Kktm_Wg7JzsUAm1GNm9hyYwss.B.GPVX80q.2b16CLGDj7kWSgSBOK2OWKg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] rd: Use a private inode for backing storage
-Date: Mon, 22 Oct 2007 11:56:07 +1000
-User-Agent: KMail/1.9.5
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-References: <200710151028.34407.borntraeger@de.ibm.com> <200710211956.50624.nickpiggin@yahoo.com.au> <m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
+	Sun, 21 Oct 2007 22:10:38 -0400
+Message-ID: <471C0697.1040906@tiscali.nl>
+Date: Mon, 22 Oct 2007 04:10:31 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710221156.07790.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] unlock before bug returns
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007 04:39, Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > On Sunday 21 October 2007 18:23, Eric W. Biederman wrote:
-> >> Christian Borntraeger <borntraeger@de.ibm.com> writes:
-> >>
-> >> Let me put it another way.  Looking at /proc/slabinfo I can get
-> >> 37 buffer_heads per page.  I can allocate 10% of memory in
-> >> buffer_heads before we start to reclaim them.  So it requires just
-> >> over 3.7 buffer_heads on very page of low memory to even trigger
-> >> this case.  That is a large 1k filesystem or a weird sized partition,
-> >> that we have written to directly.
-> >
-> > On a highmem machine it it could be relatively common.
->
-> Possibly.  But the same proportions still hold.  1k filesystems
-> are not the default these days and ramdisks are relatively uncommon.
-> The memory quantities involved are all low mem.
+I think the unlock should be before bugging?
 
-You don't need 1K filesystems to have buffers attached though,
-of course. You can hit the limit with a 4K filesystem with less
-than 8GB in pagecache I'd say.
-
-
-
-> > You don't want to change that for a stable patch, however.
-> > It fixes the bug.
->
-> No it avoids the bug which is something slightly different.
-> Further I contend that it is not obviously correct that there
-> are no other side effects (because it doesn't actually fix the
-> bug), and that makes it of dubious value for a backport.
-
-The bug in question isn't exactly that it uses buffercache for its
-backing store (although that's obviously rather hairy as well). It's
-this specific problem sequence. And it does fix the problem.
-
-
-> If I had to slap a patch on there at this point just implementing
-> an empty try_to_release_page (which disables try_to_free_buffers)
-> would be my choice.
-
-How is that better? Now you're making the exact same change for
-all filesystems that you didn't think was obviously correct for
-rd.c.
-
-
-> > I just don't think what you have is the proper fix. Calling
-> > into the core vfs and vm because right now it does something
-> > that works for you but is completely unrelated to what you
-> > are conceptually doing is not the right fix.
->
-> I think there is a strong conceptual relation and other code
-> doing largely the same thing is already in the kernel (ramfs).  Plus
-> my gut feel says shared code will make maintenance easier.
-
-ramfs is rather a different case. Filesystems intimately know
-about the pagecache.
-
-
-> You do have a point that the reuse may not be perfect and if that
-> is the case we need to watch out for the potential to mess things
-> up.
->
-> So far I don't see any problems with the reuse.
-
-It's just wrong. I guess if you don't see that by now, then we
-have to just disagree.
+--
+    unlock before bug returns
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/arm/mach-omap2/gpmc.c b/arch/arm/mach-omap2/gpmc.c
+index 5a4cc20..c910170 100644
+--- a/arch/arm/mach-omap2/gpmc.c
++++ b/arch/arm/mach-omap2/gpmc.c
+@@ -357,9 +357,8 @@ void gpmc_cs_free(int cs)
+ 	spin_lock(&gpmc_mem_lock);
+ 	if (cs >= GPMC_CS_NUM || !gpmc_cs_reserved(cs)) {
+ 		printk(KERN_ERR "Trying to free non-reserved GPMC CS%d\n", cs);
+-		BUG();
+ 		spin_unlock(&gpmc_mem_lock);
+-		return;
++		BUG();
+ 	}
+ 	gpmc_cs_disable_mem(cs);
+ 	release_resource(&gpmc_cs_mem[cs]);
