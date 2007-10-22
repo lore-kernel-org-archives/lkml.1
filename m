@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbXJVWAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXJVWB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbXJVWAI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXJVV7y
+	id S1752490AbXJVWB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXJVWBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:59:54 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46588 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbXJVV7y (ORCPT
+	Mon, 22 Oct 2007 18:01:50 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:52449 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064AbXJVWBt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:59:54 -0400
-Date: Tue, 23 Oct 2007 00:00:00 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, Dan Williams <dcbw@redhat.com>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       mwallis@serialmonkey.com
-Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
-Message-ID: <20071022220000.GH28190@elf.ucw.cz>
-References: <20071020184100.GA11640@elf.ucw.cz> <20071022211325.GF28190@elf.ucw.cz> <200710222352.57543.IvDoorn@gmail.com> <200710221742.36693.dhazelton@enter.net>
+	Mon, 22 Oct 2007 18:01:49 -0400
+Message-ID: <471D1DC8.5090802@freescale.com>
+Date: Mon, 22 Oct 2007 17:01:44 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710221742.36693.dhazelton@enter.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: request_firmware() and in-kernel modules
+References: <4718EAEA.9000609@freescale.com> <20071021040757.GC24869@kroah.com>
+In-Reply-To: <20071021040757.GC24869@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Greg KH wrote:
 
-> > > Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
-> >
-> > That doesn't say much, some manufacturers add that line to their driver
-> >  just to prevent the module loader complaining about a non-GPL driver...
-> >
-> > There should be a copyright notice or a license file accompanied with
-> > the driver that clearly states the license of the driver.
-> 
-> Lacking an explicitly stated license it can be argued that, since the 
-> MODULE_LICENSE() macro is meant to define the actual license on the code, 
-> this code is GPL. No, it isn't an explicit definition, but lacking any other 
-> signs of the license, the implicit declaration of it being GPL is (or should 
-> be) enough to deflect charges of copyright infringement.
+> I'd recommend using the non-blocking mode, that way, when userspace
+> finally gets running, it can handle the firmware events properly, and
+> your kernel code will have not timed out already.
 
-Yep, I believe this driver is GPLed. They published the source and
-there's nothing to suggest otherwise, and there's explicit:
+Thanks Greg, that did the trick.
 
-#define DRIVER_AUTHOR                   "Jeff Lee<YY_Lee@issc.com.tw>"
-#define DRIVER_DESC                             "IS89C35 802.11bg WLAN USB Driver"
-MODULE_LICENSE("GPL");
+What the value of FW_ACTION_NOHOTPLUG?  If I specify that instead of 
+FW_ACTION_HOTPLUG, I presume I don't get automatic loading of the firwmare via 
+the hotplug subsystem, but request_firmware() still times out.  Why would I ever 
+not want to take advantage of hotplug?
 
- 
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
