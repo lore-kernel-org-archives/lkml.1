@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbXJVLlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbXJVLm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbXJVLlc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 07:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXJVLlZ
+	id S1752546AbXJVLm2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 07:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXJVLmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 07:41:25 -0400
-Received: from host06.hostingexpert.com ([216.80.70.60]:59862 "EHLO
-	host06.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbXJVLlY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 07:41:24 -0400
-Message-ID: <471C8C5E.1070901@linuxtv.org>
-Date: Mon, 22 Oct 2007 07:41:18 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 22 Oct 2007 07:42:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55061 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750937AbXJVLmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 07:42:21 -0400
+Date: Mon, 22 Oct 2007 13:42:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Greg KH <gregkh@suse.de>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH] i386: fix TSC clock source calibration error [part 2]
+Message-ID: <20071022114203.GA27713@elte.hu>
+References: <18196.53154.100115.92459@zeus.sw.starentnetworks.com> <20071018085713.GA11022@elte.hu> <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
 MIME-Version: 1.0
-To: Trent Piepho <xyzzy@speakeasy.org>
-CC: Adrian Bunk <bunk@kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] fix CONFIG_TUNER_TEA5761=m
-References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org> <Pine.LNX.4.58.0710212201060.16052@shell4.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0710212201060.16052@shell4.speakeasy.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - host06.hostingexpert.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - linuxtv.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18200.59017.358372.378373@zeus.sw.starentnetworks.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0031]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Piepho wrote:
-> On Sun, 21 Oct 2007, Michael Krufky wrote:
->   
->> Adrian Bunk wrote:
->>     
->>> This patch fixes CONFIG_TUNER_TEA5761=m broken by
->>> commit ca805d57cf5ea7482ed3da28653f30621249ee45.
->>>
->>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->>>
->>> ---
->>>
->>>  drivers/media/video/tuner-core.c |    6 ------
->>>  1 file changed, 6 deletions(-)
->>>
->>> 26336c30e76c37bda368a24b8b12978388a18cf3
->>> diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
->>> index 9484308..1795b78 100644
->>> --- a/drivers/media/video/tuner-core.c
->>> +++ b/drivers/media/video/tuner-core.c
->>> @@ -30,9 +30,7 @@
->>>
->>>  /* standard i2c insmod options */
->>>  static unsigned short normal_i2c[] = {
->>> -#ifdef CONFIG_TUNER_TEA5761
->>>  	0x10,
->>> -#endif
->>>
->>>       
->> ^^^ I believe that we want to keep these #ifdef's above...  The removals
->> below are fine.
->>     
->
-> Won't leaving in the call to tea5761_autodetection() when tea5761 is not
-> compiled in result in an undefined symbol error?
->   
-It shouldn't -- See tea5761.h ... If the module is not selected, then a
-stub will report that the driver was disabled by Kconfig.
-> I think what we want to do put in the typical if(TEA5761 >= TUNER) include tea5761
-> code in tuner logic that the rest of the selectable sub-driver use.
->
-> #if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
->   
-This is what I have in my tree here...  ^^^ Isn't this already upstream
-by now?
 
--Mike
+* Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com> wrote:
+
+> The previous patch wasn't correctly handling the 'count' variable.  If 
+> a CPU gave bad results on the 1st or 2nd run but good results on the 
+> 3rd, it wouldn't do the correct thing.  No idea if any such CPU 
+> exists, but the patch below handles that case by discarding the bad 
+> runs.
+> 
+> If a bad result (too quick, or too slow) occurs on any of the 3 runs 
+> it will be discarded.
+> 
+> Also updated some comments to explain what's going on.
+
+thanks - applied in addition to your previous patch.
+
+	Ingo
