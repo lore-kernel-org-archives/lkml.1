@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbXJVXtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbXJVX4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbXJVXtN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 19:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXJVXs6
+	id S1752196AbXJVX4Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 19:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXJVX4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 19:48:58 -0400
-Received: from khc.piap.pl ([195.187.100.11]:34964 "EHLO khc.piap.pl"
+	Mon, 22 Oct 2007 19:56:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:53317 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbXJVXs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 19:48:57 -0400
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Linas Vepstas <linas@austin.ibm.com>,
-       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
-       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
-       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
-	<20071019195749.GK29903@austin.ibm.com> <471911BE.2000405@garzik.org>
-	<Pine.LNX.4.64.0710221555190.32497@iabervon.org>
-	<471D0ADC.7000005@garzik.org>
-	<Pine.LNX.4.64.0710221700120.32497@iabervon.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 23 Oct 2007 01:48:54 +0200
-In-Reply-To: <Pine.LNX.4.64.0710221700120.32497@iabervon.org> (Daniel Barkalow's message of "Mon, 22 Oct 2007 17:31:04 -0400 (EDT)")
-Message-ID: <m3abqau2vt.fsf@maximus.localdomain>
+	id S1751065AbXJVX4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 19:56:15 -0400
+Message-ID: <471D389E.40609@goop.org>
+Date: Mon, 22 Oct 2007 16:56:14 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Al Viro <viro@ftp.linux.org.uk>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Nix <nix@esperi.org.uk>,
+       Jeff Dike <jdike@addtoit.com>, Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+References: <20071022061245.GG2998@hacking> <87d4v7fy5i.fsf@hades.wkstn.nix> <20071022065202.GI2998@hacking> <20071022065943.GC10864@uranus.ravnborg.org> <20071022074823.GJ2998@hacking> <20071022113600.GA8181@ftp.linux.org.uk> <20071022122504.GL2998@hacking> <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu>
+In-Reply-To: <20071022231927.GA30814@elte.hu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow <barkalow@iabervon.org> writes:
-
-> 00:05.0 Audio device: nVidia Corporation MCP61 High Definition Audio (rev a2)
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> will have the same issue, and use a multi-vendor driver.
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> we should kill it there too.
+>>>
+>>> the only place where we should _please_ keep those annotations are for 
+>>> functions that get called from assembly code. This makes life immensely 
+>>> easier for -pg (CONFIG_FUNCTION_TRACING) kernels.
+>>>       
+>> Should we re-add them for the function pointers in asm-x86/paravirt.h?
+>>     
+>
+> yes, yes, yes. :-) It was a nightmare to sort it out in -rt (and still 
+> is). 
 
-I think MCP55 HDA did not have such problem, though I may be wrong
-(AFAIR it worked with shared IRQ and with MSI).
--- 
-Krzysztof Halasa
+Do you have a patch to do this already?
+
+>> Andi argued we should remove them since x86 is unconditionally regparm 
+>> now anyway - and they're pretty ugly syntactically.
+>>     
+>
+> Sure, it doesnt make things prettier, but i didnt see any particular 
+> ugliness.
+
+Hm, how can we get gcc to complain about inconsistent use of fastcall? 
+It doesn't generate any warnings if the function and its pointer are
+inconsistent, presumably because everything is regparm(3) anyway...
+
+    J
