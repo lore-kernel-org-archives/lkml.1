@@ -1,40 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbXJVS1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXJVS1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbXJVS1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXJVS0v
+	id S1755423AbXJVS1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXJVS1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:26:51 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:11220 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbXJVS0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:26:51 -0400
-Date: Mon, 22 Oct 2007 20:26:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: ata_exec_internal crash at boot in -git22
-Message-ID: <20071022182645.GE16425@kernel.dk>
-References: <200710222008.08095.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710222008.08095.ak@suse.de>
+	Mon, 22 Oct 2007 14:27:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:19087 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185AbXJVS1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:27:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=k2Gh8AHahTlgTHypDJIGMeHOv+qgVeDPYIh5aVvzMM4JNBOnNcVBs/ITp2GGuWzs2qOq8wzYJSoIakKum9ef7fJyEA69yhFVVlTC84oimp2/UP97T2IYfadyjMloHZ9Y2TypKzzWb5VL+pQbytsntN1wXKsEW1dkpvdeftS+W/M=
+From: Denis Cheng <crquan@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>, Jeff Garzik <jgarzik@pobox.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Denis Cheng <crquan@gmail.com>
+Subject: [PATCH] [net/ipv4]: fib_seq_show function adjustment to get a more sensable output of /proc/net/route
+Date: Tue, 23 Oct 2007 02:26:22 +0800
+Message-Id: <1193077582-4790-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22 2007, Andi Kleen wrote:
-> 
-> One of the systems tested in autoboot crashes at boot with with -git22.
-> This is a AMD 2 socket Opteron NUMA system.
-> 
-> The tester was a little flakey and happened to hit the x86-merge-broke-
-> compilation window, so the last good data point I have is 2.6.23-rc9.
+the temporary bf[127] char array is redundant, and the specified width 127 make the output of /proc/net/route include many trailing spaces;
+since most terminal's cols are less than 127, this made every fib entry occupy two lines,
 
-Andi, can you test with this patch applied?
+after applied this patch, the output of /proc/net/route is more sensable like this:
 
-http://brick.kernel.dk/sg-git.patch
+Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT
+eth0	0001A8C0	00000000	0001	0	0	0	00FFFFFF	0	0	0
+lo	0000007F	00000000	0001	0	0	0	000000FF	0	0	0
+eth0	00000000	0101A8C0	0003	0	0	0	00000000	0	0	0
 
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ net/ipv4/fib_hash.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/net/ipv4/fib_hash.c b/net/ipv4/fib_hash.c
+index 527a6e0..2a4033e 100644
+--- a/net/ipv4/fib_hash.c
++++ b/net/ipv4/fib_hash.c
+@@ -992,7 +992,6 @@ static unsigned fib_flag_trans(int type, __be32 mask, struct fib_info *fi)
+ static int fib_seq_show(struct seq_file *seq, void *v)
+ {
+ 	struct fib_iter_state *iter;
+-	char bf[128];
+ 	__be32 prefix, mask;
+ 	unsigned flags;
+ 	struct fib_node *f;
+@@ -1000,9 +999,9 @@ static int fib_seq_show(struct seq_file *seq, void *v)
+ 	struct fib_info *fi;
+ 
+ 	if (v == SEQ_START_TOKEN) {
+-		seq_printf(seq, "%-127s\n", "Iface\tDestination\tGateway "
++		seq_printf(seq, "Iface\tDestination\tGateway "
+ 			   "\tFlags\tRefCnt\tUse\tMetric\tMask\t\tMTU"
+-			   "\tWindow\tIRTT");
++			   "\tWindow\tIRTT\n");
+ 		goto out;
+ 	}
+ 
+@@ -1014,18 +1013,18 @@ static int fib_seq_show(struct seq_file *seq, void *v)
+ 	mask	= FZ_MASK(iter->zone);
+ 	flags	= fib_flag_trans(fa->fa_type, mask, fi);
+ 	if (fi)
+-		snprintf(bf, sizeof(bf),
+-			 "%s\t%08X\t%08X\t%04X\t%d\t%u\t%d\t%08X\t%d\t%u\t%u",
++		seq_printf(seq,
++			 "%s\t%08X\t%08X\t%04X\t%d\t%u\t%d\t%08X\t%d\t%u\t%u\n",
+ 			 fi->fib_dev ? fi->fib_dev->name : "*", prefix,
+ 			 fi->fib_nh->nh_gw, flags, 0, 0, fi->fib_priority,
+ 			 mask, (fi->fib_advmss ? fi->fib_advmss + 40 : 0),
+ 			 fi->fib_window,
+ 			 fi->fib_rtt >> 3);
+ 	else
+-		snprintf(bf, sizeof(bf),
+-			 "*\t%08X\t%08X\t%04X\t%d\t%u\t%d\t%08X\t%d\t%u\t%u",
++		seq_printf(seq,
++			 "*\t%08X\t%08X\t%04X\t%d\t%u\t%d\t%08X\t%d\t%u\t%u\n",
+ 			 prefix, 0, flags, 0, 0, 0, mask, 0, 0, 0);
+-	seq_printf(seq, "%-127s\n", bf);
++
+ out:
+ 	return 0;
+ }
 -- 
-Jens Axboe
+1.5.3.4
 
