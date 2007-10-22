@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbXJVHBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbXJVHCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbXJVHBj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbXJVHBb
+	id S1754862AbXJVHCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXJVHCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:01:31 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:36870 "EHLO
+	Mon, 22 Oct 2007 03:02:13 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37988 "EHLO
 	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbXJVHBa (ORCPT
+	with ESMTP id S1751754AbXJVHCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:01:30 -0400
-Date: Mon, 22 Oct 2007 12:31:25 +0530
+	Mon, 22 Oct 2007 03:02:11 -0400
+Date: Mon, 22 Oct 2007 12:32:02 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jan Blunck <jblunck@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        Christoph Hellwig <hch@lst.de>, viro@zeniv.linux.org.uk,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 09/13] Use struct path in fs_struct
-Message-ID: <20071022070125.GJ6489@in.ibm.com>
+Subject: [PATCH 10/13] Make set_fs_{root,pwd} take a struct path
+Message-ID: <20071022070202.GK6489@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20071022065352.GA6489@in.ibm.com>
 MIME-Version: 1.0
@@ -30,459 +30,156 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Blunck <jblunck@suse.de>
 
-* Use struct path in fs_struct.
+In nearly all cases the set_fs_{root,pwd}() calls work on a struct
+path. Change the function to reflect this and use path_get() here.
 
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 Acked-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/dcache.c               |   34 ++++++++++++---------------
- fs/namei.c                |   53 ++++++++++++++++++------------------------
- fs/namespace.c            |   57 ++++++++++++++++++++--------------------------
- fs/proc/base.c            |    8 +++---
- include/linux/fs_struct.h |    6 +---
- init/do_mounts.c          |    6 ++--
- kernel/auditsc.c          |    4 +--
- kernel/exit.c             |   12 +++------
- kernel/fork.c             |   18 +++++++-------
- 9 files changed, 87 insertions(+), 111 deletions(-)
+ fs/namespace.c            |   28 ++++++++++++++--------------
+ fs/open.c                 |   12 ++++--------
+ include/linux/fs_struct.h |    4 ++--
+ 3 files changed, 20 insertions(+), 24 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1851,8 +1851,7 @@ char * d_path(struct dentry *dentry, str
- 				char *buf, int buflen)
- {
- 	char *res;
--	struct vfsmount *rootmnt;
--	struct dentry *root;
-+	struct path root;
- 
- 	/*
- 	 * We have various synthetic filesystems that never get mounted.  On
-@@ -1865,14 +1864,13 @@ char * d_path(struct dentry *dentry, str
- 		return dentry->d_op->d_dname(dentry, buf, buflen);
- 
- 	read_lock(&current->fs->lock);
--	rootmnt = mntget(current->fs->rootmnt);
--	root = dget(current->fs->root);
-+	root = current->fs->root;
-+	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
-+	res = __d_path(dentry, vfsmnt, root.dentry, root.mnt, buf, buflen);
- 	spin_unlock(&dcache_lock);
--	dput(root);
--	mntput(rootmnt);
-+	path_put(&root);
- 	return res;
- }
- 
-@@ -1918,28 +1916,28 @@ char *dynamic_dname(struct dentry *dentr
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
- {
- 	int error;
--	struct vfsmount *pwdmnt, *rootmnt;
--	struct dentry *pwd, *root;
-+	struct path pwd, root;
- 	char *page = (char *) __get_free_page(GFP_USER);
- 
- 	if (!page)
- 		return -ENOMEM;
- 
- 	read_lock(&current->fs->lock);
--	pwdmnt = mntget(current->fs->pwdmnt);
--	pwd = dget(current->fs->pwd);
--	rootmnt = mntget(current->fs->rootmnt);
--	root = dget(current->fs->root);
-+	pwd = current->fs->pwd;
-+	path_get(&current->fs->pwd);
-+	root = current->fs->root;
-+	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 
- 	error = -ENOENT;
- 	/* Has the current directory has been unlinked? */
- 	spin_lock(&dcache_lock);
--	if (pwd->d_parent == pwd || !d_unhashed(pwd)) {
-+	if (pwd.dentry->d_parent == pwd.dentry || !d_unhashed(pwd.dentry)) {
- 		unsigned long len;
- 		char * cwd;
- 
--		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
-+		cwd = __d_path(pwd.dentry, pwd.mnt, root.dentry, root.mnt,
-+			       page, PAGE_SIZE);
- 		spin_unlock(&dcache_lock);
- 
- 		error = PTR_ERR(cwd);
-@@ -1957,10 +1955,8 @@ asmlinkage long sys_getcwd(char __user *
- 		spin_unlock(&dcache_lock);
- 
- out:
--	dput(pwd);
--	mntput(pwdmnt);
--	dput(root);
--	mntput(rootmnt);
-+	path_put(&pwd);
-+	path_put(&root);
- 	free_page((unsigned long) page);
- 	return error;
- }
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -550,16 +550,16 @@ walk_init_root(const char *name, struct 
- 	struct fs_struct *fs = current->fs;
- 
- 	read_lock(&fs->lock);
--	if (fs->altroot && !(nd->flags & LOOKUP_NOALT)) {
--		nd->path.mnt = mntget(fs->altrootmnt);
--		nd->path.dentry = dget(fs->altroot);
-+	if (fs->altroot.dentry && !(nd->flags & LOOKUP_NOALT)) {
-+		nd->path = fs->altroot;
-+		path_get(&fs->altroot);
- 		read_unlock(&fs->lock);
- 		if (__emul_lookup_dentry(name,nd))
- 			return 0;
- 		read_lock(&fs->lock);
- 	}
--	nd->path.mnt = mntget(fs->rootmnt);
--	nd->path.dentry = dget(fs->root);
-+	nd->path = fs->root;
-+	path_get(&fs->root);
- 	read_unlock(&fs->lock);
- 	return 1;
- }
-@@ -756,8 +756,8 @@ static __always_inline void follow_dotdo
- 		struct dentry *old = nd->path.dentry;
- 
-                 read_lock(&fs->lock);
--		if (nd->path.dentry == fs->root &&
--		    nd->path.mnt == fs->rootmnt) {
-+		if (nd->path.dentry == fs->root.dentry &&
-+		    nd->path.mnt == fs->root.mnt) {
-                         read_unlock(&fs->lock);
- 			break;
- 		}
-@@ -1079,8 +1079,8 @@ static int __emul_lookup_dentry(const ch
- 		 */
- 		nd->last_type = LAST_ROOT;
- 		read_lock(&fs->lock);
--		nd->path.mnt = mntget(fs->rootmnt);
--		nd->path.dentry = dget(fs->root);
-+		nd->path = fs->root;
-+		path_get(&fs->root);
- 		read_unlock(&fs->lock);
- 		if (path_walk(name, nd) == 0) {
- 			if (nd->path.dentry->d_inode) {
-@@ -1100,29 +1100,22 @@ void set_fs_altroot(void)
- {
- 	char *emul = __emul_prefix();
- 	struct nameidata nd;
--	struct vfsmount *mnt = NULL, *oldmnt;
--	struct dentry *dentry = NULL, *olddentry;
-+	struct path path = {}, old_path;
- 	int err;
- 	struct fs_struct *fs = current->fs;
- 
- 	if (!emul)
- 		goto set_it;
- 	err = path_lookup(emul, LOOKUP_FOLLOW|LOOKUP_DIRECTORY|LOOKUP_NOALT, &nd);
--	if (!err) {
--		mnt = nd.path.mnt;
--		dentry = nd.path.dentry;
--	}
-+	if (!err)
-+		path = nd.path;
- set_it:
- 	write_lock(&fs->lock);
--	oldmnt = fs->altrootmnt;
--	olddentry = fs->altroot;
--	fs->altrootmnt = mnt;
--	fs->altroot = dentry;
-+	old_path = fs->altroot;
-+	fs->altroot = path;
- 	write_unlock(&fs->lock);
--	if (olddentry) {
--		dput(olddentry);
--		mntput(oldmnt);
--	}
-+	if (old_path.dentry)
-+		path_put(&old_path);
- }
- 
- /* Returns 0 and nd will be valid on success; Retuns error, otherwise. */
-@@ -1140,21 +1133,21 @@ static int fastcall do_path_lookup(int d
- 
- 	if (*name=='/') {
- 		read_lock(&fs->lock);
--		if (fs->altroot && !(nd->flags & LOOKUP_NOALT)) {
--			nd->path.mnt = mntget(fs->altrootmnt);
--			nd->path.dentry = dget(fs->altroot);
-+		if (fs->altroot.dentry && !(nd->flags & LOOKUP_NOALT)) {
-+			nd->path = fs->altroot;
-+			path_get(&fs->altroot);
- 			read_unlock(&fs->lock);
- 			if (__emul_lookup_dentry(name,nd))
- 				goto out; /* found in altroot */
- 			read_lock(&fs->lock);
- 		}
--		nd->path.mnt = mntget(fs->rootmnt);
--		nd->path.dentry = dget(fs->root);
-+		nd->path = fs->root;
-+		path_get(&fs->root);
- 		read_unlock(&fs->lock);
- 	} else if (dfd == AT_FDCWD) {
- 		read_lock(&fs->lock);
--		nd->path.mnt = mntget(fs->pwdmnt);
--		nd->path.dentry = dget(fs->pwd);
-+		nd->path = fs->pwd;
-+		path_get(&fs->pwd);
- 		read_unlock(&fs->lock);
- 	} else {
- 		struct dentry *dentry;
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -868,7 +868,7 @@ static int do_umount(struct vfsmount *mn
- 	 *  (2) the usage count == 1 [parent vfsmount] + 1 [sys_umount]
- 	 */
- 	if (flags & MNT_EXPIRE) {
--		if (mnt == current->fs->rootmnt ||
-+		if (mnt == current->fs->root.mnt ||
- 		    flags & (MNT_FORCE | MNT_DETACH))
- 			return -EINVAL;
- 
-@@ -903,7 +903,7 @@ static int do_umount(struct vfsmount *mn
- 	 * /reboot - static binary that would close all descriptors and
- 	 * call reboot(9). Then init(8) could umount root and exec /reboot.
- 	 */
--	if (mnt == current->fs->rootmnt && !(flags & MNT_DETACH)) {
-+	if (mnt == current->fs->root.mnt && !(flags & MNT_DETACH)) {
- 		/*
- 		 * Special case for "unmounting" root ...
- 		 * we just try to remount it readonly.
-@@ -1949,17 +1949,17 @@ static struct mnt_namespace *dup_mnt_ns(
- 	while (p) {
- 		q->mnt_ns = new_ns;
- 		if (fs) {
--			if (p == fs->rootmnt) {
-+			if (p == fs->root.mnt) {
- 				rootmnt = p;
--				fs->rootmnt = mntget(q);
-+				fs->root.mnt = mntget(q);
- 			}
--			if (p == fs->pwdmnt) {
-+			if (p == fs->pwd.mnt) {
- 				pwdmnt = p;
--				fs->pwdmnt = mntget(q);
-+				fs->pwd.mnt = mntget(q);
- 			}
--			if (p == fs->altrootmnt) {
-+			if (p == fs->altroot.mnt) {
- 				altrootmnt = p;
--				fs->altrootmnt = mntget(q);
-+				fs->altroot.mnt = mntget(q);
- 			}
- 		}
- 		p = next_mnt(p, mnt_ns->root);
-@@ -2043,18 +2043,15 @@ out1:
- void set_fs_root(struct fs_struct *fs, struct vfsmount *mnt,
- 		 struct dentry *dentry)
+@@ -2040,15 +2040,14 @@ out1:
+  * Replace the fs->{rootmnt,root} with {mnt,dentry}. Put the old values.
+  * It can block. Requires the big lock held.
+  */
+-void set_fs_root(struct fs_struct *fs, struct vfsmount *mnt,
+-		 struct dentry *dentry)
++void set_fs_root(struct fs_struct *fs, struct path *path)
  {
--	struct dentry *old_root;
--	struct vfsmount *old_rootmnt;
-+	struct path old_root;
-+
+ 	struct path old_root;
+ 
  	write_lock(&fs->lock);
  	old_root = fs->root;
--	old_rootmnt = fs->rootmnt;
--	fs->rootmnt = mntget(mnt);
--	fs->root = dget(dentry);
-+	fs->root.mnt = mntget(mnt);
-+	fs->root.dentry = dget(dentry);
+-	fs->root.mnt = mntget(mnt);
+-	fs->root.dentry = dget(dentry);
++	fs->root = *path;
++	path_get(path);
  	write_unlock(&fs->lock);
--	if (old_root) {
--		dput(old_root);
--		mntput(old_rootmnt);
--	}
-+	if (old_root.dentry)
-+		path_put(&old_root);
- }
- 
- /*
-@@ -2064,20 +2061,16 @@ void set_fs_root(struct fs_struct *fs, s
- void set_fs_pwd(struct fs_struct *fs, struct vfsmount *mnt,
- 		struct dentry *dentry)
+ 	if (old_root.dentry)
+ 		path_put(&old_root);
+@@ -2058,15 +2057,14 @@ void set_fs_root(struct fs_struct *fs, s
+  * Replace the fs->{pwdmnt,pwd} with {mnt,dentry}. Put the old values.
+  * It can block. Requires the big lock held.
+  */
+-void set_fs_pwd(struct fs_struct *fs, struct vfsmount *mnt,
+-		struct dentry *dentry)
++void set_fs_pwd(struct fs_struct *fs, struct path *path)
  {
--	struct dentry *old_pwd;
--	struct vfsmount *old_pwdmnt;
-+	struct path old_pwd;
+ 	struct path old_pwd;
  
  	write_lock(&fs->lock);
  	old_pwd = fs->pwd;
--	old_pwdmnt = fs->pwdmnt;
--	fs->pwdmnt = mntget(mnt);
--	fs->pwd = dget(dentry);
-+	fs->pwd.mnt = mntget(mnt);
-+	fs->pwd.dentry = dget(dentry);
+-	fs->pwd.mnt = mntget(mnt);
+-	fs->pwd.dentry = dget(dentry);
++	fs->pwd = *path;
++	path_get(path);
  	write_unlock(&fs->lock);
  
--	if (old_pwd) {
--		dput(old_pwd);
--		mntput(old_pwdmnt);
--	}
-+	if (old_pwd.dentry)
-+		path_put(&old_pwd);
+ 	if (old_pwd.dentry)
+@@ -2087,12 +2085,10 @@ static void chroot_fs_refs(struct nameid
+ 			task_unlock(p);
+ 			if (fs->root.dentry == old_nd->path.dentry
+ 			    && fs->root.mnt == old_nd->path.mnt)
+-				set_fs_root(fs, new_nd->path.mnt,
+-					    new_nd->path.dentry);
++				set_fs_root(fs, &new_nd->path);
+ 			if (fs->pwd.dentry == old_nd->path.dentry
+ 			    && fs->pwd.mnt == old_nd->path.mnt)
+-				set_fs_pwd(fs, new_nd->path.mnt,
+-					   new_nd->path.dentry);
++				set_fs_pwd(fs, &new_nd->path);
+ 			put_fs_struct(fs);
+ 		} else
+ 			task_unlock(p);
+@@ -2235,6 +2231,7 @@ static void __init init_mount_tree(void)
+ {
+ 	struct vfsmount *mnt;
+ 	struct mnt_namespace *ns;
++	struct path root;
+ 
+ 	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
+ 	if (IS_ERR(mnt))
+@@ -2253,8 +2250,11 @@ static void __init init_mount_tree(void)
+ 	init_task.nsproxy->mnt_ns = ns;
+ 	get_mnt_ns(ns);
+ 
+-	set_fs_pwd(current->fs, ns->root, ns->root->mnt_root);
+-	set_fs_root(current->fs, ns->root, ns->root->mnt_root);
++	root.mnt = ns->root;
++	root.dentry = ns->root->mnt_root;
++
++	set_fs_pwd(current->fs, &root);
++	set_fs_root(current->fs, &root);
  }
  
- static void chroot_fs_refs(struct nameidata *old_nd, struct nameidata *new_nd)
-@@ -2092,12 +2085,12 @@ static void chroot_fs_refs(struct nameid
- 		if (fs) {
- 			atomic_inc(&fs->count);
- 			task_unlock(p);
--			if (fs->root == old_nd->path.dentry
--			    && fs->rootmnt == old_nd->path.mnt)
-+			if (fs->root.dentry == old_nd->path.dentry
-+			    && fs->root.mnt == old_nd->path.mnt)
- 				set_fs_root(fs, new_nd->path.mnt,
- 					    new_nd->path.dentry);
--			if (fs->pwd == old_nd->path.dentry
--			    && fs->pwdmnt == old_nd->path.mnt)
-+			if (fs->pwd.dentry == old_nd->path.dentry
-+			    && fs->pwd.mnt == old_nd->path.mnt)
- 				set_fs_pwd(fs, new_nd->path.mnt,
- 					   new_nd->path.dentry);
- 			put_fs_struct(fs);
-@@ -2163,8 +2156,8 @@ asmlinkage long sys_pivot_root(const cha
- 	}
+ void __init mnt_init(void)
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -501,7 +501,7 @@ asmlinkage long sys_chdir(const char __u
+ 	if (error)
+ 		goto dput_and_out;
  
- 	read_lock(&current->fs->lock);
--	user_nd.path.mnt = mntget(current->fs->rootmnt);
--	user_nd.path.dentry = dget(current->fs->root);
-+	user_nd.path = current->fs->root;
-+	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	down_write(&namespace_sem);
- 	mutex_lock(&old_nd.path.dentry->d_inode->i_mutex);
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -165,8 +165,8 @@ static int proc_cwd_link(struct inode *i
- 	}
- 	if (fs) {
- 		read_lock(&fs->lock);
--		*mnt = mntget(fs->pwdmnt);
--		*dentry = dget(fs->pwd);
-+		*mnt = mntget(fs->pwd.mnt);
-+		*dentry = dget(fs->pwd.dentry);
- 		read_unlock(&fs->lock);
- 		result = 0;
- 		put_fs_struct(fs);
-@@ -186,8 +186,8 @@ static int proc_root_link(struct inode *
- 	}
- 	if (fs) {
- 		read_lock(&fs->lock);
--		*mnt = mntget(fs->rootmnt);
--		*dentry = dget(fs->root);
-+		*mnt = mntget(fs->root.mnt);
-+		*dentry = dget(fs->root.dentry);
- 		read_unlock(&fs->lock);
- 		result = 0;
- 		put_fs_struct(fs);
+-	set_fs_pwd(current->fs, nd.path.mnt, nd.path.dentry);
++	set_fs_pwd(current->fs, &nd.path);
+ 
+ dput_and_out:
+ 	path_put(&nd.path);
+@@ -512,9 +512,7 @@ out:
+ asmlinkage long sys_fchdir(unsigned int fd)
+ {
+ 	struct file *file;
+-	struct dentry *dentry;
+ 	struct inode *inode;
+-	struct vfsmount *mnt;
+ 	int error;
+ 
+ 	error = -EBADF;
+@@ -522,9 +520,7 @@ asmlinkage long sys_fchdir(unsigned int 
+ 	if (!file)
+ 		goto out;
+ 
+-	dentry = file->f_path.dentry;
+-	mnt = file->f_path.mnt;
+-	inode = dentry->d_inode;
++	inode = file->f_path.dentry->d_inode;
+ 
+ 	error = -ENOTDIR;
+ 	if (!S_ISDIR(inode->i_mode))
+@@ -532,7 +528,7 @@ asmlinkage long sys_fchdir(unsigned int 
+ 
+ 	error = file_permission(file, MAY_EXEC);
+ 	if (!error)
+-		set_fs_pwd(current->fs, mnt, dentry);
++		set_fs_pwd(current->fs, &file->f_path);
+ out_putf:
+ 	fput(file);
+ out:
+@@ -556,7 +552,7 @@ asmlinkage long sys_chroot(const char __
+ 	if (!capable(CAP_SYS_CHROOT))
+ 		goto dput_and_out;
+ 
+-	set_fs_root(current->fs, nd.path.mnt, nd.path.dentry);
++	set_fs_root(current->fs, &nd.path);
+ 	set_fs_altroot();
+ 	error = 0;
+ dput_and_out:
 --- a/include/linux/fs_struct.h
 +++ b/include/linux/fs_struct.h
-@@ -1,15 +1,13 @@
- #ifndef _LINUX_FS_STRUCT_H
- #define _LINUX_FS_STRUCT_H
+@@ -20,8 +20,8 @@ extern struct kmem_cache *fs_cachep;
  
--struct dentry;
--struct vfsmount;
-+#include <linux/path.h>
+ extern void exit_fs(struct task_struct *);
+ extern void set_fs_altroot(void);
+-extern void set_fs_root(struct fs_struct *, struct vfsmount *, struct dentry *);
+-extern void set_fs_pwd(struct fs_struct *, struct vfsmount *, struct dentry *);
++extern void set_fs_root(struct fs_struct *, struct path *);
++extern void set_fs_pwd(struct fs_struct *, struct path *);
+ extern struct fs_struct *copy_fs_struct(struct fs_struct *);
+ extern void put_fs_struct(struct fs_struct *);
  
- struct fs_struct {
- 	atomic_t count;
- 	rwlock_t lock;
- 	int umask;
--	struct dentry * root, * pwd, * altroot;
--	struct vfsmount * rootmnt, * pwdmnt, * altrootmnt;
-+	struct path root, pwd, altroot;
- };
- 
- #define INIT_FS {				\
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -286,10 +286,10 @@ static int __init do_mount_root(char *na
- 		return err;
- 
- 	sys_chdir("/root");
--	ROOT_DEV = current->fs->pwdmnt->mnt_sb->s_dev;
-+	ROOT_DEV = current->fs->pwd.mnt->mnt_sb->s_dev;
- 	printk("VFS: Mounted root (%s filesystem)%s.\n",
--	       current->fs->pwdmnt->mnt_sb->s_type->name,
--	       current->fs->pwdmnt->mnt_sb->s_flags & MS_RDONLY ? 
-+	       current->fs->pwd.mnt->mnt_sb->s_type->name,
-+	       current->fs->pwd.mnt->mnt_sb->s_flags & MS_RDONLY ?
- 	       " readonly" : "");
- 	return 0;
- }
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1528,8 +1528,8 @@ void __audit_getname(const char *name)
- 	++context->name_count;
- 	if (!context->pwd) {
- 		read_lock(&current->fs->lock);
--		context->pwd = dget(current->fs->pwd);
--		context->pwdmnt = mntget(current->fs->pwdmnt);
-+		context->pwd = dget(current->fs->pwd.dentry);
-+		context->pwdmnt = mntget(current->fs->pwd.mnt);
- 		read_unlock(&current->fs->lock);
- 	}
- 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -513,14 +513,10 @@ static void __put_fs_struct(struct fs_st
- {
- 	/* No need to hold fs->lock if we are killing it */
- 	if (atomic_dec_and_test(&fs->count)) {
--		dput(fs->root);
--		mntput(fs->rootmnt);
--		dput(fs->pwd);
--		mntput(fs->pwdmnt);
--		if (fs->altroot) {
--			dput(fs->altroot);
--			mntput(fs->altrootmnt);
--		}
-+		path_put(&fs->root);
-+		path_put(&fs->pwd);
-+		if (fs->altroot.dentry)
-+			path_put(&fs->altroot);
- 		kmem_cache_free(fs_cachep, fs);
- 	}
- }
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -598,16 +598,16 @@ static struct fs_struct *__copy_fs_struc
- 		rwlock_init(&fs->lock);
- 		fs->umask = old->umask;
- 		read_lock(&old->lock);
--		fs->rootmnt = mntget(old->rootmnt);
--		fs->root = dget(old->root);
--		fs->pwdmnt = mntget(old->pwdmnt);
--		fs->pwd = dget(old->pwd);
--		if (old->altroot) {
--			fs->altrootmnt = mntget(old->altrootmnt);
--			fs->altroot = dget(old->altroot);
-+		fs->root = old->root;
-+		path_get(&old->root);
-+		fs->pwd = old->pwd;
-+		path_get(&old->pwd);
-+		if (old->altroot.dentry) {
-+			fs->altroot = old->altroot;
-+			path_get(&old->altroot);
- 		} else {
--			fs->altrootmnt = NULL;
--			fs->altroot = NULL;
-+			fs->altroot.mnt = NULL;
-+			fs->altroot.dentry = NULL;
- 		}
- 		read_unlock(&old->lock);
- 	}
