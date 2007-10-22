@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXJVVrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbXJVVsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbXJVVrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXJVVrA
+	id S1753217AbXJVVsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXJVVsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:47:00 -0400
-Received: from www.tglx.de ([62.245.132.106]:57169 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751391AbXJVVq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:46:59 -0400
-Date: Mon, 22 Oct 2007 23:46:19 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, matthew@wil.cx,
-       ralf@linux-mips.org, adobriyan@gmail.com, viro@ftp.linux.org.uk,
-       viro@zeniv.linux.org.uk, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
-In-Reply-To: <200710222334.45667.arnd@arndb.de>
-Message-ID: <alpine.LFD.0.9999.0710222344580.3167@localhost.localdomain>
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <alpine.LFD.0.999.0710221254550.30120@woody.linux-foundation.org> <20071022130223.f7d75c31.akpm@linux-foundation.org> <200710222334.45667.arnd@arndb.de>
+	Mon, 22 Oct 2007 17:48:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39054 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751249AbXJVVsH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 17:48:07 -0400
+Date: Mon, 22 Oct 2007 14:47:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <20071022224343.4abf3c96@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+ <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+ <Pine.LNX.4.64.0710222137520.7105@anakin>
+ <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org>
+ <20071022211617.31f5c63d@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
+ <20071022224343.4abf3c96@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1024360001-1193089581=:3167"
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-1024360001-1193089581=:3167
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
 
-On Mon, 22 Oct 2007, Arnd Bergmann wrote:
+On Mon, 22 Oct 2007, Alan Cox wrote:
 
-> On Monday 22 October 2007, Andrew Morton wrote:
-> > It's almost always a bug to do spin_lock_irq() when local interrupts are
-> > disabled.  However iirc when we've tried to add runtime debugging to catch
-> > that, it triggered false-positives which made the idea unworkable.  I forget
-> > where.
-> 
-> I tried this as well a few years ago, and I think I hit a few places in
-> the early initialization, but nothing unfixable.
+> For structures, not array elements or stack objects. Does gcc now get
+> aligned correct as an attribute on a stack object ?
 
-Hmm, lockdep checks this already. If it does not catch it, we need to fix it.
+I think m68k stack layout still guarantees 4-byte-alignment, no?
 
-     tglx
---8323328-1024360001-1193089581=:3167--
+> Still doesn't answer the rather more important question - why not just
+> stick a NULL on the end instead of all the nutty hacks ?
+
+You still do need one bit for the discontiguous case, so it's not like you 
+can avoid the hacks anyway (unless you just blow up the structure 
+entirely) and make it a separate member). So once you have that 
+bit+pointer, using a separate NULL entry isn't exactly prettier. 
+
+Especially as we actally want to see the difference between 
+"end-of-allocation" and "not yet filled in", so you shouldn't use NULL 
+anyway, you should probably use something like "all-ones".
+
+			Linus
