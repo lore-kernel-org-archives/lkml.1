@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbXJVTEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXJVTEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbXJVTEZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXJVTEO
+	id S1755521AbXJVTEx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXJVTEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:04:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50319 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752221AbXJVTEN (ORCPT
+	Mon, 22 Oct 2007 15:04:45 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:33794 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbXJVTEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:04:13 -0400
-Date: Mon, 22 Oct 2007 12:03:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-ppp@vger.kernel.org
-Subject: Re: kernel panic when running tcpdump
-Message-Id: <20071022120359.26403bf0.akpm@linux-foundation.org>
-In-Reply-To: <200710222040.19921.m.kozlowski@tuxland.pl>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<200710222040.19921.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 15:04:44 -0400
+Message-id: <1238327807808324409@pripojeni.net>
+Subject: [PATCH 1/1] Char: cyclades, fix potential NULL dereference
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>
+Date: Mon, 22 Oct 2007 15:04:44 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 20:40:18 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+cyclades, fix potential NULL dereference
 
-> 	I'm seeing reproducible oops on 2.6.23-mm1 when trying to run tcpdump
-> over ppp0 interface.
+to ztxdone is jumped even if tty is NULL and tty_wakeup placed after this
+label doesn't expect NULLed parameter, so this will cause an oops in some
+situations (why they scheduled a wakeup there before remove bottom half
+processing patch?). wakeup only in the case when we have non-null tty
+struct.
+Spotted by Adrian Bunk.
 
-Can you please test the latest Linus kernel from
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/?
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>
 
-Because all netwrking things which were in 2.6.23-mm1 are now in mainline.
-So if mainline is OK then that bug presumably got fixed.
+---
+commit d5e700a2247a9dc66cda09e6d89d1dc284bda40b
+tree e0ba44e65a2026e4cba1e158580eaf492a1bfa35
+parent bd9d07361314f393c7686466687c0a7aa8e88109
+author Jiri Slaby <jirislaby@gmail.com> Mon, 22 Oct 2007 20:47:01 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 22 Oct 2007 20:47:01 +0200
 
-Thanks.
+ drivers/char/cyclades.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index d15234c..710c056 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -1604,8 +1604,8 @@ static void cyz_handle_tx(struct cyclades_port *info,
+ 			info->icount.tx++;
+ 		}
+ #endif
+-ztxdone:
+ 		tty_wakeup(tty);
++ztxdone:
+ 		/* Update tx_put */
+ 		cy_writel(&buf_ctrl->tx_put, tx_put);
+ 	}
