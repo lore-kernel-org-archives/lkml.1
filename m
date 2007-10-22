@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXJVKGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbXJVKLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbXJVKGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 06:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXJVKGK
+	id S1752528AbXJVKLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 06:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbXJVKLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 06:06:10 -0400
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:2534 "EHLO
-	iamp04-out.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751162AbXJVKGJ convert rfc822-to-8bit (ORCPT
+	Mon, 22 Oct 2007 06:11:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59688 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbXJVKLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 06:06:09 -0400
-Message-ID: <471C75E7.2070400@draigBrady.com>
-Date: Mon, 22 Oct 2007 11:05:27 +0100
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Question about free/used memory on Linux
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 22 Oct 2007 10:07:07.0682 (UTC) FILETIME=[4DB9A820:01C81493]
-X-CTCH-RefID: str=0001.0A0B0201.471C75AE.0057,ss=1,fgs=0
-X-MXUniqueID: 099cb6e7-af0f-41fd-85b8-b1c83472b340
-X-MXSweep-Threat: Clean
+	Mon, 22 Oct 2007 06:11:09 -0400
+Date: Mon, 22 Oct 2007 11:11:08 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Henrik Carlqvist <hc1@poolhem.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+Message-ID: <20071022101107.GA20690@infradead.org>
+References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071020144238.4f258c8c.hc1@poolhem.se>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravinandan Arakali (rarakali) wrote:
-> Hi kernel gurus,
-> I am trying to find out the memory that's used on my linux box.
-> I find that there are quite a few confusing metrics. How do
-> I find out the "true" used memory ?
+On Sat, Oct 20, 2007 at 02:42:38PM +0200, Henrik Carlqvist wrote:
+> I think there is a need for Kconfig to specify that a functionality could
+> be built as a module or not built at all.
 > 
-> 1. For eg. "free -m" shows free memory (excluding buffers/caches) 
-> as 308 MB while I can see(from "df" output) that the the tmpfs 
-> partitions take up about 400 MB. So, does "free -m" not consider 
-> the tmpfs partitions ?
-> 
-> 2. I try to add up RSS field of all processes reported by
-> "ps aux" command. But is it true that this would be misleading
-> in that, shared memory used by, say 2 processes would show
-> up twice here although there's only one copy in memory. Also
-> does this consider the fact that there's only one copy
-> of shared libraries ?
+> Some drivers require that firmware is loaded when the driver is
+> initialized. The kernel has functionalities for this by using a userspace
+> program. However, this userspace program is only usable from modules and
+> not during boot while any initrd or any other file system has not yet been
+> mounted and yet less any processes started.
 
-Have a look at this script so show RAM used by programs:
-http://www.pixelbeat.org/scripts/ps_mem.py
+That's wrong.   You can load firmware from the initramfs even if the
+driver is built in.  There is no valid reason why a driver shouldn't
+be allowed to be built in.
 
-Note to display totals you will need this patch applied:
-http://lkml.org/lkml/2007/8/13/1224
-
-Pádraig.
