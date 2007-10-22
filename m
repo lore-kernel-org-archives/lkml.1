@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbXJVU0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbXJVU3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbXJVU0n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 16:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXJVU0f
+	id S1753135AbXJVU3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 16:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXJVU3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 16:26:35 -0400
-Received: from iabervon.org ([66.92.72.58]:52630 "EHLO iabervon.org"
+	Mon, 22 Oct 2007 16:29:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41082 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbXJVU0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 16:26:34 -0400
-Date: Mon, 22 Oct 2007 16:26:32 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linas Vepstas <linas@austin.ibm.com>,
-       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
-       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
-       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-In-Reply-To: <471911BE.2000405@garzik.org>
-Message-ID: <Pine.LNX.4.64.0710221555190.32497@iabervon.org>
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
- <20071019195749.GK29903@austin.ibm.com> <471911BE.2000405@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1750730AbXJVU3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 16:29:42 -0400
+Subject: Re: ARCH_FREE_PTE_NR 5350 on x86_64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Alok kataria <alokkataria1@gmail.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0710221913250.18548@blonde.wat.veritas.com>
+References: <35f686220710142354k66e1b9acwf65864b138ffd26@mail.gmail.com>
+	 <200710152236.24789.nickpiggin@yahoo.com.au>
+	 <Pine.LNX.4.64.0710221913250.18548@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 06:29:18 +1000
+Message-Id: <1193084958.6745.99.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007, Jeff Garzik wrote:
 
-> Linas Vepstas wrote:
-> > On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
-> > > Since we have little experience on PCI and MSI here, we had to try to
-> > 
-> > As someone else pointed out, AMD should have *lots* of people with
-> > pci and msi experience on the payroll.  (Folks here buy AMD-designed pci
-> > chips ...)
-> > 
-> > > ONLY
-> > > comment out the pci_intx() call in drivers/ata/ahci.c
-> > > My system can boot up too with MSI enabled!
-> > >
-> > > So does it mean that the root cause is our SB700 SATA controller
-> > > has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
-> > > register masks MSI interrupts too? 
-> > 
-> > That's what it sounds like, to me.
-> > 
-> > > And what is the software solution or workaround?
-> > 
-> > Not sure. Sounds like the device driver needs a quirk for this part.
-> 
-> 
-> Take a look at tg3.c net driver change
-> 2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
-> 
-> However, it may turn out that removing the pci_intx() stuff as a general rule
-> is easier than quirking these devices, if enough of them turn out to have this
-> hardware bug.
+> Agreed.  No hurry, but thanks to Alok for reminding us.
+> CC'ing Ben since he's the one most active in mmu_gathering these days.
+> CC'ing Thomas lest he's puzzling over it in the x86 merge.
 
-At a first approximation, ATI/AMD devices don't send any interrupts if 
-intx is disabled, nVidia devices send legacy interrupts in addition to MSI 
-ones if intx isn't disabled, and Intel devices actually work correctly. So 
-we need at least one kind of device quirk for intx and msi. (And doing it 
-in the drivers doesn't work, since everybody is making things driven by 
-snd_hda_intel and would like msi, afaict)
+Hrm... yes, that stuff sucks. I've had my work on mmu gather on hold
+since KS due to other priorities showing up, but I'll get back to it
+soon and put that on the todo list.
 
-	-Daniel
-*This .sig left intentionally blank*
+The main pain here is the immap_lock. I have various plans to get rid of
+preemption blocking in the main mmu gather (the stuff we discussed
+already basically), but the immap_lock must stay, so we need to keep
+something akin to immap_lock.
+
+With the new approach, the disconnect between ZAP_BLOCK_SIZE and
+whatever we use to represent the size of a batch might still be relevant
+for the cases where we aren't holding that lock.
+
+I'll get back to that stuff soon and we can then discuss the details.
+
+Ben.
+
+
