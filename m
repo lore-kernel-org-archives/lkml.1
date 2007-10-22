@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbXJVWwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXJVW5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbXJVWwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXJVWwa
+	id S1752756AbXJVW5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJVW4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 18:52:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64340 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbXJVWw3 (ORCPT
+	Mon, 22 Oct 2007 18:56:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60116 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751573AbXJVW4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 18:52:29 -0400
-Date: Mon, 22 Oct 2007 09:11:13 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-Subject: Re: [PATCH] rd: Use a private inode for backing storage
-Message-ID: <20071022091113.0343602a@think.oraclecorp.com>
-In-Reply-To: <m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
-References: <200710151028.34407.borntraeger@de.ibm.com>
-	<200710210928.58265.borntraeger@de.ibm.com>
-	<m1zlycc1ut.fsf@ebiederm.dsl.xmission.com>
-	<200710211956.50624.nickpiggin@yahoo.com.au>
-	<m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Mon, 22 Oct 2007 18:56:51 -0400
+Date: Mon, 22 Oct 2007 15:56:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: bharata@linux.vnet.ibm.com, jblunck@suse.de, agruen@suse.de, hch@lst.de,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
+Message-Id: <20071022155634.f61c9d43.akpm@linux-foundation.org>
+In-Reply-To: <20071022135758.GA17051@lst.de>
+References: <20071022065352.GA6489@in.ibm.com>
+	<20071022135758.GA17051@lst.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007 12:39:30 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Mon, 22 Oct 2007 15:57:58 +0200
+Christoph Hellwig <hch@lst.de> wrote:
 
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
 > 
-> > On Sunday 21 October 2007 18:23, Eric W. Biederman wrote:
-> >> Christian Borntraeger <borntraeger@de.ibm.com> writes:
-> >
-> >> Let me put it another way.  Looking at /proc/slabinfo I can get
-> >> 37 buffer_heads per page.  I can allocate 10% of memory in
-> >> buffer_heads before we start to reclaim them.  So it requires just
-> >> over 3.7 buffer_heads on very page of low memory to even trigger
-> >> this case.  That is a large 1k filesystem or a weird sized
-> >> partition, that we have written to directly.
-> >
-> > On a highmem machine it it could be relatively common.
-> 
-> Possibly.  But the same proportions still hold.  1k filesystems
-> are not the default these days and ramdisks are relatively uncommon.
-> The memory quantities involved are all low mem.
+> Any reason we've got this patchset posted by three people now? :)
 
-It is definitely common during run time.  It was seen in practice enough
-to be reproducible and get fixed for the non-ramdisk case.
+presumably because I haven't been merging it.
 
-The big underlying question is how which ramdisk usage case are we
-shooting for. Keeping the ram disk pages off the LRU can certainly help
-the VM if larger ramdisks used at runtime are very common.
+I was in bugfix-only mode from a week prior to 2.6.24 release and during
+the merge window.  Partly caused by the already-idiotic amount of stuff we
+had queued for 2.6.24, partly because we needed to concentrate on
+stabilising the 2.6.25 patchpile rather than writing new stuff.
 
-Otherwise, I'd say to keep it as simple as possible and use Eric's
-patch.  By simple I'm not counting lines of code, I'm counting overall
-readability between something everyone knows (page cache usage) and
-something specific to ramdisks (Nick's patch).
+And partly to send the signal that rather than beavering away on new
+features all the time, we should also be spending some (more) time testing,
+reviewing and bugfixing the current and soon-to-be-current code.
 
--chris
+Probably I should have been more explicit about it, but it wasn't really
+planned.  Next time I'll send more "thanks, I parked this for consideration
+at a more appropriate time" emails.
+
