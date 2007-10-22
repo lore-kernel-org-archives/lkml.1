@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751368AbXJVUbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751249AbXJVUkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751368AbXJVUbr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 16:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbXJVUbk
+	id S1751249AbXJVUkI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 16:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXJVUjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 16:31:40 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:34282 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750700AbXJVUbj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 16:31:39 -0400
-Date: Mon, 22 Oct 2007 13:31:38 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Michael Krufky <mkrufky@linuxtv.org>
-cc: Adrian Bunk <bunk@kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] fix CONFIG_TUNER_TEA5761=m
-In-Reply-To: <471C8C5E.1070901@linuxtv.org>
-Message-ID: <Pine.LNX.4.58.0710221325350.16052@shell4.speakeasy.net>
-References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org>
- <Pine.LNX.4.58.0710212201060.16052@shell4.speakeasy.net> <471C8C5E.1070901@linuxtv.org>
+	Mon, 22 Oct 2007 16:39:55 -0400
+Received: from waste.org ([66.93.16.53]:52470 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbXJVUjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 16:39:53 -0400
+Date: Mon, 22 Oct 2007 15:38:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071022203848.GI17536@waste.org>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071022211617.31f5c63d@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Michael Krufky wrote:
-> Trent Piepho wrote:
-> >>> +++ b/drivers/media/video/tuner-core.c
-> >>> @@ -30,9 +30,7 @@
-> >>>
-> >>>  /* standard i2c insmod options */
-> >>>  static unsigned short normal_i2c[] = {
-> >>> -#ifdef CONFIG_TUNER_TEA5761
-> >>>  	0x10,
-> >>> -#endif
-> >>>
-> >>>
-> >> ^^^ I believe that we want to keep these #ifdef's above...  The removals
-> >> below are fine.
-> >>
-> >
-> > Won't leaving in the call to tea5761_autodetection() when tea5761 is not
-> > compiled in result in an undefined symbol error?
-> >
-> It shouldn't -- See tea5761.h ... If the module is not selected, then a
-> stub will report that the driver was disabled by Kconfig.
+On Mon, Oct 22, 2007 at 09:16:17PM +0100, Alan Cox wrote:
+> On Mon, 22 Oct 2007 12:49:40 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Mon, 22 Oct 2007, Geert Uytterhoeven wrote:
+> > >
+> > > Better safe than sorry...
+> > > 
+> > > Is it possible that a chain entry pointer has bit 1 set on architectures
+> > > (e.g. m68k) where the natural alignment of 32-bit quantities is _2_ bytes,
+> > > not 4?
+> > 
+> > Better make sure that such alignment never happens... But no, I don't 
+> > think it will, since these things would generally always have to be 
+> > allocated with an allocator, and the *allocator* won't return 2-byte 
+> > aligned data structures.
+> 
+> No - but a structure which has other objects in it before the object
+> being written out may well be 2 byte aligned on M68K and some of the
+> other externally 16bit platforms - ditto local dynamic objects.
 
-You're right, there's no need to have the tuner-core code remove the tea5761
-function calls as the stubs will take care of it.
+Also, the current version of SLOB will return objects aligned at 2 bytes if the
+architecture allows it.
+ 
+> Why can't we just make the list one item longer than the entry count and
+> stick a NULL on the end of it like normal people ? Then you need one bit
+> which ought to be safe for everyone (and if the bit is a macro any CPU
+> warped enough to have byte alignment is surely going to have top bits
+> spare...)
 
-We could delete the #if/#endif around the 0x10 address to scan, or keep it.
-What's better, to not scan the address if it's not needed, or to scan it and
-then produce an error message if something is found there?
+I'm guessing the extra entry makes slab-like allocators unhappy.
 
-But if it stays, it should look like this:
-
-> > #if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
-
-i.e., only scan 0x10 if there is callable tea5761 code to handle it.
+-- 
+Mathematics is the supreme nostalgia of our time.
