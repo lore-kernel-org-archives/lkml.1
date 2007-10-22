@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbXJVDiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbXJVDoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbXJVDiq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 23:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXJVDij
+	id S1754161AbXJVDoa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 23:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXJVDoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 23:38:39 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:53747 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751396AbXJVDii (ORCPT
+	Sun, 21 Oct 2007 23:44:22 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:14471 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbXJVDoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 23:38:38 -0400
-Date: Sun, 21 Oct 2007 23:38:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6 patch] x86: add instrumentation menu
-Message-ID: <20071022033836.GA5200@Krystal>
-References: <20071022024808.GK30533@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 21 Oct 2007 23:44:22 -0400
+X-IronPort-AV: i="4.21,309,1188792000"; 
+   d="scan'208"; a="42169170:sNHT27088467"
+Subject: [GIT PULL Part #3] Blackfin arch bug fixing for merge window
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20071022024808.GK30533@stusta.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:35:59 up 84 days,  3:54,  2 users,  load average: 0.89, 0.42, 0.26
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Organization: Analog Devices, Ltd.
+Date: Mon, 22 Oct 2007 11:44:16 +0800
+Message-Id: <1193024656.19886.4.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 22 Oct 2007 03:44:20.0582 (UTC) FILETIME=[D4445060:01C8145D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@kernel.org) wrote:
-> It seems commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9 was incomplete 
-> due to a clash with the x86 architecture merge.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
+Hi Linus,
 
-Yes, my own fix only dealt with i386 and x86_64 Kconfig, without fixing
-the x86 architecture. This patch seems good.
+Please pull from 'for-linus' branch of
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git
+for-linus
 
-> ---
-> 
->  arch/i386/Kconfig         |    2 ++
->  arch/x86/oprofile/Kconfig |   17 -----------------
->  arch/x86_64/Kconfig       |    2 ++
->  3 files changed, 4 insertions(+), 17 deletions(-)
-> 
-> e66850f5417ad721e75bf575b6ec49d7aec0af04 
-> diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-> index f6e44fc..9e8a74f 100644
-> --- a/arch/i386/Kconfig
-> +++ b/arch/i386/Kconfig
-> @@ -1258,6 +1258,8 @@ source "drivers/Kconfig"
->  
->  source "fs/Kconfig"
->  
-> +source "kernel/Kconfig.instrumentation"
-> +
->  source "arch/i386/Kconfig.debug"
->  
->  source "security/Kconfig"
-> diff --git a/arch/x86/oprofile/Kconfig b/arch/x86/oprofile/Kconfig
-> deleted file mode 100644
-> index d8a8408..0000000
-> --- a/arch/x86/oprofile/Kconfig
-> +++ /dev/null
-> @@ -1,17 +0,0 @@
-> -config PROFILING
-> -	bool "Profiling support (EXPERIMENTAL)"
-> -	help
-> -	  Say Y here to enable the extended profiling support mechanisms used
-> -	  by profilers such as OProfile.
-> -	  
-> -
-> -config OPROFILE
-> -	tristate "OProfile system profiling (EXPERIMENTAL)"
-> -	depends on PROFILING
-> -	help
-> -	  OProfile is a profiling system capable of profiling the
-> -	  whole system, include the kernel, kernel modules, libraries,
-> -	  and applications.
-> -
-> -	  If unsure, say N.
-> -
-> diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-> index aab25f3..106d5d5 100644
-> --- a/arch/x86_64/Kconfig
-> +++ b/arch/x86_64/Kconfig
-> @@ -801,6 +801,8 @@ source "drivers/firmware/Kconfig"
->  
->  source fs/Kconfig
->  
-> +source "kernel/Kconfig.instrumentation"
-> +
->  source "arch/x86_64/Kconfig.debug"
->  
->  source "security/Kconfig"
-> 
+to receive the following updates:
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ arch/blackfin/Makefile       |    4 ++--
+ arch/blackfin/kernel/setup.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+Bryan Wu (1):
+      Blackfin arch: use KBUILD_CFLAGS and KBUILD_AFLAGS in Makefile
+
+Mike Frysinger (1):
+      Blackfin arch: Javier Herrer writes: fix building when icache and
+dcache is disabled
+
+diff --git a/arch/blackfin/Makefile b/arch/blackfin/Makefile
+index 3c87291..f7cac7c 100644
+--- a/arch/blackfin/Makefile
++++ b/arch/blackfin/Makefile
+@@ -12,8 +12,8 @@ LDFLAGS_vmlinux  := -X
+ OBJCOPYFLAGS     := -O binary -R .note -R .comment -S
+ GZFLAGS          := -9
+ 
+-CFLAGS           += $(call cc-option,-mno-fdpic)
+-AFLAGS           += $(call cc-option,-mno-fdpic)
++KBUILD_CFLAGS           += $(call cc-option,-mno-fdpic)
++KBUILD_AFLAGS           += $(call cc-option,-mno-fdpic)
+ CFLAGS_MODULE    += -mlong-calls
+ KALLSYMS         += --symbol-prefix=_
+ 
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index 0e74644..f1b059e 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -501,7 +501,7 @@ EXPORT_SYMBOL(sclk_to_usecs);
+ 
+ unsigned long usecs_to_sclk(unsigned long usecs)
+ {
+-	return get_sclk() / (USEC_PER_SEC * (u64)usecs);
++	return (get_sclk() * (u64)usecs) / USEC_PER_SEC;
+ }
+ EXPORT_SYMBOL(usecs_to_sclk);
+ 
+@@ -589,7 +589,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ #elif defined CONFIG_BFIN_WT
+ 		"wt"
+ #endif
+-		, 0);
++		"", 0);
+ 
+ 	seq_printf(m, "%s\n", cache);
+ 
