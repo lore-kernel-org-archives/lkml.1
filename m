@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbXJVVmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbXJVVmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534AbXJVVmD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:42:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXJVVlx
+	id S1753301AbXJVVmz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXJVVmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:41:53 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:50157 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750703AbXJVVlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:41:52 -0400
-Date: Mon, 22 Oct 2007 22:43:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071022224343.4abf3c96@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-	<Pine.LNX.4.64.0710222137520.7105@anakin>
-	<alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org>
-	<20071022211617.31f5c63d@the-village.bc.nu>
-	<alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Oct 2007 17:42:47 -0400
+Received: from keil-draco.com ([216.193.185.50]:50033 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbXJVVmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 17:42:46 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
+Date: Mon, 22 Oct 2007 17:42:36 -0400
+User-Agent: KMail/1.9.7
+Cc: Pavel Machek <pavel@ucw.cz>, Dan Williams <dcbw@redhat.com>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       mwallis@serialmonkey.com
+References: <20071020184100.GA11640@elf.ucw.cz> <20071022211325.GF28190@elf.ucw.cz> <200710222352.57543.IvDoorn@gmail.com>
+In-Reply-To: <200710222352.57543.IvDoorn@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710221742.36693.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 13:44:43 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Monday 22 October 2007 17:52:57 Ivo van Doorn wrote:
+> On Monday 22 October 2007, Pavel Machek wrote:
+> > Hi!
+> >
+> > > > > This device is NOT a Ralink USB wifi adapter!
+> > > > >
+> > > > > Get the windows driver in this link and see for yourself.
+> > > > > http://www.conitech.it/conitech/ita/risorse.asp?cod=CN402USB
+> > > > > (ISSC W89C35 802.11bg WLAN USB Adapters (Native Wifi driver))
+> > > >
+> > > > Thanks a lot. With some patches, I got driver from conitech.it to
+> > > > compile and partly work on 2.6.23. I can now transmit packets but not
+> > > > yet receive them.
+> > > >
+> > > > (use Makefile.26 instead of Makefile)
+> > >
+> > > I couldn't find any license info immediately visible; are you sure it's
+> > > GPL?
+> >
+> > Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
+>
+> That doesn't say much, some manufacturers add that line to their driver
+>  just to prevent the module loader complaining about a non-GPL driver...
+>
+> There should be a copyright notice or a license file accompanied with
+> the driver that clearly states the license of the driver.
 
-> 
-> 
-> On Mon, 22 Oct 2007, Alan Cox wrote:
-> > 
-> > Why can't we just make the list one item longer than the entry count and
-> > stick a NULL on the end of it like normal people ? Then you need one bit
-> > which ought to be safe for everyone (and if the bit is a macro any CPU
-> > warped enough to have byte alignment is surely going to have top bits
-> > spare...)
-> 
-> Well, quite frankly, equally easy is to just add a
-> 
-> 	__attribute__((aligned(4)))
-> 
-> or whatever the gcc syntax for that is today.. That guarantees that gcc 
-> lays things out properly.
+Lacking an explicitly stated license it can be argued that, since the 
+MODULE_LICENSE() macro is meant to define the actual license on the code, 
+this code is GPL. No, it isn't an explicit definition, but lacking any other 
+signs of the license, the implicit declaration of it being GPL is (or should 
+be) enough to deflect charges of copyright infringement.
 
-For structures, not array elements or stack objects. Does gcc now get
-aligned correct as an attribute on a stack object ?
+DRH
 
-Still doesn't answer the rather more important question - why not just
-stick a NULL on the end instead of all the nutty hacks ?
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
