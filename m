@@ -1,282 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbXJVHEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbXJVHP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbXJVHEc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbXJVHEY
+	id S1753012AbXJVHP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbXJVHPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:04:24 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:49641 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406AbXJVHEX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:04:23 -0400
-Date: Mon, 22 Oct 2007 12:34:19 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Blunck <jblunck@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       Christoph Hellwig <hch@lst.de>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 13/13] Rename {__}d_path() to {__}print_path() and fix comments
-Message-ID: <20071022070419.GN6489@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20071022065352.GA6489@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022065352.GA6489@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 22 Oct 2007 03:15:21 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20749 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbXJVHPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 03:15:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,309,1188802800"; 
+   d="scan'208";a="252669252"
+Subject: [PATCH -v6 3/3] x86 boot: document for 32 bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 22 Oct 2007 15:17:08 +0800
+Message-Id: <1193037428.23935.24.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 22 Oct 2007 07:14:28.0171 (UTC) FILETIME=[2EF9B9B0:01C8147B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes the name of d_path() and __d_path() to print_path() and __print_path()
-respectively and fixes the kerneldoc comments for print_path().
+This patch defines a 32-bit boot protocol and adds corresponding
+document. It is based on the proposal of Peter Anvin.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
 ---
- arch/blackfin/kernel/traps.c      |    2 -
- drivers/md/bitmap.c               |    2 -
- drivers/usb/gadget/file_storage.c |    4 +--
- fs/compat_ioctl.c                 |    3 +-
- fs/dcache.c                       |   41 +++++++++++++++++---------------------
- fs/dcookies.c                     |    2 -
- fs/ecryptfs/super.c               |    2 -
- fs/nfsd/export.c                  |    2 -
- fs/proc/base.c                    |    2 -
- fs/seq_file.c                     |    2 -
- fs/sysfs/file.c                   |    2 -
- fs/unionfs/super.c                |    2 -
- include/linux/dcache.h            |    2 -
- kernel/audit.c                    |    2 -
- 14 files changed, 34 insertions(+), 36 deletions(-)
 
---- a/arch/blackfin/kernel/traps.c
-+++ b/arch/blackfin/kernel/traps.c
-@@ -102,7 +102,7 @@ static int printk_address(unsigned long 
- 				struct file *file = vma->vm_file;
- 				if (file) {
- 					char _tmpbuf[256];
--					name = d_path(file->f_dentry,
-+					name = print_path(file->f_dentry,
- 					              file->f_vfsmnt,
- 					              _tmpbuf,
- 					              sizeof(_tmpbuf));
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -215,7 +215,7 @@ char *file_path(struct file *file, char 
- 	d = file->f_path.dentry;
- 	v = file->f_path.mnt;
+ boot.txt      |   68 ++++++++++++++++++++++++++++++
+ zero-page.txt |  129 +++++++++++++---------------------------------------------
+ 2 files changed, 97 insertions(+), 100 deletions(-)
+
+Index: linux-2.6.23/Documentation/i386/boot.txt
+===================================================================
+--- linux-2.6.23.orig/Documentation/i386/boot.txt	2007-10-22 13:32:20.000000000 +0800
++++ linux-2.6.23/Documentation/i386/boot.txt	2007-10-22 13:32:46.000000000 +0800
+@@ -2,7 +2,7 @@
+ 		     ----------------------------
  
--	buf = d_path(d, v, buf, count);
-+	buf = print_path(d, v, buf, count);
+ 		    H. Peter Anvin <hpa@zytor.com>
+-			Last update 2007-05-23
++			Last update 2007-10-22
  
- 	return IS_ERR(buf) ? NULL : buf;
- }
---- a/drivers/usb/gadget/file_storage.c
-+++ b/drivers/usb/gadget/file_storage.c
-@@ -3567,7 +3567,7 @@ static ssize_t show_file(struct device *
+ On the i386 platform, the Linux kernel uses a rather complicated boot
+ convention.  This has evolved partially due to historical aspects, as
+@@ -42,6 +42,9 @@
+ Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
+ 		the boot command line
  
- 	down_read(&fsg->filesem);
- 	if (backing_file_is_open(curlun)) {	// Get the complete pathname
--		p = d_path(curlun->filp->f_path.dentry,
-+		p = print_path(curlun->filp->f_path.dentry,
- 				curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
- 		if (IS_ERR(p))
- 			rc = PTR_ERR(p);
-@@ -3985,7 +3985,7 @@ static int __init fsg_bind(struct usb_ga
- 		if (backing_file_is_open(curlun)) {
- 			p = NULL;
- 			if (pathbuf) {
--				p = d_path(curlun->filp->f_path.dentry,
-+				p = print_path(curlun->filp->f_path.dentry,
- 					curlun->filp->f_path.mnt,
- 					pathbuf, PATH_MAX);
- 				if (IS_ERR(p))
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -3544,7 +3544,8 @@ static void compat_ioctl_error(struct fi
- 	/* find the name of the device. */
- 	path = (char *)__get_free_page(GFP_KERNEL);
- 	if (path) {
--		fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
-+		fn = print_path(filp->f_path.dentry, filp->f_path.mnt,
-+				path, PAGE_SIZE);
- 		if (IS_ERR(fn))
- 			fn = "?";
- 	}
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1762,23 +1762,7 @@ shouldnt_be_hashed:
- 	goto shouldnt_be_hashed;
- }
++Protocol 2.07:	(kernel 2.6.23) Added a field of 64-bit physical
++		pointer to single linked list of struct	setup_data.
++		Added 32-bit boot protocol.
  
--/**
-- * d_path - return the path of a dentry
-- * @dentry: dentry to report
-- * @vfsmnt: vfsmnt to which the dentry belongs
-- * @root: root dentry
-- * @rootmnt: vfsmnt to which the root dentry belongs
-- * @buffer: buffer to return value in
-- * @buflen: buffer length
-- *
-- * Convert a dentry into an ASCII path name. If the entry has been deleted
-- * the string " (deleted)" is appended. Note that this is ambiguous.
-- *
-- * Returns the buffer or an error code if the path was too long.
-- *
-- * "buflen" should be positive. Caller holds the dcache_lock.
-- */
--static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
-+static char *__print_path( struct dentry *dentry, struct vfsmount *vfsmnt,
- 			struct path *root, char *buffer, int buflen)
- {
- 	char * end = buffer+buflen;
-@@ -1845,8 +1829,21 @@ Elong:
- 	return ERR_PTR(-ENAMETOOLONG);
- }
+ **** MEMORY LAYOUT
  
--/* write full pathname into buffer and return start of pathname */
--char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+/**
-+ * print_path - return the path of a dentry
-+ * @dentry: dentry to report
-+ * @vfsmnt: vfsmnt to which the dentry belongs
-+ * @buffer: buffer to return value in
-+ * @buflen: buffer length
-+ *
-+ * Convert a dentry into an ASCII path name. If the entry has been deleted
-+ * the string " (deleted)" is appended. Note that this is ambiguous.
-+ *
-+ * Returns the buffer or an error code if the path was too long.
-+ *
-+ * "buflen" should be positive.
-+ */
-+char *print_path(struct dentry *dentry, struct vfsmount *vfsmnt,
- 				char *buf, int buflen)
- {
- 	char *res;
-@@ -1867,7 +1864,7 @@ char * d_path(struct dentry *dentry, str
- 	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
-+	res = __print_path(dentry, vfsmnt, &root, buf, buflen);
- 	spin_unlock(&dcache_lock);
- 	path_put(&root);
- 	return res;
-@@ -1935,7 +1932,7 @@ asmlinkage long sys_getcwd(char __user *
- 		unsigned long len;
- 		char * cwd;
+@@ -168,6 +171,9 @@
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
+ 0235/3	N/A	pad2		Unused
+ 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
++023c/4	N/A	pad3		Unused
++0240/8	2.07+	setup_data	64-bit physical pointer to linked list
++				of struct setup_data
  
--		cwd = __d_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
-+		cwd = __print_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
- 		spin_unlock(&dcache_lock);
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -480,6 +486,37 @@
+   cmdline_size characters. With protocol version 2.05 and earlier, the
+   maximum size was 255.
  
- 		error = PTR_ERR(cwd);
-@@ -2179,7 +2176,7 @@ EXPORT_SYMBOL(d_invalidate);
- EXPORT_SYMBOL(d_lookup);
- EXPORT_SYMBOL(d_move);
- EXPORT_SYMBOL_GPL(d_materialise_unique);
--EXPORT_SYMBOL(d_path);
-+EXPORT_SYMBOL(print_path);
- EXPORT_SYMBOL(d_prune_aliases);
- EXPORT_SYMBOL(d_rehash);
- EXPORT_SYMBOL(d_splice_alias);
---- a/fs/dcookies.c
-+++ b/fs/dcookies.c
-@@ -174,7 +174,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
- 		goto out;
++Field name:	setup_data
++Type:		write (obligatory)
++Offset/size:	0x240/8
++Protocol:	2.07+
++
++  The 64-bit physical pointer to NULL terminated single linked list of
++  struct setup_data. This is used to define a more extensible boot
++  parameters passing mechanism. The definition of struct setup_data is
++  as follow:
++
++  struct setup_data {
++	  u64 next;
++	  u32 type;
++	  u32 len;
++	  u8  data[0];
++  } __attribute__((packed));
++
++  Where, the next is a 64-bit physical pointer to the next node of
++  linked list, the next field of the last node is 0; the type is used
++  to identify the contents of data; the len is the length of data
++  field; the data holds the real payload.
++
++  With this field, to add a new boot parameter written by bootloaders,
++  it is not needed to add a new field to real mode header, just add a
++  new setup_data type is sufficient. But to add a new boot parameter
++  read by bootloader, it is still needed to add a new field.
++
++  During kernel bootstrap, the linked list of setup_data will be
++  copied to the memory area righ after the _end of kernel. So
++  bootloaders should avoid put linked list of setup_data there.
++
  
- 	/* FIXME: (deleted) ? */
--	path = d_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
-+	path = print_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
+ **** THE KERNEL COMMAND LINE
  
- 	if (IS_ERR(path)) {
- 		err = PTR_ERR(path);
---- a/fs/ecryptfs/super.c
-+++ b/fs/ecryptfs/super.c
-@@ -174,7 +174,7 @@ static int ecryptfs_show_options(struct 
- 		rc = -ENOMEM;
- 		goto out;
- 	}
--	path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
-+	path = print_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
- 	if (IS_ERR(path)) {
- 		rc = PTR_ERR(path);
- 		goto out;
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -349,7 +349,7 @@ static void svc_export_request(struct ca
- 	char *pth;
- 
- 	qword_add(bpp, blen, exp->ex_client->name);
--	pth = d_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
-+	pth = print_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
- 	if (IS_ERR(pth)) {
- 		/* is this correct? */
- 		(*bpp)[0] = '\n';
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1056,7 +1056,7 @@ static int do_proc_readlink(struct path 
- 		return -ENOMEM;
- 
- 	inode = path->dentry->d_inode;
--	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
-+	pathname = print_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
- 	len = PTR_ERR(pathname);
- 	if (IS_ERR(pathname))
- 		goto out;
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -355,7 +355,7 @@ int seq_path(struct seq_file *m,
- {
- 	if (m->count < m->size) {
- 		char *s = m->buf + m->count;
--		char *p = d_path(dentry, mnt, s, m->size - m->count);
-+		char *p = print_path(dentry, mnt, s, m->size - m->count);
- 		if (!IS_ERR(p)) {
- 			while (s <= p) {
- 				char c = *p++;
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -355,7 +355,7 @@ static int sysfs_open_file(struct inode 
- 	int error;
- 	char *p;
- 
--	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
-+	p = print_path(file->f_dentry, sysfs_mount, last_sysfs_file,
- 		   sizeof(last_sysfs_file));
- 	if (p)
- 		memmove(last_sysfs_file, p, strlen(p) + 1);
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -975,7 +975,7 @@ static int unionfs_show_options(struct s
- 
- 	seq_printf(m, ",dirs=");
- 	for (bindex = bstart; bindex <= bend; bindex++) {
--		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
-+		path = print_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
- 			      unionfs_lower_mnt_idx(sb->s_root, bindex),
- 			      tmp_page, PAGE_SIZE);
- 		if (IS_ERR(path)) {
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -300,7 +300,7 @@ extern int d_validate(struct dentry *, s
-  */
- extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
- 
--extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
-+extern char *print_path(struct dentry *, struct vfsmount *, char *, int);
-   
- /* Allocation counts.. */
- 
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
- 		audit_log_format(ab, "<no memory>");
- 		return;
- 	}
--	p = d_path(dentry, vfsmnt, path, PATH_MAX+11);
-+	p = print_path(dentry, vfsmnt, path, PATH_MAX+11);
- 	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
- 		/* FIXME: can we save some information here? */
- 		audit_log_format(ab, "<too long>");
+@@ -753,3 +790,32 @@
+ 	After completing your hook, you should jump to the address
+ 	that was in this field before your boot loader overwrote it
+ 	(relocated, if appropriate.)
++
++
++**** 32-bit BOOT PROTOCOL
++
++For machine with some new BIOS other than legacy BIOS, such as EFI,
++LinuxBIOS, etc, and kexec, the 16-bit real mode setup code in kernel
++based on legacy BIOS can not be used, so a 32-bit boot protocol need
++to be defined.
++
++In 32-bit boot protocol, the first step in loading a Linux kernel
++should still be to load the real-mode code and then examine the kernel
++header at offset 0x01f1. But, it is not necessary to load all
++real-mode code, just first 4K bytes traditionally known as "zero page"
++is needed.
++
++In addition to read/modify/write kernel header of the zero page as
++that of 16-bit boot protocol, the boot loader should also fill the
++additional fields of the zero page as that described in zero-page.txt.
++
++After loading and setuping the zero page, the boot loader can load the
++32/64-bit kernel in the same way as that of 16-bit boot protocol.
++
++In 32-bit boot protocol, the kernel is started by jumping to the
++32-bit kernel entry point, which is the start address of loaded
++32/64-bit kernel.
++
++At entry, the CPU must be in 32-bit protected mode with paging
++disabled; the CS and DS must be 4G flat segments; %esi holds the base
++address of the "zero page"; %esp, %ebp, %edi should be zero.
+Index: linux-2.6.23/Documentation/i386/zero-page.txt
+===================================================================
+--- linux-2.6.23.orig/Documentation/i386/zero-page.txt	2007-10-22 13:32:20.000000000 +0800
++++ linux-2.6.23/Documentation/i386/zero-page.txt	2007-10-22 13:32:28.000000000 +0800
+@@ -1,99 +1,30 @@
+----------------------------------------------------------------------------
+-!!!!!!!!!!!!!!!WARNING!!!!!!!!
+-The zero page is a kernel internal data structure, not a stable ABI.  It might change
+-without warning and the kernel has no way to detect old version of it.
+-If you're writing some external code like a boot loader you should only use
+-the stable versioned real mode boot protocol described in boot.txt. Otherwise the kernel
+-might break you at any time.
+-!!!!!!!!!!!!!WARNING!!!!!!!!!!!
+-----------------------------------------------------------------------------
+-
+-Summary of boot_params layout (kernel point of view)
+-     ( collected by Hans Lermen and Martin Mares )
+- 
+-The contents of boot_params are used to pass parameters from the
+-16-bit realmode code of the kernel to the 32-bit part. References/settings
+-to it mainly are in:
+-
+-  arch/i386/boot/setup.S
+-  arch/i386/boot/video.S
+-  arch/i386/kernel/head.S
+-  arch/i386/kernel/setup.c
+- 
+-
+-Offset	Type		Description
+-------  ----		-----------
+-    0	32 bytes	struct screen_info, SCREEN_INFO
+-			ATTENTION, overlaps the following !!!
+-    2	unsigned short	EXT_MEM_K, extended memory size in Kb (from int 0x15)
+- 0x20	unsigned short	CL_MAGIC, commandline magic number (=0xA33F)
+- 0x22	unsigned short	CL_OFFSET, commandline offset
+-			Address of commandline is calculated:
+-			  0x90000 + contents of CL_OFFSET
+-			(only taken, when CL_MAGIC = 0xA33F)
+- 0x40	20 bytes	struct apm_bios_info, APM_BIOS_INFO
+- 0x60	16 bytes	Intel SpeedStep (IST) BIOS support information
+- 0x80	16 bytes	hd0-disk-parameter from intvector 0x41
+- 0x90	16 bytes	hd1-disk-parameter from intvector 0x46
+-
+- 0xa0	16 bytes	System description table truncated to 16 bytes.
+-			( struct sys_desc_table_struct )
+- 0xb0 - 0x13f		Free. Add more parameters here if you really need them.
+- 0x140- 0x1be		EDID_INFO Video mode setup
+-
+-0x1c4	unsigned long	EFI system table pointer
+-0x1c8	unsigned long	EFI memory descriptor size
+-0x1cc	unsigned long	EFI memory descriptor version
+-0x1d0	unsigned long	EFI memory descriptor map pointer
+-0x1d4	unsigned long	EFI memory descriptor map size
+-0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
+-0x1e4	unsigned long	Scratch field for the kernel setup code
+-0x1e8	char		number of entries in E820MAP (below)
+-0x1e9	unsigned char	number of entries in EDDBUF (below)
+-0x1ea	unsigned char	number of entries in EDD_MBR_SIG_BUFFER (below)
+-0x1f1	char		size of setup.S, number of sectors
+-0x1f2	unsigned short	MOUNT_ROOT_RDONLY (if !=0)
+-0x1f4	unsigned short	size of compressed kernel-part in the
+-			(b)zImage-file (in 16 byte units, rounded up)
+-0x1f6	unsigned short	swap_dev (unused AFAIK)
+-0x1f8	unsigned short	RAMDISK_FLAGS
+-0x1fa	unsigned short	VGA-Mode (old one)
+-0x1fc	unsigned short	ORIG_ROOT_DEV (high=Major, low=minor)
+-0x1ff	char		AUX_DEVICE_INFO
+-
+-0x200	short jump to start of setup code aka "reserved" field.
+-0x202	4 bytes		Signature for SETUP-header, ="HdrS"
+-0x206	unsigned short	Version number of header format
+-			Current version is 0x0201...
+-0x208	8 bytes		(used by setup.S for communication with boot loaders,
+-			 look there)
+-0x210	char		LOADER_TYPE, = 0, old one
+-			else it is set by the loader:
+-			0xTV: T=0 for LILO
+-				1 for Loadlin
+-				2 for bootsect-loader
+-				3 for SYSLINUX
+-				4 for ETHERBOOT
+-				5 for ELILO
+-				7 for GRuB
+-				8 for U-BOOT
+-				9 for Xen
+-				V = version
+-0x211	char		loadflags:
+-			bit0 = 1: kernel is loaded high (bzImage)
+-			bit7 = 1: Heap and pointer (see below) set by boot
+-				  loader.
+-0x212	unsigned short	(setup.S)
+-0x214	unsigned long	KERNEL_START, where the loader started the kernel
+-0x218	unsigned long	INITRD_START, address of loaded ramdisk image
+-0x21c	unsigned long	INITRD_SIZE, size in bytes of ramdisk image
+-0x220	4 bytes		(setup.S)
+-0x224	unsigned short	setup.S heap end pointer
+-0x226   unsigned short	zero_pad
+-0x228   unsigned long	cmd_line_ptr
+-0x22c   unsigned long	ramdisk_max
+-0x230   16 bytes 	trampoline
+-0x290 - 0x2cf		EDD_MBR_SIG_BUFFER (edd.S)
+-0x2d0 - 0xd00		E820MAP
+-0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
+-0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
++The additional fields in zero page as a part of 32-bit boot protocol
++of kernel. These should be filled by bootloader or 16-bit real-mode
++code of the kernel. References/settings to it mainly are in:
++
++  include/asm-i386/bootparam.h
++
++
++Offset	Proto	Name		Meaning
++/Size
++
++000/040	2.07+	screen_info	Text mode or frame buffer information
++				(struct screen_info)
++040/014	2.07+	apm_bios_info	APM BIOS information (struct apm_bios_info)
++060/010	2.07+	ist_info	Intel SpeedStep (IST) BIOS support information
++				(struct ist_info)
++080/010	2.07+	hd0_info	hd0 disk parameter, OBSOLETE!!
++090/010	2.07+	hd1_info	hd1 disk parameter, OBSOLETE!!
++0A0/010	2.07+	sys_desc_table	System description table (struct sys_desc_table)
++140/080	2.07+	edid_info	Video mode setup (struct edid_info)
++1C0/020	2.07+	efi_info	EFI 32 information (struct efi_info)
++1E0/004	2.07+	alk_mem_k	Alternative mem check, in KB
++1E4/004	2.07+	scratch		Scratch field for the kernel setup code
++1E8/001	2.07+	e820_entries	Number of entries in e820_map (below)
++1E9/001	2.07+	eddbuf_entries	Number of entries in eddbuf (below)
++1EA/001	2.07+	edd_mbr_sig_buf_entries	Number of entries in edd_mbr_sig_buffer
++				(below)
++290/040	2.07+	edd_mbr_sig_buffer EDD MBR signatures
++2D0/A00	2.07+	e820_map	E820 memory map table
++				(array of struct e820entry)
++D00/1EC	2.07+	eddbuf		EDD data (array of struct edd_info)
