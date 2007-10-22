@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbXJVJpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbXJVJsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263AbXJVJpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXJVJpn
+	id S1752866AbXJVJsW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVJsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:45:43 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:56329 "EHLO madara.hpl.hp.com"
+	Mon, 22 Oct 2007 05:48:13 -0400
+Received: from ns1.q-leap.de ([153.94.51.193]:33639 "EHLO mail.q-leap.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbXJVJpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:45:42 -0400
-Date: Mon, 22 Oct 2007 02:44:01 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: perfmon@napali.hpl.hp.com
-Cc: Stephane Eranian <eranian@hpl.hp.com>, oprofile-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, perfctr-devel@lists.sourceforge.net,
-       linux-ia64@vger.kernel.org
-Subject: 2.6.23 new perfmon code base + libpfm + pfmon
-Message-ID: <20071022094401.GB26741@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751250AbXJVJsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 05:48:12 -0400
+From: Bernd Schubert <bs@q-leap.de>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: sata sil3114 vs. certain seagate drives results in filesystem corruptions
+Date: Mon, 22 Oct 2007 11:48:08 +0200
+User-Agent: KMail/1.9.6
+Cc: Soeren Sonnenburg <kernel@nn7.de>, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+References: <1192863324.5720.162.camel@localhost> <471C071C.2010202@gmail.com>
+In-Reply-To: <471C071C.2010202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+Message-Id: <200710221148.08809.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
 
-I have released another version of the perfmon new code base package.
-This version of the kernel patch is relative to 2.6.23. This is the first
-release based on the perfmon git tree from kernel.org. The structure of
-the package has changed, only one diff file to apply now.
+On Monday 22 October 2007 04:12:44 Tejun Heo wrote:
+> Helo,
+>
+> Soeren Sonnenburg wrote:
+> > I finally managed to find a *reproducible* setup and way to trigger
+> > random corruptions using a sata sil 3114 controller connected to 4
+> > seagate drives
+> >
+> > port 1: ST3400832AS sda
+> > port 2: ST3400620AS sdb
+> > port 3: ST3750640AS sdc
+> > port 4: ST3750640AS sdd
+> >
+> > sda & sdb form md0 via a raid1 setup followed by an additional
+> > devicemapper layer ( root ). sdc and sdb are separate and also have an
+> > additional device mapper layer ( public ) and ( backups ).
+> >
+> > Now when I write large files of zeros to root(sda&sdb) and read the file
+> > back in it contains a few nonzero entries:
+> >
+> > # dd if=/dev/zero of=/foo bs=1M count=2000
+> > # hexdump /foo
+> > 0000000 0000 0000 0000 0000 0000 0000 0000 0000
+> > *
+> > <after >1GB random parts, within large blocks of zeroes>
+> >
+> > I can reliably trigger this on the md0 / devmapper-root setup when I
+> > write about 2GB of data (note that this machine has 1.5G of memory - and
+> > still 1GB is often enough to see this problem). Here it does not matter
+> > where in the filesystem I do these writes.
 
-This new patch introduces perfmon2 v2.7.  There were many other changes
-which are highlighted below:
+Thats almost the same test as I'm always doing. Only I do not write only 2GB, 
+but as much as it fits onto the disk. On reading back this file, the 
+filesystem will report errors somewhere between 50GB and 230GB (disk size is 
+250GB).
 
-This  new kernel patch includes the following new features and
-bug fixes:
-	- full support for AMD Family 10h (Barcelona) processors,
-	  including the new Instruction-Based Samplig (IBS) feature.
-	  This is the work of Robert Richter (AMD).
+>
+> Thanks.  I'll try to reproduce the problem here.  What's your motherboard?
 
-	- support for AMD K7 (Jeff Muizelaar)
+All tested S2882 boards here.
 
-	- Several Cell processor updates from Kevin Corry (IBM),
-	  Takaki Azuma (Toshiba), Takayuki Uchikawa (Toshiba)
 
-	- Important rework of PEBS support for Pentium 4 and Intel Core
-	  based processors. Basically the PEBS support is now split between
-	  the two processor families due to incompatbilities when running
-	  in 32-bit mode. As a consequence, there are two distinct
-	  sampling formats with two distinct header files: perfmon_pebs_p4_smpl.h
-	  and perfmon_pebs_core_smpl.h. The corresponding data structures
-	  have been renamed as well. There is no functionality changes.
-
-	- ensure we do not set unimplemented PMD bits
-
-	- fix multiple pfm_restart() call issues
-
-	- fix several important register mapping table errors in perfmon_intel_arch.c
- 	  used with architectural PMU v1 and v2 when nothing else works.
-	  The fixed counters were not correctly numbered.
-
-	- take Intel Core Duo errata AE49 into account (only one enable bit).
-
-	- fix several issues and races with the PMU acquire/release mechanism
-
-	- allow non counting PMD registers to have OVFL_NOTIFY, RANDOM set.
-	  The corrolary being that perfmon now does not assume that only counters
-	  can generate interrupts (required for AMD IBS)
-
-	- do not report errors on a per vector element basis for all syscalls
-	  accepting vector arguments (pfm_*pm*(), for instance). Simplifies
-	  the code and provide some performance boost
-
-	- various code cleanups (trailing spaces, indentations)
-
-Some remark about IBS: IBS uses the extended interrupt feature of AMD
-Barcelona. Setting them up requires two steps: pci config space peeking
-and poking, and actual extended APIC writes. The first step is currently
-done by the perfmon AMd64 description module. There is ongoing work by
-Robert to push this in the general kernel initialization path for 2.6.24.
-
-I have also released a new libpfm, libpfm-3.2-071017, with several
-exciting changes. Here are some of the most important ones:
-
-	- support for PPC64 processors (PPC970{FX,GX,MP},POWER{4,4+,5,5+,6}).
-	  Corey Ashford (IBM)
-
-	- support for Cell processor. Yoshio Funayama, Takayuki Uchikawa (Toshiba)
-
-	- update to match perfmon2 v2.7, includes PEBS examples
-
-	- Various Cray updates. Steve Kaufmann (Cray)
-
-	- important updates to Intel Core event tables. New event RS_UOPS_DISPATCHED_CYCLES
-	  and bug fixes for many other important events.
-
-	- rewrite amd64 cpuid() routine to be universal i386/x86_64 PiC/noPiC.
-	  Dan Terpstra (U. of Tennessee)
-
-	- several initialization bugs fixes. Eric Paris (Redhat)
-
-IMPORTANT: this version of the library ONLY works with 2.6.23 (due to syscall number changes).
-
-Also a new version of pfmon, pfmon-3.2-071017, with several important improvements:
-
-	- initial Cell support. Takashi Yamamoto (Sony)
-
-	- switch to libstdc++ for symbol name demangling
-
-	- performance improvement to symbol table parsing and searching
-
-	- --print-interval does not print final totoal anymore (was confusing)
-
-	- --smpl-show-top, --smpl-ignore-pids, --smpl-show-function promoted as global options
-
-	- improved inst-hist (default) sampling format to support multiple sampling periods
-
-	- profiles print both code addresses and symbolic names
-
-IMPORTANT: you need libpfm-3.2-071017 with this release of pfmon
-
-You can get the package and very detailed changelogs our the web site:
-
-	 http://perfmon2.sf.net
-
-Due to Sourceforge shell access problems, the main page could not be updated at this point.
-Go to 'Project Files' to grab the new packages.
-
-Enjoy,
+Cheers,
+Bernd
 
 -- 
--Stephane
+Bernd Schubert
+Q-Leap Networks GmbH
