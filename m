@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbXJVBhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbXJVBmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbXJVBhl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 21:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXJVBhc
+	id S1753234AbXJVBmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 21:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXJVBmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 21:37:32 -0400
-Received: from ufisa.uninett.no ([158.38.152.126]:51107 "EHLO ufisa.uninett.no"
+	Sun, 21 Oct 2007 21:42:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52277 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbXJVBhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 21:37:31 -0400
-X-Greylist: delayed 1825 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 21:37:31 EDT
-Date: Mon, 22 Oct 2007 03:07:19 +0200 (CEST)
-From: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-X-X-Sender: kolla@firda.kolla.no
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>, Rob Landley <rob@landley.net>
-Subject: Re: [PATCH] m68k: Use cc-cross-prefix (was: Re: [GI:wqT PULL] kbuild
- updates - second round)
-In-Reply-To: <Pine.LNX.4.64.0710212028560.6155@anakin>
-Message-ID: <alpine.LNX.0.9999.0710220303400.27496@firda.kolla.no>
-References: <20071019204415.GA623@uranus.ravnborg.org> <Pine.LNX.4.64.0710211956280.6155@anakin> <20071021182245.GA5840@uranus.ravnborg.org> <Pine.LNX.4.64.0710212028560.6155@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	id S1750977AbXJVBmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 21:42:13 -0400
+Date: Sun, 21 Oct 2007 21:42:09 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] return hidden bug
+Message-ID: <20071021214209.1a7567d7@bree.surriel.com>
+In-Reply-To: <471BF741.2020501@tiscali.nl>
+References: <471BF741.2020501@tiscali.nl>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007, Geert Uytterhoeven wrote:
+On Mon, 22 Oct 2007 03:05:05 +0200
+Roel Kluin <12o3l@tiscali.nl> wrote:
 
-> +ifneq ($(SUB_ARCH),$(ARCH))
-> +     ifeq ($(CROSS_COMPILE),)
-> +            CROSS_COMPILE := $(call cc-cross-prefix, m68k-linux-gnu- m68k-linux-)
+>     return hidden bug
+>     
+>     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> 
+> diff --git a/arch/alpha/kernel/pci_iommu.c
+> b/arch/alpha/kernel/pci_iommu.c index e1c4707..6a69425 100644
+> --- a/arch/alpha/kernel/pci_iommu.c
+> +++ b/arch/alpha/kernel/pci_iommu.c
+> @@ -365,8 +365,8 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t
+> dma_addr, size_t size, printk(KERN_ERR "Bogus pci_unmap_single:
+> dma_addr %lx " " base %lx size %x\n", dma_addr, arena->dma_base,
+>  		       arena->size);
+> -		return;
+>  		BUG();
+> +		return;
+>  	}
+>  
+>  	npages = calc_npages((dma_addr & ~PAGE_MASK) + size);
 
-I've not paid much attention to discussion over this (I tend to build
-natively, less stress :) ), so pardon my ignorance. Does the above make
-any difference for me when I use CROSS_COMPILE=m68k-unknown-linux-gnu-,
-or does it just detect m68k-linux-gnu- and m68k-linux-?
+BUG() will terminate the process that runs into it, so you can
+just remove the return alltogether.  If BUG() is hit, the return
+will never be reached.
 
--- kolla, that gentoo/m68k lunatic :)
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
