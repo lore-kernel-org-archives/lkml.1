@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbXJVS43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXJVS4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbXJVS43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXJVS4V
+	id S1755442AbXJVS4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXJVS4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:56:21 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:8511 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbXJVS4U (ORCPT
+	Mon, 22 Oct 2007 14:56:36 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57339 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752365AbXJVS4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:56:20 -0400
-Subject: Re: [RT] seqlocks: use of PICK_FUNCTION breaks kernel compile when
-	CONFIG_GENERIC_TIME is NOT set
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <Pine.LNX.4.58.0710171133490.26554@gandalf.stny.rr.com>
-References: <1192632502.17527.129.camel@imap.mvista.com>
-	 <1192633836.8265.6.camel@localhost.localdomain>
-	 <1192634645.17527.134.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0710171133490.26554@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 11:53:03 -0700
-Message-Id: <1193079183.5028.65.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 14:56:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: appletalk bugs
+References: <471CB159.1070706@googlemail.com>
+Date: Mon, 22 Oct 2007 12:55:36 -0600
+In-Reply-To: <471CB159.1070706@googlemail.com> (Gabriel C.'s message of "Mon,
+	22 Oct 2007 16:19:05 +0200")
+Message-ID: <m18x5vasif.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-17 at 11:34 -0400, Steven Rostedt wrote:
+Gabriel C <nix.or.die@googlemail.com> writes:
 
-> 
-> Hmm, what about a __seq_irqsave_raw and __seq_nop?
-> 
-> That way it spells out that irqs are NOT touched if it is not a raw lock.
+> Hi,
+>
+> modprobing appletalk on current git gives a warning in dmesg :
+>
+> [38506.600269] sysctl table check failed: /net/appletalk .3.7 procname does not
+> match binary path procname
 
-I took out the nop , and just did a save flags which makes sense.. There
-is still more cleanup to do in that regard.
+Oops.  My apologies it appears I made a mistake when creating my
+table to check up on sysctl values.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+This should fix it.
+
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
 ---
- include/linux/seqlock.h |   26 +++++++++++++++-----------
- 1 file changed, 15 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.23/include/linux/seqlock.h
-===================================================================
---- linux-2.6.23.orig/include/linux/seqlock.h
-+++ linux-2.6.23/include/linux/seqlock.h
-@@ -92,8 +92,11 @@ static inline void __write_seqlock(seqlo
- 
- static __always_inline unsigned long __write_seqlock_irqsave(seqlock_t *sl)
- {
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
- 	__write_seqlock(sl);
--	return 0;
-+	return flags;
- }
- 
- static inline void __write_sequnlock(seqlock_t *sl)
-@@ -280,26 +283,27 @@ do {								\
- 	PICK_SEQ_OP(__write_sequnlock_irq_raw, __write_sequnlock, lock)
- 
- static __always_inline
--unsigned long __read_seqbegin_irqsave_raw(raw_seqlock_t *sl)
-+unsigned long __seq_irqsave_raw(raw_seqlock_t *sl)
- {
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
--	__read_seqbegin_raw(sl);
- 	return flags;
- }
- 
--static __always_inline unsigned long __read_seqbegin_irqsave(seqlock_t *sl)
-+static __always_inline unsigned long __seq_irqsave(seqlock_t *sl)
- {
--	__read_seqbegin(sl);
--	return 0;
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+	return flags;
- }
- 
--#define read_seqbegin_irqsave(lock, flags)			\
--do {								\
--	flags = PICK_SEQ_OP_RET(__read_seqbegin_irqsave_raw,	\
--		__read_seqbegin_irqsave, lock);			\
--} while (0)
-+#define read_seqbegin_irqsave(lock, flags)				\
-+({									\
-+	flags = PICK_SEQ_OP_RET(__seq_irqsave_raw, __seq_irqsave, lock);\
-+	read_seqbegin(lock);						\
-+})
- 
- static __always_inline int
- __read_seqretry_irqrestore(seqlock_t *sl, unsigned iv, unsigned long flags)
-
-
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index 3c9ef5a..ed6fe51 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -731,7 +731,7 @@ static struct trans_ctl_table trans_net_table[] = {
+ 	{ NET_UNIX,		"unix",		trans_net_unix_table },
+ 	{ NET_IPV4,		"ipv4",		trans_net_ipv4_table },
+ 	{ NET_IPX,		"ipx",		trans_net_ipx_table },
+-	{ NET_ATALK,		"atalk",	trans_net_atalk_table },
++	{ NET_ATALK,		"appletalk",	trans_net_atalk_table },
+ 	{ NET_NETROM,		"netrom",	trans_net_netrom_table },
+ 	{ NET_AX25,		"ax25",		trans_net_ax25_table },
+ 	{ NET_BRIDGE,		"bridge",	trans_net_bridge_table },
