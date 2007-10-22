@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXJVMPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbXJVMPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbXJVMPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 08:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXJVMPJ
+	id S1754757AbXJVMPz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 08:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXJVMPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 08:15:09 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:42945 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752000AbXJVMPH (ORCPT
+	Mon, 22 Oct 2007 08:15:48 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42986 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752008AbXJVMPr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 08:15:07 -0400
-Subject: Re: [RFC/PATCH 2/3] rt: PI-workqueue support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Daniel Walker <dwalker@mvista.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <Pine.LNX.4.58.0710220754440.10836@gandalf.stny.rr.com>
-References: <20071022095054.393085000@chello.nl>
-	 <20071022095658.745030000@chello.nl>
-	 <Pine.LNX.4.58.0710220754440.10836@gandalf.stny.rr.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mu/c0Yyp7T96aBjSkKn/"
-Date: Mon, 22 Oct 2007 14:15:03 +0200
-Message-Id: <1193055303.27435.176.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 22 Oct 2007 08:15:47 -0400
+Date: Mon, 22 Oct 2007 14:16:16 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fix CONFIG_TUNER_TEA5761=m
+Message-ID: <20071022121616.GN30533@stusta.de>
+References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <471C19F1.8090505@linuxtv.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-mu/c0Yyp7T96aBjSkKn/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2007-10-22 at 08:00 -0400, Steven Rostedt wrote:
-> --
->=20
-> On Mon, 22 Oct 2007, Peter Zijlstra wrote:
-> 5B>
-> > Index: linux-2.6/kernel/workqueue.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-2.6.orig/kernel/workqueue.c
-> > +++ linux-2.6/kernel/workqueue.c
-> > @@ -44,7 +44,7 @@ struct cpu_workqueue_struct {
+On Sun, Oct 21, 2007 at 11:33:05PM -0400, Michael Krufky wrote:
+> Adrian Bunk wrote:
+> > This patch fixes CONFIG_TUNER_TEA5761=m broken by
+> > commit ca805d57cf5ea7482ed3da28653f30621249ee45.
 > >
-> >  	spinlock_t lock;
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > >
-> > -	struct list_head worklist;
-> > +	struct plist_head worklist;
-> >  	wait_queue_head_t more_work;
-> >  	struct work_struct *current_work;
+> > ---
 > >
-> > @@ -127,16 +127,19 @@ struct cpu_workqueue_struct *get_wq_data
-> >  static void insert_work(struct cpu_workqueue_struct *cwq,
-> >  				struct work_struct *work, int tail)
-> >  {
-> > +	int prio =3D current->normal_prio;
-> > +
->=20
-> I'm curious to why you use normal_prio here? If the task has been boosted
-> by some other PI method, and this task is about to sleep, why not use the
-> actualy current->prio?
+> >  drivers/media/video/tuner-core.c |    6 ------
+> >  1 file changed, 6 deletions(-)
+> >
+> > 26336c30e76c37bda368a24b8b12978388a18cf3 
+> > diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+> > index 9484308..1795b78 100644
+> > --- a/drivers/media/video/tuner-core.c
+> > +++ b/drivers/media/video/tuner-core.c
+> > @@ -30,9 +30,7 @@
+> >  
+> >  /* standard i2c insmod options */
+> >  static unsigned short normal_i2c[] = {
+> > -#ifdef CONFIG_TUNER_TEA5761
+> >  	0x10,
+> > -#endif
+> >   
+> ^^^ I believe that we want to keep these #ifdef's above...  The removals
+> below are fine.
+>...
 
-Daniel wrote this bit, but I tend to agree with him, but can't give his
-rationale. Mine is that worklets are typically asynchonous and thus its
-prio should not depend on temporal things like boosting.
+If it's required, then we need
+  #if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
+here for getting the modular case working.
 
-OTOH it would probably make sense to allow it to depend on it through
-the barrier constructs, but for that I have to hook the completions into
-the PI chain. Something that needs more thought.
+But at least at first glance it seems the code already tries to handle 
+the cases when tea5761_{attach,autodetection}() fail?
 
+> Regards,
+> 
+> Mike Krufky
 
---=-mu/c0Yyp7T96aBjSkKn/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+cu
+Adrian
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+-- 
 
-iD8DBQBHHJRHXA2jU0ANEf4RAvXGAJ0UoJHiV4V3LSvN/tuDFvyqg/IAJwCfdtkT
-1MbLJ+7XUjFlDr0rUgDKjwc=
-=2pGG
------END PGP SIGNATURE-----
-
---=-mu/c0Yyp7T96aBjSkKn/--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
