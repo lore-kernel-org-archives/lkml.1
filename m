@@ -1,266 +1,469 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXJVSO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXJVSOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbXJVSO3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXJVSMa
+	id S1755525AbXJVSOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXJVSMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:12:30 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:22188 "EHLO kernel.dk"
+	Mon, 22 Oct 2007 14:12:31 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22192 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbXJVSMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:12:25 -0400
+	id S1752543AbXJVSM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:12:26 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 06/10] [SG] Update net/ to use sg helpers
-Date: Mon, 22 Oct 2007 20:11:00 +0200
-Message-Id: <1193076664-13652-7-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 10/10] Add CONFIG_DEBUG_SG sg validation
+Date: Mon, 22 Oct 2007 20:11:04 +0200
+Message-Id: <1193076664-13652-11-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.GIT
 In-Reply-To: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
 References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add a Kconfig entry which will toggle some sanity checks on the sg
+entry and tables.
+
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- net/core/skbuff.c                     |    4 ++--
- net/ieee80211/ieee80211_crypt_tkip.c  |   13 +++++--------
- net/ieee80211/ieee80211_crypt_wep.c   |    8 ++------
- net/mac80211/wep.c                    |    8 ++------
- net/sctp/auth.c                       |    3 ++-
- net/sctp/sm_make_chunk.c              |    6 ++++--
- net/sunrpc/auth_gss/gss_krb5_crypto.c |   10 +++++-----
- net/sunrpc/xdr.c                      |    2 +-
- net/xfrm/xfrm_algo.c                  |    4 ++--
- 9 files changed, 25 insertions(+), 33 deletions(-)
+ include/asm-alpha/scatterlist.h     |    3 +++
+ include/asm-arm/scatterlist.h       |    3 +++
+ include/asm-avr32/scatterlist.h     |    3 +++
+ include/asm-blackfin/scatterlist.h  |    3 +++
+ include/asm-cris/scatterlist.h      |    3 +++
+ include/asm-frv/scatterlist.h       |    3 +++
+ include/asm-h8300/scatterlist.h     |    3 +++
+ include/asm-ia64/scatterlist.h      |    3 +++
+ include/asm-m32r/scatterlist.h      |    3 +++
+ include/asm-m68k/scatterlist.h      |    3 +++
+ include/asm-m68knommu/scatterlist.h |    3 +++
+ include/asm-mips/scatterlist.h      |    3 +++
+ include/asm-parisc/scatterlist.h    |    3 +++
+ include/asm-powerpc/scatterlist.h   |    3 +++
+ include/asm-s390/scatterlist.h      |    3 +++
+ include/asm-sh/scatterlist.h        |    3 +++
+ include/asm-sh64/scatterlist.h      |    3 +++
+ include/asm-sparc/scatterlist.h     |    3 +++
+ include/asm-sparc64/scatterlist.h   |    3 +++
+ include/asm-v850/scatterlist.h      |    3 +++
+ include/asm-x86/scatterlist_32.h    |    3 +++
+ include/asm-x86/scatterlist_64.h    |    3 +++
+ include/asm-xtensa/scatterlist.h    |    3 +++
+ include/linux/scatterlist.h         |   22 ++++++++++++++++++++++
+ lib/Kconfig.debug                   |   10 ++++++++++
+ 25 files changed, 101 insertions(+), 0 deletions(-)
 
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 70d9b5d..4e2c84f 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -2045,7 +2045,7 @@ skb_to_sgvec(struct sk_buff *skb, struct scatterlist *sg, int offset, int len)
- 	if (copy > 0) {
- 		if (copy > len)
- 			copy = len;
--		sg[elt].page = virt_to_page(skb->data + offset);
-+		sg_set_page(&sg[elt], virt_to_page(skb->data + offset));
- 		sg[elt].offset = (unsigned long)(skb->data + offset) % PAGE_SIZE;
- 		sg[elt].length = copy;
- 		elt++;
-@@ -2065,7 +2065,7 @@ skb_to_sgvec(struct sk_buff *skb, struct scatterlist *sg, int offset, int len)
+diff --git a/include/asm-alpha/scatterlist.h b/include/asm-alpha/scatterlist.h
+index b764706..440747c 100644
+--- a/include/asm-alpha/scatterlist.h
++++ b/include/asm-alpha/scatterlist.h
+@@ -5,6 +5,9 @@
+ #include <asm/types.h>
+   
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
  
- 			if (copy > len)
- 				copy = len;
--			sg[elt].page = frag->page;
-+			sg_set_page(&sg[elt], frag->page);
- 			sg[elt].offset = frag->page_offset+offset-start;
- 			sg[elt].length = copy;
- 			elt++;
-diff --git a/net/ieee80211/ieee80211_crypt_tkip.c b/net/ieee80211/ieee80211_crypt_tkip.c
-index 72e6ab6..c796661 100644
---- a/net/ieee80211/ieee80211_crypt_tkip.c
-+++ b/net/ieee80211/ieee80211_crypt_tkip.c
-@@ -390,9 +390,7 @@ static int ieee80211_tkip_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	icv[3] = crc >> 24;
+diff --git a/include/asm-arm/scatterlist.h b/include/asm-arm/scatterlist.h
+index ab1d85d..ca0a37d 100644
+--- a/include/asm-arm/scatterlist.h
++++ b/include/asm-arm/scatterlist.h
+@@ -5,6 +5,9 @@
+ #include <asm/types.h>
  
- 	crypto_blkcipher_setkey(tkey->tx_tfm_arc4, rc4key, 16);
--	sg.page = virt_to_page(pos);
--	sg.offset = offset_in_page(pos);
--	sg.length = len + 4;
-+	sg_init_one(&sg, pos, len + 4);
- 	return crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;		/* buffer offset		 */
+ 	dma_addr_t	dma_address;	/* dma address			 */
+diff --git a/include/asm-avr32/scatterlist.h b/include/asm-avr32/scatterlist.h
+index 1356f29..377320e 100644
+--- a/include/asm-avr32/scatterlist.h
++++ b/include/asm-avr32/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++   unsigned long	sg_magic;
++#endif
+     unsigned long	page_link;
+     unsigned int	offset;
+     dma_addr_t		dma_address;
+diff --git a/include/asm-blackfin/scatterlist.h b/include/asm-blackfin/scatterlist.h
+index 384af54..32128d5 100644
+--- a/include/asm-blackfin/scatterlist.h
++++ b/include/asm-blackfin/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <linux/mm.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 	dma_addr_t dma_address;
+diff --git a/include/asm-cris/scatterlist.h b/include/asm-cris/scatterlist.h
+index 5a8a834..faff53a 100644
+--- a/include/asm-cris/scatterlist.h
++++ b/include/asm-cris/scatterlist.h
+@@ -2,6 +2,9 @@
+ #define __ASM_CRIS_SCATTERLIST_H
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	char *  address;    /* Location data is to be transferred to */
+ 	unsigned int length;
+ 
+diff --git a/include/asm-frv/scatterlist.h b/include/asm-frv/scatterlist.h
+index 53dade7..f7da007 100644
+--- a/include/asm-frv/scatterlist.h
++++ b/include/asm-frv/scatterlist.h
+@@ -22,6 +22,9 @@
+  * and that's it. There's no excuse for not highmem enabling YOUR driver. /jens
+  */
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;		/* for highmem, page offset */
+ 
+diff --git a/include/asm-h8300/scatterlist.h b/include/asm-h8300/scatterlist.h
+index 7e41983..d3ecdd8 100644
+--- a/include/asm-h8300/scatterlist.h
++++ b/include/asm-h8300/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;
+ 	dma_addr_t	dma_address;
+diff --git a/include/asm-ia64/scatterlist.h b/include/asm-ia64/scatterlist.h
+index 2f76ce3..d6f5787 100644
+--- a/include/asm-ia64/scatterlist.h
++++ b/include/asm-ia64/scatterlist.h
+@@ -9,6 +9,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 	unsigned int length;	/* buffer length */
+diff --git a/include/asm-m32r/scatterlist.h b/include/asm-m32r/scatterlist.h
+index 33b4b4d..1ed372c 100644
+--- a/include/asm-m32r/scatterlist.h
++++ b/include/asm-m32r/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long sg_magic;
++#endif
+     char *  address;    /* Location data is to be transferred to, NULL for
+                          * highmem page */
+     unsigned long page_link;
+diff --git a/include/asm-m68k/scatterlist.h b/include/asm-m68k/scatterlist.h
+index e06bb89..d3a7a0e 100644
+--- a/include/asm-m68k/scatterlist.h
++++ b/include/asm-m68k/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <linux/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 	unsigned int length;
+diff --git a/include/asm-m68knommu/scatterlist.h b/include/asm-m68knommu/scatterlist.h
+index 28bed41..1094284 100644
+--- a/include/asm-m68knommu/scatterlist.h
++++ b/include/asm-m68knommu/scatterlist.h
+@@ -5,6 +5,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;
+ 	dma_addr_t	dma_address;
+diff --git a/include/asm-mips/scatterlist.h b/include/asm-mips/scatterlist.h
+index 787797c..83d69fe 100644
+--- a/include/asm-mips/scatterlist.h
++++ b/include/asm-mips/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;
+ 	dma_addr_t	dma_address;
+diff --git a/include/asm-parisc/scatterlist.h b/include/asm-parisc/scatterlist.h
+index 26da914..cd3cfdf 100644
+--- a/include/asm-parisc/scatterlist.h
++++ b/include/asm-parisc/scatterlist.h
+@@ -5,6 +5,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 
+diff --git a/include/asm-powerpc/scatterlist.h b/include/asm-powerpc/scatterlist.h
+index b9f1dbc..fcf7d55 100644
+--- a/include/asm-powerpc/scatterlist.h
++++ b/include/asm-powerpc/scatterlist.h
+@@ -14,6 +14,9 @@
+ #include <asm/dma.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 	unsigned int length;
+diff --git a/include/asm-s390/scatterlist.h b/include/asm-s390/scatterlist.h
+index eb39486..29ec8e2 100644
+--- a/include/asm-s390/scatterlist.h
++++ b/include/asm-s390/scatterlist.h
+@@ -2,6 +2,9 @@
+ #define _ASMS390_SCATTERLIST_H
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long sg_magic;
++#endif
+     unsigned long page_link;
+     unsigned int offset;
+     unsigned int length;
+diff --git a/include/asm-sh/scatterlist.h b/include/asm-sh/scatterlist.h
+index bc7c809..a7d0d18 100644
+--- a/include/asm-sh/scatterlist.h
++++ b/include/asm-sh/scatterlist.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long sg_magic;
++#endif
+     unsigned long page_link;
+     unsigned int offset;/* for highmem, page offset */
+     dma_addr_t dma_address;
+diff --git a/include/asm-sh64/scatterlist.h b/include/asm-sh64/scatterlist.h
+index 0afd856..5109251 100644
+--- a/include/asm-sh64/scatterlist.h
++++ b/include/asm-sh64/scatterlist.h
+@@ -14,6 +14,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long sg_magic;
++#endif
+     unsigned long page_link;
+     unsigned int offset;/* for highmem, page offset */
+     dma_addr_t dma_address;
+diff --git a/include/asm-sparc/scatterlist.h b/include/asm-sparc/scatterlist.h
+index 45b16f1..e08d3d7 100644
+--- a/include/asm-sparc/scatterlist.h
++++ b/include/asm-sparc/scatterlist.h
+@@ -5,6 +5,9 @@
+ #include <linux/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long sg_magic;
++#endif
+ 	unsigned long page_link;
+ 	unsigned int offset;
+ 
+diff --git a/include/asm-sparc64/scatterlist.h b/include/asm-sparc64/scatterlist.h
+index 4cbaf7c..6df23f0 100644
+--- a/include/asm-sparc64/scatterlist.h
++++ b/include/asm-sparc64/scatterlist.h
+@@ -6,6 +6,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;
+ 
+diff --git a/include/asm-v850/scatterlist.h b/include/asm-v850/scatterlist.h
+index db91feb..02d27b3 100644
+--- a/include/asm-v850/scatterlist.h
++++ b/include/asm-v850/scatterlist.h
+@@ -17,6 +17,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned	offset;
+ 	dma_addr_t	dma_address;
+diff --git a/include/asm-x86/scatterlist_32.h b/include/asm-x86/scatterlist_32.h
+index 140a5b3..0e7d997 100644
+--- a/include/asm-x86/scatterlist_32.h
++++ b/include/asm-x86/scatterlist_32.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long	sg_magic;
++#endif
+     unsigned long	page_link;
+     unsigned int	offset;
+     dma_addr_t		dma_address;
+diff --git a/include/asm-x86/scatterlist_64.h b/include/asm-x86/scatterlist_64.h
+index e344784..1847c72 100644
+--- a/include/asm-x86/scatterlist_64.h
++++ b/include/asm-x86/scatterlist_64.h
+@@ -4,6 +4,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++    unsigned long	sg_magic;
++#endif
+     unsigned long	page_link;
+     unsigned int	offset;
+     unsigned int	length;
+diff --git a/include/asm-xtensa/scatterlist.h b/include/asm-xtensa/scatterlist.h
+index 3b8aba5..810080b 100644
+--- a/include/asm-xtensa/scatterlist.h
++++ b/include/asm-xtensa/scatterlist.h
+@@ -14,6 +14,9 @@
+ #include <asm/types.h>
+ 
+ struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
+ 	unsigned long	page_link;
+ 	unsigned int	offset;
+ 	dma_addr_t	dma_address;
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index c6136e8..42daf5e 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -23,6 +23,8 @@
+  *
+  */
+ 
++#define SG_MAGIC	0x87654321
++
+ /**
+  * sg_set_page - Set sg entry to point at given page
+  * @sg:		 SG entry
+@@ -39,6 +41,9 @@ static inline void sg_set_page(struct scatterlist *sg, struct page *page)
+ {
+ 	unsigned long page_link = sg->page_link & 0x3;
+ 
++#ifdef CONFIG_DEBUG_SG
++	BUG_ON(sg->sg_magic != SG_MAGIC);
++#endif
+ 	sg->page_link = page_link | (unsigned long) page;
  }
  
-@@ -485,9 +483,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	plen = skb->len - hdr_len - 12;
+@@ -81,6 +86,9 @@ static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
+  **/
+ static inline struct scatterlist *sg_next(struct scatterlist *sg)
+ {
++#ifdef CONFIG_DEBUG_SG
++	BUG_ON(sg->sg_magic != SG_MAGIC);
++#endif
+ 	if (sg_is_last(sg))
+ 		return NULL;
  
- 	crypto_blkcipher_setkey(tkey->rx_tfm_arc4, rc4key, 16);
--	sg.page = virt_to_page(pos);
--	sg.offset = offset_in_page(pos);
--	sg.length = plen + 4;
-+	sg_init_one(&sg, pos, plen + 4);
- 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG ": TKIP: failed to decrypt "
-@@ -539,11 +535,12 @@ static int michael_mic(struct crypto_hash *tfm_michael, u8 * key, u8 * hdr,
- 		printk(KERN_WARNING "michael_mic: tfm_michael == NULL\n");
- 		return -1;
- 	}
--	sg[0].page = virt_to_page(hdr);
-+	sg_init_table(sg, 2);
-+	sg_set_page(&sg[0], virt_to_page(hdr));
- 	sg[0].offset = offset_in_page(hdr);
- 	sg[0].length = 16;
+@@ -124,6 +132,10 @@ static inline struct scatterlist *sg_last(struct scatterlist *sgl,
+ 		ret = sg;
  
--	sg[1].page = virt_to_page(data);
-+	sg_set_page(&sg[1], virt_to_page(data));
- 	sg[1].offset = offset_in_page(data);
- 	sg[1].length = data_len;
- 
-diff --git a/net/ieee80211/ieee80211_crypt_wep.c b/net/ieee80211/ieee80211_crypt_wep.c
-index 8d18245..0af6103 100644
---- a/net/ieee80211/ieee80211_crypt_wep.c
-+++ b/net/ieee80211/ieee80211_crypt_wep.c
-@@ -170,9 +170,7 @@ static int prism2_wep_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	icv[3] = crc >> 24;
- 
- 	crypto_blkcipher_setkey(wep->tx_tfm, key, klen);
--	sg.page = virt_to_page(pos);
--	sg.offset = offset_in_page(pos);
--	sg.length = len + 4;
-+	sg_init_one(&sg, pos, len + 4);
- 	return crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+ #endif
++#ifdef CONFIG_DEBUG_SG
++	BUG_ON(sgl[0].sg_magic != SG_MAGIC);
++	BUG_ON(!sg_is_last(ret));
++#endif
+ 	return ret;
  }
  
-@@ -212,9 +210,7 @@ static int prism2_wep_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	plen = skb->len - hdr_len - 8;
- 
- 	crypto_blkcipher_setkey(wep->rx_tfm, key, klen);
--	sg.page = virt_to_page(pos);
--	sg.offset = offset_in_page(pos);
--	sg.length = plen + 4;
-+	sg_init_one(&sg, pos, plen + 4);
- 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4))
- 		return -7;
- 
-diff --git a/net/mac80211/wep.c b/net/mac80211/wep.c
-index 6675261..cc806d6 100644
---- a/net/mac80211/wep.c
-+++ b/net/mac80211/wep.c
-@@ -138,9 +138,7 @@ void ieee80211_wep_encrypt_data(struct crypto_blkcipher *tfm, u8 *rc4key,
- 	*icv = cpu_to_le32(~crc32_le(~0, data, data_len));
- 
- 	crypto_blkcipher_setkey(tfm, rc4key, klen);
--	sg.page = virt_to_page(data);
--	sg.offset = offset_in_page(data);
--	sg.length = data_len + WEP_ICV_LEN;
-+	sg_init_one(&sg, data, data_len + WEP_ICV_LEN);
- 	crypto_blkcipher_encrypt(&desc, &sg, &sg, sg.length);
+@@ -180,6 +192,9 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
+ 			       unsigned int buflen)
+ {
+ 	memset(sg, 0, sizeof(*sg));
++#ifdef CONFIG_DEBUG_SG
++	sg->sg_magic = SG_MAGIC;
++#endif
+ 	sg_mark_end(sg, 1);
+ 	sg_set_buf(sg, buf, buflen);
+ }
+@@ -198,6 +213,13 @@ static inline void sg_init_table(struct scatterlist *sgl, unsigned int nents)
+ {
+ 	memset(sgl, 0, sizeof(*sgl) * nents);
+ 	sg_mark_end(sgl, nents);
++#ifdef CONFIG_DEBUG_SG
++	{
++		int i;
++		for (i = 0; i < nents; i++)
++			sgl[i].sg_magic = SG_MAGIC;
++	}
++#endif
  }
  
-@@ -204,9 +202,7 @@ int ieee80211_wep_decrypt_data(struct crypto_blkcipher *tfm, u8 *rc4key,
- 	__le32 crc;
+ /**
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index c567f21..1faa508 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -389,6 +389,16 @@ config DEBUG_LIST
  
- 	crypto_blkcipher_setkey(tfm, rc4key, klen);
--	sg.page = virt_to_page(data);
--	sg.offset = offset_in_page(data);
--	sg.length = data_len + WEP_ICV_LEN;
-+	sg_init_one(&sg, data, data_len + WEP_ICV_LEN);
- 	crypto_blkcipher_decrypt(&desc, &sg, &sg, sg.length);
+ 	  If unsure, say N.
  
- 	crc = cpu_to_le32(~crc32_le(~0, data, data_len));
-diff --git a/net/sctp/auth.c b/net/sctp/auth.c
-index 7818107..cbd64b2 100644
---- a/net/sctp/auth.c
-+++ b/net/sctp/auth.c
-@@ -726,7 +726,8 @@ void sctp_auth_calculate_hmac(const struct sctp_association *asoc,
- 
- 	/* set up scatter list */
- 	end = skb_tail_pointer(skb);
--	sg.page = virt_to_page(auth);
-+	sg_init_table(&sg, 1);
-+	sg_set_page(&sg, virt_to_page(auth));
- 	sg.offset = (unsigned long)(auth) % PAGE_SIZE;
- 	sg.length = end - (unsigned char *)auth;
- 
-diff --git a/net/sctp/sm_make_chunk.c b/net/sctp/sm_make_chunk.c
-index f983a36..d5a9785 100644
---- a/net/sctp/sm_make_chunk.c
-+++ b/net/sctp/sm_make_chunk.c
-@@ -1513,7 +1513,8 @@ static sctp_cookie_param_t *sctp_pack_cookie(const struct sctp_endpoint *ep,
- 		struct hash_desc desc;
- 
- 		/* Sign the message.  */
--		sg.page = virt_to_page(&cookie->c);
-+		sg_init_table(&sg, 1);
-+		sg_set_page(&sg, virt_to_page(&cookie->c));
- 		sg.offset = (unsigned long)(&cookie->c) % PAGE_SIZE;
- 		sg.length = bodysize;
- 		keylen = SCTP_SECRET_SIZE;
-@@ -1585,7 +1586,8 @@ struct sctp_association *sctp_unpack_cookie(
- 
- 	/* Check the signature.  */
- 	keylen = SCTP_SECRET_SIZE;
--	sg.page = virt_to_page(bear_cookie);
-+	sg_init_table(&sg, 1);
-+	sg_set_page(&sg, virt_to_page(bear_cookie));
- 	sg.offset = (unsigned long)(bear_cookie) % PAGE_SIZE;
- 	sg.length = bodysize;
- 	key = (char *)ep->secret_key[ep->current_key];
-diff --git a/net/sunrpc/auth_gss/gss_krb5_crypto.c b/net/sunrpc/auth_gss/gss_krb5_crypto.c
-index bfb6a29..32be431 100644
---- a/net/sunrpc/auth_gss/gss_krb5_crypto.c
-+++ b/net/sunrpc/auth_gss/gss_krb5_crypto.c
-@@ -197,9 +197,9 @@ encryptor(struct scatterlist *sg, void *data)
- 		int i = (page_pos + outbuf->page_base) >> PAGE_CACHE_SHIFT;
- 		in_page = desc->pages[i];
- 	} else {
--		in_page = sg->page;
-+		in_page = sg_page(sg);
- 	}
--	desc->infrags[desc->fragno].page = in_page;
-+	sg_set_page(&desc->infrags[desc->fragno], in_page);
- 	desc->fragno++;
- 	desc->fraglen += sg->length;
- 	desc->pos += sg->length;
-@@ -215,11 +215,11 @@ encryptor(struct scatterlist *sg, void *data)
- 	if (ret)
- 		return ret;
- 	if (fraglen) {
--		desc->outfrags[0].page = sg->page;
-+		sg_set_page(&desc->outfrags[0], sg_page(sg));
- 		desc->outfrags[0].offset = sg->offset + sg->length - fraglen;
- 		desc->outfrags[0].length = fraglen;
- 		desc->infrags[0] = desc->outfrags[0];
--		desc->infrags[0].page = in_page;
-+		sg_set_page(&desc->infrags[0], in_page);
- 		desc->fragno = 1;
- 		desc->fraglen = fraglen;
- 	} else {
-@@ -287,7 +287,7 @@ decryptor(struct scatterlist *sg, void *data)
- 	if (ret)
- 		return ret;
- 	if (fraglen) {
--		desc->frags[0].page = sg->page;
-+		sg_set_page(&desc->frags[0], sg_page(sg));
- 		desc->frags[0].offset = sg->offset + sg->length - fraglen;
- 		desc->frags[0].length = fraglen;
- 		desc->fragno = 1;
-diff --git a/net/sunrpc/xdr.c b/net/sunrpc/xdr.c
-index 6a59180..3d1f7cd 100644
---- a/net/sunrpc/xdr.c
-+++ b/net/sunrpc/xdr.c
-@@ -1059,7 +1059,7 @@ xdr_process_buf(struct xdr_buf *buf, unsigned int offset, unsigned int len,
- 		do {
- 			if (thislen > page_len)
- 				thislen = page_len;
--			sg->page = buf->pages[i];
-+			sg_set_page(sg, buf->pages[i]);
- 			sg->offset = page_offset;
- 			sg->length = thislen;
- 			ret = actor(sg, data);
-diff --git a/net/xfrm/xfrm_algo.c b/net/xfrm/xfrm_algo.c
-index 5ced62c..fb2220a 100644
---- a/net/xfrm/xfrm_algo.c
-+++ b/net/xfrm/xfrm_algo.c
-@@ -552,7 +552,7 @@ int skb_icv_walk(const struct sk_buff *skb, struct hash_desc *desc,
- 		if (copy > len)
- 			copy = len;
- 
--		sg.page = virt_to_page(skb->data + offset);
-+		sg_set_page(&sg, virt_to_page(skb->data + offset));
- 		sg.offset = (unsigned long)(skb->data + offset) % PAGE_SIZE;
- 		sg.length = copy;
- 
-@@ -577,7 +577,7 @@ int skb_icv_walk(const struct sk_buff *skb, struct hash_desc *desc,
- 			if (copy > len)
- 				copy = len;
- 
--			sg.page = frag->page;
-+			sg_set_page(&sg, frag->page);
- 			sg.offset = frag->page_offset + offset-start;
- 			sg.length = copy;
- 
++config DEBUG_SG
++	bool "Debug SG table operations"
++	depends on DEBUG_KERNEL
++	help
++	  Enable this to turn on checks on scatter-gather tables. This can
++	  help find problems with drivers that do not properly initialize
++	  their sg tables.
++
++	  If unsure, say N.
++
+ config FRAME_POINTER
+ 	bool "Compile the kernel with frame pointers"
+ 	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH || BFIN)
 -- 
 1.5.3.GIT
 
