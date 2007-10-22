@@ -1,335 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbXJVHSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXJVHYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbXJVHSg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 03:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbXJVHSC
+	id S1753931AbXJVHYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 03:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXJVHYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 03:18:02 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9974 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754675AbXJVHSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 03:18:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,309,1188802800"; 
-   d="scan'208";a="303143866"
-Subject: [PATCH -v6 2/3] x86 boot: boot parameters export via sysfs
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 22 Oct 2007 15:17:02 +0800
-Message-Id: <1193037422.23935.23.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 22 Oct 2007 07:14:21.0718 (UTC) FILETIME=[2B211360:01C8147B]
+	Mon, 22 Oct 2007 03:24:37 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:43819 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbXJVHYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 03:24:35 -0400
+Date: Mon, 22 Oct 2007 09:24:32 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ursula Braun <braunu@de.ibm.com>
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-s390@vger.kernel.org,
+       mschwid2@linux.vnet.ibm.com, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com,
+       kaber@trash.net, Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [patch 0/1] remove header_ops bug in qeth driver
+Message-ID: <20071022072431.GA8044@osiris.boeblingen.de.ibm.com>
+References: <20071019215538.395133000@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019215538.395133000@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch export the boot parameters via sysfs. This can be used for
-debugging and kexec.
+On Fri, Oct 19, 2007 at 11:55:38PM +0200, Ursula Braun wrote:
+> -- 
+> Remove qeth driver bug introduced by this commit:
+> 
+> commit 3b04ddde02cf1b6f14f2697da5c20eca5715017f
+> Author: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date:   Tue Oct 9 01:40:57 2007 -0700
+> 
+>     [NET]: Move hardware header operations out of netdevice.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+Still broken:
 
----
-
- Makefile_32 |    1 
- Makefile_64 |    1 
- ksysfs.c    |  236 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- setup64.c   |    2 
- setup_32.c  |    2 
- 5 files changed, 240 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/Makefile_64
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/Makefile_64	2007-10-22 09:18:08.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/Makefile_64	2007-10-22 14:12:53.000000000 +0800
-@@ -37,6 +37,7 @@
- obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_AUDIT)		+= audit_64.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_MODULES)		+= module_64.o
- obj-$(CONFIG_PCI)		+= early-quirks.o
-Index: linux-2.6/arch/x86/kernel/setup64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup64.c	2007-10-22 09:18:08.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/setup64.c	2007-10-22 14:12:14.000000000 +0800
-@@ -24,7 +24,7 @@
- #include <asm/sections.h>
- #include <asm/setup.h>
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
-Index: linux-2.6/arch/x86/kernel/ksysfs.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/arch/x86/kernel/ksysfs.c	2007-10-22 14:12:14.000000000 +0800
-@@ -0,0 +1,236 @@
-+/*
-+ * arch/i386/ksysfs.c - architecture specific sysfs attributes in /sys/kernel
-+ *
-+ * Copyright (C) 2007, Intel Corp.
-+ *      Huang Ying <ying.huang@intel.com>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/stat.h>
-+#include <linux/mm.h>
-+
-+#include <asm/setup.h>
-+
-+static ssize_t boot_params_version_show(struct kset *kset, char *page)
-+{
-+	return sprintf(page, "0x%x\n", boot_params.hdr.version);
-+}
-+
-+static struct subsys_attribute boot_params_version_attr = {
-+	.attr = {
-+		.name = "version",
-+		.mode = S_IRUGO,
-+	},
-+	.show = boot_params_version_show,
-+};
-+
-+static struct attribute *boot_params_attrs[] = {
-+	&boot_params_version_attr.attr,
-+	NULL
-+};
-+
-+static struct attribute_group boot_params_attr_group = {
-+	.attrs = boot_params_attrs,
-+};
-+
-+static ssize_t boot_params_data_read(struct kobject *kobj,
-+				     struct bin_attribute *bin_attr,
-+				     char *buf, loff_t off, size_t count)
-+{
-+	memcpy(buf, (void *)&boot_params + off, count);
-+	return count;
-+}
-+
-+static struct bin_attribute boot_params_data_attr = {
-+	.attr = {
-+		.name = "data",
-+		.mode = S_IRUGO,
-+	},
-+	.read = boot_params_data_read,
-+	.size = sizeof(boot_params),
-+};
-+
-+struct setup_data_kobj
-+{
-+	struct kobject kobj;
-+	struct setup_data *setup_data;
-+	struct bin_attribute *data_attr;
-+};
-+
-+struct setup_data_attribute {
-+	struct attribute attr;
-+	ssize_t (*show) (struct setup_data_kobj *setup_data_kobj, char *buf);
-+};
-+
-+static ssize_t setup_data_type_show(struct setup_data_kobj *setup_data_kobj,
-+				    char *page)
-+{
-+	return sprintf(page, "0x%x\n", setup_data_kobj->setup_data->type);
-+}
-+
-+static struct setup_data_attribute setup_data_type_attr = {
-+	.attr = {
-+		.name = "type",
-+		.mode = S_IRUGO,
-+	},
-+	.show = setup_data_type_show,
-+};
-+
-+static ssize_t setup_data_attr_show(struct kobject *kobj,
-+				    struct attribute *attr,
-+				    char *buf)
-+{
-+	struct setup_data_kobj *setup_data_kobj =
-+		(struct setup_data_kobj *)kobj;
-+	struct setup_data_attribute *setup_data_attr =
-+		(struct setup_data_attribute *)attr;
-+	ssize_t error = -EIO;
-+
-+	if (setup_data_attr->show)
-+		error = setup_data_attr->show(setup_data_kobj, buf);
-+	return error;
-+}
-+
-+static void setup_data_kobj_release(struct kobject *kobj)
-+{
-+	struct setup_data_kobj *setup_data_kobj =
-+		(struct setup_data_kobj *)kobj;
-+	kfree(setup_data_kobj->data_attr);
-+	kfree(setup_data_kobj);
-+}
-+
-+static struct sysfs_ops setup_data_attr_ops = {
-+	.show = setup_data_attr_show,
-+};
-+
-+static struct attribute *setup_data_default_attrs[] = {
-+	&setup_data_type_attr.attr,
-+	NULL,
-+};
-+
-+static struct kobj_type ktype_setup_data = {
-+	.release = &setup_data_kobj_release,
-+	.sysfs_ops = &setup_data_attr_ops,
-+	.default_attrs = setup_data_default_attrs,
-+};
-+
-+static ssize_t setup_data_data_read(struct kobject *kobj,
-+				    struct bin_attribute *bin_attr,
-+				    char *buf, loff_t off, size_t count)
-+{
-+	struct setup_data_kobj *setup_data_kobj =
-+		(struct setup_data_kobj *)kobj;
-+	memcpy(buf, setup_data_kobj->setup_data->data + off, count);
-+	return count;
-+}
-+
-+decl_subsys(boot_params, NULL, NULL);
-+decl_subsys(setup_data, &ktype_setup_data, NULL);
-+
-+static int __init setup_data_create_kobj(struct setup_data *setup_data,
-+					 const char *name)
-+{
-+	struct setup_data_kobj *setup_data_kobj;
-+	struct bin_attribute *data_attr;
-+	int error;
-+
-+	setup_data_kobj = kzalloc(sizeof(struct setup_data_kobj), GFP_KERNEL);
-+	if (!setup_data_kobj) {
-+		error = -ENOMEM;
-+		goto err_return;
-+	}
-+	setup_data_kobj->setup_data = setup_data;
-+	kobject_set_name(&setup_data_kobj->kobj, "%s", name);
-+	kobj_set_kset_s(setup_data_kobj, setup_data_subsys);
-+	error = kobject_register(&setup_data_kobj->kobj);
-+	if (error) {
-+		kfree(setup_data_kobj);
-+		goto err_return;
-+	}
-+	data_attr = kzalloc(sizeof(struct bin_attribute), GFP_KERNEL);
-+	if (!data_attr) {
-+		error = -ENOMEM;
-+		goto err_unregister;
-+	}
-+	setup_data_kobj->data_attr = data_attr;
-+	data_attr->attr.name = "data";
-+	data_attr->attr.mode = S_IRUGO;
-+	data_attr->read = setup_data_data_read;
-+	data_attr->size = setup_data->len;
-+	error = sysfs_create_bin_file(&setup_data_kobj->kobj,
-+				      data_attr);
-+	if (error)
-+		goto err_unregister;
-+	return 0;
-+err_unregister:
-+	kobject_unregister(&setup_data_kobj->kobj);
-+err_return:
-+	return error;
-+}
-+
-+static void __init setup_data_kobjs_del(void)
-+{
-+	struct kobject *kobj;
-+
-+	spin_lock(&setup_data_subsys.list_lock);
-+	list_for_each_entry(kobj, &setup_data_subsys.list, entry)
-+		kobject_unregister(kobj);
-+	spin_unlock(&setup_data_subsys.list_lock);
-+}
-+
-+static int __init boot_params_ksysfs_init(void)
-+{
-+	int error;
-+	struct setup_data *setup_data;
-+	int n = 0;
-+	char buf[8];
-+
-+	kobj_set_kset_s(&boot_params_subsys, kernel_subsys);
-+	error = subsystem_register(&boot_params_subsys);
-+	if (error)
-+		goto err_return;
-+	error = sysfs_create_group(&boot_params_subsys.kobj,
-+				   &boot_params_attr_group);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	error = sysfs_create_bin_file(&boot_params_subsys.kobj,
-+				      &boot_params_data_attr);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	kobj_set_kset_s(&setup_data_subsys, boot_params_subsys);
-+	error = subsystem_register(&setup_data_subsys);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	for (setup_data = __va(boot_params.hdr.setup_data);
-+	     setup_data != __va(0);
-+	     setup_data = __va(setup_data->next)) {
-+		sprintf(buf, "%d", n++);
-+		error = setup_data_create_kobj(setup_data, buf);
-+		if (error)
-+			goto err_setup_data_kobjs_del;
-+	}
-+	return 0;
-+err_setup_data_kobjs_del:
-+	setup_data_kobjs_del();
-+	subsystem_unregister(&setup_data_subsys);
-+err_boot_params_subsys_unregister:
-+	subsystem_unregister(&boot_params_subsys);
-+err_return:
-+	return error;
-+}
-+
-+static int __init arch_ksysfs_init(void)
-+{
-+	int error;
-+
-+	error = boot_params_ksysfs_init();
-+
-+	return error;
-+}
-+
-+arch_initcall(arch_ksysfs_init);
-Index: linux-2.6/arch/x86/kernel/Makefile_32
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/Makefile_32	2007-10-22 09:18:08.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/Makefile_32	2007-10-22 14:13:06.000000000 +0800
-@@ -41,6 +41,7 @@
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c	2007-10-22 14:09:25.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/setup_32.c	2007-10-22 14:12:14.000000000 +0800
-@@ -125,7 +125,7 @@
- 
- static char __initdata command_line[COMMAND_LINE_SIZE];
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
- struct edd edd;
+Kernel BUG at 0000000000000002 [verbose debug info unavailable] 
+illegal operation: 0001 [#1] 
+Modules linked in: 
+CPU:    1    Not tainted 
+Process ip (pid: 2170, task: 0000000001f1d038, ksp: 0000000002d87b30) 
+Krnl PSW : 0704200180000000 0000000000000002 (0x2) 
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:2 PM:0 EA:3 
+Krnl GPRS: 0000000000000000 0000000000000038 00000000027c2800 00000000016d6000
+           00000000000086dd 00000000029f8b78 0000000000000000 00000000029f8b00
+           00000000029f8b40 00000000027c2800 0000000000000000 0000000002d874c8
+           00000000016d6000 00000000003cb960 00000000002c58d2 0000000002d874c8
+Krnl Code:>0000000000000002: 0000               unknown 
+           0000000000000004: 0000               unknown 
+           0000000000000006: 0000               unknown 
+           0000000000000008: 0000               unknown 
+           000000000000000a: 0000               unknown 
+           000000000000000c: 0000               unknown 
+           000000000000000e: 0000               unknown 
+           0000000000000010: 0000               unknown 
+Call Trace: 
+([<00000000002c588e>] neigh_connected_output+0x76/0x118) 
+ [<0000000000339e00>] ip6_output2+0x22c/0x478 
+ [<000000000033a46c>] ip6_output+0x250/0x10fc 
+ [<000000000034d65e>] __ndisc_send+0x416/0x768 
+ [<000000000034da1c>] ndisc_send_rs+0x6c/0x7c 
+ [<0000000000340776>] addrconf_dad_completed+0xb2/0x100 
+ [<000000000034269c>] addrconf_dad_start+0xa4/0x134 
+ [<000000000034279e>] addrconf_add_linklocal+0x72/0xa4 
+ [<00000000003439d4>] addrconf_notify+0x6ec/0x8bc 
+ [<000000000039905a>] notifier_call_chain+0x5e/0xa4 
+ [<0000000000062832>] __raw_notifier_call_chain+0x26/0x38 
+ [<0000000000062872>] raw_notifier_call_chain+0x2e/0x40 
+ [<00000000002beaa8>] call_netdevice_notifiers+0x34/0x48 
+ [<00000000002c0288>] dev_open+0xd4/0xe0 
+ [<00000000002bed42>] dev_change_flags+0x14e/0x1c4 
+ [<0000000000316cb2>] devinet_ioctl+0x5d2/0x724 
+ [<000000000031753c>] inet_ioctl+0xf4/0x130 
+ [<00000000002ac6fa>] sock_ioctl+0x86/0x300 
+ [<00000000000c8124>] do_ioctl+0x50/0xe0 
+ [<00000000000c8440>] vfs_ioctl+0x28c/0x3e4 
+ [<00000000000c85e8>] sys_ioctl+0x50/0x8c 
+ [<00000000000ff744>] dev_ifsioc+0xb8/0x4c8 
+ [<00000000000fc15c>] compat_sys_ioctl+0x11c/0x444 
+ [<00000000000229d0>] sysc_noemu+0x10/0x16 
+ [<0000000077f3b9ca>] 0x77f3b9ca 
