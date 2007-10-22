@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbXJVXL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbXJVXO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbXJVXL7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 19:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXJVXLv
+	id S1752715AbXJVXO2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 19:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXJVXOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 19:11:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:42858 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbXJVXLu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 19:11:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dLxHGEkuks0XoyqJKn5fVZJDbo15Wih6iwYzuDBxQkzTBhCyqbUwdB1Hf+PeBiur92tDQwKt+dM0yrFWadU8ovEC5BXSIJcH3HH5TsPxIonEfH+JWSLpGuKmNoLbLaUX4QOUNCsTC+0Oi5+A4hqajiB3kX4WsPEORNQAC8wa4so=
-Message-ID: <b6a2187b0710221611j41a25697q2e4b867646a9214c@mail.gmail.com>
-Date: Tue, 23 Oct 2007 07:11:49 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Frans Pop" <elendil@planet.nl>
-Subject: Re: latest 2.6.23 git missing ACPI POWER_SUPPLY
-Cc: "Alexey Starikovskiy" <aystarik@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200710221633.42619.elendil@planet.nl>
+	Mon, 22 Oct 2007 19:14:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:54372 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751207AbXJVXOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 19:14:20 -0400
+Message-ID: <471D2ECC.6090209@goop.org>
+Date: Mon, 22 Oct 2007 16:14:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Al Viro <viro@ftp.linux.org.uk>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Nix <nix@esperi.org.uk>,
+       Jeff Dike <jdike@addtoit.com>, Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in	2.6.23-final.
+References: <20071022043746.GF2998@hacking> <20071022052214.GY8181@ftp.linux.org.uk> <20071022061245.GG2998@hacking> <87d4v7fy5i.fsf@hades.wkstn.nix> <20071022065202.GI2998@hacking> <20071022065943.GC10864@uranus.ravnborg.org> <20071022074823.GJ2998@hacking> <20071022113600.GA8181@ftp.linux.org.uk> <20071022122504.GL2998@hacking> <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu>
+In-Reply-To: <20071022124551.GA7438@elte.hu>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b6a2187b0710220045q2920c0dat9ebe4850b02d1bbf@mail.gmail.com>
-	 <E1IjvB3-0005oG-N9@faramir.fjphome.nl> <471CA0AA.4000904@gmail.com>
-	 <200710221633.42619.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/07, Frans Pop <elendil@planet.nl> wrote:
-> On Monday 22 October 2007, Alexey Starikovskiy wrote:
-> > Frans Pop wrote:
-> > > I must say that having these relatively top-level ACPI settings
-> > > depending on something that is relatively buried away is not very
-> > > intuitive!
+Ingo Molnar wrote:
+> we should kill it there too.
+>
+> the only place where we should _please_ keep those annotations are for 
+> functions that get called from assembly code. This makes life immensely 
+> easier for -pg (CONFIG_FUNCTION_TRACING) kernels.
 
-That's really something that's hard to imagine having another
-dependency somewhere else. Got it now.
+Should we re-add them for the function pointers in asm-x86/paravirt.h? 
+Andi argued we should remove them since x86 is unconditionally regparm
+now anyway - and they're pretty ugly syntactically.
 
-Thanks for your help.
+    J
 
-Jeff.
