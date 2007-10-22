@@ -1,143 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXJVMKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXJVMPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbXJVMKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 08:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbXJVMJx
+	id S1753460AbXJVMPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 08:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXJVMPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 08:09:53 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42321 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbXJVMJw (ORCPT
+	Mon, 22 Oct 2007 08:15:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:42945 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752000AbXJVMPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 08:09:52 -0400
-Message-ID: <471C930D.4000004@tiscali.nl>
-Date: Mon, 22 Oct 2007 14:09:49 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unlock before bug returns
-References: <471C0697.1040906@tiscali.nl>	<471C11E5.2000003@tiscali.nl> <20071022001045.131ea465@bree.surriel.com>
-In-Reply-To: <20071022001045.131ea465@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 08:15:07 -0400
+Subject: Re: [RFC/PATCH 2/3] rt: PI-workqueue support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Daniel Walker <dwalker@mvista.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <Pine.LNX.4.58.0710220754440.10836@gandalf.stny.rr.com>
+References: <20071022095054.393085000@chello.nl>
+	 <20071022095658.745030000@chello.nl>
+	 <Pine.LNX.4.58.0710220754440.10836@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mu/c0Yyp7T96aBjSkKn/"
+Date: Mon, 22 Oct 2007 14:15:03 +0200
+Message-Id: <1193055303.27435.176.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->> should we bother to unlock before panicking, or is the unlock not
->> required either?
-> 
-> BUG() kills the current process, but not the whole system.
-> 
-> Unlocking the lock means that the rest of the system has somewhat
-> of a chance of surviving.  Not unlocking means a guaranteed hang
-> for the rest of the system, making a BUG() no better than panic.
-> 
-> Please keep the unlock.
+--=-mu/c0Yyp7T96aBjSkKn/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-In that case I guess the pathc below fixes some more unlockings before
-bugging.
+On Mon, 2007-10-22 at 08:00 -0400, Steven Rostedt wrote:
+> --
+>=20
+> On Mon, 22 Oct 2007, Peter Zijlstra wrote:
+> 5B>
+> > Index: linux-2.6/kernel/workqueue.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.orig/kernel/workqueue.c
+> > +++ linux-2.6/kernel/workqueue.c
+> > @@ -44,7 +44,7 @@ struct cpu_workqueue_struct {
+> >
+> >  	spinlock_t lock;
+> >
+> > -	struct list_head worklist;
+> > +	struct plist_head worklist;
+> >  	wait_queue_head_t more_work;
+> >  	struct work_struct *current_work;
+> >
+> > @@ -127,16 +127,19 @@ struct cpu_workqueue_struct *get_wq_data
+> >  static void insert_work(struct cpu_workqueue_struct *cwq,
+> >  				struct work_struct *work, int tail)
+> >  {
+> > +	int prio =3D current->normal_prio;
+> > +
+>=20
+> I'm curious to why you use normal_prio here? If the task has been boosted
+> by some other PI method, and this task is about to sleep, why not use the
+> actualy current->prio?
 
-in the third patch: maybe BUG before "page_cache_release(page)"?
-I also spotted some cases where it was attempted to free after BUG().
-should that occur before BUG() as well?
+Daniel wrote this bit, but I tend to agree with him, but can't give his
+rationale. Mine is that worklets are typically asynchonous and thus its
+prio should not depend on temporal things like boosting.
 
---
+OTOH it would probably make sense to allow it to depend on it through
+the barrier constructs, but for that I have to hook the completions into
+the PI chain. Something that needs more thought.
 
-    Unlock before BUG()
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/mtd/ubi/vmt.c b/drivers/mtd/ubi/vmt.c
-index 88629a3..679c8b4 100644
---- a/drivers/mtd/ubi/vmt.c
-+++ b/drivers/mtd/ubi/vmt.c
-@@ -100,8 +100,10 @@ static ssize_t vol_attribute_show(struct device *dev,
- 		ret = sprintf(buf, "%lld\n", vol->used_bytes);
- 	else if (attr == &attr_vol_upd_marker)
- 		ret = sprintf(buf, "%d\n", vol->upd_marker);
--	else
-+	else    {
-+		spin_unlock(&vol->ubi->volumes_lock);
- 		BUG();
-+	}
- 	spin_unlock(&vol->ubi->volumes_lock);
- 	return ret;
- }
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index e3c8284..67ed205 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -8722,6 +8722,7 @@ static int ipw_wx_get_freq(struct net_device *dev,
- 			break;
- 
- 		default:
-+			mutex_unlock(&priv->mutex);
- 			BUG();
- 		}
- 	} else
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 76403b1..460c17d 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1051,9 +1051,9 @@ grow_dev_page(struct block_device *bdev, sector_t block,
- 	return page;
- 
- failed:
--	BUG();
- 	unlock_page(page);
- 	page_cache_release(page);
-+	BUG();
- 	return NULL;
- }
- 
-diff --git a/mm/slab.c b/mm/slab.c
-index cfa6be4..20c58dc 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1606,8 +1606,10 @@ void __init kmem_cache_init(void)
- 		struct kmem_cache *cachep;
- 		mutex_lock(&cache_chain_mutex);
- 		list_for_each_entry(cachep, &cache_chain, next)
--			if (enable_cpucache(cachep))
-+			if (enable_cpucache(cachep)) {
-+				mutex_unlock(&cache_chain_mutex);
- 				BUG();
-+			}
- 		mutex_unlock(&cache_chain_mutex);
- 	}
- 
-diff --git a/net/rxrpc/ar-ack.c b/net/rxrpc/ar-ack.c
-index 657ee69..c56e773 100644
---- a/net/rxrpc/ar-ack.c
-+++ b/net/rxrpc/ar-ack.c
-@@ -752,8 +752,10 @@ all_acked:
- 		sp->call = call;
- 		rxrpc_get_call(call);
- 		spin_lock_bh(&call->lock);
--		if (rxrpc_queue_rcv_skb(call, skb, true, true) < 0)
-+		if (rxrpc_queue_rcv_skb(call, skb, true, true) < 0) {
-+			spin_unlock_bh(&call->lock);
- 			BUG();
-+		}
- 		spin_unlock_bh(&call->lock);
- 		goto process_further;
- 	}
-diff --git a/net/rxrpc/ar-call.c b/net/rxrpc/ar-call.c
-index 3c04b00..0d30466 100644
---- a/net/rxrpc/ar-call.c
-+++ b/net/rxrpc/ar-call.c
-@@ -426,8 +426,10 @@ void rxrpc_release_call(struct rxrpc_call *call)
- 	       call->rx_first_oos);
- 
- 	spin_lock_bh(&call->lock);
--	if (test_and_set_bit(RXRPC_CALL_RELEASED, &call->flags))
-+	if (test_and_set_bit(RXRPC_CALL_RELEASED, &call->flags)) {
-+		spin_unlock_bh(&call->lock);
- 		BUG();
-+	}
- 	spin_unlock_bh(&call->lock);
- 
- 	/* dissociate from the socket
+
+--=-mu/c0Yyp7T96aBjSkKn/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHHJRHXA2jU0ANEf4RAvXGAJ0UoJHiV4V3LSvN/tuDFvyqg/IAJwCfdtkT
+1MbLJ+7XUjFlDr0rUgDKjwc=
+=2pGG
+-----END PGP SIGNATURE-----
+
+--=-mu/c0Yyp7T96aBjSkKn/--
+
