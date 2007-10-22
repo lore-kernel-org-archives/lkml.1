@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbXJVUR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbXJVUZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbXJVUR2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 16:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXJVURS
+	id S1753565AbXJVUZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 16:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXJVUY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 16:17:18 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37592 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbXJVURR (ORCPT
+	Mon, 22 Oct 2007 16:24:59 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:57788 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbXJVUY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 16:17:17 -0400
-Date: Mon, 22 Oct 2007 21:16:17 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Erez Zadok <ezk@cs.sunysb.edu>, Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-In-Reply-To: <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI> 
- <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
- <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Oct 2007 16:24:59 -0400
+Date: Mon, 22 Oct 2007 16:24:06 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Nix <nix@esperi.org.uk>,
+       Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+Message-ID: <20071022202406.GA9556@c2.user-mode-linux.org>
+References: <200710111754.46854.rob@landley.net> <200710200252.37919.p.giarrusso@gmail.com> <87y7dyhv2u.fsf@hades.wkstn.nix> <20071021114854.GF2455@hacking> <20071021130848.GA4621@c2.user-mode-linux.org> <20071021132031.GI2455@hacking> <20071021154346.GW8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071021154346.GW8181@ftp.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Oct 2007, Pekka Enberg wrote:
-> 
-> I wonder whether _not setting_ BDI_CAP_NO_WRITEBACK implies that
-> ->writepage() will never return AOP_WRITEPAGE_ACTIVATE for
-> !wbc->for_reclaim case which would explain why we haven't hit this bug
-> before. Hugh, Andrew?
+On Sun, Oct 21, 2007 at 04:43:46PM +0100, Al Viro wrote:
+> Fallout continues; I've got a preliminary patch for it.  Basically, we
+> need to stop doing -U__i386__ et.al.
 
-Only ramdisk and shmem have been returning AOP_WRITEPAGE_ACTIVATE.
-Both of those set BDI_CAP_NO_WRITEBACK.  ramdisk never returned it
-if !wbc->for_reclaim.  I contend that shmem shouldn't either: it's
-a special code to get the LRU rotation right, not useful elsewhere.
-Though Documentation/filesystems/vfs.txt does imply wider use.
+Thanks, Al.  You need the patch below in order to get a working UML -
+feel free to fold it into this.
 
-I think this is where people use the phrase "go figure" ;)
+				Jeff
 
-Hugh
+-- 
+Work email - jdike at linux dot intel dot com
+
+
+KERNEL_DEFINES needs whitespace trimmed, otherwise this whitespace
+crunching done by make fools the patsubst which is used to remove
+KERNEL_DEFINES from USER_CFLAGS.
+
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/Makefile |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/um/Makefile
+===================================================================
+--- linux-2.6.orig/arch/um/Makefile	2007-10-22 16:19:38.000000000 -0400
++++ linux-2.6/arch/um/Makefile	2007-10-22 16:19:44.000000000 -0400
+@@ -70,9 +70,12 @@ include $(srctree)/$(ARCH_DIR)/Makefile-
+ # in KBUILD_CFLAGS.  Otherwise, it would cause ld to complain about the two different
+ # errnos.
+ # These apply to kernelspace only.
++#
++# strip leading and trailing whitespace to make the USER_CFLAGS removal of these
++# defines more robust
+ 
+-KERNEL_DEFINES = -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+-	-Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES)
++KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
++			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+ KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
+ 
