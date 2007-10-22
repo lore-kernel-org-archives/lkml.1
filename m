@@ -1,127 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbXJVEmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbXJVEp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbXJVEmk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 00:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXJVEmd
+	id S1754066AbXJVEp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 00:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVEpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 00:42:33 -0400
-Received: from xenotime.net ([66.160.160.81]:32837 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751169AbXJVEmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 00:42:32 -0400
-Date: Sun, 21 Oct 2007 21:42:29 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Henrik Carlqvist <hc1@poolhem.se>,
-       bunk@stusta.de
-Subject: Re: tristate and bool not enogh for Kconfig anymore
-Message-Id: <20071021214229.b75e2c3d.rdunlap@xenotime.net>
-In-Reply-To: <20071021201416.4ccde183.rdunlap@xenotime.net>
-References: <200710201257.55616.nick@ukfsn.org>
-	<20071020144238.4f258c8c.hc1@poolhem.se>
-	<20071020191700.GB8774@uranus.ravnborg.org>
-	<26703.1192942058@turing-police.cc.vt.edu>
-	<20071021122402.2f0f3b40.hc1@poolhem.se>
-	<20071021094517.78dd1916.rdunlap@xenotime.net>
-	<20071021210313.GA6725@uranus.ravnborg.org>
-	<20071021174748.92abc989.rdunlap@xenotime.net>
-	<20071021201416.4ccde183.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Oct 2007 00:45:50 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:25732 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751139AbXJVEpu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 00:45:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=POTxb7XtXDXVXF5OmqUaS+Q1uOttvO41sgih9zniHHooeCWFQMsgSADrNWCNRPI88dsI3jP6SGwLTW/vnD0Ew6PEuj9OAGMl8amKO1442F45WUIO/MKXpftUB4345IfbCxPcL0iuGF4rXemigiub9Y74dAXXFk8nv23FPNILyo0=  ;
+X-YMail-OSG: unlB55wVM1nPPiI5CbLS5NcaytrpQ60oVcWjYaZimQkAkIDWqxOu07p0A5sw3tzQPZjuU3xk2Q--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: dean gaudet <dean@arctic.org>
+Subject: Re: Interaction between Xen and XFS: stray RW mappings
+Date: Mon, 22 Oct 2007 14:39:21 +1000
+User-Agent: KMail/1.9.5
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
+       xfs@oss.sgi.com, Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>,
+       Morten =?iso-8859-1?q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
+       xfs-masters@oss.sgi.com
+References: <470FA7C3.90404@goop.org> <471C1A61.1010001@goop.org> <alpine.DEB.0.9999.0710212128180.2320@twinlark.arctic.org>
+In-Reply-To: <alpine.DEB.0.9999.0710212128180.2320@twinlark.arctic.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710221439.21503.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007 20:14:16 -0700 Randy Dunlap wrote:
+On Monday 22 October 2007 14:28, dean gaudet wrote:
+> On Sun, 21 Oct 2007, Jeremy Fitzhardinge wrote:
+> > dean gaudet wrote:
+> > > On Mon, 15 Oct 2007, Nick Piggin wrote:
+> > >> Yes, as Dave said, vmap (more specifically: vunmap) is very expensive
+> > >> because it generally has to invalidate TLBs on all CPUs.
+> > >
+> > > why is that?  ignoring 32-bit archs we have heaps of address space
+> > > available... couldn't the kernel just burn address space and delay
+> > > global TLB invalidate by some relatively long time (say 1 second)?
+> >
+> > Yes, that's precisely the problem.  xfs does delay the unmap, leaving
+> > stray mappings, which upsets Xen.
+>
+> sounds like a bug in xen to me :)
 
-> On Sun, 21 Oct 2007 17:47:48 -0700 Randy Dunlap wrote:
-> 
-> > On Sun, 21 Oct 2007 23:03:13 +0200 Sam Ravnborg wrote:
-> > 
-> > > On Sun, Oct 21, 2007 at 09:45:17AM -0700, Randy Dunlap wrote:
-> > > > > Is there any other way to specify that a functionality can only be built
-> > > > > as a module, not built into the kernel?
-> > > > 
-> > > > config FOO
-> > > > 	depends on BAR && m
-> > > > 
-> > > > restricts FOO to module-only.
-> > > > 
-> > > > > In my firsta attempts to post about these tests my post ended up not on
-> > > > > the mailing list but as a reply to Sam Ravnborg only, apologies for
-> > > > > that...
-> > > 
-> > > This is obviously the right solution.
-> > > Randy - we should document this somewhere together with more kconfig tips'n'tricks.
-> > 
-> > Agreed.
-> 
-> So that's one tip or trick... or common idiom.
-> 
-> > > A new document or do we extend kconfig-language?
-> > 
-> > I don't see a need for a separate document.  I would just extend
-> > kconfig-language.
-> 
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> Another common idiom that we see (and sometimes have problems
-> with) is this:
-> 
-> When B (module or subsystem) uses interfaces from A (module or
-> subsystem), A can be linked statically into the kernel image or
-> can be built as loadable module(s).   This limits how B can be
-> built.  If A is linked statically into the kernel image, B can be
-> built statically or as loadable module(s).  However, if A is built
-> as loadable module(s), then B must be restricted to loadable
-> module(s) also.  This can be expressed in kconfig language as:
-> 
-> config B
-> 	depends on A = y || A = B
-> 
-> 
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> There's also a third issue:  symbols that are specific to a
-> particular $arch, but they are in Kconfig files that are common
-> to all arches, so kconfig complains about symbol A refers to
-> unknown symbol B.  (and I'm just writing this from memory, not
-> from testing it, so it could be off a bit.)  One example of this
-> was PS3_PS3AV, as copied from an lkml email of 2007-feb-14:
-> 
-> drivers/video/Kconfig:1604:warning: 'select' used by config symbol 
-> 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
-> 
-> Someone fixed this one by introducing an intermediate config symbol.
-> I didn't follow the details of that fix, but we see this problem
-> enough to warrant explaining how to handle it.  E.g., recently
-> (from 2007-oct-14) on lkml:
-> 
-> $ make oldconfig >/dev/null
-> drivers/macintosh/Kconfig:121:warning: 'select' used by config 
-> symbol 'PMAC_APM_EMU' refers to undefined symbol 'APM_EMULATION'
-> 
-> 
-> 
-> Adrian, do you know of other items that should be listed here?
+You could call it a bug I think. I don't know much about Xen though,
+whether or not it expects to be able to run an arbitrary OS kernel.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Continuing with real-life kconfig fun, here's a fourth item that
-people need to be aware of.
-
-The construct:
-
-if ARCH_OMAP
-	source "drivers/video/omap/Kconfig"
-endif
-
-does not prevent kconfig from reading drivers/video/omap/Kconfig.
-Instead, it make all config symbols in that file be dependent upon
-the ARCH_OMAP symbol.  Adding a config symbol dependency like this
-is a common problem that causes config menus not to be displayed as
-they should be (not indented or not subordinate as expected).
-
-
----
-~Randy
+Presumably, the hypervisor _could_ write protect and trap writes to
+*all* page table page mappings.
