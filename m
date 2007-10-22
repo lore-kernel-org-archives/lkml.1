@@ -1,112 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbXJVNGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbXJVNIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbXJVNGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 09:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXJVNGZ
+	id S1754525AbXJVNIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 09:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbXJVNIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 09:06:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:2526 "EHLO
+	Mon, 22 Oct 2007 09:08:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:4174 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbXJVNGX (ORCPT
+	with ESMTP id S1751935AbXJVNIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 09:06:23 -0400
+	Mon, 22 Oct 2007 09:08:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QoFQ7NQnLxIeSoDULfmb9VcZc2tU1Ew+nKyG+m9JjZYB6pqUl5vIvCnZmFPIyj8OoKgx/tVc+CZXnLX+GRIBHVOQHDWnIJgAy8HeCArjDUGZIErt5PG6qKzj6NC/qnZPCqIVtGrlTRluL5E82FXjEVKRTdDR4lcpeNvqwvkH/+c=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: 100% iowait on one of cpus in current -git
-Date: Mon, 22 Oct 2007 15:05:35 +0200
-User-Agent: KMail/1.9.6
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200710220822.52370.maximlevitsky@gmail.com> <200710221421.21439.maximlevitsky@gmail.com> <393056632.00561@ustc.edu.cn>
-In-Reply-To: <393056632.00561@ustc.edu.cn>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=lRClV5IIFLOyoHNWfhbA5FRMY9cJZkmagbrcxrEJeIrtDyYvpX/vXtW6Wj0KyoH8nm8usc4L8Ny/2nGuse4nYvhTOxjdq242II4otQSsm+xijUz1x6Ti5RXDQqRXiYweyDo6qH8/TXfnPX/UI4rOsrnzQQLb+w7lmKFaRC9HJLc=
+Message-ID: <471CA0AA.4000904@gmail.com>
+Date: Mon, 22 Oct 2007 17:07:54 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710221505.35397.maximlevitsky@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+CC: Jeff Chua <jeff.chua.linux@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: latest 2.6.23 git missing ACPI POWER_SUPPLY
+References: <b6a2187b0710220045q2920c0dat9ebe4850b02d1bbf@mail.gmail.com> <E1IjvB3-0005oG-N9@faramir.fjphome.nl>
+In-Reply-To: <E1IjvB3-0005oG-N9@faramir.fjphome.nl>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------030700020302040404050004"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007 14:37:07 Fengguang Wu wrote:
-> On Mon, Oct 22, 2007 at 02:21:21PM +0200, Maxim Levitsky wrote:
-> > I Bisected this bug to exactly this commit:
-> > 
-> > 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b
-> > writeback: introduce writeback_control.more_io to indicate more io
-> > 
-> > Reverting it and compiling latest git shows no more signs of that bug.
+This is a multi-part message in MIME format.
+--------------030700020302040404050004
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Frans Pop wrote:
+> Jeff Chua wrote:
+>> Just pulled latest linux-2.6, and couldn't get ACPI to detect
+>> ACPI_BATTERY and ACPI_AC.
+>>
+>> It seems ACPI POWER_SUPPLY is still missing.
 > 
-> Thank you very much.
+> I had the same problem. It turns out you need to enable
+>    drivers -> Power supply class support
+> (either built in or as module) to get ACPI AC/Battery support.
 > 
-> I guess your system has some difficulty in writing back some inodes.
-> (i.e. a bug disclosed by this patch, the 100% iowait only makes it
-> more obvious)
+> I must say that having these relatively top-level ACPI settings depending on something that is relatively buried away is not very intuitive!
+> Especially not since at first glance you don't really seem to need that option except for some weird hardware.
 > 
-> I cannot reproduce it with your .config, so would you recompile and
-> run the kernel with the above commit _and_ the below debugging patch?
-> 
-> Thank you,
-> Fengguang
-> ---
-> 
->  fs/fs-writeback.c |   15 ++++++++++++++-
->  1 file changed, 14 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-git17.orig/fs/fs-writeback.c
-> +++ linux-2.6.23-git17/fs/fs-writeback.c
-> @@ -164,12 +164,25 @@ static void redirty_tail(struct inode *i
->  	list_move(&inode->i_list, &sb->s_dirty);
->  }
->  
-> +#define requeue_io(inode)						\
-> +	do {								\
-> +		__requeue_io(inode, __LINE__);				\
-> +	} while (0)
-> +
->  /*
->   * requeue inode for re-scanning after sb->s_io list is exhausted.
->   */
-> -static void requeue_io(struct inode *inode)
-> +static void __requeue_io(struct inode *inode, int line)
->  {
->  	list_move(&inode->i_list, &inode->i_sb->s_more_io);
-> +
-> +	printk(KERN_DEBUG "redirtied inode %lu size %llu at %02x:%02x(%s), line %d.\n",
-> +			inode->i_ino,
-> +			i_size_read(inode),
-> +			MAJOR(inode->i_sb->s_dev),
-> +			MINOR(inode->i_sb->s_dev),
-> +			inode->i_sb->s_id,
-> +			line);
->  }
->  
->  static void inode_sync_complete(struct inode *inode)
-> 
+> CC'ing ACPI mailing list for other opinions.
+I was thinking that 'select' might be more appropriate here...
+Please take a look on attached patch.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
-Hi,
-Thank you very much too, for helping me.
 
+--------------030700020302040404050004
+Content-Type: text/x-diff;
+ name="use_select_for_power_class.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="use_select_for_power_class.patch"
 
-Applied.
-Had to kill klogd, since kernel generates tons of redirtied inode messages.
-Size of the kern.log is 863 KB, thus I I don't think it is polite to attachit.
-Don't know whenever it is ok to put it on pastebin too.
+ACPI: use select POWER_SUPPLY for AC, BATTERY and SBS
 
-Anyway, it shows lots of redirtied inode... messages,
-and while most of them are "at 08:02(sda2)" , my reiserfs root partition, some are
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-"Oct 22 14:50:27 MAIN kernel: [   73.643794] redirtied inode 2582 size 0 at 00:0f(tmpfs), line 300."
+POWER_SUPPLY is needed for AC, battery, and SBS sysfs support.
+Use 'select' instead of 'depends on', as it is will not be selected
+by anything else, leading to confusion.
 
-" line 300" is shown always
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-(I have /var/run, /var/lock, /dev mounted as tmpfs, default kubuntu setup)
+ drivers/acpi/Kconfig |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 5d0e26a..ecd87d7 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -88,7 +88,8 @@ config ACPI_PROC_EVENT
+ 
+ config ACPI_AC
+ 	tristate "AC Adapter"
+-	depends on X86 && POWER_SUPPLY
++	depends on X86
++	select POWER_SUPPLY
+ 	default y
+ 	help
+ 	  This driver adds support for the AC Adapter object, which indicates
+@@ -97,7 +98,8 @@ config ACPI_AC
+ 
+ config ACPI_BATTERY
+ 	tristate "Battery"
+-	depends on X86 && POWER_SUPPLY
++	depends on X86
++	select POWER_SUPPLY
+ 	default y
+ 	help
+ 	  This driver adds support for battery information through
+@@ -352,7 +354,7 @@ config ACPI_HOTPLUG_MEMORY
+ config ACPI_SBS
+ 	tristate "Smart Battery System"
+ 	depends on X86
+-	depends on POWER_SUPPLY
++	select POWER_SUPPLY
+ 	help
+ 	  This driver adds support for the Smart Battery System, another
+ 	  type of access to battery information, found on some laptops.
 
-Best regards,
-	Maxim Levitsky
+--------------030700020302040404050004--
