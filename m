@@ -1,117 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbXJVFaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbXJVFoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbXJVFaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 01:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXJVF3x
+	id S1754364AbXJVFoH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 01:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXJVFn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 01:29:53 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:59415 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbXJVF3w (ORCPT
+	Mon, 22 Oct 2007 01:43:56 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42068 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbXJVFnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 01:29:52 -0400
-Date: Sun, 21 Oct 2007 22:29:51 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Michael Krufky <mkrufky@linuxtv.org>
-cc: Adrian Bunk <bunk@kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [v4l-dvb-maintainer] [2.6 patch] fix CONFIG_TUNER_TEA5761=m
-In-Reply-To: <471C19F1.8090505@linuxtv.org>
-Message-ID: <Pine.LNX.4.58.0710212201060.16052@shell4.speakeasy.net>
-References: <20071022024755.GJ30533@stusta.de> <471C19F1.8090505@linuxtv.org>
+	Mon, 22 Oct 2007 01:43:55 -0400
+Message-ID: <471C3A17.5020400@linux.vnet.ibm.com>
+Date: Mon, 22 Oct 2007 11:20:15 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Question about free/used memory on Linux
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471BA1D1.5040905@linux.vnet.ibm.com> <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847C@xmb-sjc-214.amer.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007, Michael Krufky wrote:
-> Adrian Bunk wrote:
-> > This patch fixes CONFIG_TUNER_TEA5761=m broken by
-> > commit ca805d57cf5ea7482ed3da28653f30621249ee45.
-> >
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> >
-> > ---
-> >
-> >  drivers/media/video/tuner-core.c |    6 ------
-> >  1 file changed, 6 deletions(-)
-> >
-> > 26336c30e76c37bda368a24b8b12978388a18cf3
-> > diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
-> > index 9484308..1795b78 100644
-> > --- a/drivers/media/video/tuner-core.c
-> > +++ b/drivers/media/video/tuner-core.c
-> > @@ -30,9 +30,7 @@
-> >
-> >  /* standard i2c insmod options */
-> >  static unsigned short normal_i2c[] = {
-> > -#ifdef CONFIG_TUNER_TEA5761
-> >  	0x10,
-> > -#endif
-> >
-> ^^^ I believe that we want to keep these #ifdef's above...  The removals
-> below are fine.
 
-Won't leaving in the call to tea5761_autodetection() when tea5761 is not
-compiled in result in an undefined symbol error?
+Ravinandan Arakali (rarakali) wrote:
+> Hi Vaidy,
+> Thanks for clarifying several of my doubts.
+> 
+> To answer your question about my intention, we currently have a 
+> system with 2 GB RAM and I need to find out the actual used and 
+> free memory so that we can decide if the same setup(applications,
+> tmpfs etc.) can run on another system with lesser memory.
+> 
+> Is it correct to say that the "used" field "free -m" excluding
+> buffers/caches would give the correct idea of used memory
+> (I mean does it take care of shared memory, shared copies of 
+> libraries etc.) ? I assume it does not include /dev/shm usage
+> since that's also a tmpfs partition ?
 
-I think what we want to do put in the typical if(TEA5761 >= TUNER) include tea5761
-code in tuner logic that the rest of the selectable sub-driver use.
+Thats correct. The used excluding the buffer caches gives most of the
+memory used by the system.  You have excludes _all_ file backed memory
+including shm.
 
-#if defined(CONFIG_TUNER_TEA5761) || (defined(CONFIG_TUNER_TEA5761_MODULE) && defined(MODULE))
+> 
+> If so, then I can add the memory used by tmpfs partitions to
+> the above and get the total memory used ?
+> 
+> For eg. if my "free -m" appears as below:
+> Linux(debug)# free -m
+>              total       used       free     shared    buffers
+> cached
+> Mem:          2014        984       1030          0         80
+> 594
+> -/+ buffers/cache:        309       1705
+> 
+> Can I say that 309MB + 350 MB(size of tmpfs partitions including
+> /dev/shm)
+> is the used memory on my system ?
 
-Of course compiling TEA5761 lower than TUNER doesn't make any sense now
-since the only thing that uses tea5761 is the tuner.  But it's still
-possible, you just end up with a tuner that doesn't support tea5761 and a
-tea5761 module that isn't needed by anything.
+Two problems with this logic:
 
->
->
-> >  	0x42, 0x43, 0x4a, 0x4b,			/* tda8290 */
-> >  	0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
-> >  	0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
-> > @@ -292,7 +290,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
-> >  		}
-> >  		t->mode_mask = T_RADIO;
-> >  		break;
-> > -#ifdef CONFIG_TUNER_TEA5761
-> >  	case TUNER_TEA5761:
-> >  		if (tea5761_attach(&t->fe, t->i2c.adapter, t->i2c.addr) == NULL) {
-> >  			t->type = TUNER_ABSENT;
-> > @@ -301,7 +298,6 @@ static void set_type(struct i2c_client *c, unsigned int type,
-> >  		}
-> >  		t->mode_mask = T_RADIO;
-> >  		break;
-> > -#endif
-> >  	case TUNER_PHILIPS_FMD1216ME_MK3:
-> >  		buffer[0] = 0x0b;
-> >  		buffer[1] = 0xdc;
-> > @@ -594,7 +590,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
-> >  	/* autodetection code based on the i2c addr */
-> >  	if (!no_autodetect) {
-> >  		switch (addr) {
-> > -#ifdef CONFIG_TUNER_TEA5761
-> >  		case 0x10:
-> >  			if (tea5761_autodetection(t->i2c.adapter, t->i2c.addr) != EINVAL) {
-> >  				t->type = TUNER_TEA5761;
-> > @@ -606,7 +601,6 @@ static int tuner_attach(struct i2c_adapter *adap, int addr, int kind)
-> >  				goto register_client;
-> >  			}
-> >  			break;
-> > -#endif
-> >  		case 0x42:
-> >  		case 0x43:
-> >  		case 0x4a:
-> >
-> >
-> Regards,
->
-> Mike Krufky
->
-> _______________________________________________
-> v4l-dvb-maintainer mailing list
-> v4l-dvb-maintainer@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
->
+1. all of tmpfs may not be really used.  You are over committing.
+2. You still miss the pages needed to map the program code.  They are file
+backed too. Though this will be very less amount of memory compared to data
+ and shared memory.
+
+Let me suggest a metric:
+
+1. Take the used part excluding the buffers (309MB) in your case and add
+'Mapped' and 'Dirty' from /proc/meminfo
+
+This may be better than adding tmpfs/shmdev size.
+
+2. Once your system is running will all applications loaded, cleanup the
+pagecache (file data cached in memory)
+
+sync
+echo 1 > /proc/sys/vm/drop_caches
+
+The first sync will bring down 'Dirty' count and drop_caches will reclaim
+all 'not needed' file cache memory.
+
+Now if you use 'free' and take the used count _with_ the buffers and file
+cache, this will provide a realistic value. (Actually Free in /proc/meminfo)
+
+Do not exclude buffers they are _needed_ for optimum system operation.
+With the above figure you can probably add 10% or more memory as extra
+memory for file cache when the system is operating with full load.
+
+If you want to be sure of these experiments boot you system with less
+memory using mem=xxx kernel parameter and run some performance tests to
+ensure the degradation is under acceptable limits.
+
+--Vaidy
+
+
