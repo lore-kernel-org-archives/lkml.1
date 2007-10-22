@@ -1,106 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXJVQa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbXJVQmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbXJVQa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 12:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXJVQaT
+	id S1752606AbXJVQmi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 12:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXJVQma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 12:30:19 -0400
-Received: from znsun1.ifh.de ([141.34.1.16]:57366 "EHLO znsun1.ifh.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbXJVQaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 12:30:18 -0400
-X-Greylist: delayed 4731 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Oct 2007 12:30:17 EDT
-Date: Mon, 22 Oct 2007 17:10:07 +0200 (CEST)
-From: Patrick Boettcher <patrick.boettcher@desy.de>
-X-X-Sender: pboettch@pub1.ifh.de
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] DVB: BANDWIDTH_TO_KHZ strangeness
-In-Reply-To: <20071014175055.GJ4211@stusta.de>
-Message-ID: <Pine.LNX.4.64.0710221657450.21323@pub1.ifh.de>
-References: <20071014175055.GJ4211@stusta.de>
+	Mon, 22 Oct 2007 12:42:30 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:48459 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbXJVQm3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 12:42:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ERGnV2532ECLmzoJl3ZW3qutbMj2XduzaqTbIvnRJ6LvFkvdhzXjew5HMJgPAcQ/SNpX1gY6c0IALk2AjpDdT7HH3acy93TsdXGrGUmMdsYqgkXBBW2XDb0R3Ld3/oEygKi3NGPejBjsvk+CKITHEdJbqCuJY8FSkBUHlC27B30=
+Message-ID: <2c0942db0710220942he5e9199i2e327df3c5676a6a@mail.gmail.com>
+Date: Mon, 22 Oct 2007 09:42:28 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [PATCH] return hidden bug
+Cc: "Roel Kluin" <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071021214209.1a7567d7@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: ALL_TRUSTED,AWL,BAYES_00
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <471BF741.2020501@tiscali.nl>
+	 <20071021214209.1a7567d7@bree.surriel.com>
+X-Google-Sender-Auth: a4ce78dca50d7403
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On 10/21/07, Rik van Riel <riel@redhat.com> wrote:
+> On Mon, 22 Oct 2007 03:05:05 +0200
+> Roel Kluin <12o3l@tiscali.nl> wrote:
+>
+> >     return hidden bug
+> >
+> >     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> >
+> > diff --git a/arch/alpha/kernel/pci_iommu.c
+> > b/arch/alpha/kernel/pci_iommu.c index e1c4707..6a69425 100644
+> > --- a/arch/alpha/kernel/pci_iommu.c
+> > +++ b/arch/alpha/kernel/pci_iommu.c
+> > @@ -365,8 +365,8 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t
+> > dma_addr, size_t size, printk(KERN_ERR "Bogus pci_unmap_single:
+> > dma_addr %lx " " base %lx size %x\n", dma_addr, arena->dma_base,
+> >                      arena->size);
+> > -             return;
+> >               BUG();
+> > +             return;
+> >       }
+> >
+> >       npages = calc_npages((dma_addr & ~PAGE_MASK) + size);
+>
+> BUG() will terminate the process that runs into it, so you can
+> just remove the return alltogether.  If BUG() is hit, the return
+> will never be reached.
 
-This coverity checker is great. He even finds all the things which are 
-there because I'm lazy ;) .
+I'm sorry, perhaps I poured myself a cup of stupid this morning, but
+isn't the above patch effectively introducing a BUG where none could
+be reached before? In other words, for the patch to have zero
+behavioral change, wouldn't it have to remove the BUG() altogether?
 
-The dibXXXX-drivers are all generated from our internal drivers to have at 
-least something for Linux. Because of no time there is no dedicated 
-source for the kernel but just the processed one.
-
-The particular issue here is, that the internal architecture supports a 
-variable bandwidth while the linux-dvb architecture only has 3 fixed 
-values. 
-
-I know that in the future the linux-dvb-API will also support other 
-bandwidths so I'm begging for mercy for those 3 things here to not get too 
-much out-of-sync with our internal code.
-
-thanks,
-Patrick.
-
-On Sun, 14 Oct 2007, Adrian Bunk wrote:
-> drivers/media/dvb/frontends/dibx000_common.h contains:
-> 
-> <--  snip  -->
-> 
-> ...
-> #define BANDWIDTH_TO_KHZ(v) ( (v) == BANDWIDTH_8_MHZ  ? 8000 : \
->                              (v) == BANDWIDTH_7_MHZ  ? 7000 : \
->                              (v) == BANDWIDTH_6_MHZ  ? 6000 : 8000 )
-> ...
-> 
-> <--  snip  -->
-> 
-> 
-> Commit b6884a17fc70e979ef34e4b5560988b522bb50a0 added to both of 
-> drivers/media/dvb/frontends/dib7000{m,p}.c:
-> 
-> <--  snip  -->
-> 
-> ...
->         factor = BANDWIDTH_TO_KHZ(ch->u.ofdm.bandwidth);
->         if (factor >= 5000)
->                 factor = 1;
->         else
->                 factor = 6;
-> ...
-> 
-> <--  snip  -->
-> 
-> 
-> factor < 5000 is obviously never possible.
-> 
-> drivers/media/dvb/frontends/dib0070.c contains a similar assumption that 
-> BANDWIDTH_TO_KHZ() could result in values other than {6,7,8}000
-> (I haven't checked whether there are more such assumptions in other 
-> places).
-> 
-> Spotted by the Coverity checker.
-> 
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
-> 
-> _______________________________________________
-> v4l-dvb-maintainer mailing list
-> v4l-dvb-maintainer@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
-> 
-
+Ray
