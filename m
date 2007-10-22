@@ -1,141 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbXJVDrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbXJVD5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbXJVDrG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 23:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXJVDqz
+	id S1753998AbXJVD5X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 23:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXJVD5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 23:46:55 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:9709 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbXJVDqx (ORCPT
+	Sun, 21 Oct 2007 23:57:15 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:23947
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751345AbXJVD5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 23:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=fJj1FKE1ajVLEZQmiAXZOxcyGRxXuAQr8GwLcYYZZI4dxxx4Z5y1EFH/ssRhF4Md80KUpN+8H+CQNLC4c5V/r28mWe7obEHbfJz3Fthi+c7CEne4r5X0iWopEW8QSUoHUCoxYuVo1GBAB2J0Zm30rmuqlzwUzGY4sLk5v89MILQ=
-Message-ID: <471C1D29.5020403@gmail.com>
-Date: Sun, 21 Oct 2007 23:46:49 -0400
-From: emist <emistz@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sun, 21 Oct 2007 23:57:14 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Oct 2007 23:57:14 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAF65G0fLO4fZ/2dsb2JhbAA
+X-IronPort-AV: E=Sophos;i="4.21,309,1188748800"; 
+   d="vcf'?scan'208";a="220461287"
+Message-ID: <471C1D3C.1080801@intellect.com.au>
+Date: Mon, 22 Oct 2007 11:47:08 +0800
+From: Richard Pearman <richard.pearman@intellect.com.au>
+Organization: Intellect Australia
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Linux <linux-kernel@vger.kernel.org>
-CC: geraldsc@de.ibm.com, cotte@de.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
-References: <200710201451.57138.elendil@planet.nl> <471A39D2.1070303@gmail.com> <20071021100926.GA4420@osiris.ibm.com>
-In-Reply-To: <20071021100926.GA4420@osiris.ibm.com>
-X-Enigmail-Version: 0.94.2.0
+To: Greg KH <greg@kroah.com>, pberger@brimson.com, borchers@steinerpoint.com
+CC: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 001] USB: Error handling bug fix for serial_open()
+References: <4709B59F.3020307@intellect.com.au> <20071008220821.GA31234@kroah.com>
+In-Reply-To: <20071008220821.GA31234@kroah.com>
 Content-Type: multipart/mixed;
- boundary="------------010307020508060901070905"
+ boundary="------------050504040005010202050105"
+X-OriginalArrivalTime: 22 Oct 2007 03:47:08.0257 (UTC) FILETIME=[38357D10:01C8145E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------010307020508060901070905
-Content-Type: text/plain; charset=us-ascii
+--------------050504040005010202050105
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Heiko Carstens wrote:
-> On Sat, Oct 20, 2007 at 01:24:34PM -0400, emist wrote:
->> Frans Pop wrote:
->>> emist wrote:
->>>> The following patch fixes and issue in the s390 dcssblk driver. The
->>>> issue is caused when an unsuccessful attempt is made in order to change
->>>> a segment's type through the device attribute file "shared". This causes
->>>> the driver to remove the device in question, removing with it the device
->>>> attribute which is currently handling the call. The result is a hang on
->>>> the driver as it removes memory from under its feet.
->>>>
->>>> Not exactly sure if this explanation makes sense or its entirely
->>>> accurate. This is what I believe at this point from encountering and
->>>> fixing the error. Anyway here is the patch, hope it helps.
->>> Hi,
->>>
->>> If you don't get any reactions to your patch during the next few days, I 
->>> suggest you resend it and then CC the linux-s390@vger.kernel.org list and 
->>> possibly also the maintainer at linux390@de.ibm.com.
->>>
->>> In general you should always try to CC the relevant list/people as listed in 
->>> the MAINTAINERS file and not just the linux-kernel list, both for patches 
->>> and when reporting problems.
->>>
->>> Cheers,
->>> Frans Pop
->>>
->> Thanks Frans, I will do as you suggest.
->>
->> Have a good one,
->>
->> Igor H.
-> 
-> Gerald or Carsten (cc'ed) should look into this.
-> Thanks for reporting.
-> 
+From: Richard Pearman <richard.pearman@intellect.com.au>
+From: Greg Breen <greg.breen@intellect.com.au>
 
-Hello,
+When an error occurs in serial_open() ensure that port->tty and 
+tty->driver_data are set  to NULL, if previously assigned a value in the 
+function.
 
-I realized that I did not fix one of the cases where this bug manifests
-in my last patch. Here is the complete patch to fix the issue. And this
-time I cc'ed the relevant people.
+Signed-off-by: Richard S. Pearman <richard.pearman@intellect.com.au>
+---
+--- linux-2.6.17.1/drivers/usb/serial/usb-serial.c.orig    Mon Oct 22 
+11:12:29 2007
++++ linux-2.6.17.1/drivers/usb/serial/usb-serial.c    Mon Oct 22 
+11:12:23 2007
+@@ -230,6 +230,8 @@ bailout_module_put:
+     module_put(serial->type->driver.owner);
+ bailout_mutex_unlock:
+     port->open_count = 0;
++    port->tty = NULL;
++    tty->driver_data = NULL;   
+     mutex_unlock(&port->mutex);
+ bailout_kref_put:
+     kref_put(&serial->kref, destroy_serial);
 
-Have a good one,
-
-Igor H.
-
-
-
---------------010307020508060901070905
-Content-Type: text/plain;
- name="dcssblk_fix"
+--------------050504040005010202050105
+Content-Type: text/x-vcard; charset=utf-8;
+ name="richard.pearman.vcf"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dcssblk_fix"
+Content-Disposition: attachment;
+ filename="richard.pearman.vcf"
 
-# This patch fixes a memory corruption bug in the s390 dcssblk driver.
-# The bug occurs when an attempt to change the type of a segment
-# returns an error. At this point the driver tries to remove the segment in
-# question while some of the device's attributes are in use. This causes the
-# driver to hang.
-#
-# questions/comments @ emistz@gmail.com
+begin:vcard
+fn:Richard Pearman
+n:Pearman;Richard
+org:Intellect Australia;Embedded Systems Team
+adr:EIR Building, Technology Park, Bentley;;Suite 11 and 12, 1 Sarich Way;Perth;WA;6102;Australia
+email;internet:richard.pearman@intellect.com.au
+title:Senior embedded systems  engineer
+tel;work:+61 (08) 9472 2271
+tel;fax:+61 (08) 9470 2584
+x-mozilla-html:FALSE
+url:http://www.intellect.be
+version:2.1
+end:vcard
 
 
-diff -urN linux-2.6.23.1/drivers/s390/block/dcssblk.c linuxx/drivers/s390/block/dcssblk.c
---- linux-2.6.23.1/drivers/s390/block/dcssblk.c	2007-10-20 01:19:29.000000000 -0400
-+++ linuxx/drivers/s390/block/dcssblk.c	2007-10-20 01:16:13.000000000 -0400
-@@ -230,8 +230,15 @@
- 					   SEGMENT_SHARED);
- 		if (rc < 0) {
- 			BUG_ON(rc == -EINVAL);
--			if (rc != -EAGAIN)
--				goto removeseg;
-+			if (rc != -EAGAIN){
-+						PRINT_DEBUG
-+				    ("Could not reload segment %s in the specified format, reloading\n",
-+				     dev_info->segment_name);
-+				rc = segment_modify_shared(dev_info->
-+							   segment_name,
-+							   SEGMENT_EXCLUSIVE);
-+				goto out;
-+			}
- 		} else {
- 			dev_info->is_shared = 1;
- 			switch (dev_info->segment_type) {
-@@ -253,8 +260,12 @@
- 					   SEGMENT_EXCLUSIVE);
- 		if (rc < 0) {
- 			BUG_ON(rc == -EINVAL);
--			if (rc != -EAGAIN)
--				goto removeseg;
-+			if (rc != -EAGAIN){
-+				PRINT_DEBUG("Could not reload segment %s in the specified format, reloading\n",
-+					dev_info->segment_name);
-+				rc = segment_modify_shared(dev_info->segment_name, SEGMENT_SHARED);
-+				goto out;	
-+			}
- 		} else {
- 			dev_info->is_shared = 0;
- 			set_disk_ro(dev_info->gd, 0);
-
---------------010307020508060901070905--
+--------------050504040005010202050105--
