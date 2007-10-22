@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbXJVTTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbXJVTVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbXJVTTE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbXJVTSt
+	id S1755290AbXJVTVx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXJVTVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:18:49 -0400
-Received: from mail.queued.net ([207.210.101.209]:1818 "EHLO mail.queued.net"
+	Mon, 22 Oct 2007 15:21:45 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:18083 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755964AbXJVTSs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:18:48 -0400
-Date: Mon, 22 Oct 2007 15:18:45 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Florian Fainelli <florian.fainelli@telecomint.eu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
-Message-ID: <20071022151845.5874fba3@ephemeral>
-In-Reply-To: <200710191401.56916.florian.fainelli@telecomint.eu>
-References: <200710181551.24912.florian.fainelli@telecomint.eu>
-	<20071018173828.159b15dd@ephemeral>
-	<200710191401.56916.florian.fainelli@telecomint.eu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1752206AbXJVTVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 15:21:44 -0400
+Date: Mon, 22 Oct 2007 21:21:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: ata_exec_internal crash at boot in -git22
+Message-ID: <20071022192138.GG16425@kernel.dk>
+References: <200710222008.08095.ak@suse.de> <20071022182645.GE16425@kernel.dk> <200710222117.00521.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710222117.00521.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 14:01:56 +0200
-Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
+On Mon, Oct 22 2007, Andi Kleen wrote:
+> On Monday 22 October 2007 20:26:45 Jens Axboe wrote:
+> > On Mon, Oct 22 2007, Andi Kleen wrote:
+> > > 
+> > > One of the systems tested in autoboot crashes at boot with with -git22.
+> > > This is a AMD 2 socket Opteron NUMA system.
+> > > 
+> > > The tester was a little flakey and happened to hit the x86-merge-broke-
+> > > compilation window, so the last good data point I have is 2.6.23-rc9.
+> > 
+> > Andi, can you test with this patch applied?
+> > 
+> > http://brick.kernel.dk/sg-git.patch
+> Sorry was a mistake (cue: there is no 2.6.23-git22 yet). It turned out
+> to be an old broken kernel. Current -git seems to boot.
+> Sorry for the noise.
 
-> Hi Andres,
-> 
-> Le jeudi 18 octobre 2007, Andres Salomon a écrit :
-> > While I certainly would like to see a generic GPIO API, this one
-> > isn't really useful for geode GPIOs.  It would be nice to have one
-> > that did work for us as well.  Unfortunately, I haven't had the
-> > chance to give much thought to this problem yet.
-> 
-> This one was discussed mostly on the ARM mailing-list and finally
-> made his way to the mainline kernel. Though it lacks some functions
-> to change for instance a entire GPIO line and not a single bit, it is
-> used on ARM and MIPS systems so I would conform with this one for now
-> because it is used by at least two or more architectures.
+OK, all for the better :-)
 
-How does being used on MIPS and ARM make it suitable for x86?  If
-you're arguing that other x86 platforms conform to it, and it might be
-useful for them; sure, I'll buy that.  That doesn't seem to currently be
-the case, though.
+-- 
+Jens Axboe
+
