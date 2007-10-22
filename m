@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbXJVCo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXJVCrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbXJVCo4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 22:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXJVCot
+	id S1754042AbXJVCrR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 22:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXJVCrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 22:44:49 -0400
-Received: from daimi.au.dk ([130.225.16.1]:47631 "EHLO daimi.au.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbXJVCos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 22:44:48 -0400
-To: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: [PATCH] Include kernel/Kconfig.instrumentation in i386 and x86-64 Kconfig.
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 22 Oct 2007 04:44:40 +0200
-Message-ID: <ye83aw3q353.fsf@camel08.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Sun, 21 Oct 2007 22:47:01 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47829 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751396AbXJVCrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Oct 2007 22:47:01 -0400
+Date: Mon, 22 Oct 2007 04:47:30 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ralf Baechle <ralf@linux-mips.org>, lethal@linux-sh.org
+Cc: linuxsh-shmedia-dev@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sh64: fix dma_cache_sync() compilation
+Message-ID: <20071022024730.GH30533@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To get the kernel compiled with instrumentation turned on, I had to
-apply the patch below. 
+This patch fixes the following compile error caused by
+commit 622a9edd919de98ef59571ae6c40c7458244e3f2:
 
-It looks to me like x86 and x86-64 were just left out when the
-Kconfig.instrumentation file was created, but maybe I am
-misunderstanding how the x86/x86-64 merge is supposed to work.
+<--  snip  -->
 
-Soren
+...
+  CC      init/main.o
+In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/dma-mapping.h:52,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/dmaengine.h:29,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/skbuff.h:29,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/netlink.h:155,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/genetlink.h:4,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/net/genetlink.h:4,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/taskstats_kern.h:12,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:46:
+include2/asm/dma-mapping.h: In function 'dma_cache_sync':
+include2/asm/dma-mapping.h:46: error: invalid operands to binary & (have 'void *' and 'int')
+make[2]: *** [init/main.o] Error 1
 
-Signed-off-by: Soren Sandmann <sandmann@redhat.com>
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
 ---
- arch/i386/Kconfig   |    2 ++
- arch/x86_64/Kconfig |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index f6e44fc..b54a82d 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -1266,6 +1266,8 @@ source "crypto/Kconfig"
+e4e74353f092fa502d4c7e9c3c16a0d7a3bcf85e 
+diff --git a/include/asm-sh64/dma-mapping.h b/include/asm-sh64/dma-mapping.h
+index e661857..e57f129 100644
+--- a/include/asm-sh64/dma-mapping.h
++++ b/include/asm-sh64/dma-mapping.h
+@@ -42,8 +42,9 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+ static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
+ 				  enum dma_data_direction dir)
+ {
+-	unsigned long s = (unsigned long) vaddr & L1_CACHE_ALIGN_MASK;
+-	unsigned long e = (vaddr + size) & L1_CACHE_ALIGN_MASK;
++	unsigned long start = (unsigned long) vaddr;
++	unsigned long s = start & L1_CACHE_ALIGN_MASK;
++	unsigned long e = (start + size) & L1_CACHE_ALIGN_MASK;
  
- source "lib/Kconfig"
- 
-+source "kernel/Kconfig.instrumentation"
-+
- #
- # Use the generic interrupt handling code in kernel/irq/:
- #
-diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index aab25f3..a68865b 100644
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -808,3 +808,5 @@ source "security/Kconfig"
- source "crypto/Kconfig"
- 
- source "lib/Kconfig"
-+
-+source "kernel/Kconfig.instrumentation"
--- 
-1.5.2.4
-
+ 	for (; s <= e; s += L1_CACHE_BYTES)
+ 		asm volatile ("ocbp	%0, 0" : : "r" (s));
