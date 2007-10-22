@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbXJVB4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbXJVCCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbXJVB4R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Oct 2007 21:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVB4B
+	id S1753598AbXJVCCr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Oct 2007 22:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVCCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Oct 2007 21:56:01 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:25641 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbXJVB4A (ORCPT
+	Sun, 21 Oct 2007 22:02:39 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35965 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751162AbXJVCCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Oct 2007 21:56:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bdYLlLxLi8Q9F59tvQoMlk4D8+8Q+XnKwGmKr3x7WQCuTWmQFGu1joDP2SaBan5hrFmp2MB7JO3QrjsXIK5Vxp4bE1rkSZ+WNrnoOEM5jERc3lJ6yJSemIAXkWqyGDlSP7fQuU//9B2tWLaPP1uB8SLOuXmYF0znLyzZa7DdXpA=
-Message-ID: <cfaab6210710211855q7a2de35co13d3017b2a07d4cc@mail.gmail.com>
-Date: Mon, 22 Oct 2007 09:55:58 +0800
-From: "peer chen" <peerchen@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       "Kuan Luo" <kluo@nvidia.com>
-In-Reply-To: <47185BFD.2010909@garzik.org>
+	Sun, 21 Oct 2007 22:02:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=04Z9zZ8A9PpLSjEuncoIfEs9m/xQFQC/0PUR2tMLmxEWIEfkHK3NGwVGNykmos4lapLs2TKu55dI7Fp/aiI7PdRkp/dmn2oJepR85ZueCC+ThqBC67ogTAv3/goAs5FJ57Ivy+spHrcvR9kQ8MAaAf/QY7B5jORkTOr7DMphvwc=  ;
+X-YMail-OSG: _ymuY7UVM1lpVL6Kktm_Wg7JzsUAm1GNm9hyYwss.B.GPVX80q.2b16CLGDj7kWSgSBOK2OWKg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] rd: Use a private inode for backing storage
+Date: Mon, 22 Oct 2007 11:56:07 +1000
+User-Agent: KMail/1.9.5
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
+References: <200710151028.34407.borntraeger@de.ibm.com> <200710211956.50624.nickpiggin@yahoo.com.au> <m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1d4v8b9ct.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org>
-	 <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com>
-	 <47181CE1.4000802@garzik.org>
-	 <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com>
-	 <47185BFD.2010909@garzik.org>
+Message-Id: <200710221156.07790.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, link - http://lkml.org/lkml/2007/10/8/93 add the AHCI legacy
-support to sata_nv when IDE/RAID mode been set in SBIOS and Device IDs
-are not in ahci.c at this moment. To do so, when a new chipset come
-out and DIDs haven't been submited to LKML,user still can use ahci
-driver to handle it when setting AHCI mode in BIOS, using sata_nv when
-setting RAID/IDE in BIOS.
-For example, ahci driver in Fedora 7 doesn't include the DIDs of
-MCP78, so if you set the IDE/RAID mode in BIOS, os installation onto
-SATA drive will fail. But if Fedora 7 include this patch, installation
-will be successful.
+On Monday 22 October 2007 04:39, Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > On Sunday 21 October 2007 18:23, Eric W. Biederman wrote:
+> >> Christian Borntraeger <borntraeger@de.ibm.com> writes:
+> >>
+> >> Let me put it another way.  Looking at /proc/slabinfo I can get
+> >> 37 buffer_heads per page.  I can allocate 10% of memory in
+> >> buffer_heads before we start to reclaim them.  So it requires just
+> >> over 3.7 buffer_heads on very page of low memory to even trigger
+> >> this case.  That is a large 1k filesystem or a weird sized partition,
+> >> that we have written to directly.
+> >
+> > On a highmem machine it it could be relatively common.
+>
+> Possibly.  But the same proportions still hold.  1k filesystems
+> are not the default these days and ramdisks are relatively uncommon.
+> The memory quantities involved are all low mem.
 
-2007/10/19, Jeff Garzik <jeff@garzik.org>:
-> peer chen wrote:
-> > Ok,I agree to use AHCI driver for our AHCI controllers no matter their
-> > class codes are IDE/RAID/AHCI. But for those new or upcoming AHCI
-> > controller which DIDs are not included in ahci.c and also IDE/RAID
-> > mode being set in BIOS, no driver will be loaded currently, so I hope
-> > the first patch http://lkml.org/lkml/2007/10/8/93 can be appied for
-> > this case. Any comments?
+You don't need 1K filesystems to have buffers attached though,
+of course. You can hit the limit with a 4K filesystem with less
+than 8GB in pagecache I'd say.
+
+
+
+> > You don't want to change that for a stable patch, however.
+> > It fixes the bug.
 >
-> hmmm is that the correct URL?  That one updates sata_nv to support AHCI
-> controllers?.
+> No it avoids the bug which is something slightly different.
+> Further I contend that it is not obviously correct that there
+> are no other side effects (because it doesn't actually fix the
+> bug), and that makes it of dubious value for a backport.
+
+The bug in question isn't exactly that it uses buffercache for its
+backing store (although that's obviously rather hairy as well). It's
+this specific problem sequence. And it does fix the problem.
+
+
+> If I had to slap a patch on there at this point just implementing
+> an empty try_to_release_page (which disables try_to_free_buffers)
+> would be my choice.
+
+How is that better? Now you're making the exact same change for
+all filesystems that you didn't think was obviously correct for
+rd.c.
+
+
+> > I just don't think what you have is the proper fix. Calling
+> > into the core vfs and vm because right now it does something
+> > that works for you but is completely unrelated to what you
+> > are conceptually doing is not the right fix.
 >
-> I would think you would want to add the RAID class code to ahci.c
-> instead?  And just some regular PCI IDs?
+> I think there is a strong conceptual relation and other code
+> doing largely the same thing is already in the kernel (ramfs).  Plus
+> my gut feel says shared code will make maintenance easier.
+
+ramfs is rather a different case. Filesystems intimately know
+about the pagecache.
+
+
+> You do have a point that the reuse may not be perfect and if that
+> is the case we need to watch out for the potential to mess things
+> up.
 >
->        Jeff
->
->
->
+> So far I don't see any problems with the reuse.
+
+It's just wrong. I guess if you don't see that by now, then we
+have to just disagree.
