@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbXJVGIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbXJVGRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbXJVGIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 02:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXJVGIb
+	id S1753584AbXJVGRN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 02:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXJVGQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 02:08:31 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:56260 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750709AbXJVGIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 02:08:30 -0400
-Date: Mon, 22 Oct 2007 08:11:43 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Maciej W\. Rozycki" <macro@linux-mips.org>,
-       Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] flush_work_sync vs. flush_scheduled_work Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-ID: <20071022061143.GA973@ff.dom.local>
-References: <20071015125301.GC3015@ff.dom.local> <Pine.LNX.4.64N.0710151737250.16262@blysk.ds.pg.gda.pl> <20071016062108.GB1000@ff.dom.local> <Pine.LNX.4.64N.0710161759050.22596@blysk.ds.pg.gda.pl> <20071017085809.GA1658@ff.dom.local> <20071018063157.GA1694@ff.dom.local> <20071018070531.GA2065@ff.dom.local> <20071018154819.GA425@tv-sign.ru> <20071019075014.GA1765@ff.dom.local>
-Mime-Version: 1.0
+	Mon, 22 Oct 2007 02:16:59 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:51505 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbXJVGQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 02:16:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=LfQvjxfWLU5z5Qyhuqer2kNRBq42y7863Z2kcP0ngSqtYPhuUWRHhENn+wyRbQfK+lw0Jqvl0eCOeZbNcQqB3pbfoMayLJF9a80TB6xr/nCNw00UIYGb8TJBz2pIM3SfIJHDnpv51Sh1oxN4+EGQ4Gf+6jOaM9Ta6rlpd4TJbtQ=
+Date: Mon, 22 Oct 2007 14:12:46 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Jeff Dike <jdike@addtoit.com>,
+       Nix <nix@esperi.org.uk>, Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in
+	2.6.23-final.
+Message-ID: <20071022061245.GG2998@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <200710111754.46854.rob@landley.net> <200710200252.37919.p.giarrusso@gmail.com> <87y7dyhv2u.fsf@hades.wkstn.nix> <20071021114854.GF2455@hacking> <20071021130848.GA4621@c2.user-mode-linux.org> <20071021132031.GI2455@hacking> <20071021154346.GW8181@ftp.linux.org.uk> <20071022043746.GF2998@hacking> <20071022052214.GY8181@ftp.linux.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071019075014.GA1765@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20071022052214.GY8181@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 09:50:14AM +0200, Jarek Poplawski wrote:
-> On Thu, Oct 18, 2007 at 07:48:19PM +0400, Oleg Nesterov wrote:
-> > On 10/18, Jarek Poplawski wrote:
-> > >
-> > > +/**
-> > > + * flush_work_sync - block until a work_struct's callback has terminated
-> >                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > Hmm...
-> > 
-> > > + * Similar to cancel_work_sync() but will only busy wait (without cancel)
-> > > + * if the work is queued.
-> > 
-> > Yes, it won't block, but will spin in busy-wait loop until all other works
-> > scheduled before this work are finished. Not good. After that it really
-> > blocks waiting for this work to complete.
-> > 
-> > And I am a bit confused. We can't use flush_workqueue() because some of the
-> > queued work_structs may take rtnl_lock, yes? But in that case we can't use
-> > the new flush_work_sync() helper as well, no?
+On Mon, Oct 22, 2007 at 06:22:14AM +0100, Al Viro wrote:
+>On Mon, Oct 22, 2007 at 12:37:46PM +0800, WANG Cong wrote:
+>> >Fallout continues; I've got a preliminary patch for it.  Basically, we
+>> >need to stop doing -U__i386__ et.al.
+>> >
+>> 
+>> Hi, Al.
+>> 
+>> I applied your patch and recompiled the kernel. But it failed again.
+>> ;(
+>
+>Details would be welcome...  Notes: SMP on UML is no more; UML_NET_VDE
+>depends on having some userland library installed.  Aside of those two
+>it ought to build.
+>
+>Build log on failing build would be nice, along with .config.
 
-OK, I know I'm dumber and dumber everyday, but it seems in a hurry I
-got it wrong again or miss something (as usual): these all flushes are
-rtnl lockup vulnerable wrt. other work functions, but cancel_work_sync
-looks perfectly fine... (Or am I wrong because: ...?)
+I build UML for non-SMP x86. But I don't know about UML_NET_VDE. ;(
 
-Then, if by any chance I'm right, something like flush_work_sync
-(or changed flush_scheduled_work, if there is no problem with such
-a change of implementation) could be safely (if it's called without
-locks used by flushed work only) done cancel_work_sync() way, by
-running a work function after try_to_grab_pending() returns 1 (after
-list_del_init - of course without respecting a queue order).
+Errors threw out by gcc (too many) are put here:
+	http://wangcong.org/down/errors.txt
 
-Regards,
-Jarek P.
+And my .config is located here:
+	http://wangcong.org/down/dot_config
+
+(Errors look like same as without your patch.)
+
+-- 
+May the Source Be With You.
