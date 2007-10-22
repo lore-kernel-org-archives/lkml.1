@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbXJVTf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXJVTjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbXJVTf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 15:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbXJVTfU
+	id S1754576AbXJVTjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 15:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbXJVTjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 15:35:20 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:35799 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbXJVTfS (ORCPT
+	Mon, 22 Oct 2007 15:39:45 -0400
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:48921 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752304AbXJVTjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 15:35:18 -0400
-Message-ID: <471CFA9C.7010300@cosmosbay.com>
-Date: Mon, 22 Oct 2007 21:31:40 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 22 Oct 2007 15:39:44 -0400
+Date: Mon, 22 Oct 2007 21:39:39 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+Message-ID: <Pine.LNX.4.64.0710222137520.7105@anakin>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+ <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-To: Denis Cheng <crquan@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>, Jeff Garzik <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [net/ipv4]: fib_seq_show function adjustment to get a
- more sensable output of /proc/net/route
-References: <1193077582-4790-1-git-send-email-crquan@gmail.com>
-In-Reply-To: <1193077582-4790-1-git-send-email-crquan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 22 Oct 2007 21:31:48 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Cheng a écrit :
-> the temporary bf[127] char array is redundant, and the specified width 127 make the output of /proc/net/route include many trailing spaces;
-> since most terminal's cols are less than 127, this made every fib entry occupy two lines,
+On Mon, 22 Oct 2007, Jens Axboe wrote:
+> Change the page member of the scatterlist structure to be an unsigned
+> long, and encode more stuff in the lower bits:
 > 
-> after applied this patch, the output of /proc/net/route is more sensable like this:
-> 
-> Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT
-> eth0	0001A8C0	00000000	0001	0	0	0	00FFFFFF	0	0	0
-> lo	0000007F	00000000	0001	0	0	0	000000FF	0	0	0
-> eth0	00000000	0101A8C0	0003	0	0	0	00000000	0	0	0
-> 
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> - Bits 0 and 1 zero: this is a normal sg entry. Next sg entry is located
+>   at sg + 1.
+> - Bit 0 set: this is a chain entry, the next real entry is at ->page_link
+>   with the two low bits masked off.
+> - Bit 1 set: this is the final entry in the sg entry. sg_next() will return
+>   NULL when passed such an entry.
 
-Hum... did you test your patch with many routes declared ? (more than 32 on 
-i386/x86_64)
+Better safe than sorry...
 
-127 is not a random value, but chosen as a power of two minus 1.
-PAGE_SIZE is garanted to be a multiple of 128 (127 chars + line_feed) on all 
-arches.
+Is it possible that a chain entry pointer has bit 1 set on architectures
+(e.g. m68k) where the natural alignment of 32-bit quantities is _2_ bytes,
+not 4?
 
-So each read() on /proc/net/route delivers PAGE_SIZE/128 lines.
+Gr{oetje,eeting}s,
 
-With your patch, some lines might be truncated (one every 32 on i386)
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
