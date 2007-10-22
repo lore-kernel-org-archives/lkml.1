@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbXJVKLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXJVKOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbXJVKLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 06:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbXJVKLK
+	id S1752672AbXJVKOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 06:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXJVKOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 06:11:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59688 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbXJVKLJ (ORCPT
+	Mon, 22 Oct 2007 06:14:34 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:19881 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbXJVKOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 06:11:09 -0400
-Date: Mon, 22 Oct 2007 11:11:08 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Henrik Carlqvist <hc1@poolhem.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tristate and bool not enogh for Kconfig anymore
-Message-ID: <20071022101107.GA20690@infradead.org>
-References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071020144238.4f258c8c.hc1@poolhem.se>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 22 Oct 2007 06:14:33 -0400
+Message-ID: <471C75AB.8010608@yandex.ru>
+Date: Mon, 22 Oct 2007 13:04:27 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: forcing write-back from FS - again
+References: <471BB45D.8070509@nokia.com>        <20071021135526.57db7519.akpm@linux-foundation.org>        <471C64D1.3020904@yandex.ru>        <20071022020559.aa3fc59c.akpm@linux-foundation.org>        <471C6FA8.30500@yandex.ru> <20071022025516.848198f3.akpm@linux-foundation.org>
+In-Reply-To: <20071022025516.848198f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 22 Oct 2007 10:04:27.0609 (UTC) FILETIME=[EE507490:01C81492]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 20, 2007 at 02:42:38PM +0200, Henrik Carlqvist wrote:
-> I think there is a need for Kconfig to specify that a functionality could
-> be built as a module or not built at all.
+Andrew Morton wrote:
+> take a look at struct writeback_control:
 > 
-> Some drivers require that firmware is loaded when the driver is
-> initialized. The kernel has functionalities for this by using a userspace
-> program. However, this userspace program is only usable from modules and
-> not during boot while any initrd or any other file system has not yet been
-> mounted and yet less any processes started.
+>         unsigned nonblocking:1;         /* Don't get stuck on request queues */
+>         unsigned encountered_congestion:1; /* An output: a queue is full */
+>         unsigned for_kupdate:1;         /* A kupdate writeback */
+>         unsigned for_reclaim:1;         /* Invoked from the page allocator */
+>         unsigned for_writepages:1;      /* This is a writepages() call */
+>         unsigned range_cyclic:1;        /* range_start is cyclic */
+>         unsigned more_io:1;             /* more io to be dispatched */
+> 
+> Add another one...
 
-That's wrong.   You can load firmware from the initramfs even if the
-driver is built in.  There is no valid reason why a driver shouldn't
-be allowed to be built in.
+Ups, OK! Thanks again!
 
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
