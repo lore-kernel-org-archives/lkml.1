@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXJVJ2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbXJVJaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbXJVJ2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 05:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXJVJ2J
+	id S1752525AbXJVJaQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 05:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbXJVJaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 05:28:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34654 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751364AbXJVJ2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 05:28:08 -0400
-Date: Mon, 22 Oct 2007 11:27:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20071022092753.GA7659@elte.hu>
-References: <20071015104647.14e60bc5@laptopd505.fenrus.org> <20071015114738.6b5a25c7.akpm@linux-foundation.org> <20071015192822.GA2267@kernel.dk> <20071022091057.GB2781@elte.hu> <20071022022319.a5988afe.akpm@linux-foundation.org>
+	Mon, 22 Oct 2007 05:30:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:1624 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbXJVJaC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 05:30:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Nbxi0y+jJOc2SivaBsM8OfrYmXK79ECThZGLy6BHxWsK8VvIrwCnmpeALsF0pkyks7EhUiqtQweY+Ny0Ne1iWL8plTDcSJR09LGCfQflz+AqdJ0jtgrF1TPiNZ+wJDkgIzW+g046xUgjbWmIFsmNbNQQDn5snY867Wz9/97wQD0=
+Message-ID: <84144f020710220230t24d95470o7cabec4450e68814@mail.gmail.com>
+Date: Mon, 22 Oct 2007 12:30:00 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [PATCH] return hidden bug
+Cc: "Roel Kluin" <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071021214209.1a7567d7@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071022022319.a5988afe.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <471BF741.2020501@tiscali.nl>
+	 <20071021214209.1a7567d7@bree.surriel.com>
+X-Google-Sender-Auth: fedfaafeb5df63a5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On 10/22/07, Rik van Riel <riel@redhat.com> wrote:
+> BUG() will terminate the process that runs into it, so you can
+> just remove the return alltogether.  If BUG() is hit, the return
+> will never be reached.
 
-> > but what bothers me even more is the large picture. Linux's 
-> > development is still fundamentally skewed towards bandwidth (which 
-> > goes up with hardware advances anyway), while the focus on latencies 
-> > is very lacking (which users do care about much more and which 
-> > usually does _not_ improve with improved hardware), so i cannot see 
-> > why we shouldnt apply this. Reminds me of the illogical, almost 
-> > superstitious resistence against the relatime patch. (which is not 
-> > in 2.6.24 mind you - killed for good)
-> 
-> Try `mount -o relatime' and prepare to be surprised ;)
+This isn't true when CONFIG_BUG is disabled (in embedded builds, for example).
 
-i mean this one:
-
-  http://people.redhat.com/mingo/relatime-patches/improve-relatime.patch
-
-this actually makes relatime practical.
-
-	Ingo
+                                    Pekka
