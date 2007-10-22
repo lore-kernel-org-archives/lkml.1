@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbXJVKyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbXJVK4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbXJVKyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 06:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbXJVKyY
+	id S1753483AbXJVK4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 06:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbXJVKz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 06:54:24 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:54621 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbXJVKyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 06:54:22 -0400
-Subject: Please pull git390 'for-linus' branch
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 22 Oct 2007 12:54:19 +0200
-Message-Id: <1193050460.22719.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Oct 2007 06:55:58 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:52656 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751625AbXJVKz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 06:55:57 -0400
+Message-ID: <393050530.03287@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 22 Oct 2007 18:55:25 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 100% iowait on one of cpus in current -git
+Message-ID: <20071022105525.GA6732@mail.ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221159.19364.maximlevitsky@gmail.com> <1193048530.27435.169.camel@twins> <200710221240.24386.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710221240.24386.maximlevitsky@gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'for-linus' branch of
+On Mon, Oct 22, 2007 at 12:40:24PM +0200, Maxim Levitsky wrote:
+> On Monday 22 October 2007 12:22:10 Peter Zijlstra wrote:
+> > > [  673.365631] pdflush       D c21bdecc     0   221      2
+> > > [  673.365635]        c21bdee0 00000046 00000002 c21bdecc c21bdec4 00000000 c21b3000 00000002
+> > > [  673.365643]        c0134892 c21b3164 c1e00200 00000001 c7109280 c21bdec0 c03ff849 c21bdef0
+> > > [  673.365650]        00052974 00000000 000000ff 00000000 00000000 00000000 c21bdef0 000529dc
+> > > [  673.365657] Call Trace:
+> > > [  673.365659]  [<c03fd728>] schedule_timeout+0x48/0xc0
+> > > [  673.365663]  [<c03fd50e>] io_schedule_timeout+0x5e/0xb0
+> > > [  673.365667]  [<c0170d11>] congestion_wait+0x71/0x90
+> > > [  673.365671]  [<c016b92e>] wb_kupdate+0x9e/0xf0
+> > > [  673.365675]  [<c016beb2>] pdflush+0x102/0x1d0
+> > > [  673.365679]  [<c013fa82>] kthread+0x42/0x70
+> > > [  673.365683]  [<c01050df>] kernel_thread_helper+0x7/0x18
+> > > 
+> > 
+> > That looks more like the inode writeback patches from Wu than the per
+> > bdi dirty stuff. The later typically hangs in balance_dirty_pages().
+> > 
+> > 
+> > 
+> 
+> Yes, you are right,
+> 
+> both revisions 1f7d6668c29b1dfa307a44844f9bb38356fc989b and 3e26c149c358529b1605f8959341d34bc4b880a3 work fine
+> But I didn't pay attention that those are before f4a1c2bce002f683801bcdbbc9fd89804614fb6b.
+> So, back to the drawing board.... :-)
+> 
+> Will test revision 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b, just after writeback patches.
 
-	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+Thank you. I'll try if I can reproduce it locally...
 
-to receive the following updates:
-
- arch/s390/defconfig            |  131 ++++++++-----
- arch/s390/kernel/ipl.c         |    2 +
- arch/s390/kernel/process.c     |   18 ++-
- arch/s390/kernel/smp.c         |   65 ++++++-
- arch/s390/lib/uaccess_pt.c     |   90 +++------
- arch/s390/mm/Makefile          |    2 +-
- arch/s390/mm/init.c            |   32 ++--
- arch/s390/mm/pgtable.c         |   94 +++++++++
- arch/s390/mm/vmem.c            |   53 ++++--
- drivers/s390/char/raw3270.c    |   26 +--
- drivers/s390/char/tape_class.c |   19 +--
- drivers/s390/char/tape_class.h |    4 +-
- drivers/s390/char/vmlogrdr.c   |   15 +-
- drivers/s390/cio/chp.c         |   12 +-
- drivers/s390/cio/css.c         |    9 +
- include/asm-s390/cpu.h         |   25 +++
- include/asm-s390/mmu_context.h |   50 +++---
- include/asm-s390/page.h        |    4 +
- include/asm-s390/pgalloc.h     |  250 ++++++++---------------
- include/asm-s390/pgtable.h     |  429 +++++++++++++++++++++-------------------
- include/asm-s390/processor.h   |   20 +--
- include/asm-s390/tlb.h         |  129 +++++++++++-
- include/asm-s390/tlbflush.h    |  152 ++++++---------
- 23 files changed, 918 insertions(+), 713 deletions(-)
- create mode 100644 arch/s390/mm/pgtable.c
- create mode 100644 include/asm-s390/cpu.h
-
-Cornelia Huck (3):
-      [S390] cio: Use to_channelpath() for device to channel path conversion.
-      [S390] cio: Fix incomplete commit for uevent suppression.
-      [S390] struct class_device -> struct device conversion.
-
-Heiko Carstens (1):
-      [S390] Add per-cpu idle time / idle count sysfs attributes.
-
-Martin Schwidefsky (6):
-      [S390] Update default configuration.
-      [S390] tlb flush fix.
-      [S390] Remove unused user_seg from thread structure.
-      [S390] Introduce follow_table in uaccess_pt.c
-      [S390] Cleanup page table definitions.
-      [S390] 4level-fixup cleanup
-
-Michael Holzheu (1):
-      [S390] kernel: Fix dump on panic for DASDs under LPAR.
-
-
+Fengguang
 
