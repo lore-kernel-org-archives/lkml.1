@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbXJVMwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbXJVMxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbXJVMwh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 08:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXJVMw3
+	id S1754752AbXJVMxq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 08:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbXJVMxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 08:52:29 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:33598 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbXJVMw3 (ORCPT
+	Mon, 22 Oct 2007 08:53:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42040 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbXJVMxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 08:52:29 -0400
-Message-ID: <471C9C70.8000206@keyaccess.nl>
-Date: Mon, 22 Oct 2007 14:49:52 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Roel Kluin <12o3l@tiscali.nl>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] unlock before bug returns
-References: <471C0697.1040906@tiscali.nl> <471C11E5.2000003@tiscali.nl>	 <20071022001045.131ea465@bree.surriel.com>	 <471C930D.4000004@tiscali.nl> <84144f020710220540i7be08eednf40db8367669825f@mail.gmail.com>
-In-Reply-To: <84144f020710220540i7be08eednf40db8367669825f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
-X-AtHome-MailScanner: Found to be clean
+	Mon, 22 Oct 2007 08:53:38 -0400
+Date: Mon, 22 Oct 2007 13:53:34 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Cc: Christoph Hellwig <hch@infradead.org>, Henrik Carlqvist <hc1@poolhem.se>,
+       linux-kernel@vger.kernel.org
+Subject: Re: tristate and bool not enogh for Kconfig anymore
+Message-ID: <20071022125334.GA10563@infradead.org>
+References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se> <20071022101107.GA20690@infradead.org> <471C7C33.4090003@ums.usu.ru> <20071022105727.GA22181@infradead.org> <471C8937.9010007@ums.usu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471C8937.9010007@ums.usu.ru>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/2007 02:40 PM, Pekka Enberg wrote:
+On Mon, Oct 22, 2007 at 05:27:51PM +0600, Alexander E. Patrakov wrote:
+> Yes, there is a call to usermodehelper_init() before the initcalls in 
+> do_basic_setup(), this does mean that firmware can be loaded by means of 
+> the old and obsolete /sbin/hotplug mechanism, but who has /sbin/hotplug now?
 
-> On 10/22/07, Roel Kluin <12o3l@tiscali.nl> wrote:
->> diff --git a/mm/slab.c b/mm/slab.c
->> index cfa6be4..20c58dc 100644
->> --- a/mm/slab.c
->> +++ b/mm/slab.c
->> @@ -1606,8 +1606,10 @@ void __init kmem_cache_init(void)
->>                 struct kmem_cache *cachep;
->>                 mutex_lock(&cache_chain_mutex);
->>                 list_for_each_entry(cachep, &cache_chain, next)
->> -                       if (enable_cpucache(cachep))
->> +                       if (enable_cpucache(cachep)) {
->> +                               mutex_unlock(&cache_chain_mutex);
->>                                 BUG();
->> +                       }
->>                 mutex_unlock(&cache_chain_mutex);
->>         }
-> 
-> NAK. This will cause double-unlock when CONFIG_BUG is disabled. It's
-> incorrect to assume that BUG() will always terminate the current
-> process.
-
-(which by the way also means that the "return;" delete from your original 
-patch changes behaviour for !CONFIG_BUG, and probably not for the better).
-
-Rene.
+I do.  We're not going to cripple the kernel just because you use fucked
+up userspace.
 
