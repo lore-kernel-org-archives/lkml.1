@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbXJVWSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbXJVWTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbXJVWSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 18:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXJVWSK
+	id S1753217AbXJVWTo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 18:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXJVWTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 18:18:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52495 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751028AbXJVWSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 18:18:09 -0400
-Date: Mon, 22 Oct 2007 15:17:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: yanzheng@21cn.com, linux-kernel@vger.kernel.org
-Subject: Re: + fix-vm_can_nonlinear-check-in-sys_remap_file_pages.patch
- added to -mm tree
-Message-Id: <20071022151730.c0e1bd07.akpm@linux-foundation.org>
-In-Reply-To: <20071008184044.GA1875@martell.zuzino.mipt.ru>
-References: <200710081705.l98H5eoj009691@imap1.linux-foundation.org>
-	<20071008184044.GA1875@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Oct 2007 18:19:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34199 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbXJVWTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 18:19:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: Resume problems
+Date: Tue, 23 Oct 2007 00:35:32 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+References: <471CCC98.10101@googlemail.com>
+In-Reply-To: <471CCC98.10101@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710230035.32924.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Oct 2007 22:40:44 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
-
-> On Mon, Oct 08, 2007 at 10:05:40AM -0700, akpm@linux-foundation.org wrote:
-> > --- a/mm/fremap.c~fix-vm_can_nonlinear-check-in-sys_remap_file_pages
-> > +++ a/mm/fremap.c
-> > @@ -160,7 +160,7 @@ asmlinkage long sys_remap_file_pages(uns
-> >  	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
-> >  		goto out;
-> >  
-> > -	if (!vma->vm_flags & VM_CAN_NONLINEAR)
-> > +	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
+On Monday, 22 October 2007 18:15, Gabriel C wrote:
+> Hi all ,
 > 
-> Ick.
+> I'm running current git + aic7xxx suspend patch from  http://bugzilla.kernel.org/show_bug.cgi?id=3062
+> on a Dell Precision WorkStation 530 MT SMP box ( HT enabled ).
 > 
-> [PATCH] typo time?
+> Suspend works fine but on resume I have some problems. 
+> All CPU's but boot CPU won't come back , everything else seems fine.
 
-I appreciate the patch, but that changelog is just stupid.  Effectively
-what it says is "Andrew, you get to type one up".  I'd prefer not to,
-please.
+Can you please try to disable HT and suspend?
 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
+> ...
 > 
->  drivers/block/paride/pt.c                    |    2 -
->  drivers/block/pktcdvd.c                      |    4 +--
->  drivers/isdn/act2000/module.c                |   22 ++++++++---------
->  drivers/isdn/i4l/isdn_ttyfax.c               |    2 -
->  drivers/isdn/icn/icn.c                       |   22 ++++++++---------
->  drivers/isdn/isdnloop/isdnloop.c             |   16 ++++++------
->  drivers/media/video/pvrusb2/pvrusb2-ctrl.c   |    2 -
->  drivers/net/wireless/airo.c                  |    2 -
->  drivers/net/wireless/atmel.c                 |    2 -
->  drivers/net/wireless/prism54/isl_ioctl.c     |    4 +--
->  drivers/net/wireless/zd1211rw/zd_rf_uw2453.c |    2 -
->  drivers/video/i810/i810_main.c               |    2 -
->  drivers/video/sis/sis_main.c                 |    2 -
->  fs/ocfs2/alloc.c                             |    2 -
->  net/ieee80211/ieee80211_wx.c                 |    2 -
->  15 files changed, 44 insertions(+), 44 deletions(-)
+> Oct 22 15:02:28 lara [   49.618795] Enabling non-boot CPUs ...
+> Oct 22 15:02:28 lara [   49.622211] PM: Adding info for No Bus:msr1
+> Oct 22 15:02:28 lara [   49.622259] PM: Adding info for No Bus:cpu1
+> Oct 22 15:02:28 lara [   49.622302] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   49.623536] Booting processor 1/1 eip 3000
+> Oct 22 15:02:28 lara [   54.638093] Not responding.
+> Oct 22 15:02:28 lara [   54.638096] Inquiring remote APIC #1...
+> Oct 22 15:02:28 lara [   54.638099] ... APIC #1 ID: failed
+> Oct 22 15:02:28 lara [   54.638204] ... APIC #1 VERSION: failed
+> Oct 22 15:02:28 lara [   54.638307] ... APIC #1 SPIV: failed
+> Oct 22 15:02:28 lara [   54.638427] skipping cpu1, didn't come online
+> Oct 22 15:02:28 lara [   54.638602] PM: Removing info for No Bus:msr1
+> Oct 22 15:02:28 lara [   54.638643] PM: Removing info for No Bus:cpu1
+> Oct 22 15:02:28 lara [   54.638678] Error taking CPU1 up: -5
+> Oct 22 15:02:28 lara [   54.640908] PM: Adding info for No Bus:msr2
+> Oct 22 15:02:28 lara [   54.640939] PM: Adding info for No Bus:cpu2
+> Oct 22 15:02:28 lara [   54.640976] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   54.641961] Booting processor 2/2 eip 3000
+> Oct 22 15:02:28 lara [   59.656795] Not responding.
+> Oct 22 15:02:28 lara [   59.656799] Inquiring remote APIC #2...
+> Oct 22 15:02:28 lara [   59.656803] ... APIC #2 ID: failed
+> Oct 22 15:02:28 lara [   59.656907] ... APIC #2 VERSION: failed
+> Oct 22 15:02:28 lara [   59.657011] ... APIC #2 SPIV: failed
+> Oct 22 15:02:28 lara [   59.657131] skipping cpu2, didn't come online
+> Oct 22 15:02:28 lara [   59.657300] PM: Removing info for No Bus:msr2
+> Oct 22 15:02:28 lara [   59.657343] PM: Removing info for No Bus:cpu2
+> Oct 22 15:02:28 lara [   59.657379] Error taking CPU2 up: -5
+> Oct 22 15:02:28 lara [   59.659605] PM: Adding info for No Bus:msr3
+> Oct 22 15:02:28 lara [   59.659637] PM: Adding info for No Bus:cpu3
+> Oct 22 15:02:28 lara [   59.659673] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   59.660725] Booting processor 3/3 eip 3000
+> Oct 22 15:02:28 lara [   64.675517] Not responding.
+> Oct 22 15:02:28 lara [   64.675520] Inquiring remote APIC #3...
+> Oct 22 15:02:28 lara [   64.675524] ... APIC #3 ID: failed
+> Oct 22 15:02:28 lara [   64.675628] ... APIC #3 VERSION: failed
+> Oct 22 15:02:28 lara [   64.675731] ... APIC #3 SPIV: failed
+> Oct 22 15:02:28 lara [   64.675859] skipping cpu3, didn't come online
+> Oct 22 15:02:28 lara [   64.676017] PM: Removing info for No Bus:msr3
+> Oct 22 15:02:28 lara [   64.676059] PM: Removing info for No Bus:cpu3
+> Oct 22 15:02:28 lara [   64.676092] Error taking CPU3 up: -5
+> Oct 22 15:02:28 lara [   64.676326] evxfevnt-0079 [00] enable                : System is already in ACPI mode
+> 
+> ...
+> 
+> After I've played with a lot boot options I found out booting with ' acpi=ht ' will make the CPU's work again but now
+> I have a problem on Suspend. Everything seems to just go down disks etc but the box itself is for some reason still on.
+> So I've tested reboot=<> options with no luck.
+> ( after waiting 5 minutes to be sure everything is really off I can just hit power button). On resume now everything is fine.
+> 
+> I'm not really sure what is wrong here acpi/hibernation/cpu-hotplug or a mix of all so I'm CC'ing linux-acpi as well.
+> The only thing I noticed is the 'Breaking affinity for irq XX' on suspend without acpi=ht messages.
+> 
+> I can't even tell whatever other kernel versions are working because aic7xxx driver didn't got suspend support till now 
+> ( or at least never worked here ). I know suspend worked fine on windows with that box.
+> 
+> There is my config and dmesg ( good and bad one ) :
+> 
+> 
+> http://194.231.229.228/suspend/acpi=ht_working_dmesg.txt
+> http://194.231.229.228/suspend/dmesg_broken_cpus_on_resume.txt
+> http://194.231.229.228/suspend/config
 
-seven different maintainers need to review and ack this.  Sigh.
+Well, I think we have a problem with the CPU hotplug.
+
+Can you try to offline-online CPUs (without suspending) and see if that works?
+
+Greetings,
+Rafael
