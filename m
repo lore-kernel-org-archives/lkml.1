@@ -1,111 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbXJVVbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbXJVVea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbXJVVbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXJVVbH
+	id S1752785AbXJVVea (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXJVVeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:31:07 -0400
-Received: from iabervon.org ([66.92.72.58]:43187 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbXJVVbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:31:05 -0400
-Date: Mon, 22 Oct 2007 17:31:04 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linas Vepstas <linas@austin.ibm.com>,
-       Shane Huang <chunhao.huang@hotmail.com>, davem@davemloft.net,
-       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
-       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, Brice Goglin <brice@myri.com>
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-In-Reply-To: <471D0ADC.7000005@garzik.org>
-Message-ID: <Pine.LNX.4.64.0710221700120.32497@iabervon.org>
-References: <BLU112-W5125F6D8BEB3DF6359D53E29F0@phx.gbl>
- <20071019195749.GK29903@austin.ibm.com> <471911BE.2000405@garzik.org>
- <Pine.LNX.4.64.0710221555190.32497@iabervon.org> <471D0ADC.7000005@garzik.org>
+	Mon, 22 Oct 2007 17:34:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:12570 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbXJVVeU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 17:34:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=HEm4SjZ82ZKF0T2jv89jwDOfjkyAqHZxk0P1r8JG8kAVxGY99hwNS8XvjybNCcIKxGf0BVAAXAWki+U/CCvwr21NcuGaTt8U+QHp0Op/nhGZrR1PxJtpGmzz7pmHO6bHxszAsjYKRAkbfQ2DXeqwJl38ou5xvCLkXm6ipV7QsWI=
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
+Date: Mon, 22 Oct 2007 23:52:57 +0200
+User-Agent: KMail/1.9.7
+Cc: Dan Williams <dcbw@redhat.com>, Luis Correia <luis.f.correia@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       mwallis@serialmonkey.com
+References: <20071020184100.GA11640@elf.ucw.cz> <1193067896.30205.9.camel@localhost.localdomain> <20071022211325.GF28190@elf.ucw.cz>
+In-Reply-To: <20071022211325.GF28190@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710222352.57543.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Jeff Garzik wrote:
-
-> Daniel Barkalow wrote:
-> > On Fri, 19 Oct 2007, Jeff Garzik wrote:
-> > 
-> > > Linas Vepstas wrote:
-> > > > On Fri, Oct 19, 2007 at 09:17:23PM +0800, Shane Huang wrote:
-> > > > > Since we have little experience on PCI and MSI here, we had to try to
-> > > > As someone else pointed out, AMD should have *lots* of people with
-> > > > pci and msi experience on the payroll.  (Folks here buy AMD-designed pci
-> > > > chips ...)
-> > > >
-> > > > > ONLY
-> > > > > comment out the pci_intx() call in drivers/ata/ahci.c
-> > > > > My system can boot up too with MSI enabled!
-> > > > >
-> > > > > So does it mean that the root cause is our SB700 SATA controller
-> > > > > has a hardware bug where setting INTX_DISABLE in the PCI COMMAND
-> > > > > register masks MSI interrupts too? 
-> > > > That's what it sounds like, to me.
-> > > >
-> > > > > And what is the software solution or workaround?
-> > > > Not sure. Sounds like the device driver needs a quirk for this part.
-> > >
-> > > Take a look at tg3.c net driver change
-> > > 2fbe43f6f631dd7ce19fb1499d6164a5bdb34568 which is a similar situation.
-> > >
-> > > However, it may turn out that removing the pci_intx() stuff as a general
-> > > rule
-> > > is easier than quirking these devices, if enough of them turn out to have
-> > > this
-> > > hardware bug.
-> > 
-> > At a first approximation, ATI/AMD devices don't send any interrupts if intx
-> > is disabled, nVidia devices send legacy interrupts in addition to MSI ones
-> > if intx isn't disabled, and Intel devices actually work correctly. So we
-> > need at least one kind of device quirk for intx and msi. (And doing it in
-> > the drivers doesn't work, since everybody is making things driven by
-> > snd_hda_intel and would like msi, afaict)
+On Monday 22 October 2007, Pavel Machek wrote:
+> Hi!
 > 
-> Note that INTX_DISABLE is a recent addition to PCI.  Older PCI devices support
-> neither MSI nor INTX-disable, so make sure such devices don't creep into your
-> sample.
+> > > > This device is NOT a Ralink USB wifi adapter!
+> > > > 
+> > > > Get the windows driver in this link and see for yourself.
+> > > > http://www.conitech.it/conitech/ita/risorse.asp?cod=CN402USB
+> > > > (ISSC W89C35 802.11bg WLAN USB Adapters (Native Wifi driver))
+> > > 
+> > > Thanks a lot. With some patches, I got driver from conitech.it to
+> > > compile and partly work on 2.6.23. I can now transmit packets but not
+> > > yet receive them.
+> > > 
+> > > (use Makefile.26 instead of Makefile)
+> > 
+> > I couldn't find any license info immediately visible; are you sure it's
+> > GPL?
+> 
+> Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
 
-I have a device that supports MSI and INTX-disable, and, with MSI on (and 
-delivering interrupts successfully) also sends legacy interrupts (on 
-the IRQ that is no longer associated with the device) unless INTX is 
-disabled. Without the intx_disable(), the kernel disables the IRQ 
-entirely and breaks a random other device in my system.
+That doesn't say much, some manufacturers add that line to their driver
+ just to prevent the module loader complaining about a non-GPL driver...
 
-It's:
+There should be a copyright notice or a license file accompanied with
+the driver that clearly states the license of the driver.
 
-00:07.0 Bridge: nVidia Corporation MCP61 Ethernet (rev a2)
-
-I haven't tried MSI with the other devices in the system, but I expect 
-that this:
-
-00:05.0 Audio device: nVidia Corporation MCP61 High Definition Audio (rev a2)
-
-will have the same issue, and use a multi-vendor driver.
-
-> In general it is documented that INTX_DISABLE should apply only to INTx# so
-> devices that disable MSI based on that bit are out of spec.  But unfortunately
-> that is rather irrelevant, since we see these out-of-spec devices in the field
-> today.
-
-It's likewise documented (although maybe arguable in wording) that the 
-device shouldn't send legacy interrupts if MSI is in use, regardless of 
-INTX_DISABLE, but this also happens in the field.
-
-I think that the current Linux behavior with respect to INTX_DISABLE is 
-simply due to which hardware bug was present in the device whose driver 
-first got Linux support, but one or the other or both needs a quirk, since 
-there's no behavior that works with everything. And it's still impossible 
-to tell which bug is more common, since MSI isn't used most of the time, 
-even if the hardware supports it, so it's pretty arbitrary which way Linux 
-goes in the non-quirk case.
-
-	-Daniel
-*This .sig left intentionally blank*
+Ivo
