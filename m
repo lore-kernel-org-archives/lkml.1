@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbXJVNSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXJVN3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbXJVNSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 09:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXJVNSK
+	id S1753648AbXJVN3Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 09:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbXJVN3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 09:18:10 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:45649 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbXJVNSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 09:18:09 -0400
-Message-ID: <471CA308.80401@ums.usu.ru>
-Date: Mon, 22 Oct 2007 19:18:00 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
+	Mon, 22 Oct 2007 09:29:02 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:34045 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbXJVN3A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 09:29:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=G/6hmIkkK19mrzBnJRo6Bj/fwLSbvsya7uPx3UCqrrddrS4T0Fq7AhClr5AFjNK29iIEYMvNOz2if27Pzx3ti3Qiuzlc3W+0YqWRCg7IWLtFWCf+rEwuUjojfgDDgHMj+0FPeipBWjH6eYyQezJx5bN3grnrHuaggA167M8aGCc=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: 100% iowait on one of cpus in current -git
+Date: Mon, 22 Oct 2007 15:28:20 +0200
+User-Agent: KMail/1.9.6
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221505.35397.maximlevitsky@gmail.com> <393058650.02921@ustc.edu.cn>
+In-Reply-To: <393058650.02921@ustc.edu.cn>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Henrik Carlqvist <hc1@poolhem.se>, linux-kernel@vger.kernel.org
-Subject: Re: tristate and bool not enogh for Kconfig anymore
-References: <200710201257.55616.nick@ukfsn.org> <20071020144238.4f258c8c.hc1@poolhem.se> <20071022101107.GA20690@infradead.org> <471C7C33.4090003@ums.usu.ru> <20071022105727.GA22181@infradead.org> <471C8937.9010007@ums.usu.ru> <20071022125334.GA10563@infradead.org>
-In-Reply-To: <20071022125334.GA10563@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Disposition: inline
+Message-Id: <200710221528.20369.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Oct 22, 2007 at 05:27:51PM +0600, Alexander E. Patrakov wrote:
->   
->> Yes, there is a call to usermodehelper_init() before the initcalls in 
->> do_basic_setup(), this does mean that firmware can be loaded by means of 
->> the old and obsolete /sbin/hotplug mechanism, but who has /sbin/hotplug now?
->>     
->
-> I do.  We're not going to cripple the kernel just because you use <censored> userspace.
->
->   
-AFAIK, there were good reasons (effect similar to fork bomb on a system 
-with large number of, e.g., SCSI disks - Greg KH obviously knows more 
-details) to drop /sbin/hotplug from all distributions in favour of udev. 
-Anyway, the "hotplug" package is no longer supported by its author. So 
-there is no option to use a non-<censored> from your viewpoint but still 
-supported-upstream userspace.
-
-As already mentioned in a different subthread, the solution is to wait 
-for the firmware in the background, so that the built-in case also 
-starts working. Drivers that don't do this (e.g. qla2xxx) must be fixed, 
-but for now, IMHO, it does make sense to mark them as non-working in the 
-non-modular case.
-
--- 
-Alexander E. Patrakov
+On Monday 22 October 2007 15:10:45 Fengguang Wu wrote:
+> On Mon, Oct 22, 2007 at 03:05:35PM +0200, Maxim Levitsky wrote:
+> > Hi,
+> > Thank you very much too, for helping me.
+> 
+> You are welcome :-)
+> 
+> > Applied.
+> > Had to kill klogd, since kernel generates tons of redirtied inode messages.
+> > Size of the kern.log is 863 KB, thus I I don't think it is polite to attachit.
+> > Don't know whenever it is ok to put it on pastebin too.
+> > 
+> > Anyway, it shows lots of redirtied inode... messages,
+> > and while most of them are "at 08:02(sda2)" , my reiserfs root partition, some are
+> > 
+> > "Oct 22 14:50:27 MAIN kernel: [   73.643794] redirtied inode 2582 size 0 at 00:0f(tmpfs), line 300."
+> > 
+> > " line 300" is shown always
+> > 
+> > (I have /var/run, /var/lock, /dev mounted as tmpfs, default kubuntu setup)
+> 
+> Thank you for the testing out.
+> 
+> Hmm, Maybe it's an reiserfs related issue.  Do you have the full log file?
+No, I don't think so, like I said it sometimes shows the same message on tmpfs
+> 
+> Thank you,
+> Fengguang
+> 
+> 
+Best Regards,
+	Maxim Levitsky
