@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXJVS4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXJVS6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbXJVS4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXJVS4g
+	id S1755234AbXJVS6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbXJVS6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:56:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57339 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbXJVS4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:56:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Mon, 22 Oct 2007 14:58:25 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38511 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752789AbXJVS6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:58:24 -0400
+Date: Mon, 22 Oct 2007 20:59:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: appletalk bugs
-References: <471CB159.1070706@googlemail.com>
-Date: Mon, 22 Oct 2007 12:55:36 -0600
-In-Reply-To: <471CB159.1070706@googlemail.com> (Gabriel C.'s message of "Mon,
-	22 Oct 2007 16:19:05 +0200")
-Message-ID: <m18x5vasif.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] 3 kbuild fixes
+Message-ID: <20071022185956.GA15304@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C <nix.or.die@googlemail.com> writes:
+A few kbuild related fixes.
+Please pull from:
 
-> Hi,
->
-> modprobing appletalk on current git gives a warning in dmesg :
->
-> [38506.600269] sysctl table check failed: /net/appletalk .3.7 procname does not
-> match binary path procname
+	ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
 
-Oops.  My apologies it appears I made a mistake when creating my
-table to check up on sysctl values.
 
-This should fix it.
+Full diff below.
+I had originally postponed any pull until after -rc1 but the module_install
+thing will annoy too much.
 
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+	Sam
+ 
 
----
+ Documentation/kbuild/makefiles.txt |   10 +++++-----
+ Makefile                           |    7 ++++---
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-index 3c9ef5a..ed6fe51 100644
---- a/kernel/sysctl_check.c
-+++ b/kernel/sysctl_check.c
-@@ -731,7 +731,7 @@ static struct trans_ctl_table trans_net_table[] = {
- 	{ NET_UNIX,		"unix",		trans_net_unix_table },
- 	{ NET_IPV4,		"ipv4",		trans_net_ipv4_table },
- 	{ NET_IPX,		"ipx",		trans_net_ipx_table },
--	{ NET_ATALK,		"atalk",	trans_net_atalk_table },
-+	{ NET_ATALK,		"appletalk",	trans_net_atalk_table },
- 	{ NET_NETROM,		"netrom",	trans_net_netrom_table },
- 	{ NET_AX25,		"ax25",		trans_net_ax25_table },
- 	{ NET_BRIDGE,		"bridge",	trans_net_bridge_table },
+
+Geert Uytterhoeven (1):
+      kbuild: cc-cross-prefix spelling
+
+Sam Ravnborg (2):
+      kbuild: fix modules_install after a 'make vmlinux'
+      kbuild: allow depmod in cross builds again
+
+
+
+diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+index 6166e2d..7a77533 100644
+--- a/Documentation/kbuild/makefiles.txt
++++ b/Documentation/kbuild/makefiles.txt
+@@ -519,17 +519,17 @@ more details, with real examples.
+ 	to the user why it stops.
+ 
+     cc-cross-prefix
+-	cc-cross-prefix is used to check if there exist a $(CC) in path with
++	cc-cross-prefix is used to check if there exists a $(CC) in path with
+ 	one of the listed prefixes. The first prefix where there exist a
+ 	prefix$(CC) in the PATH is returned - and if no prefix$(CC) is found
+ 	then nothing is returned.
+ 	Additional prefixes are separated by a single space in the
+ 	call of cc-cross-prefix.
+-	This functionality is usefull for architecture Makefile that try
+-	to set CROSS_COMPILE to well know values but may have several
++	This functionality is useful for architecture Makefiles that try
++	to set CROSS_COMPILE to well-known values but may have several
+ 	values to select between.
+-	It is recommended only to try to set CROSS_COMPILE is it is a cross
+-	build (host arch is different from target arch). And is CROSS_COMPILE
++	It is recommended only to try to set CROSS_COMPILE if it is a cross
++	build (host arch is different from target arch). And if CROSS_COMPILE
+ 	is already set then leave it with the old value.
+ 
+ 	Example:
+diff --git a/Makefile b/Makefile
+index 50bb50d..264f37b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1505,15 +1505,16 @@ quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files))
+ # and we build for the host arch
+ quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
+       cmd_depmod = \
+-	if [ -r System.map -a -x $(DEPMOD) -a "$(SUBARCH)" = "$(ARCH)" ]; then \
++	if [ -r System.map -a -x $(DEPMOD) ]; then                              \
+ 		$(DEPMOD) -ae -F System.map                                     \
+ 		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) -r)   \
+ 		$(KERNELRELEASE);                                               \
+ 	fi
+ 
+ # Create temporary dir for module support files
+-cmd_crmodverdir = $(Q)mkdir -p $(MODVERDIR); rm -f $(MODVERDIR)/*
+-
++# clean it up only when building all modules
++cmd_crmodverdir = $(Q)mkdir -p $(MODVERDIR) \
++                  $(if $(KBUILD_MODULES),; rm -f $(MODVERDIR)/*)
+ 
+ a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
+ 	  $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
