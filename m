@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXJVSNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbXJVSN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbXJVSNI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXJVSM0
+	id S1754917AbXJVSN2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXJVSM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:12:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:22170 "EHLO kernel.dk"
+	Mon, 22 Oct 2007 14:12:27 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22173 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbXJVSMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752140AbXJVSMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Oct 2007 14:12:24 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 03/10] [SG] Update crypto/ to sg helpers
-Date: Mon, 22 Oct 2007 20:10:57 +0200
-Message-Id: <1193076664-13652-4-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 05/10] [SG] Update fs/ to use sg helpers
+Date: Mon, 22 Oct 2007 20:10:59 +0200
+Message-Id: <1193076664-13652-6-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.3.GIT
 In-Reply-To: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
 References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
@@ -23,118 +23,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- crypto/digest.c      |    2 +-
- crypto/hmac.c        |    3 ++-
- crypto/scatterwalk.c |    2 +-
- crypto/scatterwalk.h |    6 +++---
- crypto/tcrypt.c      |    4 ++--
- crypto/xcbc.c        |    2 +-
- 6 files changed, 10 insertions(+), 9 deletions(-)
+ fs/ecryptfs/crypto.c   |   16 +++++++++++-----
+ fs/ecryptfs/keystore.c |    3 +++
+ fs/nfsd/nfs4recover.c  |    8 +++-----
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/crypto/digest.c b/crypto/digest.c
-index e56de67..8871dec 100644
---- a/crypto/digest.c
-+++ b/crypto/digest.c
-@@ -41,7 +41,7 @@ static int update2(struct hash_desc *desc,
- 		return 0;
+diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
+index 1ae90ef..0a9882e 100644
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -283,7 +283,7 @@ int virt_to_scatterlist(const void *addr, int size, struct scatterlist *sg,
+ 		pg = virt_to_page(addr);
+ 		offset = offset_in_page(addr);
+ 		if (sg) {
+-			sg[i].page = pg;
++			sg_set_page(&sg[i], pg);
+ 			sg[i].offset = offset;
+ 		}
+ 		remainder_of_page = PAGE_CACHE_SIZE - offset;
+@@ -713,10 +713,13 @@ ecryptfs_encrypt_page_offset(struct ecryptfs_crypt_stat *crypt_stat,
+ {
+ 	struct scatterlist src_sg, dst_sg;
  
- 	for (;;) {
--		struct page *pg = sg->page;
-+		struct page *pg = sg_page(sg);
- 		unsigned int offset = sg->offset;
- 		unsigned int l = sg->length;
- 
-diff --git a/crypto/hmac.c b/crypto/hmac.c
-index 8802fb6..e4eb6ac 100644
---- a/crypto/hmac.c
-+++ b/crypto/hmac.c
-@@ -159,7 +159,8 @@ static int hmac_digest(struct hash_desc *pdesc, struct scatterlist *sg,
- 	desc.flags = pdesc->flags & CRYPTO_TFM_REQ_MAY_SLEEP;
- 
- 	sg_set_buf(sg1, ipad, bs);
--	sg1[1].page = (void *)sg;
+-	src_sg.page = src_page;
++	sg_init_table(&src_sg, 1);
++	sg_init_table(&dst_sg, 1);
 +
-+	sg_set_page(&sg[1], (void *) sg);
- 	sg1[1].length = 0;
- 	sg_set_buf(sg2, opad, bs + ds);
- 
-diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
-index d6852c3..b9bbda0 100644
---- a/crypto/scatterwalk.c
-+++ b/crypto/scatterwalk.c
-@@ -54,7 +54,7 @@ static void scatterwalk_pagedone(struct scatter_walk *walk, int out,
- 	if (out) {
- 		struct page *page;
- 
--		page = walk->sg->page + ((walk->offset - 1) >> PAGE_SHIFT);
-+		page = sg_page(walk->sg) + ((walk->offset - 1) >> PAGE_SHIFT);
- 		flush_dcache_page(page);
- 	}
- 
-diff --git a/crypto/scatterwalk.h b/crypto/scatterwalk.h
-index 9c73e37..87ed681 100644
---- a/crypto/scatterwalk.h
-+++ b/crypto/scatterwalk.h
-@@ -22,13 +22,13 @@
- 
- static inline struct scatterlist *scatterwalk_sg_next(struct scatterlist *sg)
++	sg_set_page(&src_sg, src_page);
+ 	src_sg.offset = src_offset;
+ 	src_sg.length = size;
+-	dst_sg.page = dst_page;
++	sg_set_page(&dst_sg, dst_page);
+ 	dst_sg.offset = dst_offset;
+ 	dst_sg.length = size;
+ 	return encrypt_scatterlist(crypt_stat, &dst_sg, &src_sg, size, iv);
+@@ -742,10 +745,13 @@ ecryptfs_decrypt_page_offset(struct ecryptfs_crypt_stat *crypt_stat,
  {
--	return (++sg)->length ? sg : (void *)sg->page;
-+	return (++sg)->length ? sg : (void *) sg_page(sg);
- }
+ 	struct scatterlist src_sg, dst_sg;
  
- static inline unsigned long scatterwalk_samebuf(struct scatter_walk *walk_in,
- 						struct scatter_walk *walk_out)
+-	src_sg.page = src_page;
++	sg_init_table(&src_sg, 1);
++	sg_init_table(&dst_sg, 1);
++
++	sg_set_page(&src_sg, src_page);
+ 	src_sg.offset = src_offset;
+ 	src_sg.length = size;
+-	dst_sg.page = dst_page;
++	sg_set_page(&dst_sg, dst_page);
+ 	dst_sg.offset = dst_offset;
+ 	dst_sg.length = size;
+ 	return decrypt_scatterlist(crypt_stat, &dst_sg, &src_sg, size, iv);
+diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
+index 89d9710..263fed8 100644
+--- a/fs/ecryptfs/keystore.c
++++ b/fs/ecryptfs/keystore.c
+@@ -1040,6 +1040,9 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+ 	};
+ 	int rc = 0;
+ 
++	sg_init_table(&dst_sg, 1);
++	sg_init_table(&src_sg, 1);
++
+ 	if (unlikely(ecryptfs_verbosity > 0)) {
+ 		ecryptfs_printk(
+ 			KERN_DEBUG, "Session key encryption key (size [%d]):\n",
+diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+index ebd03cc..6f03918 100644
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -88,7 +88,7 @@ nfs4_make_rec_clidname(char *dname, struct xdr_netobj *clname)
  {
--	return !(((walk_in->sg->page - walk_out->sg->page) << PAGE_SHIFT) +
-+	return !(((sg_page(walk_in->sg) - sg_page(walk_out->sg)) << PAGE_SHIFT) +
- 		 (int)(walk_in->offset - walk_out->offset));
- }
+ 	struct xdr_netobj cksum;
+ 	struct hash_desc desc;
+-	struct scatterlist sg[1];
++	struct scatterlist sg;
+ 	__be32 status = nfserr_resource;
  
-@@ -60,7 +60,7 @@ static inline unsigned int scatterwalk_aligned(struct scatter_walk *walk,
+ 	dprintk("NFSD: nfs4_make_rec_clidname for %.*s\n",
+@@ -102,11 +102,9 @@ nfs4_make_rec_clidname(char *dname, struct xdr_netobj *clname)
+ 	if (cksum.data == NULL)
+  		goto out;
  
- static inline struct page *scatterwalk_page(struct scatter_walk *walk)
- {
--	return walk->sg->page + (walk->offset >> PAGE_SHIFT);
-+	return sg_page(walk->sg) + (walk->offset >> PAGE_SHIFT);
- }
+-	sg[0].page = virt_to_page(clname->data);
+-	sg[0].offset = offset_in_page(clname->data);
+-	sg[0].length = clname->len;
++	sg_init_one(&sg, clname->data, clname->len);
  
- static inline void scatterwalk_unmap(void *vaddr, int out)
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index 18d489c..d741c63 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -317,7 +317,7 @@ static void test_cipher(char *algo, int enc,
- 				goto out;
- 			}
+-	if (crypto_hash_digest(&desc, sg, sg->length, cksum.data))
++	if (crypto_hash_digest(&desc, &sg, sg.length, cksum.data))
+ 		goto out;
  
--			q = kmap(sg[0].page) + sg[0].offset;
-+			q = kmap(sg_page(&sg[0])) + sg[0].offset;
- 			hexdump(q, cipher_tv[i].rlen);
- 
- 			printk("%s\n",
-@@ -390,7 +390,7 @@ static void test_cipher(char *algo, int enc,
- 			temp = 0;
- 			for (k = 0; k < cipher_tv[i].np; k++) {
- 				printk("page %u\n", k);
--				q = kmap(sg[k].page) + sg[k].offset;
-+				q = kmap(sg_page(&sg[k])) + sg[k].offset;
- 				hexdump(q, cipher_tv[i].tap[k]);
- 				printk("%s\n",
- 					memcmp(q, cipher_tv[i].result + temp,
-diff --git a/crypto/xcbc.c b/crypto/xcbc.c
-index 9f502b8..ac68f3b 100644
---- a/crypto/xcbc.c
-+++ b/crypto/xcbc.c
-@@ -120,7 +120,7 @@ static int crypto_xcbc_digest_update2(struct hash_desc *pdesc,
- 
- 	do {
- 
--		struct page *pg = sg[i].page;
-+		struct page *pg = sg_page(&sg[i]);
- 		unsigned int offset = sg[i].offset;
- 		unsigned int slen = sg[i].length;
- 
+ 	md5_to_hex(dname, cksum.data);
 -- 
 1.5.3.GIT
 
