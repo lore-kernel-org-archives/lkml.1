@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbXJVSwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbXJVSyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbXJVSwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 14:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbXJVSwF
+	id S1754796AbXJVSyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 14:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXJVSyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 14:52:05 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:60722 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbXJVSwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 14:52:05 -0400
-Message-ID: <471CF150.9090707@tiscali.nl>
-Date: Mon, 22 Oct 2007 20:52:00 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Rik van Riel <riel@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] return hidden bug
-References: <471BF741.2020501@tiscali.nl>	 <20071021214209.1a7567d7@bree.surriel.com>	 <2c0942db0710220942he5e9199i2e327df3c5676a6a@mail.gmail.com>	 <471CE453.5050208@tiscali.nl> <2c0942db0710221112g7c7d99caj7feb0c2ac5de17e7@mail.gmail.com>
-In-Reply-To: <2c0942db0710221112g7c7d99caj7feb0c2ac5de17e7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 22 Oct 2007 14:54:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42411 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752580AbXJVSyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 14:54:13 -0400
+Date: Mon, 22 Oct 2007 14:53:21 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, mingo@elte.hu, jdike@addtoit.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+Message-ID: <20071022145321.195d929b@bree.surriel.com>
+In-Reply-To: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
+On Mon, 22 Oct 2007 19:29:07 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
->>> I'm sorry, perhaps I poured myself a cup of stupid this morning, but
->>> isn't the above patch effectively introducing a BUG where none could
->>> be reached before? In other words, for the patch to have zero
->>> behavioral change, wouldn't it have to remove the BUG() altogether?
->> True, but obviously not intended. I think the intention was to expose this bug.
+> I'm getting a process stuck in pthread_rwlock_wrlock(), even though it
+> looks like the lock is not held by anybody.
 > 
-> Arguing intentions is very dangerous. I've written code like that
-> where the intention is to make it simple to turn a printk into a full
-> bug and back and forth during development. At the end of the day, the
-> fact remains that you're changing behavior.
+> I think the last -mm was OK.  Any ideas?
 > 
-> Let me turn this around. Do you have an alpha and have you tried out
-> your patch? If not, then I'd suggest turning it into a WARN_ON(1)
-> instead, as in this specific case you're risking turning what was a
-> working system into one that doesn't.
+> If not, I'll go searching for the offending patch.
 
-No, I haven't and, I will change it, but it's included with my other
-changes. see the reply that I'll write shortly for.
-[PATCH retry] return hidden bug and unlock bugs.
+I wonder if that's the same bug that's breaking autofs for me.
 
-Roel
+Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent cache
+rwlock lock failed
+Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error: 11 at
+65 in cache.c
 
+I'm bisecting 2.6.23-mm1 today to find the problem patch, with
+some luck I'll have it this afternoon.
 
+With the series applied up to whitespace-fixes-task-exit-handling.patch
+things work.
+
+It breaks before kswapd-should-only-wait-on-io-if-there-is-io.patch
+
+That leaves only about 60-80 patches to look at :)
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
