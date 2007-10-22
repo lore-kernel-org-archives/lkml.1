@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXJVFOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbXJVFVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbXJVFOr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 01:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJVFOk
+	id S1754344AbXJVFVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 01:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXJVFVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 01:14:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:54866 "EHLO
+	Mon, 22 Oct 2007 01:21:13 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:61011 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbXJVFOj convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751802AbXJVFVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 01:14:39 -0400
+	Mon, 22 Oct 2007 01:21:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=MkEz+CqoII8IvxxOwmv23mUtrDVg92qoa9uej52w6I95qBre9zXN18400gQ1CH3RJ47IWo9C7d4GeYmAsXI5XhrSLrINNDP2gPMuNflkqq1aZA1CjfZIGijHIt4HwxZxOHXQOgqSu2AFCio89l3pfhuU7uxcf7kdT4OF3dFR3rk=
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=kJPlHiZO+VZ6JdPDdDyPHaAgu5ELGBWHvA8TC4m4QrabSI64fnYRPD/BBeL5/jL4w9qjmWFoZEGMV6nwzgH4UELzrWbuNWgwm1DFe/xmPtnVZ9+L2pttL2Nbh/AcajpizlXkRfdmpwmDthfaAmogiPxP7T+S+Cqijo263STRukM=
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for 2.6.24-rc0 (part 2)
-Date: Mon, 22 Oct 2007 01:14:32 -0400
+To: Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH 1/1] INPUT/BF54x-KEYPAD driver:  Remove useless line -errno returned by irq_request
+Date: Mon, 22 Oct 2007 01:21:06 -0400
 User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Andrey Panin <pazke@donpac.ru>,
+       Michael Hennerich <michael.hennerich@analog.com>
+References: <1192687055-11935-1-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1192687055-11935-1-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710220114.32474.dmitry.torokhov@gmail.com>
+Message-Id: <200710220121.07148.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thursday 18 October 2007, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+> 
+> Cc: Andrey Panin <pazke@donpac.ru>
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 
-Please pull from:
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
-
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Anton Ekblad (1):
-      Input: appletouch - apply idle reset logic to all touchpads
-
-Jerrold Jones (1):
-      Input: usbtouchscreen - add support for GoTop tablet devices
-
-Michael Hennerich (1):
-      Input: bf54x-keys - return real error when request_irq() fails
-
-Márton Németh (1):
-      Input: i8042 - export i8042_command()
-
-Diffstat:
---------
-
- drivers/input/keyboard/bf54x-keys.c        |    1 -
- drivers/input/mouse/appletouch.c           |   25 ++++++++-----------
- drivers/input/serio/i8042.c                |    4 ++-
- drivers/input/serio/i8042.h                |   22 -----------------
- drivers/input/touchscreen/Kconfig          |    6 ++++
- drivers/input/touchscreen/usbtouchscreen.c |   36 ++++++++++++++++++++++++++-
- include/linux/i8042.h                      |   35 +++++++++++++++++++++++++++
- 7 files changed, 89 insertions(+), 40 deletions(-)
- create mode 100644 include/linux/i8042.h
+Applied, thank you Michael, Bryan.
 
 -- 
 Dmitry
