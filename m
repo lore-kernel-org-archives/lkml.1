@@ -1,59 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXJVVfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXJVViz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbXJVVfe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 17:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbXJVVf0
+	id S1752860AbXJVViz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 17:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbXJVViq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 17:35:26 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:50658 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbXJVVfZ convert rfc822-to-8bit (ORCPT
+	Mon, 22 Oct 2007 17:38:46 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37475 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbXJVVip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 17:35:25 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
-Date: Mon, 22 Oct 2007 23:34:45 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, matthew@wil.cx,
-       ralf@linux-mips.org, adobriyan@gmail.com, viro@ftp.linux.org.uk,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <alpine.LFD.0.999.0710221254550.30120@woody.linux-foundation.org> <20071022130223.f7d75c31.akpm@linux-foundation.org>
-In-Reply-To: <20071022130223.f7d75c31.akpm@linux-foundation.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710222334.45667.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX194l6MFv7FjTmjCsUnHHVmg8AiV8VO8wqffgO/
- YL1PKk/s50OLWSxZ5Zox5+DS43VcKdyJ6C6c2vk4ifmJkm1hLO
- lOMJ1AfYH37oJA2JX+6iQ==
+	Mon, 22 Oct 2007 17:38:45 -0400
+Date: Mon, 22 Oct 2007 17:38:12 -0400
+Message-Id: <200710222138.l9MLcChn003084@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ryan Finnie <ryan@finnie.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-reply-to: Your message of "Mon, 22 Oct 2007 20:42:20 BST."
+             <Pine.LNX.4.64.0710222019020.23513@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 October 2007, Andrew Morton wrote:
-> It's almost always a bug to do spin_lock_irq() when local interrupts are
-> disabled.  However iirc when we've tried to add runtime debugging to catch
-> that, it triggered false-positives which made the idea unworkable.  I forget
-> where.
+In message <Pine.LNX.4.64.0710222019020.23513@blonde.wat.veritas.com>, Hugh Dickins writes:
+> Sorry for my delay, here are a few replies.
+> 
 
-I tried this as well a few years ago, and I think I hit a few places in
-the early initialization, but nothing unfixable.
+> > In unionfs_writepage() I tried to emulate as best possible what the lower
+> > f/s will have returned to the VFS.  Since tmpfs's ->writepage can return
+> > AOP_WRITEPAGE_ACTIVATE and re-mark its page as dirty, I did the same in
+> > unionfs: mark again my page as dirty, and return AOP_WRITEPAGE_ACTIVATE.
+> 
+> I think that's inappropriate.  Why should unionfs_writepage re-mark its
+> page as dirty when the lower level does so?  Unionfs has successfully
+> done its write to the lower level, what the lower level then gets up to
+> (writing then or not) is its own business: needn't be propagated upwards.
 
-> However what we could do is to add a new
-> spin_lock_irq_tell_me_if_i_goofed() which would perform that runtime check. 
+What's the precise semantics of AOP_WRITEPAGE_ACTIVATE?  Is it considered an
+error or not?  If it's an error, then I usually feel that it's important for
+a stacked f/s to return that error indication upwards.
 
-How about the opposite? We could have a raw_spin_lock_irq() in places where
-there are valid uses of spin_lock_irq() with irqs disabled and the same
-for spin_unlock_irq with interrupts already enabled.
+The unionfs page and the lower page are somewhat tied together, at least
+logically.  For unionfs's page to be considered to have been written
+successfully, the lower page has to be written successfully.  So again, if
+the lower f/s returns AOP_WRITEPAGE_ACTIVATE, should I consider my unionfs
+page to have been written successfully or not?  If I don't return
+AOP_WRITEPAGE_ACTIVATE up, can there be any chance that some vital data may
+never get flushed out?
 
-I can try to come up with a new implementation, including some rate-limiting,
-which I think my first attempt was missing.
+Anyway, now that unionfs has ->writepages that won't bother calling ->write
+for file systems with BDI_CAP_NO_WRITEBACK, the issue of
+AOP_WRITEPAGE_ACTIVATE in ->writepage may be less important.
 
-	Arnd <><
+> unionfs_writepage also sets AOP_WRITEPAGE_ACTIVATE when it cannot
+> find_lock_page: that case may be appropriate.  Though I don't really
+> understand it: seems dangerous to be relying upon the lower level page
+> just happening to be there already.  Isn't memory pressure then likely
+> to clog up with lots of upper level dirty pages which cannot get
+> written out to the lower level?
+
+Based on vfs.txt (which perhaps should be revised :-), I was trying to do
+the best I can to ensure that no data is lost if the current page cannot be
+written out to the lower f/s.
+
+I used to do grab_cache_page() before, but that caused problems: writepage
+is not the right place to _increase_ memory pressure by allocating a new
+page...
+
+One solution I thought of is do what ecryptfs does: keep an open struct file
+in my inode and call vfs_write(), but I don't see that as a significantly
+cleaner/better solution.  (BTW, ecrypfts kinda had to go for vfs_write b/c
+it changes the data size and content of what it writes below; unionfs is
+simpler in that manner b/c it needs to write the same data to the lower file
+at the same offset.)
+
+Another idea we've experimented with before is "page pointer flipping."  In
+writepage, we temporarily set the page->mapping->host to the lower_inode;
+then we call the lower writepage with OUR page; then fix back the
+page->mapping->host to the upper inode.  This had two benefits: first we can
+guarantee that we always have a page to write below, and second we don't
+need to keep both upper and lower pages (reduces memory pressure).  Before
+we did this page pointer flipping, we verified that the page is locked so no
+other user could be written the page->mapping->host in this transient state,
+and we ensured that no lower f/s was somehow caching the temporarily changed
+value of page->mapping->host for later use.  But, mucking with the pointers
+in this manner is kinda ugly, to say the least.  Still, I'd love to find a
+clean and simple way that two layers can share the same struct page and
+cleanly pass the upper page to a lower f/s.
+
+If you've got suggestions how I can handle unionfs_write more cleanly, or
+comments on the above possibilities, I'd love to hear them.
+
+> > Should I be doing something different when unionfs stacks on top of tmpfs?
+> 
+> I think not.
+> 
+> > (BTW, this is probably also relevant to ecryptfs.)
+> 
+> You're both agreed on that, but I don't see how: ecryptfs writes the
+> lower level via vfs_write, it's not using the lower level's writepage,
+> is it?
+
+Yup.  ecryptfs no longer does that: it recently changed things and now it
+stores and open struct file in its inode, so it can always pass the file to
+vfs_write.  This nicely avoids calling the lower writepage, but one has to
+keep an open file for every inode.  Neither the solutions employed currently
+by unionfs and ecryptfs seem really satisfactory (clean and efficient).
+
+> Hugh
+
+Thanks,
+Erez.
