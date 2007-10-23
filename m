@@ -1,140 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbXJWMJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbXJWMJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbXJWMJc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 08:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbXJWMJJ
+	id S1752138AbXJWMJp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 08:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbXJWMJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 08:09:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47693 "EHLO mx1.redhat.com"
+	Tue, 23 Oct 2007 08:09:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47691 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbXJWMJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751684AbXJWMJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Oct 2007 08:09:07 -0400
-Message-Id: <20071023120745.122724000@chello.nl>
+Message-Id: <20071023120745.616140000@chello.nl>
 References: <20071023120357.782284000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 23 Oct 2007 14:04:00 +0200
+Date: Tue, 23 Oct 2007 14:04:02 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC/PATCH 3/5] rt: plist_head_splice
-Content-Disposition: inline; filename=rt-plist-mods.patch
+Subject: [RFC/PATCH 5/5] rt: PI-workqueue: fix barriers
+Content-Disposition: inline; filename=rt-workqueue-barrier.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-merge-sort two plists together
+The plist change to the workqueues left the barrier functionality broken.
+
+The barrier is used for two things:
+ - wait_on_work(), and
+ - flush_cpu_workqueue().
+
+wait_on_work() - uses the barrier to wait on the completion of the currently
+worklet. This was done by inserting a completion barrier at the very head of
+the worklist. With plist this would be the head of the highest prio.
+
+In order to do that, we extend the priority range to exceed the normal range
+and enqueue it higher than anything else. Another noteworthy point is that
+this high prio worklet must not boost the prio further than the waiting task's
+prio, even though we enqueue it at prio 100.
+
+flush_cpu_workqueue() - is a full ordering barrier, although as the name
+suggests usually used to wait for the worklist to drain. We'll support the
+full ordering semantics currently present. This means that:
+
+  W10, W22, W65, B, W80, B, W99
+
+[ where Wn is a worklet at prio n, and B a barrier ]
+
+would most likely execute in the following order:
+
+  W10@99, W65@99, W22@99, W80@99, W99
+
+[ Wn@m is Wn executed at prio m ]
+[ W10 would be first because it can start executing while the others 
+  are being added ]
+
+Whereas without the barriers it would be:
+
+  W10@99, W99, W80, W65, W22
+
+The prio ordering of the plist makes it hard to impose an extra order on top.
+The solution used is to nest plist structures. The example will look like:
+
+  W10, B(B(W65, W22), W80), W99
+
+That is, the barrier will splice the worklist into itself, and enqueue itself
+as the next item to run (very first item, highest prio). The barrier will then
+run its own plist to completion before 'popping' back to the regular worklist.
+
+To avoid callstack nesting, run_workqueue is taught about this barrier stack.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/plist.h |    2 +
- lib/plist.c           |   68 ++++++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 68 insertions(+), 2 deletions(-)
+ kernel/workqueue.c |  111 +++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 95 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/include/linux/plist.h
+Index: linux-2.6/kernel/workqueue.c
 ===================================================================
---- linux-2.6.orig/include/linux/plist.h
-+++ linux-2.6/include/linux/plist.h
-@@ -148,6 +148,8 @@ static inline void plist_node_init(struc
- extern void plist_add(struct plist_node *node, struct plist_head *head);
- extern void plist_del(struct plist_node *node, struct plist_head *head);
+--- linux-2.6.orig/kernel/workqueue.c
++++ linux-2.6/kernel/workqueue.c
+@@ -36,6 +36,8 @@
  
-+extern void plist_head_splice(struct plist_head *src, struct plist_head *dst);
-+
- /**
-  * plist_for_each - iterate over the plist
-  * @pos:	the type * to use as a loop counter
-Index: linux-2.6/lib/plist.c
-===================================================================
---- linux-2.6.orig/lib/plist.c
-+++ linux-2.6/lib/plist.c
-@@ -66,6 +66,30 @@ static void plist_check_head(struct plis
- # define plist_check_head(h)	do { } while (0)
- #endif
+ #include <asm/uaccess.h>
  
-+static inline struct plist_node *prev_node(struct plist_node *iter)
-+{
-+	return list_entry(iter->plist.node_list.prev, struct plist_node,
-+			plist.node_list);
-+}
++struct wq_full_barrier;
 +
-+static inline struct plist_node *next_node(struct plist_node *iter)
-+{
-+	return list_entry(iter->plist.node_list.next, struct plist_node,
-+			plist.node_list);
-+}
-+
-+static inline struct plist_node *prev_prio(struct plist_node *iter)
-+{
-+	return list_entry(iter->plist.prio_list.prev, struct plist_node,
-+			plist.prio_list);
-+}
-+
-+static inline struct plist_node *next_prio(struct plist_node *iter)
-+{
-+	return list_entry(iter->plist.prio_list.next, struct plist_node,
-+			plist.prio_list);
-+}
-+
- /**
-  * plist_add - add @node to @head
-  *
-@@ -83,8 +107,7 @@ void plist_add(struct plist_node *node, 
- 		if (node->prio < iter->prio)
- 			goto lt_prio;
- 		else if (node->prio == iter->prio) {
--			iter = list_entry(iter->plist.prio_list.next,
--					struct plist_node, plist.prio_list);
-+			iter = next_prio(iter);
- 			goto eq_prio;
- 		}
- 	}
-@@ -118,3 +141,44 @@ void plist_del(struct plist_node *node, 
+ /*
+  * The per-CPU workqueue (if single thread, we always use the first
+  * possible cpu).
+@@ -52,6 +54,8 @@ struct cpu_workqueue_struct {
+ 	struct task_struct *thread;
  
- 	plist_check_head(head);
+ 	int run_depth;		/* Detect run_workqueue() recursion depth */
++
++	struct wq_full_barrier *barrier;
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -125,10 +129,8 @@ struct cpu_workqueue_struct *get_wq_data
  }
+ 
+ static void insert_work(struct cpu_workqueue_struct *cwq,
+-				struct work_struct *work, int tail)
++		struct work_struct *work, int prio, int boost_prio)
+ {
+-	int prio = current->normal_prio;
+-
+ 	set_wq_data(work, cwq);
+ 	/*
+ 	 * Ensure that we get the right work->data if we see the
+@@ -138,8 +140,8 @@ static void insert_work(struct cpu_workq
+ 	plist_node_init(&work->entry, prio);
+ 	plist_add(&work->entry, &cwq->worklist);
+ 
+-	if (prio < cwq->thread->prio)
+-		task_setprio(cwq->thread, prio);
++	if (boost_prio < cwq->thread->prio)
++		task_setprio(cwq->thread, boost_prio);
+ 	wake_up(&cwq->more_work);
+ }
+ 
+@@ -150,7 +152,7 @@ static void __queue_work(struct cpu_work
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cwq->lock, flags);
+-	insert_work(cwq, work, 1);
++	insert_work(cwq, work, current->normal_prio, current->normal_prio);
+ 	spin_unlock_irqrestore(&cwq->lock, flags);
+ }
+ 
+@@ -257,8 +259,20 @@ static void leak_check(void *func)
+ 	dump_stack();
+ }
+ 
++struct wq_full_barrier {
++	struct work_struct		work;
++	struct plist_head		worklist;
++	struct wq_full_barrier 		*prev_barrier;
++	int				prev_prio;
++	int				waiter_prio;
++	struct cpu_workqueue_struct 	*cwq;
++	struct completion		done;
++};
 +
-+void plist_head_splice(struct plist_head *src, struct plist_head *dst)
-+{
-+	struct plist_node *src_iter_first, *src_iter_last, *dst_iter;
-+	struct plist_node *tail = container_of(dst, struct plist_node, plist);
+ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ {
++	struct plist_head *worklist = &cwq->worklist;
 +
-+	dst_iter = next_prio(tail);
+ 	spin_lock_irq(&cwq->lock);
+ 	cwq->run_depth++;
+ 	if (cwq->run_depth > 3) {
+@@ -267,16 +281,27 @@ static void run_workqueue(struct cpu_wor
+ 			__FUNCTION__, cwq->run_depth);
+ 		dump_stack();
+ 	}
+-	while (!plist_head_empty(&cwq->worklist)) {
+-		struct work_struct *work = plist_first_entry(&cwq->worklist,
 +
-+	while (!plist_head_empty(src) && dst_iter != tail) {
-+		src_iter_first = plist_first(src);
-+
-+		src_iter_last = next_prio(src_iter_first);
-+		src_iter_last = prev_node(src_iter_last);
-+
-+		WARN_ON(src_iter_first->prio != src_iter_last->prio);
-+		WARN_ON(list_empty(&src_iter_first->plist.prio_list));
-+
-+		while (src_iter_first->prio > dst_iter->prio) {
-+			dst_iter = next_prio(dst_iter);
-+			if (dst_iter == tail)
-+				goto tail;
++again:
++	while (!plist_head_empty(worklist)) {
++		int prio;
++		struct work_struct *work = plist_first_entry(worklist,
+ 						struct work_struct, entry);
+ 		work_func_t f = work->func;
+ 
+-		if (likely(cwq->thread->prio != work->entry.prio))
+-			task_setprio(cwq->thread, work->entry.prio);
++		prio = work->entry.prio;
++		if (unlikely(worklist != &cwq->worklist)) {
++			prio = min(prio, cwq->barrier->prev_prio);
++			prio = min(prio, cwq->barrier->waiter_prio);
++			prio = min(prio, plist_first(&cwq->worklist)->prio);
 +		}
++		prio = max(prio, 0);
 +
-+		list_del_init(&src_iter_first->plist.prio_list);
++		if (likely(cwq->thread->prio != prio))
++			task_setprio(cwq->thread, prio);
+ 
+ 		cwq->current_work = work;
+-		plist_del(&work->entry, &cwq->worklist);
++		plist_del(&work->entry, worklist);
+ 		plist_node_init(&work->entry, MAX_PRIO);
+ 		spin_unlock_irq(&cwq->lock);
+ 
+@@ -289,7 +314,27 @@ static void run_workqueue(struct cpu_wor
+ 
+ 		spin_lock_irq(&cwq->lock);
+ 		cwq->current_work = NULL;
 +
-+		if (src_iter_first->prio < dst_iter->prio) {
-+			list_add_tail(&src_iter_first->plist.node_list,
-+					&dst_iter->plist.node_list);
-+		} else if (src_iter_first->prio == dst_iter->prio) {
-+			dst_iter = next_prio(dst_iter);
-+		} else BUG();
-+
-+		list_splice2_tail(&src_iter_first->plist.node_list,
-+			       	  &src_iter_last->plist.node_list,
-+				  &dst_iter->plist.node_list);
++		if (unlikely(cwq->barrier))
++			worklist = &cwq->barrier->worklist;
 +	}
 +
-+tail:
-+	list_splice_tail_init(&src->prio_list, &dst->prio_list);
-+	list_splice_tail_init(&src->node_list, &dst->node_list);
++	if (unlikely(worklist != &cwq->worklist)) {
++		struct wq_full_barrier *barrier = cwq->barrier;
++
++		BUG_ON(!barrier);
++		cwq->barrier = barrier->prev_barrier;
++		complete(&barrier->done);
++
++		if (unlikely(cwq->barrier))
++			worklist = &cwq->barrier->worklist;
++		else
++			worklist = &cwq->worklist;
++
++		if (!plist_head_empty(worklist))
++			goto again;
+ 	}
++
+ 	task_setprio(cwq->thread, current->normal_prio);
+ 	cwq->run_depth--;
+ 	spin_unlock_irq(&cwq->lock);
+@@ -336,14 +381,47 @@ static void wq_barrier_func(struct work_
+ }
+ 
+ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+-					struct wq_barrier *barr, int tail)
++					struct wq_barrier *barr, int prio)
+ {
+ 	INIT_WORK(&barr->work, wq_barrier_func);
+ 	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
+ 
+ 	init_completion(&barr->done);
+ 
+-	insert_work(cwq, &barr->work, tail);
++	insert_work(cwq, &barr->work, prio, current->prio);
 +}
++
++static void wq_full_barrier_func(struct work_struct *work)
++{
++	struct wq_full_barrier *barrier =
++		container_of(work, struct wq_full_barrier, work);
++	struct cpu_workqueue_struct *cwq = barrier->cwq;
++	int prio = MAX_PRIO;
++
++	spin_lock_irq(&cwq->lock);
++	barrier->prev_barrier = cwq->barrier;
++	if (cwq->barrier) {
++		prio = min(prio, cwq->barrier->waiter_prio);
++		prio = min(prio, plist_first(&cwq->barrier->worklist)->prio);
++	}
++	barrier->prev_prio = prio;
++	cwq->barrier = barrier;
++	spin_unlock_irq(&cwq->lock);
++}
++
++static void insert_wq_full_barrier(struct cpu_workqueue_struct *cwq,
++		struct wq_full_barrier *barr)
++{
++	INIT_WORK(&barr->work, wq_full_barrier_func);
++	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
++
++	plist_head_init(&barr->worklist, NULL);
++	plist_head_splice(&cwq->worklist, &barr->worklist);
++	barr->cwq = cwq;
++	init_completion(&barr->done);
++	barr->waiter_prio = current->prio;
++
++	insert_work(cwq, &barr->work, 0, current->prio);
+ }
+ 
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+@@ -358,13 +436,13 @@ static int flush_cpu_workqueue(struct cp
+ 		run_workqueue(cwq);
+ 		active = 1;
+ 	} else {
+-		struct wq_barrier barr;
++		struct wq_full_barrier barr;
+ 
+ 		active = 0;
+ 		spin_lock_irq(&cwq->lock);
+ 		if (!plist_head_empty(&cwq->worklist) ||
+ 			cwq->current_work != NULL) {
+-			insert_wq_barrier(cwq, &barr, 1);
++			insert_wq_full_barrier(cwq, &barr);
+ 			active = 1;
+ 		}
+ 		spin_unlock_irq(&cwq->lock);
+@@ -448,7 +526,7 @@ static void wait_on_cpu_work(struct cpu_
+ 
+ 	spin_lock_irq(&cwq->lock);
+ 	if (unlikely(cwq->current_work == work)) {
+-		insert_wq_barrier(cwq, &barr, 0);
++		insert_wq_barrier(cwq, &barr, -1);
+ 		running = 1;
+ 	}
+ 	spin_unlock_irq(&cwq->lock);
+@@ -759,6 +837,7 @@ init_cpu_workqueue(struct workqueue_stru
+ 	spin_lock_init(&cwq->lock);
+ 	plist_head_init(&cwq->worklist, NULL);
+ 	init_waitqueue_head(&cwq->more_work);
++	cwq->barrier = NULL;
+ 
+ 	return cwq;
+ }
 
 --
 
