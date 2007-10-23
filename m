@@ -1,121 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXJWGDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbXJWGHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbXJWGDa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXJWGDX
+	id S1752727AbXJWGHQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXJWGHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:03:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:36595 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbXJWGDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:03:22 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git pull] lguest: paravirt boot code
-Date: Tue, 23 Oct 2007 16:03:21 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>,
-       virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>
-References: <200710221237.14542.rusty@rustcorp.com.au> <alpine.LFD.0.999.0710221927131.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710221927131.30120@woody.linux-foundation.org>
+	Tue, 23 Oct 2007 02:07:05 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:15041 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbXJWGHC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 02:07:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Chk3y1MZZwvrWqcN6gBLcRBQVM7N0f/fF7risoLFzj74lLnNYWoIzO2mHBLHQRDbL
+	2LJsjx7GL9Oc/c4tvCgQQ==
+Message-ID: <6599ad830710222306m6a3e3f52k4daf501836c05274@mail.gmail.com>
+Date: Mon, 22 Oct 2007 23:06:54 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071023024036.GC3324@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710231603.21620.rusty@rustcorp.com.au>
+References: <471D4523.4040509@google.com>
+	 <20071023024036.GC3324@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 October 2007 12:28:32 Linus Torvalds wrote:
-> On Mon, 22 Oct 2007, Rusty Russell wrote:
-> > 	First attempt at git, so please pull carefully.  I've just put the
-> > three i386 boot changes in the repo for the moment.  If this works I'll
-> > pile on the 44 lguest patches.
+On 10/22/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> On Mon, Oct 22, 2007 at 05:49:39PM -0700, Paul Menage wrote:
+> > +static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
+> > +{
+> > +     struct task_group *tg = cgroup_tg(cgrp);
+> > +     int i;
+> > +     u64 res = 0;
+> > +     for_each_possible_cpu(i) {
+> > +             unsigned long flags;
+> > +             spin_lock_irqsave(&tg->cfs_rq[i]->rq->lock, flags);
 >
-> Well, it looked ok, but I had already merged the same patches through
-> Andrew, so when I pulled, I had no differences.
+> Is the lock absolutely required here?
 
-Well, with that out the way, and some scatterlist fixups, please pull from
+I'm not sure, I was hoping you or Ingo could comment on this. But some
+kind of locking seems to required at least on 32-bit platforms, since
+sum_exec_runtime is a 64-bit number.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-lguest.git
+>
+> Hmm .. I hope the cgroup code prevents a task group from being destroyed while
+> we are still reading a task group's cpu usage. Is that so?
 
-This should be fairly clean: 45 lguest patches including the more generic
-drivers (aimed to be used by KVM as well, and hopefully others) and the start
-of separation of arch-specific from general lguest code.
+Good point - cgroups certainly prevents a cgroup itself from being
+freed while a control file is being read in an RCU section, and
+prevents a task group from being destroyed when that task group has
+been read via a task's cgroups pointer and the reader is still in an
+RCU section, but we need a generic protection for subsystem state
+objects being accessed via control files too.
 
- Documentation/lguest/Makefile         |   26 +-
- Documentation/lguest/lguest.c         | 1629 ++++++++++++++++++---------------
- Documentation/lguest/lguest.txt       |   72 +-
- arch/i386/Kconfig                     |   32 +-
- arch/i386/Makefile                    |    3 +
- arch/x86/kernel/asm-offsets_32.c      |    1 +
- arch/x86/lguest/Kconfig               |   14 +
- arch/x86/lguest/Makefile              |    1 +
- arch/x86/lguest/boot.c                | 1070 ++++++++++++++++++++++
- arch/x86/lguest/i386_head.S           |  115 +++
- arch/x86/xen/Kconfig                  |    5 +-
- drivers/Kconfig                       |    2 +-
- drivers/Makefile                      |    1 +
- drivers/block/Kconfig                 |    6 +
- drivers/block/Makefile                |    2 +-
- drivers/block/lguest_blk.c            |  421 ---------
- drivers/block/virtio_blk.c            |  308 +++++++
- drivers/char/Kconfig                  |    4 +
- drivers/char/Makefile                 |    2 +-
- drivers/char/hvc_lguest.c             |  177 ----
- drivers/char/virtio_console.c         |  225 +++++
- drivers/kvm/Kconfig                   |    4 +
- drivers/lguest/Kconfig                |   13 +-
- drivers/lguest/Makefile               |   10 +-
- drivers/lguest/core.c                 |  568 +-----------
- drivers/lguest/hypercalls.c           |  177 ++---
- drivers/lguest/interrupts_and_traps.c |  125 ++-
- drivers/lguest/io.c                   |  626 -------------
- drivers/lguest/lg.h                   |  189 ++---
- drivers/lguest/lguest.c               | 1108 ----------------------
- drivers/lguest/lguest_asm.S           |   93 --
- drivers/lguest/lguest_bus.c           |  218 -----
- drivers/lguest/lguest_device.c        |  373 ++++++++
- drivers/lguest/lguest_user.c          |  138 +---
- drivers/lguest/page_tables.c          |  250 +++---
- drivers/lguest/segments.c             |   28 +-
- drivers/lguest/switcher.S             |  350 -------
- drivers/lguest/x86/core.c             |  577 ++++++++++++
- drivers/lguest/x86/switcher_32.S      |  351 +++++++
- drivers/net/Kconfig                   |    6 +
- drivers/net/Makefile                  |    2 +-
- drivers/net/lguest_net.c              |  555 -----------
- drivers/net/virtio_net.c              |  435 +++++++++
- drivers/virtio/Kconfig                |    8 +
- drivers/virtio/Makefile               |    2 +
- drivers/virtio/config.c               |   13 +
- drivers/virtio/virtio.c               |  189 ++++
- drivers/virtio/virtio_ring.c          |  313 +++++++
- include/asm-x86/Kbuild                |    3 +
- include/asm-x86/bootparam.h           |  108 ++--
- include/asm-x86/e820.h                |   28 +
- Documentation/lguest/Makefile         |   26 +-
- Documentation/lguest/lguest.c         | 1629 ++++++++++++++++++---------------
- Documentation/lguest/lguest.txt       |   72 +-
- arch/i386/Kconfig                     |   32 +-
- arch/i386/Makefile                    |    3 +
- arch/x86/kernel/asm-offsets_32.c      |    1 +
- arch/x86/lguest/Kconfig               |   14 +
- arch/x86/lguest/Makefile              |    1 +
- arch/x86/lguest/boot.c                | 1070 ++++++++++++++++++++++
- arch/x86/lguest/i386_head.S           |  115 +++
- arch/x86/xen/Kconfig                  |    5 +-
- drivers/Kconfig                       |    2 +-
- drivers/Makefile                      |    1 +
- drivers/block/Kconfig                 |    6 +
- drivers/block/Makefile                |    2 +-
- drivers/block/lguest_blk.c            |  421 ---------
- drivers/block/virtio_blk.c            |  308 +++++++
- drivers/char/Kconfig                  |    4 +
- drivers/char/Makefile                 |    2 +-
- drivers/char/hvc_lguest.c             |  177 ----
- drivers/char/virtio_console.c         |  225 +++++
- drivers/kvm/Kconfig                   |    4 +
- drivers/lguest/Kconfig                |   13 +-
+Using cgroup_mutex is certainly possible for now, although more
+heavy-weight than I'd like long term. Using css_get isn't the right
+approach, I think - we shouldn't be able to cause an rmdir to fail due
+to a concurrent read.
+
+Paul
