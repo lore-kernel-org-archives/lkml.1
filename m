@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbXJWVRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbXJWVUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbXJWVRl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXJWVRe
+	id S1754101AbXJWVUh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXJWVU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:17:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35724
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbXJWVRd (ORCPT
+	Tue, 23 Oct 2007 17:20:27 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:33003 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752304AbXJWVU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:17:33 -0400
-Date: Tue, 23 Oct 2007 14:18:00 -0700 (PDT)
-Message-Id: <20071023.141800.59467535.davem@davemloft.net>
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: IDE crash...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071023105710.GJ5059@kernel.dk>
-References: <20071023.004321.74750417.davem@davemloft.net>
-	<20071023195255S.fujita.tomonori@lab.ntt.co.jp>
-	<20071023105710.GJ5059@kernel.dk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 23 Oct 2007 17:20:26 -0400
+Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <471E6313.1040704@garzik.org>
+References: <1193173128.3434.1.camel@localhost.localdomain>
+	 <471E6313.1040704@garzik.org>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 17:20:23 -0400
+Message-Id: <1193174424.3434.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Date: Tue, 23 Oct 2007 12:57:11 +0200
-
-> On Tue, Oct 23 2007, FUJITA Tomonori wrote:
-> > BTW, we avoid calling sg_init_table() for every I/O request due to Jens'
-> > trick. And Jens will remove the code to clear sg_dma_len/addr in
-> > blk_rq_map_sg(). So sparc64 iommu needs to do that for itself?
+On Tue, 2007-10-23 at 17:09 -0400, Jeff Garzik wrote:
+> James Bottomley wrote:
+> > This should be the final SCSI updates; it's mainly just a few accessor
+> > completion updates and two driver merges (sym2 and qla2xxx) we also
+> > secured DaveM's agreement to remove fcal/fc4, which explains the high
+> > removal line count.
 > > 
-> > http://marc.info/?l=linux-scsi&m=119261920425120&w=2
+> > The patch is available here:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 > 
-> It does - Dave, do you agree with the patch? I think it should be added,
-> so that sparc64 isn't the odd-arch-out in this respect. I've tentatively
-> applied the patch, Davem?
+> I guess I have the go-ahead to merge the end-CDROM-polling async 
+> notification work you've been repeatedly ignoring?
 
-No objections.
+I haven't been ignoring it ... it just needs quite a bit of work; the
+best way to accelerate it seems to be simply to do it (add the
+supported/trigger event bitmasks and expand the infrastructure).  I just
+haven't had the time within the merge window.
+
+James
+
+
