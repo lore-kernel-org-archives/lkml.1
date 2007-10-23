@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbXJWPeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbXJWPf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbXJWPeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXJWPeM
+	id S1753270AbXJWPf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXJWPfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:34:12 -0400
-Received: from smtp114.sbc.mail.re2.yahoo.com ([68.142.229.91]:21149 "HELO
-	smtp114.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752138AbXJWPeM (ORCPT
+	Tue, 23 Oct 2007 11:35:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:34066 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbXJWPfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:34:12 -0400
-X-YMail-OSG: dfJEmf4VM1nSMBdHLXOKXDnoFsm6j3AcbWwRntEOTZosGVAsUgLGE5iRE8QXUhK.JgsPtlCUxVfScAcvGUnx.WnvdpgXDpXboKaTt9QPb7iNKGDWrbrUDghupU.ijctuTdMNQ.GQTum9iQ--
-Date: Tue, 23 Oct 2007 10:34:09 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Giacomo Catenazzi <cate@debian.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: LSM conversion to static interface
-Message-ID: <20071023153409.GA14215@vino.hallyn.com>
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <471D8A4C.3020101@debian.org> <Pine.LNX.4.64.0710231051090.16684@fbirervta.pbzchgretzou.qr> <20071023152005.GA13767@vino.hallyn.com> <Pine.LNX.4.64.0710231725550.16684@fbirervta.pbzchgretzou.qr>
+	Tue, 23 Oct 2007 11:35:50 -0400
+Message-ID: <fa686aa40710230835t5c2a3a37yf70104c7b5042f79@mail.gmail.com>
+Date: Tue, 23 Oct 2007 09:35:49 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: linux-kernel@vger.kernel.org, "Jens Axboe" <axboe@kernel.dk>,
+       linuxppc-dev@ozlabs.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, paulus@samba.org
+Subject: Re: [PATCH] Bugfix to commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+In-Reply-To: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710231725550.16684@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+X-Google-Sender-Auth: 0d64900784ab99df
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Jan Engelhardt (jengelh@computergmbh.de):
-> 
-> On Oct 23 2007 10:20, Serge E. Hallyn wrote:
-> >
-> >Once the per-process capability bounding set is accepted
-> >(http://lkml.org/lkml/2007/10/3/315) you will be able to do something
-> >like:
-> >
-> >	1. Create user 'jdoe' with uid 0
-> 
-> UID 0 is _not_ acceptable for me.
+On 10/23/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
+> dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
+> in include/asm-powerpc/dma-mapping.h
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> Linus, I cannot build an arch/powerpc kernel without this patch.
 
-I'm aware.
+Oops, ignore this patch.  It's doesn't change all the references, it
+uses the wrong method for calculating dma_address and 2 other people
+have already sent the fix for this.
 
-> >	2. write a pam module which, when jdoe logs in, takes
-> >	   CAP_NET_ADMIN out of his capability bounding set
-> >	3. Now jdoe can log in with the kind of capabilities subset
-> >	   you describe.
-> 
-> It is not that easy.
-> CAP_DAC_OVERRIDE is given to the subadmin to bypass the pre-security
-> checks in kernel code, and then the detailed implementation of
-> limitation is done inside multiadm.
+/me puts on a paper bag
+g.
 
-You mean the read/write split?
+>
+> Cheers,
+> g.
+>
+>  include/asm-powerpc/dma-mapping.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+> index 65be95d..fd33ce4 100644
+> --- a/include/asm-powerpc/dma-mapping.h
+> +++ b/include/asm-powerpc/dma-mapping.h
+> @@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+>         BUG_ON(direction == DMA_NONE);
+>
+>         for_each_sg(sgl, sg, nents, i) {
+> -               BUG_ON(!sg->page);
+> +               BUG_ON(!sg_page(sg));
+>                 __dma_sync_page(sg->page, sg->offset, sg->length, direction);
+> -               sg->dma_address = page_to_bus(sg->page) + sg->offset;
+> +               sg->dma_address = sg_phys(sg);
+>         }
+>
+>         return nents;
+>
+>
 
-> This is not just raising or lowering capabilities.
 
-Nope, but it's related, and as I pointed out below it fits in pretty
-nicely.
-
-> >It's not a perfect solution, since it doesn't allow jdoe any way at all
-> >to directly execute a file with more caps (setuid and file capabilities
-> >are subject to the capbound).  So there is certainly still a place for
-> >multiadm.
-> 
-> A normal user can execute suid binaries today, and so can s/he with mtadm.
-> I do not see where that will change - it does not need any caps atm.
-
-And he will still be able to *run* the suid binary, but if cap_bound is
-reduced he won't be able to use capabilities taken out of the bounding
-set, multiadm loaded or not.
-
--serge
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
