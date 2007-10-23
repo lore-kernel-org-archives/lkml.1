@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXJWDmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbXJWDpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbXJWDmL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 23:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXJWDl6
+	id S1753616AbXJWDpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 23:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXJWDpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 23:41:58 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:59330 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbXJWDl5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 23:41:57 -0400
-Date: Mon, 22 Oct 2007 23:41:18 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, miklos@szeredi.hu,
-       linux-kernel@vger.kernel.org, xemul@openvz.org, raven@themaw.net
-Subject: Re: futex strangeness in 2.6.23-mm1/UML
-Message-ID: <20071023034118.GA12504@c2.user-mode-linux.org>
-References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu> <20071022145321.195d929b@bree.surriel.com> <E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu> <20071022172926.03ca122a@bree.surriel.com> <20071022200742.6f3acbb2@bree.surriel.com> <20071022171624.0c00f8da.akpm@linux-foundation.org> <20071022211143.5f69d790@bree.surriel.com> <20071022213812.32bdac03@bree.surriel.com>
+	Mon, 22 Oct 2007 23:45:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52196 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751846AbXJWDpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 23:45:46 -0400
+Date: Mon, 22 Oct 2007 20:45:39 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: vitalivanov@gmail.com
+Cc: w@1wt.eu, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: [2.4 patch] Port of adutux driver from 2.6 kernel to 2.4.
+Message-Id: <20071022204539.d3e1d291.zaitcev@redhat.com>
+In-Reply-To: <1192815634.7965.53.camel@dell1.softservecom.com>
+References: <1192383445.8372.18.camel@dell1.softservecom.com>
+	<20071014182542.GA2832@1wt.eu>
+	<35fbaa3e0710141345w484b941em831282cf0d49b5c@mail.gmail.com>
+	<20071014223921.GA4677@1wt.eu>
+	<1192542889.29039.66.camel@dell1.softservecom.com>
+	<20071016154138.GA23326@1wt.eu>
+	<1192559051.29039.139.camel@dell1.softservecom.com>
+	<1192644776.10761.60.camel@dell1.softservecom.com>
+	<35fbaa3e0710190826uae4e7b7u7d8f3139e1697030@mail.gmail.com>
+	<20071019095313.76990765.zaitcev@redhat.com>
+	<1192815634.7965.53.camel@dell1.softservecom.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022213812.32bdac03@bree.surriel.com>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 09:38:12PM -0400, Rik van Riel wrote:
-> Wrt. the UML failures that Miklos is seeing, I imagine UML needs
-> to do some similar tricks.
+On Fri, 19 Oct 2007 20:40:35 +0300, Vitaliy Ivanov <vitalivanov@gmail.com> wrote:
 
-UML is just an architecture - it has no need of such tricks (although
-it does need to keep track of host pids, but these are in architecture
-data, invisible to the rest of the kernel).
+Hi, Vitaly, I added you on cc: for the 2.6 cleanup. Please double-check
+what I'm doing there and use it for your 2.4 version. I hope my intentions
+get clearer with an example. Now, about the specific question:
 
-				Jeff
+> Static lock minor_table_mutex is used for minor table structure.
+> And dev->sem for dev manipulations and that's why for open_count.
+> If you will simply browse /drivers/usb dir for 2.4 you will see that
+> such approach is widely used there.
+> What's not right?
 
--- 
-Work email - jdike at linux dot intel dot com
+The fundamental reason why you cannot lock a free-able structure with
+an in-structure lock is this. Imagine thread A locks in order to process
+a disconnect. Thread B wants to open and waits for the lock. Notice that
+the struct is not open, so thread A frees it. At this point, thread B
+is using a freed memory.
+
+The solution is to lock the instance struct dev with dev->mtx, except
+for the open count, which is locked by a static lock (I'm ignoring
+interrupts here, which cannot use mutexes).
+
+I'm sorry to say, you're quite right: a number of drivers in 2.4 got
+it wrong, and some (like adutux) carried it through 2.6.23.
+
+-- Pete
