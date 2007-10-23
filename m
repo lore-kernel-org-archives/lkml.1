@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbXJWIEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXJWIEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752238AbXJWIEE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 04:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXJWIDh
+	id S1754048AbXJWIEZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 04:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbXJWIDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 04:03:37 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6453 "EHLO mga01.intel.com"
+	Tue, 23 Oct 2007 04:03:49 -0400
+Received: from mga11.intel.com ([192.55.52.93]:11391 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121AbXJWIDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 04:03:32 -0400
+	id S1753394AbXJWIDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 04:03:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.21,316,1188802800"; 
-   d="scan'208";a="355636214"
-Subject: [PATCH -v7 1/3] x86 boot: setup data
+   d="scan'208";a="355636280"
+Subject: [PATCH -v7 3/3] x86 boot: document for 32 bit boot protocol
 From: "Huang, Ying" <ying.huang@intel.com>
 To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
        "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
@@ -20,385 +20,269 @@ To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 23 Oct 2007 16:06:11 +0800
-Message-Id: <1193126771.23935.79.camel@caritas-dev.intel.com>
+Date: Tue, 23 Oct 2007 16:06:18 +0800
+Message-Id: <1193126778.23935.81.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 23 Oct 2007 08:03:29.0065 (UTC) FILETIME=[324C4990:01C8154B]
+X-OriginalArrivalTime: 23 Oct 2007 08:03:36.0503 (UTC) FILETIME=[36BB3C70:01C8154B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add a field of 64-bit physical pointer to NULL terminated
-single linked list of struct setup_data to real-mode kernel
-header. This is used as a more extensible boot parameters passing
-mechanism.
+This patch defines a 32-bit boot protocol and adds corresponding
+document. It is based on the proposal of Peter Anvin.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
 
- arch/x86/boot/header.S      |    6 +++++-
- arch/x86/kernel/e820_64.c   |    6 +++---
- arch/x86/kernel/head64.c    |   26 ++++++++++++++++++++++++++
- arch/x86/kernel/head_32.S   |   37 ++++++++++++++++++++++++++++++++++++-
- arch/x86/kernel/setup_32.c  |   25 +++++++++++++++++++++++--
- arch/x86/kernel/setup_64.c  |   22 ++++++++++++++++++++--
- arch/x86/mm/discontig_32.c  |    3 ++-
- include/asm-x86/bootparam.h |   12 ++++++++++++
- include/asm-x86/e820_64.h   |    1 +
- include/asm-x86/setup_32.h  |    7 +++++++
- include/asm-x86/setup_64.h  |    2 ++
- 11 files changed, 137 insertions(+), 10 deletions(-)
+ boot.txt      |   76 +++++++++++++++++++++++++++++++++
+ zero-page.txt |  130 +++++++++++++---------------------------------------------
+ 2 files changed, 106 insertions(+), 100 deletions(-)
 
-Index: linux-2.6/include/asm-x86/bootparam.h
+Index: linux-2.6/Documentation/i386/boot.txt
 ===================================================================
---- linux-2.6.orig/include/asm-x86/bootparam.h	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/include/asm-x86/bootparam.h	2007-10-23 10:48:48.000000000 +0800
-@@ -9,6 +9,17 @@
- #include <asm/ist.h>
- #include <video/edid.h>
+--- linux-2.6.orig/Documentation/i386/boot.txt	2007-10-23 13:51:07.000000000 +0800
++++ linux-2.6/Documentation/i386/boot.txt	2007-10-23 14:04:18.000000000 +0800
+@@ -2,7 +2,7 @@
+ 		     ----------------------------
  
-+/* setup data types */
-+#define SETUP_NONE			0
-+
-+/* extensible setup data list node */
-+struct setup_data {
-+	u64 next;
-+	u32 type;
-+	u32 len;
-+	u8 data[0];
-+};
-+
- struct setup_header {
- 	u8	setup_sects;
- 	u16	root_flags;
-@@ -46,6 +57,7 @@
- 	u32	cmdline_size;
- 	u32	hardware_subarch;
- 	u64	hardware_subarch_data;
-+	u64	setup_data;
- } __attribute__((packed));
+ 		    H. Peter Anvin <hpa@zytor.com>
+-			Last update 2007-05-23
++			Last update 2007-10-22
  
- struct sys_desc_table {
-Index: linux-2.6/arch/x86/boot/header.S
+ On the i386 platform, the Linux kernel uses a rather complicated boot
+ convention.  This has evolved partially due to historical aspects, as
+@@ -42,6 +42,9 @@
+ Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
+ 		the boot command line
+ 
++Protocol 2.08:	(kernel 2.6.23) Added a field of 64-bit physical
++		pointer to single linked list of struct	setup_data.
++		Added 32-bit boot protocol.
+ 
+ **** MEMORY LAYOUT
+ 
+@@ -170,6 +173,8 @@
+ 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
+ 023C/4	2.07+	hardware_subarch Hardware subarchitecture
+ 0240/8	2.07+	hardware_subarch_data Subarchitecture-specific data
++0248/8	2.08+	setup_data	64-bit physical pointer to linked list
++				of struct setup_data
+ 
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -512,6 +517,37 @@
+ 
+   A pointer to data that is specific to hardware subarch
+ 
++Field name:	setup_data
++Type:		write (obligatory)
++Offset/size:	0x240/8
++Protocol:	2.08+
++
++  The 64-bit physical pointer to NULL terminated single linked list of
++  struct setup_data. This is used to define a more extensible boot
++  parameters passing mechanism. The definition of struct setup_data is
++  as follow:
++
++  struct setup_data {
++	  u64 next;
++	  u32 type;
++	  u32 len;
++	  u8  data[0];
++  };
++
++  Where, the next is a 64-bit physical pointer to the next node of
++  linked list, the next field of the last node is 0; the type is used
++  to identify the contents of data; the len is the length of data
++  field; the data holds the real payload.
++
++  With this field, to add a new boot parameter written by bootloaders,
++  it is not needed to add a new field to real mode header, just add a
++  new setup_data type is sufficient. But to add a new boot parameter
++  read by bootloader, it is still needed to add a new field.
++
++  During kernel bootstrap, the linked list of setup_data will be
++  copied to the memory area right after the _end of kernel. So
++  bootloaders should avoid put linked list of setup_data there.
++
+ 
+ **** THE KERNEL COMMAND LINE
+ 
+@@ -785,3 +821,41 @@
+ 	After completing your hook, you should jump to the address
+ 	that was in this field before your boot loader overwrote it
+ 	(relocated, if appropriate.)
++
++
++**** 32-bit BOOT PROTOCOL
++
++For machine with some new BIOS other than legacy BIOS, such as EFI,
++LinuxBIOS, etc, and kexec, the 16-bit real mode setup code in kernel
++based on legacy BIOS can not be used, so a 32-bit boot protocol need
++to be defined.
++
++In 32-bit boot protocol, the first step in loading a Linux kernel
++should be to setup the boot parameters (struct boot_params,
++traditionally known as "zero page"). The memory for struct boot_params
++should be allocated and initialized to all zero. Then the setup header
++from offset 0x01f1 of kernel image on should be loaded into struct
++boot_params and examined. The end of setup header can be calculated as
++follow:
++
++	0x0202 + byte value at offset 0x0201
++
++In addition to read/modify/write the setup header of the struct
++boot_params as that of 16-bit boot protocol, the boot loader should
++also fill the additional fields of the struct boot_params as that
++described in zero-page.txt.
++
++After setupping the struct boot_params, the boot loader can load the
++32/64-bit kernel in the same way as that of 16-bit boot protocol.
++
++In 32-bit boot protocol, the kernel is started by jumping to the
++32-bit kernel entry point, which is the start address of loaded
++32/64-bit kernel.
++
++At entry, the CPU must be in 32-bit protected mode with paging
++disabled; a GDT must be loaded with the descriptors for selectors
++__BOOT_CS(0x10) and __BOOT_DS(0x18); both descriptors must be 4G flat
++segment; __BOOS_CS must have execute/read permission, and __BOOT_DS
++must have read/write permission; CS must be __BOOT_CS and DS, ES, SS
++must be __BOOT_DS; interrupt must be disabled; %esi must hold the base
++address of the struct boot_params; %ebp, %edi must be zero.
+Index: linux-2.6/Documentation/i386/zero-page.txt
 ===================================================================
---- linux-2.6.orig/arch/x86/boot/header.S	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/boot/header.S	2007-10-23 13:51:29.000000000 +0800
-@@ -119,7 +119,7 @@
- 	# Part 2 of the header, from the old setup.S
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0207		# header version number (>= 0x0105)
-+		.word	0x0208		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- 		.globl realmode_swtch
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
-@@ -219,6 +219,10 @@
- 
- hardware_subarch_data:	.quad 0
- 
-+setup_data:		.quad 0			# 64-bit physical pointer to
-+						# single linked list of
-+						# struct setup_data
+--- linux-2.6.orig/Documentation/i386/zero-page.txt	2007-10-23 13:51:07.000000000 +0800
++++ linux-2.6/Documentation/i386/zero-page.txt	2007-10-23 13:52:49.000000000 +0800
+@@ -1,99 +1,31 @@
+----------------------------------------------------------------------------
+-!!!!!!!!!!!!!!!WARNING!!!!!!!!
+-The zero page is a kernel internal data structure, not a stable ABI.  It might change
+-without warning and the kernel has no way to detect old version of it.
+-If you're writing some external code like a boot loader you should only use
+-the stable versioned real mode boot protocol described in boot.txt. Otherwise the kernel
+-might break you at any time.
+-!!!!!!!!!!!!!WARNING!!!!!!!!!!!
+-----------------------------------------------------------------------------
+-
+-Summary of boot_params layout (kernel point of view)
+-     ( collected by Hans Lermen and Martin Mares )
+- 
+-The contents of boot_params are used to pass parameters from the
+-16-bit realmode code of the kernel to the 32-bit part. References/settings
+-to it mainly are in:
+-
+-  arch/i386/boot/setup.S
+-  arch/i386/boot/video.S
+-  arch/i386/kernel/head.S
+-  arch/i386/kernel/setup.c
+- 
+-
+-Offset	Type		Description
+-------  ----		-----------
+-    0	32 bytes	struct screen_info, SCREEN_INFO
+-			ATTENTION, overlaps the following !!!
+-    2	unsigned short	EXT_MEM_K, extended memory size in Kb (from int 0x15)
+- 0x20	unsigned short	CL_MAGIC, commandline magic number (=0xA33F)
+- 0x22	unsigned short	CL_OFFSET, commandline offset
+-			Address of commandline is calculated:
+-			  0x90000 + contents of CL_OFFSET
+-			(only taken, when CL_MAGIC = 0xA33F)
+- 0x40	20 bytes	struct apm_bios_info, APM_BIOS_INFO
+- 0x60	16 bytes	Intel SpeedStep (IST) BIOS support information
+- 0x80	16 bytes	hd0-disk-parameter from intvector 0x41
+- 0x90	16 bytes	hd1-disk-parameter from intvector 0x46
+-
+- 0xa0	16 bytes	System description table truncated to 16 bytes.
+-			( struct sys_desc_table_struct )
+- 0xb0 - 0x13f		Free. Add more parameters here if you really need them.
+- 0x140- 0x1be		EDID_INFO Video mode setup
+-
+-0x1c4	unsigned long	EFI system table pointer
+-0x1c8	unsigned long	EFI memory descriptor size
+-0x1cc	unsigned long	EFI memory descriptor version
+-0x1d0	unsigned long	EFI memory descriptor map pointer
+-0x1d4	unsigned long	EFI memory descriptor map size
+-0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
+-0x1e4	unsigned long	Scratch field for the kernel setup code
+-0x1e8	char		number of entries in E820MAP (below)
+-0x1e9	unsigned char	number of entries in EDDBUF (below)
+-0x1ea	unsigned char	number of entries in EDD_MBR_SIG_BUFFER (below)
+-0x1f1	char		size of setup.S, number of sectors
+-0x1f2	unsigned short	MOUNT_ROOT_RDONLY (if !=0)
+-0x1f4	unsigned short	size of compressed kernel-part in the
+-			(b)zImage-file (in 16 byte units, rounded up)
+-0x1f6	unsigned short	swap_dev (unused AFAIK)
+-0x1f8	unsigned short	RAMDISK_FLAGS
+-0x1fa	unsigned short	VGA-Mode (old one)
+-0x1fc	unsigned short	ORIG_ROOT_DEV (high=Major, low=minor)
+-0x1ff	char		AUX_DEVICE_INFO
+-
+-0x200	short jump to start of setup code aka "reserved" field.
+-0x202	4 bytes		Signature for SETUP-header, ="HdrS"
+-0x206	unsigned short	Version number of header format
+-			Current version is 0x0201...
+-0x208	8 bytes		(used by setup.S for communication with boot loaders,
+-			 look there)
+-0x210	char		LOADER_TYPE, = 0, old one
+-			else it is set by the loader:
+-			0xTV: T=0 for LILO
+-				1 for Loadlin
+-				2 for bootsect-loader
+-				3 for SYSLINUX
+-				4 for ETHERBOOT
+-				5 for ELILO
+-				7 for GRuB
+-				8 for U-BOOT
+-				9 for Xen
+-				V = version
+-0x211	char		loadflags:
+-			bit0 = 1: kernel is loaded high (bzImage)
+-			bit7 = 1: Heap and pointer (see below) set by boot
+-				  loader.
+-0x212	unsigned short	(setup.S)
+-0x214	unsigned long	KERNEL_START, where the loader started the kernel
+-0x218	unsigned long	INITRD_START, address of loaded ramdisk image
+-0x21c	unsigned long	INITRD_SIZE, size in bytes of ramdisk image
+-0x220	4 bytes		(setup.S)
+-0x224	unsigned short	setup.S heap end pointer
+-0x226   unsigned short	zero_pad
+-0x228   unsigned long	cmd_line_ptr
+-0x22c   unsigned long	ramdisk_max
+-0x230   16 bytes 	trampoline
+-0x290 - 0x2cf		EDD_MBR_SIG_BUFFER (edd.S)
+-0x2d0 - 0xd00		E820MAP
+-0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
+-0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
++The additional fields in struct boot_params as a part of 32-bit boot
++protocol of kernel. These should be filled by bootloader or 16-bit
++real-mode setup code of the kernel. References/settings to it mainly
++are in:
 +
- # End of setup header #####################################################
- 
- 	.section ".inittext", "ax"
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/setup_64.c	2007-10-23 10:48:48.000000000 +0800
-@@ -247,6 +247,22 @@
- 		ebda_size = 64*1024;
- }
- 
-+static void __init parse_setup_data(void)
-+{
-+	struct setup_data *data;
++  include/asm-x86/bootparam.h
 +
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	for (data = __va(boot_params.hdr.setup_data);
-+	     data != __va(0);
-+	     data = __va(data->next)) {
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+	}
-+}
 +
- void __init setup_arch(char **cmdline_p)
- {
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-@@ -282,6 +298,8 @@
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
- 	*cmdline_p = command_line;
- 
-+	parse_setup_data();
++Offset	Proto	Name		Meaning
++/Size
 +
- 	parse_early_param();
- 
- 	finish_e820_parsing();
-@@ -340,9 +358,9 @@
- 	reserve_bootmem_generic(table_start << PAGE_SHIFT, 
- 				(table_end - table_start) << PAGE_SHIFT);
- 
--	/* reserve kernel */
-+	/* reserve kernel and setup data */
- 	reserve_bootmem_generic(__pa_symbol(&_text),
--				__pa_symbol(&_end) - __pa_symbol(&_text));
-+				setup_data_end - __pa_symbol(&_text));
- 
- 	/*
- 	 * reserve physical page 0 - it's a special BIOS page on many boxes,
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/setup_32.c	2007-10-23 13:51:05.000000000 +0800
-@@ -66,6 +66,8 @@
-    address, and must not be in the .bss segment! */
- unsigned long init_pg_tables_end __initdata = ~0UL;
- 
-+unsigned long setup_data_len __initdata;
-+
- int disable_pse __devinitdata = 0;
- 
- /*
-@@ -327,7 +329,7 @@
- 	 * partially used pages are not usable - thus
- 	 * we are rounding upwards:
- 	 */
--	min_low_pfn = PFN_UP(init_pg_tables_end);
-+	min_low_pfn = PFN_UP(init_pg_tables_end+setup_data_len);
- 
- 	find_max_pfn();
- 
-@@ -532,6 +534,22 @@
- 	return machine_specific_memory_setup();
- }
- 
-+static void __init parse_setup_data(void)
-+{
-+	struct setup_data *data;
-+
-+	if (boot_params.hdr.version < 0x0207)
-+		return;
-+	for (data = __va(boot_params.hdr.setup_data);
-+	     data != __va(0);
-+	     data = __va(data->next)) {
-+		switch (data->type) {
-+		default:
-+			break;
-+		}
-+	}
-+}
-+
- /*
-  * Determine if we were loaded by an EFI loader.  If so, then we have also been
-  * passed the efi memmap, systab, etc., so we should use these data structures
-@@ -579,6 +597,9 @@
- 	rd_prompt = ((boot_params.hdr.ram_size & RAMDISK_PROMPT_FLAG) != 0);
- 	rd_doload = ((boot_params.hdr.ram_size & RAMDISK_LOAD_FLAG) != 0);
- #endif
-+
-+	parse_setup_data();
-+
- 	ARCH_SETUP
- 	if (efi_enabled)
- 		efi_init();
-@@ -594,7 +615,7 @@
- 	init_mm.start_code = (unsigned long) _text;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
--	init_mm.brk = init_pg_tables_end + PAGE_OFFSET;
-+	init_mm.brk = init_pg_tables_end + setup_data_len + PAGE_OFFSET;
- 
- 	code_resource.start = virt_to_phys(_text);
- 	code_resource.end = virt_to_phys(_etext)-1;
-Index: linux-2.6/arch/x86/kernel/e820_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_64.c	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/e820_64.c	2007-10-23 10:01:39.000000000 +0800
-@@ -79,9 +79,9 @@
- 		}
- 	} 
- #endif
--	/* kernel code */
--	if (last >= __pa_symbol(&_text) && addr < __pa_symbol(&_end)) {
--		*addrp = PAGE_ALIGN(__pa_symbol(&_end));
-+	/* kernel code and setup data */
-+	if (last >= __pa_symbol(&_text) && addr < setup_data_end) {
-+		*addrp = PAGE_ALIGN(setup_data_end);
- 		return 1;
- 	}
- 
-Index: linux-2.6/arch/x86/kernel/head64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/head64.c	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/head64.c	2007-10-23 10:01:39.000000000 +0800
-@@ -19,6 +19,9 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/sections.h>
-+#include <asm/io.h>
-+
-+unsigned long __initdata setup_data_end;
- 
- static void __init zap_identity_mappings(void)
- {
-@@ -38,12 +41,35 @@
- static void __init copy_bootdata(char *real_mode_data)
- {
- 	char * command_line;
-+	void *sdata_dst;
-+	struct setup_data *sdata;
-+	u64 *ppa_next;
-+	unsigned long sdata_len;
- 
- 	memcpy(&boot_params, real_mode_data, sizeof boot_params);
- 	if (boot_params.hdr.cmd_line_ptr) {
- 		command_line = __va(boot_params.hdr.cmd_line_ptr);
- 		memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
- 	}
-+
-+#define SETUP_DATA_ALIGN(addr) \
-+	(((unsigned long)(addr)+(SETUP_DATA_ALIGN_SIZE-1))& \
-+	 ~(SETUP_DATA_ALIGN_SIZE-1))
-+
-+	sdata_dst = __va(SETUP_DATA_ALIGN(__pa_symbol(&_end)));
-+	ppa_next = &boot_params.hdr.setup_data;
-+	while (*ppa_next) {
-+		sdata = early_ioremap(*ppa_next, sizeof(*sdata));
-+		sdata_len = sizeof(*sdata) + sdata->len;
-+		early_iounmap(sdata, sizeof(*sdata));
-+		sdata = early_ioremap(*ppa_next, sdata_len);
-+		memcpy(sdata_dst, sdata, sdata_len);
-+		early_iounmap(sdata, sdata_len);
-+		*ppa_next = __pa(sdata_dst);
-+		ppa_next = &((struct setup_data *)sdata_dst)->next;
-+		sdata_dst = (void *)SETUP_DATA_ALIGN(sdata_dst+sdata_len);
-+	}
-+	setup_data_end = __pa(sdata_dst);
- }
- 
- void __init x86_64_start_kernel(char * real_mode_data)
-Index: linux-2.6/include/asm-x86/e820_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_64.h	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/include/asm-x86/e820_64.h	2007-10-23 10:01:39.000000000 +0800
-@@ -56,6 +56,7 @@
- 
- extern unsigned ebda_addr, ebda_size;
- extern unsigned long nodemap_addr, nodemap_size;
-+extern unsigned long setup_data_end;
- #endif/*!__ASSEMBLY__*/
- 
- #endif/*__E820_HEADER*/
-Index: linux-2.6/arch/x86/kernel/head_32.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/head_32.S	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/kernel/head_32.S	2007-10-23 10:01:39.000000000 +0800
-@@ -135,6 +135,21 @@
- 	rep
- 	movsl
- 1:
-+	movl boot_params - __PAGE_OFFSET + SETUP_DATA_POINTER,%ebp
-+	xorl %ecx,%ecx
-+2:
-+	andl %ebp,%ebp
-+	jz 1f
-+	movl $(SETUP_DATA_HEADER_LEN+SETUP_DATA_ALIGN_SIZE-1),%eax
-+	addl (SETUP_DATA_LEN)(%ebp),%eax
-+	andl $~(SETUP_DATA_ALIGN_SIZE-1),%eax
-+	addl %eax, %ecx
-+	movl SETUP_DATA_NEXT(%ebp),%ebp
-+	jmp 2b
-+1:
-+	addl $(PAGE_SIZE_asm-1),%ecx
-+	andl $~(PAGE_SIZE_asm-1),%ecx
-+	movl %ecx,(setup_data_len - __PAGE_OFFSET)
- 
- #ifdef CONFIG_PARAVIRT
- 	cmpw $0x207, (boot_params + BP_version - __PAGE_OFFSET)
-@@ -191,13 +206,33 @@
- 	stosl
- 	addl $0x1000,%eax
- 	loop 11b
--	/* End condition: we must map up to and including INIT_MAP_BEYOND_END */
-+	/* End condition: we must map up to and including INIT_MAP_BEYOND_END + setup_data_len */
- 	/* bytes beyond the end of our own page tables; the +0x007 is the attribute bits */
- 	leal (INIT_MAP_BEYOND_END+0x007)(%edi),%ebp
-+	addl (setup_data_len - __PAGE_OFFSET),%ebp
- 	cmpl %ebp,%eax
- 	jb 10b
- 	movl %edi,(init_pg_tables_end - __PAGE_OFFSET)
- 
-+	/* Copy setup data */
-+	leal (boot_params - __PAGE_OFFSET + SETUP_DATA_POINTER),%ebx
-+2:
-+	movl (%ebx),%ebp
-+	andl %ebp,%ebp
-+	jz 1f
-+	movl $SETUP_DATA_HEADER_LEN,%ecx
-+	addl SETUP_DATA_LEN(%ebp),%ecx
-+	addl $(SETUP_DATA_ALIGN_SIZE-1),%edi
-+	andl $~(SETUP_DATA_ALIGN_SIZE-1),%edi
-+	movl %edi,(%ebx)
-+	movl %ebp,%esi
-+	rep
-+	movsb
-+	movl (%ebx),%ebx
-+	leal SETUP_DATA_NEXT(%ebx),%ebx
-+	jmp 2b
-+1:
-+
- 	xorl %ebx,%ebx				/* This is the boot CPU (BSP) */
- 	jmp 3f
- /*
-Index: linux-2.6/arch/x86/mm/discontig_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/discontig_32.c	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/arch/x86/mm/discontig_32.c	2007-10-23 10:01:39.000000000 +0800
-@@ -282,7 +282,8 @@
- 	kva_pages = calculate_numa_remap_pages();
- 
- 	/* partially used pages are not usable - thus round upwards */
--	system_start_pfn = min_low_pfn = PFN_UP(init_pg_tables_end);
-+	system_start_pfn = min_low_pfn = PFN_UP(init_pg_tables_end +
-+						setup_data_len);
- 
- 	kva_start_pfn = find_max_low_pfn() - kva_pages;
- 
-Index: linux-2.6/include/asm-x86/setup_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/setup_32.h	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/include/asm-x86/setup_32.h	2007-10-23 10:01:39.000000000 +0800
-@@ -25,6 +25,13 @@
- #define OLD_CL_OFFSET		0x90022
- #define NEW_CL_POINTER		0x228	/* Relative to real mode data */
- 
-+#define SETUP_DATA_POINTER	0x248	/* Relative to real mode data */
-+
-+#define SETUP_DATA_NEXT		0x0
-+#define SETUP_DATA_LEN		0xc
-+#define SETUP_DATA_HEADER_LEN	0x10
-+#define SETUP_DATA_ALIGN_SIZE	0x8
-+
- #ifndef __ASSEMBLY__
- 
- #include <asm/bootparam.h>
-Index: linux-2.6/include/asm-x86/setup_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/setup_64.h	2007-10-23 10:01:35.000000000 +0800
-+++ linux-2.6/include/asm-x86/setup_64.h	2007-10-23 10:03:25.000000000 +0800
-@@ -4,7 +4,9 @@
- #define COMMAND_LINE_SIZE	2048
- 
- #ifdef __KERNEL__
-+#include <linux/const.h>
- 
-+#define SETUP_DATA_ALIGN_SIZE	__AC(0x8, UL)
- #ifndef __ASSEMBLY__
- #include <asm/bootparam.h>
- 
++000/040	ALL	screen_info	Text mode or frame buffer information
++				(struct screen_info)
++040/014	ALL	apm_bios_info	APM BIOS information (struct apm_bios_info)
++060/010	ALL	ist_info	Intel SpeedStep (IST) BIOS support information
++				(struct ist_info)
++080/010	ALL	hd0_info	hd0 disk parameter, OBSOLETE!!
++090/010	ALL	hd1_info	hd1 disk parameter, OBSOLETE!!
++0A0/010	ALL	sys_desc_table	System description table (struct sys_desc_table)
++140/080	ALL	edid_info	Video mode setup (struct edid_info)
++1C0/020	ALL	efi_info	EFI 32 information (struct efi_info)
++1E0/004	ALL	alk_mem_k	Alternative mem check, in KB
++1E4/004	ALL	scratch		Scratch field for the kernel setup code
++1E8/001	ALL	e820_entries	Number of entries in e820_map (below)
++1E9/001	ALL	eddbuf_entries	Number of entries in eddbuf (below)
++1EA/001	ALL	edd_mbr_sig_buf_entries	Number of entries in edd_mbr_sig_buffer
++				(below)
++290/040	ALL	edd_mbr_sig_buffer EDD MBR signatures
++2D0/A00	ALL	e820_map	E820 memory map table
++				(array of struct e820entry)
++D00/1EC	ALL	eddbuf		EDD data (array of struct edd_info)
