@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbXJWWQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbXJWWSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbXJWWQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXJWWQM
+	id S1754938AbXJWWSg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXJWWSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:16:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43099 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbXJWWQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:16:11 -0400
-Message-ID: <471E729F.3000105@zytor.com>
-Date: Tue, 23 Oct 2007 15:15:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 23 Oct 2007 18:18:25 -0400
+Received: from mail.tmr.com ([64.65.253.246]:55278 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752747AbXJWWSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:18:23 -0400
+Message-ID: <471E756E.3070008@tmr.com>
+Date: Tue, 23 Oct 2007 18:27:58 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
-References: <1193126771.23935.79.camel@caritas-dev.intel.com> <471E70E0.2090802@goop.org>
-In-Reply-To: <471E70E0.2090802@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Al Boldi <a1426z@gawab.com>
+CC: Valdis.Kletnieks@vt.edu, Patrick McHardy <kaber@trash.net>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] iptables: mangle table obsoletes filter table
+References: <200710120031.42805.a1426z@gawab.com> <200710200640.02012.a1426z@gawab.com> <26556.1192855654@turing-police.cc.vt.edu> <200710210731.58959.a1426z@gawab.com>
+In-Reply-To: <200710210731.58959.a1426z@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->>  1:
->> +	movl boot_params - __PAGE_OFFSET + SETUP_DATA_POINTER,%ebp
+Al Boldi wrote:
+> Valdis.Kletnieks@vt.edu wrote:
+>> On Sat, 20 Oct 2007 06:40:02 +0300, Al Boldi said:
+>>> Sure, the idea was to mark the filter table obsolete as to make people
+>>> start using the mangle table to do their filtering for new setups.  The
+>>> filter table would then still be available for legacy/special setups. 
+>>> But this would only be possible if we at least ported the REJECT target
+>>> to mangle.
+>> That's *half* the battle.  The other half is explaining why I should move
+>> from a perfectly functional setup that uses the filter table.  What gains
+>> do I get from doing so?  What isn't working that I don't know about? etc?
+>>
+>> In other words - why do I want to move from filter to mangle?
 > 
-> You need to check the boot protocol version before looking at this pointer.
+> This has already been explained in this thread; here it is again:
 > 
+> Al Boldi wrote:
+>>>> The problem is that people think they are safe with the filter table,
+>>>> when in fact they need the prerouting chain to seal things.  Right now
+>>>> this is only possible in the mangle table.
+>>> Why do they need PREROUTING?
+>> Well, for example to stop any transient packets being forwarded.  You could 
+>> probably hack around this using mark's, but you can't stop the implied
+>> route lookup, unless you stop it in prerouting.
+> 
+> Basically, you have one big unintended gaping whole in your firewall, that 
+> could easily be exploited for DoS attacks at the least, unless you put in 
+> specific rules to limit this.
+> 
+Well... true enough on a small firewall machine with a really fast link, 
+maybe. I like your point about efficiency better, it's more logical, 
+like putting an ACCEPT of established connections before a lot of low 
+probability rules. The only time I have seen rules actually bog a 
+machine was when a major ISP sent out a customer "upgrade" with a bug 
+which caused certain connections to be SYN-SYN/ACK-RST leaving half open 
+sockets. They sent out 160k of them and the blocking list became very 
+long as blocking rules were added.
 
-No, he doesn't.  The boot protocol version is communication between the 
-boot loader and the kernel (specifically, it is communication FROM the 
-kernel TO the bootloader), not between internal bits of the kernel.  Th
+> Plus, it's outrageously incorrect to accept invalid packets, just because 
+> your filtering infrastructure can only reject packets after they have been 
+> prerouted.
+> 
+As long as the filter table doesn't go away, sometimes things change 
+after PREROUTING, like NAT, and additional rules must be used.
 
-Since the pointer is safely inside the setup template, even if the 
-bootloader doesn't understand boot protocol version 2.08 it will have 
-copied it.
-
-So this is fine.
-
-	-hpa
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
