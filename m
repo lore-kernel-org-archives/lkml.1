@@ -1,53 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbXJWRf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXJWRl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbXJWRf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXJWRfN
+	id S1753098AbXJWRl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXJWRlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:35:13 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:6536 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbXJWRfL (ORCPT
+	Tue, 23 Oct 2007 13:41:50 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:49618 "EHLO
+	outbound7-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751939AbXJWRlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:35:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L7ltseU4vfoC9VD27+9HKtY2WAzgBobflewP3G34ndjOkjMU91E4TX7472gC3kRPiMPGiYc3QueTcy3BXBK6xRHS4oQBM+MmlAcoEr4ziTqlL+HbValYy1afewBzMyp6hGgXunc+a/oVJ/wD0NS/PyiQ3zckn3pKbf2U/UgPRQk=
-Message-ID: <8bd0f97a0710231035nafbd7f1q3a1f2b6907d7350f@mail.gmail.com>
-Date: Tue, 23 Oct 2007 13:35:10 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Kirill A. Shutemov" <k.shutemov@velesys.com>
-Subject: Re: [PATCH] Do not export PAGE_SIZE to userspace.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071023165951.GA5685@localhost.localdomain>
+	Tue, 23 Oct 2007 13:41:49 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>,
+       "Joerg Roedel" <joerg.roedel@amd.com>
+Subject: [PATCH 2/4] x86 gart: rename CONFIG_IOMMU to CONFIG_GART_IOMMU
+Date: Tue, 23 Oct 2007 19:41:31 +0200
+Message-ID: <11931612931391-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <11931612933917-git-send-email-joerg.roedel@amd.com>
+References: <11931612933917-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 23 Oct 2007 17:41:33.0727 (UTC)
+ FILETIME=[F3F7B2F0:01C8159B]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-WSS-ID: 6B00EDDB0QK8075-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071023103304.GA10209@localhost.localdomain>
-	 <8bd0f97a0710230922t57699cc3o7f1eda45c488a053@mail.gmail.com>
-	 <20071023165951.GA5685@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/07, Kirill A. Shutemov <k.shutemov@velesys.com> wrote:
-> On [Tue, 23.10.2007 12:22], Mike Frysinger wrote:
-> > On 10/23/07, Kirill A. Shutemov <k.shutemov@velesys.com> wrote:
-> > > Userspace should use getpagesize() or sysconf(_SC_PAGESIZE) to get memory
-> > > page size.
-> >
-> > please go back through the archives and read the history here.  we
-> > should work at dropping page.h completely, not making it an empty
-> > file.
->
-> Do you mean page.h shouldn't be exported to userspace
+This patch renames the IOMMU config option to GART_IOMMU because in fact it
+means the GART and not general support for an IOMMU on x86.
 
-yes
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/Makefile_64    |    2 +-
+ arch/x86/kernel/early-quirks.c |    2 +-
+ arch/x86/kernel/pci-dma_64.c   |    6 +++---
+ arch/x86_64/Kconfig            |    4 ++--
+ arch/x86_64/Kconfig.debug      |    2 +-
+ arch/x86_64/defconfig          |    2 +-
+ drivers/char/agp/Kconfig       |    4 ++--
+ drivers/char/agp/amd64-agp.c   |    2 +-
+ drivers/usb/core/message.c     |    2 +-
+ include/asm-x86/gart.h         |    2 +-
+ include/asm-x86/pci_64.h       |    2 +-
+ 11 files changed, 15 insertions(+), 15 deletions(-)
 
-> or should be dropped from kernelspace too?
+diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+index dec06e7..02cfd08 100644
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -29,7 +29,7 @@ obj-$(CONFIG_PM)		+= suspend_64.o
+ obj-$(CONFIG_HIBERNATION)	+= suspend_asm_64.o
+ obj-$(CONFIG_CPU_FREQ)		+= cpu/cpufreq/
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+-obj-$(CONFIG_IOMMU)		+= pci-gart_64.o aperture_64.o
++obj-$(CONFIG_GART_IOMMU)	+= pci-gart_64.o aperture_64.o
+ obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
+ obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes_64.o
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index d6e6e83..5330745 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -23,7 +23,7 @@
+ 
+ static void __init via_bugs(void)
+ {
+-#ifdef CONFIG_IOMMU
++#ifdef CONFIG_GART_IOMMU
+ 	if ((end_pfn > MAX_DMA32_PFN ||  force_iommu) &&
+ 	    !iommu_aperture_allowed) {
+ 		printk(KERN_INFO
+diff --git a/arch/x86/kernel/pci-dma_64.c b/arch/x86/kernel/pci-dma_64.c
+index 730339f..66b3dc5 100644
+--- a/arch/x86/kernel/pci-dma_64.c
++++ b/arch/x86/kernel/pci-dma_64.c
+@@ -275,7 +275,7 @@ __init int iommu_setup(char *p)
+ 			swiotlb = 1;
+ #endif
+ 
+-#ifdef CONFIG_IOMMU
++#ifdef CONFIG_GART_IOMMU
+ 		gart_parse_options(p);
+ #endif
+ 
+@@ -298,7 +298,7 @@ void __init pci_iommu_alloc(void)
+ 	 * The order of these functions is important for
+ 	 * fall-back/fail-over reasons
+ 	 */
+-#ifdef CONFIG_IOMMU
++#ifdef CONFIG_GART_IOMMU
+ 	iommu_hole_init();
+ #endif
+ 
+@@ -321,7 +321,7 @@ static int __init pci_iommu_init(void)
+ 
+ 	intel_iommu_init();
+ 
+-#ifdef CONFIG_IOMMU
++#ifdef CONFIG_GART_IOMMU
+ 	gart_iommu_init();
+ #endif
+ 
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index 198adad..b986b27 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -479,7 +479,7 @@ config HPET_EMULATE_RTC
+ 
+ # Mark as embedded because too many people got it wrong.
+ # The code disables itself when not needed.
+-config IOMMU
++config GART_IOMMU
+ 	bool "GART IOMMU support" if EMBEDDED
+ 	default y
+ 	select SWIOTLB
+@@ -687,7 +687,7 @@ source kernel/Kconfig.hz
+ 
+ config K8_NB
+ 	def_bool y
+-	depends on AGP_AMD64 || IOMMU || (PCI && NUMA)
++	depends on AGP_AMD64 || GART_IOMMU || (PCI && NUMA)
+ 
+ endmenu
+ 
+diff --git a/arch/x86_64/Kconfig.debug b/arch/x86_64/Kconfig.debug
+index 775d211..6035468 100644
+--- a/arch/x86_64/Kconfig.debug
++++ b/arch/x86_64/Kconfig.debug
+@@ -17,7 +17,7 @@ config DEBUG_RODATA
+ 	 If in doubt, say "N".
+ 
+ config IOMMU_DEBUG
+-       depends on IOMMU && DEBUG_KERNEL
++       depends on GART_IOMMU && DEBUG_KERNEL
+        bool "Enable IOMMU debugging"
+        help
+          Force the IOMMU to on even when you have less than 4GB of
+diff --git a/arch/x86_64/defconfig b/arch/x86_64/defconfig
+index b091c5e..38a83f9 100644
+--- a/arch/x86_64/defconfig
++++ b/arch/x86_64/defconfig
+@@ -170,7 +170,7 @@ CONFIG_HOTPLUG_CPU=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_HPET_TIMER=y
+ CONFIG_HPET_EMULATE_RTC=y
+-CONFIG_IOMMU=y
++CONFIG_GART_IOMMU=y
+ # CONFIG_CALGARY_IOMMU is not set
+ CONFIG_SWIOTLB=y
+ CONFIG_X86_MCE=y
+diff --git a/drivers/char/agp/Kconfig b/drivers/char/agp/Kconfig
+index f22c253..ccb1fa8 100644
+--- a/drivers/char/agp/Kconfig
++++ b/drivers/char/agp/Kconfig
+@@ -56,9 +56,9 @@ config AGP_AMD
+ 	  X on AMD Irongate, 761, and 762 chipsets.
+ 
+ config AGP_AMD64
+-	tristate "AMD Opteron/Athlon64 on-CPU GART support" if !IOMMU
++	tristate "AMD Opteron/Athlon64 on-CPU GART support" if !GART_IOMMU
+ 	depends on AGP && X86
+-	default y if IOMMU
++	default y if GART_IOMMU
+ 	help
+ 	  This option gives you AGP support for the GLX component of
+ 	  X using the on-CPU northbridge of the AMD Athlon64/Opteron CPUs.
+diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+index d95662e..d8200ac 100644
+--- a/drivers/char/agp/amd64-agp.c
++++ b/drivers/char/agp/amd64-agp.c
+@@ -787,7 +787,7 @@ static void __exit agp_amd64_cleanup(void)
+ 
+ /* On AMD64 the PCI driver needs to initialize this driver early
+    for the IOMMU, so it has to be called via a backdoor. */
+-#ifndef CONFIG_IOMMU
++#ifndef CONFIG_GART_IOMMU
+ module_init(agp_amd64_init);
+ module_exit(agp_amd64_cleanup);
+ #endif
+diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
+index 90d64a8..9157cfb 100644
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -434,7 +434,7 @@ int usb_sg_init (
+ 		if (dma) {
+ 			io->urbs [i]->transfer_dma = sg_dma_address (sg + i);
+ 			len = sg_dma_len (sg + i);
+-#if defined(CONFIG_HIGHMEM) || defined(CONFIG_IOMMU)
++#if defined(CONFIG_HIGHMEM) || defined(CONFIG_GART_IOMMU)
+ 			io->urbs[i]->transfer_buffer = NULL;
+ #else
+ 			io->urbs[i]->transfer_buffer = sg_virt(&sg[i]);
+diff --git a/include/asm-x86/gart.h b/include/asm-x86/gart.h
+index 07862fd..cb7e989 100644
+--- a/include/asm-x86/gart.h
++++ b/include/asm-x86/gart.h
+@@ -5,7 +5,7 @@ extern void pci_iommu_shutdown(void);
+ extern void no_iommu_init(void);
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+-#ifdef CONFIG_IOMMU
++#ifdef CONFIG_GART_IOMMU
+ extern void gart_iommu_init(void);
+ extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
+diff --git a/include/asm-x86/pci_64.h b/include/asm-x86/pci_64.h
+index 9baa46d..ef54226 100644
+--- a/include/asm-x86/pci_64.h
++++ b/include/asm-x86/pci_64.h
+@@ -37,7 +37,7 @@ extern int iommu_setup(char *opt);
+  */
+ #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+ 
+-#if defined(CONFIG_IOMMU) || defined(CONFIG_CALGARY_IOMMU)
++#if defined(CONFIG_GART_IOMMU) || defined(CONFIG_CALGARY_IOMMU)
+ 
+ #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
+ 	dma_addr_t ADDR_NAME;
+-- 
+1.5.2.5
 
-noooooooooooooooooo
 
-;)
--mike
+
