@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXJWR5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbXJWR7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbXJWR5o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXJWR5h
+	id S1753452AbXJWR7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXJWR7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:57:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:45318 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbXJWR5g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:57:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eiGrG6RHoiqkX4h/J6DHmMp5hQxqFz4yp2QGPzK2bLu1TD9JfA1ULIaQLJQpYe/muBjpZm6+lfPgXkLvB+APlxD5WGfcMTjW4nh0Xr9C7liiXU/sy2MVA6Rgjij0hoY4xwfR8tJKGW67VPcZZnJA/mA9jTPJ2AxFjT9v7Y4TPsQ=
-Message-ID: <9e0cf0bf0710231057lf60ce17ldd38489850cdf7c5@mail.gmail.com>
-Date: Tue, 23 Oct 2007 19:57:34 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] rfcomm]
-Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-In-Reply-To: <1193162106.6184.208.camel@violet>
+	Tue, 23 Oct 2007 13:59:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59169 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751815AbXJWR7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 13:59:24 -0400
+Date: Tue, 23 Oct 2007 13:59:08 -0400
+From: Dave Jones <davej@redhat.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] x86 gart: rename symbols only used for the GART
+	implementation
+Message-ID: <20071023175908.GD7793@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Joerg Roedel <joerg.roedel@amd.com>, Andi Kleen <ak@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	linux-kernel@vger.kernel.org
+References: <11931612933917-git-send-email-joerg.roedel@amd.com> <1193161293928-git-send-email-joerg.roedel@amd.com> <200710231943.47157.ak@suse.de> <20071023174711.GC6697@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200710231950.31313.alon.barlev@gmail.com>
-	 <1193162106.6184.208.camel@violet>
+In-Reply-To: <20071023174711.GC6697@amd.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/07, Marcel Holtmann <marcel@holtmann.org> wrote:
-> first of all, please check if this still happens with 2.6.23, because we
-> had some patches in the area of the RFCOMM TTY code that might have
-> fixed this.
+On Tue, Oct 23, 2007 at 07:47:11PM +0200, Joerg Roedel wrote:
+ > On Tue, Oct 23, 2007 at 07:43:47PM +0200, Andi Kleen wrote:
+ > > On Tuesday 23 October 2007 19:41:33 Joerg Roedel wrote:
+ > > > This patch renames the 4 symbols iommu_hole_init(), iommu_aperture,
+ > > > iommu_aperture_allowed, iommu_aperture_disabled.
+ > > > 
+ > > > It replaces the iommu_ with gart_ in the symbol name. All these symbols are
+ > > > only used for the GART implementation of IOMMUs.
+ > > 
+ > > That makes it still potentially conflicting with the AGP GART code.
+ > 
+ > Maybe yes. But the AGP GART driver conflicts with the GART IOMMU config
+ > option. So I don't see a problem here.
+ 
+It shouldn't.  It's perfectly feasible to use both IOMMU and GART for AGP at
+the same time.
 
-These messages are of 2.6.23.
+	Dave
 
-> Second, can you try without uswsusp or suspend2. Both of
-> them are not upstream and I can't tell how much these would effect this
-> kind of behavior.
-
-How can I test this without doing suspend?
-uswsusp is not upstream?!?! Rafael?
-
-Best Regards,
-Alon Bar-Lev.
+-- 
+http://www.codemonkey.org.uk
