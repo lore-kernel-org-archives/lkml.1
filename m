@@ -1,99 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbXJWJ7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbXJWKBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbXJWJ7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXJWJ7M
+	id S1753495AbXJWKBg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXJWKB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:59:12 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47889
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751993AbXJWJ7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:59:11 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] Add chapter IDs to z8530book.tmpl
-Date: Tue, 23 Oct 2007 04:58:38 -0500
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, alan@redhat.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 06:01:28 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:12966
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751834AbXJWKB1 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 06:01:27 -0400
+Message-Id: <471DE2F8.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Tue, 23 Oct 2007 11:03:04 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@xensource.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: CONFIG_XEN dependencies
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200710230458.38440.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+Jeremy,
 
-Add chapter IDs to z8530book.tmpl
+CONFIG_XEN (in 2.6.23) depends on X86_CMPXCHG and X86_TSC. This
+precludes enabling the option in kernels using M386, M486, or M586, despite
+the fact that the detection code doesn't need these features and if Xen is
+present the features are implicitly there. At least the X86_TSC dependency
+can thus be dropped in my opinion, which would then only exclude M386
+kernels. (Dropping X86_CMPXCHG may yield build problems, but could
+perhaps also be eliminated by forcibly #define-ing it in the relevant source
+files.)
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+Jan
 
- Documentation/DocBook/z8530book.tmpl |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff -r 33c949e2f851 Documentation/DocBook/z8530book.tmpl
---- a/Documentation/DocBook/z8530book.tmpl	Sun Oct 21 13:37:07 2007 -0400
-+++ b/Documentation/DocBook/z8530book.tmpl	Mon Oct 22 23:19:42 2007 -0500
-@@ -77,7 +77,7 @@
-   </para>
-   </chapter>
-   
--  <chapter>
-+  <chapter id="Driver_Modes">
-  	<title>Driver Modes</title>
-   <para>
- 	The Z85230 driver layer can drive Z8530, Z85C30 and Z85230 devices
-@@ -108,7 +108,7 @@
-   </para>
-   </chapter>
- 
--  <chapter>
-+  <chapter id="Using_the_Z85230_driver">
-  	<title>Using the Z85230 driver</title>
-   <para>
- 	The Z85230 driver provides the back end interface to your board. To
-@@ -174,7 +174,7 @@
-   </para>
-   </chapter>
- 
--  <chapter>
-+  <chapter id="Attaching_Network_Interfaces">
-  	<title>Attaching Network Interfaces</title>
-   <para>
- 	If you wish to use the network interface facilities of the driver,
-@@ -216,7 +216,7 @@
-   </para>
-   </chapter>
- 
--  <chapter>
-+  <chapter id="Configuring_And_Activating_The_Port">
-  	<title>Configuring And Activating The Port</title>
-   <para>
- 	The Z85230 driver provides helper functions and tables to load the
-@@ -300,7 +300,7 @@
-   </para>
-   </chapter>
- 
--  <chapter>
-+  <chapter id="Network_Layer_Functions">
-  	<title>Network Layer Functions</title>
-   <para>
- 	The Z8530 layer provides functions to queue packets for
-@@ -327,7 +327,7 @@
-   </para>
-   </chapter>
- 
--  <chapter>
-+  <chapter id="Porting_The_Z8530_Driver">
-      <title>Porting The Z8530 Driver</title>
-   <para>
- 	The Z8530 driver is written to be portable. In DMA mode it makes
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
