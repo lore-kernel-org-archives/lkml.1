@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbXJWSmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXJWSoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbXJWSmf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 14:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbXJWSm2
+	id S1753169AbXJWSoc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 14:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbXJWSoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 14:42:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:24553 "EHLO kernel.dk"
+	Tue, 23 Oct 2007 14:44:25 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8382 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbXJWSm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 14:42:27 -0400
-Date: Tue, 23 Oct 2007 20:42:22 +0200
+	id S1751878AbXJWSoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 14:44:24 -0400
+Date: Tue, 23 Oct 2007 20:44:20 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix breakage after SG cleanups
-Message-ID: <20071023184222.GC14671@kernel.dk>
-References: <20071023154106.GA29757@linux-mips.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+Message-ID: <20071023184419.GD14671@kernel.dk>
+References: <471E110C.20404@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023154106.GA29757@linux-mips.org>
+In-Reply-To: <471E110C.20404@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, Ralf Baechle wrote:
-> Patches
+On Tue, Oct 23 2007, Kamalesh Babulal wrote:
+> Hi,
 > 
->    58b053e4ce9d2fc3023645c1b96e537c72aa8d9a
->    45711f1af6eff1a6d010703b4862e0d2b9afd056
->    fa05f1286be25a8ce915c5dd492aea61126b3f33
+> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+> over the AMD box
 > 
-> convert many files to use the scatter gather helpers without ensuring
-> that the necessary headerfile <linux/scatterlist> is included.  This
-> happened to work for ia64, powerpc, sparc64 and x86 because they happened
-> to drag in that file via their <asm/dma-mapping.h>.  On most of the others
-> this probably broke.
-> 
-> Instead of increasing the header file spider web I choose to include
-> <linux/scatterlist.h> directly into the affectes files.
+> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> PGD 10185b067 PUD 10075b067 PMD 0 
+> Oops: 0002 [1] SMP 
+> CPU 3 
+> Modules linked in:
+> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
+> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
 
-Thanks Ralf, I cut the pieces that are already merged and applied the
-rest.
+Can you check where gart_map_sg+0x26c is at? Make sure you have
+CONFIG_DEBUG_INFO defined, then do:
+
+$ gdb vmlinux
+$ l *gart_map_sg+0x26c
+
+Thanks!
 
 -- 
 Jens Axboe
