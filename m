@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbXJWOtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXJWPAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbXJWOtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 10:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJWOtK
+	id S1752641AbXJWPAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXJWPAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 10:49:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:62759 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXJWOtI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 10:49:08 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH][SG] fix typo in ps3rom.c
-Date: Tue, 23 Oct 2007 16:48:58 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Tue, 23 Oct 2007 11:00:23 -0400
+Received: from xyzzy.farnsworth.org ([65.39.95.219]:39998 "HELO farnsworth.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751294AbXJWPAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 11:00:23 -0400
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Oct 2007 11:00:22 EDT
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 23 Oct 2007 07:53:01 -0700
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [POWERPC] Fix fallout from sg_page changes
+Message-ID: <20071023145300.GA18989@xyzzy.farnsworth.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710231648.59438.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/mxJuCtIcdkf2Y1TXmLkmpmYg5pdLBxvrdBWj
- PYqInJYMUiSdhqR1plfHpXtRWZZ5PFEkiTbEjwSIn9sqRLEzzi
- 1InaMKTyNBLMFiGI2EmrQ==
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was accidentally introduced by yesterday's change to the SG handling.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 ---
+ include/asm-powerpc/dma-mapping.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-On Monday 22 October 2007, Jens Axboe wrote:
-> 
-> I split the patch up into a few pieces, so it can be applied safely.
-> It builds with allyesconfig on i386 and x86-64, and it's been booted
-> and tested on both those archs and ppc64 as well.
-
-Not sure if this has been reported already, but I needed the trivial fix
-to build the ps3rom driver.
-
-diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
-index 03f19b8..17b4a7c 100644
---- a/drivers/scsi/ps3rom.c
-+++ b/drivers/scsi/ps3rom.c
-@@ -147,7 +147,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd *cmd, void *buf)
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..43b4f3b 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
  
- 	req_len = fin = 0;
- 	scsi_for_each_sg(cmd, sgpnt, scsi_sg_count(cmd), k) {
--		kaddr = kmap_atomic(sg_page(sgpnt->page), KM_IRQ0);
-+		kaddr = kmap_atomic(sg_page(sgpnt), KM_IRQ0);
- 		len = sgpnt->length;
- 		if ((req_len + len) > buflen) {
- 			len = buflen - req_len;
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		BUG_ON(!sg_page(sg));
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
++		sg->dma_address = virt_to_bus(sg_virt(sg));
+ 	}
+ 
+ 	return nents;
+@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
+-- 
+1.5.3.4
+
