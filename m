@@ -1,80 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbXJWNYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbXJWNb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbXJWNYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 09:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXJWNYd
+	id S1752588AbXJWNb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 09:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXJWNbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 09:24:33 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59263 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751841AbXJWNYc (ORCPT
+	Tue, 23 Oct 2007 09:31:52 -0400
+Received: from mga07.intel.com ([143.182.124.22]:63664 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751781AbXJWNbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 09:24:32 -0400
-Date: Tue, 23 Oct 2007 15:25:01 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Al Viro <viro@ftp.linux.org.uk>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Nix <nix@esperi.org.uk>, Jeff Dike <jdike@addtoit.com>,
-       Paolo Giarrusso <p.giarrusso@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: [uml-devel] User Mode Linux still doesn't build in
-	2.6.23-final.
-Message-ID: <20071023132501.GT30533@stusta.de>
-References: <20071022065943.GC10864@uranus.ravnborg.org> <20071022074823.GJ2998@hacking> <20071022113600.GA8181@ftp.linux.org.uk> <20071022122504.GL2998@hacking> <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu>
+	Tue, 23 Oct 2007 09:31:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,317,1188802800"; 
+   d="scan'208";a="303954861"
+Message-ID: <471DF79B.20801@linux.intel.com>
+Date: Tue, 23 Oct 2007 09:31:07 -0400
+From: Anas Nashif <nashif@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071023084546.GA17007@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Marek Dabek <marek.dabek@intel.com>
+Subject: Re: [PATCH] Intel Manageability Engine Interface driver
+References: <471CDC5E.4010300@linux.intel.com> <20071022114001.40470c15.akpm@linux-foundation.org>
+In-Reply-To: <20071022114001.40470c15.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 10:45:46AM +0200, Ingo Molnar wrote:
-> 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > >> Should we re-add them for the function pointers in 
-> > >> asm-x86/paravirt.h?
-> > >
-> > > yes, yes, yes. :-) It was a nightmare to sort it out in -rt (and 
-> > > still is).
-> > 
-> > Do you have a patch to do this already?
-> 
-> yes, attached. Ack?
-> 
-> 	Ingo
-> 
-> ---------------------------->
-> Subject: [patch] paravirt: mark assembly dependencies as fastcall
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> the 'fastcall removal' changes to paravirt.c were over-eager: they
-> removed fastcall annotations from functions that are (or might be)
-> implemented in assembly. So if someone changes the compiler model,
-> such as -pg which disables regparm, the kernel breaks in nasty ways.
-> 
-> so this patch adds back fastcall annotations. This serves as
-> documentation for assembly calling-convention dependencies as
-> well.
->...
+Andrew,
 
-I see a point in annotating all C code called from assembler code with 
-either fastcall or asmlinkage, but how will these annotations be 
-maintained?
+Thanks for the feedback.
 
-Without anything giving at least a warning these annotations will simply 
-bitrot.
+Andrew Morton wrote:
+> On Mon, 22 Oct 2007 13:22:38 -0400 Anas Nashif <nashif@linux.intel.com> wrote:
+>>
+>> The patch is large so I'm placing the diff on the web for download
+>> rather than attaching it here.  Download:
+>>
+>> http://download.openamt.org/intel-MEI.diff
+> 
+> Please get the patches mailed out somehow.  Consider splitting the patch
+> up.  I think you could send it as-is (200k will fit, I believe) but it's
+> rather too large to review effectively.
+> 
+> The code looks good from a quick scan.  Immediate impressions from a
+> quick scan, mainly trivia:
+> 
 
-cu
-Adrian
+We will fix the issues below and send the revised patch to the list.
 
--- 
+>
+> 
+> - Why does a new driver have "additional char device for legacy mode"?
+> 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+It is not quite new. What is currently considered legacy was supported 
+on Linux with a driver that was never submitted upstream (although it is 
+open-source and available from e1000.sf.net).
+Some applications still use the legacy interface (KCS style) and have to 
+be supported with the new driver as well.
+
+(...)
+
+> - The changelog could do with some expansion.  What is "Intel(R)
+>   Manageability Engine (ME) firmware"?  Why do we want to include this code
+>   in Linux?  What value has it to our users, etc?  Bascially: tell us more
+>   stuff.
+
+The core hardware architecture of Intel Active Management Technology 
+(Intel AMT) is resident in firmware. The micro-controller within the 
+chipset's graphics and memory controller (MCH) hub houses the Management 
+Engine (ME) firmware, which implements various services on behalf of 
+management applications. Additionally, flash memory houses system BIOS, 
+code used by the management engine, and a third-party data store (3PDS) 
+that enables applications to store information as needed in non-volatile 
+memory.
+
+Communication between the host OS and the ME is accomplished by means of 
+the Intel Management Engine Interface (aka HECI: Host Embedded 
+Controller Interface ). MEI is bi-directional, and either the host or 
+Intel AMT firmware can initiate transactions.
+
+Some of the ME subsystems that can be access via MEI driver:
+
+- Intel(R) Quiet System Technology (QST) is implemented as a firmware 
+subsystem  that  runs in the ME.  Programs that wish to expose the 
+health monitoring and fan speed control capabilities of Intel(R) QST 
+will need to use the MEI driver to communicate with the ME sub-system.
+- ASF is the "Alert Standard Format" which is an DMTF manageability 
+standard. It is implemented in the PC's hardware and firmware, and is 
+managed from a remote console.
+
+Most recent Intel desktop chipsets have one or more of the above ME 
+services. The MEI driver will make it possible to support the above 
+features on Linux and provides applications access to the ME and it's 
+features. The MEI drivers will also help bridge a current gap related to 
+lm_sensors support on recent desktop chipsets.
+
+
+Anas
+
 
