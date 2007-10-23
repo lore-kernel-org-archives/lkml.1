@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbXJWHZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbXJWH17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbXJWHZd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbXJWHZZ
+	id S1754049AbXJWH17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXJWH1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:25:25 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:11111 "EHLO kernel.dk"
+	Tue, 23 Oct 2007 03:27:52 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:11116 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752797AbXJWHZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:25:25 -0400
-Date: Tue, 23 Oct 2007 09:23:59 +0200
+	id S1751433AbXJWH1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 03:27:51 -0400
+Date: Tue, 23 Oct 2007 09:26:26 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: IDE crash...
-Message-ID: <20071023072359.GH25962@kernel.dk>
-References: <20071022.235010.59469063.davem@davemloft.net> <20071023070252.GA25962@kernel.dk> <20071023070932.GB25962@kernel.dk> <20071023.001850.130236174.davem@davemloft.net>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 08/10] [SG] Update arch/ to use sg helpers
+Message-ID: <20071023072626.GI25962@kernel.dk>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-9-git-send-email-jens.axboe@oracle.com> <471D11DC.20007@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023.001850.130236174.davem@davemloft.net>
+In-Reply-To: <471D11DC.20007@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Tue, 23 Oct 2007 09:09:33 +0200
+On Mon, Oct 22 2007, Benny Halevy wrote:
+> It looks like it could be nice to define and use a helper for
+> page_address(sg_page(sg)) (although 11 call sites could use it
+> after this patch)
 > 
-> > Eh this wont work, it's the wrong entry... Here's a temporary
-> > work-around.
-> > 
-> > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-> > index c89f0d3..108202b 100644
-> > --- a/drivers/ide/ide-io.c
-> > +++ b/drivers/ide/ide-io.c
-> > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
-> >  		return;
+> #define sg_pgaddr(sg) page_address(sg_page(sg))
+> 
+> Note that mips sg_{un,}map_sg checked for page_address(sg->page) != 0
+> before calling __dma_sync(addr + sg->offset, sg->length, direction)
+> and you changed it to addr = (unsigned long) sg_virt(sg) which
+> takes sg->offset into account.  That said I'm not sure if the original
+> code was correct for the (page_address(sg->page) == 0 && sg->offset != 0)
+> case...
+
+I initially thought that may have been a bug, but most of the other arch
+iommu code handle it in the same way. I don't think it's a bug, since
+they want to clear full page ranges anyway. I should not have changed
+this code to take the offset into account - I don't think it's an issue,
+but it should have been left as-is. Will do that.
+
+> > diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+> > index 5098f58..1a20fe3 100644
+> > --- a/arch/x86/kernel/pci-calgary_64.c
+> > +++ b/arch/x86/kernel/pci-calgary_64.c
+> > @@ -411,8 +411,10 @@ static int calgary_nontranslate_map_sg(struct device* dev,
+> >  	int i;
 > >  
-> >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
-> > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
-> >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
-> >  	} else {
-> >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+> >  	for_each_sg(sg, s, nelems, i) {
+> > -		BUG_ON(!s->page);
+> > -		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
+> > +		struct page *p = sg_page(s);
+> > +
+> > +		BUG_ON(!p);
 > 
-> That's the exact patch I'm about to boot test :-)
+> why not just BUG_ON(!sg_page(s))?
+> 
+> > +		s->dma_address = virt_to_bus(sg_virt(s));
+> >  		s->dma_length = s->length;
+> >  	}
+> >  	return nelems;
 
-That should work - once you verify that, would you mind testing this one
-as well? Thanks!
-
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 61c2e39..290836f 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1352,7 +1352,7 @@ new_segment:
- 			if (!sg)
- 				sg = sglist;
- 			else
--				sg = sg_next(sg);
-+				sg = sg_next_force(sg);
- 
- 			sg_dma_len(sg) = 0;
- 			sg_dma_address(sg) = 0;
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 42daf5e..a98a2ee 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -99,6 +99,22 @@ static inline struct scatterlist *sg_next(struct scatterlist *sg)
- 	return sg;
- }
- 
-+/**
-+ * sg_next_force - return the next scatterlist entry in a list
-+ * @sg:		   The current sg entry
-+ *
-+ * Description:
-+ *   Must only be used when more entries beyond this one is known to exist,
-+ *   as it clears the termination bit. Useful to avoid adding a full sg
-+ *   table init on every mapping.
-+ *
-+ **/
-+static inline struct scatterlist *sg_next_force(struct scatterlist *sg)
-+{
-+	sg->page_link &= ~0x02;
-+	return sg_next(sg);
-+}
-+
- /*
-  * Loop over each sg element, following the pointer to a new list if necessary
-  */
+I think because of a two stage conversion, the page variable addition
+predates the sg_virt() helper.
 
 -- 
 Jens Axboe
