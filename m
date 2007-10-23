@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXJWWwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXJWXEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbXJWWwq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbXJWWwh
+	id S1754569AbXJWXEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXJWXEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:52:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58501 "EHLO gate.crashing.org"
+	Tue, 23 Oct 2007 19:04:09 -0400
+Received: from mga03.intel.com ([143.182.124.21]:61819 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754811AbXJWWwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:52:35 -0400
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org>
-Cc: trond.myklebust@fys.uio.no, nfs@lists.sourceforge.net, neilb@suse.de,
-       bfields@fieldses.org, chuck.lever@oracle.com
+	id S1752728AbXJWXEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 19:04:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,320,1188802800"; 
+   d="scan'208";a="304232210"
+Message-ID: <471E7DCA.9030700@intel.com>
+Date: Tue, 23 Oct 2007 16:03:38 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Adam Jackson <ajax@redhat.com>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+References: <11931515302013-git-send-email-ajax@redhat.com> <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org> <20071023212026.GF7793@redhat.com>
+In-Reply-To: <20071023212026.GF7793@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: LTP ustat01 test fails on NFSROOT
-Date: Tue, 23 Oct 2007 17:52:44 -0500
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm looking into an issue with LTP's ustat01 & ustat02 tests in which  
-they report the following:
+Dave Jones wrote:
+> On Tue, Oct 23, 2007 at 04:40:01PM -0400, Jeff Garzik wrote:
+> 
+>  > > In any case, this patch should not be merged. We often send it around to users to
+>  > > debug their issue in case it involves eeproms, but merging it will just conceal
+>  > > the real issue and all of a sudden a flood of people stop reporting *real* issues
+>  > > to us.
+>  > 
+>  > Sorry, I disagree.  Just as with e100, if there is a clear way the user 
+>  > can recover their setup -- and Adam says his was effective -- I don't 
+>  > see why we should be denying users the ability to use their own hardware.
+>  
+> Indeed. This is a common enough problem that not including it causes more pain
+> than its worth.  I have two affected boxes myself that I actually thought
+> the hardware was dead before I tried ajax's patch.
 
-ustat01     1  FAIL  :  ustat(2) failed and setthe errno to 116 :  
-Stale NFS file handle
-ustat02     2  FAIL  :  ustat(2) failed to produce expected error;  
-14, errno: EFAULT and got 116
 
-It appears sometime between 2.6.21 and 2.6.22-rc1 some changes to NFS  
-got introduced that cause this.
+look: You should have reported this to us and you didn't. Now you are using the
+fact that you did not report it as an argument which is out of place.
 
-was wondering about any ideas while I try to debug what's going on.
+why do you say it is common? how often have you seen this and not reported it back
+to our support? are you willingly trying to frustrate this issue?
 
-thanks
 
-- k
+Auke
