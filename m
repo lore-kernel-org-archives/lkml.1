@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbXJWGZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXJWG3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752447AbXJWGZd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXJWGZZ
+	id S1752682AbXJWG3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXJWG3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:25:25 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:42029 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbXJWGZZ (ORCPT
+	Tue, 23 Oct 2007 02:29:32 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:44738 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbXJWG3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:25:25 -0400
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       torvalds@linux-foundation.org
-Subject: [PATCH] ide: build fix
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071023152506I.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 23 Oct 2007 15:25:06 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Tue, 23 Oct 2007 02:29:31 -0400
+Date: Tue, 23 Oct 2007 08:28:57 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Christoph Schmitt <schmichr@de.ibm.com>,
+       Swen Schillig <swen@vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org
+Subject: Re: [PATCH 04/10] [SG] Update drivers to use sg helpers
+Message-ID: <20071023062857.GB24546@osiris.boeblingen.de.ibm.com>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-5-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193076664-13652-5-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-git-drivers/ide/ide-probe.c: In function 'hwif_init':
-drivers/ide/ide-probe.c:1327: error: implicit declaration of function 'sg_init_table'
+On Mon, Oct 22, 2007 at 08:10:58PM +0200, Jens Axboe wrote:
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+You forgot s390's zfcp driver. But unfortunately the trivial fix below
+doesn't work. No more I/O possible. Swen and/or Christof could you
+provide a correct fix for this please? Thanks!
+
 ---
- drivers/ide/ide-probe.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/s390/scsi/zfcp_def.h |    4 ++--
+ drivers/s390/scsi/zfcp_erp.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index ec55a17..6a6f2e0 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -47,6 +47,7 @@
- #include <linux/spinlock.h>
- #include <linux/kmod.h>
- #include <linux/pci.h>
-+#include <linux/scatterlist.h>
+Index: linux-2.6/drivers/s390/scsi/zfcp_def.h
+===================================================================
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_def.h
++++ linux-2.6/drivers/s390/scsi/zfcp_def.h
+@@ -63,7 +63,7 @@
+ static inline void *
+ zfcp_sg_to_address(struct scatterlist *list)
+ {
+-	return (void *) (page_address(list->page) + list->offset);
++	return (void *) (page_address(sg_page(list) + list->offset));
+ }
  
- #include <asm/byteorder.h>
- #include <asm/irq.h>
--- 
-1.5.2.4
-
+ /**
+@@ -74,7 +74,7 @@ zfcp_sg_to_address(struct scatterlist *l
+ static inline void
+ zfcp_address_to_sg(void *address, struct scatterlist *list)
+ {
+-	list->page = virt_to_page(address);
++	sg_set_page(list, virt_to_page(address));
+ 	list->offset = ((unsigned long) address) & (PAGE_SIZE - 1);
+ }
+ 
+Index: linux-2.6/drivers/s390/scsi/zfcp_erp.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_erp.c
++++ linux-2.6/drivers/s390/scsi/zfcp_erp.c
+@@ -363,7 +363,7 @@ zfcp_erp_adisc(struct zfcp_port *port)
+ 	retval = -ENOMEM;
+  freemem:
+ 	if (address != NULL)
+-		__free_pages(send_els->req->page, 0);
++		__free_pages(sg_page(send_els->req), 0);
+ 	if (send_els != NULL) {
+ 		kfree(send_els->req);
+ 		kfree(send_els->resp);
+@@ -437,7 +437,7 @@ zfcp_erp_adisc_handler(unsigned long dat
+ 
+  out:
+ 	zfcp_port_put(port);
+-	__free_pages(send_els->req->page, 0);
++	__free_pages(sg_page(send_els->req), 0);
+ 	kfree(send_els->req);
+ 	kfree(send_els->resp);
+ 	kfree(send_els);
