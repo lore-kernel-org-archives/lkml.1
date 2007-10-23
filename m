@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbXJWTfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbXJWTjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbXJWTfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 15:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJWTf2
+	id S1752781AbXJWTjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 15:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXJWTjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 15:35:28 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:45994 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752068AbXJWTf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 15:35:27 -0400
-Date: Tue, 23 Oct 2007 15:35:26 -0400
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anas Nashif <nashif@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Marek Dabek <marek.dabek@intel.com>
-Subject: Re: [PATCH] Intel Manageability Engine Interface driver
-Message-ID: <20071023193526.GY4000@csclub.uwaterloo.ca>
-References: <471CDC5E.4010300@linux.intel.com> <20071022114001.40470c15.akpm@linux-foundation.org> <20071023150429.GK4003@csclub.uwaterloo.ca> <20071023092333.39982483@laptopd505.fenrus.org> <20071023180547.GL4003@csclub.uwaterloo.ca> <adar6jl6685.fsf@cisco.com>
+	Tue, 23 Oct 2007 15:39:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40374 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752115AbXJWTjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 15:39:05 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX1+Wrohu4hSWspA3DXOm0WlspS7um7hoh/gPQNHj/M
+	CUVe/YEmTOG297
+From: Helge Deller <deller@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] usb/core/message.c: scatterlist include fix
+Date: Tue, 23 Oct 2007 21:37:55 +0200
+User-Agent: KMail/1.9.7
+X-Face: &[jmHH-Dw>Aj):"[/t-VasJu+(5eP`/LEckV7V"JV,!nBy[6(/?#8M>x`5xzg/7:FkM.l@
+	13<&9'nfV3"OkD~P)@j{P2=(uB7J(){:CcrM2jZeA+IBq?FUTp3c8Y{t+k<95mZf~[v"':
+	t"f6wKtHUPFB&/]Z5^?9~IQs=16R;Pg"NS9JD=DK!ft&4b@S~&q/MfI3;qWqlg7Q1==jS4
+	9V5OJkm$WQ[dc^_Y']DvibvMjizUZ]+'Jd4UnM><yrT}Rw(
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <adar6jl6685.fsf@cisco.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200710232137.55661.deller@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 11:22:50AM -0700, Roland Dreier wrote:
-> It's not a hard experiment to do.
-> 
-> The answer is:
-> 
->     warning: suggest parentheses around assignment used as truth value
+This fixes following bug when building for parisc-linux:
 
-A warning is not an error.  It won't abort the compile.
+drivers/usb/core/message.c: In function `usb_sg_init':
+drivers/usb/core/message.c:440: error: implicit declaration of function `sg_virt'
 
-The warning (which I don't remember gcc doing in the past) is a nice
-idea though.
+Signed-off-by: Helge Deller <deller@gmx.de>
 
---
-Len Sorensen
+diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
+index 90d64a8..aae0196 100644
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -13,7 +13,7 @@
+ #include <linux/device.h>
+ #include <linux/usb/quirks.h>
+ #include <asm/byteorder.h>
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ 
+ #include "hcd.h"	/* for usbcore internals */
+ #include "usb.h"
