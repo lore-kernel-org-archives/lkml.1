@@ -1,46 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbXJWWUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbXJWWVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbXJWWUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXJWWUa
+	id S1755526AbXJWWVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXJWWVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:20:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:36583 "EHLO mail.goop.org"
+	Tue, 23 Oct 2007 18:21:10 -0400
+Received: from palrel13.hp.com ([156.153.255.238]:43474 "EHLO palrel13.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbXJWWU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:20:29 -0400
-Message-ID: <471E73AB.4050100@goop.org>
-Date: Tue, 23 Oct 2007 15:20:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
-References: <1193126771.23935.79.camel@caritas-dev.intel.com> <471E70E0.2090802@goop.org> <471E729F.3000105@zytor.com>
-In-Reply-To: <471E729F.3000105@zytor.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1753471AbXJWWVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:21:08 -0400
+X-Greylist: delayed 1153 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Oct 2007 18:21:08 EDT
+Date: Tue, 23 Oct 2007 16:54:59 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: jens.axboe@oracle.com
+Cc: linux-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH 1/1] cciss: update copyright notices
+Message-ID: <20071023215459.GA5861@roadking.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> No, he doesn't.  The boot protocol version is communication between
-> the boot loader and the kernel (specifically, it is communication FROM
-> the kernel TO the bootloader), not between internal bits of the
-> kernel.  Th
+PATCH 1 of 1
 
-So the bootloader will only fill out fields the kernel claims to understand?
+This patch updates the copyright information for the cciss driver. It
+includes extending the year to 2007 (how timely) and some minor corrections
+deemed necessary by HP legal and the Open Source Review Board. Please
+consider this patch for inclusion.
 
-> Since the pointer is safely inside the setup template, even if the
-> bootloader doesn't understand boot protocol version 2.08 it will have
-> copied it.
-
-
-OK.
-
-    J
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+--------------------------------------------------------------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index e330c26..cd37e92 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1,20 +1,20 @@
+ /*
+- *    Disk Array driver for HP SA 5xxx and 6xxx Controllers
+- *    Copyright 2000, 2006 Hewlett-Packard Development Company, L.P.
++ *    Disk Array driver for HP Smart Array controllers.
++ *    (C) Copyright 2000, 2007 Hewlett-Packard Development Company, L.P.
+  *
+  *    This program is free software; you can redistribute it and/or modify
+  *    it under the terms of the GNU General Public License as published by
+- *    the Free Software Foundation; either version 2 of the License, or
+- *    (at your option) any later version.
++ *    the Free Software Foundation; version 2 of the License.
+  *
+  *    This program is distributed in the hope that it will be useful,
+  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- *    NON INFRINGEMENT.  See the GNU General Public License for more details.
++ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ *    General Public License for more details.
+  *
+  *    You should have received a copy of the GNU General Public License
+  *    along with this program; if not, write to the Free Software
+- *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ *    02111-1307, USA.
+  *
+  *    Questions/Comments/Bugfixes to iss_storagedev@hp.com
+  *
+diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
+index 4aca7dd..63ee6c0 100644
+--- a/drivers/block/cciss_scsi.c
++++ b/drivers/block/cciss_scsi.c
+@@ -1,20 +1,20 @@
+ /*
+- *    Disk Array driver for Compaq SA53xx Controllers, SCSI Tape module
+- *    Copyright 2001 Compaq Computer Corporation
++ *    Disk Array driver for HP Smart Array controllers, SCSI Tape module.
++ *    (C) Copyright 2001, 2007 Hewlett-Packard Development Company, L.P.
+  *
+  *    This program is free software; you can redistribute it and/or modify
+  *    it under the terms of the GNU General Public License as published by
+- *    the Free Software Foundation; either version 2 of the License, or
+- *    (at your option) any later version.
++ *    the Free Software Foundation; version 2 of the License.
+  *
+  *    This program is distributed in the hope that it will be useful,
+  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- *    NON INFRINGEMENT.  See the GNU General Public License for more details.
++ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ *    General Public License for more details.
+  *
+  *    You should have received a copy of the GNU General Public License
+  *    along with this program; if not, write to the Free Software
+- *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *    Foundation, Inc., 59 Temple Place, Suite 300, Boston, MA
++ *    02111-1307, USA.
+  *
+  *    Questions/Comments/Bugfixes to iss_storagedev@hp.com
+  *    
+diff --git a/drivers/block/cciss_scsi.h b/drivers/block/cciss_scsi.h
+index 5e7e06c..d9c2c58 100644
+--- a/drivers/block/cciss_scsi.h
++++ b/drivers/block/cciss_scsi.h
+@@ -1,20 +1,20 @@
+ /*
+- *    Disk Array driver for Compaq SA53xx Controllers, SCSI Tape module
+- *    Copyright 2001 Compaq Computer Corporation
++ *    Disk Array driver for HP Smart Array controllers, SCSI Tape module.
++ *    (C) Copyright 2001, 2007 Hewlett-Packard Development Company, L.P.
+  *
+  *    This program is free software; you can redistribute it and/or modify
+  *    it under the terms of the GNU General Public License as published by
+- *    the Free Software Foundation; either version 2 of the License, or
+- *    (at your option) any later version.
++ *    the Free Software Foundation; version 2 of the License.
+  *
+  *    This program is distributed in the hope that it will be useful,
+  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- *    NON INFRINGEMENT.  See the GNU General Public License for more details.
++ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ *    General Public License for more details.
+  *
+  *    You should have received a copy of the GNU General Public License
+  *    along with this program; if not, write to the Free Software
+- *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *    Foundation, Inc., 59 Temple Place, Suite 300, Boston, MA
++ *    02111-1307, USA.
+  *
+  *    Questions/Comments/Bugfixes to iss_storagedev@hp.com
+  *
