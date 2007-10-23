@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbXJWERX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbXJWESZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbXJWERX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 00:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbXJWERP
+	id S1754153AbXJWESZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 00:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbXJWEST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 00:17:15 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49658 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751484AbXJWERO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 00:17:14 -0400
-Date: Mon, 22 Oct 2007 21:17:09 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Paul Menage <menage@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, mingo@elte.hu,
-       dmitry.adamushko@gmail.com, ghaskins@novell.com, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
-Message-Id: <20071022211709.7be79fea.pj@sgi.com>
-In-Reply-To: <20071023032916.651749224@goodmis.org>
-References: <20071023025900.927578809@goodmis.org>
-	<20071023032916.651749224@goodmis.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Tue, 23 Oct 2007 00:18:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:44450 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751113AbXJWESS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 00:18:18 -0400
+Subject: [PATCH] Allow sysfs_remove_group() to be called on non-added groups
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Greg KH <greg@kroah.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071023032836.GC7486@kroah.com>
+References: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
+	 <dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
+	 <20071023032836.GC7486@kroah.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 14:18:17 +1000
+Message-Id: <1193113097.2898.14.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven wrote:
-> +void cpuset_rt_set_overload(struct task_struct *tsk, int cpu)
-> +{
-> +	cpu_set(cpu, task_cs(tsk)->rt_overload);
-> +}
+It would be nice to be able to do:
 
-Question for Steven:
+for_each_thing(thing) {
+ 	error = sysfs_create_group(&thing->kobj, attrs);
+ 	if (error) {
+ 		for_each_thing(thing)
+ 			sysfs_remove_group(&thing->kobj, attrs);
+		return error;
+	}
+}
 
-  What locks are held when cpuset_rt_set_overload() is called?
+But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
+were never added.
 
-Questions for Paul Menage:
+As discussed here ...
+http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
 
-  Does 'tsk' need to be locked for the above task_cs() call?
+.. we should just return in that case instead of BUG'ing.
 
-  Background concern -- one of the things that I like to think has
-  allowed cpusets to be useful to others is the careful documentation
-  of its locking requirements.  I hope that the cgroup infrastructure,
-  and the portions of the cpuset code, such as this task_cs() call,
-  that were adapted to work with cgroups, have their locking needs
-  documented as well.  I suspect that there is still some presence of
-  stale cpuset locking comments, and perhaps an absence of complete
-  comments on new cgroup locking needs.  My recollection is that this
-  is already on your todo list -- I'm just being annoying here ;).
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ fs/sysfs/group.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index f318b73..a256775 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
+ 
+ 	if (grp->name) {
+ 		sd = sysfs_get_dirent(dir_sd, grp->name);
+-		BUG_ON(!sd);
++		if (!sd)
++			return;
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+1.5.1.3.g7a33b
+
+
+
