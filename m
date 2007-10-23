@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXJWT4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbXJWUA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbXJWT4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 15:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXJWT4b
+	id S1753521AbXJWUA0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 16:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXJWUAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 15:56:31 -0400
-Received: from mail.suse.de ([195.135.220.2]:50743 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753517AbXJWT4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 15:56:30 -0400
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 09/10] Change table chaining layout
-From: Andi Kleen <andi@firstfloor.org>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-	<471E2A96.7050304@panasas.com> <20071023183321.GA14671@kernel.dk>
-Date: Tue, 23 Oct 2007 21:56:28 +0200
-In-Reply-To: <20071023183321.GA14671@kernel.dk> (Jens Axboe's message of "Tue\, 23 Oct 2007 20\:33\:21 +0200")
-Message-ID: <p738x5t4nbn.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 23 Oct 2007 16:00:15 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:64910 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbXJWUAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 16:00:13 -0400
+Subject: [RFC PATCH 0/2] use virtual time for CFS on s390
+From: Jan Glauber <jang@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefksy <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 22:02:08 +0200
+Message-Id: <1193169728.5922.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+Hi Ingo,
 
->> You might want to put a BUG_ON(page & 0x3); Make sure
->> you're not loosing information. (The m68k problem)
->
-> That's a really good idea, thanks Boaz! I'll add that.
+an outcome from the previous discussion about a virtual sched_clock() on s390
+was that scheduler_tick() should also be called based on virtual time.
+The second patch changes the scheduler_tick() call to only happen after a tick
+passed for the virtual cpu.
 
-It would be even better if you replaced all the magic numbers with defines
-or better accessors.
+The patches cause nothing obvious to break, numbers from top look sane but 
+I've seen something strange...
 
--Andi
+For a simple make -j6 workload top reports processes very often to be in 
+state <defunct>. Thats' not terribly wrong since this can happens also 
+without the patches but I wonder if this indicates that the scheduler behaves
+badly and does less often schedule the parent processes that gathers the 
+waiting zombie processes?
+
+Are there any indicators in the sched_debug output that I could look for?
+
+Jan
+
