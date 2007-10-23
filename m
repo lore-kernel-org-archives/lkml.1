@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbXJWJXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXJWJ2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbXJWJXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXJWJXb
+	id S1752822AbXJWJ2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbXJWJ2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:23:31 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:36682
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbXJWJXa (ORCPT
+	Tue, 23 Oct 2007 05:28:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52828 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbXJWJ2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:23:30 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: linux-wireless@vger.kernel.org
-Subject: Fwd: b43legacy maintainer needed
-Date: Tue, 23 Oct 2007 11:22:32 +0200
-User-Agent: KMail/1.9.6
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 05:28:42 -0400
+Date: Tue, 23 Oct 2007 11:28:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       dean gaudet <dean@arctic.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>
+Subject: Re: Interaction between Xen and XFS: stray RW mappings
+Message-ID: <20071023092838.GA24536@one.firstfloor.org>
+References: <4712A254.4090604@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au> <alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org> <471C1A61.1010001@goop.org> <p73sl439s7k.fsf@bingen.suse.de> <471CEEB4.9040807@goop.org> <20071022190740.GA1695@one.firstfloor.org> <20071022223224.GC995458@sgi.com> <20071022233514.GA9057@one.firstfloor.org> <20071023003641.GF995458@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710231122.32585.mb@bu3sch.de>
+In-Reply-To: <20071023003641.GF995458@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forwarding this to more public places. :)
+On Tue, Oct 23, 2007 at 10:36:41AM +1000, David Chinner wrote:
+> > That doesn't mean it is correct.
+> 
+> Right, but it also points to the fact that it's not causing problems
+> from 99.999% of ppl out there.
 
-----------  Forwarded Message  ----------
+So you're waiting for someone to take months to debug this again? 
 
-Subject: b43legacy maintainer needed
-Date: Tuesday 23 October 2007
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Broadcom Linux <bcm43xx-dev@lists.berlios.de>
+> You mean like vmap() could record the pages passed to it in the area->pages
+> array, 
 
-As you have seen in a previous E-mail, I have resigned as maintainer of bcm43xx and b43legacy. No
-replacement will be needed for bcm43xx as it will not be in the kernel much longer.
+The page tables contain pointers to the pages anyways. vunmap() has to walk 
+them.  It would not be very difficult to store them in an array during
+the walk.
 
-The effort required to maintain b43legacy should be minimal. For the past several months, most of
-what I have done is take b43 patches written by Michael Buesch and port them to b43legacy.
+> 
+> If we did this, it would probably be best to pass a page release function
+> into the vmap or vunmap call - we'd need page_cache_release() called on
+> the page rather than __free_page()....
 
-Besides the obvious programming experience, the maintainer should have a BCM4306/2 card. If you have
-a laptop with a PCMCIA slot, I have an extra Linksys WPC54G with that chip that you could have.
+Possible. Normally vmalloc pages should not be in the LRU except yours
+so it would be probably fine to just change it.
 
-If you are interested, please write to me.
+> The solution belongs behind the vmap/vunmap interface, not in XFS....
 
-Thanks,
+You could also just keep the array from map time around yourself. 
+Then you could do it yourself.
 
-Larry
-
--------------------------------------------------------
-
--- 
-Greetings Michael.
+-Andi
