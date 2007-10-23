@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbXJWQfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXJWQmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbXJWQfS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbXJWQfC
+	id S1753394AbXJWQmQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXJWQmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:35:02 -0400
-Received: from www17.your-server.de ([213.133.104.17]:49886 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbXJWQfA (ORCPT
+	Tue, 23 Oct 2007 12:42:03 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52608 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbXJWQmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:35:00 -0400
-Message-ID: <471E22A8.5070702@m3y3r.de>
-Date: Tue, 23 Oct 2007 18:34:48 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Tue, 23 Oct 2007 12:42:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=KUKohehvevF8qYizQeqzAzS753eoVN5J9j+IlNcYMbx6jApGL2xz5FevEm71/86ED
+	EylU11/e2uHQnBEoyZ59A==
+Message-ID: <6599ad830710230941y5d175688ob3a4d9ac42ba8c8f@mail.gmail.com>
+Date: Tue, 23 Oct 2007 09:41:49 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071023164704.GE4667@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kexec: gets stuck in acpi_idle_enter_bm with 0895e91d60ef9bdef426d1ce14bb94bd5875870d
-References: <471E194F.9010602@m3y3r.de> <471E1DF0.7030008@m3y3r.de>
-In-Reply-To: <471E1DF0.7030008@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Disposition: inline
+References: <471D4523.4040509@google.com>
+	 <20071023164704.GE4667@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer schrieb:
-> Thomas Meyer schrieb:
->   
->> i try to kexec from 0895e91d60ef9bdef426d1ce14bb94bd5875870d into
->> another (older) commit kernel after 2.6.23 (bisect) and the kernel gets
->> stuck:
->>
->> PID: 0, comm: swapper
->> EIP is at acpi_idle_enter_bm+0x258/0x2fa (processor)
->>
->> -> cpuidle_idle_call+0x5c/0x81
->> -> cpuidle_idle_call+0x0/0x81
->> -> cpu_idle+0xab/0xcc
->> -> start_kernel+0x329/0x331
->> -> unknown_bootoption+0x0/0x196
->>
->>
->>   
->>     
-> 2.6.23-current-git:
+On 10/23/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> > Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
+> > milliseconds for that cgroup's tasks
 >
-> http://m3y3r.de/bilder/2.6.23-rc0-kexec-stuck.jpg
->
-> this seems also to happen in 2.6.23:
->
-> http://m3y3r.de/bilder/2.6.23-kexec-stuck.jpg
->
->
->   
-I am sorry again.
+> It would be nice to split this into user and sys time at some point.
 
-The gentoo reboot runlevel sequence seem to stuck somewhere and who. so
-the kernel is actually idleing...
+Sounds reasonable - but does CFS track this?
 
-This is very likely not a kernel problem.
+> We have also received request to provide idle time for a
+> container/cgroup.
 
-sorry for the disturbance!
+The semantics of "idle time" for a cgroup on a shared system seem a
+bit fuzzy. How would you define it?
 
+Suppose you have two cgroups that would each want to use, say, 55% of
+a CPU - technically they should each be regarded as having 45% idle
+time, but if they run on a the same CPU the chances are that they will
+both always have some processes on their runqueue due to contention
+with the other group. So how would you measure the difference between
+this and a cgroup that really is trying to use 100%?
+
+Paul
