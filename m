@@ -1,166 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbXJWU7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXJWVCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbXJWU7A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 16:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJWU6w
+	id S1753899AbXJWVCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbXJWVCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 16:58:52 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:56696 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751935AbXJWU6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 16:58:51 -0400
-Subject: [GIT PATCH] final SCSI pieces for the merge window
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 16:58:48 -0400
-Message-Id: <1193173128.3434.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Tue, 23 Oct 2007 17:02:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:23862 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752439AbXJWVCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:02:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,320,1188802800"; 
+   d="scan'208";a="183960151"
+Message-ID: <471E6121.9010008@intel.com>
+Date: Tue, 23 Oct 2007 14:01:21 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+References: <11931515302013-git-send-email-ajax@redhat.com>	 <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org>
+In-Reply-To: <471E5C21.8030908@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should be the final SCSI updates; it's mainly just a few accessor
-completion updates and two driver merges (sym2 and qla2xxx) we also
-secured DaveM's agreement to remove fcal/fc4, which explains the high
-removal line count.
-
-The patch is available here:
-
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-
-The short changelog is:
-
-Adrian Bunk (3):
-      gdth: __init fixes
-      aic7xxx_old: fix accidental logic reversal
-      lpfc: lpfc_debugfs.c: fix typo
-
-Alan Cox (1):
-      initio: Fix merge fallout
-
-Andrew Morton (1):
-      qla2xxx: printk fixes
-
-Andrew Vasquez (8):
-      qla2xxx: Update version number to 8.02.00-k5.
-      qla2xxx: Correct display of ISP serial-number.
-      qla2xxx: Correct residual-count handling discrepancies during UNDERRUN han
-      qla2xxx: Make driver (mostly) legacy I/O port free.
-      qla2xxx: Fix issue where final flash-segment updates were falling into the
-      qla2xxx: Handle unaligned sector writes during NVRAM/VPD updates.
-      qla2xxx: Defer explicit interrupt-polling processing to init-time scenario
-      qla2xxx: Resync with latest HBA SSID specification -- 2.2u.
-
-Hannes Reinecke (3):
-      aic7xxx: Fix firmware build
-      aic7xxx: Update Maintainer information
-      aic7xxx: Add suspend/resume support
-
-HighPoint Linux Team (1):
-      hptiop: avoid buffer overflow when returning sense data
-
-James Bottomley (2):
-      make supported_mode default to initiator.
-      include linux/scatterlist.h in scsi_eh.h
-
-Johannes Dickgreber (2):
-      qla1280: eliminate wasted space in request and response ring
-      qla1280: uses wrong failure path after failed pci_set_dma_mask
-
-Kai Makisara (1):
-      sym53c8xx: Work around 53c896 erratum
-
-Linas Vepstas (1):
-      sym53c8xx: PCI Error Recovery support
-
-Matthew Wilcox (16):
-      sym53c8xx: Remove sym_xpt_async_sent_bdr
-      sym53c8xx: Remove pci_dev pointer from sym_shcb
-      sym53c8xx: Make interrupt handler capable of returning IRQ_NONE
-      sym53c8xx: Get rid of IRQ_FMT and IRQ_PRM
-      sym53c8xx: Use scmd_printk where appropriate
-      sym53c8xx: Simplify DAC DMA handling
-      sym53c8xx: Remove tag_ctrl module parameter
-      sym53c8xx: Remove io_ws, mmio_ws and ram_ws elements
-      sym53c8xx: Remove ->device_id
-      sym53c8xx: Use pdev->revision
-      sym53c8xx: Stop overriding scsi_done
-      sym53c8xx: Don't disable interrupts in the interrupt handler
-      sym53c8xx: Remove unnecessary check in queuecommand
-      sym53c8xx: Remove data_mapping and data_mapped
-      sym53c8xx: Use pci_dev irq number
-      fc4: remove this and all associated drivers
-
-and the diffstat:
-
- b/Documentation/scsi/sym53c8xx_2.txt              |   21 
- b/MAINTAINERS                                     |    6 
- b/arch/sparc64/Kconfig                            |    2 
- b/drivers/Makefile                                |    1 
- b/drivers/scsi/Makefile                           |    2 
- b/drivers/scsi/aic7xxx/aic7770.c                  |   16 
- b/drivers/scsi/aic7xxx/aic79xx.h                  |   11 
- b/drivers/scsi/aic7xxx/aic79xx_core.c             |    7 
- b/drivers/scsi/aic7xxx/aic79xx_osm.c              |    4 
- b/drivers/scsi/aic7xxx/aic79xx_osm_pci.c          |   50 
- b/drivers/scsi/aic7xxx/aic79xx_pci.c              |   27 
- b/drivers/scsi/aic7xxx/aic7xxx.h                  |   11 
- b/drivers/scsi/aic7xxx/aic7xxx_osm.c              |    4 
- b/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c          |   46 
- b/drivers/scsi/aic7xxx/aic7xxx_pci.c              |   16 
- b/drivers/scsi/aic7xxx/aicasm/aicasm_macro_scan.l |    3 
- b/drivers/scsi/aic7xxx_old.c                      |    2 
- b/drivers/scsi/gdth.c                             |    6 
- b/drivers/scsi/hosts.c                            |    6 
- b/drivers/scsi/hptiop.c                           |    5 
- b/drivers/scsi/initio.c                           |    6 
- b/drivers/scsi/lpfc/lpfc_debugfs.c                |    2 
- b/drivers/scsi/qla1280.c                          |    4 
- b/drivers/scsi/qla1280.h                          |    4 
- b/drivers/scsi/qla2xxx/qla_attr.c                 |    9 
- b/drivers/scsi/qla2xxx/qla_def.h                  |    1 
- b/drivers/scsi/qla2xxx/qla_devtbl.h               |    7 
- b/drivers/scsi/qla2xxx/qla_iocb.c                 |    2 
- b/drivers/scsi/qla2xxx/qla_isr.c                  |    8 
- b/drivers/scsi/qla2xxx/qla_mbx.c                  |    2 
- b/drivers/scsi/qla2xxx/qla_os.c                   |   50 
- b/drivers/scsi/qla2xxx/qla_sup.c                  |   30 
- b/drivers/scsi/qla2xxx/qla_version.h              |    2 
- b/drivers/scsi/scsi_error.c                       |    1 
- b/drivers/scsi/scsi_sysfs.c                       |   10 
- b/drivers/scsi/sym53c8xx_2/sym53c8xx.h            |    1 
- b/drivers/scsi/sym53c8xx_2/sym_fw.c               |   18 
- b/drivers/scsi/sym53c8xx_2/sym_fw.h               |    2 
- b/drivers/scsi/sym53c8xx_2/sym_glue.c             |  581 +++++------
- b/drivers/scsi/sym53c8xx_2/sym_glue.h             |   16 
- b/drivers/scsi/sym53c8xx_2/sym_hipd.c             |  159 +--
- b/drivers/scsi/sym53c8xx_2/sym_hipd.h             |   22 
- b/drivers/scsi/sym53c8xx_2/sym_nvram.c            |    2 
- b/include/scsi/scsi_eh.h                          |    2 
- drivers/fc4/Kconfig                               |   81 -
- drivers/fc4/Makefile                              |    9 
- drivers/fc4/fc-al.h                               |   27 
- drivers/fc4/fc.c                                  | 1146 ----------------------
- drivers/fc4/fc.h                                  |  230 ----
- drivers/fc4/fc_syms.c                             |   30 
- drivers/fc4/fcp.h                                 |   94 -
- drivers/fc4/fcp_impl.h                            |  164 ---
- drivers/fc4/soc.c                                 |  764 --------------
- drivers/fc4/soc.h                                 |  301 -----
- drivers/fc4/socal.c                               |  904 -----------------
- drivers/fc4/socal.h                               |  314 ------
- drivers/scsi/fcal.c                               |  317 ------
- drivers/scsi/fcal.h                               |   27 
- drivers/scsi/pluto.c                              |  349 ------
- drivers/scsi/pluto.h                              |   47 
- 60 files changed, 675 insertions(+), 5316 deletions(-)
-
-James
+Jeff Garzik wrote:
+> Kok, Auke wrote:
+>> Adam Jackson wrote:
+>>> On Tue, 2007-10-23 at 09:18 -0700, Kok, Auke wrote:
+>>>> Adam Jackson wrote:
+>>>>> When the EEPROM gets corrupted, you can fix it with ethtool, but
+>>>>> only if
+>>>>> the module loads and creates a network device.  But, without this
+>>>>> option,
+>>>>> if the EEPROM is corrupted, the driver will not create a network
+>>>>> device.
+>>>>>
+>>>>> Signed-off-by: Adam Jackson <ajax@redhat.com>
+>>>> NAK
+>>>>
+>>>> wrong list, not sent to me, and while for e100 I was OK with this
+>>>> patch, for e1000
+>>>> it really does not make sense to 'just allow' a bad checksum - if
+>>>> your eeprom is
+>>>> randomly messed up then you cannot just fix it like this anyway.
+>>> That's strange, I managed to recover an otherwise horked e1000 with it.
+>>> What should I have done instead?
+>>
+>>
+>> Dump the eeprom and send us a copy, plus any and all information to
+>> the card,
+>> system etc.. I realize that you need the patch to actually create it
+>> but the
+>> danger is that people will start using it *without* troubleshooting
+>> the real
+>> issue. In various systems the eeprom checksum failure is actually due
+>> to a
+>> misconfigured powersavings feature and the checksum is really not bad
+>> at all, but
+>> the card just reports random values.
+>>
+>> In any case, this patch should not be merged. We often send it around
+>> to users to
+>> debug their issue in case it involves eeproms, but merging it will
+>> just conceal
+>> the real issue and all of a sudden a flood of people stop reporting
+>> *real* issues
+>> to us.
+> 
+> 
+> Sorry, I disagree.  Just as with e100, if there is a clear way the user
+> can recover their setup -- and Adam says his was effective -- I don't
+> see why we should be denying users the ability to use their own hardware.
 
 
+That's not even relevant, I already offer the same patch offline to people who
+*really* only have a wrong checksum, AFTER we check the contents of their eeprom
+for them.
+
+We help everyone out, and if you merge this patch you will prevent users from
+getting to us for support in the first place.
+
+I realize that we should probably document the "bad eeprom checksum" case more
+decently but I think merging this patch is a bad idea for the *user* in all cases.
+
+You completely bypass the fact that e100 eeproms and e1000 eeproms are completely
+different beasts as well, one can be practically empty in all cases (e100), the
+other one every bit counts (most e1000's), which is an unfair representation and
+falsely tells the user that he can just do this without any information or
+disclaimer as to what he may expect afterwards.
+
+
+Auke
