@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbXJWS3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbXJWS31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbXJWS3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 14:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJWS3A
+	id S1755395AbXJWS31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 14:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXJWS3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 14:29:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:64112 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbXJWS27 (ORCPT
+	Tue, 23 Oct 2007 14:29:08 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:59646 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267AbXJWS3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 14:28:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SLfG3VSnC9BoTlsIaS95iGCUuUtZ1eGoQOe0zqA1Ux9OOY5V2/L8+pgJbvsdXfGYmTC0F189Rbfj7Evegxx1e8iHz1ntGLuNo0+nr0QomoQZQks8Kn5MFeOTc6xlQzhW8JukT66hCdwl47IO6e8n/hh7Jpzacm8BKL+0+rqvfcQ=
-Message-ID: <9e0cf0bf0710231128r7d1e0218n1b954037faad738c@mail.gmail.com>
-Date: Tue, 23 Oct 2007 20:28:56 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>
+	Tue, 23 Oct 2007 14:29:06 -0400
 Subject: Re: [BUG] rfcomm]
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
        bluez-devel@lists.sourceforge.net
-In-Reply-To: <1193164006.6184.217.camel@violet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In-Reply-To: <9e0cf0bf0710231127o485a52e1sc7a06df7c8bc0189@mail.gmail.com>
 References: <200710231950.31313.alon.barlev@gmail.com>
 	 <1193162106.6184.208.camel@violet>
-	 <9e0cf0bf0710231057lf60ce17ldd38489850cdf7c5@mail.gmail.com>
-	 <1193164006.6184.217.camel@violet>
+	 <Pine.LNX.4.64.0710232004260.18815@twin.jikos.cz>
+	 <1193163905.6184.214.camel@violet>
+	 <9e0cf0bf0710231127o485a52e1sc7a06df7c8bc0189@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 20:30:10 +0200
+Message-Id: <1193164210.6184.221.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/07, Marcel Holtmann <marcel@holtmann.org> wrote:
-> still another one to go :( Anyway since you have experience and you have
-> a way to reproduce it, please test the latest kernel from Linus' Git
-> tree.
+Hi Alon,
 
-I can reproduce this.
-But I cannot use git snapshot as I have too much dependencies.
+> > nice. I've never used it. Currently I am using what comes with Ubuntu
+> > 7.10 and that seems to work.
+> 
+> Have you tried to suspend while pppd is using rfcomm?
+> 
+> The fact that it happens with suspend2 and uswsusp means that the
+> issue is suspend blind.
+> Do you need any more information in order to determine what is the problem?
 
-> I can also whip up a patch that disables the device_move() usage and see
-> if that is the reason for the falling over.
+the code in net/bluetooth/rfcomm/tty.c contains two calls to
+device_move(). Please comment these out and try again. At least then we
+know that it is in issue on how we use the driver model.
 
-This would be nice!
-I can test separate patches.
+Regards
 
-Best Regards,
-Alon Bar-Lev.
+Marcel
+
+
