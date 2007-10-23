@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXJWPsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbXJWPtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbXJWPsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbXJWPsE
+	id S1753608AbXJWPtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXJWPtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:48:04 -0400
-Received: from mail0.scram.de ([78.47.204.202]:35260 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752218AbXJWPsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:48:01 -0400
-X-Spam-Score: -4.046
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.4 AWL AWL: From: address is in the auto white-list
-Message-ID: <471E179F.6050605@scram.de>
-Date: Tue, 23 Oct 2007 17:47:43 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Tue, 23 Oct 2007 11:49:07 -0400
+Received: from www17.your-server.de ([213.133.104.17]:39818 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511AbXJWPtG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 11:49:06 -0400
+Message-ID: <471E17E6.6060304@m3y3r.de>
+Date: Tue, 23 Oct 2007 17:48:54 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Scott Wood <scottwood@freescale.com>, Carsten Juttner <carjay@gmx.net>,
-       linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
-       linuxppc-embedded@ozlabs.org
-Subject: Re: [i2c] [PATCH take2] [POWERPC] i2c: adds support for i2c bus on
-  8xx
-References: <47134A94.60606@scram.de>	<20071015183107.GA4361@loki.buserror.net>	<47166085.1010608@scram.de> <20071017230027.334a5f48@hyperion.delvare>
-In-Reply-To: <20071017230027.334a5f48@hyperion.delvare>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one() with 4fa435018d740cb83d74c92306aa1f796da91ddd
+References: <471E1764.5040000@m3y3r.de>
+In-Reply-To: <471E1764.5040000@m3y3r.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Thomas Meyer schrieb:
+> Oct 23 17:13:55 [kernel] usb 1-1: new high speed USB device using
+> ehci_hcd and address 7
+> Oct 23 17:13:55 [kernel] usb 1-1: configuration #1 chosen from 1 choice
+> Oct 23 17:13:55 [kernel] hub 1-1:1.0: USB hub found
+> Oct 23 17:13:55 [kernel] hub 1-1:1.0: 4 ports detected
+> Oct 23 17:13:55 [kernel] sysfs: duplicate filename 'bInterfaceNumber'
+> can not be created
+> Oct 23 17:13:55 [kernel] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> Oct 23 17:13:55 [kernel]  [<c01a37f0>] sysfs_add_one+0x54/0xb8
+> Oct 23 17:13:55 [kernel]  [<c01a332a>] sysfs_add_file+0x42/0x6a
+> Oct 23 17:13:55 [kernel]  [<c01a4a01>] sysfs_create_group+0x84/0xe7
+> Oct 23 17:13:55 [kernel]  [<c023e5ec>] device_add+0x44a/0x454
+> Oct 23 17:13:55 [kernel]  [<f88e774c>]
+> usb_create_sysfs_intf_files+0x24/0x98 [usbcore]
+> Oct 23 17:13:55 [kernel]  [<f88e4181>] usb_set_configuration+0x48f/0x4a9
+> [usbcore]
+> Oct 23 17:13:55 [kernel]  [<f88eabf3>] generic_probe+0x50/0x91 [usbcore]
+> Oct 23 17:13:55 [kernel]  [<f88e5817>] usb_probe_device+0x32/0x37 [usbcore]
+> Oct 23 17:13:55 [kernel]  [<c023fc11>] driver_probe_device+0xc5/0x148
+> Oct 23 17:13:55 [kernel]  [<c02d94bd>] klist_next+0x4b/0x6b
+> Oct 23 17:13:55 [kernel]  [<c023f14a>] bus_for_each_drv+0x35/0x5c
+> Oct 23 17:13:55 [kernel]  [<c023fd17>] device_attach+0x63/0x77
+> Oct 23 17:13:55 [kernel]  [<c023fc94>] __device_attach+0x0/0x5
+> Oct 23 17:13:55 [kernel]  [<c023f0c6>] bus_attach_device+0x26/0x75
+> Oct 23 17:13:55 [kernel]  [<c023e43d>] device_add+0x29b/0x454
+> Oct 23 17:13:55 [kernel]  [<f88dfc2e>] usb_new_device+0x4d/0x8a [usbcore]
+> Oct 23 17:13:55 [kernel]  [<f88e1149>] hub_thread+0x6f5/0xae2 [usbcore]
+> Oct 23 17:13:55 [kernel]  [<c02d9e72>] schedule+0x4b4/0x519
+> Oct 23 17:13:55 [kernel]  [<c013a1e1>] autoremove_wake_function+0x0/0x33
+> Oct 23 17:13:55 [kernel]  [<f88e0a54>] hub_thread+0x0/0xae2 [usbcore]
+> Oct 23 17:13:55 [kernel]  [<c013a119>] kthread+0x38/0x5f
+> Oct 23 17:13:55 [kernel]  [<c013a0e1>] kthread+0x0/0x5f
+> Oct 23 17:13:55 [kernel]  [<c0107bb7>] kernel_thread_helper+0x7/0x10
+> Oct 23 17:13:55 [kernel]  =======================
+>
+>
+>
+>   
+Sorry. This happens with 0895e91d60ef9bdef426d1ce14bb94bd5875870d...
 
-> On Wed, 17 Oct 2007 21:20:37 +0200, Jochen Friedrich wrote:
->>>> +	/* Select an arbitrary address.  Just make sure it is unique.
->>>> +	 */
->>>> +	out_8(&i2c->i2c_i2add, 0xfe);
->>>>     
->>> It's a 7-bit address...  and are you sure that 0x7e is unique?  Does this
->>> driver even support slave operation?
->>>   
->> It's in fact 0x7F << 1. The same value is used in the 2.4 driver and
->> in u-boot, as well. Slave operation is not supported.
-> 
-> I'm not sure what exactly you are doing here, but 0x7f isn't a valid
-> 7-bit I2C address.
 
-That's most probably the reason why it is used everywhere in the CPM world
-(old driver, u-boot) ;-)
-
-According to the documentation, the CPM enters a loopback mode as soon
-as a write access to the I2C address written to i2c_i2add takes place.
-This even happens if the CPM is set to master mode. So the only way to make
-sure there are no limitations to the I2C addresses which can be used is to
-use this invalid address. 0x00 can't be used either or no I2C broadcasts
-would be possible.
-
->From the MPC-823 documentation:
-
-16.13.3.1.3 I2C Loopback Configuration. Loopback on the I2C controller is a
-special part of master mode operation with a device that does not contain
-internal addresses. Refer to Figure 16-127 for more information. To begin a
-loopback transmission, you must prepare a TX buffer descriptor with a data
-buffer N+1 bytes long, where N is the number of data bytes to be written back
-to the I2C controller. You must also prepare one or more RX buffer descriptors
-to receive the N bytes of data. The first byte of the TX buffer descriptor
-must contain the address of the MPC823 I2C device’s own address, which is in
-the I2CADD register, followed by the write bit asserted (R/W = 0). The
-remaining N bytes of the TX buffer descriptor contain the data to be sent and
-received by the I2C controller. Next, set the R bit in the TX buffer descriptor
-and the E bit in the RX buffer descriptor. Then set the W and L bits in the TX
-buffer descriptor. Setting the L bit causes a stop condition to be issued after
-this buffer is transmitted to conclude the operation. Set the I bit in the TX
-and RX buffer descriptors to enable the transmission and reception status to be
-updated in the I2CE register and to enable I2C transmit and receive interrupts
-to the core. You must then set the STR bit in the I2COM register to initiate
-the loopback operation.
-
-Thanks,
-Jochen
