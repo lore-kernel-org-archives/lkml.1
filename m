@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbXJXNJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXJXNNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758472AbXJXNJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbXJXNJL
+	id S1758166AbXJXNNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbXJXNMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:09:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:13068 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbXJXNJK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:09:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=DKmLt++tStmYQUY8vIW1i9gOPwDpAiQRaQw+GS1Cy0i9eLIvp2KOdpZDTKEssQk46AOGSfIRCtg/aOb43GC6eynWtscuCxgU5DZjvTJjXGwXa72B1gCBk8iGrUIlsQ8oqrNN/N74hNXA/5hkLtG9oEoHHoDlQcVzc5Q91da0Zvs=
-Message-ID: <471F43F0.7000703@gmail.com>
-Date: Wed, 24 Oct 2007 15:09:04 +0200
-From: jan sonnek <ha2nny@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: TODO list for kernel beginer?
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 09:12:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4687 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752685AbXJXNMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:12:52 -0400
+Date: Tue, 23 Oct 2007 18:31:21 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 0/21] KGDB: Request to merge KGDB
+Message-ID: <20071023183121.GA4898@ucw.cz>
+References: <4713B238.4030409@windriver.com> <20071017212025.d8a52694.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071017212025.d8a52694.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-where can I find actually TODO list for kernel beginer?
-Many Thanks,
+Hi!
 
-Jan Sonnek
+> > This is a request to merge KGDB into the mainline kernel.  
+> 
+> This won't work very well.  There's a lot of review work to be done here,
+> and a lot of it by busy architecture maintainers.  Expecting people to do
+> all this review and test work late in the merge window when they're all
+> madly scrambling to get their bugs^Wpatches into mainline is not reasonable.
+> This should all have started a month ago.
+
+_If_ the code is properly bisectable, it should be possible to merge
+core now and then switch architectures lazily. (If it is not
+bisectable, it should be fixed).
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
