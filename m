@@ -1,221 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbXJWXJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXJWXOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbXJWXJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 19:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXJWXJK
+	id S1754055AbXJWXOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXJWXOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 19:09:10 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:39780 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752504AbXJWXJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 19:09:09 -0400
-Date: Tue, 23 Oct 2007 19:09:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: tony.luck@intel.com, linux-ia64@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] IA64/perfmon: kill dead code, clean irq handling
-Message-ID: <20071023230908.GA12417@havoc.gtf.org>
+	Tue, 23 Oct 2007 19:14:47 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:40756 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbXJWXOq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 19:14:46 -0400
+X-Greylist: delayed 549 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Oct 2007 19:14:46 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
+Date: Tue, 23 Oct 2007 23:04:58 -0000
+Message-ID: <66ED1F0546CFFE4BABB226CD6633D4A6016D9941@G3W0635.americas.hpqcorp.net>
+In-Reply-To: <20071023212032.GA26597@infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
+Thread-Index: AcgVuo9OcAwVRRfTSa2QlMB1CxRP7wADjYSA
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Helgaas, Bjorn" <bjorn.helgaas@hp.com>
+Cc: <linux-kernel@vger.kernel.org>, "Wim Van Sebroeck" <wim@iguana.be>
+X-OriginalArrivalTime: 23 Oct 2007 23:05:00.0334 (UTC) FILETIME=[2334ECE0:01C815C9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We will never have more than one iLO2 device in a server so no multiple
+instances are possible. 
 
-By deleting unused code, this makes perfmon irq handling more efficient,
-as well as reducing code size.
+Tom 
 
-* remove unused pfm_install_alt_pmu_interrupt()
-* remove unused pfm_remove_alt_pmu_interrupt()
+-----Original Message-----
+From: Christoph Hellwig [mailto:hch@infradead.org] 
+Sent: Tuesday, October 23, 2007 4:21 PM
+To: Helgaas, Bjorn
+Cc: Mingarelli, Thomas; linux-kernel@vger.kernel.org; Wim Van Sebroeck
+Subject: Re: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch
+<resend>
 
-* remove now-unused pfm_alt_intr_handler pointer, and associated
-  function call in perfmon interrupt handler.
+On Tue, Oct 23, 2007 at 02:31:15PM -0600, Bjorn Helgaas wrote:
+> The driver assumes only a single instance of the device.  But PCI 
+> being what it is, it's often possible to have multiple cards, so you 
+> might want some protection in case you trip over more than one.
 
-* remove unused 'irq' argument from pfm_do_interrupt_handler()
+Yes.  And even with that protection please move all the global variables
+into some per-device structure.  That makes the code a lot more
+understandable and future-proof in case multiple devices of this type
+may appear somewhere.
 
-* un-indent code in pfm_interrupt_handler() now that
-  pfm_alt_intr_handler is no longer used.
-
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- arch/ia64/kernel/perfmon.c |  123 ++++++---------------------------------------
- include/asm-ia64/perfmon.h |    2 
- 2 files changed, 17 insertions(+), 108 deletions(-)
-
-42a3391c5a27b411c80e942853e0b913911119d5
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 59169bf..12fc846 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -504,9 +504,6 @@ typedef struct {
- static pfm_stats_t		pfm_stats[NR_CPUS];
- static pfm_session_t		pfm_sessions;	/* global sessions information */
- 
--static DEFINE_SPINLOCK(pfm_alt_install_check);
--static pfm_intr_handler_desc_t  *pfm_alt_intr_handler;
--
- static struct proc_dir_entry 	*perfmon_dir;
- static pfm_uuid_t		pfm_null_uuid = {0,};
- 
-@@ -5526,7 +5523,7 @@ stop_monitoring:
- }
- 
- static int
--pfm_do_interrupt_handler(int irq, void *arg, struct pt_regs *regs)
-+pfm_do_interrupt_handler(void *arg, struct pt_regs *regs)
- {
- 	struct task_struct *task;
- 	pfm_context_t *ctx;
-@@ -5600,30 +5597,28 @@ pfm_interrupt_handler(int irq, void *arg)
- 	struct pt_regs *regs = get_irq_regs();
- 
- 	this_cpu = get_cpu();
--	if (likely(!pfm_alt_intr_handler)) {
--		min = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min;
--		max = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max;
- 
--		start_cycles = ia64_get_itc();
-+	min = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min;
-+	max = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max;
- 
--		ret = pfm_do_interrupt_handler(irq, arg, regs);
-+	start_cycles = ia64_get_itc();
- 
--		total_cycles = ia64_get_itc();
-+	ret = pfm_do_interrupt_handler(arg, regs);
- 
--		/*
--		 * don't measure spurious interrupts
--		 */
--		if (likely(ret == 0)) {
--			total_cycles -= start_cycles;
-+	total_cycles = ia64_get_itc();
- 
--			if (total_cycles < min) pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min = total_cycles;
--			if (total_cycles > max) pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max = total_cycles;
-+	/*
-+	 * don't measure spurious interrupts
-+	 */
-+	if (likely(ret == 0)) {
-+		total_cycles -= start_cycles;
- 
--			pfm_stats[this_cpu].pfm_ovfl_intr_cycles += total_cycles;
--		}
--	}
--	else {
--		(*pfm_alt_intr_handler->handler)(irq, arg, regs);
-+		if (total_cycles < min)
-+			pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min = total_cycles;
-+		if (total_cycles > max)
-+			pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max = total_cycles;
-+
-+		pfm_stats[this_cpu].pfm_ovfl_intr_cycles += total_cycles;
- 	}
- 
- 	put_cpu_no_resched();
-@@ -6520,90 +6515,6 @@ pfm_alt_restore_pmu_state(void *data)
- 	ia64_srlz_d();
- }
- 
--int
--pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
--{
--	int ret, i;
--	int reserve_cpu;
--
--	/* some sanity checks */
--	if (hdl == NULL || hdl->handler == NULL) return -EINVAL;
--
--	/* do the easy test first */
--	if (pfm_alt_intr_handler) return -EBUSY;
--
--	/* one at a time in the install or remove, just fail the others */
--	if (!spin_trylock(&pfm_alt_install_check)) {
--		return -EBUSY;
--	}
--
--	/* reserve our session */
--	for_each_online_cpu(reserve_cpu) {
--		ret = pfm_reserve_session(NULL, 1, reserve_cpu);
--		if (ret) goto cleanup_reserve;
--	}
--
--	/* save the current system wide pmu states */
--	ret = on_each_cpu(pfm_alt_save_pmu_state, NULL, 0, 1);
--	if (ret) {
--		DPRINT(("on_each_cpu() failed: %d\n", ret));
--		goto cleanup_reserve;
--	}
--
--	/* officially change to the alternate interrupt handler */
--	pfm_alt_intr_handler = hdl;
--
--	spin_unlock(&pfm_alt_install_check);
--
--	return 0;
--
--cleanup_reserve:
--	for_each_online_cpu(i) {
--		/* don't unreserve more than we reserved */
--		if (i >= reserve_cpu) break;
--
--		pfm_unreserve_session(NULL, 1, i);
--	}
--
--	spin_unlock(&pfm_alt_install_check);
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(pfm_install_alt_pmu_interrupt);
--
--int
--pfm_remove_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
--{
--	int i;
--	int ret;
--
--	if (hdl == NULL) return -EINVAL;
--
--	/* cannot remove someone else's handler! */
--	if (pfm_alt_intr_handler != hdl) return -EINVAL;
--
--	/* one at a time in the install or remove, just fail the others */
--	if (!spin_trylock(&pfm_alt_install_check)) {
--		return -EBUSY;
--	}
--
--	pfm_alt_intr_handler = NULL;
--
--	ret = on_each_cpu(pfm_alt_restore_pmu_state, NULL, 0, 1);
--	if (ret) {
--		DPRINT(("on_each_cpu() failed: %d\n", ret));
--	}
--
--	for_each_online_cpu(i) {
--		pfm_unreserve_session(NULL, 1, i);
--	}
--
--	spin_unlock(&pfm_alt_install_check);
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(pfm_remove_alt_pmu_interrupt);
--
- /*
-  * perfmon initialization routine, called from the initcall() table
-  */
-diff --git a/include/asm-ia64/perfmon.h b/include/asm-ia64/perfmon.h
-index 7f3333d..811db64 100644
---- a/include/asm-ia64/perfmon.h
-+++ b/include/asm-ia64/perfmon.h
-@@ -191,8 +191,6 @@ extern void pfm_syst_wide_update_task(struct task_struct *, unsigned long info,
- extern void pfm_inherit(struct task_struct *task, struct pt_regs *regs);
- extern void pfm_init_percpu(void);
- extern void pfm_handle_work(void);
--extern int  pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *h);
--extern int  pfm_remove_alt_pmu_interrupt(pfm_intr_handler_desc_t *h);
- 
- 
- 
