@@ -1,219 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXJWVb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbXJWVcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbXJWVb6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXJWVbY
+	id S1754835AbXJWVcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXJWVb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:31:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:20398 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752781AbXJWVbW (ORCPT
+	Tue, 23 Oct 2007 17:31:26 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:2241 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbXJWVbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Oct 2007 17:31:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=n8+Coop136zvQQFi0dpsAPU7N4RhLXHogYXHCO7qPJS0dIfu6pglBYzqjft4wVscolUibZngIuYfKX+wMdvzliYbc8wh5fwrREw5J56QiGo1PbbKbSbSym8g8DY/rtZjCmDzw/tUiEOPl910JEtm7NoO8wFZK/Jh1zpnxYriCCg=
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=k8p8yhUmcXl1c9s2/JcBiHmnUfqJFccug10N/67uW9npOa4oTBa5Hgcob1OPyzhElI+cYiD0uPAtDduqYlt8vPc9KiKMnKdnbMI21VG+t0tB2J1x6KiXK+XBszlpU7e0w0nism0+X2sJbYbhjrdyv2PQVmtSkreLmOPSPvntZdM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] hpt366: fix build for CONFIG_HOTPLUG=n
-Date: Tue, 23 Oct 2007 22:59:00 +0200
+To: linux-kernel@vger.kernel.org
+Subject: const vs __{dev}initdata
+Date: Tue, 23 Oct 2007 23:35:56 +0200
 User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       "Avuton Olrich" <avuton@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <greg@kroah.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200710232335.56766.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710232259.00414.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Saturday 20 October 2007, Avuton Olrich wrote:
+Hi,
 
-> My randconfig script the attached config caught an error on:
-> drivers/ide/pci/cy82c693.c:439: error: primary causes a section type conflict
->
-> My git tree: c00046c279a2521075250fad682ca0acc10d4fd7
->
-> Bisected to:
-> 8562043606430185cad26d085d46adcc7ad67fd1 is first bad commit
-> commit 8562043606430185cad26d085d46adcc7ad67fd1
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Sat Oct 20 00:32:34 2007 +0200
->
->     ide: constify struct ide_port_info
->
->     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+It seems that const cannot be (officialy) mixed with __{dev}initdata,
 
-It turns out that const and __{dev}initdata cannot be mixed currently
-and that hpt366 host driver is also affected by the same issue:
+include/linux/init.h:
+...
+ *
+ * Also note, that this data cannot be "const".
+ */
+...
 
-> drivers/ide/pci/hpt366.c:1428: error: hpt366_chipsets causes a section type
-> conflict
+[ BTW Greg: this doesn't seem to be mentioned in LDD3. ]
 
-This patch workarounds the problem by making static struct hpt_info instances
-const.  Now all __devinitdata data in hpt366 host driver are read-only so it
-builds again (driver's .init.data section gets marked as READONLY).
+Any reason for this limitation (other than not having .init.rodata section
+and __const__{dev}initdata tag)?  There are places where we really would like
+to have both, i.e. struct ide_port_info in drivers/ide.
 
-While at it:
+Quick and lame grep on the current git tree results in 81 (besides 32 in
+drivers/ide) occurences of const + "initdata".  Probably most work because
+of the unreliable-in-the-long-term workaround (if driver's .init.data section
+contains only read-only data the whole section becomes READONLY and the
+driver builds fine), some have const commented out currently but some may
+actually fail to build with CONFIG_HOTPLUG=n:
 
-* Bump driver version.
-
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: "Avuton Olrich" <avuton@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/pci/hpt366.c |   32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
-
-Index: b/drivers/ide/pci/hpt366.c
-===================================================================
---- a/drivers/ide/pci/hpt366.c
-+++ b/drivers/ide/pci/hpt366.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/drivers/ide/pci/hpt366.c		Version 1.20	Oct 1, 2007
-+ * linux/drivers/ide/pci/hpt366.c		Version 1.21	Oct 23, 2007
-  *
-  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
-  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
-@@ -433,7 +433,7 @@ static u32 *hpt37x_settings[NUM_ATA_CLOC
- 	sixty_six_base_hpt37x
- };
- 
--static struct hpt_info hpt36x __devinitdata = {
-+static const struct hpt_info hpt36x __devinitdata = {
- 	.chip_name	= "HPT36x",
- 	.chip_type	= HPT36x,
- 	.udma_mask	= HPT366_ALLOW_ATA66_3 ? (HPT366_ALLOW_ATA66_4 ? ATA_UDMA4 : ATA_UDMA3) : ATA_UDMA2,
-@@ -441,7 +441,7 @@ static struct hpt_info hpt36x __devinitd
- 	.settings	= hpt36x_settings
- };
- 
--static struct hpt_info hpt370 __devinitdata = {
-+static const struct hpt_info hpt370 __devinitdata = {
- 	.chip_name	= "HPT370",
- 	.chip_type	= HPT370,
- 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
-@@ -449,7 +449,7 @@ static struct hpt_info hpt370 __devinitd
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt370a __devinitdata = {
-+static const struct hpt_info hpt370a __devinitdata = {
- 	.chip_name	= "HPT370A",
- 	.chip_type	= HPT370A,
- 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
-@@ -457,7 +457,7 @@ static struct hpt_info hpt370a __devinit
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt374 __devinitdata = {
-+static const struct hpt_info hpt374 __devinitdata = {
- 	.chip_name	= "HPT374",
- 	.chip_type	= HPT374,
- 	.udma_mask	= ATA_UDMA5,
-@@ -465,7 +465,7 @@ static struct hpt_info hpt374 __devinitd
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt372 __devinitdata = {
-+static const struct hpt_info hpt372 __devinitdata = {
- 	.chip_name	= "HPT372",
- 	.chip_type	= HPT372,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -473,7 +473,7 @@ static struct hpt_info hpt372 __devinitd
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt372a __devinitdata = {
-+static const struct hpt_info hpt372a __devinitdata = {
- 	.chip_name	= "HPT372A",
- 	.chip_type	= HPT372A,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -481,7 +481,7 @@ static struct hpt_info hpt372a __devinit
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt302 __devinitdata = {
-+static const struct hpt_info hpt302 __devinitdata = {
- 	.chip_name	= "HPT302",
- 	.chip_type	= HPT302,
- 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -489,7 +489,7 @@ static struct hpt_info hpt302 __devinitd
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt371 __devinitdata = {
-+static const struct hpt_info hpt371 __devinitdata = {
- 	.chip_name	= "HPT371",
- 	.chip_type	= HPT371,
- 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -497,7 +497,7 @@ static struct hpt_info hpt371 __devinitd
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt372n __devinitdata = {
-+static const struct hpt_info hpt372n __devinitdata = {
- 	.chip_name	= "HPT372N",
- 	.chip_type	= HPT372N,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -505,7 +505,7 @@ static struct hpt_info hpt372n __devinit
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt302n __devinitdata = {
-+static const struct hpt_info hpt302n __devinitdata = {
- 	.chip_name	= "HPT302N",
- 	.chip_type	= HPT302N,
- 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -513,7 +513,7 @@ static struct hpt_info hpt302n __devinit
- 	.settings	= hpt37x_settings
- };
- 
--static struct hpt_info hpt371n __devinitdata = {
-+static const struct hpt_info hpt371n __devinitdata = {
- 	.chip_name	= "HPT371N",
- 	.chip_type	= HPT371N,
- 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -1508,7 +1508,7 @@ static const struct ide_port_info hpt366
-  */
- static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_device_id *id)
- {
--	struct hpt_info *info = NULL;
-+	const struct hpt_info *info = NULL;
- 	struct pci_dev *dev2 = NULL;
- 	struct ide_port_info d;
- 	u8 idx = id->driver_data;
-@@ -1522,7 +1522,7 @@ static int __devinit hpt366_init_one(str
- 		if (rev < 3)
- 			info = &hpt36x;
- 		else {
--			static struct hpt_info *hpt37x_info[] =
-+			static const struct hpt_info *hpt37x_info[] =
- 				{ &hpt370, &hpt370a, &hpt372, &hpt372n };
- 
- 			info = hpt37x_info[min_t(u8, rev, 6) - 3];
-@@ -1552,7 +1552,7 @@ static int __devinit hpt366_init_one(str
- 	d.name = info->chip_name;
- 	d.udma_mask = info->udma_mask;
- 
--	pci_set_drvdata(dev, info);
-+	pci_set_drvdata(dev, (void *)info);
- 
- 	if (info == &hpt36x || info == &hpt374)
- 		dev2 = pci_get_slot(dev->bus, dev->devfn + 1);
-@@ -1560,7 +1560,7 @@ static int __devinit hpt366_init_one(str
- 	if (dev2) {
- 		int ret;
- 
--		pci_set_drvdata(dev2, info);
-+		pci_set_drvdata(dev2, (void *)info);
- 
- 		if (info == &hpt374)
- 			hpt374_init(dev, dev2);
+./arch/frv/mb93090-mb00/pci-irq.c:static const uint8_t __initdata pci_bus0_irq_routing[32][4] = {
+./arch/frv/kernel/setup.c:static const struct clock_cmode __pminitdata *clock_cmodes;
+./arch/mips/mips-boards/malta/malta_setup.c:		static const int pciclocks[] __initdata = {
+./arch/mips/pci/fixup-mpc30x.c:static const int internal_func_irqs[] __initdata = {
+./arch/mips/pci/fixup-mpc30x.c:static const int irq_tab_mpc30x[] __initdata = {
+./arch/h8300/platform/h8s/ints_h8s.c:const int __initdata h8300_saved_vectors[]={
+./arch/h8300/platform/h8s/ints_h8s.c:const unsigned long __initdata h8300_trap_table[NR_TRAPS]={
+./arch/arm/mach-at91/clock.c:static struct clk *const standard_pmc_clocks[] __initdata = {
+./arch/arm/mach-davinci/irq.c:static const u8 default_priorities[DAVINCI_N_AINTC_IRQ] __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_info xen_info __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_init_ops xen_init_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_time_ops xen_time_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_cpu_ops xen_cpu_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_irq_ops xen_irq_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_apic_ops xen_apic_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct pv_mmu_ops xen_mmu_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct smp_ops xen_smp_ops __initdata = {
+./arch/x86/xen/enlighten.c:static const struct machine_ops __initdata xen_machine_ops = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata samuel1_clock_ratio[16] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata samuel1_eblcr[16] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata samuel2_eblcr[16] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata ezra_clock_ratio[16] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata ezra_eblcr[16] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata ezrat_clock_ratio[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata ezrat_eblcr[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata  nehemiah_clock_ratio[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const int __initdata nehemiah_eblcr[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const struct mV_pos __initdata vrm85_mV[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const unsigned char __initdata mV_vrm85[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const struct mV_pos __initdata mobilevrm_mV[32] = {
+./arch/x86/kernel/cpu/cpufreq/longhaul.h:static const unsigned char __initdata mV_mobilevrm[32] = {
+./arch/powerpc/platforms/cell/spu_base.c:		 * conflicts for const and __initdata with different compiler
+./drivers/atm/eni.c:static const char *media_name[] __devinitdata = {
+./drivers/infiniband/hw/mlx4/main.c:static const char mlx4_ib_version[] __devinitdata =
+./drivers/infiniband/hw/mthca/mthca_main.c:static const char mthca_version[] __devinitdata =
+./drivers/net/typhoon.c:static const char version[] __devinitdata =
+./drivers/net/typhoon.c:static const struct typhoon_card_info typhoon_card_info[] __devinitdata = {
+./drivers/net/via-velocity.c:static const struct velocity_info_tbl chip_info_table[] __devinitdata = {
+./drivers/net/via-velocity.c:static const struct pci_device_id velocity_id_table[] __devinitdata = {
+./drivers/net/wireless/orinoco.c:/* Can't be declared "const" or the whole __initdata section will
+./drivers/net/wireless/spectrum_cs.c:/* Can't be declared "const" or the whole __initdata section will
+./drivers/net/wireless/orinoco_cs.c:/* Can't be declared "const" or the whole __initdata section will
+./drivers/net/starfire.c:static const char version[] __devinitdata =
+./drivers/net/fealnx.c:static const struct chip_info skel_netdrv_tbl[] __devinitdata = {
+./drivers/net/mlx4/main.c:static const char mlx4_version[] __devinitdata =
+./drivers/net/bnx2.c:static const char version[] __devinitdata =
+./drivers/net/ne3210.c:static const char *ifmap[] __initdata = {"UTP", "?", "BNC", "AUI"};
+./drivers/net/tulip/eeprom.c:static const char *block_name[] __devinitdata = {
+./drivers/net/tulip/winbond-840.c:static const struct pci_id_info pci_id_tbl[] __devinitdata = {
+./drivers/net/sundance.c:static const struct pci_id_info pci_id_tbl[] __devinitdata = {
+./drivers/net/natsemi.c:static const char version[] __devinitdata =
+./drivers/net/natsemi.c:static const struct pci_device_id natsemi_pci_tbl[] __devinitdata = {
+./drivers/mtd/maps/wr_sbc82xx_flash.c:static const char *part_probes[] __initdata = {"cmdlinepart", "RedBoot", NULL};
+./drivers/watchdog/sbc_epx_c3.c:static const char banner[] __initdata =
+./drivers/macintosh/macio_asic.c:static const struct pci_device_id __devinitdata pci_ids [] = { {
+./drivers/video/gxt4500.c:static const struct fb_videomode defaultmode __devinitdata = {
+./drivers/video/gxt4500.c:static const struct fb_fix_screeninfo gxt4500_fix __devinitdata = {
+./drivers/video/i810/i810_main.c:static const char *i810_pci_list[] __devinitdata = {
+./drivers/video/geode/lxfb_core.c:const struct fb_videomode geode_modedb[] __initdata = {
+./drivers/video/geode/gx1fb_core.c:static const struct fb_videomode __initdata gx1_modedb[] = {
+./drivers/video/geode/gxfb_core.c:static const struct fb_videomode gx_modedb[] __initdata = {
+./drivers/video/aty/aty128fb.c:static const char *r128_family[] __devinitdata = {
+./drivers/edac/amd76x_edac.c:static const struct pci_device_id amd76x_pci_tbl[] __devinitdata = {
+./drivers/edac/i82975x_edac.c:static const struct pci_device_id i82975x_pci_tbl[] __devinitdata = {
+./drivers/edac/i82860_edac.c:static const struct pci_device_id i82860_pci_tbl[] __devinitdata = {
+./drivers/edac/e7xxx_edac.c:static const struct pci_device_id e7xxx_pci_tbl[] __devinitdata = {
+./drivers/edac/i82875p_edac.c:static const struct pci_device_id i82875p_pci_tbl[] __devinitdata = {
+./drivers/edac/i82443bxgx_edac.c:static const struct pci_device_id i82443bxgx_pci_tbl[] __devinitdata = {
+./drivers/edac/e752x_edac.c:static const struct pci_device_id e752x_pci_tbl[] __devinitdata = {
+./drivers/edac/i5000_edac.c:static const struct pci_device_id i5000_pci_tbl[] __devinitdata = {
+./drivers/edac/r82600_edac.c:static const struct pci_device_id r82600_pci_tbl[] __devinitdata = {
+./drivers/edac/i3000_edac.c:static const struct pci_device_id i3000_pci_tbl[] __devinitdata = {
+./drivers/media/dvb/cinergyT2/cinergyT2.c:static const struct usb_device_id cinergyt2_table [] __devinitdata = {
+./drivers/mmc/host/sdhci.c:static const struct pci_device_id pci_ids[] __devinitdata = {
+./drivers/mmc/host/ricoh_mmc.c:static const struct pci_device_id pci_ids[] __devinitdata = {
+./drivers/char/hw_random/intel-rng.c:		static __initdata /*const*/ char warning[] =
+./drivers/char/mbcs.c:static const struct cx_device_id __devinitdata mbcs_id_table[] = {
+./drivers/scsi/aic94xx/aic94xx_init.c:static const struct pci_device_id aic94xx_pci_table[] __devinitdata = {
+./drivers/hwmon/w83627hf.c:	static const __initdata char *names[] = {
+./drivers/hwmon/w83627ehf.c:	static const char __initdata sio_name_W83627EHF[] = "W83627EHF";
+./drivers/hwmon/w83627ehf.c:	static const char __initdata sio_name_W83627EHG[] = "W83627EHG";
+./drivers/hwmon/w83627ehf.c:	static const char __initdata sio_name_W83627DHG[] = "W83627DHG";
