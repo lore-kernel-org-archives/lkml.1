@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbXJWPUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbXJWPUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbXJWPUY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXJWPUM
+	id S1753384AbXJWPUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXJWPUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:20:12 -0400
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:28681 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751862AbXJWPUK (ORCPT
+	Tue, 23 Oct 2007 11:20:23 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9252 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbXJWPUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:20:10 -0400
-X-YMail-OSG: gM8iXH8VM1nQUbqytaM334gwE8ZpjWkSEwmHlUbjHvihMafKr9IIIiSmUIp8LqqFulpnH4Qm2z7v3rRzCs45zF1eDI6rJi9k6.XPpjHnWn3fMOUCYOLxl7m4qU31kyzNQQyuV1UKDEv0XlI-
-Date: Tue, 23 Oct 2007 10:20:05 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Giacomo Catenazzi <cate@debian.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: LSM conversion to static interface
-Message-ID: <20071023152005.GA13767@vino.hallyn.com>
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <471D8A4C.3020101@debian.org> <Pine.LNX.4.64.0710231051090.16684@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710231051090.16684@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 23 Oct 2007 11:20:21 -0400
+Date: Tue, 23 Oct 2007 09:20:25 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Bugfix to commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+To: linux-kernel@vger.kernel.org, Jens@secretlab.ca,
+       "Axboe <jens.axboe"@oracle.com, linuxppc-dev@ozlabs.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org
+Message-id: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+User-Agent: StGIT/0.12.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Jan Engelhardt (jengelh@computergmbh.de):
-> 
-> On Oct 23 2007 07:44, Giacomo Catenazzi wrote:
-> >
-> >> I do have a pseudo LSM called "multiadm" at 
-> >> http://freshmeat.net/p/multiadm/ , quoting:
-> >
-> >> Policy is dead simple since it is based on UIDs. The UID ranges can be 
-> >> set on module load time or during runtime (sysfs params). This LSM is 
-> >> basically grants extra rights unlike most other LSMs[1], which is why 
-> >> modprobe makes much more sense here. (It also does not have to do any 
-> >> security labelling that would require it to be loaded at boot time 
-> >> already.)
-> >
-> >But his is against LSM design (and first agreements about LSM):
-> >LSM can deny rights, but it should not give extra permissions
-> >or bypass standard unix permissions.
-> 
-> It is just not feasible to add ACLs to all million files in /home,
-> also because ACLs are limited to around 25 entries.
-> And it is obvious I do not want <prof> to have UID 0, because
-> then you cannot distinguish who created what file.
-> So the requirement to the task is to have unique UIDs.
-> The next logical step would be to give capabilities to those UIDs.
-> 
-> *Is that wrong*? Who says that only UID 0 is allowed to have
-> all 31 capability bits turned on, and that all non-UID 0 users
-> need to have all 31 capability bits turned off?
-> 
-> So, we give caps to the subadmins (which is IMHO a natural task),
-> and then, as per LSM design (wonder where that is written) deny
-> some of the rights that the capabilities raised for subadmins grant,
-> because that is obviously too much.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Once the per-process capability bounding set is accepted
-(http://lkml.org/lkml/2007/10/3/315) you will be able to do something
-like:
+Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
+dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
+in include/asm-powerpc/dma-mapping.h
 
-	1. Create user 'jdoe' with uid 0
-	2. write a pam module which, when jdoe logs in, takes
-	   CAP_NET_ADMIN out of his capability bounding set
-	3. Now jdoe can log in with the kind of capabilities subset
-	   you describe.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-It's not a perfect solution, since it doesn't allow jdoe any way at all
-to directly execute a file with more caps (setuid and file capabilities
-are subject to the capbound).  So there is certainly still a place for
-multiadm.
+Linus, I cannot build an arch/powerpc kernel without this patch.
 
--serge
+Cheers,
+g.
+
+ include/asm-powerpc/dma-mapping.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..fd33ce4 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
++		BUG_ON(!sg_page(sg));
+ 		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		sg->dma_address = sg_phys(sg);
+ 	}
+ 
+ 	return nents;
+
