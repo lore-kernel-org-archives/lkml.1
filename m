@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbXJWWly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbXJWWoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbXJWWly (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXJWWku
+	id S1756122AbXJWWoj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbXJWWob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:40:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756589AbXJWWks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:40:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Resume problems
-Date: Wed, 24 Oct 2007 00:57:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
-References: <471CCC98.10101@googlemail.com> <471D3C26.3090602@googlemail.com> <471D47D2.2070707@googlemail.com>
-In-Reply-To: <471D47D2.2070707@googlemail.com>
+	Tue, 23 Oct 2007 18:44:31 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40364 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752367AbXJWWoa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:44:30 -0400
+Date: Wed, 24 Oct 2007 00:44:55 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       avi@qumranet.com
+Subject: Re: [PATCH 6/12] KVM: work around SMP requirement
+Message-ID: <20071023224455.GY30533@stusta.de>
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223640.EADF31F81AC@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200710240057.10131.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071023223640.EADF31F81AC@havoc.gtf.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 23 October 2007 03:01, Gabriel C wrote:
+On Tue, Oct 23, 2007 at 06:36:40PM -0400, Jeff Garzik wrote:
+> KVM is currently completely broken for the !CONFIG_SMP case.
 > 
-> > Also box just froze on level 3 but I got a ACPI error at least which I didn't got in any other dmesg till now :
-> > ( also patch was tested with HT disabled and Suspend and Hibernation enabled in kernel and BIOS )
-> > 
-> > ...
-> > 
-> > Oct 23 01:51:05 lara [  273.512374] PM: Removing info for No Bus:input0
-> > Oct 23 01:51:05 lara [  274.545158] PM: Removing info for No Bus:mouse0
-> > Oct 23 01:51:05 lara [  274.551435] PM: Removing info for No Bus:event1
-> > Oct 23 01:51:05 lara [  274.559493] PM: Removing info for No Bus:input1
-> > Oct 23 01:53:06 lara [  394.869468] ACPI Error (evevent-0303): No installed handler for fixed event [00000002] [20070126]
-> > 
-> > ....
-> > 
-> > ( I hard reseted after that ) 
-> > 
-> > I try level 2 and 1 now I just wanted to let you know.
-> > 
+> drivers/kvm/kvm_main.c: In function ‘kvm_flush_remote_tlbs’:
+> drivers/kvm/kvm_main.c:220: error: implicit declaration of function ‘smp_call_function_mask’
 > 
-> Same issues with level 2 and 1.
-
-Yes.  If you have a problem at level n, it should always reappear for n-1 etc.
-
-> BTW I found out why my box does not shutdown with acpi=ht. It seems like libata does not like that 
-> acpi mode =) dropping the '... read http://linux-ata.org/shutdown.html , power down manually' message.
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+> I hope the KVM maintainer can come up with a better solution...
 > 
-> That works perfectly with full acpi here.
-> 
-> After all I think all this problems may be some who ACPI related 
-> but the question is why they get triggered by Suspend/Hibernation.
+> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+> index 8749fa4..e35fbc6 100644
+> --- a/drivers/kvm/Kconfig
+> +++ b/drivers/kvm/Kconfig
+> @@ -16,7 +16,7 @@ if VIRTUALIZATION
+>  
+>  config KVM
+>  	tristate "Kernel-based Virtual Machine (KVM) support"
+> -	depends on X86 && EXPERIMENTAL
+> +	depends on X86 && EXPERIMENTAL && SMP
+>...
 
-They certainly are ACPI-related, because the only difference between level 4
-and level 3 suspend testing is that some global ACPI methods are executed
-at level 3 (in addition to level 4).
+Assuming it won't get fixed soon, the pattern would be "(SMP || BROKEN)".
 
-Unfortunately, I have no idea what to do next, for now.
+The effect is the same, but this makes it more obvious that KVM 
+does not depend architecturally on SMP but just broken.
 
-I think you can file a bug report at http://bugzilla.kernel.org and put a link
-to this thread in there (against ACPI and please add my address to the CC
-list).
+Of course, the preferred solution is to simply get KVM fixed...
 
-Greetings,
-Rafael
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
