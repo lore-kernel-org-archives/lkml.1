@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbXJWJLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbXJWJNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbXJWJLY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXJWJLG
+	id S1752810AbXJWJNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbXJWJN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:11:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:8398 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbXJWJLD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:11:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EsO4YiP2Jv6oQ1R1wm5S8gaz93eyiZPWgbXdNUFb5HNVREtgG7MVn/Vu0Rz2oFa1rKsqB2yJyMJG0YRXpxPvWfcAFyEgpTN/83sMfUmtRhEBAOi6+eLmCW21JgOdNHEdid5s5HIQVdrV5M2RWl6XD2q17HMTOOuMwPd6Jz1njgw=
-Message-ID: <efe7343f0710230211h53037226p874e6a2fd67f0088@mail.gmail.com>
-Date: Tue, 23 Oct 2007 10:11:02 +0100
-From: "Luis Correia" <luis.f.correia@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Daniel Hazelton" <dhazelton@enter.net>,
-       "Ivo van Doorn" <ivdoorn@gmail.com>, "Dan Williams" <dcbw@redhat.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
-In-Reply-To: <20071023090808.GB19758@infradead.org>
+	Tue, 23 Oct 2007 05:13:27 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52455 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751658AbXJWJN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 05:13:26 -0400
+Date: Tue, 23 Oct 2007 02:13:05 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LSM conversion to static interface [revert patch]
+Message-ID: <20071023091305.GI3660@sequoia.sous-sol.org>
+References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au> <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org> <Pine.LNX.4.64.0710231057020.16684@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071020184100.GA11640@elf.ucw.cz>
-	 <20071022211325.GF28190@elf.ucw.cz>
-	 <200710222352.57543.IvDoorn@gmail.com>
-	 <200710221742.36693.dhazelton@enter.net>
-	 <20071022220000.GH28190@elf.ucw.cz>
-	 <20071023090808.GB19758@infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0710231057020.16684@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+* Jan Engelhardt (jengelh@computergmbh.de) wrote:
+> On Oct 22 2007 22:16, Chris Wright wrote:
+> >Yes, and I think we can still improve performance although I can't see
+> >anyway to help out the modular case, so I guess it will have to incur
+> >the hit that's always been there.  I think your Kconfig option is a
+> >decent compromise.
+> 
+> (Un)registering security modules is a one-time hit. You do not load
+> and unload modules on a per-minute basis outside debugging.
 
-On 10/23/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Tue, Oct 23, 2007 at 12:00:00AM +0200, Pavel Machek wrote:
-> > there's nothing to suggest otherwise, and there's explicit:
-> >
-> > #define DRIVER_AUTHOR                   "Jeff Lee<YY_Lee@issc.com.tw>"
-> > #define DRIVER_DESC                             "IS89C35 802.11bg WLAN USB Driver"
-> > MODULE_LICENSE("GPL");
->
-> So what about contacting the vendor and asking?
->
-
-this is no longer a rt2x00 issue, maybe we all could keep it away from
-the rt2400-devel list?
-
-thanks,
-Luis Correia
-rt2x00 project administrator
+I'm referring to the hit for indirect calls
