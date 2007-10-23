@@ -1,726 +1,551 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbXJWVNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbXJWVNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbXJWVNj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXJWVM4
+	id S1754989AbXJWVNx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbXJWVM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:12:56 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:41784 "EHLO
-	mail-05.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752705AbXJWVMv (ORCPT
+	Tue, 23 Oct 2007 17:12:57 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:53510 "EHLO
+	mail-09.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbXJWVMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Oct 2007 17:12:51 -0400
 From: Matthew Wilcox <matthew@wil.cx>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
 Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 4/4] partitions: Fix non-atomic printk
-Date: Tue, 23 Oct 2007 17:12:46 -0400
-Message-Id: <1193173966-3550-4-git-send-email-matthew@wil.cx>
+Subject: [PATCH 2/4] isdn: Use stringbuf
+Date: Tue, 23 Oct 2007 17:12:44 -0400
+Message-Id: <1193173966-3550-2-git-send-email-matthew@wil.cx>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1193173966-3550-3-git-send-email-matthew@wil.cx>
+In-Reply-To: <1193173966-3550-1-git-send-email-matthew@wil.cx>
 References: <1193173966-3550-1-git-send-email-matthew@wil.cx>
- <1193173966-3550-2-git-send-email-matthew@wil.cx>
- <1193173966-3550-3-git-send-email-matthew@wil.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With asynchronous disk scanning, it's quite common for the partition
-report to be interrupted by reports of other discs being discovered.
-Use a new function, print_partition, to accumulate the partitions into
-a stringbuf.
+Get rid of the _cdebbuf structure that was used to accumulate strings
+for a debug printk and use the stringbuf instead.  Allocate the stringbuf
+on the stack instead of with kmalloc.  Return a char * to the callers
+rather than a stringbuf.
 
 Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- fs/partitions/acorn.c  |   24 ++++++++++--------------
- fs/partitions/amiga.c  |    9 ++++-----
- fs/partitions/atari.c  |   20 +++++++++-----------
- fs/partitions/check.c  |   19 ++++++++++++++-----
- fs/partitions/check.h  |    6 +++++-
- fs/partitions/efi.c    |    1 -
- fs/partitions/ibm.c    |   11 +++++------
- fs/partitions/karma.c  |    1 -
- fs/partitions/ldm.c    |   11 +++++------
- fs/partitions/mac.c    |    3 +--
- fs/partitions/msdos.c  |   36 +++++++++++++++++-------------------
- fs/partitions/osf.c    |    1 -
- fs/partitions/sgi.c    |    1 -
- fs/partitions/sun.c    |    1 -
- fs/partitions/sysv68.c |    5 ++---
- fs/partitions/ultrix.c |    1 -
- 16 files changed, 72 insertions(+), 78 deletions(-)
+ drivers/isdn/capi/capidrv.c   |   18 ++--
+ drivers/isdn/capi/capiutil.c  |  220 ++++++++++-------------------------------
+ drivers/isdn/capi/kcapi.c     |   35 +++----
+ include/linux/isdn/capiutil.h |   16 +---
+ 4 files changed, 83 insertions(+), 206 deletions(-)
 
-diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
-index 3d3e166..7ece065 100644
---- a/fs/partitions/acorn.c
-+++ b/fs/partitions/acorn.c
-@@ -46,7 +46,7 @@ adfs_partition(struct parsed_partitions *state, char *name, char *data,
- 		   (le32_to_cpu(dr->disc_size) >> 9);
+diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
+index 476012b..ba6645c 100644
+--- a/drivers/isdn/capi/capidrv.c
++++ b/drivers/isdn/capi/capidrv.c
+@@ -995,7 +995,7 @@ static void handle_plci(_cmsg * cmsg)
+ 	capidrv_contr *card = findcontrbynumber(cmsg->adr.adrController & 0x7f);
+ 	capidrv_plci *plcip;
+ 	isdn_ctrl cmd;
+-	_cdebbuf *cdb;
++	char *s;
  
- 	if (name)
--		printk(" [%s]", name);
-+		print_partition(state, " [%s]", name);
- 	put_partition(state, slot, first_sector, nr_sects);
- 	return dr;
- }
-@@ -81,14 +81,14 @@ riscix_partition(struct parsed_partitions *state, struct block_device *bdev,
- 	if (!rr)
- 		return -1;
- 
--	printk(" [RISCiX]");
-+	print_partition(state, " [RISCiX]");
- 
- 
- 	if (rr->magic == RISCIX_MAGIC) {
- 		unsigned long size = nr_sects > 2 ? 2 : nr_sects;
- 		int part;
- 
--		printk(" <");
-+		print_partition(state, " <");
- 
- 		put_partition(state, slot++, first_sect, size);
- 		for (part = 0; part < 8; part++) {
-@@ -97,11 +97,11 @@ riscix_partition(struct parsed_partitions *state, struct block_device *bdev,
- 				put_partition(state, slot++,
- 					le32_to_cpu(rr->part[part].start),
- 					le32_to_cpu(rr->part[part].length));
--				printk("(%s)", rr->part[part].name);
-+				print_partition(state, "(%s)", rr->part[part].name);
+ 	if (!card) {
+ 		printk(KERN_ERR "capidrv: %s from unknown controller 0x%x\n",
+@@ -1128,11 +1128,11 @@ static void handle_plci(_cmsg * cmsg)
+ 				break;
  			}
  		}
+-		cdb = capi_cmsg2str(cmsg);
+-		if (cdb) {
++		s = capi_cmsg2str(cmsg);
++		if (s) {
+ 			printk(KERN_WARNING "capidrv-%d: %s\n",
+-				card->contrnr, cdb->buf);
+-			cdebbuf_free(cdb);
++				card->contrnr, s);
++			kfree(s);
+ 		} else
+ 			printk(KERN_WARNING "capidrv-%d: CAPI_INFO_IND InfoNumber %x not handled\n",
+ 				card->contrnr, cmsg->InfoNumber);
+@@ -1385,12 +1385,12 @@ static void capidrv_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ {
+ 	capi_message2cmsg(&s_cmsg, skb->data);
+ 	if (debugmode > 3) {
+-		_cdebbuf *cdb = capi_cmsg2str(&s_cmsg);
++		char *s = capi_cmsg2str(&s_cmsg);
  
--		printk(" >\n");
-+		print_partition(state, " >");
- 	} else {
- 		put_partition(state, slot++, first_sect, nr_sects);
+-		if (cdb) {
++		if (s) {
+ 			printk(KERN_DEBUG "%s: applid=%d %s\n", __FUNCTION__,
+-				ap->applid, cdb->buf);
+-			cdebbuf_free(cdb);
++				ap->applid, s);
++			kfree(s);
+ 		} else
+ 			printk(KERN_DEBUG "%s: applid=%d %s not traced\n",
+ 				__FUNCTION__, ap->applid,
+diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
+index 22379b9..c8df3f0 100644
+--- a/drivers/isdn/capi/capiutil.c
++++ b/drivers/isdn/capi/capiutil.c
+@@ -14,6 +14,7 @@
+ #include <linux/string.h>
+ #include <linux/ctype.h>
+ #include <linux/stddef.h>
++#include <linux/stringbuf.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/init.h>
+@@ -705,75 +706,28 @@ static char *pnames[] =
+     /*2f */ "Useruserdata"
+ };
+ 
+-
+-
+-#include <stdarg.h>
+-
+-/*-------------------------------------------------------*/
+-static _cdebbuf *bufprint(_cdebbuf *cdb, char *fmt,...)
+-{
+-	va_list f;
+-	size_t n,r;
+-
+-	if (!cdb)
+-		return NULL;
+-	va_start(f, fmt);
+-	r = cdb->size - cdb->pos;
+-	n = vsnprintf(cdb->p, r, fmt, f);
+-	va_end(f);
+-	if (n >= r) {
+-		/* truncated, need bigger buffer */
+-		size_t ns = 2 * cdb->size;
+-		u_char *nb;
+-
+-		while ((ns - cdb->pos) <= n)
+-			ns *= 2;
+-		nb = kmalloc(ns, GFP_ATOMIC);
+-		if (!nb) {
+-			cdebbuf_free(cdb);
+-			return NULL;
+-		}
+-		memcpy(nb, cdb->buf, cdb->pos);
+-		kfree(cdb->buf);
+-		nb[cdb->pos] = 0;
+-		cdb->buf = nb;
+-		cdb->p = cdb->buf + cdb->pos;
+-		cdb->size = ns;
+-		va_start(f, fmt);
+-		r = cdb->size - cdb->pos;
+-		n = vsnprintf(cdb->p, r, fmt, f);
+-		va_end(f);
+-	}
+-	cdb->p += n;
+-	cdb->pos += n;
+-	return cdb;
+-}
+-
+-static _cdebbuf *printstructlen(_cdebbuf *cdb, u8 * m, unsigned len)
++static void printstructlen(struct stringbuf *sb, u8 *m, unsigned len)
+ {
+ 	unsigned hex = 0;
+ 
+-	if (!cdb)
+-		return NULL;
+ 	for (; len; len--, m++)
+ 		if (isalnum(*m) || *m == ' ') {
+ 			if (hex)
+-				cdb = bufprint(cdb, ">");
+-			cdb = bufprint(cdb, "%c", *m);
++				sb_printf(sb, ">");
++			sb_printf(sb, "%c", *m);
+ 			hex = 0;
+ 		} else {
+ 			if (!hex)
+-				cdb = bufprint(cdb, "<%02x", *m);
++				sb_printf(sb, "<%02x", *m);
+ 			else
+-				cdb = bufprint(cdb, " %02x", *m);
++				sb_printf(sb, " %02x", *m);
+ 			hex = 1;
+ 		}
+ 	if (hex)
+-		cdb = bufprint(cdb, ">");
+-	return cdb;
++		sb_printf(sb, ">");
+ }
+ 
+-static _cdebbuf *printstruct(_cdebbuf *cdb, u8 * m)
++static void printstruct(struct stringbuf *sb, u8 *m)
+ {
+ 	unsigned len;
+ 
+@@ -784,45 +738,42 @@ static _cdebbuf *printstruct(_cdebbuf *cdb, u8 * m)
+ 		len = ((u16 *) (m + 1))[0];
+ 		m += 3;
  	}
-@@ -131,7 +131,7 @@ linux_partition(struct parsed_partitions *state, struct block_device *bdev,
- 	struct linux_part *linuxp;
- 	unsigned long size = nr_sects > 2 ? 2 : nr_sects;
+-	cdb = printstructlen(cdb, m, len);
+-	return cdb;
++	printstructlen(sb, m, len);
+ }
  
--	printk(" [Linux]");
-+	print_partition(state, " [Linux]");
+ /*-------------------------------------------------------*/
+ #define NAME (pnames[cmsg->par[cmsg->p]])
  
- 	put_partition(state, slot++, first_sect, size);
+-static _cdebbuf *protocol_message_2_pars(_cdebbuf *cdb, _cmsg *cmsg, int level)
++static void protocol_message_2_pars(struct stringbuf *sb, _cmsg *cmsg, int level)
+ {
+ 	for (; TYP != _CEND; cmsg->p++) {
+ 		int slen = 29 + 3 - level;
+ 		int i;
  
-@@ -139,7 +139,7 @@ linux_partition(struct parsed_partitions *state, struct block_device *bdev,
- 	if (!linuxp)
- 		return -1;
+-		if (!cdb)
+-			return NULL;
+-		cdb = bufprint(cdb, "  ");
++		sb_printf(sb, "  ");
+ 		for (i = 0; i < level - 1; i++)
+-			cdb = bufprint(cdb, " ");
++			sb_printf(sb, " ");
  
--	printk(" <");
-+	print_partition(state, " <");
- 	while (linuxp->magic == cpu_to_le32(LINUX_NATIVE_MAGIC) ||
- 	       linuxp->magic == cpu_to_le32(LINUX_SWAP_MAGIC)) {
- 		if (slot == state->limit)
-@@ -149,7 +149,7 @@ linux_partition(struct parsed_partitions *state, struct block_device *bdev,
- 				 le32_to_cpu(linuxp->nr_sects));
- 		linuxp ++;
- 	}
--	printk(" >");
-+	print_partition(state, " >");
- 
- 	put_dev_sector(sect);
- 	return slot;
-@@ -306,7 +306,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
+ 		switch (TYP) {
+ 		case _CBYTE:
+-			cdb = bufprint(cdb, "%-*s = 0x%x\n", slen, NAME, *(u8 *) (cmsg->m + cmsg->l));
++			sb_printf(sb, "%-*s = 0x%x\n", slen, NAME, *(u8 *) (cmsg->m + cmsg->l));
+ 			cmsg->l++;
+ 			break;
+ 		case _CWORD:
+-			cdb = bufprint(cdb, "%-*s = 0x%x\n", slen, NAME, *(u16 *) (cmsg->m + cmsg->l));
++			sb_printf(sb, "%-*s = 0x%x\n", slen, NAME, *(u16 *) (cmsg->m + cmsg->l));
+ 			cmsg->l += 2;
+ 			break;
+ 		case _CDWORD:
+-			cdb = bufprint(cdb, "%-*s = 0x%lx\n", slen, NAME, *(u32 *) (cmsg->m + cmsg->l));
++			sb_printf(sb, "%-*s = 0x%x\n", slen, NAME, *(u32 *) (cmsg->m + cmsg->l));
+ 			cmsg->l += 4;
+ 			break;
+ 		case _CSTRUCT:
+-			cdb = bufprint(cdb, "%-*s = ", slen, NAME);
++			sb_printf(sb, "%-*s = ", slen, NAME);
+ 			if (cmsg->m[cmsg->l] == '\0')
+-				cdb = bufprint(cdb, "default");
++				sb_printf(sb, "default");
+ 			else
+-				cdb = printstruct(cdb, cmsg->m + cmsg->l);
+-			cdb = bufprint(cdb, "\n");
++				printstruct(sb, cmsg->m + cmsg->l);
++			sb_printf(sb, "\n");
+ 			if (cmsg->m[cmsg->l] != 0xff)
+ 				cmsg->l += 1 + cmsg->m[cmsg->l];
+ 			else
+@@ -833,164 +784,102 @@ static _cdebbuf *protocol_message_2_pars(_cdebbuf *cdb, _cmsg *cmsg, int level)
+ 		case _CMSTRUCT:
+ /*----- Metastruktur 0 -----*/
+ 			if (cmsg->m[cmsg->l] == '\0') {
+-				cdb = bufprint(cdb, "%-*s = default\n", slen, NAME);
++				sb_printf(sb, "%-*s = default\n", slen, NAME);
+ 				cmsg->l++;
+ 				jumpcstruct(cmsg);
+ 			} else {
+ 				char *name = NAME;
+ 				unsigned _l = cmsg->l;
+-				cdb = bufprint(cdb, "%-*s\n", slen, name);
++				sb_printf(sb, "%-*s\n", slen, name);
+ 				cmsg->l = (cmsg->m + _l)[0] == 255 ? cmsg->l + 3 : cmsg->l + 1;
+ 				cmsg->p++;
+-				cdb = protocol_message_2_pars(cdb, cmsg, level + 1);
++				protocol_message_2_pars(sb, cmsg, level + 1);
+ 			}
  			break;
  		}
  	}
--	printk("\n");
- 	return 1;
+-	return cdb;
  }
- #endif
-@@ -379,7 +378,7 @@ adfspart_check_ICS(struct parsed_partitions *state, struct block_device *bdev)
- 		return 0;
- 	}
+ /*-------------------------------------------------------*/
  
--	printk(" [ICS]");
-+	print_partition(state, " [ICS]");
+-static _cdebbuf *g_debbuf;
+-static u_long g_debbuf_lock;
++static unsigned long g_debbuf_lock;
+ static _cmsg *g_cmsg;
  
- 	for (slot = 1, p = (const struct ics_part *)data; p->size; p++) {
- 		u32 start = le32_to_cpu(p->start);
-@@ -413,7 +412,6 @@ adfspart_check_ICS(struct parsed_partitions *state, struct block_device *bdev)
- 	}
- 
- 	put_dev_sector(sect);
--	printk("\n");
- 	return 1;
- }
- #endif
-@@ -474,7 +472,7 @@ adfspart_check_POWERTEC(struct parsed_partitions *state, struct block_device *bd
- 		return 0;
- 	}
- 
--	printk(" [POWERTEC]");
-+	print_partition(state, " [POWERTEC]");
- 
- 	for (i = 0, p = (const struct ptec_part *)data; i < 12; i++, p++) {
- 		u32 start = le32_to_cpu(p->start);
-@@ -485,7 +483,6 @@ adfspart_check_POWERTEC(struct parsed_partitions *state, struct block_device *bd
- 	}
- 
- 	put_dev_sector(sect);
--	printk("\n");
- 	return 1;
- }
- #endif
-@@ -557,7 +554,6 @@ adfspart_check_EESOX(struct parsed_partitions *state, struct block_device *bdev)
- 
- 		size = get_capacity(bdev->bd_disk);
- 		put_partition(state, slot++, start, size - start);
--		printk("\n");
- 	}
- 
- 	return i ? 1 : 0;
-diff --git a/fs/partitions/amiga.c b/fs/partitions/amiga.c
-index 9917a8c..9853dee 100644
---- a/fs/partitions/amiga.c
-+++ b/fs/partitions/amiga.c
-@@ -70,7 +70,7 @@ amiga_partition(struct parsed_partitions *state, struct block_device *bdev)
- 	/* blksize is blocks per 512 byte standard block */
- 	blksize = be32_to_cpu( rdb->rdb_BlockBytes ) / 512;
- 
--	printk(" RDSK (%d)", blksize * 512);	/* Be more informative */
-+	print_partition(state, " RDSK (%d)", blksize * 512);	/* Be more informative */
- 	blk = be32_to_cpu(rdb->rdb_PartitionList);
- 	put_dev_sector(sect);
- 	for (part = 1; blk>0 && part<=16; part++, put_dev_sector(sect)) {
-@@ -110,20 +110,19 @@ amiga_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			__be32 *dt = (__be32 *)dostype;
- 			*dt = pb->pb_Environment[16];
- 			if (dostype[3] < ' ')
--				printk(" (%c%c%c^%c)",
-+				print_partition(state, " (%c%c%c^%c)",
- 					dostype[0], dostype[1],
- 					dostype[2], dostype[3] + '@' );
- 			else
--				printk(" (%c%c%c%c)",
-+				print_partition(state, " (%c%c%c%c)",
- 					dostype[0], dostype[1],
- 					dostype[2], dostype[3]);
--			printk("(res %d spb %d)",
-+			print_partition(state, "(res %d spb %d)",
- 				be32_to_cpu(pb->pb_Environment[6]),
- 				be32_to_cpu(pb->pb_Environment[4]));
- 		}
- 		res = 1;
- 	}
--	printk("\n");
- 
- rdb_done:
- 	return res;
-diff --git a/fs/partitions/atari.c b/fs/partitions/atari.c
-index 1f3572d..b696b52 100644
---- a/fs/partitions/atari.c
-+++ b/fs/partitions/atari.c
-@@ -62,7 +62,7 @@ int atari_partition(struct parsed_partitions *state, struct block_device *bdev)
- 	}
- 
- 	pi = &rs->part[0];
--	printk (" AHDI");
-+	print_partition(state, " AHDI");
- 	for (slot = 1; pi < &rs->part[4] && slot < state->limit; slot++, pi++) {
- 		struct rootsector *xrs;
- 		Sector sect2;
-@@ -81,19 +81,19 @@ int atari_partition(struct parsed_partitions *state, struct block_device *bdev)
- #ifdef ICD_PARTS
- 		part_fmt = 1;
- #endif
--		printk(" XGM<");
-+		print_partition(state, " XGM<");
- 		partsect = extensect = be32_to_cpu(pi->st);
- 		while (1) {
- 			xrs = (struct rootsector *)read_dev_sector(bdev, partsect, &sect2);
- 			if (!xrs) {
--				printk (" block %ld read failed\n", partsect);
-+				print_partition(state, " block %ld read failed\n", partsect);
- 				put_dev_sector(sect);
- 				return -1;
- 			}
- 
- 			/* ++roman: sanity check: bit 0 of flg field must be set */
- 			if (!(xrs->part[0].flg & 1)) {
--				printk( "\nFirst sub-partition in extended partition is not valid!\n" );
-+				printk("First sub-partition in extended partition is not valid!\n");
- 				put_dev_sector(sect2);
- 				break;
- 			}
-@@ -108,7 +108,7 @@ int atari_partition(struct parsed_partitions *state, struct block_device *bdev)
- 				break;
- 			}
- 			if (memcmp( xrs->part[1].id, "XGM", 3 ) != 0) {
--				printk("\nID of extended partition is not XGM!\n");
-+				printk("ID of extended partition is not XGM!\n");
- 				put_dev_sector(sect2);
- 				break;
- 			}
-@@ -116,18 +116,18 @@ int atari_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			partsect = be32_to_cpu(xrs->part[1].st) + extensect;
- 			put_dev_sector(sect2);
- 			if (++slot == state->limit) {
--				printk( "\nMaximum number of partitions reached!\n" );
-+				printk("Maximum number of partitions reached!\n");
- 				break;
- 			}
- 		}
--		printk(" >");
-+		print_partition(state, " >");
- 	}
- #ifdef ICD_PARTS
- 	if ( part_fmt!=1 ) { /* no extended partitions -> test ICD-format */
- 		pi = &rs->icdpart[0];
- 		/* sanity check: no ICD format if first partition invalid */
- 		if (OK_id(pi->id)) {
--			printk(" ICD<");
-+			print_partition(state, " ICD<");
- 			for (; pi < &rs->icdpart[8] && slot < state->limit; slot++, pi++) {
- 				/* accept only GEM,BGM,RAW,LNX,SWP partitions */
- 				if (!((pi->flg & 1) && OK_id(pi->id)))
-@@ -137,13 +137,11 @@ int atari_partition(struct parsed_partitions *state, struct block_device *bdev)
- 						be32_to_cpu(pi->st),
- 						be32_to_cpu(pi->siz));
- 			}
--			printk(" >");
-+			print_partition(state, " >");
- 		}
- 	}
- #endif
- 	put_dev_sector(sect);
- 
--	printk ("\n");
+-static _cdebbuf *cdebbuf_alloc(void)
++static _cmsg *cmsg_alloc(void)
+ {
+-	_cdebbuf *cdb;
 -
- 	return 1;
+-	if (likely(!test_and_set_bit(1, &g_debbuf_lock))) {
+-		cdb = g_debbuf;
+-		goto init;
+-	} else
+-		cdb = kmalloc(sizeof(_cdebbuf), GFP_ATOMIC);
+-	if (!cdb)
+-		return NULL;
+-	cdb->buf = kmalloc(CDEBUG_SIZE, GFP_ATOMIC);
+-	if (!cdb->buf) {
+-		kfree(cdb);
+-		return NULL;
+-	}
+-	cdb->size = CDEBUG_SIZE;
+-init:
+-	cdb->buf[0] = 0;
+-	cdb->p = cdb->buf;
+-	cdb->pos = 0;
+-	return cdb;
++	if (likely(!test_and_set_bit(1, &g_debbuf_lock)))
++		return g_cmsg;
++	else
++		return kmalloc(sizeof(_cmsg), GFP_ATOMIC);
  }
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 722e12e..a3dcbf6 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -162,9 +162,10 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
- 	state = kmalloc(sizeof(struct parsed_partitions), GFP_KERNEL);
- 	if (!state)
+ 
+-void cdebbuf_free(_cdebbuf *cdb)
++void cmsg_free(_cmsg *cmsg)
+ {
+-	if (likely(cdb == g_debbuf)) {
+-		test_and_clear_bit(1, &g_debbuf_lock);
+-		return;
+-	}
+-	if (likely(cdb))
+-		kfree(cdb->buf);
+-	kfree(cdb);
++	if (likely(cmsg == g_cmsg))
++		clear_bit(1, &g_debbuf_lock);
++	else
++		kfree(cmsg);
+ }
+ 
+-
+-_cdebbuf *capi_message2str(u8 * msg)
++char *capi_message2str(u8 *msg)
+ {
+-	_cdebbuf *cdb;
+-	_cmsg	*cmsg;
+-
+-	cdb = cdebbuf_alloc();
+-	if (unlikely(!cdb))
++	char *s;
++	_cmsg *cmsg = cmsg_alloc();
++	if (unlikely(!cmsg))
  		return NULL;
-+	sb_init(&state->sb);
- 
- 	disk_name(hd, 0, state->name);
--	printk(KERN_INFO " %s:", state->name);
-+	print_partition(state, "%s:", state->name);
- 	if (isdigit(state->name[strlen(state->name)-1]))
- 		sprintf(state->name, "p");
- 
-@@ -182,15 +183,23 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
- 		}
- 
- 	}
--	if (res > 0)
+-	if (likely(cdb == g_debbuf))
+-		cmsg = g_cmsg;
+-	else
+-		cmsg = kmalloc(sizeof(_cmsg), GFP_ATOMIC);
+-	if (unlikely(!cmsg)) {
+-		cdebbuf_free(cdb);
+-		return NULL;
+-	}
 +
-+	if (res > 0) {
-+		printk(KERN_INFO " %s\n", sb_string(&state->sb));
-+		sb_free(&state->sb);
- 		return state;
--	if (err)
-+	}
-+
- 	/* The partition is unrecognized. So report I/O errors if there were any */
-+	if (err)
- 		res = err;
- 	if (!res)
--		printk(" unknown partition table\n");
-+		print_partition(state, " unknown partition table");
- 	else if (warn_no_part)
--		printk(" unable to read partition table\n");
-+		print_partition(state, " unable to read partition table");
-+
-+	printk(KERN_INFO " %s\n", sb_string(&state->sb));
-+	sb_free(&state->sb);
- 	kfree(state);
- 	return ERR_PTR(res);
+ 	cmsg->m = msg;
+-	cmsg->l = 8;
+-	cmsg->p = 0;
+ 	byteTRcpy(cmsg->m + 4, &cmsg->Command);
+ 	byteTRcpy(cmsg->m + 5, &cmsg->Subcommand);
+ 	cmsg->par = cpars[command_2_index(cmsg->Command, cmsg->Subcommand)];
+ 
+-	cdb = bufprint(cdb, "%-26s ID=%03d #0x%04x LEN=%04d\n",
+-		 mnames[command_2_index(cmsg->Command, cmsg->Subcommand)],
+-		 ((unsigned short *) msg)[1],
+-		 ((unsigned short *) msg)[3],
+-		 ((unsigned short *) msg)[0]);
++	s = capi_cmsg2str(cmsg);
++	cmsg_free(cmsg);
+ 
+-	cdb = protocol_message_2_pars(cdb, cmsg, 1);
+-	if (unlikely(cmsg != g_cmsg))
+-		kfree(cmsg);
+-	return cdb;
++	return s;
  }
-diff --git a/fs/partitions/check.h b/fs/partitions/check.h
-index 17ae8ec..84be0df 100644
---- a/fs/partitions/check.h
-+++ b/fs/partitions/check.h
-@@ -1,5 +1,6 @@
- #include <linux/pagemap.h>
- #include <linux/blkdev.h>
-+#include <linux/stringbuf.h>
  
- /*
-  * add_gd_partition adds a partitions details to the devices partition
-@@ -16,15 +17,18 @@ struct parsed_partitions {
- 	} parts[MAX_PART];
- 	int next;
- 	int limit;
+-_cdebbuf *capi_cmsg2str(_cmsg * cmsg)
++char *capi_cmsg2str(_cmsg *cmsg)
+ {
+-	_cdebbuf *cdb;
 +	struct stringbuf sb;
- };
- 
-+#define print_partition(p, fmt, args...) sb_printf(&p->sb, fmt , ## args)
 +
- static inline void
- put_partition(struct parsed_partitions *p, int n, sector_t from, sector_t size)
++	sb_init(&sb);
+ 
+-	cdb = cdebbuf_alloc();
+-	if (!cdb)
+-		return NULL;
+ 	cmsg->l = 8;
+ 	cmsg->p = 0;
+-	cdb = bufprint(cdb, "%s ID=%03d #0x%04x LEN=%04d\n",
++	sb_printf(&sb, "%s ID=%03d #0x%04x LEN=%04d\n",
+ 		 mnames[command_2_index(cmsg->Command, cmsg->Subcommand)],
+ 		 ((u16 *) cmsg->m)[1],
+ 		 ((u16 *) cmsg->m)[3],
+ 		 ((u16 *) cmsg->m)[0]);
+-	cdb = protocol_message_2_pars(cdb, cmsg, 1);
+-	return cdb;
++	protocol_message_2_pars(&sb, cmsg, 1);
++	return sb_to_string(&sb);
+ }
+ 
+ int __init cdebug_init(void)
  {
- 	if (n < p->limit) {
- 		p->parts[n].from = from;
- 		p->parts[n].size = size;
--		printk(" %s%d", p->name, n);
-+		sb_printf(&p->sb, " %s%d", p->name, n);
- 	}
+-	g_cmsg= kmalloc(sizeof(_cmsg), GFP_KERNEL);
++	g_cmsg = kmalloc(sizeof(_cmsg), GFP_KERNEL);
+ 	if (!g_cmsg)
+ 		return ENOMEM;
+-	g_debbuf = kmalloc(sizeof(_cdebbuf), GFP_KERNEL);
+-	if (!g_debbuf) {
+-		kfree(g_cmsg);
+-		return ENOMEM;
+-	}
+-	g_debbuf->buf = kmalloc(CDEBUG_GSIZE, GFP_KERNEL);
+-	if (!g_debbuf->buf) {
+-		kfree(g_cmsg);
+-		kfree(g_debbuf);
+-		return ENOMEM;;
+-	}
+-	g_debbuf->size = CDEBUG_GSIZE;
+-	g_debbuf->buf[0] = 0;
+-	g_debbuf->p = g_debbuf->buf;
+-	g_debbuf->pos = 0;
+ 	return 0;
  }
  
-diff --git a/fs/partitions/efi.c b/fs/partitions/efi.c
-index e7b0700..9631304 100644
---- a/fs/partitions/efi.c
-+++ b/fs/partitions/efi.c
-@@ -634,6 +634,5 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
- 	}
- 	kfree(ptes);
- 	kfree(gpt);
--	printk("\n");
- 	return 1;
- }
-diff --git a/fs/partitions/ibm.c b/fs/partitions/ibm.c
-index 1e064c4..53766a7 100644
---- a/fs/partitions/ibm.c
-+++ b/fs/partitions/ibm.c
-@@ -111,14 +111,14 @@ ibm_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			 * VM style CMS1 labeled disk
- 			 */
- 			if (label->cms.disk_offset != 0) {
--				printk("CMS1/%8s(MDSK):", name);
-+				print_partition(state, "CMS1/%8s(MDSK):", name);
- 				/* disk is reserved minidisk */
- 				blocksize = label->cms.block_size;
- 				offset = label->cms.disk_offset;
- 				size = (label->cms.block_count - 1)
- 					* (blocksize >> 9);
- 			} else {
--				printk("CMS1/%8s:", name);
-+				print_partition(state, "CMS1/%8s:", name);
- 				offset = (info->label_block + 1);
- 				size = i_size >> 9;
- 			}
-@@ -127,9 +127,9 @@ ibm_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			 * Old style LNX1 or unlabeled disk
- 			 */
- 			if (strncmp(type, "LNX1", 4) == 0)
--				printk ("LNX1/%8s:", name);
-+				print_partition(state, "LNX1/%8s:", name);
- 			else
--				printk("(nonl)");
-+				print_partition(state, "(nonl)");
- 			offset = (info->label_block + 1);
- 			size = i_size >> 9;
- 		}
-@@ -147,7 +147,7 @@ ibm_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		 * if not, something is wrong, skipping partition detection
- 		 */
- 		if (strncmp(type, "VOL1",  4) == 0) {
--			printk("VOL1/%8s:", name);
-+			print_partition(state, "VOL1/%8s:", name);
- 			/*
- 			 * get block number and read then go through format1
- 			 * labels
-@@ -203,7 +203,6 @@ ibm_partition(struct parsed_partitions *state, struct block_device *bdev)
- 
- 	}
- 
--	printk("\n");
- 	goto out_freeall;
- 
- 
-diff --git a/fs/partitions/karma.c b/fs/partitions/karma.c
-index 176d89b..e85c430 100644
---- a/fs/partitions/karma.c
-+++ b/fs/partitions/karma.c
-@@ -50,7 +50,6 @@ int karma_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		}
- 		slot++;
- 	}
--	printk("\n");
- 	put_dev_sector(sect);
- 	return 1;
- }
-diff --git a/fs/partitions/ldm.c b/fs/partitions/ldm.c
-index e7dd1d4..ae057d0 100644
---- a/fs/partitions/ldm.c
-+++ b/fs/partitions/ldm.c
-@@ -611,7 +611,7 @@ static struct vblk * ldm_get_disk_objid (const struct ldmdb *ldb)
- 
- /**
-  * ldm_create_data_partitions - Create data partitions for this device
-- * @pp:   List of the partitions parsed so far
-+ * @state:   List of the partitions parsed so far
-  * @ldb:  Cache of the database structures
-  *
-  * The database contains ALL the partitions for ALL disk groups, so we need to
-@@ -626,7 +626,7 @@ static struct vblk * ldm_get_disk_objid (const struct ldmdb *ldb)
-  * Return:  'true'   Partition created
-  *          'false'  Error, probably a range checking problem
-  */
--static bool ldm_create_data_partitions (struct parsed_partitions *pp,
-+static bool ldm_create_data_partitions (struct parsed_partitions *state,
- 					const struct ldmdb *ldb)
+ void __exit cdebug_exit(void)
  {
- 	struct list_head *item;
-@@ -635,7 +635,7 @@ static bool ldm_create_data_partitions (struct parsed_partitions *pp,
- 	struct vblk_part *part;
- 	int part_num = 1;
- 
--	BUG_ON (!pp || !ldb);
-+	BUG_ON (!state || !ldb);
- 
- 	disk = ldm_get_disk_objid (ldb);
- 	if (!disk) {
-@@ -643,7 +643,7 @@ static bool ldm_create_data_partitions (struct parsed_partitions *pp,
- 		return false;
- 	}
- 
--	printk (" [LDM]");
-+	print_partition(state, " [LDM]");
- 
- 	/* Create the data partitions */
- 	list_for_each (item, &ldb->v_part) {
-@@ -653,12 +653,11 @@ static bool ldm_create_data_partitions (struct parsed_partitions *pp,
- 		if (part->disk_id != disk->obj_id)
- 			continue;
- 
--		put_partition (pp, part_num, ldb->ph.logical_disk_start +
-+		put_partition(state, part_num, ldb->ph.logical_disk_start +
- 				part->start, part->size);
- 		part_num++;
- 	}
- 
--	printk ("\n");
- 	return true;
+-	if (g_debbuf)
+-		kfree(g_debbuf->buf);
+-	kfree(g_debbuf);
+ 	kfree(g_cmsg);
  }
  
-diff --git a/fs/partitions/mac.c b/fs/partitions/mac.c
-index d4a0fad..44fee83 100644
---- a/fs/partitions/mac.c
-+++ b/fs/partitions/mac.c
-@@ -59,7 +59,7 @@ int mac_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		put_dev_sector(sect);
- 		return 0;		/* not a MacOS disk */
- 	}
--	printk(" [mac]");
-+	print_partition(state, " [mac]");
- 	blocks_in_map = be32_to_cpu(part->map_count);
- 	for (blk = 1; blk <= blocks_in_map; ++blk) {
- 		int pos = blk * secsize;
-@@ -127,6 +127,5 @@ int mac_partition(struct parsed_partitions *state, struct block_device *bdev)
- #endif
+ #else /* !CONFIG_CAPI_TRACE */
  
- 	put_dev_sector(sect);
--	printk("\n");
- 	return 1;
- }
-diff --git a/fs/partitions/msdos.c b/fs/partitions/msdos.c
-index 5567ec0..63a0085 100644
---- a/fs/partitions/msdos.c
-+++ b/fs/partitions/msdos.c
-@@ -212,9 +212,9 @@ parse_solaris_x86(struct parsed_partitions *state, struct block_device *bdev,
- 		put_dev_sector(sect);
- 		return;
- 	}
--	printk(" %s%d: <solaris:", state->name, origin);
-+	print_partition(state, " %s%d: <solaris:", state->name, origin);
- 	if (le32_to_cpu(v->v_version) != 1) {
--		printk("  cannot handle version %d vtoc>\n",
-+		print_partition(state, "  cannot handle version %d vtoc>\n",
- 			le32_to_cpu(v->v_version));
- 		put_dev_sector(sect);
- 		return;
-@@ -225,7 +225,7 @@ parse_solaris_x86(struct parsed_partitions *state, struct block_device *bdev,
- 		struct solaris_x86_slice *s = &v->v_slice[i];
- 		if (s->s_size == 0)
- 			continue;
--		printk(" [s%d]", i);
-+		print_partition(state, " [s%d]", i);
- 		/* solaris partitions are relative to current MS-DOS
- 		 * one; must add the offset of the current partition */
- 		put_partition(state, state->next++,
-@@ -233,7 +233,7 @@ parse_solaris_x86(struct parsed_partitions *state, struct block_device *bdev,
- 				 le32_to_cpu(s->s_size));
- 	}
- 	put_dev_sector(sect);
--	printk(" >\n");
-+	print_partition(state, " >");
- #endif
- }
- 
-@@ -258,7 +258,7 @@ parse_bsd(struct parsed_partitions *state, struct block_device *bdev,
- 		put_dev_sector(sect);
- 		return;
- 	}
--	printk(" %s%d: <%s:", state->name, origin, flavour);
-+	print_partition(state, " %s%d: <%s:", state->name, origin, flavour);
- 
- 	if (le16_to_cpu(l->d_npartitions) < max_partitions)
- 		max_partitions = le16_to_cpu(l->d_npartitions);
-@@ -275,16 +275,16 @@ parse_bsd(struct parsed_partitions *state, struct block_device *bdev,
- 			/* full parent partition, we have it already */
- 			continue;
- 		if (offset > bsd_start || offset+size < bsd_start+bsd_size) {
--			printk("bad subpartition - ignored\n");
-+			printk("bad subpartition %d - ignored\n", p - l->d_partitions);
- 			continue;
- 		}
- 		put_partition(state, state->next++, bsd_start, bsd_size);
- 	}
- 	put_dev_sector(sect);
- 	if (le16_to_cpu(l->d_npartitions) > max_partitions)
--		printk(" (ignored %d more)",
-+		print_partition(state, " (ignored %d more)",
- 		       le16_to_cpu(l->d_npartitions) - max_partitions);
--	printk(" >\n");
-+	print_partition(state, " >");
- }
- #endif
- 
-@@ -339,7 +339,7 @@ parse_unixware(struct parsed_partitions *state, struct block_device *bdev,
- 		put_dev_sector(sect);
- 		return;
- 	}
--	printk(" %s%d: <unixware:", state->name, origin);
-+	print_partition(state, " %s%d: <unixware:", state->name, origin);
- 	p = &l->vtoc.v_slice[1];
- 	/* I omit the 0th slice as it is the same as whole disk. */
- 	while (p - &l->vtoc.v_slice[0] < UNIXWARE_NUMSLICE) {
-@@ -352,7 +352,7 @@ parse_unixware(struct parsed_partitions *state, struct block_device *bdev,
- 		p++;
- 	}
- 	put_dev_sector(sect);
--	printk(" >\n");
-+	print_partition(state, " >");
- #endif
- }
- 
-@@ -383,7 +383,7 @@ parse_minix(struct parsed_partitions *state, struct block_device *bdev,
- 	if (msdos_magic_present (data + 510) &&
- 	    SYS_IND(p) == MINIX_PARTITION) { /* subpartition table present */
- 
--		printk(" %s%d: <minix:", state->name, origin);
-+		print_partition(state, " %s%d: <minix:", state->name, origin);
- 		for (i = 0; i < MINIX_NR_SUBPARTITIONS; i++, p++) {
- 			if (state->next == state->limit)
- 				break;
-@@ -392,7 +392,7 @@ parse_minix(struct parsed_partitions *state, struct block_device *bdev,
- 				put_partition(state, state->next++,
- 					      START_SECT(p), NR_SECTS(p));
- 		}
--		printk(" >\n");
-+		print_partition(state, " >");
- 	}
- 	put_dev_sector(sect);
- #endif /* CONFIG_MINIX_SUBPARTITION */
-@@ -431,7 +431,7 @@ int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- 
- 	if (aix_magic_present(data, bdev)) {
- 		put_dev_sector(sect);
--		printk( " [AIX]");
-+		print_partition(state,  " [AIX]");
- 		return 0;
- 	}
- 
-@@ -477,22 +477,20 @@ int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			/* prevent someone doing mkfs or mkswap on an
- 			   extended partition, but leave room for LILO */
- 			put_partition(state, slot, start, size == 1 ? 1 : 2);
--			printk(" <");
-+			print_partition(state, " <");
- 			parse_extended(state, bdev, start, size);
--			printk(" >");
-+			print_partition(state, " >");
- 			continue;
- 		}
- 		put_partition(state, slot, start, size);
- 		if (SYS_IND(p) == LINUX_RAID_PARTITION)
- 			state->parts[slot].flags = 1;
- 		if (SYS_IND(p) == DM6_PARTITION)
--			printk("[DM]");
-+			print_partition(state, "[DM]");
- 		if (SYS_IND(p) == EZD_PARTITION)
--			printk("[EZD]");
-+			print_partition(state, "[EZD]");
- 	}
- 
--	printk("\n");
+-static _cdebbuf g_debbuf = {"CONFIG_CAPI_TRACE not enabled", NULL, 0, 0};
 -
- 	/* second pass - output for each on a separate line */
- 	p = (struct partition *) (0x1be + data);
- 	for (slot = 1 ; slot <= 4 ; slot++, p++) {
-diff --git a/fs/partitions/osf.c b/fs/partitions/osf.c
-index c05c17b..634229d 100644
---- a/fs/partitions/osf.c
-+++ b/fs/partitions/osf.c
-@@ -72,7 +72,6 @@ int osf_partition(struct parsed_partitions *state, struct block_device *bdev)
- 				le32_to_cpu(partition->p_size));
- 		slot++;
- 	}
--	printk("\n");
- 	put_dev_sector(sect);
- 	return 1;
- }
-diff --git a/fs/partitions/sgi.c b/fs/partitions/sgi.c
-index ed5ac83..54b9850 100644
---- a/fs/partitions/sgi.c
-+++ b/fs/partitions/sgi.c
-@@ -76,7 +76,6 @@ int sgi_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		}
- 		slot++;
- 	}
--	printk("\n");
- 	put_dev_sector(sect);
- 	return 1;
- }
-diff --git a/fs/partitions/sun.c b/fs/partitions/sun.c
-index c95e6a6..dafe00d 100644
---- a/fs/partitions/sun.c
-+++ b/fs/partitions/sun.c
-@@ -116,7 +116,6 @@ int sun_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		}
- 		slot++;
- 	}
--	printk("\n");
- 	put_dev_sector(sect);
- 	return 1;
- }
-diff --git a/fs/partitions/sysv68.c b/fs/partitions/sysv68.c
-index 4eba27b..5ab913b 100644
---- a/fs/partitions/sysv68.c
-+++ b/fs/partitions/sysv68.c
-@@ -73,7 +73,7 @@ int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev)
- 		return -1;
+-_cdebbuf *capi_message2str(u8 * msg)
+-{
+-	return &g_debbuf;
+-}
++static const char *g_debbuf = "CONFIG_CAPI_TRACE not enabled";
  
- 	slices -= 1; /* last slice is the whole disk */
--	printk("sysV68: %s(s%u)", state->name, slices);
-+	print_partition(state, "sysV68: %s(s%u)", state->name, slices);
- 	slice = (struct slice *)data;
- 	for (i = 0; i < slices; i++, slice++) {
- 		if (slot == state->limit)
-@@ -82,11 +82,10 @@ int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev)
- 			put_partition(state, slot,
- 				be32_to_cpu(slice->blkoff),
- 				be32_to_cpu(slice->nblocks));
--			printk("(s%u)", i);
-+			print_partition(state, "(s%u)", i);
- 		}
- 		slot++;
- 	}
--	printk("\n");
- 	put_dev_sector(sect);
- 	return 1;
+-_cdebbuf *capi_cmsg2str(_cmsg * cmsg)
++char *capi_message2str(u8 * msg)
+ {
+-	return &g_debbuf;
++	return kstrdup(g_debbuf, GFP_ATOMIC);
  }
-diff --git a/fs/partitions/ultrix.c b/fs/partitions/ultrix.c
-index ec852c1..5b01971 100644
---- a/fs/partitions/ultrix.c
-+++ b/fs/partitions/ultrix.c
-@@ -39,7 +39,6 @@ int ultrix_partition(struct parsed_partitions *state, struct block_device *bdev)
- 					      label->pt_part[i].pi_blkoff,
- 					      label->pt_part[i].pi_nblocks);
- 		put_dev_sector(sect);
--		printk ("\n");
- 		return 1;
- 	} else {
- 		put_dev_sector(sect);
+ 
+-void cdebbuf_free(_cdebbuf *cdb)
++char *capi_cmsg2str(_cmsg * cmsg)
+ {
++	return kstrdup(g_debbuf, GFP_ATOMIC);
+ }
+ 
+ int __init cdebug_init(void)
+@@ -1004,7 +893,6 @@ void __exit cdebug_exit(void)
+ 
+ #endif
+ 
+-EXPORT_SYMBOL(cdebbuf_free);
+ EXPORT_SYMBOL(capi_cmsg2message);
+ EXPORT_SYMBOL(capi_message2cmsg);
+ EXPORT_SYMBOL(capi_cmsg_header);
+diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
+index f555318..3905331 100644
+--- a/drivers/isdn/capi/kcapi.c
++++ b/drivers/isdn/capi/kcapi.c
+@@ -276,14 +276,13 @@ void capi_ctr_handle_message(struct capi_ctr * card, u16 appl, struct sk_buff *s
+ 	int showctl = 0;
+ 	u8 cmd, subcmd;
+ 	unsigned long flags;
+-	_cdebbuf *cdb;
+ 
+ 	if (card->cardstate != CARD_RUNNING) {
+-		cdb = capi_message2str(skb->data);
+-		if (cdb) {
++		char *s = capi_message2str(skb->data);
++		if (s) {
+ 			printk(KERN_INFO "kcapi: controller [%03d] not active, got: %s",
+-				card->cnr, cdb->buf);
+-			cdebbuf_free(cdb);
++				card->cnr, s);
++			kfree(s);
+ 		} else
+ 			printk(KERN_INFO "kcapi: controller [%03d] not active, cannot trace\n",
+ 				card->cnr);
+@@ -307,11 +306,11 @@ void capi_ctr_handle_message(struct capi_ctr * card, u16 appl, struct sk_buff *s
+ 			       capi_cmd2str(cmd, subcmd),
+ 			       CAPIMSG_LEN(skb->data));
+ 		} else {
+-			cdb = capi_message2str(skb->data);
+-			if (cdb) {
++			char *s = capi_message2str(skb->data);
++			if (s) {
+ 				printk(KERN_DEBUG "kcapi: got [%03d] %s\n",
+-					card->cnr, cdb->buf);
+-				cdebbuf_free(cdb);
++					card->cnr, s);
++				kfree(s);
+ 			} else
+ 				printk(KERN_DEBUG "kcapi: got [%03d] id#%d %s len=%u, cannot trace\n",
+ 					card->cnr, CAPIMSG_APPID(skb->data),
+@@ -324,12 +323,13 @@ void capi_ctr_handle_message(struct capi_ctr * card, u16 appl, struct sk_buff *s
+ 	read_lock_irqsave(&application_lock, flags);
+ 	ap = get_capi_appl_by_nr(CAPIMSG_APPID(skb->data));
+ 	if ((!ap) || (ap->release_in_progress)) {
++		char *s;
+ 		read_unlock_irqrestore(&application_lock, flags);
+-		cdb = capi_message2str(skb->data);
+-		if (cdb) {
++		s = capi_message2str(skb->data);
++		if (s) {
+ 			printk(KERN_ERR "kcapi: handle_message: applid %d state released (%s)\n",
+-			CAPIMSG_APPID(skb->data), cdb->buf);
+-			cdebbuf_free(cdb);
++			CAPIMSG_APPID(skb->data), s);
++			kfree(s);
+ 		} else
+ 			printk(KERN_ERR "kcapi: handle_message: applid %d state released (%s) cannot trace\n",
+ 				CAPIMSG_APPID(skb->data),
+@@ -649,12 +649,11 @@ u16 capi20_put_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 			       capi_cmd2str(cmd, subcmd),
+ 			       CAPIMSG_LEN(skb->data));
+ 		} else {
+-			_cdebbuf *cdb = capi_message2str(skb->data);
+-			if (cdb) {
++			char *s = capi_message2str(skb->data);
++			if (s) {
+ 				printk(KERN_DEBUG "kcapi: put [%03d] %s\n",
+-					CAPIMSG_CONTROLLER(skb->data),
+-					cdb->buf);
+-				cdebbuf_free(cdb);
++					CAPIMSG_CONTROLLER(skb->data), s);
++				kfree(s);
+ 			} else
+ 				printk(KERN_DEBUG "kcapi: put [%03d] id#%d %s len=%u cannot trace\n",
+ 					CAPIMSG_CONTROLLER(skb->data),
+diff --git a/include/linux/isdn/capiutil.h b/include/linux/isdn/capiutil.h
+index 5a52f2c..bd48c51 100644
+--- a/include/linux/isdn/capiutil.h
++++ b/include/linux/isdn/capiutil.h
+@@ -177,22 +177,12 @@ char *capi_info2str(__u16 reason);
+ 
+ char *capi_cmd2str(__u8 cmd, __u8 subcmd);
+ 
+-typedef struct {
+-	u_char	*buf;
+-	u_char	*p;
+-	size_t	size;
+-	size_t	pos;
+-} _cdebbuf;
+-
+-#define	CDEBUG_SIZE	1024
+-#define	CDEBUG_GSIZE	4096
+-
+-void cdebbuf_free(_cdebbuf *cdb);
+ int cdebug_init(void);
+ void cdebug_exit(void);
+ 
+-_cdebbuf *capi_cmsg2str(_cmsg *cmsg);
+-_cdebbuf *capi_message2str(__u8 *msg);
++/* Callers must kfree the strings returned from these functions */
++char *capi_cmsg2str(_cmsg *cmsg);
++char *capi_message2str(__u8 *msg);
+ 
+ /*-----------------------------------------------------------------------*/
+ 
 -- 
 1.5.3.4
 
