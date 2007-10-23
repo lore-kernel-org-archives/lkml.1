@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbXJWJ4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXJWJ4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbXJWJ4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbXJWJ4G
+	id S1754038AbXJWJ4p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXJWJ4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:56:06 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:34941 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753501AbXJWJ4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:56:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=izL/e69F5DIyTkzH8mIarsuiFJ9VDZ6qqHMQxU/CLVgWkfmlCBk0os3u6rgQz6Vj3xY2aiVz/b6ptN8OufkxTrL7EBRTzO0IT8icbAva4eryS2V6HDxp8rd8AwhJ+jMmvPknUUBlTeXlbLaAmv9mQt4VaH97ah/yMnintjwZMGo=
-Message-ID: <471DC52B.20802@gmail.com>
-Date: Tue, 23 Oct 2007 18:55:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 23 Oct 2007 05:56:35 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:6447 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753683AbXJWJ4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 05:56:34 -0400
+Date: Tue, 23 Oct 2007 11:55:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071023095507.GE5059@kernel.dk>
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <471DC3D9.2070809@panasas.com>
 MIME-Version: 1.0
-To: Steen Eugen Poulsen <sep@lix-world.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, lists@dusted.dk,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-References: <56020.194.255.108.253.1192004925.squirrel@root.dusted.dk> <20071012174153.69556b32.akpm@linux-foundation.org> <47105C53.7040603@lix-world.net>
-In-Reply-To: <47105C53.7040603@lix-world.net>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471DC3D9.2070809@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Steen Eugen Poulsen wrote:
-> Sep 28 04:32:40 locker ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0
-> action 0x2 frozen
-> Sep 28 04:32:40 locker ata1.00: cmd b0/d2:f1:00:4f:c2/00:00:00:00:00/00
-> tag 0 cdb 0x0 data 123392 in
-> Sep 28 04:32:40 locker res 50/00:f1:00:4f:c2/00:00:00:00:00/00 Emask
-> 0x202 (HSM violation)
-[--snip--]
-> Another machine:
+On Tue, Oct 23 2007, Boaz Harrosh wrote:
+> On Tue, Oct 23 2007 at 11:41 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Tue, Oct 23 2007, Boaz Harrosh wrote:
+> >> On Mon, Oct 22 2007 at 23:47 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >>> On Mon, 22 Oct 2007, Alan Cox wrote:
+> >>>
+> >>>> For structures, not array elements or stack objects. Does gcc now get
+> >>>> aligned correct as an attribute on a stack object ?
+> >>> I think m68k stack layout still guarantees 4-byte-alignment, no?
+> >>>
+> >>>> Still doesn't answer the rather more important question - why not just
+> >>>> stick a NULL on the end instead of all the nutty hacks ?
+> >>> You still do need one bit for the discontiguous case, so it's not like you 
+> >>> can avoid the hacks anyway (unless you just blow up the structure 
+> >>> entirely) and make it a separate member). So once you have that 
+> >>> bit+pointer, using a separate NULL entry isn't exactly prettier. 
+> >>>
+> >>> Especially as we actally want to see the difference between 
+> >>> "end-of-allocation" and "not yet filled in", so you shouldn't use NULL 
+> >>> anyway, you should probably use something like "all-ones".
+> >>>
+> >>> 			Linus
+> >>> -
+> >> Every one is so hysterical about this sg-chaining problem. And massive
+> >> patches produced, that when a simple none intrusive solution is proposed
+> >> it is totally ignored because every one thinks, "I can not be that stupid".
+> >> Well Einstein said: "Simplicity is the ultimate sophistication". So no one
+> >> need to feel bad.
+> > 
+> > It's all about the end goal - having maintainable and resilient code.
+> > And I think the sg code will be better once we get past the next day or
+> > so, and it'll be more robust. That is what matters to me, not the
+> > simplicity of the patch itself.
+> > 
 > 
-> Sep 28 03:47:55 dragonslair ata1.00: exception Emask 0x0 SAct 0x0 SErr
-> 0x0 action 0x2 frozen
-> Sep 28 03:47:55 dragonslair ata1.00: cmd
-> b0/db:f8:00:4f:c2/00:00:00:00:00/00 tag 0 cdb 0x0 data 126976 in
-> 
-> Sep 28 03:47:55 dragonslair res 50/00:f8:00:4f:c2/00:00:00:00:00/00
-> Emask 0x202 (HSM violation)
-[--snip--]
-> Sep 28 04:33:52 liferaft kernel: ata1.00: exception Emask 0x0 SAct 0x0
-> SErr 0x0 action 0x2 frozen
-> Sep 28 04:33:55 liferaft kernel: ata1.00: cmd
-> b0/d2:f1:00:4f:c2/00:00:00:00:00/00 tag 0 cdb 0x0 data 123392 in
-> Sep 28 04:33:55 liferaft kernel:          res
-> 50/00:f1:00:4f:c2/00:00:00:00:00/00 Emask 0x202 (HSM violation)
-> Sep 28 04:33:55 liferaft kernel: ata1: soft resetting port
-> Sep 28 04:33:55 liferaft kernel: ata1: SATA link up 3.0 Gbps (SStatus
-> 123 SControl 300)
-> Sep 28 04:33:55 liferaft kernel: ata1.00: configured for UDMA/133
-> Sep 28 04:33:55 liferaft kernel: ata1: EH complete
+> But that is exactly what his patch is. Much more robust. Because you do not
+> relay on sglist content but on outside information, that you already have.
+> Have you had an hard look at his solution? It just simply falls into place.
+> Please try it out for yourself. I did, and it works.
 
-All these are caused by smartd.  Updating should fix the problem.
+Sure, I looked at it, it's not exactly rocket science, I do understand
+what it achieves. I don't think the patch is bad as such, I'm merely
+trying to state that I think the end code AND interface will be much
+nicer with the current direction that the sg helpers are moving.
 
-> Note 2: The hardware didn't freeze for me and I believe the freeze is do
-> to swap breaking due to the errors.
-
-Above HSM violations should be harmless other than those messages.
-libata resets the devices and should just go on.
-
-> Note 3: dragonslair's harddisk actually crashed, kernel didn't die, it
-> just remounted read only. Reboot and the disk was missing, more reboot
-> and the machine started with all disks running again, been stable since
-> the 28th Sep. (knock on wood)
-
-libata EH can't really recover from actual hardware failures but some
-drives come back on if you hot unplug and then replug it.
+It does rely on outside context, because you need to pass in the sglist
+number. In my opinion, this patch would be a bandaid for the original
+chain code until we got around to fixing the PAGEALLOC crash. Which we
+did, it's now merged. The patch doesn't make the code cleaner, it makes
+it uglier. It'll work, but that still doesn't mean I have to agree it's
+a nice design.
 
 -- 
-tejun
+Jens Axboe
+
