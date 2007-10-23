@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXJWONk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXJWOUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbXJWONk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 10:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXJWONc
+	id S1752664AbXJWOUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 10:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXJWOUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 10:13:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:58337 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbXJWONb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 10:13:31 -0400
-Date: Tue, 23 Oct 2007 10:10:53 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] reiserfs: don't drop PG_dirty when releasing
- sub-page-sized dirty file
-Message-ID: <20071023101053.638fe207@think.oraclecorp.com>
-In-Reply-To: <393140585.27414@ustc.edu.cn>
-References: <200710220822.52370.maximlevitsky@gmail.com>
-	<200710221258.11384.maximlevitsky@gmail.com>
-	<393051953.24752@ustc.edu.cn>
-	<200710221421.21439.maximlevitsky@gmail.com>
-	<393126119.26275@ustc.edu.cn>
-	<1193134027.7406.1.camel@twins>
-	<393140585.27414@ustc.edu.cn>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 23 Oct 2007 10:20:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33218 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751604AbXJWOUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 10:20:32 -0400
+Date: Tue, 23 Oct 2007 16:20:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Al Viro <viro@ftp.linux.org.uk>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Nix <nix@esperi.org.uk>, Jeff Dike <jdike@addtoit.com>,
+       Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in
+	2.6.23-final.
+Message-ID: <20071023142006.GA9961@elte.hu>
+References: <20071022122504.GL2998@hacking> <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu> <p73wste7zy5.fsf@bingen.suse.de> <20071023131009.GA32298@elte.hu> <p73sl427wvu.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73sl427wvu.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 19:56:20 +0800
-Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-> On Tue, Oct 23, 2007 at 12:07:07PM +0200, Peter Zijlstra wrote:
-> > [ adding reiserfs devs to the CC ]
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> >> You should rename it then to "asmcall" or something.
+> >
+> > if then that should be a separate renaming patch.
 > 
-> Thank you.
-> 
-> This fix is kind of crude - even when it fixed Maxim's problem, and
-> survived my stress testing of a lot of patching and kernel compiling.
-> I'd be glad to see better solutions.
+> Well you're asking for the ugly hacks for out of tree code.  [...]
 
-This should be safe, reiserfs has the buffer heads themselves clean and
-the page should get cleaned eventually.  The cancel_dirty_page call was
-just an optimization to be VM friendly.
+nice word-bending there. I'm asking for pre-existing annotations to 
+survive. It hurts you _nothing_ and it was a world of pain for us to 
+recover those lost annotations. Anyway, if Jeremy does not object to the 
+patch we'll push it in and then rename fastcall to asmcall. Much ado 
+about nothing.
 
--chris
+	Ingo
