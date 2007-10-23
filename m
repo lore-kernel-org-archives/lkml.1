@@ -1,151 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXJWBr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbXJWBs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXJWBr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 21:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXJWBrw
+	id S1753793AbXJWBs5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 21:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXJWBss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 21:47:52 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:45425 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbXJWBrv (ORCPT
+	Mon, 22 Oct 2007 21:48:48 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37348 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbXJWBsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 21:47:51 -0400
-Message-ID: <471D52C4.1050701@tiscali.nl>
-Date: Tue, 23 Oct 2007 03:47:48 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 22 Oct 2007 21:48:47 -0400
+Date: Mon, 22 Oct 2007 19:48:45 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Al Viro <viro@ftp.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Sparse fix for scsi_request_fn
+Message-ID: <20071023014845.GN27248@parisc-linux.org>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] several returns before unlocking in lmc_ioctl
-References: <471D4763.60604@tiscali.nl>
-In-Reply-To: <471D4763.60604@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think we should keep the lmc_tracing. Use this patch instead.
+Introduce new __holds() macro to tell sparse it's OK to drop and then
+reacquire a lock within a function.  Use it in scsi_request_fn.
 
---
-    Several returns before unlocking in lmc_ioctl
-    
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
-index 5ea8772..64eb578 100644
---- a/drivers/net/wan/lmc/lmc_main.c
-+++ b/drivers/net/wan/lmc/lmc_main.c
-@@ -142,9 +142,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
-          * To date internally, just copy this out to the user.
-          */
-     case LMCIOCGINFO: /*fold01*/
--        if (copy_to_user(ifr->ifr_data, &sc->ictl, sizeof (lmc_ctl_t)))
--            return -EFAULT;
--        ret = 0;
-+	if (copy_to_user(ifr->ifr_data, &sc->ictl, sizeof(lmc_ctl_t)))
-+		ret = -EFAULT;
-+	else
-+		ret = 0;
-         break;
- 
-     case LMCIOCSINFO: /*fold01*/
-@@ -159,8 +160,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
-             break;
-         }
- 
--        if (copy_from_user(&ctl, ifr->ifr_data, sizeof (lmc_ctl_t)))
--            return -EFAULT;
-+	if (copy_from_user(&ctl, ifr->ifr_data, sizeof(lmc_ctl_t))) {
-+		ret = -EFAULT;
-+		break;
-+	}
- 
-         sc->lmc_media->set_status (sc, &ctl);
- 
-@@ -190,8 +193,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
- 		break;
- 	    }
- 
--	    if (copy_from_user(&new_type, ifr->ifr_data, sizeof(u_int16_t)))
--                return -EFAULT;
-+	    if (copy_from_user(&new_type, ifr->ifr_data, sizeof(u_int16_t))) {
-+		ret = -EFAULT;
-+		break;
-+	    }
- 
-             
- 	    if (new_type == old_type)
-@@ -229,9 +234,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
-         sc->lmc_xinfo.Magic1 = 0xDEADBEEF;
- 
-         if (copy_to_user(ifr->ifr_data, &sc->lmc_xinfo,
--                         sizeof (struct lmc_xinfo)))
--            return -EFAULT;
--        ret = 0;
-+					sizeof(struct lmc_xinfo))) {
-+		ret = -EFAULT;
-+	else
-+		ret = 0;
- 
-         break;
- 
-@@ -262,9 +268,9 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
- 
-         if (copy_to_user(ifr->ifr_data, &sc->stats,
-                          sizeof (struct lmc_statistics)))
--            return -EFAULT;
--
--        ret = 0;
-+		ret = -EFAULT;
-+	else
-+		ret = 0;
-         break;
- 
-     case LMCIOCCLEARLMCSTATS: /*fold01*/
-@@ -292,8 +298,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
-             break;
-         }
- 
--        if (copy_from_user(&ctl, ifr->ifr_data, sizeof (lmc_ctl_t)))
--            return -EFAULT;
-+	if (copy_from_user(&ctl, ifr->ifr_data, sizeof(lmc_ctl_t))) {
-+		ret = -EFAULT;
-+		break;
-+	}
-         sc->lmc_media->set_circuit_type(sc, ctl.circuit_type);
-         sc->ictl.circuit_type = ctl.circuit_type;
-         ret = 0;
-@@ -318,12 +326,15 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
- 
- #ifdef DEBUG
-     case LMCIOCDUMPEVENTLOG:
--        if (copy_to_user(ifr->ifr_data, &lmcEventLogIndex, sizeof (u32)))
--            return -EFAULT;
-+	if (copy_to_user(ifr->ifr_data, &lmcEventLogIndex, sizeof(u32))) {
-+		ret = -EFAULT;
-+		break;
-+	}
-         if (copy_to_user(ifr->ifr_data + sizeof (u32), lmcEventLogBuf, sizeof (lmcEventLogBuf)))
--            return -EFAULT;
-+		ret = -EFAULT;
-+	else
-+		ret = 0;
- 
--        ret = 0;
-         break;
- #endif /* end ifdef _DBG_EVENTLOG */
-     case LMCIOCT1CONTROL: /*fold01*/
-@@ -346,8 +357,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
-              */
-             netif_stop_queue(dev);
- 
--            if (copy_from_user(&xc, ifr->ifr_data, sizeof (struct lmc_xilinx_control)))
--                return -EFAULT;
-+	if (copy_from_user(&xc, ifr->ifr_data, sizeof(struct lmc_xilinx_control))) {
-+		ret = -EFAULT;
-+		break;
-+	}
-             switch(xc.command){
-             case lmc_xilinx_reset: /*fold02*/
-                 {
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 207f1aa..5e0583a 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1374,6 +1372,7 @@ static void scsi_softirq_done(struct request *rq)
+  * Lock status: IO request lock assumed to be held when called.
+  */
+ static void scsi_request_fn(struct request_queue *q)
++		__holds(q->queue_lock)
+ {
+ 	struct scsi_device *sdev = q->queuedata;
+ 	struct Scsi_Host *shost;
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 86f9a3a..1611ac6 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -12,6 +12,7 @@
+ # define __iomem	__attribute__((noderef, address_space(2)))
+ # define __acquires(x)	__attribute__((context(x,0,1)))
+ # define __releases(x)	__attribute__((context(x,1,0)))
++# define __holds(x)	__attribute__((context(x,1,1)))
+ # define __acquire(x)	__context__(x,1)
+ # define __release(x)	__context__(x,-1)
+ # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
+@@ -29,6 +30,7 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+ # define __builtin_warning(x, y...) (1)
+ # define __acquires(x)
+ # define __releases(x)
++# define __holds(x)
+ # define __acquire(x) (void)0
+ # define __release(x) (void)0
+ # define __cond_lock(x,c) (c)
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
