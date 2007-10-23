@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbXJWRH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbXJWRHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462AbXJWRH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXJWRFc
+	id S1755398AbXJWRHt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbXJWRFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:05:32 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:35066
+	Tue, 23 Oct 2007 13:05:37 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:35076
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754663AbXJWRFa (ORCPT
+	by vger.kernel.org with ESMTP id S1754695AbXJWRFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:05:30 -0400
+	Tue, 23 Oct 2007 13:05:35 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 06/13] RT: Maintain the highest RQ priority
+Subject: [PATCH 07/13] RT: Clean up some of the push-rt logic
 To: linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Darren Hart <dvhltc@us.ibm.com>
-Date: Tue, 23 Oct 2007 12:50:54 -0400
-Message-ID: <20071023165054.5536.13480.stgit@novell1.haskins.net>
+Date: Tue, 23 Oct 2007 12:50:59 -0400
+Message-ID: <20071023165059.5536.51340.stgit@novell1.haskins.net>
 In-Reply-To: <20071023164156.5536.95573.stgit@novell1.haskins.net>
 References: <20071023164156.5536.95573.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -29,126 +29,91 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an implementation of Steve's idea where we should update the RQ
-concept of priority to show the highest-task, even if that task is not (yet)
-running.  This prevents us from pushing multiple tasks to the RQ before it
-gets a chance to reschedule.
+Get rid of the superfluous dst_cpu, and move the cpu_mask inside the search
+function.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c |   34 +++++++++++++++++++++++++---------
- 1 files changed, 25 insertions(+), 9 deletions(-)
+ kernel/sched.c |   18 +++++++-----------
+ 1 files changed, 7 insertions(+), 11 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 7c4fba8..c17e2e4 100644
+index c17e2e4..0600062 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -304,7 +304,7 @@ struct rq {
- #ifdef CONFIG_PREEMPT_RT
- 	unsigned long rt_nr_running;
- 	unsigned long rt_nr_uninterruptible;
--	int curr_prio;
-+	int highest_prio;
- #endif
+@@ -1517,20 +1517,21 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
+ #define RT_PUSH_MAX_TRIES 3
  
- 	unsigned long switch_timestamp;
-@@ -368,11 +368,20 @@ static DEFINE_MUTEX(sched_hotcpu_mutex);
- #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
- static inline void set_rq_prio(struct rq *rq, int prio)
+ /* Will lock the rq it finds */
+-static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
+-				      struct task_struct *task,
++static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ 				      struct rq *this_rq)
  {
--	rq->curr_prio = prio;
-+	rq->highest_prio = prio;
-+}
+ 	struct rq *lowest_rq = NULL;
+-	int dst_cpu = -1;
+ 	int cpu;
+ 	int tries;
++	cpumask_t cpu_mask;
 +
-+static inline void update_rq_prio(struct rq *rq)
-+{
-+	struct rt_prio_array *array = &rq->rt.active;
-+	int                   prio  = sched_find_first_bit(array->bitmap);
-+
-+	set_rq_prio(rq, prio);
- }
++	cpus_and(cpu_mask, cpu_online_map, task->cpus_allowed);
  
- #else
- #define set_rq_prio(rq, prio) do { } while(0)
-+#define update_rq_prio(rq)    do { } while(0)
- #endif
+ 	for (tries = 0; tries < RT_PUSH_MAX_TRIES; tries++) {
+ 		/*
+ 		 * Scan each rq for the lowest prio.
+ 		 */
+-		for_each_cpu_mask(cpu, *cpu_mask) {
++		for_each_cpu_mask(cpu, cpu_mask) {
+ 			struct rq *rq = &per_cpu(runqueues, cpu);
  
- static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
-@@ -1023,12 +1032,14 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
- 	sched_info_queued(p);
- 	p->sched_class->enqueue_task(rq, p, wakeup);
- 	p->se.on_rq = 1;
-+	update_rq_prio(rq);
- }
- 
- static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
- {
- 	p->sched_class->dequeue_task(rq, p, sleep);
- 	p->se.on_rq = 0;
-+	update_rq_prio(rq);
- }
- 
- /*
-@@ -1526,15 +1537,15 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
- 				continue;
- 
+ 			if (cpu == smp_processor_id())
+@@ -1539,7 +1540,6 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
  			/* We look for lowest RT prio or non-rt CPU */
--			if (rq->curr_prio >= MAX_RT_PRIO) {
-+			if (rq->highest_prio >= MAX_RT_PRIO) {
+ 			if (rq->highest_prio >= MAX_RT_PRIO) {
  				lowest_rq = rq;
- 				dst_cpu = cpu;
+-				dst_cpu = cpu;
  				break;
  			}
  
- 			/* no locking for now */
--			if (rq->curr_prio > task->prio &&
--			    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
-+			if (rq->highest_prio > task->prio &&
-+			    (!lowest_rq || rq->highest_prio < lowest_rq->highest_prio)) {
+@@ -1547,7 +1547,6 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
+ 			if (rq->highest_prio > task->prio &&
+ 			    (!lowest_rq || rq->highest_prio < lowest_rq->highest_prio)) {
  				lowest_rq = rq;
- 				dst_cpu = cpu;
+-				dst_cpu = cpu;
  			}
-@@ -1560,7 +1571,7 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
  		}
  
- 		/* If this rq is still suitable use it. */
--		if (lowest_rq->curr_prio > task->prio)
-+		if (lowest_rq->highest_prio > task->prio)
- 			break;
+@@ -1562,7 +1561,7 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
+ 			 * migrated already or had its affinity changed.
+ 			 */
+ 			if (unlikely(task_rq(task) != this_rq ||
+-				     !cpu_isset(dst_cpu, task->cpus_allowed))) {
++				     !cpu_isset(lowest_rq->cpu, task->cpus_allowed))) {
+ 				spin_unlock(&lowest_rq->lock);
+ 				lowest_rq = NULL;
+ 				break;
+@@ -1593,7 +1592,6 @@ static int push_rt_task(struct rq *this_rq)
+ 	struct rq *lowest_rq;
+ 	int dst_cpu;
+ 	int ret = 0;
+-	cpumask_t cpu_mask;
  
- 		/* try again */
-@@ -2339,10 +2350,8 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	 */
- 	prev_state = prev->state;
- 	_finish_arch_switch(prev);
--
--	set_rq_prio(rq, current->prio);
--
- 	finish_lock_switch(rq, prev);
-+
- #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
- 	/*
- 	 * If we pushed an RT task off the runqueue,
-@@ -4647,6 +4656,9 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
- 	prev_resched = _need_resched();
+ 	assert_spin_locked(&this_rq->lock);
  
- 	if (on_rq) {
-+		/*
-+		 * Note: RQ priority gets updated in the enqueue/dequeue logic
-+		 */
- 		enqueue_task(rq, p, 0);
- 		/*
- 		 * Reschedule if we are currently running on this runqueue and
-@@ -4713,6 +4725,10 @@ void set_user_nice(struct task_struct *p, long nice)
- 		 */
- 		if (delta < 0 || (delta > 0 && task_running(rq, p)))
- 			resched_task(rq->curr);
-+
-+		/*
-+		 * Note: RQ priority gets updated in the enqueue/dequeue logic
-+		 */
- 	}
- out_unlock:
- 	task_rq_unlock(rq, &flags);
+@@ -1601,13 +1599,11 @@ static int push_rt_task(struct rq *this_rq)
+ 	if (!next_task)
+ 		return 0;
+ 
+-	cpus_and(cpu_mask, cpu_online_map, next_task->cpus_allowed);
+-
+ 	/* We might release this_rq lock */
+ 	get_task_struct(next_task);
+ 
+ 	/* find_lock_lowest_rq locks the rq if found */
+-	lowest_rq = find_lock_lowest_rq(&cpu_mask, next_task, this_rq);
++	lowest_rq = find_lock_lowest_rq(next_task, this_rq);
+ 	if (!lowest_rq)
+ 		goto out;
+ 
 
