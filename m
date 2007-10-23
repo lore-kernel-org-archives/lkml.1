@@ -1,42 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbXJWVsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXJWVuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbXJWVsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXJWVsb
+	id S1755083AbXJWVuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXJWVuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:48:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37538
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbXJWVsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:48:30 -0400
-Date: Tue, 23 Oct 2007 14:48:57 -0700 (PDT)
-Message-Id: <20071023.144857.03983847.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: auke-jan.h.kok@intel.com, ajax@redhat.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <471E5C21.8030908@garzik.org>
-References: <1193156487.26974.39.camel@localhost.localdomain>
-	<471E2AD0.1000500@intel.com>
-	<471E5C21.8030908@garzik.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 23 Oct 2007 17:50:09 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:43072 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752344AbXJWVuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:50:07 -0400
+Subject: Re: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
+From: Richard Purdie <rpurdie@rpsys.net>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
+In-Reply-To: <471B4C46.9030502@freemail.hu>
+References: <4718FD04.3080602@freemail.hu>
+	 <20071019133607.3419b00a.randy.dunlap@oracle.com>
+	 <471B4BA5.30100@freemail.hu>  <471B4C46.9030502@freemail.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Tue, 23 Oct 2007 22:48:24 +0100
+Message-Id: <1193176104.5709.137.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 23 Oct 2007 16:40:01 -0400
+On Sun, 2007-10-21 at 14:55 +0200, Németh Márton wrote:
+> diff -uprN linux-2.6.23.orig/Documentation/leds-class.txt linux-2.6.23/Documentation/leds-class.txt
+> --- linux-2.6.23.orig/Documentation/leds-class.txt	2007-10-09 22:31:38.000000000 +0200
+> +++ linux-2.6.23/Documentation/leds-class.txt	2007-10-21 10:45:35.000000000 +0200
+> @@ -39,7 +39,9 @@ LED Device Naming
+> 
+>  Is currently of the form:
+> 
+> -"devicename:colour"
+> +"devicename:colour" or
+> +"devicename:colour:type" or
+> +"devicename::type"
 
-> Sorry, I disagree.  Just as with e100, if there is a clear way the user 
-> can recover their setup -- and Adam says his was effective -- I don't 
-> see why we should be denying users the ability to use their own hardware.
+Adding a the idea of function here was proposed a while back and we
+probably should do that but it needs to be a separate patch and some of
+the other drivers probably need tweaking for consistency. I will take
+care of this for the next merge window.
 
-I'd like to second these sentiments.
+> diff -uprN linux-2.6.23.orig/drivers/leds/Kconfig linux-2.6.23/drivers/leds/Kconfig
+> --- linux-2.6.23.orig/drivers/leds/Kconfig	2007-10-09 22:31:38.000000000 +0200
+> +++ linux-2.6.23/drivers/leds/Kconfig	2007-10-21 12:04:50.000000000 +0200
+> @@ -101,6 +101,39 @@ config LEDS_GPIO
+>  	  outputs. To be useful the particular board must have LEDs
+>  	  and they must be connected to the GPIO lines.
+> 
+> +config LEDS_CLEVO_MAIL
+> +	tristate "Mail LED on Clevo notebook (EXPERIMENTAL)"
+> +	depends on LEDS_CLASS && X86 && SERIO_I8042 && DMI && EXPERIMENTAL
+> +	help
+> +	  This driver makes the mail LED accessible from userspace
+> +	  programs through the leds subsystem. This LED have three
+> +	  known mode: off, blink at 0.5Hz and blink at 1Hz.
+> +
+> +	  The driver supports two kinds of interface: using ledtrig-timer
+> +	  or through /sys/class/leds/clevo::mail/brightness. As this LED
+> +	  cannot change it's brightness it blinks instead. The brightness
+> +	  value 0 means off, 1..127 means blink at 0.5Hz and 128..255 means
+> +	  blink at 1Hz.
 
-Just because you can come up with cases where using a wrong
-eeprom would fail, does not mean the facility should not be
-provided at all.
+Hmm, there really is no way to just turn the LED on? :(
+
+> +	  Example to start blink at 0.5Hz:
+> +	    echo 1 >/sys/class/leds/clevo::mail/brightness
+> +	  - or -
+> +	    echo timer >/sys/class/leds/clevo::mail/trigger
+> +	    echo 1000 >/sys/class/leds/clevo::mail/delay_on
+> +	    echo 1000 >/sys/class/leds/clevo::mail/delay_off
+
+The Kconfig option shouldn't need to go into this much detail. If we
+need this much detail, we should probably enhance the LED documentation
+in Documentation/ instead.
+
+> diff -uprN linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c linux-2.6.23/drivers/leds/leds-clevo-mail.c
+> --- linux-2.6.23.orig/drivers/leds/leds-clevo-mail.c	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.23/drivers/leds/leds-clevo-mail.c	2007-10-21 10:49:32.000000000 +0200
+> @@ -0,0 +1,210 @@
+> +
+> +#include <linux/module.h>
+> +
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/leds.h>
+> +
+> +#include <linux/io.h>
+> +#include <linux/dmi.h>
+> +
+> +#include <linux/i8042.h>
+> +
+> +#define HANDLED				0
+
+Probably easiest to turn the two references to this into "return 0"
+
+Other than that the driver looks ok and I'm happy to add a version with
+the above minor tweaks to the LED tree.
+
+Cheers,
+
+Richard
+
