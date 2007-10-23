@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbXJWRJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXJWRKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbXJWRJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbXJWRHl
+	id S1756067AbXJWRKk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbXJWRKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:07:41 -0400
-Received: from keil-draco.com ([216.193.185.50]:50579 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbXJWRHi (ORCPT
+	Tue, 23 Oct 2007 13:10:23 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:19879 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753950AbXJWRKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:07:38 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Dan Williams <dcbw@redhat.com>
-Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
-Date: Tue, 23 Oct 2007 13:07:23 -0400
-User-Agent: KMail/1.9.7
-Cc: Pavel Machek <pavel@ucw.cz>, Ivo van Doorn <ivdoorn@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       mwallis@serialmonkey.com
-References: <20071020184100.GA11640@elf.ucw.cz> <20071022220000.GH28190@elf.ucw.cz> <1193148312.8648.17.camel@localhost.localdomain>
-In-Reply-To: <1193148312.8648.17.camel@localhost.localdomain>
+	Tue, 23 Oct 2007 13:10:21 -0400
+Message-ID: <471E2A96.7050304@panasas.com>
+Date: Tue, 23 Oct 2007 19:08:38 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 09/10] Change table chaining layout
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710231307.25301.dhazelton@enter.net>
+X-OriginalArrivalTime: 23 Oct 2007 17:08:02.0548 (UTC) FILETIME=[45362340:01C81597]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 October 2007 10:05:12 Dan Williams wrote:
-> On Tue, 2007-10-23 at 00:00 +0200, Pavel Machek wrote:
-> > Hi!
-> >
-> > > > > Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
-> > > >
-> > > > That doesn't say much, some manufacturers add that line to their
-> > > > driver just to prevent the module loader complaining about a non-GPL
-> > > > driver...
-> > > >
-> > > > There should be a copyright notice or a license file accompanied with
-> > > > the driver that clearly states the license of the driver.
-> > >
-> > > Lacking an explicitly stated license it can be argued that, since the
-> > > MODULE_LICENSE() macro is meant to define the actual license on the
-> > > code, this code is GPL. No, it isn't an explicit definition, but
-> > > lacking any other signs of the license, the implicit declaration of it
-> > > being GPL is (or should be) enough to deflect charges of copyright
-> > > infringement.
-> >
-> > Yep, I believe this driver is GPLed. They published the source and
-> > there's nothing to suggest otherwise, and there's explicit:
-> >
-> > #define DRIVER_AUTHOR                   "Jeff Lee<YY_Lee@issc.com.tw>"
-> > #define DRIVER_DESC                             "IS89C35 802.11bg WLAN
-> > USB Driver" MODULE_LICENSE("GPL");
->
-> If there isn't an explicit COPYING or LICENSE file or something
-> distributed with the driver, and if there aren't copyright/license
-> headers at the top of the files in question, I have a hard time agreeing
-> that MODULE_LICENSE("GPL") _definitely_ means that the author has GPL-ed
-> the driver intentionally.  Of course that's the way it's supposed to
-> work, but to me this doesn't pass sufficient muster to be definitely
-> called GPL without additional clarification.
->
-> Dan
+On Mon, Oct 22 2007 at 20:11 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> Change the page member of the scatterlist structure to be an unsigned
+> long, and encode more stuff in the lower bits:
+> 
+> - Bits 0 and 1 zero: this is a normal sg entry. Next sg entry is located
+>   at sg + 1.
+> - Bit 0 set: this is a chain entry, the next real entry is at ->page_link
+>   with the two low bits masked off.
+> - Bit 1 set: this is the final entry in the sg entry. sg_next() will return
+>   NULL when passed such an entry.
+> 
+> It's thus important that sg table users use the proper accessors to get
+> and set the page member.
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+<snip>
+>  
+>  /**
+>   * sg_set_page - Set sg entry to point at given page
+> @@ -20,11 +37,20 @@
+>   **/
+>  static inline void sg_set_page(struct scatterlist *sg, struct page *page)
+>  {
+> -	sg->page = page;
+> +	unsigned long page_link = sg->page_link & 0x3;
+> +
+You might want to put a BUG_ON(page & 0x3); Make sure
+you're not loosing information. (The m68k problem)
 
-Lacking any other indication MODULE_LICENSE is supposed to mark the license 
-that the code is being distributed under. If companies are intentionally 
-mis-using this to get around the "internal interfaces" limitations (where 
-some interfaces are not available unless the module is GPL'd) and the warning 
-message printed in the logs when the module is not GPL'd then they are 
-(technically) in violation of the law. (interfaces that are GPL only are 
-considered so internal to the kernel that using them makes your code GPL 
-because of the inclusion of GPL'd code. And no - I am not going to get into 
-that discussion - it's pointless)
+> +	sg->page_link = page_link | (unsigned long) page;
+>  }
+>  
+> -#define sg_page(sg)	((sg)->page)
+> +#define sg_page(sg)	((struct page *) ((sg)->page_link & ~0x3))
+>  
+<snip>
 
-In the end, using MODULE_LICENSE for any purpose other than declaring the 
-chosen license for the code is deceptive. So it is easily arguable that by 
-not including any license with the code other than the MODULE_LICENSE 
-statement and then trying to prosecute because MODULE_LICENSE doesn't 
-accurately state the license on the code is entrapment and illegal.
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Boaz
