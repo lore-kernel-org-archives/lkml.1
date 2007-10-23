@@ -1,99 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbXJWHA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbXJWHE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbXJWHA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbXJWHAr
+	id S1753366AbXJWHE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXJWHET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:00:47 -0400
-Received: from nn7.de ([85.214.94.156]:52744 "EHLO nn7.de"
+	Tue, 23 Oct 2007 03:04:19 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7557 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbXJWHAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:00:46 -0400
-Subject: Re: sata sil3114 vs. certain seagate drives results in filesystem
-	corruptions
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <200710221259.27989.bs@q-leap.de>
-References: <1192863324.5720.162.camel@localhost>
-	 <200710221148.08809.bs@q-leap.de> <1193049392.10246.29.camel@localhost>
-	 <200710221259.27989.bs@q-leap.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 23 Oct 2007 08:57:45 +0200
-Message-Id: <1193122665.4384.16.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	id S1752308AbXJWHES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 03:04:18 -0400
+Date: Tue, 23 Oct 2007 09:02:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: IDE crash...
+Message-ID: <20071023070252.GA25962@kernel.dk>
+References: <20071022.235010.59469063.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071022.235010.59469063.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-22 at 12:59 +0200, Bernd Schubert wrote: 
-> On Monday 22 October 2007 12:36:32 Soeren Sonnenburg wrote:
-> > On Mon, 2007-10-22 at 11:48 +0200, Bernd Schubert wrote:
-> > > Hello,
-> > >
-> > > On Monday 22 October 2007 04:12:44 Tejun Heo wrote:
-> > > > Helo,
-> > > > [...]
-> > > >
-> > > > > Now when I write large files of zeros to root(sda&sdb) and read the
-> > > > > file back in it contains a few nonzero entries:
-> > > > >
-> > > > > # dd if=/dev/zero of=/foo bs=1M count=2000
-> > > > > # hexdump /foo
-> > > > > 0000000 0000 0000 0000 0000 0000 0000 0000 0000
-> > > > > *
-> > > > > <after >1GB random parts, within large blocks of zeroes>
-> > > > >
-> > > > > I can reliably trigger this on the md0 / devmapper-root setup when I
-> > > > > write about 2GB of data (note that this machine has 1.5G of memory -
-> > > > > and still 1GB is often enough to see this problem). Here it does not
-> > > > > matter where in the filesystem I do these writes.
-> > >
-> > > Thats almost the same test as I'm always doing. Only I do not write only
-> > > 2GB,
-> >
-> > Well when I read your mail I thought that I could be seeing exactly the
-> > same bug... it still may be. However ``my'' problem does not go away
-> > with the mod15fix ...
+On Mon, Oct 22 2007, David Miller wrote:
 > 
-> Yeah, pity it did not fix it :( I will try to port Tejuns patch 
-> (http://home-tj.org/wiki/index.php/Sil_m15w#Patches) to 2.6.23 today or 
-> tomorrow. If you are testing anyway, could you then also try this?
-
-Hmmhh, dmesg said the m15 fix was turned on (at least it appeared for
-the 2 drives in question in dmesg), so I fear it is something different.
-On the other hand this is a 'production' machine so I am not too eager
-to try very experimental things...
-
-> > > but as much as it fits onto the disk. On reading back this file, the
-> > > filesystem will report errors somewhere between 50GB and 230GB (disk size
-> > > is 250GB).
-> >
-> > Wow, I really see lots of corruptions (well every 1-2 GB a couple of
-> > bytes are corrupted). Are you getting similiarly many in the 50G - 230G
-> > region?
-> >
-> > > > Thanks.  I'll try to reproduce the problem here.  What's your
-> > > > motherboard?
-> > >
-> > > All tested S2882 boards here.
-> >
-> > I assume all equipped with lots of memory and mostly empty pci slots?
+> I'm debugging a blk_rq_map_sg() crash that i'm getting on sparc64 as
+> root is mounted over IDE.  I think I know what is happening now.
 > 
-> Yes, all pci-slots are free and the systems to have between 4 and 16GB memory 
-> (ecc, monitored with edac). Well, those are cluster systems (actually tyan 
-> names those B2882).
-> Do you think the configuration is related? Here it also happens with odirect, 
-> we tested this to minimize memory effects.
+> The IDE sg table is allocated and initialized like this in
+> drivers/ide/ide-probe.c:
+> 
+> 	x = kmalloc(sizeof(struct scatterlist) * nents, GFP_XXX);
+> 	sg_init_table(x, nents);
+> 
+> So far, so good.
+> 
+> Now, ide_map_sg() passes requests down to blk_rq_map_sg() like this in
+> drivers/block/ide-io.c:
+> 
+> 		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+> 
+> Ok, so what does blk_rq_map_sg() do?
+> 
+> 	sg = NULL;
+> 	rq_for_each_segment(bvec, rq, iter) {
+>  ...
+> 		if (bvprv && cluster) {
+>  ...
+> 		} else {
+> new_segment:
+> 			if (!sg)
+> 				sg = sglist;
+> 			else
+> 				sg = sg_next(sg);
+>  ...
+> 		}
+> 		bvprv = bvec;
+> 	} /* segments in rq */
+> 
+> 	if (sg)
+> 		__sg_mark_end(sg);
+> 
+> So let's say the first request comes in and needs 2 segs.
+> This will mark sg[1].page_link with 0x2
+> 
+> If the next request from IDE needs 4 segs, we'll OOPS because
+> sg_next() on &sg[1] will see page_link bit 0x2 is set and
+> therefore return NULL.
+> 
+> A quick look shows that if you're testing on SCSI (or something
+> layered on top of it like SATA or PATA) you won't see this seemingly
+> guarenteed crash because the SCSI mid-layer allocates a fresh sglist
+> via mempool_alloc() and runs sg_init_table() on it for every I/O
+> request.
 
-Mine is just a a7v8x with via KT400 chipset... really old, but several
-of the pci slots are filled, so the problem may be more likely to happen
-it may happen here... on the other hand I never tried writing 50-250G on
-the drives I considered OK. Will do. Also what could be helpful is that
-we both see patterns in the corruptions, like corruptions are always 512
-bytes long or so (IIRC in my case they were only up to 64 bytes).
+We should never see the end pointer in blk_rq_map_sg(), or that's a bug
+in the driver. So it should be OK to just clear the end pointer always
+in there, even if it's not the prettiest solution...
 
-Soeren
+This just needs to be wrapped up in some scatterlist.h macro/function.
+
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 61c2e39..a3bda2f 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -1354,6 +1354,12 @@ new_segment:
+ 			else
+ 				sg = sg_next(sg);
+ 
++			/*
++			 * Clear end-of-table pointer, we'll mark a new one
++			 * at the end
++			 */
++			sg->page_link &= ~0x2;
++
+ 			sg_dma_len(sg) = 0;
+ 			sg_dma_address(sg) = 0;
+ 			sg_set_page(sg, bvec->bv_page);
+
+-- 
+Jens Axboe
+
