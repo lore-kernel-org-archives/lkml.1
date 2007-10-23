@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbXJWB3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXJWBia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbXJWB3d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 21:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXJWB3Y
+	id S1752815AbXJWBia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 21:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXJWBiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 21:29:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:62756 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbXJWB3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 21:29:23 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: gregkh@suse.de
-Subject: USB HCD: avoid duplicate local_irq_disable()
-Date: Tue, 23 Oct 2007 03:28:31 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <alpine.LFD.0.9999.0710222344580.3167@localhost.localdomain> <200710230306.51606.arnd@arndb.de>
-In-Reply-To: <200710230306.51606.arnd@arndb.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, matthew@wil.cx,
-       ralf@linux-mips.org, adobriyan@gmail.com, viro@ftp.linux.org.uk,
-       viro@zeniv.linux.org.uk, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-usb-devel@lists.sourceforge.net
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 22 Oct 2007 21:38:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56323 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751374AbXJWBiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 21:38:22 -0400
+Date: Mon, 22 Oct 2007 21:38:12 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, xemul@openvz.org,
+       raven@themaw.net
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+Message-ID: <20071022213812.32bdac03@bree.surriel.com>
+In-Reply-To: <20071022211143.5f69d790@bree.surriel.com>
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+	<20071022145321.195d929b@bree.surriel.com>
+	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
+	<20071022172926.03ca122a@bree.surriel.com>
+	<20071022200742.6f3acbb2@bree.surriel.com>
+	<20071022171624.0c00f8da.akpm@linux-foundation.org>
+	<20071022211143.5f69d790@bree.surriel.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710230328.33915.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19wHsu5RpP3uThcvHTu+wgWopSyrn1ZXSt9H7D
- u5EtVOZotfwJSVCOBmLu1arWAzJOP+eJT17eQeUYPwClk/UEyC
- z2FHsF0Gb8/QT5glTd1iA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-usb_hcd_flush_endpoint() has a retry loop that starts with a spin_lock_irq(),
-but only gives up the spinlock, not the irq_disable before jumping to the
-rescan label.
+On Mon, 22 Oct 2007 21:11:43 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-Split the spin_lock_irq into the retryable part and the local_irq_disable()
-that is only done once as a micro-optimization and slight cleanup.
+> I have my systems set up to automount my home directory over
+> NFS when I log in.  When trying to log in to the system with
+> 2.6.23-mm1, I get the messages from above in my syslog, and
+> the NFS filesystem is not automounted.
+> 
+> I am thinking something in autofs or the pid-namespace* patches
+> does not match up and uses a wrong PID number or process pointer
+> when trying to lock things.
+> 
+> Which code is at fault I have no idea...
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+I still do not know for sure, but I have found some code that
+puzzles me.
 
----
+At fork() time, task->pid is set to task->pid->numbers[0].nr
 
-On Tuesday 23 October 2007, I wrote:
-> I tried the trivial annotation below and (with lockdep enabled) got a few
-> warnings at boot time, but only one that I could still find in the log
-> buffer:
+On the other hand, fork() returns to the parent process:
 
-One more such example that was not found by lockdep. I guess this counts
-as a false positive, as it is clearly harmless, but working around
-it is a small optimization for the case where local_irq_disable()
-is a hypervisor call.
+task->pid[PIDTYPE_PID]->numbers[task->pid->level].nr
 
-Should we try to fix this class of (non-)problem in other places?
-Will this patch cause a different warning with lockdep since now we
-are pairing spin_lock() with spin_unlock_irq()?
+I have not unravelled the code enough yet to be sure whether
+this is always the same number, but having a wrong PID number
+somewhere could certainly explain these autofs4 errors:
 
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1312,8 +1312,9 @@ void usb_hcd_flush_endpoint(struct usb_device *udev,
- 	hcd = bus_to_hcd(udev->bus);
- 
- 	/* No more submits can occur */
-+	local_irq_disable();
- rescan:
--	spin_lock_irq(&hcd_urb_list_lock);
-+	spin_lock(&hcd_urb_list_lock);
- 	list_for_each_entry (urb, &ep->urb_list, urb_list) {
- 		int	is_in;
- 
+Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent cache
+rwlock lock failed
+Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error: 11 at
+65 in cache.c
+
+After all, autofs4 puts various kinds of PID information of the
+daemon into the autofs4 waitqueue:
+
+fs/autofs4/waitq.c:296:
+                wq->uid = current->uid;
+                wq->gid = current->gid;
+                wq->pid = current->pid;
+                wq->tgid = current->tgid;
+
+Could this be related?
+
+Wrt. the UML failures that Miklos is seeing, I imagine UML needs
+to do some similar tricks.
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
