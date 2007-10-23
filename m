@@ -1,54 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXJWXFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbXJWXJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXJWXFZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 19:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXJWXFO
+	id S1754482AbXJWXJV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXJWXJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 19:05:14 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1456 "EHLO kernel.dk"
+	Tue, 23 Oct 2007 19:09:10 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:39780 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbXJWXFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 19:05:13 -0400
-Date: Wed, 24 Oct 2007 01:05:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       linux-main <linux-kernel@vger.kernel.org>,
-       linuxsh <linuxsh-dev@lists.sourceforge.net>
-Subject: Re: [SUPERH] dma-mapping.h structure has no member named page
-Message-ID: <20071023230507.GP14671@kernel.dk>
-References: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
+	id S1752504AbXJWXJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 19:09:09 -0400
+Date: Tue, 23 Oct 2007 19:09:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: tony.luck@intel.com, linux-ia64@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] IA64/perfmon: kill dead code, clean irq handling
+Message-ID: <20071023230908.GA12417@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, Kristoffer Ericson wrote:
-> Greetings,
-> 
-> Got this after syncing my tree with linux-2.6.git.
-> 
-> In file included from include/linux/dma-mapping.h:52,
->                  from include/linux/dmaengine.h:29,
->                  from include/linux/skbuff.h:29,
->                  from include/linux/netlink.h:155,
->                  from include/linux/genetlink.h:4,
->                  from include/net/genetlink.h:4,
->                  from include/linux/taskstats_kern.h:12,
->                  from init/main.c:46:
-> include/asm/dma-mapping.h: In function `dma_map_sg':
-> include/asm/dma-mapping.h:88: error: structure has no member named `page'
-> include/asm/dma-mapping.h:91: error: structure has no member named `page'
-> include/asm/dma-mapping.h: In function `dma_sync_sg':
-> include/asm/dma-mapping.h:141: error: structure has no member named `page'
-> include/asm/dma-mapping.h:144: error: structure has no member named `page'
-> make[1]: *** [init/main.o] Error 1
-> make: *** [init] Error 2
 
-Pull again, should be ok now.
+By deleting unused code, this makes perfmon irq handling more efficient,
+as well as reducing code size.
 
--- 
-Jens Axboe
+* remove unused pfm_install_alt_pmu_interrupt()
+* remove unused pfm_remove_alt_pmu_interrupt()
 
+* remove now-unused pfm_alt_intr_handler pointer, and associated
+  function call in perfmon interrupt handler.
+
+* remove unused 'irq' argument from pfm_do_interrupt_handler()
+
+* un-indent code in pfm_interrupt_handler() now that
+  pfm_alt_intr_handler is no longer used.
+
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+ arch/ia64/kernel/perfmon.c |  123 ++++++---------------------------------------
+ include/asm-ia64/perfmon.h |    2 
+ 2 files changed, 17 insertions(+), 108 deletions(-)
+
+42a3391c5a27b411c80e942853e0b913911119d5
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index 59169bf..12fc846 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -504,9 +504,6 @@ typedef struct {
+ static pfm_stats_t		pfm_stats[NR_CPUS];
+ static pfm_session_t		pfm_sessions;	/* global sessions information */
+ 
+-static DEFINE_SPINLOCK(pfm_alt_install_check);
+-static pfm_intr_handler_desc_t  *pfm_alt_intr_handler;
+-
+ static struct proc_dir_entry 	*perfmon_dir;
+ static pfm_uuid_t		pfm_null_uuid = {0,};
+ 
+@@ -5526,7 +5523,7 @@ stop_monitoring:
+ }
+ 
+ static int
+-pfm_do_interrupt_handler(int irq, void *arg, struct pt_regs *regs)
++pfm_do_interrupt_handler(void *arg, struct pt_regs *regs)
+ {
+ 	struct task_struct *task;
+ 	pfm_context_t *ctx;
+@@ -5600,30 +5597,28 @@ pfm_interrupt_handler(int irq, void *arg)
+ 	struct pt_regs *regs = get_irq_regs();
+ 
+ 	this_cpu = get_cpu();
+-	if (likely(!pfm_alt_intr_handler)) {
+-		min = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min;
+-		max = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max;
+ 
+-		start_cycles = ia64_get_itc();
++	min = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min;
++	max = pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max;
+ 
+-		ret = pfm_do_interrupt_handler(irq, arg, regs);
++	start_cycles = ia64_get_itc();
+ 
+-		total_cycles = ia64_get_itc();
++	ret = pfm_do_interrupt_handler(arg, regs);
+ 
+-		/*
+-		 * don't measure spurious interrupts
+-		 */
+-		if (likely(ret == 0)) {
+-			total_cycles -= start_cycles;
++	total_cycles = ia64_get_itc();
+ 
+-			if (total_cycles < min) pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min = total_cycles;
+-			if (total_cycles > max) pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max = total_cycles;
++	/*
++	 * don't measure spurious interrupts
++	 */
++	if (likely(ret == 0)) {
++		total_cycles -= start_cycles;
+ 
+-			pfm_stats[this_cpu].pfm_ovfl_intr_cycles += total_cycles;
+-		}
+-	}
+-	else {
+-		(*pfm_alt_intr_handler->handler)(irq, arg, regs);
++		if (total_cycles < min)
++			pfm_stats[this_cpu].pfm_ovfl_intr_cycles_min = total_cycles;
++		if (total_cycles > max)
++			pfm_stats[this_cpu].pfm_ovfl_intr_cycles_max = total_cycles;
++
++		pfm_stats[this_cpu].pfm_ovfl_intr_cycles += total_cycles;
+ 	}
+ 
+ 	put_cpu_no_resched();
+@@ -6520,90 +6515,6 @@ pfm_alt_restore_pmu_state(void *data)
+ 	ia64_srlz_d();
+ }
+ 
+-int
+-pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
+-{
+-	int ret, i;
+-	int reserve_cpu;
+-
+-	/* some sanity checks */
+-	if (hdl == NULL || hdl->handler == NULL) return -EINVAL;
+-
+-	/* do the easy test first */
+-	if (pfm_alt_intr_handler) return -EBUSY;
+-
+-	/* one at a time in the install or remove, just fail the others */
+-	if (!spin_trylock(&pfm_alt_install_check)) {
+-		return -EBUSY;
+-	}
+-
+-	/* reserve our session */
+-	for_each_online_cpu(reserve_cpu) {
+-		ret = pfm_reserve_session(NULL, 1, reserve_cpu);
+-		if (ret) goto cleanup_reserve;
+-	}
+-
+-	/* save the current system wide pmu states */
+-	ret = on_each_cpu(pfm_alt_save_pmu_state, NULL, 0, 1);
+-	if (ret) {
+-		DPRINT(("on_each_cpu() failed: %d\n", ret));
+-		goto cleanup_reserve;
+-	}
+-
+-	/* officially change to the alternate interrupt handler */
+-	pfm_alt_intr_handler = hdl;
+-
+-	spin_unlock(&pfm_alt_install_check);
+-
+-	return 0;
+-
+-cleanup_reserve:
+-	for_each_online_cpu(i) {
+-		/* don't unreserve more than we reserved */
+-		if (i >= reserve_cpu) break;
+-
+-		pfm_unreserve_session(NULL, 1, i);
+-	}
+-
+-	spin_unlock(&pfm_alt_install_check);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(pfm_install_alt_pmu_interrupt);
+-
+-int
+-pfm_remove_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
+-{
+-	int i;
+-	int ret;
+-
+-	if (hdl == NULL) return -EINVAL;
+-
+-	/* cannot remove someone else's handler! */
+-	if (pfm_alt_intr_handler != hdl) return -EINVAL;
+-
+-	/* one at a time in the install or remove, just fail the others */
+-	if (!spin_trylock(&pfm_alt_install_check)) {
+-		return -EBUSY;
+-	}
+-
+-	pfm_alt_intr_handler = NULL;
+-
+-	ret = on_each_cpu(pfm_alt_restore_pmu_state, NULL, 0, 1);
+-	if (ret) {
+-		DPRINT(("on_each_cpu() failed: %d\n", ret));
+-	}
+-
+-	for_each_online_cpu(i) {
+-		pfm_unreserve_session(NULL, 1, i);
+-	}
+-
+-	spin_unlock(&pfm_alt_install_check);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(pfm_remove_alt_pmu_interrupt);
+-
+ /*
+  * perfmon initialization routine, called from the initcall() table
+  */
+diff --git a/include/asm-ia64/perfmon.h b/include/asm-ia64/perfmon.h
+index 7f3333d..811db64 100644
+--- a/include/asm-ia64/perfmon.h
++++ b/include/asm-ia64/perfmon.h
+@@ -191,8 +191,6 @@ extern void pfm_syst_wide_update_task(struct task_struct *, unsigned long info,
+ extern void pfm_inherit(struct task_struct *task, struct pt_regs *regs);
+ extern void pfm_init_percpu(void);
+ extern void pfm_handle_work(void);
+-extern int  pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *h);
+-extern int  pfm_remove_alt_pmu_interrupt(pfm_intr_handler_desc_t *h);
+ 
+ 
+ 
