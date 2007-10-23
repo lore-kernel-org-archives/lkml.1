@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXJWOUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbXJWOU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbXJWOUk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 10:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXJWOUc
+	id S1753292AbXJWOU7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 10:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXJWOUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 10:20:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33218 "EHLO mx3.mail.elte.hu"
+	Tue, 23 Oct 2007 10:20:50 -0400
+Received: from il.qumranet.com ([82.166.9.18]:34276 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbXJWOUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 10:20:32 -0400
-Date: Tue, 23 Oct 2007 16:20:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Al Viro <viro@ftp.linux.org.uk>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Nix <nix@esperi.org.uk>, Jeff Dike <jdike@addtoit.com>,
-       Paolo Giarrusso <p.giarrusso@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: [uml-devel] User Mode Linux still doesn't build in
-	2.6.23-final.
-Message-ID: <20071023142006.GA9961@elte.hu>
-References: <20071022122504.GL2998@hacking> <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu> <p73wste7zy5.fsf@bingen.suse.de> <20071023131009.GA32298@elte.hu> <p73sl427wvu.fsf@bingen.suse.de>
+	id S1752701AbXJWOUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 10:20:49 -0400
+Message-ID: <471E033E.20701@qumranet.com>
+Date: Tue, 23 Oct 2007 16:20:46 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73sl427wvu.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Bart Trojanowski <bart@jukie.net>
+CC: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [BUG] 2.6.23.1 host freezes when running kvm
+References: <20071019202019.GW3962@jukie.net> <20071020000240.GX3962@jukie.net>	<20071020154445.GA5254@jukie.net> <471B366B.7040706@qumranet.com>	<20071022132820.GA3962@jukie.net> <471CA88B.7000706@qumranet.com> <20071023135410.GF3962@jukie.net>
+In-Reply-To: <20071023135410.GF3962@jukie.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 23 Oct 2007 16:20:46 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bart Trojanowski wrote:
+> * Avi Kivity <avi@qumranet.com> [071022 09:42]:
+>   
+>> I'm not sure that's useful -- very little changed after 2.6.23-rc1 (10 
+>> patches).
+>>
+>> There were 92 kvm patches in 2.6.23, so a bisect should take about a 
+>> week worst case.
+>>     
+>
+> I'll get started tonight.
+>
+>   
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Thanks, that will be most helpful.  If userspace won't compile against
+some intermediate version, let me know the commit hash and I'll add a fixup.
 
-> >> You should rename it then to "asmcall" or something.
-> >
-> > if then that should be a separate renaming patch.
-> 
-> Well you're asking for the ugly hacks for out of tree code.  [...]
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-nice word-bending there. I'm asking for pre-existing annotations to 
-survive. It hurts you _nothing_ and it was a world of pain for us to 
-recover those lost annotations. Anyway, if Jeremy does not object to the 
-patch we'll push it in and then rename fastcall to asmcall. Much ado 
-about nothing.
-
-	Ingo
