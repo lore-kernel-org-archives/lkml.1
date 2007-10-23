@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbXJWUJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXJWUSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753217AbXJWUJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 16:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXJWUJc
+	id S1752858AbXJWUSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 16:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbXJWUSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 16:09:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41644 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752062AbXJWUJb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 16:09:31 -0400
-Date: Tue, 23 Oct 2007 13:09:31 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org
-Subject: Re: SLUB 0:1 SLAB (OOM during massive parallel kernel builds)
-In-Reply-To: <84144f020710231304h6cba8626na4ab4bec0acda7a0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0710231305050.20095@schroedinger.engr.sgi.com>
-References: <20071023181615.GA10377@martell.zuzino.mipt.ru> 
- <Pine.LNX.4.64.0710231227590.19626@schroedinger.engr.sgi.com>
- <84144f020710231304h6cba8626na4ab4bec0acda7a0@mail.gmail.com>
+	Tue, 23 Oct 2007 16:18:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50173 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752324AbXJWUSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 16:18:22 -0400
+Date: Tue, 23 Oct 2007 16:17:50 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] LinuxPPS - PPS support for Linux
+Message-ID: <20071023201750.GE7793@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rodolfo Giometti <giometti@enneenne.com>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
+References: <20071023180417.GM9748@enneenne.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023180417.GM9748@enneenne.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007, Pekka Enberg wrote:
+On Tue, Oct 23, 2007 at 08:04:18PM +0200, Rodolfo Giometti wrote:
 
-> On 10/23/07, Christoph Lameter <clameter@sgi.com> wrote:
-> > Not sure what this is. Maybe the slowing SLUB solves the race.
-> 
-> What kind of race are you thinking of? What I initially thought was
-> that the problem is that SLUB messes up some other VM heuristics due
-> to different object sizes, not holding on to empty slabs, and/or page
-> allocator pass-through. I guess only object size is affected by
-> debugging, though?
+Hi Rodolfo,
+ 
+ > here my last patch for PPS support.
+ > 
+ > Please, let me know if I have something to do for kernel inclusion.
 
-The number of objects per page is reduced by enabling full debugging. That 
-triggers a potential of more order 1 allocations but we are failing at 
-order 0 allocs. slub_debug=F does not increase object size with debugging 
-information but keeps things as they are while doing as much verification 
-of slab integrity as possible.
+Thanks for trying to get this merged, we've had a few users asking
+us to support this in the Fedora kernel.
 
-One--potentially far fetched theory--is that the difference in alloc 
-performance may trigger a race. But I guess it is more likely that we will 
-find something wrong with the gfp flags (that I recategorized for 2.6.24).
+>From a quick look through, it doesn't look too bad.
+A couple of obvious things that jumped out..
 
+* The example program in the Documentation dir.
+  There was some discussion recently about moving away 
+  from doing this, and instead moving code to the samples/ dir
+  (or including it in util-linux instead if applicable).
 
+ > +    static struct pps_source_info_s pps_ktimer_info = {
+ > +            name         : "ktimer",
+ > +            path         : "",
+ > +            mode         : PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
+ > +			   PPS_ECHOASSERT | \
+ > +                           PPS_CANWAIT | PPS_TSFMT_TSPEC,
+ > +            echo         : pps_ktimer_echo,
+ > +            owner        : THIS_MODULE,
+ > +    };
+
+  should be
+    .name = "ktimer"
+  etc..
+
+ > +#include <linux/version.h>
+
+This should be getting included automatically for you.
+
+On the whole, asides from these (very) minor nits, quite a clean
+submission compared to a lot of new driver submissions to lkml.
+Might want to run it through scripts/checkpatch.pl too to see
+if that picks up any more minor fluff.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
