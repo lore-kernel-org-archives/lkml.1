@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbXJWPLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbXJWPNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbXJWPLa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXJWPLI
+	id S1752918AbXJWPNn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbXJWPNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:11:08 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:37546 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752721AbXJWPLH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:11:07 -0400
-Date: Tue, 23 Oct 2007 11:10:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, Daniel Walker <dwalker@mvista.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC/PATCH 3/5] rt: plist_head_splice
-In-Reply-To: <20071023120745.122724000@chello.nl>
-Message-ID: <Pine.LNX.4.58.0710231108050.31159@gandalf.stny.rr.com>
-References: <20071023120357.782284000@chello.nl> <20071023120745.122724000@chello.nl>
+	Tue, 23 Oct 2007 11:13:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58616 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751658AbXJWPNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 11:13:35 -0400
+Date: Tue, 23 Oct 2007 17:13:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Al Viro <viro@ftp.linux.org.uk>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Nix <nix@esperi.org.uk>, Jeff Dike <jdike@addtoit.com>,
+       Paolo Giarrusso <p.giarrusso@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in
+	2.6.23-final.
+Message-ID: <20071023151309.GA14998@elte.hu>
+References: <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu> <p73wste7zy5.fsf@bingen.suse.de> <20071023131009.GA32298@elte.hu> <p73sl427wvu.fsf@bingen.suse.de> <20071023142006.GA9961@elte.hu> <20071023144852.GA27956@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023144852.GA27956@one.firstfloor.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---
-On Tue, 23 Oct 2007, Peter Zijlstra wrote:
-> +
-> +void plist_head_splice(struct plist_head *src, struct plist_head *dst)
-> +{
-> +	struct plist_node *src_iter_first, *src_iter_last, *dst_iter;
-> +	struct plist_node *tail = container_of(dst, struct plist_node, plist);
-> +
-> +	dst_iter = next_prio(tail);
-> +
-> +	while (!plist_head_empty(src) && dst_iter != tail) {
-> +		src_iter_first = plist_first(src);
-> +
-> +		src_iter_last = next_prio(src_iter_first);
-> +		src_iter_last = prev_node(src_iter_last);
-> +
-> +		WARN_ON(src_iter_first->prio != src_iter_last->prio);
-> +		WARN_ON(list_empty(&src_iter_first->plist.prio_list));
-> +
-> +		while (src_iter_first->prio > dst_iter->prio) {
-> +			dst_iter = next_prio(dst_iter);
-> +			if (dst_iter == tail)
-> +				goto tail;
-> +		}
-> +
-> +		list_del_init(&src_iter_first->plist.prio_list);
-> +
-> +		if (src_iter_first->prio < dst_iter->prio) {
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-I may be confused here, but shouldn't we be linking the
-src_iter_first->prio_list somewhere here? Doesn't all different prios need
-to be in its separate prio_list? Otherwise two splices in a row can cause
-the above WARN_ON (prio != prio).
+> On Tue, Oct 23, 2007 at 04:20:06PM +0200, Ingo Molnar wrote:
+> > 
+> > * Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > >> You should rename it then to "asmcall" or something.
+> > > >
+> > > > if then that should be a separate renaming patch.
+> > > 
+> > > Well you're asking for the ugly hacks for out of tree code.  [...]
+> > 
+> > nice word-bending there. I'm asking for pre-existing annotations to 
+> > survive. 
+> 
+> What I'm objecting to is that you ask for this for your out of tree 
+> code without any justification on why exactly -- -pg should in theory 
+> work with -mregparms.
 
--- Steve
+last i checked it didnt work - i'll re-check that.
 
+but even taking the latency tracer completely out of the picture, 
+maintaining this information is useful - at least for some time.
 
-> +			list_add_tail(&src_iter_first->plist.node_list,
-> +					&dst_iter->plist.node_list);
-> +		} else if (src_iter_first->prio == dst_iter->prio) {
-> +			dst_iter = next_prio(dst_iter);
-> +		} else BUG();
-> +
-> +		list_splice2_tail(&src_iter_first->plist.node_list,
-> +			       	  &src_iter_last->plist.node_list,
-> +				  &dst_iter->plist.node_list);
-> +	}
-> +
-> +tail:
-> +	list_splice_tail_init(&src->prio_list, &dst->prio_list);
-> +	list_splice_tail_init(&src->node_list, &dst->node_list);
-> +}
->
-> --
->
->
->
+> It's standard policy to require very good reasons for changes that are 
+> only useful for out of tree code. [...]
+
+it's not just for out of tree code - it's to keep the information of the 
+calling convention maintained - we could need it in the future.
+
+> Is it just because you didn't want to adapt the tracer for i386 
+> regparm? [...]
+
+uhm, thank you for such accusations and personal attacks :-( How did i 
+deserve that?
+
+	Ingo
