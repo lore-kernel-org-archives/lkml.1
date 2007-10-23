@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbXJWSL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbXJWSPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbXJWSL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 14:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbXJWSLG
+	id S1754096AbXJWSPX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 14:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXJWSPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 14:11:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51500 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbXJWSLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 14:11:05 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 4/4] x86 gart: rename symbols only used for the =?iso-8859-1?q?GART=09implementation?=
-Date: Tue, 23 Oct 2007 20:10:54 +0200
-User-Agent: KMail/1.9.6
-Cc: Dave Jones <davej@redhat.com>, Joerg Roedel <joerg.roedel@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-References: <11931612933917-git-send-email-joerg.roedel@amd.com> <20071023175908.GD7793@redhat.com> <471E37B4.9010604@zytor.com>
-In-Reply-To: <471E37B4.9010604@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 23 Oct 2007 14:15:11 -0400
+Received: from xenotime.net ([66.160.160.81]:49824 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752664AbXJWSPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 14:15:10 -0400
+Date: Tue, 23 Oct 2007 11:15:06 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [ARM] : Section mismatch : reference to......
+Message-Id: <20071023111506.31b30043.rdunlap@xenotime.net>
+In-Reply-To: <20071023200906.42db6a45.Kristoffer.ericson@gmail.com>
+References: <20071023195207.e52e22e5.Kristoffer.ericson@gmail.com>
+	<20071023110113.a98c36a8.rdunlap@xenotime.net>
+	<20071023200906.42db6a45.Kristoffer.ericson@gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710232010.55074.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 October 2007 20:04:36 H. Peter Anvin wrote:
-> Dave Jones wrote:
-> > On Tue, Oct 23, 2007 at 07:47:11PM +0200, Joerg Roedel wrote:
-> >  > On Tue, Oct 23, 2007 at 07:43:47PM +0200, Andi Kleen wrote:
-> >  > > On Tuesday 23 October 2007 19:41:33 Joerg Roedel wrote:
-> >  > > > This patch renames the 4 symbols iommu_hole_init(), iommu_aperture,
-> >  > > > iommu_aperture_allowed, iommu_aperture_disabled.
-> >  > > > 
-> >  > > > It replaces the iommu_ with gart_ in the symbol name. All these symbols are
-> >  > > > only used for the GART implementation of IOMMUs.
-> >  > > 
-> >  > > That makes it still potentially conflicting with the AGP GART code.
-> >  > 
-> >  > Maybe yes. But the AGP GART driver conflicts with the GART IOMMU config
-> >  > option. So I don't see a problem here.
-> >  
-> > It shouldn't.  It's perfectly feasible to use both IOMMU and GART for AGP at
-> > the same time.
-> > 
+On Tue, 23 Oct 2007 20:09:06 -0700 Kristoffer Ericson wrote:
+
+> On Tue, 23 Oct 2007 11:01:13 -0700
+> Randy Dunlap <rdunlap@xenotime.net> wrote:
 > 
-> And even if did, it's a big difference between being not able to compile 
-> in two drivers in the same kernel and not being able to use them at the 
-> same time.
+> > On Tue, 23 Oct 2007 19:52:07 -0700 Kristoffer Ericson wrote:
+> > 
+> > > Best way to handle this?
+> > > 
+> > > 
+> > >   LD      init/built-in.o
+> > >   LD      .tmp_vmlinux1
+> > >   KSYM    .tmp_kallsyms1.S
+> > >   AS      .tmp_kallsyms1.o
+> > >   LD      .tmp_vmlinux2
+> > >   KSYM    .tmp_kallsyms2.S
+> > >   AS      .tmp_kallsyms2.o
+> > >   LD      vmlinux.o
+> > >   MODPOST vmlinux.o
+> > > WARNING: vmlinux.o(.text+0x9afc): Section mismatch: reference to .init.text:sa1110_mb_enable (between 'sa1111_probe' and 'sa1111_remove')
+> > > WARNING: vmlinux.o(.text+0x13b1ac): Section mismatch: reference to .init.text:pcmcia_jornada720_init (between 'pcmcia_probe' and 'pcmcia_remove')
+> > >   LD      vmlinux
+> > >   SYSMAP  System.map
+> > >   SYSMAP  .tmp_System.map
+> > >   OBJCOPY arch/arm/boot/Image
+> > >   Kernel: arch/arm/boot/Image is ready
+> > >   AS      arch/arm/boot/compressed/head.o
+> > >   GZIP    arch/arm/boot/compressed/piggy.gz
+> > >   AS      arch/arm/boot/compressed/piggy.o
+> > >   CC      arch/arm/boot/compressed/misc.o
+> > >   AS      arch/arm/boot/compressed/head-sa1100.o
+> > >   LD      arch/arm/boot/compressed/vmlinux
+> > >   OBJCOPY arch/arm/boot/zImage
+> > >   Kernel: arch/arm/boot/zImage is ready
+> > > -
+> > 
+> > Missing kernel version and .config file.
+> Ah, true. Im using latest git (linux-2.6.git) with proper config. This error has been there for quite some time, just decided it was time to fix it. Im not fully familiar with the section errors, so thought it better to ask.
+> 
+> > 
+> > In drivers/pcmcia/sa1100_jornada.c, change
+> > 
+> > int __init pcmcia_jornada720_init(struct device *dev)
+> > 
+> > to
+> > 
+> > int __devinit pcmcia_jornada720_init(struct device *dev)
+> > 
+> > may help.  Please test that.
+> Seems to work fine, big thanks. 
+> > 
+> > I can't find sa1110_mb_enable().
+> Found it inside /arch/arm/mach-sa1100/generic.c, proper way to set it as __devinit?
 
-You can already compile them in all. The functions are not really
-conflicting -- otherwise allyesconfig would not work.
+Probably, at least it's worth trying.
 
-I think his goal was to get an prefix that describes the module uniquely.
-gart_* clearly does not fulfill that criteria.
-
-So basically he's replacing an ambigious-with-other-IOMMU-implementations
-prefix with an ambigious-with-AGP prefix. Seems like a rather pointless
-change.
-
--And
+---
+~Randy
