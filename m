@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXJWEmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXJWEm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbXJWEmJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 00:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXJWEjY
+	id S1754601AbXJWEm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 00:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbXJWEjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 00:39:24 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:58893 "EHLO snapgear.com"
+	Tue, 23 Oct 2007 00:39:25 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:58896 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752859AbXJWEjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 00:39:22 -0400
+	id S1752876AbXJWEjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 00:39:23 -0400
 Date: Tue, 23 Oct 2007 14:37:54 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710230437.l9N4bsVf001778@goober>
+Message-Id: <200710230437.l9N4bsEf001792@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: improve mii_do_cmd code in FEC driver
+Subject: [M68KNOMMU]: remove use of undefined symbols in setup.c
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Philippe De Muyter <phdm@macqel.be>
+Remove use of undefined symbols CONFIG_TELOS, CONFIG_M68EZ328ADS
+and CONFIG_ALMA_ANS.
 
-Improve the readability of mii_do_cmd().
-
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
 
-diff -Naurp linux-2.6.23/drivers/net/fec.c linux-2.6.23-uc0/drivers/net/fec.c
---- linux-2.6.23/drivers/net/fec.c	2007-10-19 10:25:49.000000000 +1000
-+++ linux-2.6.23-uc0/drivers/net/fec.c	2007-10-19 10:34:22.000000000 +1000
-@@ -770,14 +768,11 @@ mii_queue(struct net_device *dev, int re
+diff -Naurp linux-2.6.23/arch/m68knommu/kernel/setup.c linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c
+--- linux-2.6.23/arch/m68knommu/kernel/setup.c	2007-10-19 10:30:54.000000000 +1000
++++ linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c	2007-10-19 10:35:38.000000000 +1000
+@@ -151,27 +148,15 @@ void setup_arch(char **cmdline_p)
+ #ifdef CONFIG_ELITE
+ 	printk(KERN_INFO "Modified for M5206eLITE by Rob Scott, rscott@mtrob.fdns.net\n");
+ #endif
+-#ifdef CONFIG_TELOS
+-	printk(KERN_INFO "Modified for Omnia ToolVox by James D. Schettine, james@telos-systems.com\n");
+-#endif
+ #endif
+ 	printk(KERN_INFO "Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne\n");
  
- static void mii_do_cmd(struct net_device *dev, const phy_cmd_t *c)
- {
--	int k;
+ #if defined( CONFIG_PILOT ) && defined( CONFIG_M68328 )
+ 	printk(KERN_INFO "TRG SuperPilot FLASH card support <info@trgnet.com>\n");
+ #endif
 -
- 	if(!c)
- 		return;
- 
--	for(k = 0; (c+k)->mii_data != mk_mii_end; k++) {
--		mii_queue(dev, (c+k)->mii_data, (c+k)->funct);
--	}
-+	for (; c->mii_data != mk_mii_end; c++)
-+		mii_queue(dev, c->mii_data, c->funct);
- }
- 
- static void mii_parse_sr(uint mii_reg, struct net_device *dev)
+ #if defined( CONFIG_PILOT ) && defined( CONFIG_M68EZ328 )
+ 	printk(KERN_INFO "PalmV support by Lineo Inc. <jeff@uclinux.com>\n");
+ #endif
+-
+-#ifdef CONFIG_M68EZ328ADS
+-	printk(KERN_INFO "M68EZ328ADS board support (C) 1999 Vladimir Gurevich <vgurevic@cisco.com>\n");
+-#endif
+-
+-#ifdef CONFIG_ALMA_ANS
+-	printk(KERN_INFO "Alma Electronics board support (C) 1999 Vladimir Gurevich <vgurevic@cisco.com>\n");
+-#endif
+ #if defined (CONFIG_M68360)
+ 	printk(KERN_INFO "QUICC port done by SED Systems <hamilton@sedsystems.ca>,\n");
+ 	printk(KERN_INFO "based on 2.0.38 port by Lineo Inc. <mleslie@lineo.com>.\n");
