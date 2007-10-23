@@ -1,107 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXJWDSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXJWDYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbXJWDSL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 23:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXJWDR6
+	id S1752794AbXJWDYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 23:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbXJWDYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 23:17:58 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51716 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbXJWDR6 (ORCPT
+	Mon, 22 Oct 2007 23:24:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36261 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbXJWDYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 23:17:58 -0400
-Message-ID: <471D67B5.1020802@linux.vnet.ibm.com>
-Date: Tue, 23 Oct 2007 08:47:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 22 Oct 2007 23:24:11 -0400
+Date: Mon, 22 Oct 2007 20:28:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow sysfs_remove_group() to be called on non-added
+	groups
+Message-ID: <20071023032836.GC7486@kroah.com>
+References: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au> <dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
-References: <471D4523.4040509@google.com>
-In-Reply-To: <471D4523.4040509@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Report CPU usage in CFS Cgroup directories
+On Tue, Oct 23, 2007 at 12:02:39PM +1000, Michael Ellerman wrote:
+> On 9/13/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> > It would be nice to be able to do:
+> >
+> > for_each_thing(thing) {
+> >         error = sysfs_create_group(&thing->kobj, attrs);
+> >         if (error) {
+> >                 for_each_thing(thing)
+> >                         sysfs_remove_group(&thing->kobj, attrs);
+> >                 return error;
+> >         }
+> > }
+> >
+> > But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
+> > were never added.
+> >
+> > As discussed here ...
+> > http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
+> >
+> > .. we should just return in that case instead of BUG'ing.
+> >
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >  fs/sysfs/group.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+> > index f318b73..a256775 100644
+> > --- a/fs/sysfs/group.c
+> > +++ b/fs/sysfs/group.c
+> > @@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
+> >
+> >         if (grp->name) {
+> >                 sd = sysfs_get_dirent(dir_sd, grp->name);
+> > -               BUG_ON(!sd);
+> > +               if (!sd)
+> > +                       return;
+> >         } else
+> >                 sd = sysfs_get(dir_sd);
+> >
+> >
 > 
-> Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
-> milliseconds for that cgroup's tasks
+> Hi Greg,
 > 
-> This replaces the "example CPU Accounting CGroup subsystem" that
-> was merged into mainline last week.
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
-> ---
-> kernel/sched.c |   32 +++++++++++++++++++++++++++-----
-> 1 file changed, 27 insertions(+), 5 deletions(-)
-> 
-> Index: container-2.6.23-mm1/kernel/sched.c
-> ===================================================================
-> --- container-2.6.23-mm1.orig/kernel/sched.c
-> +++ container-2.6.23-mm1/kernel/sched.c
-> @@ -7005,15 +7005,37 @@ static u64 cpu_shares_read_uint(struct c
->     return (u64) tg->shares;
-> }
-> 
-> -static struct cftype cpu_shares = {
-> -    .name = "shares",
-> -    .read_uint = cpu_shares_read_uint,
-> -    .write_uint = cpu_shares_write_uint,
-> +static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +    struct task_group *tg = cgroup_tg(cgrp);
-> +    int i;
-> +    u64 res = 0;
-> +    for_each_possible_cpu(i) {
-> +        unsigned long flags;
-> +        spin_lock_irqsave(&tg->cfs_rq[i]->rq->lock, flags);
-> +        res += tg->se[i]->sum_exec_runtime;
-> +        spin_unlock_irqrestore(&tg->cfs_rq[i]->rq->lock, flags);
-> +    }
-> +    /* Convert from ns to ms */
-> +    do_div(res, 1000000);
-> +    return res;
-> +}
-> +
+> I didn't see this in your series, any objections? AFAICT it still applies.
 
-I think we also need the notion of load, like we have in cpu_acct.c
-Don't we need to do a css_get() on the cgrp to ensure that the cgroup
-does not go away if it's empty and someone does an rmdir on it?
+Hm, I think I just missed it, care to forward it to me "clean" again?
 
+thanks,
 
-> +static struct cftype cpu_files[] = {
-> +    {
-> +        .name = "shares",
-> +        .read_uint = cpu_shares_read_uint,
-> +        .write_uint = cpu_shares_write_uint,
-> +    },
-> +    {
-> +        .name = "usage",
-> +        .read_uint = cpu_usage_read,
-> +    },
-> };
-> 
-> static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup
-> *cont)
-> {
-> -    return cgroup_add_file(cont, ss, &cpu_shares);
-> +    return cgroup_add_files(cont, ss, cpu_files, ARRAY_SIZE(cpu_files));
-> }
-> 
-> struct cgroup_subsys cpu_cgroup_subsys = {
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+greg k-h
