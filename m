@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXJWVqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbXJWVsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbXJWVqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXJWVqZ
+	id S1754422AbXJWVsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXJWVsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:46:25 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5945 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbXJWVqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:46:24 -0400
-Date: Tue, 23 Oct 2007 23:46:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071023214618.GO14671@kernel.dk>
-References: <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <20071023103351.GA2795@elte.hu> <20071023105615.GI5059@kernel.dk> <20071023112738.GA13847@elte.hu> <Pine.LNX.4.64.0710232120080.21337@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710232120080.21337@anakin>
+	Tue, 23 Oct 2007 17:48:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37538
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751564AbXJWVsa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:48:30 -0400
+Date: Tue, 23 Oct 2007 14:48:57 -0700 (PDT)
+Message-Id: <20071023.144857.03983847.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: auke-jan.h.kok@intel.com, ajax@redhat.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <471E5C21.8030908@garzik.org>
+References: <1193156487.26974.39.camel@localhost.localdomain>
+	<471E2AD0.1000500@intel.com>
+	<471E5C21.8030908@garzik.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, Geert Uytterhoeven wrote:
-> On Tue, 23 Oct 2007, Ingo Molnar wrote:
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > > Linus' latest tree, which has your SG-list enhancements included, 
-> > > > certainly works fine here and does not have the problems of the 
-> > > > first iteration.
-> > > 
-> > > That's good to hear :-)
-> > > 
-> > > I have a series of pending patches where I've collected fallout 
-> > > patches from people and some from myself here:
-> > > 
-> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=sg
-> > > 
-> > > or pullable from
-> > > 
-> > > git://git.kernel.dk/inux-2.6-block.git sg
-> > 
-> > i've attached your fixes as a diff against linus-latest below - for 
-> > those who'd like to have it in patch form.
-> 
-> The below are still needed for m68k
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 23 Oct 2007 16:40:01 -0400
 
-OK, added. Thanks!
+> Sorry, I disagree.  Just as with e100, if there is a clear way the user 
+> can recover their setup -- and Adam says his was effective -- I don't 
+> see why we should be denying users the ability to use their own hardware.
 
--- 
-Jens Axboe
+I'd like to second these sentiments.
 
+Just because you can come up with cases where using a wrong
+eeprom would fail, does not mean the facility should not be
+provided at all.
