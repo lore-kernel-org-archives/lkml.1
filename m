@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbXJWGJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbXJWGMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbXJWGJn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXJWGJf
+	id S1753526AbXJWGMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXJWGMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:09:35 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:37930 "EHLO
+	Tue, 23 Oct 2007 02:12:00 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:15331 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbXJWGJe (ORCPT
+	with ESMTP id S1751960AbXJWGL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:09:34 -0400
+	Tue, 23 Oct 2007 02:11:59 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:cc:in-reply-to:
 	mime-version:content-type:content-transfer-encoding:
 	content-disposition:references;
-	b=o4ZK3kadfmYbi0WW2jiM+nNqQTbCVnkZmzXd7keY7goJR+0WnFqGjurGZahiryvSf
-	6MAkQvMU5pL64soImEuqw==
-Message-ID: <6599ad830710222309j599d0e38xa7c4bdf7c160019a@mail.gmail.com>
-Date: Mon, 22 Oct 2007 23:09:29 -0700
+	b=oNjLktvRZMefBb2wHN9CrCIHncI9NUeigI9eF3QPTki7u1BGX8uwE0jzfU093TSl6
+	kKEz9n5Ohmapn2xm8hL1g==
+Message-ID: <6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
+Date: Mon, 22 Oct 2007 23:11:54 -0700
 From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <471D67B5.1020802@linux.vnet.ibm.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       ghaskins@novell.com, a.p.zijlstra@chello.nl
+In-Reply-To: <20071022211709.7be79fea.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <471D4523.4040509@google.com> <471D67B5.1020802@linux.vnet.ibm.com>
+References: <20071023025900.927578809@goodmis.org>
+	 <20071023032916.651749224@goodmis.org>
+	 <20071022211709.7be79fea.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On 10/22/07, Paul Jackson <pj@sgi.com> wrote:
+> Steven wrote:
+> > +void cpuset_rt_set_overload(struct task_struct *tsk, int cpu)
+> > +{
+> > +     cpu_set(cpu, task_cs(tsk)->rt_overload);
+> > +}
 >
-> I think we also need the notion of load, like we have in cpu_acct.c
+> Question for Steven:
+>
+>   What locks are held when cpuset_rt_set_overload() is called?
+>
+> Questions for Paul Menage:
+>
+>   Does 'tsk' need to be locked for the above task_cs() call?
 
-Yes, a notion of load would be good - but the "load" calculated by
-cpu_acct.c isn't all that useful yet - it's just a total of the CPU
-cycles used in the 10 second time interval prior to the current
-interval. Something that's more analagous to the real machine load
-would be nice, and I hope the numbers could be made available via CFS.
+Cgroups doesn't change the locking rules for accessing a cpuset from a
+task - you have to have one of:
 
-> Don't we need to do a css_get() on the cgrp to ensure that the cgroup
-> does not go away if it's empty and someone does an rmdir on it?
+- task_lock(task)
 
-See my other email. Yes, I think we need more here, but probably
-something more generic.
+- callback_mutex
+
+- be in an RCU section from the point when you call task_cs to the
+point when you stop using its result. (Additionally, in this case
+there's no guarantee that the task stays in this cpuset for the
+duration of the RCU section).
 
 Paul
