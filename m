@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbXJWHQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbXJWHRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbXJWHQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXJWHP5
+	id S1754260AbXJWHRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJWHRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:15:57 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:60271 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbXJWHP4 (ORCPT
+	Tue, 23 Oct 2007 03:17:12 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:37052 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbXJWHRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:15:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=rSabhqFaZQulLMq0vK309R510xslZK2VhKdj52x4DVJYMAwO20ZazOJhUlCp3dVLh9f8JAk3ne3Jq8/4fRabB0gRsY4SaOGF3IzmtOKTPeBCEnNPZ4iEAT1+Opg9Q0F1/a49U1TNK04iwTrEY2DUgAQPaD+hfcxtDYVp/ptwwL0=
-Message-ID: <3877989d0710230015x1640388aod98cae2fa3fc82c2@mail.gmail.com>
-Date: Tue, 23 Oct 2007 15:15:55 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: linux-ia64@vger.kernel.org
-Subject: [PATCH] fix typo in per_cpu_offset
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Tue, 23 Oct 2007 03:17:11 -0400
+Date: Tue, 23 Oct 2007 09:16:41 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Christoph Schmitt <schmichr@de.ibm.com>,
+       Swen Schillig <swen@vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org
+Subject: Re: [PATCH 04/10] [SG] Update drivers to use sg helpers
+Message-ID: <20071023071641.GE24546@osiris.boeblingen.de.ibm.com>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-5-git-send-email-jens.axboe@oracle.com> <20071023062857.GB24546@osiris.boeblingen.de.ibm.com> <20071023071407.GF25962@kernel.dk>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_12136_32329095.1193123755592"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023071407.GF25962@kernel.dk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_12136_32329095.1193123755592
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, Oct 23, 2007 at 09:14:07AM +0200, Jens Axboe wrote:
+> On Tue, Oct 23 2007, Heiko Carstens wrote:
+> > On Mon, Oct 22, 2007 at 08:10:58PM +0200, Jens Axboe wrote:
+> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > ---
+> > 
+> > You forgot s390's zfcp driver. But unfortunately the trivial fix below
+> > doesn't work. No more I/O possible. Swen and/or Christof could you
+> > provide a correct fix for this please? Thanks!
+> > 
+> > ---
+> >  drivers/s390/scsi/zfcp_def.h |    4 ++--
+> >  drivers/s390/scsi/zfcp_erp.c |    4 ++--
+> >  2 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/s390/scsi/zfcp_def.h
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/s390/scsi/zfcp_def.h
+> > +++ linux-2.6/drivers/s390/scsi/zfcp_def.h
+> > @@ -63,7 +63,7 @@
+> >  static inline void *
+> >  zfcp_sg_to_address(struct scatterlist *list)
+> >  {
+> > -	return (void *) (page_address(list->page) + list->offset);
+> > +	return (void *) (page_address(sg_page(list) + list->offset));
+> >  }
+> 
+> return sg_virt(list); would be better.
+> 
+> I'll fix up the driver, no worries.
 
-Hello list,
-
-there is a typo in the definition of per_cpu_offset because, for ia64,
-the __per_cpu_offset is an array.
-
- extern unsigned long __per_cpu_offset[NR_CPUS];
--#define per_cpu_offset(x) (__per_cpu_offset(x))
-+#define per_cpu_offset(x) (__per_cpu_offset[x])
-
-Thanks,
-Luming
-
-Signed-off-by: Yu Luming <luming.yu@intel.com>
-
-------=_Part_12136_32329095.1193123755592
-Content-Type: application/octet-stream; name=correct_per_cpu_offset.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f8430x0q
-Content-Disposition: attachment; filename=correct_per_cpu_offset.patch
-
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvYXNtLWlhNjQvcGVyY3B1LmggYi9pbmNsdWRlL2FzbS1pYTY0
-L3BlcmNwdS5oCmluZGV4IDQzYTdhYWMuLmM0ZjFlMzIgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYXNt
-LWlhNjQvcGVyY3B1LmgKKysrIGIvaW5jbHVkZS9hc20taWE2NC9wZXJjcHUuaApAQCAtNDYsNyAr
-NDYsNyBAQCAjZW5kaWYKICNpZmRlZiBDT05GSUdfU01QCiAKIGV4dGVybiB1bnNpZ25lZCBsb25n
-IF9fcGVyX2NwdV9vZmZzZXRbTlJfQ1BVU107Ci0jZGVmaW5lIHBlcl9jcHVfb2Zmc2V0KHgpIChf
-X3Blcl9jcHVfb2Zmc2V0KHgpKQorI2RlZmluZSBwZXJfY3B1X29mZnNldCh4KSAoX19wZXJfY3B1
-X29mZnNldFt4XSkKIAogLyogRXF1YWwgdG8gX19wZXJfY3B1X29mZnNldFtzbXBfcHJvY2Vzc29y
-X2lkKCldLCBidXQgZmFzdGVyIHRvIGFjY2VzczogKi8KIERFQ0xBUkVfUEVSX0NQVSh1bnNpZ25l
-ZCBsb25nLCBsb2NhbF9wZXJfY3B1X29mZnNldCk7Cg==
-------=_Part_12136_32329095.1193123755592--
+ok, thanks!
