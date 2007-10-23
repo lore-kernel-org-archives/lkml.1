@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbXJWOJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXJWONk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbXJWOJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 10:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXJWOJa
+	id S1752623AbXJWONk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 10:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXJWONc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 10:09:30 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:43337 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbXJWOJa (ORCPT
+	Tue, 23 Oct 2007 10:13:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:58337 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbXJWONb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 10:09:30 -0400
-Date: Tue, 23 Oct 2007 10:08:24 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, Daniel Walker <dwalker@mvista.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC/PATCH 2/5] rt: list_splice2
-In-Reply-To: <20071023120744.879638000@chello.nl>
-Message-ID: <Pine.LNX.4.58.0710231005540.29506@gandalf.stny.rr.com>
-References: <20071023120357.782284000@chello.nl> <20071023120744.879638000@chello.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Oct 2007 10:13:31 -0400
+Date: Tue, 23 Oct 2007 10:10:53 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] reiserfs: don't drop PG_dirty when releasing
+ sub-page-sized dirty file
+Message-ID: <20071023101053.638fe207@think.oraclecorp.com>
+In-Reply-To: <393140585.27414@ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com>
+	<200710221258.11384.maximlevitsky@gmail.com>
+	<393051953.24752@ustc.edu.cn>
+	<200710221421.21439.maximlevitsky@gmail.com>
+	<393126119.26275@ustc.edu.cn>
+	<1193134027.7406.1.camel@twins>
+	<393140585.27414@ustc.edu.cn>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 23 Oct 2007 19:56:20 +0800
+Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
+> On Tue, Oct 23, 2007 at 12:07:07PM +0200, Peter Zijlstra wrote:
+> > [ adding reiserfs devs to the CC ]
+> 
+> Thank you.
+> 
+> This fix is kind of crude - even when it fixed Maxim's problem, and
+> survived my stress testing of a lot of patching and kernel compiling.
+> I'd be glad to see better solutions.
 
---
-On Tue, 23 Oct 2007, Peter Zijlstra wrote:
->
->  /**
-> @@ -341,7 +341,13 @@ static inline void __list_splice(struct
->  static inline void list_splice(struct list_head *list, struct list_head *head)
->  {
->  	if (!list_empty(list))
-> -		__list_splice(list, head);
-> +		__list_splice(list, head, head->next);
-> +}
-> +
+This should be safe, reiserfs has the buffer heads themselves clean and
+the page should get cleaned eventually.  The cancel_dirty_page call was
+just an optimization to be VM friendly.
 
-
-> Index: linux-2.6/lib/lock_list.c
-> ===================================================================
-> --- linux-2.6.orig/lib/lock_list.c
-> +++ linux-2.6/lib/lock_list.c
-> @@ -128,7 +128,7 @@ void lock_list_splice_init(struct lock_l
->  	lock = __lock_list_reverse(list);
->  	if (!list_empty(&list->head)) {
->  		spin_lock_nested(&head->lock, LOCK_LIST_NESTING_NEXT);
-> -		__list_splice(&list->head, &head->head);
-> +		__list_splice(&list->head, &head->head, head->head.next);
-
-Can't this just now be list_splice and not __list_splice?
-
-Yes it tests for list_empty again, but that should (hopefully) be
-optimized out.
-
--- Steve
-
->  		INIT_LIST_HEAD(&list->head);
->  		spin_unlock(&head->lock);
->  	}
->
-> --
->
->
->
+-chris
