@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXJWXOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbXJWXPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbXJWXOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 19:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXJWXOr
+	id S1755277AbXJWXPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXJWXPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 19:14:47 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:40756 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbXJWXOq convert rfc822-to-8bit (ORCPT
+	Tue, 23 Oct 2007 19:15:42 -0400
+Received: from xenotime.net ([66.160.160.81]:39492 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752839AbXJWXPl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 19:14:46 -0400
-X-Greylist: delayed 549 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Oct 2007 19:14:46 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Tue, 23 Oct 2007 19:15:41 -0400
+Date: Tue, 23 Oct 2007 16:15:35 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       linux-wireless@vger.kernel.org, linville@tuxdriver.com
+Subject: Re: [PATCH 10/12] mac80211: fix warning created by BIT()
+Message-Id: <20071023161535.a526d595.rdunlap@xenotime.net>
+In-Reply-To: <20071023223645.421AB1F81B6@havoc.gtf.org>
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>
+	<20071023223645.421AB1F81B6@havoc.gtf.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
-Date: Tue, 23 Oct 2007 23:04:58 -0000
-Message-ID: <66ED1F0546CFFE4BABB226CD6633D4A6016D9941@G3W0635.americas.hpqcorp.net>
-In-Reply-To: <20071023212032.GA26597@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
-Thread-Index: AcgVuo9OcAwVRRfTSa2QlMB1CxRP7wADjYSA
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Helgaas, Bjorn" <bjorn.helgaas@hp.com>
-Cc: <linux-kernel@vger.kernel.org>, "Wim Van Sebroeck" <wim@iguana.be>
-X-OriginalArrivalTime: 23 Oct 2007 23:05:00.0334 (UTC) FILETIME=[2334ECE0:01C815C9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We will never have more than one iLO2 device in a server so no multiple
-instances are possible. 
+On Tue, 23 Oct 2007 18:36:45 -0400 (EDT) Jeff Garzik wrote:
 
-Tom 
+> Now that BIT() forces unsigned long, this warning appears:
+> 
+> net/mac80211/ieee80211_sta.c: In function ‘ieee80211_rx_mgmt_assoc_resp’:
+> net/mac80211/ieee80211_sta.c:1187: warning: format ‘%d’ expects type ‘int’, but argument 7 has type ‘long unsigned int’
 
------Original Message-----
-From: Christoph Hellwig [mailto:hch@infradead.org] 
-Sent: Tuesday, October 23, 2007 4:21 PM
-To: Helgaas, Bjorn
-Cc: Mingarelli, Thomas; linux-kernel@vger.kernel.org; Wim Van Sebroeck
-Subject: Re: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch
-<resend>
+LC_ALL=C make ...
 
-On Tue, Oct 23, 2007 at 02:31:15PM -0600, Bjorn Helgaas wrote:
-> The driver assumes only a single instance of the device.  But PCI 
-> being what it is, it's often possible to have multiple cards, so you 
-> might want some protection in case you trip over more than one.
 
-Yes.  And even with that protection please move all the global variables
-into some per-device structure.  That makes the code a lot more
-understandable and future-proof in case multiple devices of this type
-may appear somewhere.
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+> 
+> diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+> index f7ffeec..bdfd901 100644
+> --- a/net/mac80211/ieee80211_sta.c
+> +++ b/net/mac80211/ieee80211_sta.c
+> @@ -1182,7 +1182,7 @@ static void ieee80211_rx_mgmt_assoc_resp(struct net_device *dev,
+>  	aid = le16_to_cpu(mgmt->u.assoc_resp.aid);
+>  
+>  	printk(KERN_DEBUG "%s: RX %sssocResp from %s (capab=0x%x "
+> -	       "status=%d aid=%d)\n",
+> +	       "status=%d aid=%ld)\n",
+>  	       dev->name, reassoc ? "Rea" : "A", print_mac(mac, mgmt->sa),
+>  	       capab_info, status_code, aid & ~(BIT(15) | BIT(14)));
+>  
+> -
 
+Patch was submitted yesterday by Johannes Berg, but does need to be
+pushed by someone... (like this)
+
+
+---
+~Randy
