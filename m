@@ -1,87 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbXJWQTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXJWQTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbXJWQTR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXJWQTH
+	id S1753893AbXJWQTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXJWQTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:19:07 -0400
-Received: from mga01.intel.com ([192.55.52.88]:3377 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbXJWQTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:19:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,318,1188802800"; 
-   d="scan'208";a="355986547"
-Message-ID: <471E1ECD.80002@intel.com>
-Date: Tue, 23 Oct 2007 09:18:21 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
-MIME-Version: 1.0
-To: Adam Jackson <ajax@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-References: <11931515302013-git-send-email-ajax@redhat.com>
-In-Reply-To: <11931515302013-git-send-email-ajax@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Oct 2007 12:19:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43509 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752632AbXJWQTl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 12:19:41 -0400
+Date: Tue, 23 Oct 2007 09:18:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "Bart Van Assche" <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: [PATCH] I2C: add support for the PCF8575 chip
+Message-Id: <20071023091845.bcb19caf.akpm@linux-foundation.org>
+In-Reply-To: <20071023135030.750e9fa4@hyperion.delvare>
+References: <e2e108260710050232s1b0a9cb7u604ab7e20b61646e@mail.gmail.com>
+	<20071022145814.84e46287.akpm@linux-foundation.org>
+	<20071023135030.750e9fa4@hyperion.delvare>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Oct 2007 16:18:42.0308 (UTC) FILETIME=[60C55C40:01C81590]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam Jackson wrote:
-> When the EEPROM gets corrupted, you can fix it with ethtool, but only if
-> the module loads and creates a network device.  But, without this option,
-> if the EEPROM is corrupted, the driver will not create a network device.
+On Tue, 23 Oct 2007 13:50:30 +0200 Jean Delvare <khali@linux-fr.org> wrote:
+
+> Hi Andrew,
 > 
-> Signed-off-by: Adam Jackson <ajax@redhat.com>
-
-
-NAK
-
-wrong list, not sent to me, and while for e100 I was OK with this patch, for e1000
-it really does not make sense to 'just allow' a bad checksum - if your eeprom is
-randomly messed up then you cannot just fix it like this anyway.
-
-Auke
-
-
-
-> ---
->  drivers/net/e1000/e1000_main.c |   10 ++++++++--
->  1 files changed, 8 insertions(+), 2 deletions(-)
+> On Mon, 22 Oct 2007 14:58:14 -0700, Andrew Morton wrote:
+> > On Fri, 5 Oct 2007 11:32:35 +0200
+> > "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
+> > 
+> > > From: Bart Van Assche
+> > > 
+> > > Add support for the PCF8575 I2C chip.
+> > 
+> > I'll comment on this 17-day-old patch.
+> > 
+> > Jean, this illustrates why explicitly steering people *away* from lkml or
+> > from any other mailing list is a poor idea.  If Bart has posted an updated
+> > version to the i2c list then I end up reviewing an outdated patch, and
+> > probably duplicating other people's comments.
 > 
-> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-> index f1ce348..b308c32 100644
-> --- a/drivers/net/e1000/e1000_main.c
-> +++ b/drivers/net/e1000/e1000_main.c
-> @@ -255,6 +255,10 @@ static int debug = NETIF_MSG_DRV | NETIF_MSG_PROBE;
->  module_param(debug, int, 0);
->  MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
->  
-> +static int eeprom_bad_csum_allow = 0;
-> +module_param(eeprom_bad_csum_allow, int, 0);
-> +MODULE_PARM_DESC(eeprom_bad_csum_allow, "Allow bad eeprom checksums");
-> +
->  /**
->   * e1000_init_module - Driver Registration Routine
->   *
-> @@ -1012,7 +1016,8 @@ e1000_probe(struct pci_dev *pdev,
->  
->  	if (e1000_validate_eeprom_checksum(&adapter->hw) < 0) {
->  		DPRINTK(PROBE, ERR, "The EEPROM Checksum Is Not Valid\n");
-> -		goto err_eeprom;
-> +		if (!eeprom_bad_csum_allow)
-> +			goto err_eeprom;
->  	}
->  
->  	/* copy the MAC address out of the EEPROM */
-> @@ -1024,7 +1029,8 @@ e1000_probe(struct pci_dev *pdev,
->  
->  	if (!is_valid_ether_addr(netdev->perm_addr)) {
->  		DPRINTK(PROBE, ERR, "Invalid MAC Address\n");
-> -		goto err_eeprom;
-> +		if (!eeprom_bad_csum_allow)
-> +			goto err_eeprom;
->  	}
->  
->  	e1000_get_bus_info(&adapter->hw);
+> You're unfair. I can use the same argument the other way around: if
+> Bart did not post to the wrong list in the first place, then there
+> would have been no risk for you to miss any update.
+
+Sure.  But what I was referring to was the recommendation that submitters
+explicitly _remove_ lkml from the cc.
+
+> I stand on my initial affirmation that sending all patches, bug reports
+> etc. to LKML when more specialized lists exist, is a bad idea. Maybe it
+> makes you happy because you want to know everything that's going on in
+> every area on the kernel, and are lucky enough to be able to actually
+> do that and survive. But for others, it's essentially wasting their
+> time (not to mention bandwidth and disk space.)
+> 
+> If you are so interested about i2c patches, then I'd suggest that you
+> simply subscribe to the i2c list.
+
+I am subscribed to a large number of lists, but I don't read them.  I keep
+them around so I can go find and reply to the original email thread when a
+fishy patch turns up in the tree.
+
+But I'm not just talking about me.  Consider the example of a random lkml
+lurker who has a PCF8575 and who can end up using an old version of the
+code.
+
+> > googling for 'PCF8575 Assche' indicates that he has not sent an updated
+> > patch.  Perhaps he was discouraged by your quite unconstructive response.
+> 
+> Actually Bart resent his patch to the i2c list 3 days later, twice. But
+> it was probably the exact same patch (it didn't mention any changes at
+> least.) There's no reason why Bart would have sent an updated patch as
+> he did not receive feedback at this point. I fail to see how my
+> response would have had any influence in that respect.
+> 
+> Anyway, thanks for the review. I didn't have much time left for reviews
+> these last few weeks.
+> 
+> Still... I am worried that you, Andrew Morton, co-top-maintainer of the
+> Linux 2.6 kernel, one of most brilliant kernel developers we have,
+> waste your time doing the initial review of a random i2c patch that
+> about anyone remotely involved in kernel development would have been
+> able to review. There's something wrong here.
+
+It goes like this:
+
+- patch floats past, I save it
+
+- a week or three later I check to see if it is still unmerged
+
+- if so, go look at the lkml thread
+
+- if nothing much has happened then I'll assume that it got lost and will
+  pick it up so that it gets consideration
+
+If the discussion got steered to a different list and lkml got removed from
+that discussion then I end up wasting everyone's time.
+
