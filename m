@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbXJWKfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbXJWKkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbXJWKfY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 06:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXJWKfL
+	id S1752745AbXJWKkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXJWKk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 06:35:11 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:46342 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbXJWKfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 06:35:10 -0400
-Date: Tue, 23 Oct 2007 14:34:52 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: linux-scsi@vger.kernel.org, akpm@osdl.org, axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sr_mod oops (elv_next_request involved)
-Message-ID: <20071023103452.GA6267@localhost.sw.ru>
-References: <20071022121206.GB6271@localhost.sw.ru>
+	Tue, 23 Oct 2007 06:40:28 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:52670 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751703AbXJWKk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 06:40:28 -0400
+Date: Tue, 23 Oct 2007 12:40:21 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kernel@avr32linux.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] avr32 updates for 2.6.24, round 2
+Message-ID: <20071023124021.4b92b442@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20071023114314.2348d5a0@dhcp-255-175.norway.atmel.com>
+References: <20071023114314.2348d5a0@dhcp-255-175.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022121206.GB6271@localhost.sw.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 04:12:06PM +0400, Alexey Dobriyan wrote:
-> Steps to reproduce:
+On Tue, 23 Oct 2007 11:43:14 +0200
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+
+> Subject: [GIT PULL]
+
+Heh, I knew I forgot something. Sorry about that.
+
+Håvard
+
+> Linus,
 > 
-> 	modprobe sr_mod
-
-To clarify: this is done during boot sequence.
-
-> 	rmmod sr_mod
-> 	modprobe sr_mod
-
-This -- by hand.
-
-> BUG: unable to handle kernel paging request at virtual address f881b9f3
-> printing eip: f881b9f3 *pdpt = 0000000000003001 <1>*pde = 000000000480a067 *pte = 0000000000000000 
-> Oops: 0010 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> Modules linked in: sr_mod af_packet ipv6 nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp ipt_REJECT iptable_filter ip_tables x_tables cpufreq_ondemand loop serio_raw k8temp hwmon amd_rng cdrom
+> Please pull from
 > 
-> Pid: 1981, comm: modprobe Not tainted (2.6.23-55b70a0300b873c0ec7ea6e33752af56f41250ce #4)
-> EIP: 0060:[<f881b9f3>] EFLAGS: 00010086 CPU: 1
-> EIP is at 0xf881b9f3
-> EAX: c570b380 EBX: c56b6700 ECX: f881b9f3 EDX: c56b6700
-> ESI: c570b380 EDI: c5767920 EBP: c570b380 ESP: c4b5ec0c
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process modprobe (pid: 1981, ti=c4b5e000 task=c4b60000 task.ti=c4b5e000)
-> Stack: c10ab9ea c570b380 c4b5ecec c528c5c8 c56b6700 c570b380 c528c430 c11251fd 
->        c570b380 c56b6700 c10ae49a 00000001 c570b380 c56b6700 c570b380 c4b5ecec 
->        c10ae4c3 00000001 c10ae540 00000001 00000000 c4b5ecf0 c56b6700 c4b5ed18 
-> Call Trace:
->  [<c10ab9ea>] elv_next_request+0x83/0xfe
-
-> CONFIG_HWMON=m
-> CONFIG_SENSORS_K8TEMP=m
-
-Strange...
-
-If I make CONFIG_HWMON=y, oops goes away.
-If I load hwmon.ko after sr_mod.ko, oops goes away.
-
+>   ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
+> 
+> to receive the following updates. This is mostly about connecting a few
+> loose ends that came in through other trees, that is make sure that the
+> new drivers can actually be used on avr32.
+> 
+> Alejandro Martinez Ruiz (1):
+>       [AVR32] ARRAY_SIZE() cleanup
+> 
+> Haavard Skinnemoen (3):
+>       [AVR32] Fix a couple of sparse warnings
+>       [AVR32] Implement more at32_add_device_foo() functions
+>       [AVR32] Implement at32_add_device_cf()
+> 
+> Hans-Christian Egtvedt (1):
+>       [AVR32] Wire up AT73C213 sound driver on ATSTK1000 board
+> 
+> Kristoffer Nyborg Gregertsen (1):
+>       [AVR32] Platform code for pata_at32
+> 
+>  arch/avr32/boards/atstk1000/atstk1002.c |   58 +++++
+>  arch/avr32/mach-at32ap/at32ap7000.c     |  344 +++++++++++++++++++++++++++++++
+>  arch/avr32/mach-at32ap/extint.c         |    2 +-
+>  arch/avr32/mach-at32ap/pm.h             |    4 +-
+>  arch/avr32/mach-at32ap/time-tc.c        |    2 +-
+>  include/asm-avr32/arch-at32ap/board.h   |   23 ++
+>  6 files changed, 429 insertions(+), 4 deletions(-)
