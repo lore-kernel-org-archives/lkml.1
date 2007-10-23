@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXJWQmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbXJWQtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbXJWQmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXJWQmD
+	id S1753177AbXJWQtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXJWQtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:42:03 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:52608 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbXJWQmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:42:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=KUKohehvevF8qYizQeqzAzS753eoVN5J9j+IlNcYMbx6jApGL2xz5FevEm71/86ED
-	EylU11/e2uHQnBEoyZ59A==
-Message-ID: <6599ad830710230941y5d175688ob3a4d9ac42ba8c8f@mail.gmail.com>
-Date: Tue, 23 Oct 2007 09:41:49 -0700
-From: "Paul Menage" <menage@google.com>
-To: vatsa@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071023164704.GE4667@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Oct 2007 12:49:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48678 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbXJWQs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 12:48:59 -0400
+Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+From: Adam Jackson <ajax@redhat.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <471E1ECD.80002@intel.com>
+References: <11931515302013-git-send-email-ajax@redhat.com>
+	 <471E1ECD.80002@intel.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 12:21:27 -0400
+Message-Id: <1193156487.26974.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.90 (2.11.90-2.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <471D4523.4040509@google.com>
-	 <20071023164704.GE4667@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> > Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
-> > milliseconds for that cgroup's tasks
->
-> It would be nice to split this into user and sys time at some point.
+On Tue, 2007-10-23 at 09:18 -0700, Kok, Auke wrote:
+> Adam Jackson wrote:
+> > When the EEPROM gets corrupted, you can fix it with ethtool, but only if
+> > the module loads and creates a network device.  But, without this option,
+> > if the EEPROM is corrupted, the driver will not create a network device.
+> > 
+> > Signed-off-by: Adam Jackson <ajax@redhat.com>
+> 
+> NAK
+> 
+> wrong list, not sent to me, and while for e100 I was OK with this patch, for e1000
+> it really does not make sense to 'just allow' a bad checksum - if your eeprom is
+> randomly messed up then you cannot just fix it like this anyway.
 
-Sounds reasonable - but does CFS track this?
+That's strange, I managed to recover an otherwise horked e1000 with it.
+What should I have done instead?
 
-> We have also received request to provide idle time for a
-> container/cgroup.
+- ajax
 
-The semantics of "idle time" for a cgroup on a shared system seem a
-bit fuzzy. How would you define it?
-
-Suppose you have two cgroups that would each want to use, say, 55% of
-a CPU - technically they should each be regarded as having 45% idle
-time, but if they run on a the same CPU the chances are that they will
-both always have some processes on their runqueue due to contention
-with the other group. So how would you measure the difference between
-this and a cgroup that really is trying to use 100%?
-
-Paul
