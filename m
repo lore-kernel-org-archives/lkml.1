@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbXJWHmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbXJWHnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbXJWHmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXJWHmm
+	id S1751868AbXJWHnL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXJWHm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:42:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:19221 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXJWHmm (ORCPT
+	Tue, 23 Oct 2007 03:42:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43817
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752877AbXJWHm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:42:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Ku5NGeknZUsOupEZs6wkxDWeC/PfEiG48990FfxmvXEYAxcn6OmkGYTWIyfqu6QwB
-	hl+BC7ExanKZFMOnRq2qA==
-Message-ID: <6599ad830710230042j1732149bw4cb8a4632a8c77bf@mail.gmail.com>
-Date: Tue, 23 Oct 2007 00:42:33 -0700
-From: "Paul Menage" <menage@google.com>
-To: vatsa@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] CFS CGroup: Code cleanup
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <6599ad830710222316i353a25a7ha3d7f179da8cb3c7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Oct 2007 03:42:56 -0400
+Date: Tue, 23 Oct 2007 00:43:21 -0700 (PDT)
+Message-Id: <20071023.004321.74750417.davem@davemloft.net>
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: IDE crash...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071023072359.GH25962@kernel.dk>
+References: <20071023070932.GB25962@kernel.dk>
+	<20071023.001850.130236174.davem@davemloft.net>
+	<20071023072359.GH25962@kernel.dk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <471D4510.9030200@google.com>
-	 <20071023024654.GD3324@linux.vnet.ibm.com>
-	 <6599ad830710222316i353a25a7ha3d7f179da8cb3c7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/22/07, Paul Menage <menage@google.com> wrote:
-> On 10/22/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> >
-> > Minor nit: From pov of making this patch series git bisect safe, shouldn't we
-> > be registering a write_uint() handler in this patch as well?
-> >
->
-> Yes, we should. Sigh. I originally had the cleanup and the new
-> reporting interface in the same patch, and decided to split them apart
-> into a cleanup patch and a new feature patch, but clearly goofed. I'll
-> resend tomorrow with the write_uint registration in the right place.
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Tue, 23 Oct 2007 09:23:59 +0200
 
-OK, this wasn't a patch goof - the original patch in my tree does have
-the addition of write_uint in the cftype definition. I guess the last
-hunk got lost as I transferred it to the email.
+> On Tue, Oct 23 2007, David Miller wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Tue, 23 Oct 2007 09:09:33 +0200
+> > 
+> > > Eh this wont work, it's the wrong entry... Here's a temporary
+> > > work-around.
+> > > 
+> > > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+> > > index c89f0d3..108202b 100644
+> > > --- a/drivers/ide/ide-io.c
+> > > +++ b/drivers/ide/ide-io.c
+> > > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
+> > >  		return;
+> > >  
+> > >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+> > > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
+> > >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+> > >  	} else {
+> > >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+> > 
+> > That's the exact patch I'm about to boot test :-)
+> 
+> That should work - once you verify that, would you mind testing this one
+> as well? Thanks!
 
-Paul
+This one works here too, thanks.
