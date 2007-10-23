@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXJWKGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbXJWKH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXJWKGO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 06:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXJWKF6
+	id S1753194AbXJWKH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbXJWKHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 06:05:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57710
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbXJWKF5 (ORCPT
+	Tue, 23 Oct 2007 06:07:18 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:64712 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbXJWKHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 06:05:57 -0400
-Date: Tue, 23 Oct 2007 03:06:22 -0700 (PDT)
-Message-Id: <20071023.030622.74744677.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: barkalow@iabervon.org, linas@austin.ibm.com, chunhao.huang@hotmail.com,
-       gregkh@suse.de, htejun@gmail.com, brice.goglin@gmail.com,
-       david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <471DC66D.6000909@garzik.org>
-References: <Pine.LNX.4.64.0710221700120.32497@iabervon.org>
-	<20071022.171318.104036671.davem@davemloft.net>
-	<471DC66D.6000909@garzik.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 06:07:16 -0400
+Date: Tue, 23 Oct 2007 03:07:04 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: do not clear cpu_index set by store_cpu_info
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200710230307.04953.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 23 Oct 2007 06:01:17 -0400
+[PATCH] x86_64: do not clear cpu_index set by store_cpu_info
 
-> David Miller wrote:
-> > My suggestion is:
- ...
-> Sounds good to me also.
+early_indentify_cpu is called after store_cpu_info.
+So don't clear the assigned cpu_index
 
-Ok, it seems I've sort-of self-nominated myself to implement
-this so I'll try to work on it tomorrow :-)
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index e7a9e36..80ce096 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -892,7 +892,6 @@ void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
+ 
+ #ifdef CONFIG_SMP
+ 	c->phys_proc_id = (cpuid_ebx(1) >> 24) & 0xff;
+-	c->cpu_index = 0;
+ #endif
+ }
+ 
