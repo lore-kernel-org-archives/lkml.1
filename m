@@ -1,58 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbXJWVVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbXJWV2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbXJWVVM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXJWVUo
+	id S1753718AbXJWV2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJWV2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:20:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52925 "EHLO mx1.redhat.com"
+	Tue, 23 Oct 2007 17:28:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47327 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754432AbXJWVUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:20:39 -0400
-Date: Tue, 23 Oct 2007 17:20:26 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Adam Jackson <ajax@redhat.com>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-Message-ID: <20071023212026.GF7793@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeff Garzik <jeff@garzik.org>,
-	"Kok, Auke" <auke-jan.h.kok@intel.com>,
-	Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
-References: <11931515302013-git-send-email-ajax@redhat.com> <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471E5C21.8030908@garzik.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1751277AbXJWV2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:28:00 -0400
+Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
+From: Dan Williams <dcbw@redhat.com>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Ivo van Doorn <ivdoorn@gmail.com>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       mwallis@serialmonkey.com
+In-Reply-To: <200710231541.42943.dhazelton@enter.net>
+References: <20071020184100.GA11640@elf.ucw.cz>
+	 <200710231307.25301.dhazelton@enter.net>
+	 <1193165694.26768.10.camel@localhost.localdomain>
+	 <200710231541.42943.dhazelton@enter.net>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 17:27:07 -0400
+Message-Id: <1193174828.7110.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 04:40:01PM -0400, Jeff Garzik wrote:
+On Tue, 2007-10-23 at 15:41 -0400, Daniel Hazelton wrote:
+> On Tuesday 23 October 2007 14:54:54 Dan Williams wrote:
+> > On Tue, 2007-10-23 at 13:07 -0400, Daniel Hazelton wrote:
+> > > On Tuesday 23 October 2007 10:05:12 Dan Williams wrote:
+> > > > On Tue, 2007-10-23 at 00:00 +0200, Pavel Machek wrote:
+> > > > > Hi!
+> > > > >
+> > > > > > > > Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
+> > > > > > >
+> > > > > > > That doesn't say much, some manufacturers add that line to their
+> > > > > > > driver just to prevent the module loader complaining about a
+> > > > > > > non-GPL driver...
+> > > > > > >
+> > > > > > > There should be a copyright notice or a license file accompanied
+> > > > > > > with the driver that clearly states the license of the driver.
+> > > > > >
+> > > > > > Lacking an explicitly stated license it can be argued that, since
+> > > > > > the MODULE_LICENSE() macro is meant to define the actual license on
+> > > > > > the code, this code is GPL. No, it isn't an explicit definition,
+> > > > > > but lacking any other signs of the license, the implicit
+> > > > > > declaration of it being GPL is (or should be) enough to deflect
+> > > > > > charges of copyright infringement.
+> > > > >
+> > > > > Yep, I believe this driver is GPLed. They published the source and
+> > > > > there's nothing to suggest otherwise, and there's explicit:
+> > > > >
+> > > > > #define DRIVER_AUTHOR                   "Jeff
+> > > > > Lee<YY_Lee@issc.com.tw>" #define DRIVER_DESC                         
+> > > > >    "IS89C35 802.11bg WLAN USB Driver" MODULE_LICENSE("GPL");
+> > > >
+> > > > If there isn't an explicit COPYING or LICENSE file or something
+> > > > distributed with the driver, and if there aren't copyright/license
+> > > > headers at the top of the files in question, I have a hard time
+> > > > agreeing that MODULE_LICENSE("GPL") _definitely_ means that the author
+> > > > has GPL-ed the driver intentionally.  Of course that's the way it's
+> > > > supposed to work, but to me this doesn't pass sufficient muster to be
+> > > > definitely called GPL without additional clarification.
+> > > >
+> > > > Dan
+> > >
+> > > Lacking any other indication MODULE_LICENSE is supposed to mark the
+> > > license that the code is being distributed under. If companies are
+> > > intentionally
+> >
+> > Step 1: Ask the author.
+> 
+> Agreed. This should have been done before this discussion even started.
+> 
+> > Step 2: if the author doesn't reply, then we can have this discussion
+> >
+> > MODULE_LICENSE is just a random string that could have been added by
+> > anybody, not necessarily the author.  Unless you can determine the
+> > intent of the author explicitly, a single MODULE_LICENSE is not
+> > sufficient to concretely determine the license of the code.  It's only
+> > in one file.  There is nothing to explicitly state the overall license
+> > of the whole work unless each file has a header referring to the license
+> > or unless there is a license document distributed with the code as a
+> > whole.
+> >
+> > In the absence of any other indication, MODULE_LICENSE doesn't not
+> > concretely determine the license of the code.  You can assume it does,
+> > but that's your gun to put to your own head.
+> 
+> The intent of MODULE_LICENSE is to mark the license on the code. This is 
+> clearly stated in several places in Documentation/ (if my memory serves).
+> 
+> > > mis-using this to get around the "internal interfaces" limitations (where
+> > > some interfaces are not available unless the module is GPL'd) and the
+> > > warning message printed in the logs when the module is not GPL'd then
+> > > they are (technically) in violation of the law. (interfaces that are GPL
+> > > only are considered so internal to the kernel that using them makes your
+> > > code GPL because of the inclusion of GPL'd code. And no - I am not going
+> > > to get into that discussion - it's pointless)
+> >
+> > Just because the module may be loading illegally says _nothing_ about
+> > the license of the code.
+> 
+> No, but it is a mis-use of MODULE_LICENSE, which is supposed to state the 
+> correct license on the code.
+> 
+> > > In the end, using MODULE_LICENSE for any purpose other than declaring the
+> > > chosen license for the code is deceptive. So it is easily arguable that
+> > > by
+> >
+> > "deceptive" is also not "this code code is definitely GPL".  Doesn't
+> > matter whether it's deceptive or not.  We do not know that the code is
+> > GPL.
+> 
+> Deception in order to create a situation whereby you can prosecute people for 
+> violation of the law is illegal. Therefore not distributing the code with any 
+> indication as to the license other than MODULE_LICENSE and attempting to 
+> prosecute afterwards is illegal. QED: even if the code is not GPL'd (and such 
+> could be learned by contacting the author), the fact that it ships without 
+> any indication of the license other than MODULE_LICENSE implies that the 
+> license is what is stated and prosecution on the grounds that it isn't 
+> becomes entrapment.
+> 
+> > > not including any license with the code other than the MODULE_LICENSE
+> > > statement and then trying to prosecute because MODULE_LICENSE doesn't
+> > > accurately state the license on the code is entrapment and illegal.
+> >
+> > Arguable doesn't mean that it's concrete enough to pass legal muster.  I
+> > am not a lawyer, but this just doesn't pass the bar.
+> 
+> I know several and have asked one that is a very good friend. He agreed with 
+> my interpretation of the presented facts - that since the only indication of 
+> what the license on the code might be is MODULE_LICENSE it can be safely 
+> assumed that the license is what that states. Any attempt to later prosecute 
+> because the license is not what is stated would constitute entrapment - which 
+> is illegal.
 
- > > In any case, this patch should not be merged. We often send it around to users to
- > > debug their issue in case it involves eeproms, but merging it will just conceal
- > > the real issue and all of a sudden a flood of people stop reporting *real* issues
- > > to us.
- > 
- > Sorry, I disagree.  Just as with e100, if there is a clear way the user 
- > can recover their setup -- and Adam says his was effective -- I don't 
- > see why we should be denying users the ability to use their own hardware.
- 
-Indeed. This is a common enough problem that not including it causes more pain
-than its worth.  I have two affected boxes myself that I actually thought
-the hardware was dead before I tried ajax's patch.
+I asked Tom Callaway, who heads up all the legal/licensing issues for
+Fedora.  He said essentially "it won't be in Fedora" on just the basis
+of MODULE_LICENSE.  I can run it past Red Hat lawyers too.  It's just
+not clear with only MODULE_LICENSE, and not clear pretty much means
+Don't Touch until it becomes clear.
 
-People aren't going to report this as a bug. They aren't going to try out patches,
-they're going to do what I did and stick another network card in the box and
-go on with life.
+Dan
 
-Our users deserve better than this.
+> DRH
+> 
+> PS: note that all legal information contained here-in is only known to be 
+> valid in the US.
+> 
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
