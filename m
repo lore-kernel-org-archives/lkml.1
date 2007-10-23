@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbXJVX6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbXJVX7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbXJVX6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 19:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXJVX6D
+	id S1753429AbXJVX7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 19:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXJVX7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 19:58:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59658
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751115AbXJVX6A (ORCPT
+	Mon, 22 Oct 2007 19:59:46 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:52949 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbXJVX7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 19:58:00 -0400
-Date: Mon, 22 Oct 2007 16:58:22 -0700 (PDT)
-Message-Id: <20071022.165822.126577184.davem@davemloft.net>
-To: khc@pm.waw.pl
-Cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
-       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       shane.huang@amd.com, linux-ide@vger.kernel.org, brice@myri.com
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m3ejfmu3a5.fsf@maximus.localdomain>
-References: <Pine.LNX.4.64.0710221555190.32497@iabervon.org>
-	<471D0ADC.7000005@garzik.org>
-	<m3ejfmu3a5.fsf@maximus.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 22 Oct 2007 19:59:45 -0400
+Subject: Re: BUG in: Driver core: convert block from raw kobjects to core
+	devices
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0710212014130.25357-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0710212014130.25357-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 02:01:21 +0200
+Message-Id: <1193097681.2107.9.camel@lov.site>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18KMBCzoqaDqNR7JtS47fZ4neyFlxhbhSJpxpv
+ N1wNpfFXxaqexVuuy/R76LP2cHMHf3yQvaISlf5cRk8gaIyKEm
+ BcAKBY4Z1RZcC1VNjmkuGbjrYX9c36+
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 23 Oct 2007 01:40:18 +0200
-
-> Jeff Garzik <jeff@garzik.org> writes:
+On Sun, 2007-10-21 at 20:26 -0400, Alan Stern wrote:
+> On Sun, 21 Oct 2007, Kay Sievers wrote:
 > 
-> > In general it is documented that INTX_DISABLE should apply only to
-> > INTx# so devices that disable MSI based on that bit are out of spec.
+> > > [  458.013133] scsi_disk_release: disk sda, kobj ce8be990, refcount before put_disk 2
+> > > [  458.032420] scsi_device_dev_release: rq cd9b2000
+> > 
+> > Hmm, I still don't see this without the final put.
 > 
-> The wording is:
-> 10: This bit disables the device from asserting INTx#. A value of 0
-> enables the assertion of its INTx# signal. A value of 1 disables the
-> assertion of its INTx# signal. This bit's state after RST# is 0. Refer
-> to Section 6.8.1.3 for control of MSI.
-> 
-> So strictly speaking it mandates disabling/enabling INTx but says
-> nothing about other things (e.g. MSI). Some common sense dictates
-> it shouldn't disable MSI, I guess.
+> Yes, I see your point.  Suppose you try doing the exact same thing
+> again, but this time un-comment the put_device() call so that the
+> scsi_device does get released.  I predict that the log will show your
+> request_queue drops its reference to the gendisk structure _after_ the
+> gendisk has been released.  (If necessary I could send a patch with a
+> printk at the crucial spot.)  That would prove something is going wrong
+> on your system.
 
-Right, and every vendor I've spoken to who had the INTX_DISABLE
-bug clearly acknowledged that it was a bug in their RTL design
-and that they considered the spec to be clear on this matter
-in that INTX_DISABLE should not influence MSI in any way.
+There is definitely something wrong, I tried all sorts of options now,
+and a second machine, and I can never get the behavior you see. I even
+booted with init=/bin/sh.
+But true, looking at the kobject debugging for loop devices, and usb
+storage driven by the ub driver, all looks fine without the additional
+put.
 
-> The "MSI Enable" description doesn't leave any doubt:
-> 0: MSI Enable: If 1, the function is permitted to use MSI to request
-> service and is prohibited from using its INTx# pin [...]
+There must be something going wrong with the block patch in conjunction
+with the crazy SCSI release logic. Can you send me your .config? Just
+for a check, maybe you have some option, enabled/disabled that changes
+the behavior, and possibly brings us closer to find the bug.
 
-Things get more complicated with PCI-Express because INTx# isn't an
-out-of-band "pin", but rather a message sent over the bus :-)
+Thanks,
+Kay
+
