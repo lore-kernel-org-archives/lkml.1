@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbXJWVoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXJWVpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbXJWVoz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXJWVos
+	id S1754881AbXJWVpW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbXJWVpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:44:48 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5931 "EHLO kernel.dk"
+	Tue, 23 Oct 2007 17:45:06 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5936 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbXJWVos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:44:48 -0400
-Date: Tue, 23 Oct 2007 23:44:42 +0200
+	id S1752502AbXJWVpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:45:05 -0400
+Date: Tue, 23 Oct 2007 23:44:59 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071023214442.GL14671@kernel.dk>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <471E2A96.7050304@panasas.com> <20071023183321.GA14671@kernel.dk> <p738x5t4nbn.fsf@bingen.suse.de> <20071023202017.GI14671@kernel.dk> <20071023205710.GA32592@one.firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: Re: IDE crash...
+Message-ID: <20071023214459.GM14671@kernel.dk>
+References: <20071023.004321.74750417.davem@davemloft.net> <20071023195255S.fujita.tomonori@lab.ntt.co.jp> <20071023105710.GJ5059@kernel.dk> <20071023.141800.59467535.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023205710.GA32592@one.firstfloor.org>
+In-Reply-To: <20071023.141800.59467535.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, Andi Kleen wrote:
-> On Tue, Oct 23, 2007 at 10:20:17PM +0200, Jens Axboe wrote:
-> > On Tue, Oct 23 2007, Andi Kleen wrote:
-> > > Jens Axboe <jens.axboe@oracle.com> writes:
-> > > 
-> > > >> You might want to put a BUG_ON(page & 0x3); Make sure
-> > > >> you're not loosing information. (The m68k problem)
-> > > >
-> > > > That's a really good idea, thanks Boaz! I'll add that.
-> > > 
-> > > It would be even better if you replaced all the magic numbers with defines
-> > > or better accessors.
-> > 
-> > All? There are two numbers, and all are confined to scatterlist.h
-> > privately. Except the one in blk_rq_map_sg(), which was done on purpose
-> > since I don't want to export that knowledge to others. So we definitely
-> > don't want accessors, I can name the two bit values but don't see much
-> > point in doing it.
+On Tue, Oct 23 2007, David Miller wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Tue, 23 Oct 2007 12:57:11 +0200
 > 
-> Maybe no point for you, but it would be helpful for any poor soul
-> who has to read/debug/change the code later.
+> > On Tue, Oct 23 2007, FUJITA Tomonori wrote:
+> > > BTW, we avoid calling sg_init_table() for every I/O request due to Jens'
+> > > trick. And Jens will remove the code to clear sg_dma_len/addr in
+> > > blk_rq_map_sg(). So sparc64 iommu needs to do that for itself?
+> > > 
+> > > http://marc.info/?l=linux-scsi&m=119261920425120&w=2
+> > 
+> > It does - Dave, do you agree with the patch? I think it should be added,
+> > so that sparc64 isn't the odd-arch-out in this respect. I've tentatively
+> > applied the patch, Davem?
+> 
+> No objections.
 
-I understand, but if you look in the include file that uses the magic
-numbers, then there's a big comment block in the beginning describing
-the usage.
-
-> Even if they're limited right now that doesn't mean it'll stay
-> that way anyways.
-
-Since it's reusing lower page bits, we can't go beyond 2 bits anyway. So
-I'll be surprised if they expand :-)
+Great, thanks Dave.
 
 -- 
 Jens Axboe
