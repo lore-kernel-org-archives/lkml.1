@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbXJWXT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbXJWX1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbXJWXT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 19:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXJWXTp
+	id S1754545AbXJWX1F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXJWX0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 19:19:45 -0400
-Received: from mga11.intel.com ([192.55.52.93]:32376 "EHLO mga11.intel.com"
+	Tue, 23 Oct 2007 19:26:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:52609 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842AbXJWXTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 19:19:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,320,1188802800"; 
-   d="scan'208";a="356294534"
-Message-ID: <471E817D.5030500@intel.com>
-Date: Tue, 23 Oct 2007 16:19:25 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	id S1752367AbXJWX0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 19:26:54 -0400
+Message-ID: <471E833B.6070602@goop.org>
+Date: Tue, 23 Oct 2007 16:26:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: davej@redhat.com, jeff@garzik.org, ajax@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-References: <471E2AD0.1000500@intel.com>	<471E5C21.8030908@garzik.org>	<20071023212026.GF7793@redhat.com> <20071023.145339.55504234.davem@davemloft.net>
-In-Reply-To: <20071023.145339.55504234.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
+References: <1193126771.23935.79.camel@caritas-dev.intel.com> <471E70E0.2090802@goop.org> <471E7B1D.4050107@zytor.com>
+In-Reply-To: <471E7B1D.4050107@zytor.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Dave Jones <davej@redhat.com>
-> Date: Tue, 23 Oct 2007 17:20:26 -0400
-> 
->> Indeed. This is a common enough problem that not including it causes
->> more pain than its worth.  I have two affected boxes myself that I
->> actually thought the hardware was dead before I tried ajax's patch.
+H. Peter Anvin wrote:
+> Furthermore, on looking through the code again, I see a bunch of
+> "init_pg_tables_end + setup_data_len" which really is ugly.
+
+Yeah, that's what I'm objecting to.
+
+>> What are the alignment rules for this structure?  Is it always 64-bit
+>> aligned?  What about the relationship of len and data?
 >>
->> People aren't going to report this as a bug. They aren't going to
->> try out patches, they're going to do what I did and stick another
->> network card in the box and go on with life.
->>
->> Our users deserve better than this.
-> 
-> Seconded.  The resistence to this patch is just flat-out rediculious,
-> just like it was in the e100 case.
-> 
-> And I think all of this "e1000 is different!" talk is merely a
-> scarecrow for the fact that Intel simply doesn't want this patch
-> merged for some other reason.
+>
+> It's x86, so alignment is soft - it presumably *should* be 64-bit
+> aligned, but nothing break if the boot loader doesn't.
 
-no, e1000 eeproms contain many timing information and bits crucial to getting the
-adapter working in the first place. All of these are documented in our PUBLICALLY
-available SDM which is downloadable from our e1000.sf.net website. (e.g. 8254x
-sdm, section 5.6, page 98+). For pci-e silicon this gets much more complex.
-
-we haven't even heard from the user what hardware he has nor gotten an eeprom dump
-from him.
-
-I'm not hiding anything and you're deliberately creating a negative atmosphere here.
-
-The people who do have eeprom checksum issues have come to us in the past. The
-fact that you didn't see them means that they *properly* made it to us.
-
-As a matter of fact I am still working on a permanent solution for bad eeprom
-checksums on lenovo T60 laptops. Should I just drop that issue and leave the real
-problem unsolved?
-
-This patch only affirms *YOUR* point of view, not that of many customers who have
-come to us and received help with many issues. You're completely ignoring that and
-that is unfair.
-
-If we want this patch in the kernel in some form that actually shows in a decent
-way what a user *should* do and more importantly should *know*, then maybe we can
-talk about that.
-
-The patch in question does not add any extra information nor does it do some
-sanity checking on the eeprom values or turn off any of the problematic features
-that we really should disable. We even have code that allows some of the hardware
-to run without a properly setup eeprom in a few hardware cases. And we definately
-should print out a lot more warnings to the user that running with garbage eeprom
-data is _not_ a good idea.
+This was more or less a rhetorical question - the code spends some
+effort in rounding len up to some alignment, so its probably worth
+documenting with the structure.
 
 
-Auke
-
-
+    J
