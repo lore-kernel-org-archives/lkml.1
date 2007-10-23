@@ -1,52 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXJWH6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXJWIBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbXJWH6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXJWH6r
+	id S1752860AbXJWIBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 04:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJWIBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:58:47 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:51157 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbXJWH6q (ORCPT
+	Tue, 23 Oct 2007 04:01:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41711
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751097AbXJWIBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:58:46 -0400
-Message-ID: <471DA974.8060509@linux.vnet.ibm.com>
-Date: Tue, 23 Oct 2007 13:27:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: vatsa@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
-References: <471D4523.4040509@google.com> <20071023024036.GC3324@linux.vnet.ibm.com> <6599ad830710222306m6a3e3f52k4daf501836c05274@mail.gmail.com> <6599ad830710230021n536908c0xd95250f36aa8a27d@mail.gmail.com> <471DA78F.4090600@linux.vnet.ibm.com> <6599ad830710230053l35fffaf5ld8882eaae8b9df7c@mail.gmail.com>
-In-Reply-To: <6599ad830710230053l35fffaf5ld8882eaae8b9df7c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Oct 2007 04:01:31 -0400
+Date: Tue, 23 Oct 2007 01:01:56 -0700 (PDT)
+Message-Id: <20071023.010156.41630559.davem@davemloft.net>
+To: anil.s.keshavamurthy@intel.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH]: Genericizing iova.[ch]
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On 10/23/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> Well, most people who care about deletion will use the notify_on_release
->> callback and retry.
-> 
-> I'm not convinced this is true. Certainly the userspace approaches
-> we're developing at Google don't (currently) use notify_on_release.
-> 
-> Paul
 
-Well, without notify_on_release you can never be sure if a new task
-got added to the control group or if someone acquired a reference
-to it. I can't think of a safe way of removing control groups/cpusets
-without using notify_on_release.
+I would like to potentially move the sparc64 IOMMU code over to using
+the nice new drivers/pci/iova.[ch] code for free area management..
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+In order to do that we have to detach the IOMMU page size assumptions
+which only really need to exist in the intel-iommu.[ch] code.
 
+This patch attempts to implement that.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index b3d7031..7f2aec4 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1089,7 +1089,7 @@ static void dmar_init_reserved_ranges(void)
+ 	int i;
+ 	u64 addr, size;
+ 
+-	init_iova_domain(&reserved_iova_list);
++	init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
+ 
+ 	/* IOAPIC ranges shouldn't be accessed by DMA */
+ 	iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
+@@ -1143,7 +1143,7 @@ static int domain_init(struct dmar_domain *domain, int guest_width)
+ 	int adjust_width, agaw;
+ 	unsigned long sagaw;
+ 
+-	init_iova_domain(&domain->iovad);
++	init_iova_domain(&domain->iovad, DMA_32BIT_PFN);
+ 	spin_lock_init(&domain->mapping_lock);
+ 
+ 	domain_reserve_special_ranges(domain);
+diff --git a/drivers/pci/intel-iommu.h b/drivers/pci/intel-iommu.h
+index ee88dd2..af8560c 100644
+--- a/drivers/pci/intel-iommu.h
++++ b/drivers/pci/intel-iommu.h
+@@ -27,6 +27,19 @@
+ #include <linux/io.h>
+ 
+ /*
++ * We need a fixed PAGE_SIZE of 4K irrespective of
++ * arch PAGE_SIZE for IOMMU page tables.
++ */
++#define PAGE_SHIFT_4K		(12)
++#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
++#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
++#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
++
++#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
++#define DMA_32BIT_PFN		IOVA_PFN(DMA_32BIT_MASK)
++#define DMA_64BIT_PFN		IOVA_PFN(DMA_64BIT_MASK)
++
++/*
+  * Intel IOMMU register specification per version 1.0 public spec.
+  */
+ 
+diff --git a/drivers/pci/iova.c b/drivers/pci/iova.c
+index a84571c..8de7ab6 100644
+--- a/drivers/pci/iova.c
++++ b/drivers/pci/iova.c
+@@ -9,19 +9,19 @@
+ #include "iova.h"
+ 
+ void
+-init_iova_domain(struct iova_domain *iovad)
++init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit)
+ {
+ 	spin_lock_init(&iovad->iova_alloc_lock);
+ 	spin_lock_init(&iovad->iova_rbtree_lock);
+ 	iovad->rbroot = RB_ROOT;
+ 	iovad->cached32_node = NULL;
+-
++	iovad->dma_32bit_pfn = pfn_32bit;
+ }
+ 
+ static struct rb_node *
+ __get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
+ {
+-	if ((*limit_pfn != DMA_32BIT_PFN) ||
++	if ((*limit_pfn != iovad->dma_32bit_pfn) ||
+ 		(iovad->cached32_node == NULL))
+ 		return rb_last(&iovad->rbroot);
+ 	else {
+@@ -37,7 +37,7 @@ static void
+ __cached_rbnode_insert_update(struct iova_domain *iovad,
+ 	unsigned long limit_pfn, struct iova *new)
+ {
+-	if (limit_pfn != DMA_32BIT_PFN)
++	if (limit_pfn != iovad->dma_32bit_pfn)
+ 		return;
+ 	iovad->cached32_node = &new->node;
+ }
+diff --git a/drivers/pci/iova.h b/drivers/pci/iova.h
+index ae3028d..d521b5b 100644
+--- a/drivers/pci/iova.h
++++ b/drivers/pci/iova.h
+@@ -15,22 +15,9 @@
+ #include <linux/rbtree.h>
+ #include <linux/dma-mapping.h>
+ 
+-/*
+- * We need a fixed PAGE_SIZE of 4K irrespective of
+- * arch PAGE_SIZE for IOMMU page tables.
+- */
+-#define PAGE_SHIFT_4K		(12)
+-#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
+-#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
+-#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
+-
+ /* IO virtual address start page frame number */
+ #define IOVA_START_PFN		(1)
+ 
+-#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
+-#define DMA_32BIT_PFN	IOVA_PFN(DMA_32BIT_MASK)
+-#define DMA_64BIT_PFN	IOVA_PFN(DMA_64BIT_MASK)
+-
+ /* iova structure */
+ struct iova {
+ 	struct rb_node	node;
+@@ -44,6 +31,7 @@ struct iova_domain {
+ 	spinlock_t	iova_rbtree_lock; /* Lock to protect update of rbtree */
+ 	struct rb_root	rbroot;		/* iova domain rbtree root */
+ 	struct rb_node	*cached32_node; /* Save last alloced node */
++	unsigned long	dma_32bit_pfn;
+ };
+ 
+ struct iova *alloc_iova_mem(void);
+@@ -56,7 +44,7 @@ struct iova *alloc_iova(struct iova_domain *iovad, unsigned long size,
+ struct iova *reserve_iova(struct iova_domain *iovad, unsigned long pfn_lo,
+ 	unsigned long pfn_hi);
+ void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
+-void init_iova_domain(struct iova_domain *iovad);
++void init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit);
+ struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn);
+ void put_iova_domain(struct iova_domain *iovad);
+ 
