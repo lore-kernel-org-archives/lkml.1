@@ -1,690 +1,650 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXJWEnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbXJWEn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbXJWEnB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 00:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJWEjb
+	id S1754826AbXJWEn1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 00:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbXJWEjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 00:39:31 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:58905 "EHLO snapgear.com"
+	Tue, 23 Oct 2007 00:39:33 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:58907 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753065AbXJWEj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 00:39:29 -0400
+	id S1753118AbXJWEjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 00:39:31 -0400
 Date: Tue, 23 Oct 2007 14:37:54 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710230437.l9N4bs9H001772@goober>
+Message-Id: <200710230437.l9N4bsXg001800@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: new style ColdFire UART driver
+Subject: [M68KNOMMU]: cleanup m68knommu timer code
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new style serial driver for the Freescale ColdFire UART to replace
-the old style one currently in the tree (drivers/serial/mcfserial.c).
-
-Currently this UART is only found in the ColdFire CPU family of parts
-(thus I prefixed this patch [M68KNOMMU]).
-
-This has been around for a long while now, tested on all available
-platforms.
+Reduce the function pointer mess of the m68knommu timer code.
+Call direct to the local hardware's timer setup, and expose the local
+common timer interrupt handler to the lower level hardware timer.
+Ultimately this will save definitions of all these functions across
+all the platform code to setup the function pointers (which for
+any given m68knommu CPU family member can be only one set of hardware
+timer functions).
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
+diffstat (relative to arch/m68knommu):
+ kernel/setup.c          |    9 ---------
+ kernel/time.c           |   22 ++++++++--------------
+ platform/5206/config.c  |    9 ---------
+ platform/5206e/config.c |   10 ----------
+ platform/520x/config.c  |    8 +-------
+ platform/523x/config.c  |    8 --------
+ platform/5249/config.c  |   10 ----------
+ platform/5272/config.c  |   10 ----------
+ platform/527x/config.c  |    8 --------
+ platform/528x/config.c  |    8 --------
+ platform/5307/config.c  |   10 ----------
+ platform/5307/pit.c     |   15 +++++++++------
+ platform/5307/timers.c  |   19 +++++++++++--------
+ platform/532x/config.c  |   10 ----------
+ platform/5407/config.c  |   10 ----------
+ 15 files changed, 29 insertions(+), 137 deletions(-)
 
-diff -Naurp linux-2.6.23/drivers/serial/mcf.c linux-2.6.23-uc0/drivers/serial/mcf.c
---- linux-2.6.23/drivers/serial/mcf.c	1970-01-01 10:00:00.000000000 +1000
-+++ linux-2.6.23-uc0/drivers/serial/mcf.c	2007-10-19 11:23:15.000000000 +1000
-@@ -0,0 +1,653 @@
-+/****************************************************************************/
+
+diff -Naurp linux-2.6.23/arch/m68knommu/kernel/setup.c linux-2.6.23.timers/arch/m68knommu/kernel/setup.c
+--- linux-2.6.23/arch/m68knommu/kernel/setup.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/kernel/setup.c	2007-10-19 15:08:24.000000000 +1000
+@@ -287,12 +287,3 @@ struct seq_operations cpuinfo_op = {
+ 	.show	= show_cpuinfo,
+ };
+ 
+-void arch_gettod(int *year, int *mon, int *day, int *hour,
+-		 int *min, int *sec)
+-{
+-	if (mach_gettod)
+-		mach_gettod(year, mon, day, hour, min, sec);
+-	else
+-		*year = *mon = *day = *hour = *min = *sec = 0;
+-}
+-
+diff -Naurp linux-2.6.23/arch/m68knommu/kernel/time.c linux-2.6.23.timers/arch/m68knommu/kernel/time.c
+--- linux-2.6.23/arch/m68knommu/kernel/time.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/kernel/time.c	2007-10-19 15:08:24.000000000 +1000
+@@ -27,7 +27,6 @@
+ 
+ #define	TICK_SIZE (tick_nsec / 1000)
+ 
+-
+ static inline int set_rtc_mmss(unsigned long nowtime)
+ {
+ 	if (mach_set_clock_mmss)
+@@ -39,15 +38,11 @@ static inline int set_rtc_mmss(unsigned 
+  * timer_interrupt() needs to keep up the real-time clock,
+  * as well as call the "do_timer()" routine every clocktick
+  */
+-static irqreturn_t timer_interrupt(int irq, void *dummy)
++irqreturn_t arch_timer_interrupt(int irq, void *dummy)
+ {
+ 	/* last time the cmos clock got updated */
+ 	static long last_rtc_update=0;
+ 
+-	/* may need to kick the hardware timer */
+-	if (mach_tick)
+-	  mach_tick();
+-
+ 	write_seqlock(&xtime_lock);
+ 
+ 	do_timer(1);
+@@ -103,10 +98,10 @@ void time_init(void)
+ {
+ 	unsigned int year, mon, day, hour, min, sec;
+ 
+-	extern void arch_gettod(int *year, int *mon, int *day, int *hour,
+-				int *min, int *sec);
+-
+-	arch_gettod(&year, &mon, &day, &hour, &min, &sec);
++	if (mach_gettod)
++		mach_gettod(&year, &mon, &day, &hour, &min, &sec);
++	else
++		year = mon = day = hour = min = sec = 0;
+ 
+ 	if ((year += 1900) < 1970)
+ 		year += 100;
+@@ -114,7 +109,7 @@ void time_init(void)
+ 	xtime.tv_nsec = 0;
+ 	wall_to_monotonic.tv_sec = -xtime.tv_sec;
+ 
+-	mach_sched_init(timer_interrupt);
++	hw_timer_init();
+ }
+ 
+ /*
+@@ -128,7 +123,7 @@ void do_gettimeofday(struct timeval *tv)
+ 
+ 	do {
+ 		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = mach_gettimeoffset ? mach_gettimeoffset() : 0;
++		usec = hw_timer_offset();
+ 		sec = xtime.tv_sec;
+ 		usec += (xtime.tv_nsec / 1000);
+ 	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+@@ -160,8 +155,7 @@ int do_settimeofday(struct timespec *tv)
+ 	 * Discover what correction gettimeofday
+ 	 * would have done, and then undo it!
+ 	 */
+-	if (mach_gettimeoffset)
+-		nsec -= (mach_gettimeoffset() * 1000);
++	nsec -= (hw_timer_offset() * 1000);
+ 
+ 	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+ 	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5206/config.c linux-2.6.23.timers/arch/m68knommu/platform/5206/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5206/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5206/config.c	2007-10-19 15:11:38.000000000 +1000
+@@ -10,13 +10,10 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcftimer.h>
+@@ -25,9 +22,6 @@
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -97,9 +91,6 @@ int mcf_timerirqpending(int timer)
+ void config_BSP(char *commandp, int size)
+ {
+ 	mcf_setimr(MCFSIM_IMR_MASKALL);
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5206e/config.c linux-2.6.23.timers/arch/m68knommu/platform/5206e/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5206e/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5206e/config.c	2007-10-19 15:12:33.000000000 +1000
+@@ -9,23 +9,16 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -102,9 +95,6 @@ void config_BSP(char *commandp, int size
+ 	commandp[size-1] = 0;
+ #endif /* CONFIG_NETtel */
+ 
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/520x/config.c linux-2.6.23.timers/arch/m68knommu/platform/520x/config.c
+--- linux-2.6.23/arch/m68knommu/platform/520x/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/520x/config.c	2007-10-19 15:13:13.000000000 +1000
+@@ -27,9 +27,6 @@ unsigned int dma_device_address[MAX_M68K
+ 
+ /***************************************************************************/
+ 
+-void coldfire_pit_tick(void);
+-void coldfire_pit_init(irq_handler_t handler);
+-unsigned long coldfire_pit_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -47,10 +44,7 @@ void mcf_autovector(unsigned int vec)
+ 
+ void config_BSP(char *commandp, int size)
+ {
+-    mach_sched_init = coldfire_pit_init;
+-    mach_tick = coldfire_pit_tick;
+-    mach_gettimeoffset = coldfire_pit_offset;
+-    mach_reset = coldfire_reset;
++	mach_reset = coldfire_reset;
+ }
+ 
+ /***************************************************************************/
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/523x/config.c linux-2.6.23.timers/arch/m68knommu/platform/523x/config.c
+--- linux-2.6.23/arch/m68knommu/platform/523x/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/523x/config.c	2007-10-19 15:13:57.000000000 +1000
+@@ -13,12 +13,10 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcfsim.h>
+@@ -26,9 +24,6 @@
+ 
+ /***************************************************************************/
+ 
+-void coldfire_pit_tick(void);
+-void coldfire_pit_init(irq_handler_t handler);
+-unsigned long coldfire_pit_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -62,9 +57,6 @@ void mcf_autovector(unsigned int vec)
+ void config_BSP(char *commandp, int size)
+ {
+ 	mcf_disableall();
+-	mach_sched_init = coldfire_pit_init;
+-	mach_tick = coldfire_pit_tick;
+-	mach_gettimeoffset = coldfire_pit_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5249/config.c linux-2.6.23.timers/arch/m68knommu/platform/5249/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5249/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5249/config.c	2007-10-19 15:14:24.000000000 +1000
+@@ -9,24 +9,17 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -95,9 +88,6 @@ int mcf_timerirqpending(int timer)
+ void config_BSP(char *commandp, int size)
+ {
+ 	mcf_setimr(MCFSIM_IMR_MASKALL);
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5272/config.c linux-2.6.23.timers/arch/m68knommu/platform/5272/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5272/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5272/config.c	2007-10-19 15:15:14.000000000 +1000
+@@ -10,24 +10,17 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ extern unsigned int mcf_timervector;
+@@ -128,9 +121,6 @@ void config_BSP(char *commandp, int size
+ 
+ 	mcf_timervector = 69;
+ 	mcf_profilevector = 70;
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/527x/config.c linux-2.6.23.timers/arch/m68knommu/platform/527x/config.c
+--- linux-2.6.23/arch/m68knommu/platform/527x/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/527x/config.c	2007-10-19 15:15:33.000000000 +1000
+@@ -13,12 +13,10 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcfsim.h>
+@@ -26,9 +24,6 @@
+ 
+ /***************************************************************************/
+ 
+-void coldfire_pit_tick(void);
+-void coldfire_pit_init(irq_handler_t handler);
+-unsigned long coldfire_pit_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -62,9 +57,6 @@ void mcf_autovector(unsigned int vec)
+ void config_BSP(char *commandp, int size)
+ {
+ 	mcf_disableall();
+-	mach_sched_init = coldfire_pit_init;
+-	mach_tick = coldfire_pit_tick;
+-	mach_gettimeoffset = coldfire_pit_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/528x/config.c linux-2.6.23.timers/arch/m68knommu/platform/528x/config.c
+--- linux-2.6.23/arch/m68knommu/platform/528x/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/528x/config.c	2007-10-19 15:16:14.000000000 +1000
+@@ -13,12 +13,10 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcfsim.h>
+@@ -26,9 +24,6 @@
+ 
+ /***************************************************************************/
+ 
+-void coldfire_pit_tick(void);
+-void coldfire_pit_init(irq_handler_t handler);
+-unsigned long coldfire_pit_offset(void);
+ void coldfire_reset(void);
+ 
+ /***************************************************************************/
+@@ -62,9 +57,6 @@ void mcf_autovector(unsigned int vec)
+ void config_BSP(char *commandp, int size)
+ {
+ 	mcf_disableall();
+-	mach_sched_init = coldfire_pit_init;
+-	mach_tick = coldfire_pit_tick;
+-	mach_gettimeoffset = coldfire_pit_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5307/config.c linux-2.6.23.timers/arch/m68knommu/platform/5307/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5307/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5307/config.c	2007-10-19 15:16:57.000000000 +1000
+@@ -10,25 +10,18 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ #include <asm/mcfwdebug.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ extern unsigned int mcf_timervector;
+@@ -122,9 +115,6 @@ void config_BSP(char *commandp, int size
+ 	mcf_timerlevel = 6;
+ #endif
+ 
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ 
+ #ifdef MCF_BDM_DISABLE
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5307/pit.c linux-2.6.23.timers/arch/m68knommu/platform/5307/pit.c
+--- linux-2.6.23/arch/m68knommu/platform/5307/pit.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5307/pit.c	2007-10-19 15:04:28.000000000 +1000
+@@ -17,6 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
++#include <asm/machdep.h>
+ #include <asm/io.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcfpit.h>
+@@ -31,28 +32,30 @@
+ 
+ /***************************************************************************/
+ 
+-void coldfire_pit_tick(void)
++static irqreturn_t hw_tick(int irq, void *dummy)
+ {
+ 	unsigned short pcsr;
+ 
+ 	/* Reset the ColdFire timer */
+ 	pcsr = __raw_readw(TA(MCFPIT_PCSR));
+ 	__raw_writew(pcsr | MCFPIT_PCSR_PIF, TA(MCFPIT_PCSR));
 +
-+/*
-+ *	mcf.c -- Freescale ColdFire UART driver
-+ *
-+ *	(C) Copyright 2003-2007, Greg Ungerer <gerg@snapgear.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+/****************************************************************************/
-+
-+#include <linux/kernel.h>
++	return arch_timer_interrupt(irq, dummy);
+ }
+ 
+ /***************************************************************************/
+ 
+ static struct irqaction coldfire_pit_irq = {
+-	.name    = "timer",
+-	.flags   = IRQF_DISABLED | IRQF_TIMER,
++	.name	 = "timer",
++	.flags	 = IRQF_DISABLED | IRQF_TIMER,
++	.handler = hw_tick,
+ };
+ 
+-void coldfire_pit_init(irq_handler_t handler)
++void hw_timer_init(void)
+ {
+ 	volatile unsigned char *icrp;
+ 	volatile unsigned long *imrp;
+ 
+-	coldfire_pit_irq.handler = handler;
+ 	setup_irq(MCFINT_VECBASE + MCFINT_PIT1, &coldfire_pit_irq);
+ 
+ 	icrp = (volatile unsigned char *) (MCF_IPSBAR + MCFICM_INTC0 +
+@@ -71,7 +74,7 @@ void coldfire_pit_init(irq_handler_t han
+ 
+ /***************************************************************************/
+ 
+-unsigned long coldfire_pit_offset(void)
++unsigned long hw_timer_offset(void)
+ {
+ 	volatile unsigned long *ipr;
+ 	unsigned long pmr, pcntr, offset;
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5307/timers.c linux-2.6.23.timers/arch/m68knommu/platform/5307/timers.c
+--- linux-2.6.23/arch/m68knommu/platform/5307/timers.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5307/timers.c	2007-10-19 15:07:36.000000000 +1000
+@@ -9,10 +9,9 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/console.h>
-+#include <linux/tty.h>
-+#include <linux/tty_flip.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#include <linux/io.h>
-+#include <asm/coldfire.h>
-+#include <asm/mcfsim.h>
-+#include <asm/mcfuart.h>
-+#include <asm/nettel.h>
-+
-+/****************************************************************************/
-+
-+/*
-+ *	Some boards implement the DTR/DCD lines using GPIO lines, most
-+ *	don't. Dummy out the access macros for those that don't. Those
-+ *	that do should define these macros somewhere in there board
-+ *	specific inlude files.
-+ */
-+#if !defined(mcf_getppdcd)
-+#define	mcf_getppdcd(p)		(1)
-+#endif
-+#if !defined(mcf_getppdtr)
-+#define	mcf_getppdtr(p)		(1)
-+#endif
-+#if !defined(mcf_setppdtr)
-+#define	mcf_setppdtr(p, v)	do { } while (0)
-+#endif
-+
-+/****************************************************************************/
-+
-+/*
-+ *	Local per-uart structure.
-+ */
-+struct mcf_uart {
-+	struct uart_port	port;
-+	unsigned int		sigs;		/* Local copy of line sigs */
-+	unsigned char		imr;		/* Local IMR mirror */
-+};
-+
-+/****************************************************************************/
-+
-+static unsigned int mcf_tx_empty(struct uart_port *port)
-+{
-+	return (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXEMPTY) ?
-+		TIOCSER_TEMT : 0;
-+}
-+
-+/****************************************************************************/
-+
-+static unsigned int mcf_get_mctrl(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+	unsigned int sigs;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	sigs = (readb(port->membase + MCFUART_UIPR) & MCFUART_UIPR_CTS) ?
-+		0 : TIOCM_CTS;
-+	sigs |= (pp->sigs & TIOCM_RTS);
-+	sigs |= (mcf_getppdcd(port->line) ? TIOCM_CD : 0);
-+	sigs |= (mcf_getppdtr(port->line) ? TIOCM_DTR : 0);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+	return sigs;
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_set_mctrl(struct uart_port *port, unsigned int sigs)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	pp->sigs = sigs;
-+	mcf_setppdtr(port->line, (sigs & TIOCM_DTR));
-+	if (sigs & TIOCM_RTS)
-+		writeb(MCFUART_UOP_RTS, port->membase + MCFUART_UOP1);
-+	else
-+		writeb(MCFUART_UOP_RTS, port->membase + MCFUART_UOP0);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_start_tx(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	pp->imr |= MCFUART_UIR_TXREADY;
-+	writeb(pp->imr, port->membase + MCFUART_UIMR);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_stop_tx(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	pp->imr &= ~MCFUART_UIR_TXREADY;
-+	writeb(pp->imr, port->membase + MCFUART_UIMR);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_stop_rx(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	pp->imr &= ~MCFUART_UIR_RXREADY;
-+	writeb(pp->imr, port->membase + MCFUART_UIMR);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_break_ctl(struct uart_port *port, int break_state)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	if (break_state == -1)
-+		writeb(MCFUART_UCR_CMDBREAKSTART, port->membase + MCFUART_UCR);
-+	else
-+		writeb(MCFUART_UCR_CMDBREAKSTOP, port->membase + MCFUART_UCR);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_enable_ms(struct uart_port *port)
-+{
-+}
-+
-+/****************************************************************************/
-+
-+static int mcf_startup(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+
-+	/* Reset UART, get it into known state... */
-+	writeb(MCFUART_UCR_CMDRESETRX, port->membase + MCFUART_UCR);
-+	writeb(MCFUART_UCR_CMDRESETTX, port->membase + MCFUART_UCR);
-+
-+	/* Enable the UART transmitter and receiver */
-+	writeb(MCFUART_UCR_RXENABLE | MCFUART_UCR_TXENABLE,
-+		port->membase + MCFUART_UCR);
-+
-+	/* Enable RX interrupts now */
-+	pp->imr = MCFUART_UIR_RXREADY;
-+	writeb(pp->imr, port->membase + MCFUART_UIMR);
-+
-+	spin_unlock_irqrestore(&port->lock, flags);
-+
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_shutdown(struct uart_port *port)
-+{
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+
-+	/* Disable all interrupts now */
-+	pp->imr = 0;
-+	writeb(pp->imr, port->membase + MCFUART_UIMR);
-+
-+	/* Disable UART transmitter and receiver */
-+	writeb(MCFUART_UCR_CMDRESETRX, port->membase + MCFUART_UCR);
-+	writeb(MCFUART_UCR_CMDRESETTX, port->membase + MCFUART_UCR);
-+
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_set_termios(struct uart_port *port, struct ktermios *termios,
-+	struct ktermios *old)
-+{
-+	unsigned long flags;
-+	unsigned int baud, baudclk;
-+	unsigned char mr1, mr2;
-+
-+	baud = uart_get_baud_rate(port, termios, old, 0, 230400);
-+	baudclk = ((MCF_BUSCLK / baud) + 16) / 32;
-+
-+	mr1 = MCFUART_MR1_RXIRQRDY | MCFUART_MR1_RXERRCHAR;
-+	mr2 = 0;
-+
-+	switch (termios->c_cflag & CSIZE) {
-+	case CS5: mr1 |= MCFUART_MR1_CS5; break;
-+	case CS6: mr1 |= MCFUART_MR1_CS6; break;
-+	case CS7: mr1 |= MCFUART_MR1_CS7; break;
-+	case CS8:
-+	default:  mr1 |= MCFUART_MR1_CS8; break;
-+	}
-+
-+	if (termios->c_cflag & PARENB) {
-+		if (termios->c_cflag & CMSPAR) {
-+			if (termios->c_cflag & PARODD)
-+				mr1 |= MCFUART_MR1_PARITYMARK;
-+			else
-+				mr1 |= MCFUART_MR1_PARITYSPACE;
-+		} else {
-+			if (termios->c_cflag & PARODD)
-+				mr1 |= MCFUART_MR1_PARITYODD;
-+			else
-+				mr1 |= MCFUART_MR1_PARITYEVEN;
-+		}
-+	} else {
-+		mr1 |= MCFUART_MR1_PARITYNONE;
-+	}
-+
-+	if (termios->c_cflag & CSTOPB)
-+		mr2 |= MCFUART_MR2_STOP2;
-+	else
-+		mr2 |= MCFUART_MR2_STOP1;
-+
-+	if (termios->c_cflag & CRTSCTS) {
-+		mr1 |= MCFUART_MR1_RXRTS;
-+		mr2 |= MCFUART_MR2_TXCTS;
-+	}
-+
-+	spin_lock_irqsave(&port->lock, flags);
-+	writeb(MCFUART_UCR_CMDRESETRX, port->membase + MCFUART_UCR);
-+	writeb(MCFUART_UCR_CMDRESETTX, port->membase + MCFUART_UCR);
-+	writeb(MCFUART_UCR_CMDRESETMRPTR, port->membase + MCFUART_UCR);
-+	writeb(mr1, port->membase + MCFUART_UMR);
-+	writeb(mr2, port->membase + MCFUART_UMR);
-+	writeb((baudclk & 0xff00) >> 8, port->membase + MCFUART_UBG1);
-+	writeb((baudclk & 0xff), port->membase + MCFUART_UBG2);
-+	writeb(MCFUART_UCSR_RXCLKTIMER | MCFUART_UCSR_TXCLKTIMER,
-+		port->membase + MCFUART_UCSR);
-+	writeb(MCFUART_UCR_RXENABLE | MCFUART_UCR_TXENABLE,
-+		port->membase + MCFUART_UCR);
-+	spin_unlock_irqrestore(&port->lock, flags);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_rx_chars(struct mcf_uart *pp)
-+{
-+	struct uart_port *port = (struct uart_port *) pp;
-+	unsigned char status, ch, flag;
-+
-+	while ((status = readb(port->membase + MCFUART_USR)) & MCFUART_USR_RXREADY) {
-+		ch = readb(port->membase + MCFUART_URB);
-+		flag = TTY_NORMAL;
-+		port->icount.rx++;
-+
-+		if (status & MCFUART_USR_RXERR) {
-+			writeb(MCFUART_UCR_CMDRESETERR,
-+				port->membase + MCFUART_UCR);
-+
-+			if (status & MCFUART_USR_RXBREAK) {
-+				port->icount.brk++;
-+				if (uart_handle_break(port))
-+					continue;
-+			} else if (status & MCFUART_USR_RXPARITY) {
-+				port->icount.parity++;
-+			} else if (status & MCFUART_USR_RXOVERRUN) {
-+				port->icount.overrun++;
-+			} else if (status & MCFUART_USR_RXFRAMING) {
-+				port->icount.frame++;
-+			}
-+
-+			status &= port->read_status_mask;
-+
-+			if (status & MCFUART_USR_RXBREAK)
-+				flag = TTY_BREAK;
-+			else if (status & MCFUART_USR_RXPARITY)
-+				flag = TTY_PARITY;
-+			else if (status & MCFUART_USR_RXFRAMING)
-+				flag = TTY_FRAME;
-+		}
-+
-+		if (uart_handle_sysrq_char(port, ch))
-+			continue;
-+		uart_insert_char(port, status, MCFUART_USR_RXOVERRUN, ch, flag);
-+	}
-+
-+	tty_flip_buffer_push(port->info->tty);
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_tx_chars(struct mcf_uart *pp)
-+{
-+	struct uart_port *port = (struct uart_port *) pp;
-+	struct circ_buf *xmit = &port->info->xmit;
-+
-+	if (port->x_char) {
-+		/* Send special char - probably flow control */
-+		writeb(port->x_char, port->membase + MCFUART_UTB);
-+		port->x_char = 0;
-+		port->icount.tx++;
-+		return;
-+	}
-+
-+	while (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY) {
-+		if (xmit->head == xmit->tail)
-+			break;
-+		writeb(xmit->buf[xmit->tail], port->membase + MCFUART_UTB);
-+		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE -1);
-+		port->icount.tx++;
-+	}
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(port);
-+
-+	if (xmit->head == xmit->tail) {
-+		pp->imr &= ~MCFUART_UIR_TXREADY;
-+		writeb(pp->imr, port->membase + MCFUART_UIMR);
-+	}
-+}
-+
-+/****************************************************************************/
-+
-+static irqreturn_t mcf_interrupt(int irq, void *data)
-+{
-+	struct uart_port *port = data;
-+	struct mcf_uart *pp = (struct mcf_uart *) port;
-+	unsigned int isr;
-+
-+	isr = readb(port->membase + MCFUART_UISR) & pp->imr;
-+	if (isr & MCFUART_UIR_RXREADY)
-+		mcf_rx_chars(pp);
-+	if (isr & MCFUART_UIR_TXREADY)
-+		mcf_tx_chars(pp);
-+	return IRQ_HANDLED;
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_config_port(struct uart_port *port, int flags)
-+{
-+	port->type = PORT_MCF;
-+
-+	/* Clear mask, so no surprise interrupts. */
-+	writeb(0, port->membase + MCFUART_UIMR);
-+
-+	if (request_irq(port->irq, mcf_interrupt, IRQF_DISABLED, "UART", port))
-+		printk(KERN_ERR "MCF: unable to attach ColdFire UART %d "
-+			"interrupt vector=%d\n", port->line, port->irq);
-+}
-+
-+/****************************************************************************/
-+
-+static const char *mcf_type(struct uart_port *port)
-+{
-+	return (port->type == PORT_MCF) ? "ColdFire UART" : NULL;
-+}
-+
-+/****************************************************************************/
-+
-+static int mcf_request_port(struct uart_port *port)
-+{
-+	/* UARTs always present */
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_release_port(struct uart_port *port)
-+{
-+	/* Nothing to release... */
-+}
-+
-+/****************************************************************************/
-+
-+static int mcf_verify_port(struct uart_port *port, struct serial_struct *ser)
-+{
-+	if ((ser->type != PORT_UNKNOWN) && (ser->type != PORT_MCF))
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+/*
-+ *	Define the basic serial functions we support.
-+ */
-+static struct uart_ops mcf_uart_ops = {
-+	.tx_empty	= mcf_tx_empty,
-+	.get_mctrl	= mcf_get_mctrl,
-+	.set_mctrl	= mcf_set_mctrl,
-+	.start_tx	= mcf_start_tx,
-+	.stop_tx	= mcf_stop_tx,
-+	.stop_rx	= mcf_stop_rx,
-+	.enable_ms	= mcf_enable_ms,
-+	.break_ctl	= mcf_break_ctl,
-+	.startup	= mcf_startup,
-+	.shutdown	= mcf_shutdown,
-+	.set_termios	= mcf_set_termios,
-+	.type		= mcf_type,
-+	.request_port	= mcf_request_port,
-+	.release_port	= mcf_release_port,
-+	.config_port	= mcf_config_port,
-+	.verify_port	= mcf_verify_port,
-+};
-+
-+static struct mcf_uart mcf_ports[3];
-+
-+#define	MCF_MAXPORTS	(sizeof(mcf_ports) / sizeof(struct mcf_uart))
-+
-+/****************************************************************************/
-+#if defined(CONFIG_SERIAL_MCF_CONSOLE)
-+/****************************************************************************/
-+
-+int __init early_mcf_setup(struct mcf_platform_uart *platp)
-+{
-+	struct uart_port *port;
-+	int i;
-+
-+	for (i = 0; ((i < MCF_MAXPORTS) && (platp[i].mapbase)); i++) {
-+		port = &mcf_ports[i].port;
-+
-+		port->line = i;
-+		port->type = PORT_MCF;
-+		port->mapbase = platp[i].mapbase;
-+		port->membase = (platp[i].membase) ? platp[i].membase :
-+			(unsigned char __iomem *) port->mapbase;
-+		port->iotype = SERIAL_IO_MEM;
-+		port->irq = platp[i].irq;
-+		port->uartclk = MCF_BUSCLK;
-+		port->flags = ASYNC_BOOT_AUTOCONF;
-+		port->ops = &mcf_uart_ops;
-+	}
-+
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_console_putc(struct console *co, const char c)
-+{
-+	struct uart_port *port = &(mcf_ports + co->index)->port;
-+	int i;
-+
-+	for (i = 0; (i < 0x10000); i++) {
-+		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY)
-+			break;
-+	}
-+	writeb(c, port->membase + MCFUART_UTB);
-+	for (i = 0; (i < 0x10000); i++) {
-+		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY)
-+			break;
-+	}
-+}
-+
-+/****************************************************************************/
-+
-+static void mcf_console_write(struct console *co, const char *s, unsigned int count)
-+{
-+	for (; (count); count--, s++) {
-+		mcf_console_putc(co, *s);
-+		if (*s == '\n')
-+			mcf_console_putc(co, '\r');
-+	}
-+}
-+
-+/****************************************************************************/
-+
-+static int __init mcf_console_setup(struct console *co, char *options)
-+{
-+	struct uart_port *port;
-+	int baud = CONFIG_SERIAL_MCF_BAUDRATE;
-+	int bits = 8;
-+	int parity = 'n';
-+	int flow = 'n';
-+
-+	if ((co->index >= 0) && (co->index <= MCF_MAXPORTS))
-+		co->index = 0;
-+	port = &mcf_ports[co->index].port;
-+	if (port->membase == 0)
-+		return -ENODEV;
-+
-+	if (options)
-+		uart_parse_options(options, &baud, &parity, &bits, &flow);
-+
-+	return uart_set_options(port, co, baud, parity, bits, flow);
-+}
-+
-+/****************************************************************************/
-+
-+static struct uart_driver mcf_driver;
-+
-+static struct console mcf_console = {
-+	.name		= "ttyS",
-+	.write		= mcf_console_write,
-+	.device		= uart_console_device,
-+	.setup		= mcf_console_setup,
-+	.flags		= CON_PRINTBUFFER,
-+	.index		= -1,
-+	.data		= &mcf_driver,
-+};
-+
-+static int __init mcf_console_init(void)
-+{
-+	register_console(&mcf_console);
-+	return 0;
-+}
-+
-+console_initcall(mcf_console_init);
-+
-+#define	MCF_CONSOLE	&mcf_console
-+
-+/****************************************************************************/
-+#else
-+/****************************************************************************/
-+
-+#define	MCF_CONSOLE	NULL
-+
-+/****************************************************************************/
-+#endif /* CONFIG_MCF_CONSOLE */
-+/****************************************************************************/
-+
-+/*
-+ *	Define the mcf UART driver structure.
-+ */
-+static struct uart_driver mcf_driver = {
-+	.owner		= THIS_MODULE,
-+	.driver_name	= "mcf",
-+	.dev_name	= "ttyS",
-+	.major		= TTY_MAJOR,
-+	.minor		= 64,
-+	.nr		= MCF_MAXPORTS,
-+	.cons		= MCF_CONSOLE,
-+};
-+
-+/****************************************************************************/
-+
-+static int __devinit mcf_probe(struct platform_device *pdev)
-+{
-+	struct mcf_platform_uart *platp = pdev->dev.platform_data;
-+	struct uart_port *port;
-+	int i;
-+
-+	for (i = 0; ((i < MCF_MAXPORTS) && (platp[i].mapbase)); i++) {
-+		port = &mcf_ports[i].port;
-+
-+		port->line = i;
-+		port->type = PORT_MCF;
-+		port->mapbase = platp[i].mapbase;
-+		port->membase = (platp[i].membase) ? platp[i].membase :
-+			(unsigned char __iomem *) platp[i].mapbase;
-+		port->iotype = SERIAL_IO_MEM;
-+		port->irq = platp[i].irq;
-+		port->uartclk = MCF_BUSCLK;
-+		port->ops = &mcf_uart_ops;
-+		port->flags = ASYNC_BOOT_AUTOCONF;
-+
-+		uart_add_one_port(&mcf_driver, port);
-+	}
-+
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static int mcf_remove(struct platform_device *pdev)
-+{
-+	struct uart_port *port;
-+	int i;
-+
-+	for (i = 0; (i < MCF_MAXPORTS); i++) {
-+		port = &mcf_ports[i].port;
-+		if (port)
-+			uart_remove_one_port(&mcf_driver, port);
-+	}
-+
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static struct platform_driver mcf_platform_driver = {
-+	.probe		= mcf_probe,
-+	.remove		= __devexit_p(mcf_remove),
-+	.driver		= {
-+		.name	= "mcfuart",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+/****************************************************************************/
-+
-+static int __init mcf_init(void)
-+{
-+	int rc;
-+
-+	printk("ColdFire internal UART serial driver\n");
-+
-+	rc = uart_register_driver(&mcf_driver);
-+	if (rc)
-+		return rc;
-+	rc = platform_driver_register(&mcf_platform_driver);
-+	if (rc)
-+		return rc;
-+	return 0;
-+}
-+
-+/****************************************************************************/
-+
-+static void __exit mcf_exit(void)
-+{
-+	platform_driver_unregister(&mcf_platform_driver);
-+	uart_unregister_driver(&mcf_driver);
-+}
-+
-+/****************************************************************************/
-+
-+module_init(mcf_init);
-+module_exit(mcf_exit);
-+
-+MODULE_AUTHOR("Greg Ungerer <gerg@snapgear.com>");
-+MODULE_DESCRIPTION("Freescale ColdFire UART driver");
-+MODULE_LICENSE("GPL");
-+
-+/****************************************************************************/
+ #include <linux/sched.h>
+-#include <linux/param.h>
+ #include <linux/interrupt.h>
+-#include <linux/init.h>
+ #include <linux/irq.h>
+ #include <asm/io.h>
+ #include <asm/traps.h>
+@@ -54,24 +53,28 @@ extern int mcf_timerirqpending(int timer
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void)
++static irqreturn_t hw_tick(int irq, void *dummy)
+ {
+ 	/* Reset the ColdFire timer */
+ 	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, TA(MCFTIMER_TER));
++
++	return arch_timer_interrupt(irq, dummy);
+ }
+ 
+ /***************************************************************************/
+ 
+ static struct irqaction coldfire_timer_irq = {
+-        .name    = "timer",
+-        .flags   = IRQF_DISABLED | IRQF_TIMER,
++	.name	 = "timer",
++	.flags	 = IRQF_DISABLED | IRQF_TIMER,
++	.handler = hw_tick,
+ };
+ 
++/***************************************************************************/
++
+ static int ticks_per_intr;
+ 
+-void coldfire_timer_init(irq_handler_t handler)
++void hw_timer_init(void)
+ {
+-	coldfire_timer_irq.handler = handler;
+ 	setup_irq(mcf_timervector, &coldfire_timer_irq);
+ 
+ 	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
+@@ -89,7 +92,7 @@ void coldfire_timer_init(irq_handler_t h
+ 
+ /***************************************************************************/
+ 
+-unsigned long coldfire_timer_offset(void)
++unsigned long hw_timer_offset(void)
+ {
+ 	unsigned long tcn, offset;
+ 
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/532x/config.c linux-2.6.23.timers/arch/m68knommu/platform/532x/config.c
+--- linux-2.6.23/arch/m68knommu/platform/532x/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/532x/config.c	2007-10-19 15:17:53.000000000 +1000
+@@ -18,25 +18,18 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ #include <asm/mcfwdebug.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ extern unsigned int mcf_timervector;
+@@ -104,9 +97,6 @@ void config_BSP(char *commandp, int size
+ 
+ 	mcf_timervector = 64+32;
+ 	mcf_profilevector = 64+33;
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ 
+ #ifdef MCF_BDM_DISABLE
+diff -Naurp linux-2.6.23/arch/m68knommu/platform/5407/config.c linux-2.6.23.timers/arch/m68knommu/platform/5407/config.c
+--- linux-2.6.23/arch/m68knommu/platform/5407/config.c	2007-10-10 06:31:38.000000000 +1000
++++ linux-2.6.23.timers/arch/m68knommu/platform/5407/config.c	2007-10-19 15:18:11.000000000 +1000
+@@ -10,24 +10,17 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/irq.h>
+ #include <asm/dma.h>
+-#include <asm/traps.h>
+ #include <asm/machdep.h>
+ #include <asm/coldfire.h>
+-#include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+ 
+ /***************************************************************************/
+ 
+-void coldfire_tick(void);
+-void coldfire_timer_init(irq_handler_t handler);
+-unsigned long coldfire_timer_offset(void);
+ void coldfire_reset(void);
+ 
+ extern unsigned int mcf_timervector;
+@@ -108,9 +101,6 @@ void config_BSP(char *commandp, int size
+ 	mcf_timerlevel = 6;
+ #endif
+ 
+-	mach_sched_init = coldfire_timer_init;
+-	mach_tick = coldfire_tick;
+-	mach_gettimeoffset = coldfire_timer_offset;
+ 	mach_reset = coldfire_reset;
+ }
+ 
