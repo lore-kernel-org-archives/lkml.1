@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbXJWVqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbXJWVqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbXJWVqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXJWVqV
+	id S1755279AbXJWVqo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXJWVqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:46:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36072 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752597AbXJWVqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:46:19 -0400
-Date: Tue, 23 Oct 2007 14:46:15 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: menage@google.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, mingo@elte.hu, dmitry.adamushko@gmail.com,
-       ghaskins@novell.com, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
-Message-Id: <20071023144615.89ed9c86.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.58.0710230844040.29506@gandalf.stny.rr.com>
-References: <20071023025900.927578809@goodmis.org>
-	<20071023032916.651749224@goodmis.org>
-	<20071022211709.7be79fea.pj@sgi.com>
-	<6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
-	<Pine.LNX.4.58.0710230844040.29506@gandalf.stny.rr.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 17:46:25 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5945 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753365AbXJWVqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:46:24 -0400
+Date: Tue, 23 Oct 2007 23:46:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071023214618.GO14671@kernel.dk>
+References: <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <20071023103351.GA2795@elte.hu> <20071023105615.GI5059@kernel.dk> <20071023112738.GA13847@elte.hu> <Pine.LNX.4.64.0710232120080.21337@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710232120080.21337@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven wrote:
-> Ingo Molnar and Peter Zijlstra pointed out to me that this global cpumask
-> would kill performance on >64 CPU boxes due to cacheline bouncing. To
-> solve this issue, I placed the RT overload mask into the cpusets.
+On Tue, Oct 23 2007, Geert Uytterhoeven wrote:
+> On Tue, 23 Oct 2007, Ingo Molnar wrote:
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > > Linus' latest tree, which has your SG-list enhancements included, 
+> > > > certainly works fine here and does not have the problems of the 
+> > > > first iteration.
+> > > 
+> > > That's good to hear :-)
+> > > 
+> > > I have a series of pending patches where I've collected fallout 
+> > > patches from people and some from myself here:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=sg
+> > > 
+> > > or pullable from
+> > > 
+> > > git://git.kernel.dk/inux-2.6-block.git sg
+> > 
+> > i've attached your fixes as a diff against linus-latest below - for 
+> > those who'd like to have it in patch form.
+> 
+> The below are still needed for m68k
 
-This feels rather like sched domains to me (which I can't claim
-to understand very well.)  That is, you need to subdivide the
-overload masks, so as to avoid contention on a single mask in a
-large system, making the tradeoff that you will sometimes resolve
-overloads less aggressively.
-
-With sched domains, we added cpuset code, that is only called in the
-infrequent event that the cpusets are reconfigured, to update the
-kernel's sched domains.  It hasn't been easy code, but at least the
-main line scheduler code paths remain oblivious to cpusets.
-
-Can you create "RT domains", each with their own overload mask?
-Perhaps even attach the overload masks to the existing sched domains?
-
-The essential approach here, as with all things involving cpusets and
-the scheduler, is to not have the scheduler code access cpusets, but
-rather to have the scheduler code have its own controlling data
-structures, which it can access with locking suitable to its fast path
-requirements, and then have the cpuset code ~~delicately~~ update those
-structures on the infrequent occassion that something changes in the
-cpuset configuration.
+OK, added. Thanks!
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Jens Axboe
+
