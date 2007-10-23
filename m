@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbXJWFpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXJWFro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbXJWFpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 01:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXJWFpB
+	id S1752929AbXJWFro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 01:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbXJWFrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 01:45:01 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:50782 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbXJWFpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 01:45:00 -0400
-Message-ID: <471D8A4C.3020101@debian.org>
-Date: Tue, 23 Oct 2007 07:44:44 +0200
-From: Giacomo Catenazzi <cate@debian.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Tue, 23 Oct 2007 01:47:35 -0400
+Received: from lixom.net ([66.141.50.11]:58752 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751848AbXJWFre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 01:47:34 -0400
+Date: Tue, 23 Oct 2007 00:54:39 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Joachim Fenkes <fenkes@de.ibm.com>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: Re: IB/ehca: Fix sg_page() fallout
+Message-ID: <20071023055439.GA22426@lixom.net>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <20071023040948.GA19699@lixom.net> <20071023043148.GA20904@lixom.net> <20071023050512.GK16425@kernel.dk>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: LSM conversion to static interface
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023050512.GK16425@kernel.dk>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
 
-> I do have a pseudo LSM called "multiadm" at 
-> http://freshmeat.net/p/multiadm/ , quoting:
+More fallout from sg_page changes:
 
-> Policy is dead simple since it is based on UIDs. The UID ranges can be 
-> set on module load time or during runtime (sysfs params). This LSM is 
-> basically grants extra rights unlike most other LSMs[1], which is why 
-> modprobe makes much more sense here. (It also does not have to do any 
-> security labelling that would require it to be loaded at boot time 
-> already.)
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user1':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1779: error: 'struct scatterlist' has no member named 'page'
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_check_kpages_per_ate':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1835: error: 'struct scatterlist' has no member named 'page'
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user2':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1870: error: 'struct scatterlist' has no member named 'page'
 
-But his is against LSM design (and first agreements about LSM):
-LSM can deny rights, but it should not give extra permissions
-or bypass standard unix permissions.
 
-ciao
-	cate
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+---
+
+On Tue, Oct 23, 2007 at 07:05:12AM +0200, Jens Axboe wrote:
+> On Mon, Oct 22 2007, Olof Johansson wrote:
+> > More fallout from sg_page changes, found with powerpc allyesconfig:
+> > 
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user1':
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c:1779: error: 'struct scatterlist' has no member named 'page'
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_check_kpages_per_ate':
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c:1835: error: 'struct scatterlist' has no member named 'page'
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user2':
+> > drivers/infiniband/hw/ehca/ehca_mrmw.c:1870: error: 'struct scatterlist' has no member named 'page'
+> 
+> Thanks a lot Olof, applied both fixups!
+
+I messed up the second fix. :( please replace with this.
+
+
+-Olof
+
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+index da88738..ead7230 100644
+--- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
++++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+@@ -1776,7 +1776,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 	list_for_each_entry_continue(
+ 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
+ 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
+-			pgaddr = page_to_pfn(chunk->page_list[i].page)
++			pgaddr = page_to_pfn(sg_page(&chunk->page_list[i]))
+ 				<< PAGE_SHIFT ;
+ 			*kpage = phys_to_abs(pgaddr +
+ 					     (pginfo->next_hwpage *
+@@ -1832,7 +1832,7 @@ static int ehca_check_kpages_per_ate(struct scatterlist *page_list,
+ {
+ 	int t;
+ 	for (t = start_idx; t <= end_idx; t++) {
+-		u64 pgaddr = page_to_pfn(page_list[t].page) << PAGE_SHIFT;
++		u64 pgaddr = page_to_pfn(sg_page(&page_list[t])) << PAGE_SHIFT;
+ 		ehca_gen_dbg("chunk_page=%lx value=%016lx", pgaddr,
+ 			     *(u64 *)abs_to_virt(phys_to_abs(pgaddr)));
+ 		if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
+@@ -1867,7 +1867,7 @@ static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
+ 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
+ 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
+ 			if (nr_kpages == kpages_per_hwpage) {
+-				pgaddr = ( page_to_pfn(chunk->page_list[i].page)
++				pgaddr = ( page_to_pfn(sg_page(&chunk->page_list[i]))
+ 					   << PAGE_SHIFT );
+ 				*kpage = phys_to_abs(pgaddr);
+ 				if ( !(*kpage) ) {
