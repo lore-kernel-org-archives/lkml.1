@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXJWXEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXJWXFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbXJWXEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 19:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXJWXEJ
+	id S1754860AbXJWXFZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 19:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXJWXFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 19:04:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:61819 "EHLO mga03.intel.com"
+	Tue, 23 Oct 2007 19:05:14 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1456 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728AbXJWXEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 19:04:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,320,1188802800"; 
-   d="scan'208";a="304232210"
-Message-ID: <471E7DCA.9030700@intel.com>
-Date: Tue, 23 Oct 2007 16:03:38 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	id S1752367AbXJWXFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 19:05:13 -0400
+Date: Wed, 24 Oct 2007 01:05:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       linux-main <linux-kernel@vger.kernel.org>,
+       linuxsh <linuxsh-dev@lists.sourceforge.net>
+Subject: Re: [SUPERH] dma-mapping.h structure has no member named page
+Message-ID: <20071023230507.GP14671@kernel.dk>
+References: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Adam Jackson <ajax@redhat.com>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-References: <11931515302013-git-send-email-ajax@redhat.com> <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org> <20071023212026.GF7793@redhat.com>
-In-Reply-To: <20071023212026.GF7793@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Tue, Oct 23, 2007 at 04:40:01PM -0400, Jeff Garzik wrote:
+On Tue, Oct 23 2007, Kristoffer Ericson wrote:
+> Greetings,
 > 
->  > > In any case, this patch should not be merged. We often send it around to users to
->  > > debug their issue in case it involves eeproms, but merging it will just conceal
->  > > the real issue and all of a sudden a flood of people stop reporting *real* issues
->  > > to us.
->  > 
->  > Sorry, I disagree.  Just as with e100, if there is a clear way the user 
->  > can recover their setup -- and Adam says his was effective -- I don't 
->  > see why we should be denying users the ability to use their own hardware.
->  
-> Indeed. This is a common enough problem that not including it causes more pain
-> than its worth.  I have two affected boxes myself that I actually thought
-> the hardware was dead before I tried ajax's patch.
+> Got this after syncing my tree with linux-2.6.git.
+> 
+> In file included from include/linux/dma-mapping.h:52,
+>                  from include/linux/dmaengine.h:29,
+>                  from include/linux/skbuff.h:29,
+>                  from include/linux/netlink.h:155,
+>                  from include/linux/genetlink.h:4,
+>                  from include/net/genetlink.h:4,
+>                  from include/linux/taskstats_kern.h:12,
+>                  from init/main.c:46:
+> include/asm/dma-mapping.h: In function `dma_map_sg':
+> include/asm/dma-mapping.h:88: error: structure has no member named `page'
+> include/asm/dma-mapping.h:91: error: structure has no member named `page'
+> include/asm/dma-mapping.h: In function `dma_sync_sg':
+> include/asm/dma-mapping.h:141: error: structure has no member named `page'
+> include/asm/dma-mapping.h:144: error: structure has no member named `page'
+> make[1]: *** [init/main.o] Error 1
+> make: *** [init] Error 2
 
+Pull again, should be ok now.
 
-look: You should have reported this to us and you didn't. Now you are using the
-fact that you did not report it as an argument which is out of place.
+-- 
+Jens Axboe
 
-why do you say it is common? how often have you seen this and not reported it back
-to our support? are you willingly trying to frustrate this issue?
-
-
-Auke
