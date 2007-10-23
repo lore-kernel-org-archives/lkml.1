@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbXJWKeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbXJWKfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbXJWKeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 06:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXJWKeO
+	id S1753305AbXJWKfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXJWKfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 06:34:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34001 "EHLO mx2.mail.elte.hu"
+	Tue, 23 Oct 2007 06:35:11 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:46342 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751484AbXJWKeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 06:34:13 -0400
-Date: Tue, 23 Oct 2007 12:33:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071023103351.GA2795@elte.hu>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk>
-MIME-Version: 1.0
+	id S1751658AbXJWKfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 06:35:10 -0400
+Date: Tue, 23 Oct 2007 14:34:52 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: linux-scsi@vger.kernel.org, akpm@osdl.org, axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sr_mod oops (elv_next_request involved)
+Message-ID: <20071023103452.GA6267@localhost.sw.ru>
+References: <20071022121206.GB6271@localhost.sw.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023094142.GD5059@kernel.dk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071022121206.GB6271@localhost.sw.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 22, 2007 at 04:12:06PM +0400, Alexey Dobriyan wrote:
+> Steps to reproduce:
+> 
+> 	modprobe sr_mod
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+To clarify: this is done during boot sequence.
 
-> It's all about the end goal - having maintainable and resilient code. 
-> And I think the sg code will be better once we get past the next day 
-> or so, and it'll be more robust. That is what matters to me, not the 
-> simplicity of the patch itself.
+> 	rmmod sr_mod
+> 	modprobe sr_mod
 
-Linus' latest tree, which has your SG-list enhancements included, 
-certainly works fine here and does not have the problems of the first 
-iteration.
+This -- by hand.
 
-	Ingo
+> BUG: unable to handle kernel paging request at virtual address f881b9f3
+> printing eip: f881b9f3 *pdpt = 0000000000003001 <1>*pde = 000000000480a067 *pte = 0000000000000000 
+> Oops: 0010 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> Modules linked in: sr_mod af_packet ipv6 nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp ipt_REJECT iptable_filter ip_tables x_tables cpufreq_ondemand loop serio_raw k8temp hwmon amd_rng cdrom
+> 
+> Pid: 1981, comm: modprobe Not tainted (2.6.23-55b70a0300b873c0ec7ea6e33752af56f41250ce #4)
+> EIP: 0060:[<f881b9f3>] EFLAGS: 00010086 CPU: 1
+> EIP is at 0xf881b9f3
+> EAX: c570b380 EBX: c56b6700 ECX: f881b9f3 EDX: c56b6700
+> ESI: c570b380 EDI: c5767920 EBP: c570b380 ESP: c4b5ec0c
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process modprobe (pid: 1981, ti=c4b5e000 task=c4b60000 task.ti=c4b5e000)
+> Stack: c10ab9ea c570b380 c4b5ecec c528c5c8 c56b6700 c570b380 c528c430 c11251fd 
+>        c570b380 c56b6700 c10ae49a 00000001 c570b380 c56b6700 c570b380 c4b5ecec 
+>        c10ae4c3 00000001 c10ae540 00000001 00000000 c4b5ecf0 c56b6700 c4b5ed18 
+> Call Trace:
+>  [<c10ab9ea>] elv_next_request+0x83/0xfe
+
+> CONFIG_HWMON=m
+> CONFIG_SENSORS_K8TEMP=m
+
+Strange...
+
+If I make CONFIG_HWMON=y, oops goes away.
+If I load hwmon.ko after sr_mod.ko, oops goes away.
+
