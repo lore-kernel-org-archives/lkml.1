@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbXJWVu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbXJWVxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbXJWVu4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXJWVui
+	id S1755239AbXJWVxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbXJWVxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:50:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37543
+	Tue, 23 Oct 2007 17:53:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49108
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752304AbXJWVuh (ORCPT
+	by vger.kernel.org with ESMTP id S1751917AbXJWVxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:50:37 -0400
-Date: Tue, 23 Oct 2007 14:51:04 -0700 (PDT)
-Message-Id: <20071023.145104.30179908.davem@davemloft.net>
-To: auke-jan.h.kok@intel.com
-Cc: jeff@garzik.org, ajax@redhat.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
+	Tue, 23 Oct 2007 17:53:12 -0400
+Date: Tue, 23 Oct 2007 14:53:39 -0700 (PDT)
+Message-Id: <20071023.145339.55504234.davem@davemloft.net>
+To: davej@redhat.com
+Cc: jeff@garzik.org, auke-jan.h.kok@intel.com, ajax@redhat.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <471E6121.9010008@intel.com>
+In-Reply-To: <20071023212026.GF7793@redhat.com>
 References: <471E2AD0.1000500@intel.com>
 	<471E5C21.8030908@garzik.org>
-	<471E6121.9010008@intel.com>
+	<20071023212026.GF7793@redhat.com>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,12 +28,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Date: Tue, 23 Oct 2007 14:01:21 -0700
+From: Dave Jones <davej@redhat.com>
+Date: Tue, 23 Oct 2007 17:20:26 -0400
 
-> We help everyone out, and if you merge this patch you will prevent
-> users from getting to us for support in the first place.
+> Indeed. This is a common enough problem that not including it causes
+> more pain than its worth.  I have two affected boxes myself that I
+> actually thought the hardware was dead before I tried ajax's patch.
+>
+> People aren't going to report this as a bug. They aren't going to
+> try out patches, they're going to do what I did and stick another
+> network card in the box and go on with life.
+>
+> Our users deserve better than this.
 
-If using the bad eeprom has to be explicitly enabled by the user, your
-argument holds no water.  We just need to make sure the patch does
-that.
+Seconded.  The resistence to this patch is just flat-out rediculious,
+just like it was in the e100 case.
+
+And I think all of this "e1000 is different!" talk is merely a
+scarecrow for the fact that Intel simply doesn't want this patch
+merged for some other reason.
