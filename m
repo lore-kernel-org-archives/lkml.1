@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbXJWPtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbXJWPxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbXJWPtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXJWPtH
+	id S1753078AbXJWPxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXJWPw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:49:07 -0400
-Received: from www17.your-server.de ([213.133.104.17]:39818 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752511AbXJWPtG (ORCPT
+	Tue, 23 Oct 2007 11:52:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60776 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751993AbXJWPw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:49:06 -0400
-Message-ID: <471E17E6.6060304@m3y3r.de>
-Date: Tue, 23 Oct 2007 17:48:54 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Tue, 23 Oct 2007 11:52:56 -0400
+Date: Tue, 23 Oct 2007 08:52:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Olaf Hering <olh@suse.de>
+cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Bugfix to commit
+ 4f9a58d75bfe82ab2b8ba5b8506dfb190a267834
+In-Reply-To: <20071023063720.GA29993@suse.de>
+Message-ID: <alpine.LFD.0.999.0710230839120.30120@woody.linux-foundation.org>
+References: <20071022223737.21679.23812.stgit@trillian.cg.shawcable.net>
+ <20071023063720.GA29993@suse.de>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one() with 4fa435018d740cb83d74c92306aa1f796da91ddd
-References: <471E1764.5040000@m3y3r.de>
-In-Reply-To: <471E1764.5040000@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer schrieb:
-> Oct 23 17:13:55 [kernel] usb 1-1: new high speed USB device using
-> ehci_hcd and address 7
-> Oct 23 17:13:55 [kernel] usb 1-1: configuration #1 chosen from 1 choice
-> Oct 23 17:13:55 [kernel] hub 1-1:1.0: USB hub found
-> Oct 23 17:13:55 [kernel] hub 1-1:1.0: 4 ports detected
-> Oct 23 17:13:55 [kernel] sysfs: duplicate filename 'bInterfaceNumber'
-> can not be created
-> Oct 23 17:13:55 [kernel] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> Oct 23 17:13:55 [kernel]  [<c01a37f0>] sysfs_add_one+0x54/0xb8
-> Oct 23 17:13:55 [kernel]  [<c01a332a>] sysfs_add_file+0x42/0x6a
-> Oct 23 17:13:55 [kernel]  [<c01a4a01>] sysfs_create_group+0x84/0xe7
-> Oct 23 17:13:55 [kernel]  [<c023e5ec>] device_add+0x44a/0x454
-> Oct 23 17:13:55 [kernel]  [<f88e774c>]
-> usb_create_sysfs_intf_files+0x24/0x98 [usbcore]
-> Oct 23 17:13:55 [kernel]  [<f88e4181>] usb_set_configuration+0x48f/0x4a9
-> [usbcore]
-> Oct 23 17:13:55 [kernel]  [<f88eabf3>] generic_probe+0x50/0x91 [usbcore]
-> Oct 23 17:13:55 [kernel]  [<f88e5817>] usb_probe_device+0x32/0x37 [usbcore]
-> Oct 23 17:13:55 [kernel]  [<c023fc11>] driver_probe_device+0xc5/0x148
-> Oct 23 17:13:55 [kernel]  [<c02d94bd>] klist_next+0x4b/0x6b
-> Oct 23 17:13:55 [kernel]  [<c023f14a>] bus_for_each_drv+0x35/0x5c
-> Oct 23 17:13:55 [kernel]  [<c023fd17>] device_attach+0x63/0x77
-> Oct 23 17:13:55 [kernel]  [<c023fc94>] __device_attach+0x0/0x5
-> Oct 23 17:13:55 [kernel]  [<c023f0c6>] bus_attach_device+0x26/0x75
-> Oct 23 17:13:55 [kernel]  [<c023e43d>] device_add+0x29b/0x454
-> Oct 23 17:13:55 [kernel]  [<f88dfc2e>] usb_new_device+0x4d/0x8a [usbcore]
-> Oct 23 17:13:55 [kernel]  [<f88e1149>] hub_thread+0x6f5/0xae2 [usbcore]
-> Oct 23 17:13:55 [kernel]  [<c02d9e72>] schedule+0x4b4/0x519
-> Oct 23 17:13:55 [kernel]  [<c013a1e1>] autoremove_wake_function+0x0/0x33
-> Oct 23 17:13:55 [kernel]  [<f88e0a54>] hub_thread+0x0/0xae2 [usbcore]
-> Oct 23 17:13:55 [kernel]  [<c013a119>] kthread+0x38/0x5f
-> Oct 23 17:13:55 [kernel]  [<c013a0e1>] kthread+0x0/0x5f
-> Oct 23 17:13:55 [kernel]  [<c0107bb7>] kernel_thread_helper+0x7/0x10
-> Oct 23 17:13:55 [kernel]  =======================
->
->
->
->   
-Sorry. This happens with 0895e91d60ef9bdef426d1ce14bb94bd5875870d...
 
 
+On Tue, 23 Oct 2007, Olaf Hering wrote:
+>
+> On Mon, Oct 22, Grant Likely wrote:
+> 
+> > Olaf, do I have the correct solution here?
+> 
+> Sure.
+
+Side note: I already applied that patch, but take a look at the commit 
+message.
+
+That's right: I had to edit the message provided to make it readable. So 
+I'll just take this opportunity to ask people that when they send 
+bug-fixes, please try to make the subject line and message make sense for 
+a *reader*, not for yourself (or even to me, although if it's readable to 
+some generic person, it's hopefully readable to me too!).
+
+So a subject line of "Bugfix to commit <commit-sha-goes-here>" is 
+obviously not a very nice one, if you're looking at the kernel commit 
+history in gitk or some other visualizer that shows the first line as the 
+subject for the whole commit. It just doesn't make any sense to the 
+reader!
+
+Related to that, another thing that also happens is that people write 
+subject lines (and the description) as if everybody realized that 
+something is particular to that architecture or driver. It may be true 
+that that particular developer (or development list) is only about ppc, 
+and then people write subject lines like "Fix execve() argument handling", 
+but again, when a *generic* person reads that, it now reads totally wrong, 
+since it wasn't execve() in general, it was a particular architecture that 
+it went wrong for.
+
+So the rule should be:
+
+ - if it's not fairly generic, specify the area (architecture, subsystem, 
+   driver) that the fix is for in the subject line. Even if you end up 
+   initially sending the fix out to just a list that handles that 
+   particular subsystem anyway.
+
+ - don't use commit names in the subject line - and while it's great to 
+   use them in the body of the explanation, even there you don't want to 
+   assume that people read it from within git. People see patches and 
+   commit changelogs on the web or the commit mailing lists, so when 
+   specifying an exact version, also specify the human-readable name of 
+   that version.
+
+ - write the commit message for an outsider, and use whitespace. The 
+   third-most common fixup I end up doing (after the above two) is to 
+   split things up into shorter paragraphs, after somebody wrote a good 
+   changelog entry, but made it one large unreadable blob of text. The 
+   more involved and technical some description is (and that's what long 
+   changelog entries should be - we don't want a fluffy novella here!), 
+   the more "breather space" and individually understandable small 
+   snippets of text readers need. Making things too dense is bad.
+
+Anyway, this was in no way meant to be a specific problem for Grant or 
+Olaf - I end up editing just about half of all the commit messages of 
+stuff I get in email (except for Andrew's stuff, since Andrew largely does 
+the same kinds of cleanups anyway, so I only need to edit up a small 
+percentage of the patches he forwards). I'd like it to be *much* less than 
+that, so I thought I should speak up since I had an example of this.
+
+			Linus
