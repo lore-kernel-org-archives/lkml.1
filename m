@@ -1,124 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXJWQYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXJWQZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbXJWQYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXJWQYX
+	id S1753884AbXJWQZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXJWQZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:24:23 -0400
-Received: from smtp28.orange.fr ([80.12.242.99]:59151 "EHLO smtp28.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbXJWQYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:24:22 -0400
-X-ME-UUID: 20071023161747531.81D577000097@mwinf2821.orange.fr
-Date: Tue, 23 Oct 2007 18:13:21 +0200
-From: Philippe Elie <phil.el@wanadoo.fr>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sami Farin <safari-kernel@safari.iki.fi>
-Subject: Re: [patch 1/2] oProfile: oops when profile_pc() return ~0LU
-Message-ID: <20071023161321.GA2884@zaniah>
-References: <20071021120842.GA2886@zaniah> <alpine.LFD.0.999.0710221936130.30120@woody.linux-foundation.org> <20071023101007.3y62tufa6yxrqk4w@m.safari.iki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071023101007.3y62tufa6yxrqk4w@m.safari.iki.fi>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 23 Oct 2007 12:25:45 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:42113 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbXJWQZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 12:25:44 -0400
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: axboe@kernel.dk, paulus@samba.org, chris@zankel.net,
+       grundler@parisc-linux.org, kyle@parisc-linux.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, torvalds@linux-foundation.org,
+       ashok.raj@intel.com, shaohua.li@intel.com,
+       anil.s.keshavamurthy@intel.com
+Cc: parisc-linux@lists.parisc-linux.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Emil Medve <Emilian.Medve@Freescale.com>
+Subject: [PATCH] Use the new sg_page() helper
+Date: Tue, 23 Oct 2007 11:14:52 -0500
+Message-Id: <1193156092-11819-1-git-send-email-Emilian.Medve@Freescale.com>
+X-Mailer: git-send-email 1.5.3.GIT
+X-Brightmail-Tracker: AAAAAQAAAAQ=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 at 13:10 +0000, Sami Farin wrote:
+Fix build error messages such as this:
 
-> On Mon, Oct 22, 2007 at 19:38:10 -0700, Linus Torvalds wrote:
-> > 
-> > This set of two patches look ok by me, but I'd like sign-offs.. Also, were 
-> > they tested and found to fix the problem by Sami?
-> > 
-> > 		Linus
+In file included from include/linux/dma-mapping.h:52,
+                 from include/linux/dmaengine.h:29,
+                 from include/linux/skbuff.h:29,
+                 from include/linux/netlink.h:155,
+                 from include/linux/genetlink.h:4,
+                 from include/net/genetlink.h:4,
+                 from include/linux/taskstats_kern.h:12,
+                 from init/main.c:46:
+include/asm/dma-mapping.h: In function 'dma_map_sg':
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:290: error: 'struct scatterlist' has no member named 'page'
 
-For the signed-offs I thought the From: was an implicit Signed-offs.
+This change in the struct scatterlist was introduced by this commit: 18dabf473e15850c0dbc8ff13ac1e2806d542c15
 
-Test was done privately, Sami helped to narrow down the trouble, but
-he didn't test the last patch, nothing bad on Sami side, I was too
-confident the fix was obvious after narrowing it.
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
 
-> 
-> The previous patch I tested by Philippe, oprof-fix-profile_pc-use.patch,
-> worked ok, but with this latest patch oprofiled aborts.
-> But kernel does not oops or print msgs.
+linux-2.6> scripts/checkpatch.pl 0001-Use-the-new-sg_page-helper.patch 
+Your patch has no obvious style problems and is ready for submission.
 
-argh, I just moved the wrong eip from kernel to user space where the same
-problem occur too, *sighs*, since I can't reproduce Sami problem, my own
-test obviously worked...
+ drivers/mmc/host/mmci.h           |    4 ++--
+ drivers/pci/intel-iommu.c         |    2 +-
+ include/asm-arm/dma-mapping.h     |    8 ++++----
+ include/asm-parisc/scatterlist.h  |    3 ++-
+ include/asm-powerpc/dma-mapping.h |   10 +++++-----
+ include/asm-xtensa/dma-mapping.h  |   10 +++++-----
+ 6 files changed, 19 insertions(+), 18 deletions(-)
 
-Sami, can you test this new patch. After testing can you report
-the contents of /dev/oprofile/stats/cpu*/sample_invalid_eip ?
-
-Linus, there is two way to fix this problem, the attached patch fix it
-by sanitizing the sampled eip, the other is to replace the use of
-profile_pc(); by instruction_pointer(); in cpu_buffer.c, that one was
-tested by Sami  but 1) it'll break the 'use oprofile as a sort of lockometer'
-2) I think sanitizing the eip will be necessary anyway as I'm not really
-confident than instruction_pointer() can never return weird eip on some
-weird arch and/or some weird circumstances.
-
-diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-index a83c3db..c93d3d2 100644
---- a/drivers/oprofile/cpu_buffer.c
-+++ b/drivers/oprofile/cpu_buffer.c
-@@ -64,6 +64,8 @@ int alloc_cpu_buffers(void)
- 		b->head_pos = 0;
- 		b->sample_received = 0;
- 		b->sample_lost_overflow = 0;
-+		b->backtrace_aborted = 0;
-+		b->sample_invalid_eip = 0;
- 		b->cpu = i;
- 		INIT_DELAYED_WORK(&b->work, wq_sync_buffer);
- 	}
-@@ -175,6 +177,11 @@ static int log_sample(struct oprofile_cpu_buffer * cpu_buf, unsigned long pc,
- 
- 	cpu_buf->sample_received++;
- 
-+	if (pc == ESCAPE_CODE) {
-+		cpu_buf->sample_invalid_eip++;
-+		return 0;
-+	}
+diff --git a/drivers/mmc/host/mmci.h b/drivers/mmc/host/mmci.h
+index 000e6a9..de3c223 100644
+--- a/drivers/mmc/host/mmci.h
++++ b/drivers/mmc/host/mmci.h
+@@ -112,7 +112,7 @@
+  * The size of the FIFO in bytes.
+  */
+ #define MCI_FIFOSIZE	(16*4)
+-	
 +
- 	if (nr_available_slots(cpu_buf) < 3) {
- 		cpu_buf->sample_lost_overflow++;
- 		return 0;
-diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
-index 49900d9..c66c025 100644
---- a/drivers/oprofile/cpu_buffer.h
-+++ b/drivers/oprofile/cpu_buffer.h
-@@ -42,6 +42,7 @@ struct oprofile_cpu_buffer {
- 	unsigned long sample_received;
- 	unsigned long sample_lost_overflow;
- 	unsigned long backtrace_aborted;
-+	unsigned long sample_invalid_eip;
- 	int cpu;
- 	struct delayed_work work;
- } ____cacheline_aligned;
-diff --git a/drivers/oprofile/oprofile_stats.c b/drivers/oprofile/oprofile_stats.c
-index f0acb66..d1f6d77 100644
---- a/drivers/oprofile/oprofile_stats.c
-+++ b/drivers/oprofile/oprofile_stats.c
-@@ -26,6 +26,8 @@ void oprofile_reset_stats(void)
- 		cpu_buf = &cpu_buffer[i]; 
- 		cpu_buf->sample_received = 0;
- 		cpu_buf->sample_lost_overflow = 0;
-+		cpu_buf->backtrace_aborted = 0;
-+		cpu_buf->sample_invalid_eip = 0;
+ #define MCI_FIFOHALFSIZE (MCI_FIFOSIZE / 2)
+ 
+ #define NR_SG		16
+@@ -169,7 +169,7 @@ static inline char *mmci_kmap_atomic(struct mmci_host *host, unsigned long *flag
+ 	struct scatterlist *sg = host->sg_ptr;
+ 
+ 	local_irq_save(*flags);
+-	return kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
++	return kmap_atomic(sg_page(sg), KM_BIO_SRC_IRQ) + sg->offset;
+ }
+ 
+ static inline void mmci_kunmap_atomic(struct mmci_host *host, void *buffer, unsigned long *flags)
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index b3d7031..347948c 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2010,7 +2010,7 @@ static int intel_nontranslate_map_sg(struct device *hddev,
+ 	struct scatterlist *sg;
+ 
+ 	for_each_sg(sglist, sg, nelems, i) {
+-		BUG_ON(!sg->page);
++		BUG_ON(!sg_page(sg));
+ 		sg->dma_address = virt_to_bus(SG_ENT_VIRT_ADDRESS(sg));
+ 		sg->dma_length = sg->length;
  	}
-  
- 	atomic_set(&oprofile_stats.sample_lost_no_mm, 0);
-@@ -61,6 +63,8 @@ void oprofile_create_stats_files(struct super_block * sb, struct dentry * root)
- 			&cpu_buf->sample_lost_overflow);
- 		oprofilefs_create_ro_ulong(sb, cpudir, "backtrace_aborted",
- 			&cpu_buf->backtrace_aborted);
-+		oprofilefs_create_ro_ulong(sb, cpudir, "sample_invalid_eip",
-+			&cpu_buf->sample_invalid_eip);
+diff --git a/include/asm-arm/dma-mapping.h b/include/asm-arm/dma-mapping.h
+index 1eb8aac..08afd5a 100644
+--- a/include/asm-arm/dma-mapping.h
++++ b/include/asm-arm/dma-mapping.h
+@@ -274,8 +274,8 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	for (i = 0; i < nents; i++, sg++) {
+ 		char *virt;
+ 
+-		sg->dma_address = page_to_dma(dev, sg->page) + sg->offset;
+-		virt = page_address(sg->page) + sg->offset;
++		sg->dma_address = page_to_dma(dev, sg_page(sg)) + sg->offset;
++		virt = page_address(sg_page(sg)) + sg->offset;
+ 
+ 		if (!arch_is_coherent())
+ 			dma_cache_maint(virt, sg->length, dir);
+@@ -371,7 +371,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nents,
+ 	int i;
+ 
+ 	for (i = 0; i < nents; i++, sg++) {
+-		char *virt = page_address(sg->page) + sg->offset;
++		char *virt = page_address(sg_page(sg)) + sg->offset;
+ 		if (!arch_is_coherent())
+ 			dma_cache_maint(virt, sg->length, dir);
  	}
-  
- 	oprofilefs_create_ro_atomic(sb, dir, "sample_lost_no_mm",
+@@ -384,7 +384,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nents,
+ 	int i;
+ 
+ 	for (i = 0; i < nents; i++, sg++) {
+-		char *virt = page_address(sg->page) + sg->offset;
++		char *virt = page_address(sg_page(sg)) + sg->offset;
+ 		if (!arch_is_coherent())
+ 			dma_cache_maint(virt, sg->length, dir);
+ 	}
+diff --git a/include/asm-parisc/scatterlist.h b/include/asm-parisc/scatterlist.h
+index cd3cfdf..3c79a2a 100644
+--- a/include/asm-parisc/scatterlist.h
++++ b/include/asm-parisc/scatterlist.h
+@@ -18,7 +18,8 @@ struct scatterlist {
+ 	__u32      iova_length; /* bytes mapped */
+ };
+ 
+-#define sg_virt_addr(sg) ((unsigned long)(page_address(sg->page) + sg->offset))
++#define sg_virt_addr(sg) \
++		((unsigned long)(page_address(sg_page(sg)) + sg->offset))
+ #define sg_dma_address(sg) ((sg)->iova)
+ #define sg_dma_len(sg)     ((sg)->iova_length)
+ 
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..ff52013 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		BUG_ON(!sg_page(sg));
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
++		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
+ 	}
+ 
+ 	return nents;
+@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
+diff --git a/include/asm-xtensa/dma-mapping.h b/include/asm-xtensa/dma-mapping.h
+index 82b03b3..2b3e975 100644
+--- a/include/asm-xtensa/dma-mapping.h
++++ b/include/asm-xtensa/dma-mapping.h
+@@ -58,10 +58,10 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for (i = 0; i < nents; i++, sg++ ) {
+-		BUG_ON(!sg->page);
++		BUG_ON(!sg_page(sg));
+ 
+-		sg->dma_address = page_to_phys(sg->page) + sg->offset;
+-		consistent_sync(page_address(sg->page) + sg->offset,
++		sg->dma_address = page_to_phys(sg_page(sg)) + sg->offset;
++		consistent_sync(page_address(sg_page(sg)) + sg->offset,
+ 				sg->length, direction);
+ 	}
+ 
+@@ -128,7 +128,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
+ {
+ 	int i;
+ 	for (i = 0; i < nelems; i++, sg++)
+-		consistent_sync(page_address(sg->page) + sg->offset,
++		consistent_sync(page_address(sg_page(sg)) + sg->offset,
+ 				sg->length, dir);
+ }
+ 
+@@ -138,7 +138,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
+ {
+ 	int i;
+ 	for (i = 0; i < nelems; i++, sg++)
+-		consistent_sync(page_address(sg->page) + sg->offset,
++		consistent_sync(page_address(sg_page(sg)) + sg->offset,
+ 				sg->length, dir);
+ }
+ static inline int
+-- 
+1.5.3.GIT
 
