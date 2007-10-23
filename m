@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbXJWBs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbXJWB61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbXJWBs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 21:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXJWBss
+	id S1752539AbXJWB61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 21:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXJWB6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 21:48:48 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37348 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbXJWBsr (ORCPT
+	Mon, 22 Oct 2007 21:58:20 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:32189 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbXJWB6T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 21:48:47 -0400
-Date: Mon, 22 Oct 2007 19:48:45 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@osdl.org>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Sparse fix for scsi_request_fn
-Message-ID: <20071023014845.GN27248@parisc-linux.org>
+	Mon, 22 Oct 2007 21:58:19 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Question about free/used memory on Linux
+Date: Mon, 22 Oct 2007 18:58:17 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B848B@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <471C75E7.2070400@draigBrady.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Question about free/used memory on Linux
+Thread-Index: AcgUkyzCfshk5SOkQG683qpnaO0lvQAhJKPg
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B847B@xmb-sjc-214.amer.cisco.com> <471C75E7.2070400@draigBrady.com>
+From: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
+To: =?iso-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 23 Oct 2007 01:58:18.0314 (UTC) FILETIME=[2E7902A0:01C81518]
+Authentication-Results: sj-dkim-1; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce new __holds() macro to tell sparse it's OK to drop and then
-reacquire a lock within a function.  Use it in scsi_request_fn.
+Thanks all for the answers.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+I could load by specifying lower amount of memory but on the newer
+platform(does not exist), some of the existing components will
+not exist while some newer ones will be added. So, it won't be
+entirely accurate but I could still get some idea by trying
+it out.
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 207f1aa..5e0583a 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1374,6 +1372,7 @@ static void scsi_softirq_done(struct request *rq)
-  * Lock status: IO request lock assumed to be held when called.
-  */
- static void scsi_request_fn(struct request_queue *q)
-+		__holds(q->queue_lock)
- {
- 	struct scsi_device *sdev = q->queuedata;
- 	struct Scsi_Host *shost;
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 86f9a3a..1611ac6 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -12,6 +12,7 @@
- # define __iomem	__attribute__((noderef, address_space(2)))
- # define __acquires(x)	__attribute__((context(x,0,1)))
- # define __releases(x)	__attribute__((context(x,1,0)))
-+# define __holds(x)	__attribute__((context(x,1,1)))
- # define __acquire(x)	__context__(x,1)
- # define __release(x)	__context__(x,-1)
- # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
-@@ -29,6 +30,7 @@ extern void __chk_io_ptr(const volatile void __iomem *);
- # define __builtin_warning(x, y...) (1)
- # define __acquires(x)
- # define __releases(x)
-+# define __holds(x)
- # define __acquire(x) (void)0
- # define __release(x) (void)0
- # define __cond_lock(x,c) (c)
+Thanks,
+Ravi 
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+-----Original Message-----
+From: Pádraig Brady [mailto:P@draigBrady.com] 
+Sent: Monday, October 22, 2007 3:05 AM
+To: Ravinandan Arakali (rarakali)
+Cc: Linux Kernel
+Subject: Re: Question about free/used memory on Linux
+
+Ravinandan Arakali (rarakali) wrote:
+> Hi kernel gurus,
+> I am trying to find out the memory that's used on my linux box.
+> I find that there are quite a few confusing metrics. How do I find out 
+> the "true" used memory ?
+> 
+> 1. For eg. "free -m" shows free memory (excluding buffers/caches) as 
+> 308 MB while I can see(from "df" output) that the the tmpfs partitions 
+> take up about 400 MB. So, does "free -m" not consider the tmpfs 
+> partitions ?
+> 
+> 2. I try to add up RSS field of all processes reported by "ps aux" 
+> command. But is it true that this would be misleading in that, shared 
+> memory used by, say 2 processes would show up twice here although 
+> there's only one copy in memory. Also does this consider the fact that 
+> there's only one copy of shared libraries ?
+
+Have a look at this script so show RAM used by programs:
+http://www.pixelbeat.org/scripts/ps_mem.py
+
+Note to display totals you will need this patch applied:
+http://lkml.org/lkml/2007/8/13/1224
+
+Pádraig.
