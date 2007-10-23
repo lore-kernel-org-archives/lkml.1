@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXJWVpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbXJWVqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbXJWVpW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbXJWVpG
+	id S1754797AbXJWVqa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXJWVqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:45:06 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5936 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752502AbXJWVpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:45:05 -0400
-Date: Tue, 23 Oct 2007 23:44:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: IDE crash...
-Message-ID: <20071023214459.GM14671@kernel.dk>
-References: <20071023.004321.74750417.davem@davemloft.net> <20071023195255S.fujita.tomonori@lab.ntt.co.jp> <20071023105710.GJ5059@kernel.dk> <20071023.141800.59467535.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071023.141800.59467535.davem@davemloft.net>
+	Tue, 23 Oct 2007 17:46:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36072 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752597AbXJWVqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:46:19 -0400
+Date: Tue, 23 Oct 2007 14:46:15 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: menage@google.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       ghaskins@novell.com, a.p.zijlstra@chello.nl
+Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
+Message-Id: <20071023144615.89ed9c86.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.58.0710230844040.29506@gandalf.stny.rr.com>
+References: <20071023025900.927578809@goodmis.org>
+	<20071023032916.651749224@goodmis.org>
+	<20071022211709.7be79fea.pj@sgi.com>
+	<6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
+	<Pine.LNX.4.58.0710230844040.29506@gandalf.stny.rr.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Tue, 23 Oct 2007 12:57:11 +0200
-> 
-> > On Tue, Oct 23 2007, FUJITA Tomonori wrote:
-> > > BTW, we avoid calling sg_init_table() for every I/O request due to Jens'
-> > > trick. And Jens will remove the code to clear sg_dma_len/addr in
-> > > blk_rq_map_sg(). So sparc64 iommu needs to do that for itself?
-> > > 
-> > > http://marc.info/?l=linux-scsi&m=119261920425120&w=2
-> > 
-> > It does - Dave, do you agree with the patch? I think it should be added,
-> > so that sparc64 isn't the odd-arch-out in this respect. I've tentatively
-> > applied the patch, Davem?
-> 
-> No objections.
+Steven wrote:
+> Ingo Molnar and Peter Zijlstra pointed out to me that this global cpumask
+> would kill performance on >64 CPU boxes due to cacheline bouncing. To
+> solve this issue, I placed the RT overload mask into the cpusets.
 
-Great, thanks Dave.
+This feels rather like sched domains to me (which I can't claim
+to understand very well.)  That is, you need to subdivide the
+overload masks, so as to avoid contention on a single mask in a
+large system, making the tradeoff that you will sometimes resolve
+overloads less aggressively.
+
+With sched domains, we added cpuset code, that is only called in the
+infrequent event that the cpusets are reconfigured, to update the
+kernel's sched domains.  It hasn't been easy code, but at least the
+main line scheduler code paths remain oblivious to cpusets.
+
+Can you create "RT domains", each with their own overload mask?
+Perhaps even attach the overload masks to the existing sched domains?
+
+The essential approach here, as with all things involving cpusets and
+the scheduler, is to not have the scheduler code access cpusets, but
+rather to have the scheduler code have its own controlling data
+structures, which it can access with locking suitable to its fast path
+requirements, and then have the cpuset code ~~delicately~~ update those
+structures on the infrequent occassion that something changes in the
+cpuset configuration.
 
 -- 
-Jens Axboe
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
