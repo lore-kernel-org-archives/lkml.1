@@ -1,124 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXJWU41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXJWU4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbXJWU41 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 16:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXJWU4A
+	id S1754251AbXJWU4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 16:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXJWU4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 16:56:00 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:34483 "EHLO atlrel7.hp.com"
+	Tue, 23 Oct 2007 16:56:17 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:56468 "EHLO atlrel9.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbXJWUz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 16:55:59 -0400
-Message-Id: <20071023205515.775882722@ldl.fc.hp.com>
+	id S1753366AbXJWU4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 16:56:16 -0400
+Message-Id: <20071023205515.406778977@ldl.fc.hp.com>
 References: <20071023204843.442608289@ldl.fc.hp.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 23 Oct 2007 14:48:45 -0600
+Date: Tue, 23 Oct 2007 14:48:44 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Alessandro Zummo <a.zummo@towertech.it>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mips@linux-mips.org
-Subject: [patch 2/2] rtc: fallback to requesting only the ports we actually use
-Content-Disposition: inline; filename=rtc-resource-size
+Subject: [patch 1/2] rtc: release correct region in error path
+Content-Disposition: inline; filename=rtc-factor
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Firmware like PNPBIOS or ACPI can report the address space consumed by the
-RTC.  The actual space consumed may be less than the size (RTC_IO_EXTENT)
-assumed by the RTC driver.
-
-The PNP core doesn't request resources yet, but I'd like to make it do so.
-If/when it does, the RTC_IO_EXTENT request may fail, which prevents the RTC
-driver from loading.
-
-Since we only use the RTC index and data registers at RTC_PORT(0) and
-RTC_PORT(1), we can fall back to requesting just enough space for those.
-
-If the PNP core requests resources, this results in typical I/O port usage
-like this:
-
-    0070-0073 : 00:06		<-- PNP device 00:06 responds to 70-73
-      0070-0071 : rtc		<-- RTC driver uses only 70-71
-
-instead of the current:
-
-    0070-0077 : rtc		<-- RTC_IO_EXTENT == 8
+The misc_register() error path always released an I/O port region,
+even if the region was memory-mapped (only mips uses memory-mapped RTC,
+as far as I can see).
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 Index: w/drivers/char/rtc.c
 ===================================================================
---- w.orig/drivers/char/rtc.c	2007-10-23 14:41:23.000000000 -0600
-+++ w/drivers/char/rtc.c	2007-10-23 14:41:30.000000000 -0600
-@@ -918,12 +918,29 @@
+--- w.orig/drivers/char/rtc.c	2007-10-23 09:59:33.000000000 -0600
++++ w/drivers/char/rtc.c	2007-10-23 14:41:23.000000000 -0600
+@@ -918,6 +918,14 @@
  };
  #endif
  
-+static resource_size_t rtc_size;
-+
-+static struct resource * __init rtc_request_region(resource_size_t size)
++static void rtc_release_region(void)
 +{
-+	struct resource *r;
-+
 +	if (RTC_IOMAPPED)
-+		r = request_region(RTC_PORT(0), size, "rtc");
++		release_region(RTC_PORT(0), RTC_IO_EXTENT);
 +	else
-+		r = request_mem_region(RTC_PORT(0), size, "rtc");
-+
-+	if (r)
-+		rtc_size = size;
-+
-+	return r;
++		release_mem_region(RTC_PORT(0), RTC_IO_EXTENT);
 +}
 +
- static void rtc_release_region(void)
- {
- 	if (RTC_IOMAPPED)
--		release_region(RTC_PORT(0), RTC_IO_EXTENT);
-+		release_region(RTC_PORT(0), rtc_size);
- 	else
--		release_mem_region(RTC_PORT(0), RTC_IO_EXTENT);
-+		release_mem_region(RTC_PORT(0), rtc_size);
- }
- 
  static int __init rtc_init(void)
-@@ -976,10 +993,17 @@
+ {
+ #ifdef CONFIG_PROC_FS
+@@ -992,10 +1000,7 @@
+ 		/* Yeah right, seeing as irq 8 doesn't even hit the bus. */
+ 		rtc_has_irq = 0;
+ 		printk(KERN_ERR "rtc: IRQ %d is not free.\n", RTC_IRQ);
+-		if (RTC_IOMAPPED)
+-			release_region(RTC_PORT(0), RTC_IO_EXTENT);
+-		else
+-			release_mem_region(RTC_PORT(0), RTC_IO_EXTENT);
++		rtc_release_region();
+ 		return -EIO;
  	}
- no_irq:
+ 	hpet_rtc_timer_init();
+@@ -1009,7 +1014,7 @@
+ 		free_irq(RTC_IRQ, NULL);
+ 		rtc_has_irq = 0;
+ #endif
+-		release_region(RTC_PORT(0), RTC_IO_EXTENT);
++		rtc_release_region();
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1091,10 +1096,7 @@
+ 	if (rtc_has_irq)
+ 		free_irq (rtc_irq, &rtc_port);
  #else
 -	if (RTC_IOMAPPED)
--		r = request_region(RTC_PORT(0), RTC_IO_EXTENT, "rtc");
+-		release_region(RTC_PORT(0), RTC_IO_EXTENT);
 -	else
--		r = request_mem_region(RTC_PORT(0), RTC_IO_EXTENT, "rtc");
-+	r = rtc_request_region(RTC_IO_EXTENT);
-+
-+	/*
-+	 * If we've already requested a smaller range (for example, because
-+	 * PNPBIOS or ACPI told us how the device is configured), the request
-+	 * above might fail because it's too big.
-+	 *
-+	 * If so, request just the range we actually use.
-+	 */
-+	if (!r)
-+		r = rtc_request_region(RTC_IO_EXTENT_USED);
- 	if (!r) {
+-		release_mem_region(RTC_PORT(0), RTC_IO_EXTENT);
++	rtc_release_region();
  #ifdef RTC_IRQ
- 		rtc_has_irq = 0;
-Index: w/include/linux/mc146818rtc.h
-===================================================================
---- w.orig/include/linux/mc146818rtc.h	2007-10-23 14:41:23.000000000 -0600
-+++ w/include/linux/mc146818rtc.h	2007-10-23 14:41:30.000000000 -0600
-@@ -109,8 +109,11 @@
- #ifndef ARCH_RTC_LOCATION	/* Override by <asm/mc146818rtc.h>? */
- 
- #define RTC_IO_EXTENT	0x8
-+#define RTC_IO_EXTENT_USED	0x2
- #define RTC_IOMAPPED	1	/* Default to I/O mapping. */
- 
-+#else
-+#define RTC_IO_EXTENT_USED      RTC_IO_EXTENT
- #endif /* ARCH_RTC_LOCATION */
- 
- #endif /* _MC146818RTC_H */
+ 	if (rtc_has_irq)
+ 		free_irq (RTC_IRQ, NULL);
 
 --
