@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXJWHeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbXJWHhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbXJWHeQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXJWHeD
+	id S1753468AbXJWHhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXJWHhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:34:03 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:24529 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbXJWHeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:34:01 -0400
-Date: Tue, 23 Oct 2007 09:32:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: torvalds@linux-foundation.org, anil.s.keshavamurthy@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-iommu: fix sg_page()
-Message-ID: <20071023073236.GM25962@kernel.dk>
-References: <20071023135926A.fujita.tomonori@lab.ntt.co.jp> <20071023050426.GJ16425@kernel.dk> <20071023141929B.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071023141929B.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 23 Oct 2007 03:37:06 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:42706 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbXJWHhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 03:37:05 -0400
+To: akpm@linux-foundation.org
+CC: riel@redhat.com, linux-kernel@vger.kernel.org, xemul@openvz.org,
+       raven@themaw.net
+In-reply-to: <20071022171624.0c00f8da.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 22 Oct 2007 17:16:24 -0700)
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+	<20071022145321.195d929b@bree.surriel.com>
+	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
+	<20071022172926.03ca122a@bree.surriel.com>
+	<20071022200742.6f3acbb2@bree.surriel.com> <20071022171624.0c00f8da.akpm@linux-foundation.org>
+Message-Id: <E1IkEJP-0004Qp-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 23 Oct 2007 09:36:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, FUJITA Tomonori wrote:
-> On Tue, 23 Oct 2007 07:04:27 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+> I guess we can debug it in the old-fashioned ways.  The first of which is
+> to palm the problem off on Pavel ;)
 > 
-> > On Tue, Oct 23 2007, FUJITA Tomonori wrote:
-> > > drivers/pci/intel-iommu.c: In function 'intel_unmap_sg':
-> > > drivers/pci/intel-iommu.c:1987: error: 'struct scatterlist' has no member named 'page'
-> > > drivers/pci/intel-iommu.c: In function 'intel_nontranslate_map_sg':
-> > > drivers/pci/intel-iommu.c:2013: error: 'struct scatterlist' has no member named 'page'
-> > > drivers/pci/intel-iommu.c:2014: error: 'struct scatterlist' has no member named 'page'
-> > > drivers/pci/intel-iommu.c: In function 'intel_map_sg':
-> > > drivers/pci/intel-iommu.c:2044: error: 'struct scatterlist' has no member named 'page'
-> > > drivers/pci/intel-iommu.c:2068: error: 'struct scatterlist' has no member named 'page'
-> > > 
-> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > ---
-> > >  drivers/pci/intel-iommu.c |   11 +++++------
-> > >  1 files changed, 5 insertions(+), 6 deletions(-)
-> > > 
-> > > diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> > > index b3d7031..0f6e528 100644
-> > > --- a/drivers/pci/intel-iommu.c
-> > > +++ b/drivers/pci/intel-iommu.c
-> > > @@ -1962,7 +1962,6 @@ static void intel_free_coherent(struct device *hwdev, size_t size,
-> > >  	free_pages((unsigned long)vaddr, order);
-> > >  }
-> > >  
-> > > -#define SG_ENT_VIRT_ADDRESS(sg)	(page_address((sg)->page) + (sg)->offset)
-> > 
-> > Thanks, though I preferred to just do the one-liner for the conversions.
-> > Funny that I missed this file - ah seems it was merged yesterday as
-> > well, it didn't exist in the current tree I was working against.
-> 
-> Yeah, the patchset has been -mm and was merged after the sg updates.
-> 
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> 
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index b3d7031..a837d64 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -1962,7 +1962,7 @@ static void intel_free_coherent(struct device *hwdev, size_t size,
->  	free_pages((unsigned long)vaddr, order);
->  }
->  
-> -#define SG_ENT_VIRT_ADDRESS(sg)	(page_address((sg)->page) + (sg)->offset)
-> +#define SG_ENT_VIRT_ADDRESS(sg)	sg_virt(sg)
->  static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
->  	int nelems, int dir)
->  {
-> @@ -2010,7 +2010,7 @@ static int intel_nontranslate_map_sg(struct device *hddev,
->  	struct scatterlist *sg;
->  
->  	for_each_sg(sglist, sg, nelems, i) {
-> -		BUG_ON(!sg->page);
-> +		BUG_ON(!sg_page(sg));
->  		sg->dma_address = virt_to_bus(SG_ENT_VIRT_ADDRESS(sg));
->  		sg->dma_length = sg->length;
->  	}
+> I don't recall seeing a simple step-by-step way by which others can
+> reproduce this?
 
-Great, applied this one.
+My method is this:
 
--- 
-Jens Axboe
+- enable CONFIG_FUSE_FS
+- compile fuse from CVS:
+ cvs -d:pserver:anonymous@fuse.cvs.sourceforge.net:/cvsroot/fuse co -P fuse
+ cd fuse
+ ./makeconf.sh
+ ./configure
+ make
+ make -C test
 
+- in one shell:
+ mkdir /tmp/fuse
+ example/fusexmp_fh -d /tmp/fuse
+
+- in another shell:
+ mkdir /tmp/test
+ test/test /tmp/fuse/tmp/test
+
+The result is normally a completed run with "1 tests failed".  On
+2.6.23-mm1, it just hangs after the first test.
+
+I've only tried under UML, but since Rick is seeing it on real HW, I
+guess this method may work there as well.
+
+Miklos
