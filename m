@@ -1,151 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbXJWJvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbXJWJvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbXJWJvM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXJWJu6
+	id S1753420AbXJWJvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXJWJvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:50:58 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36376
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751878AbXJWJu5 (ORCPT
+	Tue, 23 Oct 2007 05:51:38 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:31749 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751760AbXJWJvg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:50:57 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/7] Add missing section IDs to genericirq.tmpl (updated)
-Date: Tue, 23 Oct 2007 04:50:23 -0500
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+	Tue, 23 Oct 2007 05:51:36 -0400
+Message-ID: <471DC3D9.2070809@panasas.com>
+Date: Tue, 23 Oct 2007 11:50:17 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk>
+In-Reply-To: <20071023094142.GD5059@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710230450.23540.rob@landley.net>
+X-OriginalArrivalTime: 23 Oct 2007 09:50:19.0532 (UTC) FILETIME=[1F3BECC0:01C8155A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+On Tue, Oct 23 2007 at 11:41 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Tue, Oct 23 2007, Boaz Harrosh wrote:
+>> On Mon, Oct 22 2007 at 23:47 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>> On Mon, 22 Oct 2007, Alan Cox wrote:
+>>>
+>>>> For structures, not array elements or stack objects. Does gcc now get
+>>>> aligned correct as an attribute on a stack object ?
+>>> I think m68k stack layout still guarantees 4-byte-alignment, no?
+>>>
+>>>> Still doesn't answer the rather more important question - why not just
+>>>> stick a NULL on the end instead of all the nutty hacks ?
+>>> You still do need one bit for the discontiguous case, so it's not like you 
+>>> can avoid the hacks anyway (unless you just blow up the structure 
+>>> entirely) and make it a separate member). So once you have that 
+>>> bit+pointer, using a separate NULL entry isn't exactly prettier. 
+>>>
+>>> Especially as we actally want to see the difference between 
+>>> "end-of-allocation" and "not yet filled in", so you shouldn't use NULL 
+>>> anyway, you should probably use something like "all-ones".
+>>>
+>>> 			Linus
+>>> -
+>> Every one is so hysterical about this sg-chaining problem. And massive
+>> patches produced, that when a simple none intrusive solution is proposed
+>> it is totally ignored because every one thinks, "I can not be that stupid".
+>> Well Einstein said: "Simplicity is the ultimate sophistication". So no one
+>> need to feel bad.
+> 
+> It's all about the end goal - having maintainable and resilient code.
+> And I think the sg code will be better once we get past the next day or
+> so, and it'll be more robust. That is what matters to me, not the
+> simplicity of the patch itself.
+> 
 
-Add missing section IDs to genericirq.tmpl
+But that is exactly what his patch is. Much more robust. Because you do not
+relay on sglist content but on outside information, that you already have.
+Have you had an hard look at his solution? It just simply falls into place.
+Please try it out for yourself. I did, and it works.
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
- Either one more showed up in -git since I submitted this, or I missed one.
+Boaz
 
- Documentation/DocBook/genericirq.tmpl |   26 ++++++++++++------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff -r 33c949e2f851 Documentation/DocBook/genericirq.tmpl
---- a/Documentation/DocBook/genericirq.tmpl	Sun Oct 21 13:37:07 2007 -0400
-+++ b/Documentation/DocBook/genericirq.tmpl	Mon Oct 22 23:02:14 2007 -0500
-@@ -172,7 +172,7 @@
- 	  <listitem><para>Chiplevel hardware encapsulation</para></listitem>
- 	</orderedlist>
-     </para>
--    <sect1>
-+    <sect1 id="Interrupt_control_flow">
- 	<title>Interrupt control flow</title>
- 	<para>
- 	Each interrupt is described by an interrupt descriptor structure
-@@ -190,7 +190,7 @@
- 	referenced by the assigned chip descriptor structure.
- 	</para>
-     </sect1>
--    <sect1>
-+    <sect1 id="Highlevel_Driver_API">
- 	<title>Highlevel Driver API</title>
- 	<para>
- 	  The highlevel Driver API consists of following functions:
-@@ -210,7 +210,7 @@
- 	  See the autogenerated function documentation for details.
- 	</para>
-     </sect1>
--    <sect1>
-+    <sect1 id="Highlevel_IRQ_flow_handlers">
- 	<title>Highlevel IRQ flow handlers</title>
- 	<para>
- 	  The generic layer provides a set of pre-defined irq-flow methods:
-@@ -224,9 +224,9 @@
- 	  specific) are assigned to specific interrupts by the architecture
- 	  either during bootup or during device initialization.
- 	</para>
--	<sect2>
-+	<sect2 id="Default_flow_implementations">
- 	<title>Default flow implementations</title>
--	    <sect3>
-+	    <sect3 id="Helper_functions">
- 	 	<title>Helper functions</title>
- 		<para>
- 		The helper functions call the chip primitives and
-@@ -267,9 +267,9 @@ noop(irq)
- 	        </para>
- 	    </sect3>
- 	</sect2>
--	<sect2>
-+	<sect2 id="Default_flow_handler_implementations">
- 	<title>Default flow handler implementations</title>
--	    <sect3>
-+	    <sect3 id="Default_Level_IRQ_flow_handler">
- 	 	<title>Default Level IRQ flow handler</title>
- 		<para>
- 		handle_level_irq provides a generic implementation
-@@ -284,7 +284,7 @@ desc->chip->end();
- 		</programlisting>
- 		</para>
-    	    </sect3>
--	    <sect3>
-+	    <sect3 id="Default_Edge_IRQ_flow_handler">
- 	 	<title>Default Edge IRQ flow handler</title>
- 		<para>
- 		handle_edge_irq provides a generic implementation
-@@ -311,7 +311,7 @@ desc->chip->end();
- 		</programlisting>
- 		</para>
-    	    </sect3>
--	    <sect3>
-+	    <sect3 id="Default_simple_IRQ_flow_handler">
- 	 	<title>Default simple IRQ flow handler</title>
- 		<para>
- 		handle_simple_irq provides a generic implementation
-@@ -328,7 +328,7 @@ handle_IRQ_event(desc->action);
- 		</programlisting>
- 		</para>
-    	    </sect3>
--	    <sect3>
-+	    <sect3 id="Default_per_CPU_flow_handler">
- 	 	<title>Default per CPU flow handler</title>
- 		<para>
- 		handle_percpu_irq provides a generic implementation
-@@ -349,7 +349,7 @@ desc->chip->end();
- 		</para>
-    	    </sect3>
- 	</sect2>
--	<sect2>
-+	<sect2 id="Quirks_and_optimizations">
- 	<title>Quirks and optimizations</title>
- 	<para>
- 	The generic functions are intended for 'clean' architectures and chips,
-@@ -358,7 +358,7 @@ desc->chip->end();
- 	overriding the highlevel irq-flow handler.
- 	</para>
- 	</sect2>
--	<sect2>
-+	<sect2 id="Delayed_interrupt_disable">
- 	<title>Delayed interrupt disable</title>
- 	<para>
- 	This per interrupt selectable feature, which was introduced by Russell
-@@ -380,7 +380,7 @@ desc->chip->end();
- 	</para>
- 	</sect2>
-     </sect1>
--    <sect1>
-+    <sect1 id="Chiplevel_hardware_encapsulation">
- 	<title>Chiplevel hardware encapsulation</title>
- 	<para>
- 	The chip level hardware descriptor structure irq_chip
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
