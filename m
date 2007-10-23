@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXJWHTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXJWHWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbXJWHTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXJWHSx
+	id S1753954AbXJWHWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXJWHWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:18:53 -0400
-Received: from agave.telenet-ops.be ([195.130.137.77]:44794 "EHLO
-	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753012AbXJWHSu (ORCPT
+	Tue, 23 Oct 2007 03:22:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:41006 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbXJWHWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:18:50 -0400
-Date: Tue, 23 Oct 2007 09:18:42 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-In-Reply-To: <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710230907370.7105@anakin>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
- <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
- <Pine.LNX.4.64.0710222137520.7105@anakin>
- <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org>
- <20071022211617.31f5c63d@the-village.bc.nu>
- <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
- <20071022224343.4abf3c96@the-village.bc.nu>
- <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+	Tue, 23 Oct 2007 03:22:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=XImSowJJIqajBYTtxxyWh5oSAfpVAG24eCC+D+f9Jt5e/ZRx8kfPnCro3gsvlDbYr
+	it5RniO1fXeAzStmwt5MA==
+Message-ID: <6599ad830710230021n536908c0xd95250f36aa8a27d@mail.gmail.com>
+Date: Tue, 23 Oct 2007 00:21:59 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <6599ad830710222306m6a3e3f52k4daf501836c05274@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <471D4523.4040509@google.com>
+	 <20071023024036.GC3324@linux.vnet.ibm.com>
+	 <6599ad830710222306m6a3e3f52k4daf501836c05274@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Linus Torvalds wrote:
-> On Mon, 22 Oct 2007, Alan Cox wrote:
-> > For structures, not array elements or stack objects. Does gcc now get
-> > aligned correct as an attribute on a stack object ?
-> 
-> I think m68k stack layout still guarantees 4-byte-alignment, no?
+On 10/22/07, Paul Menage <menage@google.com> wrote:
+>
+> Using cgroup_mutex is certainly possible for now, although more
+> heavy-weight than I'd like long term. Using css_get isn't the right
+> approach, I think - we shouldn't be able to cause an rmdir to fail due
+> to a concurrent read.
+>
 
-The stack pointer must be even (i.e. 2 byte-alignment).
-But it looks like current gcc always allocates multiples of 4 bytes on
-the stack, probably for performance reasons.
+OK, the obvious solution is to use the same approach for subsystem
+state objects as we do for the struct cgroup itself - move the calls
+to the subsystem destroy methods to cgroup_diput. A control file
+dentry will keep alive the parent dir's dentry, which will keep alive
+the cgroup and (with this change) the subsystem state objects too.
 
-Gr{oetje,eeting}s,
+The only potential drawback that I can see is that an open fd on a
+cgroup directory or a control file will keep more memory alive than it
+would have done previously.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Paul
