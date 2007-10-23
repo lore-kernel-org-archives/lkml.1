@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbXJWLi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXJWLot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbXJWLi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 07:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXJWLiT
+	id S1752581AbXJWLot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 07:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXJWLom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 07:38:19 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:57843 "EHLO proxima.lp0.eu"
+	Tue, 23 Oct 2007 07:44:42 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10478 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbXJWLiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 07:38:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
-	b=MnRSuhztShuerfD8EXoFXGNDK9yXc/vz4nBzVvf1V41JY25xj1JwKKWJ32BhvgQ3pjrjMrOoNLba+KYUrg3fkm8Pkjo5hUP4IM3x0M71TDx84Xwwlv4n3/Rd+YVSe41j;
-Message-ID: <11103.simon.1193139489@5ec7c279.invalid>
-In-Reply-To: <20071022171326.GA30317@kroah.com>
-References: <200710221700.l9MH0klg006152@sapphire.spiritone.com>
-    <20071022171326.GA30317@kroah.com>
-Date: Tue, 23 Oct 2007 12:38:09 +0100
-Subject: Re: LSM conversion to static interface
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
-       linux-kernel@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LSM ML" <linux-security-module@vger.kernel.org>,
-       "Crispin Cowan" <crispin@crispincowan.com>
-User-Agent: SquirrelMail/1.4.10a
+	id S1751750AbXJWLom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 07:44:42 -0400
+Date: Tue, 23 Oct 2007 13:43:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: Re: IDE crash...
+Message-ID: <20071023114314.GL5059@kernel.dk>
+References: <20071023195255S.fujita.tomonori@lab.ntt.co.jp> <20071023105710.GJ5059@kernel.dk> <20071023105810.GK5059@kernel.dk> <20071023201048R.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023201048R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, October 22, 2007 18:13, Greg KH wrote:
-> I agree, that is why customers do not load other random security modules
-> in their kernel today, and why they will not do so tomorrow.  So,
-> because of that, this whole point about compliance with regulatory law
-> seems kind of moot :)
->
-> Again, LSM isn't going away at all, this is just one config option for
-> allowing LSM to work as a module that is changing.  If a customer
-> demands that this feature come back, I'm sure that the big distros will
-> be the first to push for it.  But currently, given that there are no
-> known external LSMs being used by customers demanding support, I don't
-> see what the big issue here really is.
+On Tue, Oct 23 2007, FUJITA Tomonori wrote:
+> On Tue, 23 Oct 2007 12:58:11 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Tue, Oct 23 2007, Jens Axboe wrote:
+> > > On Tue, Oct 23 2007, FUJITA Tomonori wrote:
+> > > > On Tue, 23 Oct 2007 00:43:21 -0700 (PDT)
+> > > > David Miller <davem@davemloft.net> wrote:
+> > > > 
+> > > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > > Date: Tue, 23 Oct 2007 09:23:59 +0200
+> > > > > 
+> > > > > > On Tue, Oct 23 2007, David Miller wrote:
+> > > > > > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > > > > > Date: Tue, 23 Oct 2007 09:09:33 +0200
+> > > > > > > 
+> > > > > > > > Eh this wont work, it's the wrong entry... Here's a temporary
+> > > > > > > > work-around.
+> > > > > > > > 
+> > > > > > > > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+> > > > > > > > index c89f0d3..108202b 100644
+> > > > > > > > --- a/drivers/ide/ide-io.c
+> > > > > > > > +++ b/drivers/ide/ide-io.c
+> > > > > > > > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
+> > > > > > > >  		return;
+> > > > > > > >  
+> > > > > > > >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+> > > > > > > > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
+> > > > > > > >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+> > > > > > > >  	} else {
+> > > > > > > >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+> > > > > > > 
+> > > > > > > That's the exact patch I'm about to boot test :-)
+> > > > > > 
+> > > > > > That should work - once you verify that, would you mind testing this one
+> > > > > > as well? Thanks!
+> > > > > 
+> > > > > This one works here too, thanks.
+> > > > 
+> > > > BTW, we avoid calling sg_init_table() for every I/O request due to Jens'
+> > > > trick. And Jens will remove the code to clear sg_dma_len/addr in
+> > > > blk_rq_map_sg(). So sparc64 iommu needs to do that for itself?
+> > > > 
+> > > > http://marc.info/?l=linux-scsi&m=119261920425120&w=2
+> > > 
+> > > It does - Dave, do you agree with the patch? I think it should be added,
+> > > so that sparc64 isn't the odd-arch-out in this respect. I've tentatively
+> > > applied the patch, Davem?
+> > 
+> > BTW, you sure that should not include to check whether sg_next() returns
+> > non-NULL?
+> 
+> Yeah, the following part checks that:
+> 
+> +	if (dma_sg != sg) {
 
-I have an out of tree module to do per-port (tcp/udp) bind permissions,
-it works fine with the "capability" module as secondary and I can load
-or unload both of them at any time... this recent change completely
-breaks that. (I had to #include dummy.c though).
-
-Why should I now need to:
-1. reboot every time I change the code when I could just reload modules before?
-2. put it into my kernel source tree to use it?
+Ah good, thanks for confirming.
 
 -- 
-Simon Arlott
+Jens Axboe
+
