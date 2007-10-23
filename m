@@ -1,133 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXJWDHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXJWDSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbXJWDHY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 23:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXJWDHK
+	id S1753102AbXJWDSL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 23:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXJWDR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 23:07:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752199AbXJWDHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 23:07:08 -0400
-Date: Mon, 22 Oct 2007 23:07:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: accusys.sw5@gmail.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Add ACCUSYS RAID driver for Linux i386/x86-64
-Message-ID: <20071023030701.GC7793@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	David Miller <davem@davemloft.net>, accusys.sw5@gmail.com,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cbc61c0d0710220317w68f4f119xceb10192f2ad0158@mail.gmail.com> <cbc61c0d0710221845h46f40d6p435f994b88a92b89@mail.gmail.com> <20071022.190253.95509114.davem@davemloft.net>
+	Mon, 22 Oct 2007 23:17:58 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51716 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbXJWDR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 23:17:58 -0400
+Message-ID: <471D67B5.1020802@linux.vnet.ibm.com>
+Date: Tue, 23 Oct 2007 08:47:09 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071022.190253.95509114.davem@davemloft.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+References: <471D4523.4040509@google.com>
+In-Reply-To: <471D4523.4040509@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 07:02:53PM -0700, David Miller wrote:
- > From: "Peter Chan" <accusys.sw5@gmail.com>
- > Date: Tue, 23 Oct 2007 09:45:48 +0800
- > 
- > > Add linux-scsi and linux-kernel in mail group.
- > 
- > Please do not post your driver as a "RAR" attachment,
- > not only are most Linux folks not familiar with this
- > archive format, it is also an attachment type rejected
- > by just about every large email service provider out
- > there.
+Paul Menage wrote:
+> Report CPU usage in CFS Cgroup directories
+> 
+> Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
+> milliseconds for that cgroup's tasks
+> 
+> This replaces the "example CPU Accounting CGroup subsystem" that
+> was merged into mainline last week.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+> ---
+> kernel/sched.c |   32 +++++++++++++++++++++++++++-----
+> 1 file changed, 27 insertions(+), 5 deletions(-)
+> 
+> Index: container-2.6.23-mm1/kernel/sched.c
+> ===================================================================
+> --- container-2.6.23-mm1.orig/kernel/sched.c
+> +++ container-2.6.23-mm1/kernel/sched.c
+> @@ -7005,15 +7005,37 @@ static u64 cpu_shares_read_uint(struct c
+>     return (u64) tg->shares;
+> }
+> 
+> -static struct cftype cpu_shares = {
+> -    .name = "shares",
+> -    .read_uint = cpu_shares_read_uint,
+> -    .write_uint = cpu_shares_write_uint,
+> +static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
+> +{
+> +    struct task_group *tg = cgroup_tg(cgrp);
+> +    int i;
+> +    u64 res = 0;
+> +    for_each_possible_cpu(i) {
+> +        unsigned long flags;
+> +        spin_lock_irqsave(&tg->cfs_rq[i]->rq->lock, flags);
+> +        res += tg->se[i]->sum_exec_runtime;
+> +        spin_unlock_irqrestore(&tg->cfs_rq[i]->rq->lock, flags);
+> +    }
+> +    /* Convert from ns to ms */
+> +    do_div(res, 1000000);
+> +    return res;
+> +}
+> +
 
-Before resubmitting this in a different format, this looks
-like it will need quite a bit of work before it's
-in mergable state.
-
-Just from a quick skim..
-
-* Why are there separate drivers for i386 and x86-64 ?
-  (With i386 and x86-64 now being one arch/ this makes even
-   less sense)
-  Typically in Linux we have one driver capable of driving
-  the hardware, regardless of which architecture it's running on.
-
-  The differences between the two seem to be locking related,
-  which makes this look even more odd.
-
-* lots of #ifdef LINUX_VERSION_CODE > 2.5.0 and similar.
-  These should just be removed.
-
-* None of this should be necessary..
-
-#include <linux/version.h>
-
-#if defined(CONFIG_MODVERSIONS) && !defined(MODVERSIONS)
-        #define MODVERSIONS
-#endif
-
-/* modversions.h should be before module.h */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
-        #if defined(MODVERSIONS)
-                #include <config/modversions.h>
-        #endif
-#endif
-
-
-* Don't use absolute paths in includes
-       #include "/usr/src/linux/drivers/scsi/scsi.h"
-        #include "/usr/src/linux/drivers/scsi/hosts.h"
-        #include "/usr/src/linux/drivers/scsi/constants.h"
-        #include "/usr/src/linux/drivers/scsi/sd.h"
-
-  There's no guarantee (or need) for kernel source to be there.
-
-* Instead of reinventing a linked list implementation, use
-  the one from <linux/list.h>
-
-* Use <linux/types.h> instead of reinventing your own.
-
-* Remove pointless wrappers like..
-
-#define iowrite32 writel
-#define ioread32 readl
-
-  and just use the functions directly.
-
-* This raises some eyebrows..
-
-        #include "/usr/src/linux/drivers/scsi/scsi_module.c"
-
-  Asides from the absolute path problem, no new drivers
-  should be using this file. There's even a helpful comment
-  inside that file telling you this.
-
-* This isn't nice..
-
-#define AllocRequestIndex(ResIndex)\
-{\
-        /*DISABLE_IRQ();*/\
-        AllocRequest++;\
-        if (RequestHead == NULL) PANIC("Request FULL");\
-        ResIndex = RequestHead;\
-        ResIndex->InUsed = TRUE;\
-        RequestHead = RequestHead->Next;\
-        /*ENABLE_IRQ();*/\
-}
-
-  Drivers should never panic the box unless something
-  seriously critical is happening. An allocation failure
-  doesn't sound particularly catastrophic.
-
-* You don't need to redefine the SCSI opcodes, they are
-  already defined for you in <scsi/scsi.h>
+I think we also need the notion of load, like we have in cpu_acct.c
+Don't we need to do a css_get() on the cgrp to ensure that the cgroup
+does not go away if it's empty and someone does an rmdir on it?
 
 
-I stopped reading at this point.  There's probably more lurking
-under that, and scripts/checkpatch.pl will probably pick up
-another bunch of nits.
+> +static struct cftype cpu_files[] = {
+> +    {
+> +        .name = "shares",
+> +        .read_uint = cpu_shares_read_uint,
+> +        .write_uint = cpu_shares_write_uint,
+> +    },
+> +    {
+> +        .name = "usage",
+> +        .read_uint = cpu_usage_read,
+> +    },
+> };
+> 
+> static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup
+> *cont)
+> {
+> -    return cgroup_add_file(cont, ss, &cpu_shares);
+> +    return cgroup_add_files(cont, ss, cpu_files, ARRAY_SIZE(cpu_files));
+> }
+> 
+> struct cgroup_subsys cpu_cgroup_subsys = {
 
-	Dave
 
 -- 
-http://www.codemonkey.org.uk
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
