@@ -1,145 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXJWVxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbXJWVy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbXJWVxx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJWVxp
+	id S1755575AbXJWVy2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbXJWVyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:53:45 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:37616 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753028AbXJWVxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:53:44 -0400
-Subject: Re: mm: soft lockup in 2.6.23-6636. caused by drop_caches ?
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1193148210.16944.1.camel@twins>
-References: <1193147728.3044.18.camel@castor.rsk.org>
-	 <1193148210.16944.1.camel@twins>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 22:53:41 +0100
-Message-Id: <1193176421.3126.14.camel@castor.rsk.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Tue, 23 Oct 2007 17:54:19 -0400
+Received: from mail.tmr.com ([64.65.253.246]:55260 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752669AbXJWVyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 17:54:18 -0400
+Message-ID: <471E6FC2.1070401@tmr.com>
+Date: Tue, 23 Oct 2007 18:03:46 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Federico Sevilla III <jijo@fs3.ph>, linux-kernel@vger.kernel.org
+Subject: Re: "spurious completions during NCQ" with 2.6.23.1 and DVD   Multi-Recorder
+ on Thinkpad T61
+References: <1193018170.4672.20.camel@humanitas.fs3.ph> <20071022104619.0a554cea@the-village.bc.nu>
+In-Reply-To: <20071022104619.0a554cea@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-23 at 16:03 +0200, Peter Zijlstra wrote:
-> On Tue, 2007-10-23 at 14:55 +0100, richard kennedy wrote:
-> > on git v2.6.23-6636-g557ebb7 I'm getting a soft lockup when running a
-> > simple disk write test case on AMD64X2, sata hd &  ext3.
-> > 
-> > the test does this
-> > sync
-> > echo 3 > /proc/sys/vm/drop_caches
-> > for (( i=0; $i < $count; i=$i+1 )) ; do
-> > dd if=large_file of=copy_file_$i bs=4k &
-> > done
+Alan Cox wrote:
+> On Mon, 22 Oct 2007 09:56:10 +0800
+> Federico Sevilla III <jijo@fs3.ph> wrote:
 > 
-> have you tried with lockdep enabled?
+>> Hi,
+>>
+>> Using the 2.6.23.1 kernel and Debian Etch on a Lenovo Thinkpad T61
+>> 7659A21, I am getting two weird errors, as follows:
 > 
-> Also, doesn't really surprise me since its known that drop_caches has a
-> deadlock in it.
+> Turn off bluetooth and you may find the stuck IRQ goes away - at least on
+> some thinkpads there are weird extra IRQs when bluetooth is running which
+> break stuff.
 > 
-Thanks for suggestion, of course it took a lot longer to fail with all
-the debug turned on.
+There was an old American Music/Comedy show called "Hee Haw!" which had 
+a recurring skit consisting of a farmer running into the doctor's office 
+and saying
+   "Doctor, doctor! It hurts when I do this!" followed by some unlikely 
+activity.
+   The doctor always replied "Then don't do that."
 
-But, lockdep gives a possible circular lock dependency between
-journal->j_list_lock and inode_lock
+Turning off bluetooth is a useful diagnostic test, but for some systems 
+it's not a practical operating configuration. Any thoughts on making 
+bluetooth work in these cases? Most laptops make a unit like the 
+Logitech MX5000 BT keyboard desirable for extended use.
 
-drop_pagecache_sb takes the inode_lock and calls down into
-journal_try_to_free_buffers which takes the journal->j_list_lock
-
-while in kjournald, journal_commit_transaction take the j_list_lock and
-calls __journal_unfile_buffer that takes the inode_lock.
-
-I'm not sure how to fix this, but hope this helps someone else ;)
-Here's the full info.
-
-Cheers
-Richard
-
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.23 #2
--------------------------------------------------------
-bash/3535 is trying to acquire lock:
- (&journal->j_list_lock){--..}, at: [<ffffffff88023b58>] journal_try_to_free_buffers+0x7e/0x131 [jbd]
-
-but task is already holding lock:
- (inode_lock){--..}, at: [<ffffffff810b5574>] drop_pagecache+0x4d/0xeb
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (inode_lock){--..}:
-       [<ffffffff81056026>] __lock_acquire+0xac8/0xcf0
-       [<ffffffff810b4f2e>] __mark_inode_dirty+0xe2/0x174
-       [<ffffffff810562d2>] lock_acquire+0x84/0xa8
-       [<ffffffff810b4f2e>] __mark_inode_dirty+0xe2/0x174
-       [<ffffffff8125564a>] _spin_lock+0x1e/0x27
-       [<ffffffff810b4f2e>] __mark_inode_dirty+0xe2/0x174
-       [<ffffffff810b8c2a>] __set_page_dirty+0x118/0x124
-       [<ffffffff88022238>] __journal_unfile_buffer+0x9/0x13 [jbd]
-       [<ffffffff880248c5>] journal_commit_transaction+0xbd1/0xde8 [jbd]
-       [<ffffffff880278f1>] kjournald+0xc6/0x1f1 [jbd]
-       [<ffffffff8104b87a>] autoremove_wake_function+0x0/0x2e
-       [<ffffffff810550bd>] trace_hardirqs_on+0x11e/0x149
-       [<ffffffff8802782b>] kjournald+0x0/0x1f1 [jbd]
-       [<ffffffff8104b760>] kthread+0x47/0x73
-       [<ffffffff8125512e>] trace_hardirqs_on_thunk+0x35/0x3a
-       [<ffffffff8100cdf8>] child_rip+0xa/0x12
-       [<ffffffff8100c50f>] restore_args+0x0/0x30
-       [<ffffffff8104b719>] kthread+0x0/0x73
-       [<ffffffff8100cdee>] child_rip+0x0/0x12
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #0 (&journal->j_list_lock){--..}:
-       [<ffffffff8105479f>] print_circular_bug_header+0xcc/0xd3
-       [<ffffffff81055f2b>] __lock_acquire+0x9cd/0xcf0
-       [<ffffffff88023b58>] journal_try_to_free_buffers+0x7e/0x131 [jbd]
-       [<ffffffff810562d2>] lock_acquire+0x84/0xa8
-       [<ffffffff88023b58>] journal_try_to_free_buffers+0x7e/0x131 [jbd]
-       [<ffffffff8125564a>] _spin_lock+0x1e/0x27
-       [<ffffffff88023b58>] journal_try_to_free_buffers+0x7e/0x131 [jbd]
-       [<ffffffff810785db>] __invalidate_mapping_pages+0x81/0x103
-       [<ffffffff810b559d>] drop_pagecache+0x76/0xeb
-       [<ffffffff810b562c>] drop_caches_sysctl_handler+0x1a/0x2e
-       [<ffffffff810d9407>] proc_sys_write+0x7c/0xa4
-       [<ffffffff81099619>] vfs_write+0xc6/0x16f
-       [<ffffffff81099bd6>] sys_write+0x45/0x6e
-       [<ffffffff8100c05a>] tracesys+0xdc/0xe1
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
-other info that might help us debug this:
-
-2 locks held by bash/3535:
- #0:  (&type->s_umount_key#17){----}, at: [<ffffffff810b5561>] drop_pagecache+0x3a/0xeb
- #1:  (inode_lock){--..}, at: [<ffffffff810b5574>] drop_pagecache+0x4d/0xeb
-
-stack backtrace:
-
-Call Trace:
- [<ffffffff81054369>] print_circular_bug_tail+0x69/0x72
- [<ffffffff8105479f>] print_circular_bug_header+0xcc/0xd3
- [<ffffffff81055f2b>] __lock_acquire+0x9cd/0xcf0
- [<ffffffff88023b58>] :jbd:journal_try_to_free_buffers+0x7e/0x131
- [<ffffffff810562d2>] lock_acquire+0x84/0xa8
- [<ffffffff88023b58>] :jbd:journal_try_to_free_buffers+0x7e/0x131
- [<ffffffff8125564a>] _spin_lock+0x1e/0x27
- [<ffffffff88023b58>] :jbd:journal_try_to_free_buffers+0x7e/0x131
- [<ffffffff810785db>] __invalidate_mapping_pages+0x81/0x103
- [<ffffffff810b559d>] drop_pagecache+0x76/0xeb
- [<ffffffff810b562c>] drop_caches_sysctl_handler+0x1a/0x2e
- [<ffffffff810d9407>] proc_sys_write+0x7c/0xa4
- [<ffffffff81099619>] vfs_write+0xc6/0x16f
- [<ffffffff81099bd6>] sys_write+0x45/0x6e
- [<ffffffff8100c05a>] tracesys+0xdc/0xe1
-
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
