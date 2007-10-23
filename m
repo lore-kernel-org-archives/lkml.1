@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbXJWVb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXJWVbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbXJWVb3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 17:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbXJWVbT
+	id S1752641AbXJWVbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 17:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbXJWVbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 17:31:19 -0400
+	Tue, 23 Oct 2007 17:31:21 -0400
 Received: from fk-out-0910.google.com ([209.85.128.190]:2241 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbXJWVbS (ORCPT
+	with ESMTP id S1752426AbXJWVbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 17:31:18 -0400
+	Tue, 23 Oct 2007 17:31:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=jWFvEQM+T+LO3nHB7AnRvOCNlzh5iArEWaGDImqF/pR6f+b1NJNd7Lkfm8LU8FFVbh4qxpv50gWx2ZjJG0qgU6FhcinRpncSzKY/dEIZrALCRcITTPUEmi+lbMooEXsT/MdKQbXq911u0GP8+AmQeFppr1F/HbQdrU2/2XqiDCw=
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=L5keGs7cwJz8AcfpjEsh5PPTcyC0iYi7YMN635CPRByyT1OZz386B5uYolJqoopt+OdZqRe1XVJfQQVZAPz93x135e8eB9cbEp0KFTHlfctzrXrsJWVUcR+YL00GvrjiDQFpzDOGHrMCGxIiq4fALAWDGM0w91E9VhR8jdODH0g=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH]: Fix IDE host_flags regression.
-Date: Tue, 23 Oct 2007 21:50:14 +0200
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] cy82c693: fix build for CONFIG_HOTPLUG=n
+Date: Tue, 23 Oct 2007 22:57:33 +0200
 User-Agent: KMail/1.9.7
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20071022.020900.41634188.davem@davemloft.net>
-In-Reply-To: <20071022.020900.41634188.davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, "Avuton Olrich" <avuton@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200710232150.14284.bzolnier@gmail.com>
+Message-Id: <200710232257.34137.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -32,48 +31,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+On Saturday 20 October 2007, Avuton Olrich wrote:
 
-Thanks for debugging & fixing this.
+> My randconfig script the attached config caught an error on:
+> drivers/ide/pci/cy82c693.c:439: error: primary causes a section type conflict
+>
+> My git tree: c00046c279a2521075250fad682ca0acc10d4fd7
+>
+> Bisected to:
+> 8562043606430185cad26d085d46adcc7ad67fd1 is first bad commit
+> commit 8562043606430185cad26d085d46adcc7ad67fd1
+> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date:   Sat Oct 20 00:32:34 2007 +0200
+>
+>     ide: constify struct ide_port_info
+>
+>     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-On Monday 22 October 2007, David Miller wrote:
-> 
-> Bart, please test your changes.
+It turns out that const and __{dev}initdata cannot be mixed currently.
 
-Well, I do.  However due to hardware diversity it is not practically
-possible to test them all myself...
+This patch workarounds the problem by removing __devinitdata tag from 'primary'
+variable (which makes 'primary' to be moved from .init.data to .bss section).
+Now all __devinitdata data in cy82c693 host driver are read-only so it builds
+again (driver's .init.data section gets marked as READONLY).
 
-> Thank you.
-> 
-> [IDE]: Expand hwif->host_flags so that it fits new flags.
-> 
-> This fixes regressions added by:
-> 238e4f142c33bb34440cc64029dde7b9fbc4e65f
+While at it:
 
-Yeah, sorry for that.  ->host flags were expanded in struct ide_pci_device_s
-(now struct ide_port_info) but not in struct hwif_s.  This went unnoticed
-because majority of new flags are used only through struct ide_pci_device_s.
+* Move 'primary' variable to its only user, init_iops_cy82c693().
 
-The exceptions are:
-- IDE_HFLAG_NO_LBA48 (only user is trm290, exotic hardware)
-- IDE_HFLAG_NO_LBA48_DMA (only user is alim15x3, revisions <= 0xC4)
-- IDE_HFLAG_ERROR_STOPS_FIFO (the error path of pdc202xx_{old,new}) 
+* Bump driver version.
 
-What worries me a bit is that commit 238e4f142c33bb34440cc64029dde7b9fbc4e65f
-was in -mm since 2.6.23-rc4-mm1 (released on Sep 1 2007) and nobody reported
-the issue earlier... 
+Cc: "Avuton Olrich" <avuton@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+Even if we decide to revert commit 8562043606430185cad26d085d46adcc7ad67fd1
+later it is worth to have the (independent) changes contained in this patch.
 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/include/linux/ide.h b/include/linux/ide.h
-> index 2e4b8dd..4ed4777 100644
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
-> @@ -667,7 +667,7 @@ typedef struct hwif_s {
->  	u8 straight8;	/* Alan's straight 8 check */
->  	u8 bus_state;	/* power state of the IDE bus */
->  
-> -	u16 host_flags;
-> +	u32 host_flags;
->  
->  	u8 pio_mask;
+ drivers/ide/pci/cy82c693.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: b/drivers/ide/pci/cy82c693.c
+===================================================================
+--- a/drivers/ide/pci/cy82c693.c
++++ b/drivers/ide/pci/cy82c693.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/cy82c693.c		Version 0.41	Aug 27, 2007
++ * linux/drivers/ide/pci/cy82c693.c		Version 0.42	Oct 23, 2007
+  *
+  *  Copyright (C) 1998-2000 Andreas S. Krebs (akrebs@altavista.net), Maintainer
+  *  Copyright (C) 1998-2002 Andre Hedrick <andre@linux-ide.org>, Integrator
+@@ -436,10 +436,10 @@ static void __devinit init_hwif_cy82c693
+ 	hwif->ide_dma_on = &cy82c693_ide_dma_on;
+ }
+ 
+-static __devinitdata ide_hwif_t *primary;
+-
+ static void __devinit init_iops_cy82c693(ide_hwif_t *hwif)
+ {
++	static ide_hwif_t *primary;
++
+ 	if (PCI_FUNC(hwif->pci_dev->devfn) == 1)
+ 		primary = hwif;
+ 	else {
