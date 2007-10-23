@@ -1,162 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXJWIBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbXJWIDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbXJWIBj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 04:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJWIBc
+	id S1753283AbXJWIDm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 04:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXJWID3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 04:01:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41711
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751097AbXJWIBb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 04:01:31 -0400
-Date: Tue, 23 Oct 2007 01:01:56 -0700 (PDT)
-Message-Id: <20071023.010156.41630559.davem@davemloft.net>
-To: anil.s.keshavamurthy@intel.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH]: Genericizing iova.[ch]
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 23 Oct 2007 04:03:29 -0400
+Received: from mga11.intel.com ([192.55.52.93]:61216 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751462AbXJWID0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 04:03:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,316,1188802800"; 
+   d="scan'208";a="355636183"
+Subject: [PATCH -v7 0/3] x86 boot: 32-bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 23 Oct 2007 16:06:05 +0800
+Message-Id: <1193126765.23935.74.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 23 Oct 2007 08:03:23.0159 (UTC) FILETIME=[2EC71A70:01C8154B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch set defines a 32-bit boot protocol for x86 platform, adds
+an extensible boot parameter passing mechanism, export the boot
+parameters via sysfs.
 
-I would like to potentially move the sparc64 IOMMU code over to using
-the nice new drivers/pci/iova.[ch] code for free area management..
+The patch set has been tested against kernel of git version
+v2.6.23-6623-g55b70a0 (with Rusty's git tree pulled) on x86_64 and
+i386.
 
-In order to do that we have to detach the IOMMU page size assumptions
-which only really need to exist in the intel-iommu.[ch] code.
+This patch set is based on the proposal of Peter Anvin.
 
-This patch attempts to implement that.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+v7:
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index b3d7031..7f2aec4 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -1089,7 +1089,7 @@ static void dmar_init_reserved_ranges(void)
- 	int i;
- 	u64 addr, size;
- 
--	init_iova_domain(&reserved_iova_list);
-+	init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
- 
- 	/* IOAPIC ranges shouldn't be accessed by DMA */
- 	iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
-@@ -1143,7 +1143,7 @@ static int domain_init(struct dmar_domain *domain, int guest_width)
- 	int adjust_width, agaw;
- 	unsigned long sagaw;
- 
--	init_iova_domain(&domain->iovad);
-+	init_iova_domain(&domain->iovad, DMA_32BIT_PFN);
- 	spin_lock_init(&domain->mapping_lock);
- 
- 	domain_reserve_special_ranges(domain);
-diff --git a/drivers/pci/intel-iommu.h b/drivers/pci/intel-iommu.h
-index ee88dd2..af8560c 100644
---- a/drivers/pci/intel-iommu.h
-+++ b/drivers/pci/intel-iommu.h
-@@ -27,6 +27,19 @@
- #include <linux/io.h>
- 
- /*
-+ * We need a fixed PAGE_SIZE of 4K irrespective of
-+ * arch PAGE_SIZE for IOMMU page tables.
-+ */
-+#define PAGE_SHIFT_4K		(12)
-+#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
-+#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
-+#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
-+
-+#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
-+#define DMA_32BIT_PFN		IOVA_PFN(DMA_32BIT_MASK)
-+#define DMA_64BIT_PFN		IOVA_PFN(DMA_64BIT_MASK)
-+
-+/*
-  * Intel IOMMU register specification per version 1.0 public spec.
-  */
- 
-diff --git a/drivers/pci/iova.c b/drivers/pci/iova.c
-index a84571c..8de7ab6 100644
---- a/drivers/pci/iova.c
-+++ b/drivers/pci/iova.c
-@@ -9,19 +9,19 @@
- #include "iova.h"
- 
- void
--init_iova_domain(struct iova_domain *iovad)
-+init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit)
- {
- 	spin_lock_init(&iovad->iova_alloc_lock);
- 	spin_lock_init(&iovad->iova_rbtree_lock);
- 	iovad->rbroot = RB_ROOT;
- 	iovad->cached32_node = NULL;
--
-+	iovad->dma_32bit_pfn = pfn_32bit;
- }
- 
- static struct rb_node *
- __get_cached_rbnode(struct iova_domain *iovad, unsigned long *limit_pfn)
- {
--	if ((*limit_pfn != DMA_32BIT_PFN) ||
-+	if ((*limit_pfn != iovad->dma_32bit_pfn) ||
- 		(iovad->cached32_node == NULL))
- 		return rb_last(&iovad->rbroot);
- 	else {
-@@ -37,7 +37,7 @@ static void
- __cached_rbnode_insert_update(struct iova_domain *iovad,
- 	unsigned long limit_pfn, struct iova *new)
- {
--	if (limit_pfn != DMA_32BIT_PFN)
-+	if (limit_pfn != iovad->dma_32bit_pfn)
- 		return;
- 	iovad->cached32_node = &new->node;
- }
-diff --git a/drivers/pci/iova.h b/drivers/pci/iova.h
-index ae3028d..d521b5b 100644
---- a/drivers/pci/iova.h
-+++ b/drivers/pci/iova.h
-@@ -15,22 +15,9 @@
- #include <linux/rbtree.h>
- #include <linux/dma-mapping.h>
- 
--/*
-- * We need a fixed PAGE_SIZE of 4K irrespective of
-- * arch PAGE_SIZE for IOMMU page tables.
-- */
--#define PAGE_SHIFT_4K		(12)
--#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
--#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
--#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
--
- /* IO virtual address start page frame number */
- #define IOVA_START_PFN		(1)
- 
--#define IOVA_PFN(addr)		((addr) >> PAGE_SHIFT_4K)
--#define DMA_32BIT_PFN	IOVA_PFN(DMA_32BIT_MASK)
--#define DMA_64BIT_PFN	IOVA_PFN(DMA_64BIT_MASK)
--
- /* iova structure */
- struct iova {
- 	struct rb_node	node;
-@@ -44,6 +31,7 @@ struct iova_domain {
- 	spinlock_t	iova_rbtree_lock; /* Lock to protect update of rbtree */
- 	struct rb_root	rbroot;		/* iova domain rbtree root */
- 	struct rb_node	*cached32_node; /* Save last alloced node */
-+	unsigned long	dma_32bit_pfn;
- };
- 
- struct iova *alloc_iova_mem(void);
-@@ -56,7 +44,7 @@ struct iova *alloc_iova(struct iova_domain *iovad, unsigned long size,
- struct iova *reserve_iova(struct iova_domain *iovad, unsigned long pfn_lo,
- 	unsigned long pfn_hi);
- void copy_reserved_iova(struct iova_domain *from, struct iova_domain *to);
--void init_iova_domain(struct iova_domain *iovad);
-+void init_iova_domain(struct iova_domain *iovad, unsigned long pfn_32bit);
- struct iova *find_iova(struct iova_domain *iovad, unsigned long pfn);
- void put_iova_domain(struct iova_domain *iovad);
- 
+- Rebase on Rusty's git tree.
+- Revise the 32-bit boot protocol document.
+
+v6:
+
+- The linked list of setup_data is copied to memory area right after
+  the kernel _end during early kernel bootstrap to solve the issue
+  that where the safe place is to place linked list of setup_data.
+
+v5:
+
+- Use bt_ioremap/bt_iounmap in copy_setup_data.
+
+v4:
+
+- Reserve setup_data and boot parameters for accessing during
+  runtime.
+- Export boot parameters via sysfs.
+
+v3:
+
+- Move hd0_info and hd1_info back to zero page for compatibility.
+
+v2:
+
+- Increase the boot protocol version number
+- Check version number before parsing setup data.
+- Revise zero page description according to the source code and move
+  them to zero-page.txt.
+
+
+Best Regards,
+Huang Ying
