@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbXJWAP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbXJWARW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbXJWAP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 20:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXJWAPU
+	id S1753880AbXJWARW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 20:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXJWARP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 20:15:20 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:48599 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751277AbXJWAPS (ORCPT
+	Mon, 22 Oct 2007 20:17:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52541 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750700AbXJWARO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 20:15:18 -0400
-Subject: Re: Interaction between Xen and XFS: stray RW mappings
-From: Zachary Amsden <zach@vmware.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       dean gaudet <dean@arctic.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
-       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>
-In-Reply-To: <20071022233514.GA9057@one.firstfloor.org>
-References: <470FA7C3.90404@goop.org> <20071014225618.GN23367404@sgi.com>
-	 <4712A254.4090604@goop.org> <200710151415.07248.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.0.9999.0710212015430.2320@twinlark.arctic.org>
-	 <471C1A61.1010001@goop.org> <p73sl439s7k.fsf@bingen.suse.de>
-	 <471CEEB4.9040807@goop.org> <20071022190740.GA1695@one.firstfloor.org>
-	 <20071022223224.GC995458@sgi.com>
-	 <20071022233514.GA9057@one.firstfloor.org>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 17:16:03 -0700
-Message-Id: <1193098563.7278.40.camel@bodhitayantram.eng.vmware.com>
+	Mon, 22 Oct 2007 20:17:14 -0400
+Date: Mon, 22 Oct 2007 17:16:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, xemul@openvz.org,
+       raven@themaw.net
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+Message-Id: <20071022171624.0c00f8da.akpm@linux-foundation.org>
+In-Reply-To: <20071022200742.6f3acbb2@bree.surriel.com>
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+	<20071022145321.195d929b@bree.surriel.com>
+	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
+	<20071022172926.03ca122a@bree.surriel.com>
+	<20071022200742.6f3acbb2@bree.surriel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-23 at 01:35 +0200, Andi Kleen wrote:
-> On Tue, Oct 23, 2007 at 08:32:25AM +1000, David Chinner wrote:
-> > On Mon, Oct 22, 2007 at 09:07:40PM +0200, Andi Kleen wrote:
-> > > On Mon, Oct 22, 2007 at 11:40:52AM -0700, Jeremy Fitzhardinge wrote:
-> > > > Andi Kleen wrote:
-> > > > > Jeremy Fitzhardinge <jeremy@goop.org> writes:
-> > > > >   
-> > > > >> Yes, that's precisely the problem.  xfs does delay the unmap, leaving
-> > > > >> stray mappings, which upsets Xen.
-> > > > >>     
-> > > > >
-> > > > > Again it not just upsets Xen, keeping mappings to freed pages is wrong generally 
-> > > > > and violates the x86 (and likely others like PPC) architecture because it can 
-> > > > > cause illegal caching attribute aliases.
+On Mon, 22 Oct 2007 20:07:42 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-It is a serious offense to leave stray mappings for memory which can get
-re-mapped to I/O devices... especially with PCI and other device
-hotplug.  I have to back up Andi on this one unconditionally.
+> On Mon, 22 Oct 2007 17:29:26 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> 
+> > On Mon, 22 Oct 2007 22:48:51 +0200
+> > Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > > > I'm getting a process stuck in pthread_rwlock_wrlock(), even
+> > > > > though it looks like the lock is not held by anybody.
+> > > > > 
+> > > > > I think the last -mm was OK.  Any ideas?
+> > > > > 
+> > > > > If not, I'll go searching for the offending patch.
+> > > > 
+> > > > I wonder if that's the same bug that's breaking autofs for me.
+> > > 
+> > > Probably.
+> > > 
+> > > > Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent
+> > > > cache rwlock lock failed
+> > > > Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error:
+> > > > 11 at 65 in cache.c
+> > > > 
+> > > > I'm bisecting 2.6.23-mm1 today to find the problem patch, with
+> > > > some luck I'll have it this afternoon.
+> > > > 
+> > > > With the series applied up to
+> > > > whitespace-fixes-task-exit-handling.patch things work.
+> > > > 
+> > > > It breaks before
+> > > > kswapd-should-only-wait-on-io-if-there-is-io.patch
+> > > > 
+> > > > That leaves only about 60-80 patches to look at :)
+> > > 
+> > > OK, the first patch that breaks something for me is:
+> > > 
+> > >   pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
+> > 
+> > Confirmed.  That same patch is the point where the bisect
+> > here starts breaking autofs.
+> 
+> Oww man.  Getting into heisenbug territory now :(
+> 
+> I bisected down to the point where I had these two patches between
+> good and bad:
+> 
+> # GOOD
+> pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
+> pid-namespaces-make-proc-have-multiple-superblocks-one-for-each-namespace.patch
+> # BAD
+> 
+> Applying them one by one and rebuilding the kernel after each one
+> gave me a working kernel, though!
+> 
+> Bisecting them from the top (quilt pop) resulted in a broken kernel,
+> bisecting from the bottom (quilt push) results in a working one.
+> 
+> I have no idea what is going on any more...
+> 
 
-On architectures where you have multibyte, non-wordsize updates to
-hardware page tables, you even have races here when setting, updating
-and clearing PTEs that must be done in a sequence where no aliasing of
-mappings to partially written PTEs can result in I/O memory getting
-mapped in a cacheable state.  The window here is only one instruction,
-and yes, it is possible for a window this small to create a problem.  A
-large (or permanently lazy) window is extremely frightening.
+I guess we can debug it in the old-fashioned ways.  The first of which is
+to palm the problem off on Pavel ;)
 
-These things do cause bugs.  The bugs take a very long time to show up
-and are very difficult to track down, since they can basically cause
-random behavior, such as hanging the machine or losing orbit and
-crashing into the moon.
-
-Zach
+I don't recall seeing a simple step-by-step way by which others can
+reproduce this?
 
