@@ -1,218 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXJWQZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbXJWQ0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbXJWQZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXJWQZp
+	id S1752944AbXJWQ0K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXJWQZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:25:45 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:42113 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbXJWQZo (ORCPT
+	Tue, 23 Oct 2007 12:25:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51808 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754088AbXJWQZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:25:44 -0400
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: axboe@kernel.dk, paulus@samba.org, chris@zankel.net,
-       grundler@parisc-linux.org, kyle@parisc-linux.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, torvalds@linux-foundation.org,
-       ashok.raj@intel.com, shaohua.li@intel.com,
-       anil.s.keshavamurthy@intel.com
-Cc: parisc-linux@lists.parisc-linux.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Emil Medve <Emilian.Medve@Freescale.com>
-Subject: [PATCH] Use the new sg_page() helper
-Date: Tue, 23 Oct 2007 11:14:52 -0500
-Message-Id: <1193156092-11819-1-git-send-email-Emilian.Medve@Freescale.com>
-X-Mailer: git-send-email 1.5.3.GIT
-X-Brightmail-Tracker: AAAAAQAAAAQ=
-X-Whitelist: TRUE
+	Tue, 23 Oct 2007 12:25:55 -0400
+Date: Tue, 23 Oct 2007 09:25:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anas Nashif <nashif@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Marek Dabek <marek.dabek@intel.com>
+Subject: Re: [PATCH] Intel Manageability Engine Interface driver
+Message-Id: <20071023092551.3c822df6.akpm@linux-foundation.org>
+In-Reply-To: <471DF79B.20801@linux.intel.com>
+References: <471CDC5E.4010300@linux.intel.com>
+	<20071022114001.40470c15.akpm@linux-foundation.org>
+	<471DF79B.20801@linux.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix build error messages such as this:
+On Tue, 23 Oct 2007 09:31:07 -0400 Anas Nashif <nashif@linux.intel.com> wrote:
 
-In file included from include/linux/dma-mapping.h:52,
-                 from include/linux/dmaengine.h:29,
-                 from include/linux/skbuff.h:29,
-                 from include/linux/netlink.h:155,
-                 from include/linux/genetlink.h:4,
-                 from include/net/genetlink.h:4,
-                 from include/linux/taskstats_kern.h:12,
-                 from init/main.c:46:
-include/asm/dma-mapping.h: In function 'dma_map_sg':
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:290: error: 'struct scatterlist' has no member named 'page'
+> Andrew,
+> 
+> Thanks for the feedback.
+> 
+> Andrew Morton wrote:
+> > On Mon, 22 Oct 2007 13:22:38 -0400 Anas Nashif <nashif@linux.intel.com> wrote:
+> >>
+> >> The patch is large so I'm placing the diff on the web for download
+> >> rather than attaching it here.  Download:
+> >>
+> >> http://download.openamt.org/intel-MEI.diff
+> > 
+> > Please get the patches mailed out somehow.  Consider splitting the patch
+> > up.  I think you could send it as-is (200k will fit, I believe) but it's
+> > rather too large to review effectively.
+> > 
+> > The code looks good from a quick scan.  Immediate impressions from a
+> > quick scan, mainly trivia:
+> > 
+> 
+> We will fix the issues below and send the revised patch to the list.
+> 
+> >
+> > 
+> > - Why does a new driver have "additional char device for legacy mode"?
+> > 
+> 
+> It is not quite new. What is currently considered legacy was supported 
+> on Linux with a driver that was never submitted upstream (although it is 
+> open-source and available from e1000.sf.net).
+> Some applications still use the legacy interface (KCS style) and have to 
+> be supported with the new driver as well.
+> 
 
-This change in the struct scatterlist was introduced by this commit: 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+It would be better to remove the lecacy mode support from the new driver
+and to continue to ship a patch for those people who use the old interface.
+ They've been patching in the whole driver thus far so I assume all the
+processes are already in place for this.
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+> 
+> > - The changelog could do with some expansion.  What is "Intel(R)
+> >   Manageability Engine (ME) firmware"?  Why do we want to include this code
+> >   in Linux?  What value has it to our users, etc?  Bascially: tell us more
+> >   stuff.
+> 
+> The core hardware architecture of Intel Active Management Technology 
+> (Intel AMT) is resident in firmware. The micro-controller within the 
+> chipset's graphics and memory controller (MCH) hub houses the Management 
+> Engine (ME) firmware, which implements various services on behalf of 
+> management applications. Additionally, flash memory houses system BIOS, 
+> code used by the management engine, and a third-party data store (3PDS) 
+> that enables applications to store information as needed in non-volatile 
+> memory.
+> 
+> Communication between the host OS and the ME is accomplished by means of 
+> the Intel Management Engine Interface (aka HECI: Host Embedded 
+> Controller Interface ). MEI is bi-directional, and either the host or 
+> Intel AMT firmware can initiate transactions.
+> 
+> Some of the ME subsystems that can be access via MEI driver:
+> 
+> - Intel(R) Quiet System Technology (QST) is implemented as a firmware 
+> subsystem  that  runs in the ME.  Programs that wish to expose the 
+> health monitoring and fan speed control capabilities of Intel(R) QST 
+> will need to use the MEI driver to communicate with the ME sub-system.
+> - ASF is the "Alert Standard Format" which is an DMTF manageability 
+> standard. It is implemented in the PC's hardware and firmware, and is 
+> managed from a remote console.
+> 
+> Most recent Intel desktop chipsets have one or more of the above ME 
+> services. The MEI driver will make it possible to support the above 
+> features on Linux and provides applications access to the ME and it's 
+> features. The MEI drivers will also help bridge a current gap related to 
+> lm_sensors support on recent desktop chipsets.
+> 
 
-linux-2.6> scripts/checkpatch.pl 0001-Use-the-new-sg_page-helper.patch 
-Your patch has no obvious style problems and is ready for submission.
-
- drivers/mmc/host/mmci.h           |    4 ++--
- drivers/pci/intel-iommu.c         |    2 +-
- include/asm-arm/dma-mapping.h     |    8 ++++----
- include/asm-parisc/scatterlist.h  |    3 ++-
- include/asm-powerpc/dma-mapping.h |   10 +++++-----
- include/asm-xtensa/dma-mapping.h  |   10 +++++-----
- 6 files changed, 19 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/mmc/host/mmci.h b/drivers/mmc/host/mmci.h
-index 000e6a9..de3c223 100644
---- a/drivers/mmc/host/mmci.h
-+++ b/drivers/mmc/host/mmci.h
-@@ -112,7 +112,7 @@
-  * The size of the FIFO in bytes.
-  */
- #define MCI_FIFOSIZE	(16*4)
--	
-+
- #define MCI_FIFOHALFSIZE (MCI_FIFOSIZE / 2)
- 
- #define NR_SG		16
-@@ -169,7 +169,7 @@ static inline char *mmci_kmap_atomic(struct mmci_host *host, unsigned long *flag
- 	struct scatterlist *sg = host->sg_ptr;
- 
- 	local_irq_save(*flags);
--	return kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
-+	return kmap_atomic(sg_page(sg), KM_BIO_SRC_IRQ) + sg->offset;
- }
- 
- static inline void mmci_kunmap_atomic(struct mmci_host *host, void *buffer, unsigned long *flags)
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index b3d7031..347948c 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2010,7 +2010,7 @@ static int intel_nontranslate_map_sg(struct device *hddev,
- 	struct scatterlist *sg;
- 
- 	for_each_sg(sglist, sg, nelems, i) {
--		BUG_ON(!sg->page);
-+		BUG_ON(!sg_page(sg));
- 		sg->dma_address = virt_to_bus(SG_ENT_VIRT_ADDRESS(sg));
- 		sg->dma_length = sg->length;
- 	}
-diff --git a/include/asm-arm/dma-mapping.h b/include/asm-arm/dma-mapping.h
-index 1eb8aac..08afd5a 100644
---- a/include/asm-arm/dma-mapping.h
-+++ b/include/asm-arm/dma-mapping.h
-@@ -274,8 +274,8 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	for (i = 0; i < nents; i++, sg++) {
- 		char *virt;
- 
--		sg->dma_address = page_to_dma(dev, sg->page) + sg->offset;
--		virt = page_address(sg->page) + sg->offset;
-+		sg->dma_address = page_to_dma(dev, sg_page(sg)) + sg->offset;
-+		virt = page_address(sg_page(sg)) + sg->offset;
- 
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
-@@ -371,7 +371,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nents,
- 	int i;
- 
- 	for (i = 0; i < nents; i++, sg++) {
--		char *virt = page_address(sg->page) + sg->offset;
-+		char *virt = page_address(sg_page(sg)) + sg->offset;
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
- 	}
-@@ -384,7 +384,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nents,
- 	int i;
- 
- 	for (i = 0; i < nents; i++, sg++) {
--		char *virt = page_address(sg->page) + sg->offset;
-+		char *virt = page_address(sg_page(sg)) + sg->offset;
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
- 	}
-diff --git a/include/asm-parisc/scatterlist.h b/include/asm-parisc/scatterlist.h
-index cd3cfdf..3c79a2a 100644
---- a/include/asm-parisc/scatterlist.h
-+++ b/include/asm-parisc/scatterlist.h
-@@ -18,7 +18,8 @@ struct scatterlist {
- 	__u32      iova_length; /* bytes mapped */
- };
- 
--#define sg_virt_addr(sg) ((unsigned long)(page_address(sg->page) + sg->offset))
-+#define sg_virt_addr(sg) \
-+		((unsigned long)(page_address(sg_page(sg)) + sg->offset))
- #define sg_dma_address(sg) ((sg)->iova)
- #define sg_dma_len(sg)     ((sg)->iova_length)
- 
-diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
-index 65be95d..ff52013 100644
---- a/include/asm-powerpc/dma-mapping.h
-+++ b/include/asm-powerpc/dma-mapping.h
-@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		BUG_ON(!sg->page);
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
-+		BUG_ON(!sg_page(sg));
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
- 	}
- 
- 	return nents;
-@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline void dma_sync_sg_for_device(struct device *dev,
-@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline int dma_mapping_error(dma_addr_t dma_addr)
-diff --git a/include/asm-xtensa/dma-mapping.h b/include/asm-xtensa/dma-mapping.h
-index 82b03b3..2b3e975 100644
---- a/include/asm-xtensa/dma-mapping.h
-+++ b/include/asm-xtensa/dma-mapping.h
-@@ -58,10 +58,10 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for (i = 0; i < nents; i++, sg++ ) {
--		BUG_ON(!sg->page);
-+		BUG_ON(!sg_page(sg));
- 
--		sg->dma_address = page_to_phys(sg->page) + sg->offset;
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		sg->dma_address = page_to_phys(sg_page(sg)) + sg->offset;
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, direction);
- 	}
- 
-@@ -128,7 +128,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
- {
- 	int i;
- 	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, dir);
- }
- 
-@@ -138,7 +138,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
- {
- 	int i;
- 	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, dir);
- }
- static inline int
--- 
-1.5.3.GIT
-
+I see, thanks.  That would be a fine addition to the patch's changelog,
+please.
