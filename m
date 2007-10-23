@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbXJWKIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbXJWKKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754457AbXJWKIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 06:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbXJWKHX
+	id S1753835AbXJWKKZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXJWKKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 06:07:23 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:51230 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbXJWKHW (ORCPT
+	Tue, 23 Oct 2007 06:10:13 -0400
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:58273 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751652AbXJWKKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 06:07:22 -0400
-Date: Tue, 23 Oct 2007 03:07:24 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86: typo about sequence of cpu_index and cpu_online in
- show_cpuinfo
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200710230307.24793.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Tue, 23 Oct 2007 06:10:11 -0400
+Date: Tue, 23 Oct 2007 13:10:07 +0300
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Philippe Elie <phil.el@wanadoo.fr>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] oProfile: oops when profile_pc() return ~0LU
+Message-ID: <20071023101007.3y62tufa6yxrqk4w@m.safari.iki.fi>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Philippe Elie <phil.el@wanadoo.fr>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20071021120842.GA2886@zaniah> <alpine.LFD.0.999.0710221936130.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.0.999.0710221936130.30120@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-10-15)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: typo about sequence of cpu_index and cpu_online in show_cpuinfo
+On Mon, Oct 22, 2007 at 19:38:10 -0700, Linus Torvalds wrote:
+> 
+> This set of two patches look ok by me, but I'd like sign-offs.. Also, were 
+> they tested and found to fix the problem by Sami?
+> 
+> 		Linus
 
-use the real cpu_index instead of 0.
+The previous patch I tested by Philippe, oprof-fix-profile_pc-use.patch,
+worked ok, but with this latest patch oprofiled aborts.
+But kernel does not oops or print msgs.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+(gdb) bt
+#0  0x00007f68d66fee65 in raise () from /lib64/libc.so.6
+#1  0x00007f68d6700910 in abort () from /lib64/libc.so.6
+#2  0x00007f68d7053974 in code_unknown (trans=0x7fff5bcd1c60) at opd_trans.c:140
+#3  0x00007f68d7053eff in opd_process_samples (buffer=0x7f68d6ef3010 "��������\002", count=99349) at opd_trans.c:362
+#4  0x00007f68d7050408 in opd_do_samples (opd_buf=0x7f68d6ef3010 "��������\002", count=794792) at init.c:131
+#5  0x00007f68d70504e9 in opd_do_read (buf=0x7f68d6ef3010 "��������\002", size=1048576) at init.c:181
+#6  0x00007f68d70506ca in opd_26_start () at init.c:265
+#7  0x00007f68d7051468 in main (argc=9, argv=0x7fff5bcd1e98) at oprofiled.c:501
 
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 2d42b41..2196b51 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -89,9 +89,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	int fpu_exception;
- 
- #ifdef CONFIG_SMP
-+	n = c->cpu_index;
- 	if (!cpu_online(n))
- 		return 0;
--	n = c->cpu_index;
- #endif
- 	seq_printf(m, "processor\t: %d\n"
- 		"vendor_id\t: %s\n"
+(gdb) frame 2
+#2  0x00007f68d7053974 in code_unknown (trans=0x7fff5bcd1c60) at opd_trans.c:140
+140             abort();
+
+(gdb) p *trans
+$1 = {buffer = 0x7f68d6ef3c38 "�)\200����", remaining = 98960, tracing = TRACING_OFF, current = 0x7f68d89dd010, last = 0x7f68d89dd010, anon = 0x0, 
+  last_anon = 0x0, cookie = 18446604436320244048, app_cookie = 18446604436320244048, pc = 18446744071568019675, last_pc = 18446744071568019675, 
+  event = 5, in_kernel = 1, cpu = 1, tid = 10074, tgid = 10074, embedded_offset = 18446744073709551615}
+(gdb) 
+
+-- 
+Do what you love because life is too short for anything else.
+
