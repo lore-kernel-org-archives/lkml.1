@@ -1,98 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbXJWGC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXJWGDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753010AbXJWGC1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbXJWGCU
+	id S1753320AbXJWGDa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbXJWGDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:02:20 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:51094 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbXJWGCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:02:19 -0400
-To: jens.axboe@oracle.com
-Cc: torvalds@linux-foundation.org, kyle@parisc-linux.org,
-       linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: [PATCH] parisc: fix sg_page() fallout
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 23 Oct 2007 02:03:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:36595 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751178AbXJWGDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 02:03:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] lguest: paravirt boot code
+Date: Tue, 23 Oct 2007 16:03:21 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>,
+       virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>
+References: <200710221237.14542.rusty@rustcorp.com.au> <alpine.LFD.0.999.0710221927131.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710221927131.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071023150017P.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 23 Oct 2007 15:00:17 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Disposition: inline
+Message-Id: <200710231603.21620.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/parisc/kernel/pci-dma.c: In function 'pa11_dma_map_sg':
-arch/parisc/kernel/pci-dma.c:487: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c: In function 'pa11_dma_unmap_sg':
-arch/parisc/kernel/pci-dma.c:508: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c:508: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c: In function 'pa11_dma_sync_sg_for_cpu':
-arch/parisc/kernel/pci-dma.c:535: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c:535: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c: In function 'pa11_dma_sync_sg_for_device':
-arch/parisc/kernel/pci-dma.c:545: error: 'struct scatterlist' has no member named 'page'
-arch/parisc/kernel/pci-dma.c:545: error: 'struct scatterlist' has no member named 'page'
+On Tuesday 23 October 2007 12:28:32 Linus Torvalds wrote:
+> On Mon, 22 Oct 2007, Rusty Russell wrote:
+> > 	First attempt at git, so please pull carefully.  I've just put the
+> > three i386 boot changes in the repo for the moment.  If this works I'll
+> > pile on the 44 lguest patches.
+>
+> Well, it looked ok, but I had already merged the same patches through
+> Andrew, so when I pulled, I had no differences.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/parisc/kernel/pci-dma.c     |    1 +
- drivers/parisc/ccio-dma.c        |    1 +
- drivers/parisc/sba_iommu.c       |    1 +
- include/asm-parisc/scatterlist.h |    2 +-
- 4 files changed, 4 insertions(+), 1 deletions(-)
+Well, with that out the way, and some scatterlist fixups, please pull from
 
-diff --git a/arch/parisc/kernel/pci-dma.c b/arch/parisc/kernel/pci-dma.c
-index 41f8e32..9448d4e 100644
---- a/arch/parisc/kernel/pci-dma.c
-+++ b/arch/parisc/kernel/pci-dma.c
-@@ -25,6 +25,7 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <linux/scatterlist.h>
- 
- #include <asm/cacheflush.h>
- #include <asm/dma.h>    /* for DMA_CHUNK_SIZE */
-diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
-index b3c4dbf..7c60cbd 100644
---- a/drivers/parisc/ccio-dma.c
-+++ b/drivers/parisc/ccio-dma.c
-@@ -42,6 +42,7 @@
- #include <linux/reboot.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-+#include <linux/scatterlist.h>
- 
- #include <asm/byteorder.h>
- #include <asm/cache.h>		/* for L1_CACHE_BYTES */
-diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
-index e5c3239..e527a0e 100644
---- a/drivers/parisc/sba_iommu.c
-+++ b/drivers/parisc/sba_iommu.c
-@@ -28,6 +28,7 @@
- #include <linux/mm.h>
- #include <linux/string.h>
- #include <linux/pci.h>
-+#include <linux/scatterlist.h>
- 
- #include <asm/byteorder.h>
- #include <asm/io.h>
-diff --git a/include/asm-parisc/scatterlist.h b/include/asm-parisc/scatterlist.h
-index cd3cfdf..62269b3 100644
---- a/include/asm-parisc/scatterlist.h
-+++ b/include/asm-parisc/scatterlist.h
-@@ -18,7 +18,7 @@ struct scatterlist {
- 	__u32      iova_length; /* bytes mapped */
- };
- 
--#define sg_virt_addr(sg) ((unsigned long)(page_address(sg->page) + sg->offset))
-+#define sg_virt_addr(sg) ((unsigned long)sg_virt(sg))
- #define sg_dma_address(sg) ((sg)->iova)
- #define sg_dma_len(sg)     ((sg)->iova_length)
- 
--- 
-1.5.2.4
+	git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-lguest.git
 
+This should be fairly clean: 45 lguest patches including the more generic
+drivers (aimed to be used by KVM as well, and hopefully others) and the start
+of separation of arch-specific from general lguest code.
+
+ Documentation/lguest/Makefile         |   26 +-
+ Documentation/lguest/lguest.c         | 1629 ++++++++++++++++++---------------
+ Documentation/lguest/lguest.txt       |   72 +-
+ arch/i386/Kconfig                     |   32 +-
+ arch/i386/Makefile                    |    3 +
+ arch/x86/kernel/asm-offsets_32.c      |    1 +
+ arch/x86/lguest/Kconfig               |   14 +
+ arch/x86/lguest/Makefile              |    1 +
+ arch/x86/lguest/boot.c                | 1070 ++++++++++++++++++++++
+ arch/x86/lguest/i386_head.S           |  115 +++
+ arch/x86/xen/Kconfig                  |    5 +-
+ drivers/Kconfig                       |    2 +-
+ drivers/Makefile                      |    1 +
+ drivers/block/Kconfig                 |    6 +
+ drivers/block/Makefile                |    2 +-
+ drivers/block/lguest_blk.c            |  421 ---------
+ drivers/block/virtio_blk.c            |  308 +++++++
+ drivers/char/Kconfig                  |    4 +
+ drivers/char/Makefile                 |    2 +-
+ drivers/char/hvc_lguest.c             |  177 ----
+ drivers/char/virtio_console.c         |  225 +++++
+ drivers/kvm/Kconfig                   |    4 +
+ drivers/lguest/Kconfig                |   13 +-
+ drivers/lguest/Makefile               |   10 +-
+ drivers/lguest/core.c                 |  568 +-----------
+ drivers/lguest/hypercalls.c           |  177 ++---
+ drivers/lguest/interrupts_and_traps.c |  125 ++-
+ drivers/lguest/io.c                   |  626 -------------
+ drivers/lguest/lg.h                   |  189 ++---
+ drivers/lguest/lguest.c               | 1108 ----------------------
+ drivers/lguest/lguest_asm.S           |   93 --
+ drivers/lguest/lguest_bus.c           |  218 -----
+ drivers/lguest/lguest_device.c        |  373 ++++++++
+ drivers/lguest/lguest_user.c          |  138 +---
+ drivers/lguest/page_tables.c          |  250 +++---
+ drivers/lguest/segments.c             |   28 +-
+ drivers/lguest/switcher.S             |  350 -------
+ drivers/lguest/x86/core.c             |  577 ++++++++++++
+ drivers/lguest/x86/switcher_32.S      |  351 +++++++
+ drivers/net/Kconfig                   |    6 +
+ drivers/net/Makefile                  |    2 +-
+ drivers/net/lguest_net.c              |  555 -----------
+ drivers/net/virtio_net.c              |  435 +++++++++
+ drivers/virtio/Kconfig                |    8 +
+ drivers/virtio/Makefile               |    2 +
+ drivers/virtio/config.c               |   13 +
+ drivers/virtio/virtio.c               |  189 ++++
+ drivers/virtio/virtio_ring.c          |  313 +++++++
+ include/asm-x86/Kbuild                |    3 +
+ include/asm-x86/bootparam.h           |  108 ++--
+ include/asm-x86/e820.h                |   28 +
+ Documentation/lguest/Makefile         |   26 +-
+ Documentation/lguest/lguest.c         | 1629 ++++++++++++++++++---------------
+ Documentation/lguest/lguest.txt       |   72 +-
+ arch/i386/Kconfig                     |   32 +-
+ arch/i386/Makefile                    |    3 +
+ arch/x86/kernel/asm-offsets_32.c      |    1 +
+ arch/x86/lguest/Kconfig               |   14 +
+ arch/x86/lguest/Makefile              |    1 +
+ arch/x86/lguest/boot.c                | 1070 ++++++++++++++++++++++
+ arch/x86/lguest/i386_head.S           |  115 +++
+ arch/x86/xen/Kconfig                  |    5 +-
+ drivers/Kconfig                       |    2 +-
+ drivers/Makefile                      |    1 +
+ drivers/block/Kconfig                 |    6 +
+ drivers/block/Makefile                |    2 +-
+ drivers/block/lguest_blk.c            |  421 ---------
+ drivers/block/virtio_blk.c            |  308 +++++++
+ drivers/char/Kconfig                  |    4 +
+ drivers/char/Makefile                 |    2 +-
+ drivers/char/hvc_lguest.c             |  177 ----
+ drivers/char/virtio_console.c         |  225 +++++
+ drivers/kvm/Kconfig                   |    4 +
+ drivers/lguest/Kconfig                |   13 +-
