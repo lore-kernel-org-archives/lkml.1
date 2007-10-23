@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbXJWWbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbXJWWcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbXJWWbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXJWWbX
+	id S1754851AbXJWWcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXJWWcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:31:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38753 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752634AbXJWWbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:31:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Freezer: Do not allow freezing processes to clear TIF_SIGPENDING
-Date: Wed, 24 Oct 2007 00:47:09 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>
+	Tue, 23 Oct 2007 18:32:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47091 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbXJWWcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:32:24 -0400
+Message-ID: <471E766F.7020203@zytor.com>
+Date: Tue, 23 Oct 2007 15:32:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
+References: <1193126771.23935.79.camel@caritas-dev.intel.com> <471E70E0.2090802@goop.org> <471E729F.3000105@zytor.com> <471E73AB.4050100@goop.org>
+In-Reply-To: <471E73AB.4050100@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710240047.09878.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Please consider as 2.6.24 material.]
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> No, he doesn't.  The boot protocol version is communication between
+>> the boot loader and the kernel (specifically, it is communication FROM
+>> the kernel TO the bootloader), not between internal bits of the
+>> kernel.  Th
+> 
+> So the bootloader will only fill out fields the kernel claims to understand?
+> 
 
-Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
-so that they will not race with the freezer (like mysqld does, for example).
+Correct.  If it fails to respect this restriction, it might even 
+overwrite kernel code.  To make the bootloader's job easier, we have 
+retconned the jump instruction at the beginning of the header to also be 
+a limit marker.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Nigel Cunningham <nigel@suspend2.net>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/signal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.23/kernel/signal.c
-===================================================================
---- linux-2.6.23.orig/kernel/signal.c
-+++ linux-2.6.23/kernel/signal.c
-@@ -124,7 +124,7 @@ void recalc_sigpending_and_wake(struct t
- 
- void recalc_sigpending(void)
- {
--	if (!recalc_sigpending_tsk(current))
-+	if (!recalc_sigpending_tsk(current) && !freezing(current))
- 		clear_thread_flag(TIF_SIGPENDING);
- 
- }
+	-hpa
