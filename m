@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbXJWRyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXJWR5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbXJWRyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbXJWRyE
+	id S1754132AbXJWR5o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXJWR5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:54:04 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:59626 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbXJWRyD (ORCPT
+	Tue, 23 Oct 2007 13:57:37 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:45318 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbXJWR5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:54:03 -0400
+	Tue, 23 Oct 2007 13:57:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eiGrG6RHoiqkX4h/J6DHmMp5hQxqFz4yp2QGPzK2bLu1TD9JfA1ULIaQLJQpYe/muBjpZm6+lfPgXkLvB+APlxD5WGfcMTjW4nh0Xr9C7liiXU/sy2MVA6Rgjij0hoY4xwfR8tJKGW67VPcZZnJA/mA9jTPJ2AxFjT9v7Y4TPsQ=
+Message-ID: <9e0cf0bf0710231057lf60ce17ldd38489850cdf7c5@mail.gmail.com>
+Date: Tue, 23 Oct 2007 19:57:34 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "Marcel Holtmann" <marcel@holtmann.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [BUG] rfcomm]
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Alon Bar-Lev <alon.barlev@gmail.com>
 Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-In-Reply-To: <200710231950.31313.alon.barlev@gmail.com>
-References: <200710231950.31313.alon.barlev@gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 19:55:06 +0200
-Message-Id: <1193162106.6184.208.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+In-Reply-To: <1193162106.6184.208.camel@violet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200710231950.31313.alon.barlev@gmail.com>
+	 <1193162106.6184.208.camel@violet>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alon,
+On 10/23/07, Marcel Holtmann <marcel@holtmann.org> wrote:
+> first of all, please check if this still happens with 2.6.23, because we
+> had some patches in the area of the RFCOMM TTY code that might have
+> fixed this.
 
-> I have this issue for long time (At least from linux-2.6.18).
-> I think it is about time I report this... :)
-> 
-> When coming out of suspend (uswsusp or suspend2) if rfcomm was
-> active it creates this dump.
-> 
-> If you need any more info I will be glad to provide.
+These messages are of 2.6.23.
 
-first of all, please check if this still happens with 2.6.23, because we
-had some patches in the area of the RFCOMM TTY code that might have
-fixed this. Second, can you try without uswsusp or suspend2. Both of
-them are not upstream and I can't tell how much these would effect this
-kind of behavior.
+> Second, can you try without uswsusp or suspend2. Both of
+> them are not upstream and I can't tell how much these would effect this
+> kind of behavior.
 
-Regards
+How can I test this without doing suspend?
+uswsusp is not upstream?!?! Rafael?
 
-Marcel
-
-
+Best Regards,
+Alon Bar-Lev.
