@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbXJWPUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbXJWP01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbXJWPUk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXJWPUX
+	id S1752873AbXJWP01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbXJWP0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:20:23 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9252 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbXJWPUV (ORCPT
+	Tue, 23 Oct 2007 11:26:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37596 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751827AbXJWP0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:20:21 -0400
-Date: Tue, 23 Oct 2007 09:20:25 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Bugfix to commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
-To: linux-kernel@vger.kernel.org, Jens@secretlab.ca,
-       "Axboe <jens.axboe"@oracle.com, linuxppc-dev@ozlabs.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org
-Message-id: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-User-Agent: StGIT/0.12.1
+	Tue, 23 Oct 2007 11:26:17 -0400
+Date: Tue, 23 Oct 2007 08:22:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <471DCBB2.9020706@panasas.com>
+Message-ID: <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org>
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+ <Pine.LNX.4.64.0710222137520.7105@anakin>
+ <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org>
+ <20071022211617.31f5c63d@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
+ <20071022224343.4abf3c96@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+ <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk>
+ <471DC3D9.2070809@panasas.com> <20071023095507.GE5059@kernel.dk>
+ <471DCBB2.9020706@panasas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
-dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
-in include/asm-powerpc/dma-mapping.h
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+On Tue, 23 Oct 2007, Boaz Harrosh wrote:
+>
+> A nice design is to have an struct like BIO. That holds a pointer to the 
+> array of scatterlists, size, ..., and a next and prev pointers to the next
+> chunks. Than have all kernel code that now accepts scatterlist* and size
+> accept a pointer to such structure. And all is clear and defined.
 
-Linus, I cannot build an arch/powerpc kernel without this patch.
+Yes, that would be one clean situation.
 
-Cheers,
-g.
+> But since we do not do that, and every single API in the kernel that
+> receives a scatterlist pointer also receives an sg_count parameter,
+> than I do not see what is so hacky about giving that sg_count parameter
+> to the one that needs it the most. sg_next();
 
- include/asm-powerpc/dma-mapping.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Well, I'd personally actually prefer to *not* have the count be passed 
+down explicitly, because it's just too error prone. So I'd much rather see 
+the count implicit in the list: whether it's in an explicit header 
+structure (that is the *only* thing passed down) or whether it's embedded 
+in the list itself is not important.
 
-diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
-index 65be95d..fd33ce4 100644
---- a/include/asm-powerpc/dma-mapping.h
-+++ b/include/asm-powerpc/dma-mapping.h
-@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		BUG_ON(!sg->page);
-+		BUG_ON(!sg_page(sg));
- 		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
-+		sg->dma_address = sg_phys(sg);
- 	}
- 
- 	return nents;
+Since the list itself has to have the "next pointer" for chaining, and 
+thus already has "embedded information" in it, it actually does make sense 
+in my opinion to just embed the end-of-list information too. And the end 
+result right now is pretty simple, with "sg_next()" being really simple to 
+use, and there being no way to screw things up by getting the count and 
+the sg pointer out of sync.
 
+My biggest complaint right now is that a lot of users of the sg *filling* 
+functions were mindlessly converted, so we have code like
+
+	cryptoloop.c:             sg_set_page(&sg_in, in_page);
+	cryptoloop.c:             sg_in.offset = in_offs;
+	cryptoloop.c:             sg_in.length = sz;
+
+which is just really stupid, and we should have a function for that. But 
+worse is code like this:
+
+	ub.c:     sg_set_page(sg, virt_to_page(sc->top_sense));
+	ub.c:     sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
+	ub.c:     sg->length = UB_SENSE_SIZE;
+
+which again was converted "line by line" and we actually *do* have a 
+function to do the above three lines as
+
+	sg_set_buf(sg, sc->top_sense, UB_SENSE_SIZE);
+
+where that *single* line is just tons shorter but more importantly, more 
+readable, than the mess that is a brute-force conversion.
+
+So I think the SG stuff looks ok now, but I think we have a lot of "fix up 
+the rough edges" to go!
+
+(The above is not the only case. Just grep for "sg_set_page", and you'll 
+see several examples of this kind of hard-to-read code. Basically, I don't 
+think it's ever a good idea to initialize the SG entries one by one, and 
+even when we have a hard page/offset/size thing, we should not set them 
+one by one, and we should probably extend sg_set_page() to always take 
+offset and length too, since setting one without the other two is never 
+really sensible!)
+
+		Linus
