@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbXJWOtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbXJWOtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124AbXJWOtH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 10:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXJWOs4
+	id S1752231AbXJWOtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 10:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXJWOtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 10:48:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50459 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbXJWOsz (ORCPT
+	Tue, 23 Oct 2007 10:49:10 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:62759 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbXJWOtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 10:48:55 -0400
-Date: Tue, 23 Oct 2007 16:48:52 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Al Viro <viro@ftp.linux.org.uk>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Nix <nix@esperi.org.uk>,
-       Jeff Dike <jdike@addtoit.com>, Paolo Giarrusso <p.giarrusso@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
-Message-ID: <20071023144852.GA27956@one.firstfloor.org>
-References: <20071022124322.GB8181@ftp.linux.org.uk> <20071022124551.GA7438@elte.hu> <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu> <p73wste7zy5.fsf@bingen.suse.de> <20071023131009.GA32298@elte.hu> <p73sl427wvu.fsf@bingen.suse.de> <20071023142006.GA9961@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 23 Oct 2007 10:49:08 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH][SG] fix typo in ps3rom.c
+Date: Tue, 23 Oct 2007 16:48:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071023142006.GA9961@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710231648.59438.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/mxJuCtIcdkf2Y1TXmLkmpmYg5pdLBxvrdBWj
+ PYqInJYMUiSdhqR1plfHpXtRWZZ5PFEkiTbEjwSIn9sqRLEzzi
+ 1InaMKTyNBLMFiGI2EmrQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 04:20:06PM +0200, Ingo Molnar wrote:
+This was accidentally introduced by yesterday's change to the SG handling.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+---
+
+On Monday 22 October 2007, Jens Axboe wrote:
 > 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > >> You should rename it then to "asmcall" or something.
-> > >
-> > > if then that should be a separate renaming patch.
-> > 
-> > Well you're asking for the ugly hacks for out of tree code.  [...]
-> 
-> nice word-bending there. I'm asking for pre-existing annotations to 
-> survive. 
+> I split the patch up into a few pieces, so it can be applied safely.
+> It builds with allyesconfig on i386 and x86-64, and it's been booted
+> and tested on both those archs and ppc64 as well.
 
-What I'm objecting to is that you ask for this for your out of 
-tree code without any justification on why exactly -- -pg should
-in theory work with -mregparms. 
+Not sure if this has been reported already, but I needed the trivial fix
+to build the ps3rom driver.
 
-It's standard policy to require very good reasons for changes
-that are only useful for out of tree code.  People get flamed
-for this all the time so I'm doing this thankless job here too.
-
-Is it just because you didn't want to adapt the tracer for i386 regparm?
-(that would be an invalid reason in my opinion ;-)
-The correct fix would be to adapt the tracer then.
-
-Or is it because gcc miscompiles something on i386 with -mregparm -pg?
-(if yes that would be a valid reason, but it should be clearly stated) 
-
--Andi
-
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index 03f19b8..17b4a7c 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -147,7 +147,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd *cmd, void *buf)
+ 
+ 	req_len = fin = 0;
+ 	scsi_for_each_sg(cmd, sgpnt, scsi_sg_count(cmd), k) {
+-		kaddr = kmap_atomic(sg_page(sgpnt->page), KM_IRQ0);
++		kaddr = kmap_atomic(sg_page(sgpnt), KM_IRQ0);
+ 		len = sgpnt->length;
+ 		if ((req_len + len) > buflen) {
+ 			len = buflen - req_len;
