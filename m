@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbXJWD3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbXJWDaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbXJWD3w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 23:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXJWD3h
+	id S1752127AbXJWDaN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 23:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXJWD3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 23:29:37 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:33600 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbXJWD3g (ORCPT
+	Mon, 22 Oct 2007 23:29:39 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:59055 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbXJWD3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 23:29:36 -0400
-Message-Id: <20071023032916.808883356@goodmis.org>
-References: <20071023025900.927578809@goodmis.org>
+	Mon, 22 Oct 2007 23:29:37 -0400
+Message-Id: <20071023025900.927578809@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 22 Oct 2007 22:59:05 -0400
+Date: Mon, 22 Oct 2007 22:59:00 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -21,299 +20,195 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Paul Jackson <pj@sgi.com>, Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH -v2 5/7] pull RT tasks
-Content-Disposition: inline; filename=rt-balance-pull-tasks.patch
+Subject: [PATCH -v2 0/7] New RT Task Balancing -v2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the algorithm to pull tasks from RT overloaded runqueues.
+[
+  Changes since V1:
+    Updated to git tree 55b70a0300b873c0ec7ea6e33752af56f41250ce
 
-When a pull RT is initiated, all overloaded runqueues are examined for
-a RT task that is higher in prio than the highest prio task queued on the
-target runqueue. If another runqueue holds a RT task that is of higher
-prio than the highest prio task on the target runqueue is found it is pulled
-to the target runqueue.
+    Various clean ups suggested by Gregory Haskins, Dmitry Adamushko,
+    and Peter Zijlstra.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+    Biggest change was recommended by Ingo Molnar. This is the use of cpusets
+    for keeping track of RT overloaded CPUS.  When CONFIG_CPUSETS is not
+    defined, we have a single global rt_overload_mask that keeps track
+    of the runqueues with more than one RT task queued. When CONFIG_CPUSETS
+    is configured, that bitmask is stored in the cpusets.
 
----
- kernel/sched.c    |    2 
- kernel/sched_rt.c |  196 ++++++++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 187 insertions(+), 11 deletions(-)
+    Note that in the case of overlapping cpusets it is possible to have
+    inconsistent data between the bitmask and actual RT overloaded runqueues.
+    The worst that can happen is that a task doesn't get moved quickly
+    over to a runnable CPU.  But this is a price we pay to keep from
+    dirtying caches for large number of CPU boxes. If this does happen
+    it gets cleaned up rather quickly since there are checks for
+    RT overload bits being set when they shouldn't be.
 
-Index: linux-test.git/kernel/sched.c
-===================================================================
---- linux-test.git.orig/kernel/sched.c	2007-10-22 22:31:59.000000000 -0400
-+++ linux-test.git/kernel/sched.c	2007-10-22 22:37:28.000000000 -0400
-@@ -3622,6 +3622,8 @@ need_resched_nonpreemptible:
- 		switch_count = &prev->nvcsw;
- 	}
- 
-+	schedule_balance_rt(rq, prev);
-+
- 	if (unlikely(!rq->nr_running))
- 		idle_balance(cpu, rq);
- 
-Index: linux-test.git/kernel/sched_rt.c
-===================================================================
---- linux-test.git.orig/kernel/sched_rt.c	2007-10-22 22:32:18.000000000 -0400
-+++ linux-test.git/kernel/sched_rt.c	2007-10-22 22:37:28.000000000 -0400
-@@ -168,8 +168,17 @@ static void put_prev_task_rt(struct rq *
- static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
- static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep);
- 
-+static int pick_rt_task(struct rq *rq, struct task_struct *p, int cpu)
-+{
-+	if (!task_running(rq, p) &&
-+	    (cpu < 0 || cpu_isset(cpu, p->cpus_allowed)))
-+		return 1;
-+	return 0;
-+}
-+
- /* Return the second highest RT task, NULL otherwise */
--static struct task_struct *pick_next_highest_task_rt(struct rq *rq)
-+static struct task_struct *pick_next_highest_task_rt(struct rq *rq,
-+						     int cpu)
- {
- 	struct rt_prio_array *array = &rq->rt.active;
- 	struct task_struct *next;
-@@ -188,26 +197,36 @@ static struct task_struct *pick_next_hig
- 	}
- 
- 	queue = array->queue + idx;
-+	BUG_ON(list_empty(queue));
-+
- 	next = list_entry(queue->next, struct task_struct, run_list);
--	if (unlikely(next != rq->curr))
--		return next;
-+	if (unlikely(pick_rt_task(rq, next, cpu)))
-+		goto out;
- 
- 	if (queue->next->next != queue) {
- 		/* same prio task */
- 		next = list_entry(queue->next->next, struct task_struct, run_list);
--		return next;
-+		if (pick_rt_task(rq, next, cpu))
-+			goto out;
- 	}
- 
-+ retry:
- 	/* slower, but more flexible */
- 	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
--	if (unlikely(idx >= MAX_RT_PRIO)) {
--		WARN_ON(1); /* rt_nr_running was 2 and above! */
-+	if (unlikely(idx >= MAX_RT_PRIO))
- 		return NULL;
--	}
- 
- 	queue = array->queue + idx;
--	next = list_entry(queue->next, struct task_struct, run_list);
-+	BUG_ON(list_empty(queue));
- 
-+	list_for_each_entry(next, queue, run_list) {
-+		if (pick_rt_task(rq, next, cpu))
-+			goto out;
-+	}
-+
-+	goto retry;
-+
-+ out:
- 	return next;
- }
- 
-@@ -296,13 +315,15 @@ static int push_rt_task(struct rq *this_
- 
- 	assert_spin_locked(&this_rq->lock);
- 
--	next_task = pick_next_highest_task_rt(this_rq);
-+	next_task = pick_next_highest_task_rt(this_rq, -1);
- 	if (!next_task)
- 		return 0;
- 
-  retry:
--	if (unlikely(next_task == this_rq->curr))
-+	if (unlikely(next_task == this_rq->curr)) {
-+		WARN_ON(1);
- 		return 0;
-+	}
- 
- 	/*
- 	 * It's possible that the next_task slipped in of
-@@ -326,7 +347,7 @@ static int push_rt_task(struct rq *this_
- 		 * so it is possible that next_task has changed.
- 		 * If it has, then try again.
- 		 */
--		task = pick_next_highest_task_rt(this_rq);
-+		task = pick_next_highest_task_rt(this_rq, -1);
- 		if (unlikely(task != next_task) && task && paranoid--) {
- 			put_task_struct(next_task);
- 			next_task = task;
-@@ -371,6 +392,158 @@ static void push_rt_tasks(struct rq *rq)
- 		;
- }
- 
-+static int pull_rt_task(struct rq *this_rq)
-+{
-+	struct task_struct *next;
-+	struct task_struct *p;
-+	struct rq *src_rq;
-+	cpumask_t rto_cpumask;
-+	int this_cpu = this_rq->cpu;
-+	int cpu;
-+	int ret = 0;
-+
-+	assert_spin_locked(&this_rq->lock);
-+
-+	/*
-+	 * If cpusets are used, and we have overlapping
-+	 * run queue cpusets, then this algorithm may not catch all.
-+	 * This is just the price you pay on trying to keep
-+	 * dirtying caches down on large SMP machines.
-+	 */
-+	if (likely(!rt_overloaded(this_rq->curr)))
-+		return 0;
-+
-+	next = pick_next_task_rt(this_rq);
-+
-+	rto_cpumask = rt_overload(this_rq->curr);
-+
-+	for_each_cpu_mask(cpu, rto_cpumask) {
-+		if (this_cpu == cpu)
-+			continue;
-+
-+		src_rq = cpu_rq(cpu);
-+		if (unlikely(src_rq->rt.rt_nr_running <= 1)) {
-+			/*
-+			 * It is possible that overlapping cpusets
-+			 * will miss clearing a non overloaded runqueue.
-+			 * Clear it now.
-+			 */
-+			if (double_lock_balance(this_rq, src_rq)) {
-+				/* unlocked our runqueue lock */
-+				struct task_struct *old_next = next;
-+				next = pick_next_task_rt(this_rq);
-+				if (next != old_next)
-+					ret = 1;
-+			}
-+			if (likely(src_rq->rt.rt_nr_running <= 1))
-+				/*
-+				 * Small chance that this_rq->curr changed
-+				 * but it's really harmless here.
-+				 */
-+				rt_clear_overload(this_rq->curr, this_rq->cpu);
-+			else
-+				/*
-+				 * Heh, the src_rq is now overloaded, since
-+				 * we already have the src_rq lock, go straight
-+				 * to pulling tasks from it.
-+				 */
-+				goto try_pulling;
-+			spin_unlock(&src_rq->lock);
-+			continue;
-+		}
-+
-+		/*
-+		 * We can potentially drop this_rq's lock in
-+		 * double_lock_balance, and another CPU could
-+		 * steal our next task - hence we must cause
-+		 * the caller to recalculate the next task
-+		 * in that case:
-+		 */
-+		if (double_lock_balance(this_rq, src_rq)) {
-+			struct task_struct *old_next = next;
-+			next = pick_next_task_rt(this_rq);
-+			if (next != old_next)
-+				ret = 1;
-+		}
-+
-+		/*
-+		 * Are there still pullable RT tasks?
-+		 */
-+		if (src_rq->rt.rt_nr_running <= 1) {
-+			spin_unlock(&src_rq->lock);
-+			continue;
-+		}
-+
-+ try_pulling:
-+		p = pick_next_highest_task_rt(src_rq, this_cpu);
-+
-+		/*
-+		 * Do we have an RT task that preempts
-+		 * the to-be-scheduled task?
-+		 */
-+		if (p && (!next || (p->prio < next->prio))) {
-+			WARN_ON(p == src_rq->curr);
-+			WARN_ON(!p->se.on_rq);
-+
-+			/*
-+			 * There's a chance that p is higher in priority
-+			 * than what's currently running on its cpu.
-+			 * This is just that p is wakeing up and hasn't
-+			 * had a chance to schedule. We only pull
-+			 * p if it is lower in priority than the
-+			 * current task on the run queue or
-+			 * this_rq next task is lower in prio than
-+			 * the current task on that rq.
-+			 */
-+			if (p->prio < src_rq->curr->prio ||
-+			    (next && next->prio < src_rq->curr->prio))
-+				goto bail;
-+
-+			ret = 1;
-+
-+			deactivate_task(src_rq, p, 0);
-+			set_task_cpu(p, this_cpu);
-+			activate_task(this_rq, p, 0);
-+			/*
-+			 * We continue with the search, just in
-+			 * case there's an even higher prio task
-+			 * in another runqueue. (low likelyhood
-+			 * but possible)
-+			 */
-+
-+			/*
-+			 * Update next so that we won't pick a task
-+			 * on another cpu with a priority lower (or equal)
-+			 * than the one we just picked.
-+			 */
-+			next = p;
-+
-+		}
-+ bail:
-+		spin_unlock(&src_rq->lock);
-+	}
-+
-+	return ret;
-+}
-+
-+static void schedule_balance_rt(struct rq *rq,
-+				struct task_struct *prev)
-+{
-+	struct rt_prio_array *array;
-+	int next_prio;
-+
-+	/* Try to pull RT tasks here if we lower this rq's prio */
-+	if (unlikely(rt_task(prev))) {
-+		next_prio = MAX_RT_PRIO;
-+		if (rq->rt.rt_nr_running) {
-+			array = &rq->rt.active;
-+			next_prio = sched_find_first_bit(array->bitmap);
-+		}
-+		if (next_prio > prev->prio)
-+			pull_rt_task(rq);
-+	}
-+}
-+
- static void schedule_tail_balance_rt(struct rq *rq)
- {
- 	/*
-@@ -388,6 +561,7 @@ static void schedule_tail_balance_rt(str
- }
- #else /* CONFIG_SMP */
- # define schedule_tail_balance_rt(rq)	do { } while (0)
-+# define schedule_balance_rt(rq)	do { } while (0)
- #endif /* CONFIG_SMP */
- 
- 
+    For most systems this is not an issue since a single cpuset is used.
+]
 
--- 
+Currently in mainline the balancing of multiple RT threads is quite broken.
+That is to say that a high priority thread that is scheduled on a CPU
+with a higher priority thread, may need to unnecessarily wait while it
+can easily run on another CPU that's running a lower priority thread.
+
+Balancing (or migrating) tasks in general is an art. Lots of considerations
+must be taken into account. Cache lines, NUMA and more. This is true
+with general processes which expect high through put and migration can
+be done in batch.  But when it comes to RT tasks, we really need to
+put them off to a CPU that they can run on as soon as possible. Even
+if it means a bit of cache line flushing.
+
+Right now an RT task can wait several milliseconds before it gets scheduled
+to run. And perhaps even longer. The migration thread is not fast enough
+to take care of RT tasks.
+
+To demonstrate this, I wrote a simple test.
+ 
+  http://rostedt.homelinux.com/rt/rt-migrate-test.c
+
+  (gcc -o rt-migrate-test rt-migrate-test.c -lpthread)
+
+This test expects a parameter to pass in the number of threads to create.
+If you add the '-c' option (check) it will terminate if the test fails
+one of the iterations. If you add this, pass in +1 threads.
+
+For example, on a 4 way box, I used
+
+  rt-migrate-test -c 5
+
+What this test does is to create the number of threads specified (in this
+case 5). Each thread is set as an RT FIFO task starting at a specified
+prio (default 2) and each thread being one priority higher. So with this
+example the 5 threads created are at priorities 2, 3, 4, 5, and 6.
+
+The parent thread sets its priority to one higher than the highest of
+the children (this example 7). It uses pthread_barrier_wait to synchronize
+the threads.  Then it takes a time stamp and starts all the threads.
+The threads when woken up take a time stamp and compares it to the parent
+thread to see how long it took to be awoken. It then runs for an
+interval (20ms default) in a busy loop. The busy loop ends when it reaches
+the interval delta from the start time stamp. So if it is preempted, it
+may not actually run for the full interval. This is expected behavior
+of the test.
+
+The numbers recorded are the delta from the thread's time stamp from the
+parent time stamp. The number of iterations it ran the busy loop for, and
+the delta from a thread time stamp taken at the end of the loop to the
+parent time stamp.
+
+Sometimes a lower priority task might wake up before a higher priority,
+but this is OK, as long as the higher priority process gets the CPU when
+it is awoken.
+
+At the end of the test, the iteration data is printed to stdout. If a
+higher priority task had to wait for a lower one to finish running, then
+this is considered a failure. Here's an example of the output from
+a run against git commit 4fa4d23fa20de67df919030c1216295664866ad7.
+
+   1:       36      33   20041      39      33
+ len:    20036   20033   40041   20039   20033
+ loops: 167789  167693  227167  167829  167814
+
+On iteration 1 (starts at 0) the third task started at 20ms after the parent
+woke it up. We can see here that the first two tasks ran to completion
+before the higher priority task was even able to start. That is a
+20ms latency for the higher priority task!!!
+
+So people who think that their audio would lose most latencies by upping 
+the priority, may be in for a surprise. Since some kernel threads (like
+the migration thread itself) may cause this latency.
+
+To solve this issue, I've changed the RT task balancing from a passive
+method (migration thread) to an active method.  This new method is
+to actively push or pull RT tasks when they are woken up or scheduled.
+
+On wake up of a task if it is an RT task, and there's already an RT task
+of higher priority running on its runqueue, we initiate a push_rt_tasks
+algorithm. This algorithm looks at the highest non-running RT task
+and tries to find a CPU where it can run on. It only migrates the RT
+task if it finds a CPU (of lowest priority) where the RT task
+can run on and can preempt the currently running task on that CPU.
+We continue pushing RT tasks until we can't push anymore.
+
+If a RT task fails to be migrated we stop the pushing. This is possible
+because we are always looking at the highest priority RT task on the
+run queue. And if it can't migrate, then most likely the lower RT tasks
+can not either.
+
+There is one case that is not covered by this patch set. That is that
+when the highest priority non running RT task has its CPU affinity
+in such a way that it can not preempt any tasks on the CPUs running
+on CPUs of its affinity. But a lower priority task has a larger affinity
+to CPUs that it can run on. This is a case where the lower priority task
+will not be migrated to those CPUS (although those CPUs may pull that task).
+Currently this patch set ignores this scenario.
+
+Another case where we push RT tasks is in the finish_task_switch. This is
+done since the running RT task can not be migrated while it is running.
+So if an RT task is preempted by a higher priority RT task, we can
+migrate the RT task being preempted at that moment.
+
+We also actively pull RT tasks. Whenever a runqueue is about to lower its
+priority (schedule a lower priority task) a check is done to see if that
+runqueue can pull RT tasks to it to run instead. A search is made of all
+overloaded runqueues (runqueues with more than one RT task scheduled on it)
+and checked to see if they have an RT task that can run on the runqueue
+(affinity matches) and is of higher priority than the task the runqueue
+is about to schedule. The pull algorithm pulls all RT tasks that match
+this case.
+
+With this patch set, I ran the rt-migrate-test over night in a while
+loop with the -c option (which terminates upon failure) and it passed
+over 6500 tests (each doing 50 wakeups each).
+
+Here's an example of the output from the patched kernel. This is just to
+explain it a bit more.
+
+   1:    20060      61      55      56      61
+ len:    40060   20061   20055   20056   20061
+ loops: 227255  146050  168104  145965  168144
+
+   2:       40      46      31      35      42
+ len:    20040   20046   20031   20035   20042
+ loops:     28  167769  167781  167668  167804
+
+The first iteration (really 2cd, since we start at zero), is a typical run.
+The lowest prio task didn't start executing until the other 4 tasks finished
+and gave up the CPU.
+
+The second iteration seems at first like a failure. But this is actually fine.
+The lowest priority task just happen to schedule onto a CPU before the
+higher priority tasks were woken up. But as you can see from this example,
+the higher priority tasks still were able to get scheduled right away and
+in doing so preempted the lower priority task. This can be seen by the
+number of loops that the lower priority task was able to complete. Only 28.
+This is because the busy loop terminates when the time stamp reaches the
+time interval (20ms here) from the start time stamp. Since the lower priority
+task was able to sneak in and start, it's time stamp was low. So after it
+got preempted, and rescheduled, it was already past the run time interval
+so it simply ended the loop.
+
+Finally, the CFS RT balancing had to be removed in order for this to work.
+Testing showed that the CFS RT balancing would actually pull RT tasks
+from runqueues already assigned to the proper runqueues, and again cause
+latencies.  With this new approach, the CFS RT balancing is not needed,
+and I suggest that these patches replace the current CFS RT balancing.
+
+Also, let me stress, that I made a great attempt to have this cause
+as little overhead (practically none) to the non RT cases. Most of these
+algorithms only take place when more than one RT task is scheduled on the
+same runqueue.
+
+Special thanks goes to Gregory Haskins for his advice and back and forth
+on IRC with ideas. Although I didn't use his actual patches (his were
+against -rt) it did help me clean up some of my code.  Also, thanks go to
+Ingo Molnar himself for taking some ideas from his RT balance code in
+the -rt patch.
+
+
+Comments welcomed!
+
+-- Steve
+
