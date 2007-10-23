@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbXJWARW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbXJWARx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbXJWARW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 20:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXJWARP
+	id S1754106AbXJWARx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 20:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXJWARo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 20:17:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52541 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750700AbXJWARO (ORCPT
+	Mon, 22 Oct 2007 20:17:44 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:53540 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbXJWARn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 20:17:14 -0400
-Date: Mon, 22 Oct 2007 17:16:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, xemul@openvz.org,
-       raven@themaw.net
-Subject: Re: futex strangeness in 2.6.23-mm1/UML
-Message-Id: <20071022171624.0c00f8da.akpm@linux-foundation.org>
-In-Reply-To: <20071022200742.6f3acbb2@bree.surriel.com>
-References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
-	<20071022145321.195d929b@bree.surriel.com>
-	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
-	<20071022172926.03ca122a@bree.surriel.com>
-	<20071022200742.6f3acbb2@bree.surriel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Oct 2007 20:17:43 -0400
+Message-ID: <471D3D05.9070801@keyaccess.nl>
+Date: Tue, 23 Oct 2007 02:15:01 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: Roel Kluin <12o3l@tiscali.nl>, Rik van Riel <riel@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] return hidden bug
+References: <471BF741.2020501@tiscali.nl>	 <20071021214209.1a7567d7@bree.surriel.com>	 <2c0942db0710220942he5e9199i2e327df3c5676a6a@mail.gmail.com>	 <471CE453.5050208@tiscali.nl>	 <2c0942db0710221112g7c7d99caj7feb0c2ac5de17e7@mail.gmail.com>	 <471CF150.9090707@tiscali.nl> <471D23AA.2000803@keyaccess.nl> <2c0942db0710221600j24f76f68lefe562cc8bc2d067@mail.gmail.com>
+In-Reply-To: <2c0942db0710221600j24f76f68lefe562cc8bc2d067@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Neem contact op met support@home.nl voor meer informatie
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 20:07:42 -0400
-Rik van Riel <riel@redhat.com> wrote:
+On 10/23/2007 01:00 AM, Ray Lee wrote:
 
-> On Mon, 22 Oct 2007 17:29:26 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> 
-> > On Mon, 22 Oct 2007 22:48:51 +0200
-> > Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > 
-> > > > > I'm getting a process stuck in pthread_rwlock_wrlock(), even
-> > > > > though it looks like the lock is not held by anybody.
-> > > > > 
-> > > > > I think the last -mm was OK.  Any ideas?
-> > > > > 
-> > > > > If not, I'll go searching for the offending patch.
-> > > > 
-> > > > I wonder if that's the same bug that's breaking autofs for me.
-> > > 
-> > > Probably.
-> > > 
-> > > > Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent
-> > > > cache rwlock lock failed
-> > > > Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads error:
-> > > > 11 at 65 in cache.c
-> > > > 
-> > > > I'm bisecting 2.6.23-mm1 today to find the problem patch, with
-> > > > some luck I'll have it this afternoon.
-> > > > 
-> > > > With the series applied up to
-> > > > whitespace-fixes-task-exit-handling.patch things work.
-> > > > 
-> > > > It breaks before
-> > > > kswapd-should-only-wait-on-io-if-there-is-io.patch
-> > > > 
-> > > > That leaves only about 60-80 patches to look at :)
-> > > 
-> > > OK, the first patch that breaks something for me is:
-> > > 
-> > >   pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
-> > 
-> > Confirmed.  That same patch is the point where the bisect
-> > here starts breaking autofs.
-> 
-> Oww man.  Getting into heisenbug territory now :(
-> 
-> I bisected down to the point where I had these two patches between
-> good and bad:
-> 
-> # GOOD
-> pid-namespaces-move-alloc_pid-lower-in-copy_process.patch
-> pid-namespaces-make-proc-have-multiple-superblocks-one-for-each-namespace.patch
-> # BAD
-> 
-> Applying them one by one and rebuilding the kernel after each one
-> gave me a working kernel, though!
-> 
-> Bisecting them from the top (quilt pop) resulted in a broken kernel,
-> bisecting from the bottom (quilt push) results in a working one.
-> 
-> I have no idea what is going on any more...
-> 
+> On 10/22/07, Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-I guess we can debug it in the old-fashioned ways.  The first of which is
-to palm the problem off on Pavel ;)
+>> Hugely trust inspiring isn't it -- the amount of eyes and comments you'll
+>> get even on trivial patches like this? This development model is working!
+> 
+> Go easy with the snarkiness, hmm? It's the trivial ones that seem to
+> be the most dangerous. The larger ones actually get *tested*
+> sometimes.
 
-I don't recall seeing a simple step-by-step way by which others can
-reproduce this?
+I was also commenting and don't generally on anything much more involved so 
+any snarkiness included myself which should make things better.
+
+>> Now if only we'd sometimes get some for non trivial patches as well...
+> 
+> That's certainly true regardless, but for myself, I'd rather throw
+> some reviews out for the small ones since I have adequate time and
+> knowledge for them. The larger ones require domain specific knowledge
+> I lack, and time I don't have.
+
+Exactly the problem. Comment was mostly triggered due to me looking at a 
+problem with a proprietary CD-ROM driver again tonight that I posted a few 
+months ago where the only comment has been from the fellow author. There the 
+problem was the block layer blowing up and given that it seems unlikely that 
+this wouldn't be a problem inside the newbie-driver itself, that the block 
+part of it was actually really small and people said they'd look at it, the 
+subsequent thundering silence still annoys me.
+
+Ofcourse, now it seems the kernel itself has moved on enough that the driver 
+doesn't work at _all_ anymore and I at the moment lack the time to spend the 
+required hours googling around trying to find out what the heck changed out 
+from under me so that I might get it to at least do what it already did do.
+
+Hey, I don't actually know and maybe I'm just wrong but I have the feeling 
+that over the last 1 or 2 years most new developers seem to be either people 
+that are payed to be so, perhaps in the form of graduation, or janitors. The 
+kernel is much, much more complex than even only a few years ago and at the 
+same time the number of knowledgeable developers who'll do something other 
+than their own thing and otherwise just wait around for something perfect to 
+merge seems to be approaching zero.
+
+That is -- I do not feel that the current developer base is expending overly 
+many efforts to appear welcoming.
+
+Please feel free to do the open-source thing and argue that's actually an 
+advantage (there we have that snarkiness again...) or otherwise ignore me. 
+I'll just sit here and be grumpy anyway. Might be better after a good 
+night's sleep...
+
+Rene.
 
