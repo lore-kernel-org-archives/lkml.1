@@ -1,274 +1,496 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXJWT4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbXJWT4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbXJWT4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 15:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXJWT4S
+	id S1753835AbXJWT4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 15:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbXJWT43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 15:56:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57540 "EHLO
+	Tue, 23 Oct 2007 15:56:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55355 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751944AbXJWT4R (ORCPT
+	by vger.kernel.org with ESMTP id S1751862AbXJWT42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 15:56:17 -0400
-Date: Tue, 23 Oct 2007 12:56:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Shannon Nelson <shannon.nelson@intel.com>
-Cc: linux-kernel@vger.kernel.org, dan.j.williams@intel.com
-Subject: Re: [PATCH] I/OAT: Add support for version 2 of ioatdma device
-Message-Id: <20071023125613.4e90b764.akpm@linux-foundation.org>
-In-Reply-To: <20071019072024.5057.3665.stgit@localhost.localdomain>
-References: <20071019072024.5057.3665.stgit@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 23 Oct 2007 15:56:28 -0400
+Date: Tue, 23 Oct 2007 12:55:55 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fujitsu application panel driver
+Message-ID: <20071023125555.38d63567@shemminger-laptop>
+In-Reply-To: <200709161623.00286.dtor@insightbb.com>
+References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
+	<200709140130.59732.dtor@insightbb.com>
+	<20070916215516.2934abad@oldman.hemminger.net>
+	<200709161623.00286.dtor@insightbb.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 00:20:25 -0700
-Shannon Nelson <shannon.nelson@intel.com> wrote:
+This driver supports the application buttons on some Fujitsu Lifebook
+laptops. It is based on the earlier apanel driver done by Jochen
+Eisenger, but with many changes.  The original driver used ioctl's and
+a separate user space program (see http://apanel.sourceforge.net). This
+driver hooks into the input subsystem so that the normal keys act as
+expected without a daemon. In addition to buttons, the Mail Led is
+handled via LEDs class device.
 
-> Add support for version 2 of the ioatdma device.  This device handles
-> the descriptor chain and DCA services slightly differently:
->  - Instead of moving the dma descriptors between a busy and an idle chain,
->    this new version uses a single circular chain so that we don't have
->    rewrite the next_descriptor pointers as we add new requests, and the
->    device doesn't need to re-read the last descriptor.
->  - The new device has the DCA tags defined internally instead of needing
->    them defined statically.
-> 
-> ...
->
-> +static inline void __ioat1_dma_memcpy_issue_pending(
-> +					       struct ioat_dma_chan *ioat_chan);
-> +static inline void __ioat2_dma_memcpy_issue_pending(
-> +					       struct ioat_dma_chan *ioat_chan);
+The driver now supports redefinable keymaps and no longer has to
+have a DMI table for all Fujitsu laptops.
 
-It's somewhat unusual to forward-declare an inline like this.  My version
-of gcc does do the right thing with it, but for the sake of
-conventionality, readability and cleanliness, please consider just moving
-the implementations higher up the file sometime, thanks.
+I thought about mixing this driver should be integrated into the Fujitsu laptop
+extras driver that handles backlight, but rejected the idea because
+it wasn't clear if all the Fujitsu laptops supported both.
 
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-> +static dma_cookie_t ioat2_tx_submit(struct dma_async_tx_descriptor *tx)
-> +{
-> +	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
-> +	struct ioat_desc_sw *first = tx_to_ioat_desc(tx);
-> +	struct ioat_desc_sw *new;
-> +	struct ioat_dma_descriptor *hw;
-> +	dma_cookie_t cookie;
-> +	u32 copy;
-> +	size_t len;
-> +	dma_addr_t src, dst;
-> +	int orig_ack;
-> +	unsigned int desc_count = 0;
-> +
-> +	/* src and dest and len are stored in the initial descriptor */
-> +	len = first->len;
-> +	src = first->src;
-> +	dst = first->dst;
-> +	orig_ack = first->async_tx.ack;
-> +	new = first;
-> +
-> +	/* ioat_chan->desc_lock is still in force in version 2 path */
-> +
-> +	do {
-> +		copy = min((u32) len, ioat_chan->xfercap);
+---
 
-min_t is the preferred tool for this.
+ drivers/input/misc/Kconfig  |   14 +
+ drivers/input/misc/Makefile |    1 
+ drivers/input/misc/apanel.c |  407 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 422 insertions(+)
 
-> +		new->async_tx.ack = 1;
-> +
-> +		hw = new->hw;
-> +		hw->size = copy;
-> +		hw->ctl = 0;
-> +		hw->src_addr = src;
-> +		hw->dst_addr = dst;
-> +
-> +		len -= copy;
-> +		dst += copy;
-> +		src += copy;
-> +		desc_count++;
-> +	} while (len && (new = ioat2_dma_get_next_descriptor(ioat_chan)));
-> +
-> +	hw->ctl = IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
-> +	if (new->async_tx.callback) {
-> +		hw->ctl |= IOAT_DMA_DESCRIPTOR_CTL_INT_GN;
-> +		if (first != new) {
-> +			/* move callback into to last desc */
-> +			new->async_tx.callback = first->async_tx.callback;
-> +			new->async_tx.callback_param
-> +					= first->async_tx.callback_param;
-> +			first->async_tx.callback = NULL;
-> +			first->async_tx.callback_param = NULL;
-> +		}
-> +	}
-> +
-> +	new->tx_cnt = desc_count;
-> +	new->async_tx.ack = orig_ack; /* client is in control of this ack */
-> +
-> +	/* store the original values for use in later cleanup */
-> +	if (new != first) {
-> +		new->src = first->src;
-> +		new->dst = first->dst;
-> +		new->len = first->len;
-> +	}
-> +
-> +	/* cookie incr and addition to used_list must be atomic */
-> +	cookie = ioat_chan->common.cookie;
-> +	cookie++;
-> +	if (cookie < 0)
-> +		cookie = 1;
-> +	ioat_chan->common.cookie = new->async_tx.cookie = cookie;
-> +
-> +	ioat_chan->dmacount += desc_count;
-> +	ioat_chan->pending += desc_count;
-> +	if (ioat_chan->pending >= ioat_pending_level)
-> +		__ioat2_dma_memcpy_issue_pending(ioat_chan);
-> +	spin_unlock_bh(&ioat_chan->desc_lock);
->  
->  	return cookie;
->  }
->  
-> +{
-> +	struct ioat_desc_sw *new = NULL;
-> +
-> +	/*
-> +	 * used.prev points to where to start processing
-> +	 * used.next points to next free descriptor
-> +	 * if used.prev == NULL, there are none waiting to be processed
-> +	 * if used.next == used.prev.prev, there is only one free descriptor,
-> +	 *      and we need to use it to as a noop descriptor before
-> +	 *      linking in a new set of descriptors, since the device
-> +	 *      has probably already read the pointer to it
-> +	 */
-> +	if (ioat_chan->used_desc.prev &&
-> +	    ioat_chan->used_desc.next == ioat_chan->used_desc.prev->prev) {
-> +
-> +		struct ioat_desc_sw *desc = NULL;
-> +		struct ioat_desc_sw *noop_desc = NULL;
-
-The noop_desc initialisation is unneeded and so too is the initialisation
-of `desc', I suspect.
-
-The compiler should avoid any additional code generation, but unneeded
-initialisations like this can cause useful warnings to be suppressed and
-they're a bit misleading to the reader of the code.
-
-
-> +		int i;
-> +
-> +		/* set up the noop descriptor */
-> +		noop_desc = to_ioat_desc(ioat_chan->used_desc.next);
-> +		noop_desc->hw->size = 0;
-> +		noop_desc->hw->ctl = IOAT_DMA_DESCRIPTOR_NUL;
-> +		noop_desc->hw->src_addr = 0;
-> +		noop_desc->hw->dst_addr = 0;
-> +
-> +		ioat_chan->used_desc.next = ioat_chan->used_desc.next->next;
-> +		ioat_chan->pending++;
-> +		ioat_chan->dmacount++;
-> +
-> +		/* get a few more descriptors */
-> +		for (i = 16; i; i--) {
-> +			desc = ioat_dma_alloc_descriptor(ioat_chan, GFP_ATOMIC);
-> +			BUG_ON(!desc);
-
-You can't do that!
-
-GFP_ATOMIC allocations can and do fail under regular (albeit heavy) use. 
-Code _must_ be able to recover from an allocation failure.  Taking out the
-whole machine is not acceptable.
-
-An exception to this is when the GFP_ATOMIC allocation is happening at
-initial boot time (ie: in __init in code which cannot be loaded as a
-module).
-
-
-> +			list_add_tail(&desc->node, ioat_chan->used_desc.next);
-> +
-> +			desc->hw->next
-> +				= to_ioat_desc(desc->node.next)->async_tx.phys;
-> +			to_ioat_desc(desc->node.prev)->hw->next
-> +				= desc->async_tx.phys;
-> +			ioat_chan->desccount++;
-> +		}
-> +
-> +		ioat_chan->used_desc.next = noop_desc->node.next;
-> +	}
-> +	new = to_ioat_desc(ioat_chan->used_desc.next);
-> +	prefetch(new);
-> +	ioat_chan->used_desc.next = new->node.next;
-> +
-> +	if (ioat_chan->used_desc.prev == NULL)
-> +		ioat_chan->used_desc.prev = &new->node;
-> +
-> +	prefetch(new->hw);
-> +	return new;
-> +}
-> +
->  
-> +static struct dma_async_tx_descriptor *ioat2_dma_prep_memcpy(
-> +						struct dma_chan *chan,
-> +						size_t len,
-> +						int int_en)
-> +{
-> +	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-> +	struct ioat_desc_sw *new;
-> +
-> +	spin_lock_bh(&ioat_chan->desc_lock);
-> +	new = ioat2_dma_get_next_descriptor(ioat_chan);
-> +	new->len = len;
-> +
-> +	/* leave ioat_chan->desc_lock set in version 2 path */
-> +	return new ? &new->async_tx : NULL;
-> +}
-
-I assume that there's a spin_unlock_bh() somewhere..
-
-> +static void ioat2_dma_memcpy_issue_pending(struct dma_chan *chan)
-> +{
-> +	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-> +
-> +	if (ioat_chan->pending != 0) {
-> +		spin_lock_bh(&ioat_chan->desc_lock);
-> +		__ioat2_dma_memcpy_issue_pending(ioat_chan);
-> +		spin_unlock_bh(&ioat_chan->desc_lock);
->  	}
->  }
-
-Is it non-racy to test ->pending outside the lock?
-
->  
->  #define IOAT_LOW_COMPLETION_MASK	0xffffffc0
-> +#define IOAT_DMA_DCA_ANY_CPU		~0
-> +
-
-The code is refreshingly free from usable comments.  A reader might wonder what
-things like IOAT_DMA_DCA_ANY_CPU actually represent.  I can't work it out
-from the bare C implementation.
-
->  void ioat_dma_remove(struct ioatdma_device *device);
-> -struct dca_provider *ioat_dca_init(struct pci_dev *pdev,
-> -				   void __iomem *iobase);
-> +struct dca_provider *ioat_dca_init(struct pci_dev *pdev, void __iomem *iobase);
-> +struct dca_provider *ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase);
->  #else
->  #define ioat_dma_probe(pdev, iobase)    NULL
->  #define ioat_dma_remove(device)         do { } while (0)
->  #define ioat_dca_init(pdev, iobase)	NULL
-> +#define ioat2_dca_init(pdev, iobase)	NULL
->  #endif
-
-grumble.  All these could be implemented as inlines.  Please only use
-macros when the code cannot be implemented in C.
-
-Reasons:
-
-- we get typechecking even when CONFIG_YOUR_STUFF=n
-
-- can still take the address of the functions (dubious)
-
-- looks nicer
-
-
+--- a/drivers/input/misc/Kconfig	2007-10-23 11:19:10.000000000 -0700
++++ b/drivers/input/misc/Kconfig	2007-10-23 11:19:48.000000000 -0700
+@@ -40,6 +40,20 @@ config INPUT_M68K_BEEP
+ 	tristate "M68k Beeper support"
+ 	depends on M68K
+ 
++config INPUT_APANEL
++	tristate "Fujitsu Lifebook Application Panel buttons"
++	depends on X86
++	select I2C_I801
++	select INPUT_POLLDEV
++	select CHECK_SIGNATURE
++	help
++	 Say Y here for support of the Application Panel buttons, used on
++	 Fujitsu Lifebook. These are attached to the mainboard through
++	 an SMBus interface managed by the I2C Intel ICH (i801) driver.
++
++	 To compile this driver as a module, choose M here: the module will
++	 be called apanel.
++
+ config INPUT_IXP4XX_BEEPER
+ 	tristate "IXP4XX Beeper support"
+ 	depends on ARCH_IXP4XX
+--- a/drivers/input/misc/Makefile	2007-10-23 11:19:10.000000000 -0700
++++ b/drivers/input/misc/Makefile	2007-10-23 11:19:48.000000000 -0700
+@@ -18,3 +18,4 @@ obj-$(CONFIG_INPUT_POWERMATE)		+= powerm
+ obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
+ obj-$(CONFIG_HP_SDC_RTC)		+= hp_sdc_rtc.o
+ obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
++obj-$(CONFIG_INPUT_APANEL)		+= apanel.o
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/drivers/input/misc/apanel.c	2007-10-23 12:47:55.000000000 -0700
+@@ -0,0 +1,407 @@
++/*
++ *  Fujitsu Lifebook Application Panel button drive
++ *
++ *  Copyright (C) 2007 Stephen Hemminger <shemminger@linux-foundation.org>
++ *  Copyright (C) 2001-2003 Jochen Eisinger <jochen@penguin-breeder.org>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * Many Fujitsu Lifebook laptops have a small panel of buttons that are
++ * accessible via the i2c/smbus interface. This driver polls those
++ * buttons and generates input events.
++ *
++ * For more details see:
++ * 	http://apanel.sourceforge.net/tech.php
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/input-polldev.h>
++#include <linux/i2c.h>
++#include <linux/workqueue.h>
++#include <linux/leds.h>
++
++#define APANEL_NAME	"Fujitsu Application Panel"
++#define APANEL_VERSION	"1.3"
++#define APANEL		"apanel"
++
++/* How often we poll keys - msecs */
++#define POLL_INTERVAL_DEFAULT	1000
++
++/* Magic constants in BIOS that tell about buttons */
++enum apanel_devid {
++	APANEL_DEV_NONE	  = 0,
++	APANEL_DEV_APPBTN = 1,
++	APANEL_DEV_CDBTN  = 2,
++	APANEL_DEV_LCD	  = 3,
++	APANEL_DEV_LED	  = 4,
++	APANEL_DEV_MAX,
++};
++
++enum apanel_chip {
++	CHIP_NONE    = 0,
++	CHIP_OZ992C  = 1,
++	CHIP_OZ163T  = 2,
++	CHIP_OZ711M3 = 4,
++};
++
++/* Result of BIOS snooping/probing -- what features are supported */
++static enum apanel_chip device_chip[APANEL_DEV_MAX];
++
++/* names for APANEL_XXX */
++static const char *device_names[APANEL_DEV_MAX] __initdata = {
++	[APANEL_DEV_APPBTN] = "Application Buttons",
++	[APANEL_DEV_LCD]    = "LCD",
++	[APANEL_DEV_LED]    = "LED",
++	[APANEL_DEV_CDBTN]  = "CD Buttons",
++};
++
++#define MAX_PANEL_KEYS	12
++
++struct apanel {
++	struct input_polled_dev *ipdev;
++	struct i2c_client client;
++	unsigned keymap[MAX_PANEL_KEYS];
++	u16    nkeys;
++	u16    led_bits;
++	struct work_struct led_work;
++	struct led_classdev mail_led;
++};
++
++
++static int apanel_probe(struct i2c_adapter *, int, int);
++
++/* for now, we only support one address */
++static unsigned short normal_i2c[] = {0, I2C_CLIENT_END};
++static unsigned short ignore = I2C_CLIENT_END;
++static struct i2c_client_address_data addr_data = {
++	.normal_i2c	= normal_i2c,
++	.probe		= &ignore,
++	.ignore		= &ignore,
++};
++
++static void report_key(struct input_dev *input, unsigned keycode)
++{
++	pr_debug(APANEL ": report key %#x\n", keycode);
++	input_report_key(input, keycode, 1);
++	input_sync(input);
++
++	input_report_key(input, keycode, 0);
++	input_sync(input);
++}
++
++/* Poll for key changes
++ *
++ * Read Application keys via SMI
++ *  A (0x4), B (0x8), Internet (0x2), Email (0x1).
++ *
++ * CD keys:
++ * Forward (0x100), Rewind (0x200), Stop (0x400), Pause (0x800)
++ */
++static void apanel_poll(struct input_polled_dev *ipdev)
++{
++	struct apanel *ap = ipdev->private;
++	struct input_dev *idev = ipdev->input;
++	u8 cmd = device_chip[APANEL_DEV_APPBTN] == CHIP_OZ992C ? 0 : 8;
++	s32 data;
++	int i;
++
++	data = i2c_smbus_read_word_data(&ap->client, cmd);
++	if (data < 0)
++		return;	/* ignore errors (due to ACPI??) */
++
++	/* write back to clear latch */
++	i2c_smbus_write_word_data(&ap->client, cmd, 0);
++
++	if (!data)
++		return;
++
++	dev_dbg(&ipdev->input->dev, APANEL ": data %#x\n", data);
++	for (i = 0; i < ipdev->input->keycodemax; i++)
++		if (1ul << i & data)
++			report_key(idev, ap->keymap[i]);
++}
++
++static int apanel_getkeycode(struct input_dev *idev, int scancode, int *keycode)
++{
++	struct apanel *ap = idev->private;
++
++	if (scancode < 0 || scancode >= MAX_PANEL_KEYS)
++		return -EINVAL;
++
++	*keycode = ap->keymap[scancode];
++	return 0;
++}
++
++static int apanel_setkeycode(struct input_dev *idev, int scancode, int keycode)
++{
++	struct apanel *ap = idev->private;
++
++	if (keycode < 0 || keycode > KEY_MAX)
++		return -EINVAL;
++
++	if (scancode < 0 || scancode >= MAX_PANEL_KEYS)
++		return -EINVAL;
++
++	clear_bit(ap->keymap[scancode], idev->keybit);
++	ap->keymap[scancode] = keycode;
++	set_bit(keycode, idev->keybit);
++	return 0;
++}
++
++/* Track state changes of LED */
++static void led_update(struct work_struct *work)
++{
++	struct apanel *ap = container_of(work, struct apanel, led_work);
++
++	i2c_smbus_write_word_data(&ap->client, 0x10, ap->led_bits);
++}
++
++static void mail_led_set(struct led_classdev *led,
++			 enum led_brightness value)
++{
++	struct apanel *ap = container_of(led, struct apanel, mail_led);
++	if (value)
++		ap->led_bits |= 0x8000;
++	else
++		ap->led_bits &= ~0x8000;
++	ap->led_bits = value;
++	schedule_work(&ap->led_work);
++}
++
++static int apanel_detach_client(struct i2c_client *client)
++{
++	struct apanel *ap = i2c_get_clientdata(client);
++
++	if (device_chip[APANEL_DEV_LED] != CHIP_NONE)
++		led_classdev_unregister(&ap->mail_led);
++
++	input_unregister_polled_device(ap->ipdev);
++	i2c_detach_client(&ap->client);
++
++	return 0;
++}
++
++/* Function is invoked for every i2c adapter. */
++static int apanel_attach_adapter(struct i2c_adapter *adap)
++{
++	dev_dbg(&adap->dev, APANEL ": attach adapter id=%d\n", adap->id);
++
++	/* Our device is connected only to i801 on laptop */
++	if (adap->id != I2C_HW_SMBUS_I801)
++		return -ENODEV;
++
++	return i2c_probe(adap, &addr_data, apanel_probe);
++}
++
++static struct i2c_driver apanel_driver = {
++	.driver = {
++		.name = APANEL,
++	},
++	.attach_adapter = &apanel_attach_adapter,
++	.detach_client  = &apanel_detach_client,
++};
++
++static struct apanel apanel = {
++	.client = {
++		.driver = &apanel_driver,
++		.name   = APANEL,
++	},
++	.keymap = {
++		[0] = KEY_MAIL,
++		[1] = KEY_WWW,
++		[2] = KEY_PROG2,
++		[3] = KEY_PROG1,
++
++		[8] = KEY_FORWARD,
++		[9] = KEY_REWIND,
++		[10] = KEY_STOPCD,
++		[11] = KEY_PLAYPAUSE,
++
++	},
++	.mail_led = {
++		.name = APANEL ":mail",
++		.brightness_set = mail_led_set,
++	},
++};
++
++/* NB: Only one panel on the i2c. */
++static int apanel_probe(struct i2c_adapter *bus, int address, int kind)
++{
++	struct apanel *ap;
++	struct input_polled_dev *ipdev;
++	struct input_dev *idev;
++	u8 cmd = device_chip[APANEL_DEV_APPBTN] == CHIP_OZ992C ? 0 : 8;
++	int i, err = -ENOMEM;
++
++	dev_dbg(&bus->dev, APANEL ": probe adapter %p addr %d kind %d\n",
++		bus, address, kind);
++
++	ap = &apanel;
++
++	ipdev = input_allocate_polled_device();
++	if (!ipdev)
++		goto out1;
++
++	ap->ipdev = ipdev;
++	ap->client.adapter = bus;
++	ap->client.addr = address;
++
++	i2c_set_clientdata(&ap->client, ap);
++
++	err = i2c_attach_client(&ap->client);
++	if (err)
++		goto out2;
++
++	err = i2c_smbus_write_word_data(&ap->client, cmd, 0);
++	if (err) {
++		dev_warn(&ap->client.dev, APANEL ": smbus write error %d\n",
++			 err);
++		goto out3;
++	}
++
++	ipdev->poll = apanel_poll;
++	ipdev->poll_interval = POLL_INTERVAL_DEFAULT;
++	ipdev->private = ap;
++
++	idev = ipdev->input;
++	idev->name = APANEL_NAME " buttons";
++	idev->phys = "apanel/input0";
++	idev->id.bustype = BUS_HOST;
++	idev->dev.parent = &ap->client.dev;
++	idev->getkeycode = apanel_getkeycode;
++	idev->setkeycode = apanel_setkeycode;
++
++	set_bit(EV_KEY, idev->evbit);
++
++	idev->keycodemax = (device_chip[APANEL_DEV_CDBTN] != CHIP_NONE) ? 12 : 4;
++
++	for (i = 0; i < idev->keycodemax; i++)
++		if (ap->keymap[i])
++			set_bit(ap->keymap[i], idev->keybit);
++
++	err = input_register_polled_device(ipdev);
++	if (err)
++		goto out3;
++
++	INIT_WORK(&ap->led_work, led_update);
++	if (device_chip[APANEL_DEV_LED] != CHIP_NONE) {
++		err = led_classdev_register(&ap->client.dev, &ap->mail_led);
++		if (err)
++			goto out4;
++	}
++
++	return 0;
++out4:
++	input_unregister_polled_device(ipdev);
++out3:
++	i2c_detach_client(&ap->client);
++out2:
++	input_free_polled_device(ipdev);
++out1:
++	return err;
++}
++
++/* Scan the system ROM for the signature "FJKEYINF" */
++static __init const void __iomem *bios_signature(const void __iomem *bios)
++{
++	ssize_t offset;
++	const unsigned char signature[] = "FJKEYINF";
++
++	for (offset = 0; offset < 0x10000; offset += 0x10) {
++		if (check_signature(bios + offset, signature,
++				    sizeof(signature)-1))
++			return bios + offset;
++	}
++	pr_notice(APANEL ": Fujitsu BIOS signature '%s' not found...\n",
++		  signature);
++	return NULL;
++}
++
++static int __init apanel_init(void)
++{
++	void __iomem *bios;
++	const void __iomem *p;
++	u8 devno;
++	int found = 0;
++
++	bios = ioremap(0xF0000, 0x10000); /* Can't fail */
++
++	p = bios_signature(bios);
++	if (!p) {
++		iounmap(bios);
++		return -ENODEV;
++	}
++
++	/* just use the first address */
++	p += 8;
++	normal_i2c[0] = readb(p+3) >> 1;
++
++	for ( ; (devno = readb(p)) & 0x7f; p += 4) {
++		unsigned char method, slave, chip;
++
++		method = readb(p + 1);
++		chip = readb(p + 2);
++		slave = readb(p + 3) >> 1;
++
++		if (slave != normal_i2c[0]) {
++			pr_notice(APANEL ": only one SMBus slave "
++				  "address supported, skiping device...\n");
++			continue;
++		}
++
++		/* translate alternative device numbers */
++		switch (devno) {
++		case 6:
++			devno = APANEL_DEV_APPBTN;
++			break;
++		case 7:
++			devno = APANEL_DEV_LED;
++			break;
++		}
++
++		if (devno >= APANEL_DEV_MAX)
++			pr_notice(APANEL ": unknown device %d found\n", devno);
++		else if (device_chip[devno] != CHIP_NONE)
++			pr_warning(APANEL ": duplicate entry for %s\n",
++				   device_names[devno]);
++
++		else if (method != 1 && method != 2 && method != 4) {
++			pr_notice(APANEL ": unknown  method %u for %s\n",
++				  method, device_names[devno]);
++		} else {
++			pr_debug(APANEL ": %s found.\n", device_names[devno]);
++
++			device_chip[devno] = (enum apanel_chip) chip;
++			++found;
++		}
++	}
++	iounmap(bios);
++
++	if (found == 0) {
++		pr_info(APANEL ": no input devices reported by BIOS\n");
++		return -EIO;
++	}
++
++	return i2c_add_driver(&apanel_driver);
++}
++module_init(apanel_init);
++
++static void __exit apanel_cleanup(void)
++{
++	i2c_del_driver(&apanel_driver);
++}
++module_exit(apanel_cleanup);
++
++MODULE_AUTHOR("Stephen Hemminger <shemminger@linux-foundation.org>");
++MODULE_DESCRIPTION(APANEL_NAME " driver");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(APANEL_VERSION);
++
++MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifeBook*:pvr*:rvnFUJITSU:*");
++MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifebook*:pvr*:rvnFUJITSU:*");
