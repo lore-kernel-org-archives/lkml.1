@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbXJWGgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbXJWGgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752571AbXJWGgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXJWGgI
+	id S1753387AbXJWGgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXJWGgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:36:08 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:47713 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbXJWGgH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:36:07 -0400
-To: jens.axboe@oracle.com
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] arm: build fix
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071023153536K.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 23 Oct 2007 15:35:36 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Tue, 23 Oct 2007 02:36:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:33439 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752235AbXJWGgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 02:36:16 -0400
+Date: Tue, 23 Oct 2007 08:35:57 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression: 2.6.23-rc9 okay, 2.6.23.1 resume problems
+In-Reply-To: <200710230113.25667.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.9999.0710230835100.3167@localhost.localdomain>
+References: <4712786B.3040009@rtr.ca> <200710170207.02732.rjw@sisk.pl> <471CAF88.2010806@rtr.ca> <200710230113.25667.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/arm/common/dmabounce.c: In function 'dma_map_sg':
-arch/arm/common/dmabounce.c:445: error: implicit declaration of function 'sg_page'
+On Tue, 23 Oct 2007, Rafael J. Wysocki wrote:
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/arm/common/dmabounce.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> On Monday, 22 October 2007 16:11, Mark Lord wrote:
+> > Rafael,
+> > 
+> > What happens to the jiffies variable on resume from RAM, and from DISK?
+> > Do we restore it to the value it had at suspend,
+> > or just leave it be with whatever?
+> > 
+> > The answer has to be "restore the value it had at suspend time",
+> > but I figured I'd check here anyway.
+> > 
+> > ??
+> 
+> Well, frankly, I've lost track of that recently, but it seems that we just use
+> the pre-suspend jiffies (at least in the current -git).
+> 
+> Thomas knows better, I guess. :-)
 
-diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
-index 9d371e4..52fc6a8 100644
---- a/arch/arm/common/dmabounce.c
-+++ b/arch/arm/common/dmabounce.c
-@@ -29,6 +29,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/dmapool.h>
- #include <linux/list.h>
-+#include <linux/scatterlist.h>
- 
- #include <asm/cacheflush.h>
- 
--- 
-1.5.2.4
+We use the pre-suspend value if nothing else fiddled in the variable.
 
+   tglx
