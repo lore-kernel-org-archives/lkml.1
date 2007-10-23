@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbXJWWrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbXJWWrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbXJWWrQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbXJWWrB
+	id S1756494AbXJWWrq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbXJWWri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:47:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48947 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbXJWWrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:47:00 -0400
-Message-ID: <471E79E2.2090204@garzik.org>
-Date: Tue, 23 Oct 2007 18:46:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       avi@qumranet.com
-Subject: Re: [PATCH 6/12] KVM: work around SMP requirement
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223640.EADF31F81AC@havoc.gtf.org> <20071023224455.GY30533@stusta.de>
-In-Reply-To: <20071023224455.GY30533@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Tue, 23 Oct 2007 18:47:38 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:41811 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752504AbXJWWrh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:47:37 -0400
+To: kamalesh@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, apw@shadowen.org,
+       tomof@acm.org
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <471E110C.20404@linux.vnet.ibm.com>
+References: <471E110C.20404@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071024074200K.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 24 Oct 2007 07:42:00 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Oct 23, 2007 at 06:36:40PM -0400, Jeff Garzik wrote:
->> KVM is currently completely broken for the !CONFIG_SMP case.
->>
->> drivers/kvm/kvm_main.c: In function ‘kvm_flush_remote_tlbs’:
->> drivers/kvm/kvm_main.c:220: error: implicit declaration of function ‘smp_call_function_mask’
->>
->> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->> ---
->> I hope the KVM maintainer can come up with a better solution...
->>
->> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
->> index 8749fa4..e35fbc6 100644
->> --- a/drivers/kvm/Kconfig
->> +++ b/drivers/kvm/Kconfig
->> @@ -16,7 +16,7 @@ if VIRTUALIZATION
->>  
->>  config KVM
->>  	tristate "Kernel-based Virtual Machine (KVM) support"
->> -	depends on X86 && EXPERIMENTAL
->> +	depends on X86 && EXPERIMENTAL && SMP
->> ...
-> 
-> Assuming it won't get fixed soon, the pattern would be "(SMP || BROKEN)".
-> 
-> The effect is the same, but this makes it more obvious that KVM 
-> does not depend architecturally on SMP but just broken.
-> 
-> Of course, the preferred solution is to simply get KVM fixed...
+On Tue, 23 Oct 2007 20:49:40 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-In general I agree, but I specifically avoided CONFIG_BROKEN in case it 
-was an intentional choice to require an SMP kernel.
+> Hi,
+> 
+> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+> over the AMD box
+> 
+> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> PGD 10185b067 PUD 10075b067 PMD 0 
 
-	Jeff
+Does this work?
 
+
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index c56e9ee..ae7e016 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -338,7 +338,6 @@ static int __dma_map_cont(struct scatterlist *start, int nelems,
+ 		
+ 		BUG_ON(s != start && s->offset);
+ 		if (s == start) {
+-			*sout = *s; 
+ 			sout->dma_address = iommu_bus_base;
+ 			sout->dma_address += iommu_page*PAGE_SIZE + s->offset;
+ 			sout->dma_length = s->length;
+@@ -365,7 +364,7 @@ static inline int dma_map_cont(struct scatterlist *start, int nelems,
+ {
+ 	if (!need) {
+ 		BUG_ON(nelems != 1);
+-		*sout = *start;
++		sout->dma_address = start->dma_address;
+ 		sout->dma_length = start->length;
+ 		return 0;
+ 	}
+-- 
+1.5.2.4
 
