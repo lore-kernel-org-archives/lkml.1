@@ -1,528 +1,2343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXJWUqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbXJWUwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbXJWUqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 16:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbXJWUqR
+	id S1753161AbXJWUwo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 16:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXJWUwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 16:46:17 -0400
-Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:5624 "EHLO
-	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752344AbXJWUqQ (ORCPT
+	Tue, 23 Oct 2007 16:52:36 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:44016 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbXJWUwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 16:46:16 -0400
-X-Belgacom-Dynamic: yes
-Date: Tue, 23 Oct 2007 22:52:24 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [WATCHDOG] v2.6.24 Watchdog Device Drivers patches - part 2
-Message-ID: <20071023205224.GA3100@infomag.infomag.iguana.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 23 Oct 2007 16:52:33 -0400
+Date: Tue, 23 Oct 2007 22:55:00 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20071023205459.GP9748@enneenne.com>
+References: <20071023180417.GM9748@enneenne.com> <20071023201750.GE7793@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="HL3CiL6n73+IAdG4"
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071023201750.GE7793@redhat.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS - PPS support for Linux
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+--HL3CiL6n73+IAdG4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This will update the following files:
+On Tue, Oct 23, 2007 at 04:17:50PM -0400, Dave Jones wrote:
+> 
+> On the whole, asides from these (very) minor nits, quite a clean
+> submission compared to a lot of new driver submissions to lkml.
+> Might want to run it through scripts/checkpatch.pl too to see
+> if that picks up any more minor fluff.
 
- Documentation/watchdog/src/watchdog-simple.c |   18 +
- drivers/watchdog/Kconfig                     |   13 -
- drivers/watchdog/Makefile                    |    1 
- drivers/watchdog/ar7_wdt.c                   |  349 +++++++++++++++++++++++++++
- 4 files changed, 374 insertions(+), 7 deletions(-)
+Here the ./scripts/checkpatch.pl output:
 
-with these Changes:
+   $ ./scripts/checkpatch.pl patch 
+   WARNING: do not add new typedefs
+   #522: FILE: Documentation/pps/timepps.h:59:
+   +typedef int pps_handle_t;		/* represents a PPS source */
 
-Author: WANG Cong <xiyou.wangcong@gmail.com>
-Date:   Sat Oct 6 11:17:13 2007 +0800
+   WARNING: do not add new typedefs
+   #523: FILE: Documentation/pps/timepps.h:60:
+   +typedef unsigned long pps_seq_t;	/* sequence number */
 
-    [WATCHDOG] Documentation/watchdog/src/watchdog-simple.c: improve this code
-    
-    Make some improvements for Documentation/watchdog/src/watchdog-simple.c.
-    
-    Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+   WARNING: do not add new typedefs
+   #524: FILE: Documentation/pps/timepps.h:61:
+   +typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
 
-Author: Matteo Croce <technoboy85@gmail.com>
-Date:   Thu Sep 20 18:06:41 2007 +0200
+   WARNING: do not add new typedefs
+   #525: FILE: Documentation/pps/timepps.h:62:
+   +typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
 
-    [WATCHDOG] AR7: watchdog timer
-    
-    Driver for the watchdog timer. Still doesn't reboots the machine
-    on some boards, but we have improved and cleaned it
-    
-    Signed-off-by: Matteo Croce <technoboy85@gmail.com>
-    Signed-off-by: Nicolas Thill <nico@openwrt.org>
-    Signed-off-by: Enrik Berkhan <Enrik.Berkhan@akk.org>
-    Signed-off-by: Christer Weinigel <wingel@nano-system.com>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+   WARNING: do not add new typedefs
+   #526: FILE: Documentation/pps/timepps.h:63:
+   +typedef struct pps_info pps_info_t;
 
-Author: Veljkovic Srdjan <sveljko@gvs.co.yu>
-Date:   Wed Sep 12 15:22:26 2007 +0200
+   WARNING: do not add new typedefs
+   #527: FILE: Documentation/pps/timepps.h:64:
+   +typedef struct pps_params pps_params_t;
 
-    [WATCHDOG] Linux kernel IPC SBC Watchdog Timer driver
-    
-    ICP's Wafer 5823 SBC has, as far as I can tell, the same WDT as many,
-    if not all ICP's SBC's (that do have a WDT). I have tested it with
-    several boards, including Rocky 4783, Rocky 3703 and Rocky 3782.
-    
-    I propose a rename of the  Wafer 5823 watchdog timer driver
-    to something like "IPC (SBC) Watchdog Timer", to reflect that it
-    works with other IPC boards (maybe even all of them).
-    
-    Signed-off-by: Veljkovic Srdjan <sveljko@gvs.co.yu>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+These refere to an userland include file.
 
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+   WARNING: line over 80 characters
+   #1882: FILE: drivers/serial/serial_core.c:871:
+   +		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
 
-For completeness, I added the overal diff below.
+   ERROR: need consistent spacing around '|' (ctx:WxV)
+   #2191: FILE: include/linux/serial_core.h:288:
+   +							|UPF_HARDPPS_CD))
+                                                        ^
+These refere to previous code.
 
-Greetings,
-Wim.
+   ERROR: Missing Signed-off-by: line(s)
 
-================================================================================
-diff --git a/Documentation/watchdog/src/watchdog-simple.c b/Documentation/watchdog/src/watchdog-simple.c
-index 47801bc..4cf72f3 100644
---- a/Documentation/watchdog/src/watchdog-simple.c
-+++ b/Documentation/watchdog/src/watchdog-simple.c
-@@ -3,15 +3,25 @@
- #include <unistd.h>
- #include <fcntl.h>
- 
--int main(int argc, const char *argv[]) {
-+int main(void)
-+{
- 	int fd = open("/dev/watchdog", O_WRONLY);
-+	int ret = 0;
- 	if (fd == -1) {
- 		perror("watchdog");
--		exit(1);
-+		exit(EXIT_FAILURE);
- 	}
- 	while (1) {
--		write(fd, "\0", 1);
--		fsync(fd);
-+		ret = write(fd, "\0", 1);
-+		if (ret != 1) {
-+			ret = -1;
-+			break;
-+		}
-+		ret = fsync(fd);
-+		if (ret)
-+			break;
- 		sleep(10);
- 	}
-+	close(fd);
-+	return ret;
- }
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 37bddc1..81db48f 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -343,11 +343,12 @@ config IBMASR
- 	  module will be called ibmasr.
- 
- config WAFER_WDT
--	tristate "ICP Wafer 5823 Single Board Computer Watchdog"
-+	tristate "ICP Single Board Computer Watchdog Timer"
- 	depends on X86
- 	help
--	  This is a driver for the hardware watchdog on the ICP Wafer 5823
--	  Single Board Computer (and probably other similar models).
-+	  This is a driver for the hardware watchdog on the ICP Single
-+	  Board Computer. This driver is working on (at least) the following
-+	  IPC SBC's: Wafer 5823, Rocky 4783, Rocky 3703 and Rocky 3782.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called wafer5823wdt.
-@@ -609,6 +610,12 @@ config WDT_RM9K_GPI
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called rm9k_wdt.
- 
-+config AR7_WDT
-+	tristate "TI AR7 Watchdog Timer"
-+	depends on AR7
-+	help
-+	  Hardware driver for the TI AR7 Watchdog Timer.
-+
- # PARISC Architecture
- 
- # POWERPC Architecture
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 389f8b1..7d9e573 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_SBC_EPX_C3_WATCHDOG) += sbc_epx_c3.o
- obj-$(CONFIG_INDYDOG) += indydog.o
- obj-$(CONFIG_WDT_MTX1)	+= mtx-1_wdt.o
- obj-$(CONFIG_WDT_RM9K_GPI) += rm9k_wdt.o
-+obj-$(CONFIG_AR7_WDT) += ar7_wdt.o
- 
- # PARISC Architecture
- 
-diff --git a/drivers/watchdog/ar7_wdt.c b/drivers/watchdog/ar7_wdt.c
+   Your patch has style problems, please review.  If any of these errors
+   are false positives report them to the maintainer, see
+   CHECKPATCH in MAINTAINERS.
+
+Attached the new patch.
+
+Ciao,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
+
+--HL3CiL6n73+IAdG4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=patch
+
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
 new file mode 100644
-index 0000000..cdaab8c
+index 0000000..a2660a2
 --- /dev/null
-+++ b/drivers/watchdog/ar7_wdt.c
-@@ -0,0 +1,349 @@
-+/*
-+ * drivers/watchdog/ar7_wdt.c
-+ *
-+ * Copyright (C) 2007 Nicolas Thill <nico@openwrt.org>
-+ * Copyright (c) 2005 Enrik Berkhan <Enrik.Berkhan@akk.org>
-+ *
-+ * Some code taken from:
-+ * National Semiconductor SCx200 Watchdog support
-+ * Copyright (c) 2001,2002 Christer Weinigel <wingel@nano-system.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,27 @@
++TARGETS = ppstest ppsctl
 +
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/notifier.h>
-+#include <linux/reboot.h>
-+#include <linux/fs.h>
-+#include <linux/ioport.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
 +
-+#include <asm/addrspace.h>
-+#include <asm/ar7/ar7.h>
++# -- Actions section ----------------------------------------------------------
 +
-+#define DRVNAME "ar7_wdt"
-+#define LONGNAME "TI AR7 Watchdog Timer"
++.PHONY : all depend dep
 +
-+MODULE_AUTHOR("Nicolas Thill <nico@openwrt.org>");
-+MODULE_DESCRIPTION(LONGNAME);
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
++all : .depend $(TARGETS)
 +
-+static int margin = 60;
-+module_param(margin, int, 0);
-+MODULE_PARM_DESC(margin, "Watchdog margin in seconds");
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
 +
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout, "Disable watchdog shutdown on close");
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
 +
-+#define READ_REG(x) readl((void __iomem *)&(x))
-+#define WRITE_REG(x, v) writel((v), (void __iomem *)&(x))
 +
-+struct ar7_wdt {
-+	u32 kick_lock;
-+	u32 kick;
-+	u32 change_lock;
-+	u32 change;
-+	u32 disable_lock;
-+	u32 disable;
-+	u32 prescale_lock;
-+	u32 prescale;
-+};
++# -- Clean section ------------------------------------------------------------
 +
-+static struct semaphore open_semaphore;
-+static unsigned expect_close;
++.PHONY : clean
 +
-+/* XXX currently fixed, allows max margin ~68.72 secs */
-+#define prescale_value 0xffff
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/pps.txt b/Documentation/pps/pps.txt
+new file mode 100644
+index 0000000..9538925
+--- /dev/null
++++ b/Documentation/pps/pps.txt
+@@ -0,0 +1,170 @@
 +
-+/* Offset of the WDT registers */
-+static unsigned long ar7_regs_wdt;
-+/* Pointer to the remapped WDT IO space */
-+static struct ar7_wdt *ar7_wdt;
-+static void ar7_wdt_get_regs(void)
++			PPS - Pulse Per Second
++			----------------------
++
++(C) Copyright 2007 Rodolfo Giometti <giometti@enneenne.com>
++
++This program is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2 of the License, or
++(at your option) any later version.
++
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++
++
++Overview
++--------
++
++LinuxPPS provides a programming interface (API) to define into the
++system several PPS sources.
++
++PPS means "pulse per second" and a PPS source is just a device which
++provides a high precision signal each second so that an application
++can use it to adjust system clock time.
++
++A PPS source can be connected to a serial port (usually to the Data
++Carrier Detect pin) or to a parallel port (ACK-pin) or to a special
++CPU's GPIOs (this is the common case in embedded systems) but in each
++case when a new pulse comes the system must apply to it a timestamp
++and record it for the userland.
++
++Common use is the combination of the NTPD as userland program with a
++GPS receiver as PPS source to obtain a wallclock-time with
++sub-millisecond synchronisation to UTC.
++
++
++RFC considerations
++------------------
++
++While implementing a PPS API as RFC 2783 defines and using an embedded
++CPU GPIO-Pin as physical link to the signal, I encountered a deeper
++problem:
++
++   At startup it needs a file descriptor as argument for the function
++   time_pps_create().
++
++This implies that the source has a /dev/... entry. This assumption is
++ok for the serial and parallel port, where you can do something
++useful besides(!) the gathering of timestamps as it is the central
++task for a PPS-API. But this assumption does not work for a single
++purpose GPIO line. In this case even basic file-related functionality
++(like read() and write()) makes no sense at all and should not be a
++precondition for the use of a PPS-API.
++
++The problem can be simply solved if you consider that a PPS source is
++not always connected with a GPS data source.
++
++So your programs should check if the GPS data source (the serial port
++for instance) is a PPS source too, otherwise they should provide the
++possibility to open another device as PPS source.
++
++In LinuxPPS the PPS sources are simply char devices usually mapped
++into files /dev/pps0, /dev/pps1, etc..
++
++
++Coding example
++--------------
++
++To register a PPS source into the kernel you should define a struct
++pps_source_info_s as follow:
++
++    static struct pps_source_info_s pps_ktimer_info = {
++            name         : "ktimer",
++            path         : "",
++            mode         : PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++			   PPS_ECHOASSERT | \
++                           PPS_CANWAIT | PPS_TSFMT_TSPEC,
++            echo         : pps_ktimer_echo,
++            owner        : THIS_MODULE,
++    };
++
++and then calling the function pps_register_source() in your
++intialization routine as follow:
++
++    source = pps_register_source(&pps_ktimer_info,
++			PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
++
++The pps_register_source() prototype is:
++
++  int pps_register_source(struct pps_source_info_s *info, int default_params)
++
++where "info" is a pointer to a structure that describes a particular
++PPS source, "default_params" tells the system what the initial default
++parameters for the device should be (is obvious that these parameters
++must be a subset of ones defined into the struct
++pps_source_info_s which describe the capabilities of the driver).
++
++Once you have registered a new PPS source into the system you can
++signal an assert event (for example in the interrupt handler routine)
++just using:
++
++    pps_event(source, PPS_CAPTUREASSERT, ptr);
++
++The same function may also run the defined echo function
++(pps_ktimer_echo(), passing to it the "ptr" pointer) if the user
++asked for that... etc..
++
++Please see the file drivers/pps/clients/ktimer.c for an example code.
++
++
++SYSFS support
++-------------
++
++If the SYSFS filesystem is enabled in the kernel it provides a new class:
++
++   $ ls /sys/class/pps/
++   pps0/  pps1/  pps2/
++
++Every directory is the ID of a PPS sources defined into the system and
++inside you find several files:
++
++    $ ls /sys/class/pps/pps0/
++    assert	clear  echo  mode  name  path  subsystem@  uevent
++
++Inside each "assert" and "clear" file you can find the timestamp and a
++sequence number:
++
++    $ cat /sys/class/pps/pps0/assert
++    1170026870.983207967#8
++
++Where before the "#" is the timestamp in seconds and after it is the
++sequence number. Other files are:
++
++* echo: reports if the PPS source has an echo function or not;
++
++* mode: reports available PPS functioning modes;
++
++* name: reports the PPS source's name;
++
++* path: reports the PPS source's device path, that is the device the
++  PPS source is connected to (if it exists).
++
++
++Testing the PPS support
++-----------------------
++
++In order to test the PPS support even without specific hardware you can use
++the ktimer driver (see the client subsection in the PPS configuration menu)
++and the userland tools provided into Documentaion/pps/ directory.
++
++Once you have enabled the compilation of ktimer just modprobe it (if
++not statically compiled):
++
++   # modprobe ktimer
++
++and the run ppstest as follow:
++
++   $ ./ppstest /dev/pps0
++   trying PPS source "/dev/pps1"
++   found PPS source "/dev/pps1"
++   ok, found 1 source(s), now start fetching data...
++   source 0 - assert 1186592699.388832443, sequence: 364 - clear  0.000000000, sequence: 0
++   source 0 - assert 1186592700.388931295, sequence: 365 - clear  0.000000000, sequence: 0
++   source 0 - assert 1186592701.389032765, sequence: 366 - clear  0.000000000, sequence: 0
++
++Please, note that to compile userland programs you need the file timepps.h
++(see Documentation/pps/).
+diff --git a/Documentation/pps/ppsctl.c b/Documentation/pps/ppsctl.c
+new file mode 100644
+index 0000000..83fd08a
+--- /dev/null
++++ b/Documentation/pps/ppsctl.c
+@@ -0,0 +1,62 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <string.h>
++#include <linux/serial.h>
++
++void usage(char *name)
 +{
-+	u16 chip_id = ar7_chip_id();
-+	switch (chip_id) {
-+	case AR7_CHIP_7100:
-+	case AR7_CHIP_7200:
-+		ar7_regs_wdt = AR7_REGS_WDT;
-+		break;
-+	default:
-+		ar7_regs_wdt = UR8_REGS_WDT;
-+		break;
++	fprintf(stderr, "usage: %s <ttyS> [enable|disable]\n", name);
++
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int fd;
++	int ret;
++	struct serial_struct ss;
++
++	if (argc < 2)
++		usage(argv[0]);
++
++	fd = open(argv[1], O_RDWR);
++	if (fd < 0) {
++		perror("open");
++		exit(EXIT_FAILURE);
 +	}
-+}
 +
-+
-+static void ar7_wdt_kick(u32 value)
-+{
-+	WRITE_REG(ar7_wdt->kick_lock, 0x5555);
-+	if ((READ_REG(ar7_wdt->kick_lock) & 3) == 1) {
-+		WRITE_REG(ar7_wdt->kick_lock, 0xaaaa);
-+		if ((READ_REG(ar7_wdt->kick_lock) & 3) == 3) {
-+			WRITE_REG(ar7_wdt->kick, value);
-+			return;
-+		}
++	ret = ioctl(fd, TIOCGSERIAL, &ss);
++	if (ret < 0) {
++		perror("ioctl(TIOCGSERIAL)");
++		exit(EXIT_FAILURE);
 +	}
-+	printk(KERN_ERR DRVNAME ": failed to unlock WDT kick reg\n");
-+}
 +
-+static void ar7_wdt_prescale(u32 value)
-+{
-+	WRITE_REG(ar7_wdt->prescale_lock, 0x5a5a);
-+	if ((READ_REG(ar7_wdt->prescale_lock) & 3) == 1) {
-+		WRITE_REG(ar7_wdt->prescale_lock, 0xa5a5);
-+		if ((READ_REG(ar7_wdt->prescale_lock) & 3) == 3) {
-+			WRITE_REG(ar7_wdt->prescale, value);
-+			return;
-+		}
++	if (argc < 3) {		/* just read PPS status */
++		printf("PPS is %sabled\n",
++		       ss.flags & ASYNC_HARDPPS_CD ? "en" : "dis");
++		exit(EXIT_SUCCESS);
 +	}
-+	printk(KERN_ERR DRVNAME ": failed to unlock WDT prescale reg\n");
-+}
 +
-+static void ar7_wdt_change(u32 value)
-+{
-+	WRITE_REG(ar7_wdt->change_lock, 0x6666);
-+	if ((READ_REG(ar7_wdt->change_lock) & 3) == 1) {
-+		WRITE_REG(ar7_wdt->change_lock, 0xbbbb);
-+		if ((READ_REG(ar7_wdt->change_lock) & 3) == 3) {
-+			WRITE_REG(ar7_wdt->change, value);
-+			return;
-+		}
++	if (argv[2][0] == 'e' || argv[2][0] == '1')
++		ss.flags |= ASYNC_HARDPPS_CD;
++	else if (argv[2][0] == 'd' || argv[2][0] == '0')
++		ss.flags &= ~ASYNC_HARDPPS_CD;
++	else {
++		fprintf(stderr, "invalid state argument \"%s\"\n", argv[2]);
++		exit(EXIT_FAILURE);
 +	}
-+	printk(KERN_ERR DRVNAME ": failed to unlock WDT change reg\n");
-+}
 +
-+static void ar7_wdt_disable(u32 value)
-+{
-+	WRITE_REG(ar7_wdt->disable_lock, 0x7777);
-+	if ((READ_REG(ar7_wdt->disable_lock) & 3) == 1) {
-+		WRITE_REG(ar7_wdt->disable_lock, 0xcccc);
-+		if ((READ_REG(ar7_wdt->disable_lock) & 3) == 2) {
-+			WRITE_REG(ar7_wdt->disable_lock, 0xdddd);
-+			if ((READ_REG(ar7_wdt->disable_lock) & 3) == 3) {
-+				WRITE_REG(ar7_wdt->disable, value);
-+				return;
-+			}
-+		}
++	ret = ioctl(fd, TIOCSSERIAL, &ss);
++	if (ret < 0) {
++		perror("ioctl(TIOCSSERIAL)");
++		exit(EXIT_FAILURE);
 +	}
-+	printk(KERN_ERR DRVNAME ": failed to unlock WDT disable reg\n");
++
++	return 0;
 +}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100755
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
 +
-+static void ar7_wdt_update_margin(int new_margin)
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
 +{
-+	u32 change;
++	pps_params_t params;
++	int ret;
 +
-+	change = new_margin * (ar7_vbus_freq() / prescale_value);
-+	if (change < 1) change = 1;
-+	if (change > 0xffff) change = 0xffff;
-+	ar7_wdt_change(change);
-+	margin = change * prescale_value / ar7_vbus_freq();
-+	printk(KERN_INFO DRVNAME
-+	       ": timer margin %d seconds (prescale %d, change %d, freq %d)\n",
-+	       margin, prescale_value, change, ar7_vbus_freq());
-+}
++	printf("trying PPS source \"%s\"\n", path);
 +
-+static void ar7_wdt_enable_wdt(void)
-+{
-+	printk(KERN_DEBUG DRVNAME ": enabling watchdog timer\n");
-+	ar7_wdt_disable(1);
-+	ar7_wdt_kick(1);
-+}
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
 +
-+static void ar7_wdt_disable_wdt(void)
-+{
-+	printk(KERN_DEBUG DRVNAME ": disabling watchdog timer\n");
-+	ar7_wdt_disable(0);
-+}
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
 +
-+static int ar7_wdt_open(struct inode *inode, struct file *file)
-+{
-+	/* only allow one at a time */
-+	if (down_trylock(&open_semaphore))
-+		return -EBUSY;
-+	ar7_wdt_enable_wdt();
-+	expect_close = 0;
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
 +
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int ar7_wdt_release(struct inode *inode, struct file *file)
-+{
-+	if (!expect_close)
-+		printk(KERN_WARNING DRVNAME
-+		": watchdog device closed unexpectedly,"
-+		"will not disable the watchdog timer\n");
-+	else if (!nowayout)
-+		ar7_wdt_disable_wdt();
-+
-+	up(&open_semaphore);
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
 +
 +	return 0;
 +}
 +
-+static int ar7_wdt_notify_sys(struct notifier_block *this,
-+			      unsigned long code, void *unused)
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
 +{
-+	if (code == SYS_HALT || code == SYS_POWER_OFF)
-+		if (!nowayout)
-+			ar7_wdt_disable_wdt();
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
 +
-+	return NOTIFY_DONE;
-+}
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
 +
-+static struct notifier_block ar7_wdt_notifier = {
-+	.notifier_call = ar7_wdt_notify_sys
-+};
-+
-+static ssize_t ar7_wdt_write(struct file *file, const char *data,
-+			     size_t len, loff_t *ppos)
-+{
-+	/* check for a magic close character */
-+	if (len) {
-+		size_t i;
-+
-+		ar7_wdt_kick(1);
-+
-+		expect_close = 0;
-+		for (i = 0; i < len; ++i) {
-+			char c;
-+			if (get_user(c, data+i))
-+				return -EFAULT;
-+			if (c == 'V')
-+				expect_close = 1;
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
 +		}
 +
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
 +	}
-+	return len;
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
 +}
 +
-+static int ar7_wdt_ioctl(struct inode *inode, struct file *file,
-+			 unsigned int cmd, unsigned long arg)
++void usage(char *name)
 +{
-+	static struct watchdog_info ident = {
-+		.identity = LONGNAME,
-+		.firmware_version = 1,
-+		.options = (WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING),
-+	};
-+	int new_margin;
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
+diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
+new file mode 100644
+index 0000000..28ebf4c
+--- /dev/null
++++ b/Documentation/pps/timepps.h
+@@ -0,0 +1,193 @@
++/*
++ * timepps.h -- PPS API main header
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef _SYS_TIMEPPS_H_
++#define _SYS_TIMEPPS_H_
++
++#include <sys/syscall.h>
++#include <unistd.h>
++#include <errno.h>
++#include <linux/pps.h>
++
++/*
++ * New data structures
++ */
++
++struct ntp_fp {
++	unsigned int integral;
++	unsigned int fractional;
++};
++
++union pps_timeu {
++	struct timespec tspec;
++	struct ntp_fp ntpfp;
++	unsigned long longpad[3];
++};
++
++struct pps_info {
++	unsigned long assert_sequence;	/* seq. num. of assert event */
++	unsigned long clear_sequence;	/* seq. num. of clear event */
++	union pps_timeu assert_tu;	/* time of assert event */
++	union pps_timeu clear_tu;	/* time of clear event */
++	int current_mode;		/* current mode bits */
++};
++
++struct pps_params {
++	int api_version;		/* API version # */
++	int mode;			/* mode bits */
++	union pps_timeu assert_off_tu;	/* offset compensation for assert */
++	union pps_timeu clear_off_tu;	/* offset compensation for clear */
++};
++
++typedef int pps_handle_t;		/* represents a PPS source */
++typedef unsigned long pps_seq_t;	/* sequence number */
++typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
++typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
++typedef struct pps_info pps_info_t;
++typedef struct pps_params pps_params_t;
++
++#define assert_timestamp        assert_tu.tspec
++#define clear_timestamp         clear_tu.tspec
++
++#define assert_timestamp_ntpfp  assert_tu.ntpfp
++#define clear_timestamp_ntpfp   clear_tu.ntpfp
++
++#define assert_offset		assert_off_tu.tspec
++#define clear_offset		clear_off_tu.tspec
++
++#define assert_offset_ntpfp     assert_off_tu.ntpfp
++#define clear_offset_ntpfp      clear_off_tu.ntpfp
++
++/*
++ * The PPS API
++ */
++
++static __inline int time_pps_create(int source, pps_handle_t *handle)
++{
++	int ret;
++
++	if (!handle) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	/* First we check if current device is a PPS valid PPS one...
++	 */
++	ret = ioctl(source, PPS_CHECK);
++	if (ret) {
++		errno = EOPNOTSUPP;
++		return -1;
++	}
++
++	/* ... then since in LinuxPPS there are no differences between a
++	 * "PPS source" and a "PPS handle", we simply return the same value.
++	 */
++	*handle = source;
++
++	return 0;
++}
++
++static __inline int time_pps_destroy(pps_handle_t handle)
++{
++	return close(handle);
++}
++
++static __inline int time_pps_getparams(pps_handle_t handle,
++					pps_params_t *ppsparams)
++{
++	int ret;
++	struct pps_kparams __ppsparams;
++
++	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
++
++	ppsparams->api_version = __ppsparams.api_version;
++	ppsparams->mode = __ppsparams.mode;
++	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
++	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
++	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
++	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
++
++	return ret;
++}
++
++static __inline int time_pps_setparams(pps_handle_t handle,
++					const pps_params_t *ppsparams)
++{
++	struct pps_kparams __ppsparams;
++
++	__ppsparams.api_version = ppsparams->api_version;
++	__ppsparams.mode = ppsparams->mode;
++	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
++	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
++	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
++	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
++
++	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
++}
++
++/* Get capabilities for handle */
++static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
++{
++	return ioctl(handle, PPS_GETCAP, mode);
++}
++
++static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
++					pps_info_t *ppsinfobuf,
++					const struct timespec *timeout)
++{
++	struct pps_fdata __fdata;
++	int ret;
++
++	/* Sanity checks */
++	if (tsformat != PPS_TSFMT_TSPEC) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	if (timeout) {
++		__fdata.timeout.sec = timeout->tv_sec;
++		__fdata.timeout.nsec = timeout->tv_nsec;
++		__fdata.timeout.flags = ~PPS_TIME_INVALID;
++	} else
++		__fdata.timeout.flags = PPS_TIME_INVALID;
++
++	ret = ioctl(handle, PPS_FETCH, &__fdata);
++
++	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
++	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
++	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
++	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
++	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
++	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
++	ppsinfobuf->current_mode = __fdata.info.current_mode;
++
++	return ret;
++}
++
++static __inline int time_pps_kcbind(pps_handle_t handle,
++					const int kernel_consumer,
++					const int edge, const int tsformat)
++{
++	/* LinuxPPS doesn't implement kernel consumer feature */
++	errno = EOPNOTSUPP;
++	return -1;
++}
++
++#endif				/* _SYS_TIMEPPS_H_ */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9a91d9e..f45e974 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3011,6 +3011,13 @@ P:	James Chapman
+ M:	jchapman@katalix.com
+ S:	Maintained
+ 
++PPS SUPPORT
++P:	Rodolfo Giometti
++M:	giometti@enneenne.com
++W:	http://wiki.enneenne.com/index.php/LinuxPPS_support
++L:	linuxpps@ml.enneenne.com
++S:	Maintained
++
+ PREEMPTIBLE KERNEL
+ P:	Robert Love
+ M:	rml@tech9.net
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 3e1c442..bffc48e 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -52,6 +52,8 @@ source "drivers/i2c/Kconfig"
+ 
+ source "drivers/spi/Kconfig"
+ 
++source "drivers/pps/Kconfig"
++
+ source "drivers/w1/Kconfig"
+ 
+ source "drivers/power/Kconfig"
+diff --git a/drivers/Makefile b/drivers/Makefile
+index f0878b2..2e84e49 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -63,6 +63,7 @@ obj-$(CONFIG_INPUT)		+= input/
+ obj-$(CONFIG_I2O)		+= message/
+ obj-$(CONFIG_RTC_LIB)		+= rtc/
+ obj-y				+= i2c/
++obj-$(CONFIG_PPS)		+= pps/
+ obj-$(CONFIG_W1)		+= w1/
+ obj-$(CONFIG_POWER_SUPPLY)	+= power/
+ obj-$(CONFIG_HWMON)		+= hwmon/
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index 62051f8..e0a8364 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -746,6 +746,27 @@ static struct console lpcons = {
+ 
+ #endif /* console on line printer */
+ 
++/* Support for PPS signal on the line printer */
++
++#ifdef CONFIG_PPS_CLIENT_LP
++
++static void lp_pps_echo(int source, int event, void *data)
++{
++	struct parport *port = data;
++	unsigned char status = parport_read_status(port);
++
++	/* echo event via SEL bit */
++	parport_write_control(port,
++		parport_read_control(port) | PARPORT_CONTROL_SELECT);
++
++	/* signal no event */
++	if ((status & PARPORT_STATUS_ACK) != 0)
++		parport_write_control(port,
++			parport_read_control(port) & ~PARPORT_CONTROL_SELECT);
++}
++
++#endif
++
+ /* --- initialisation code ------------------------------------- */
+ 
+ static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
+@@ -817,6 +838,38 @@ static int lp_register(int nr, struct parport *port)
+ 	}
+ #endif
+ 
++#ifdef CONFIG_PPS_CLIENT_LP
++	port->pps_info.owner = THIS_MODULE;
++	port->pps_info.dev = port->dev;
++	snprintf(port->pps_info.path, PPS_MAX_NAME_LEN, "/dev/lp%d", nr);
++
++	/* No PPS support if lp port has no IRQ line */
++	if (port->irq != PARPORT_IRQ_NONE) {
++		strncpy(port->pps_info.name, port->name, PPS_MAX_NAME_LEN);
++
++		port->pps_info.mode = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++				PPS_ECHOASSERT | \
++				PPS_CANWAIT | PPS_TSFMT_TSPEC;
++
++		port->pps_info.echo = lp_pps_echo;
++
++		port->pps_source = pps_register_source(&(port->pps_info),
++				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
++		if (port->pps_source < 0)
++			dev_err(port->dev,
++					"cannot register PPS source \"%s\"\n",
++					port->pps_info.path);
++		else
++			dev_info(port->dev, "PPS source #%d \"%s\" added\n",
++					port->pps_source, port->pps_info.path);
++	} else {
++		port->pps_source = -1;
++		dev_err(port->dev, "PPS support disabled due port \"%s\" is "
++					"in polling mode\n",
++					port->pps_info.path);
++	}
++#endif
++
+ 	return 0;
+ }
+ 
+@@ -860,6 +913,14 @@ static void lp_detach (struct parport *port)
+ 		console_registered = NULL;
+ 	}
+ #endif /* CONFIG_LP_CONSOLE */
++
++#ifdef CONFIG_PPS_CLIENT_LP
++	if (port->pps_source >= 0) {
++		pps_unregister_source(port->pps_source);
++		dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
++			port->pps_source, port->pps_info.path);
++	}
++#endif
+ }
+ 
+ static struct parport_driver lp_driver = {
+diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
+new file mode 100644
+index 0000000..bfe6621
+--- /dev/null
++++ b/drivers/pps/Kconfig
+@@ -0,0 +1,34 @@
++#
++# PPS support configuration
++#
++
++menu "PPS support"
++
++config PPS
++	tristate "PPS support"
++	depends on EXPERIMENTAL
++	---help---
++	  PPS (Pulse Per Second) is a special pulse provided by some GPS
++	  antennae. Userland can use it to get an high time reference.
++
++	  Some antennae's PPS signals are connected with the CD (Carrier
++	  Detect) pin of the serial line they use to communicate with the
++	  host. In this case use the SERIAL_LINE client support.
++
++	  Some antennae's PPS signals are connected with some special host
++	  inputs so you have to enable the corresponding client support.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called pps_core.ko.
++
++config PPS_DEBUG
++	bool "PPS debugging messages"
++	depends on PPS 
++	help
++	  Say Y here if you want the PPS support to produce a bunch of debug
++	  messages to the system log.  Select this if you are having a
++	  problem with PPS support and want to see more of what is going on.
++
++source drivers/pps/clients/Kconfig
++
++endmenu
+diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
+new file mode 100644
+index 0000000..d8ec308
+--- /dev/null
++++ b/drivers/pps/Makefile
+@@ -0,0 +1,11 @@
++#
++# Makefile for the PPS core.
++#
++
++pps_core-objs			+= pps.o kapi.o sysfs.o
++obj-$(CONFIG_PPS)		+= pps_core.o
++obj-y				+= clients/
++
++ifeq ($(CONFIG_PPS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
+diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
+new file mode 100644
+index 0000000..09ba5c3
+--- /dev/null
++++ b/drivers/pps/clients/Kconfig
+@@ -0,0 +1,38 @@
++#
++# PPS clients configuration
++#
++
++if PPS
++
++comment "PPS clients support"
++
++config PPS_CLIENT_KTIMER
++	tristate "Kernel timer client (Testing client, use for debug)"
++	help
++	  If you say yes here you get support for a PPS debugging client
++	  which uses a kernel timer to generate the PPS signal.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called ktimer.ko.
++
++comment "UART serial support (forced off)"
++	depends on ! (SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y))
++
++config PPS_CLIENT_UART
++	bool "UART serial support"
++	depends on SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y)
++	help
++	  If you say yes here you get support for a PPS source connected
++	  with the CD (Carrier Detect) pin of your serial port.
++
++comment "Parallel printer support (forced off)"
++	depends on !( PRINTER != n && !(PPS = m && PRINTER = y))
++
++config PPS_CLIENT_LP
++	bool "Parallel printer support"
++	depends on PRINTER != n && !(PPS = m && PRINTER = y)
++	help
++	  If you say yes here you get support for a PPS source connected
++	  with the interrupt pin of your parallel port.
++
++endif
+diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
+new file mode 100644
+index 0000000..f3c1e39
+--- /dev/null
++++ b/drivers/pps/clients/Makefile
+@@ -0,0 +1,9 @@
++#
++# Makefile for PPS clients.
++#
++
++obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
++
++ifeq ($(CONFIG_PPS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
+diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
+new file mode 100644
+index 0000000..5845188
+--- /dev/null
++++ b/drivers/pps/clients/ktimer.c
+@@ -0,0 +1,114 @@
++/*
++ * ktimer.c -- kernel timer test client
++ *
++ *
++ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/time.h>
++#include <linux/timer.h>
++
++#include <linux/pps.h>
++
++/*
++ * Global variables
++ */
++
++static int source;
++static struct timer_list ktimer;
++
++/*
++ * The kernel timer
++ */
++
++static void pps_ktimer_event(unsigned long ptr)
++{
++	pr_info("PPS event at %lu\n", jiffies);
++
++	pps_event(source, PPS_CAPTUREASSERT, NULL);
++
++	mod_timer(&ktimer, jiffies + HZ);
++}
++
++/*
++ * The echo function
++ */
++
++static void pps_ktimer_echo(int source, int event, void *data)
++{
++	pr_info("echo %s %s for source %d\n",
++		event & PPS_CAPTUREASSERT ? "assert" : "",
++		event & PPS_CAPTURECLEAR ? "clear" : "",
++		source);
++}
++
++/*
++ * The PPS info struct
++ */
++
++static struct pps_source_info pps_ktimer_info = {
++	.name		= "ktimer",
++	.path		= "",
++	.mode		= PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++			  PPS_ECHOASSERT | \
++			  PPS_CANWAIT | PPS_TSFMT_TSPEC,
++	.echo 		= pps_ktimer_echo,
++	.owner		= THIS_MODULE,
++};
++
++/*
++ * Module staff
++ */
++
++static void __exit pps_ktimer_exit(void)
++{
++	del_timer_sync(&ktimer);
++	pps_unregister_source(source);
++
++	pr_info("ktimer PPS source unregistered\n");
++}
++
++static int __init pps_ktimer_init(void)
++{
++	int ret;
++
++	ret = pps_register_source(&pps_ktimer_info,
++				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
++	if (ret < 0) {
++		printk(KERN_ERR "cannot register ktimer source\n");
++		return ret;
++	}
++	source = ret;
++
++	setup_timer(&ktimer, pps_ktimer_event, 0);
++	mod_timer(&ktimer, jiffies + HZ);
++
++	pr_info("ktimer PPS source registered at %d\n", source);
++
++	return  0;
++}
++
++module_init(pps_ktimer_init);
++module_exit(pps_ktimer_exit);
++
++MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
++MODULE_DESCRIPTION("dummy PPS source by using a kernel timer (just for debug)");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
+new file mode 100644
+index 0000000..8c9665e
+--- /dev/null
++++ b/drivers/pps/kapi.c
+@@ -0,0 +1,272 @@
++/*
++ * kapi.c -- kernel API
++ *
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/time.h>
++#include <linux/spinlock.h>
++#include <linux/idr.h>
++#include <linux/fs.h>
++#include <linux/pps.h>
++
++/*
++ * Local variables
++ */
++
++static spinlock_t idr_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_IDR(pps_idr);
++
++/*
++ * Local functions
++ */
++
++static void pps_add_offset(struct pps_ktime *ts, struct pps_ktime *offset)
++{
++	ts->nsec += offset->nsec;
++	while (ts->nsec >= NSEC_PER_SEC) {
++		ts->nsec -= NSEC_PER_SEC;
++		ts->sec++;
++	}
++	while (ts->nsec < 0) {
++		ts->nsec += NSEC_PER_SEC;
++		ts->sec--;
++	}
++	ts->sec += offset->sec;
++}
++
++/*
++ * Exported functions
++ */
++
++int pps_register_source(struct pps_source_info *info, int default_params)
++{
++	struct pps_device *pps;
++	int id;
++	int err;
++
++	/* Sanity checks */
++	if ((info->mode & default_params) != default_params) {
++		printk(KERN_ERR "pps: %s: unsupported default parameters\n",
++					info->name);
++		err = -EINVAL;
++		goto pps_register_source_exit;
++	}
++	if ((info->mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)) != 0 &&
++			info->echo == NULL) {
++		printk(KERN_ERR "pps: %s: echo function is not defined\n",
++					info->name);
++		err = -EINVAL;
++		goto pps_register_source_exit;
++	}
++	if ((info->mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
++		printk(KERN_ERR "pps: %s: unspecified time format\n",
++					info->name);
++		err = -EINVAL;
++		goto pps_register_source_exit;
++	}
++
++	/* Allocate memory for the new PPS source struct */
++	pps = kzalloc(sizeof(struct pps_device), GFP_KERNEL);
++	if (pps == NULL) {
++		err = -ENOMEM;
++		goto pps_register_source_exit;
++	}
++
++	/* Get new ID for the new PPS source */
++	if (idr_pre_get(&pps_idr, GFP_KERNEL) == 0) {
++		err = -ENOMEM;
++		goto kfree_pps;
++	}
++
++	spin_lock_irq(&idr_lock);
++	err = idr_get_new(&pps_idr, pps, &id);
++	spin_unlock_irq(&idr_lock);
++
++	if (err < 0)
++		goto kfree_pps;
++
++	id = id & MAX_ID_MASK;
++	if (id >= PPS_MAX_SOURCES) {
++		printk(KERN_ERR "pps: %s: too much PPS sources in the system\n",
++					info->name);
++		err = -EBUSY;
++		goto free_idr;
++	}
++
++	pps->id = id;
++	pps->params.api_version = PPS_API_VERS;
++	pps->params.mode = default_params;
++	pps->info = *info;
++
++	init_waitqueue_head(&pps->queue);
++	spin_lock_init(&pps->lock);
++	atomic_set(&pps->usage, 0);
++	init_waitqueue_head(&pps->usage_queue);
++
++	/* Create the char device */
++	err = pps_register_cdev(pps);
++	if (err < 0) {
++		printk(KERN_ERR "pps: %s: unable to create char device\n",
++					info->name);
++		goto free_idr;
++	}
++
++	/* Create the sysfs entry */
++	err = pps_sysfs_create_source_entry(pps);
++	if (err < 0) {
++		printk(KERN_ERR "pps: %s: unable to create sysfs entries\n",
++					info->name);
++		goto unregister_cdev;
++	}
++
++	pr_info("new PPS source %s at ID %d\n", info->name, id);
++
++	return id;
++
++unregister_cdev:
++	pps_unregister_cdev(pps);
++
++free_idr:
++	spin_lock_irq(&idr_lock);
++	idr_remove(&pps_idr, id);
++	spin_unlock_irq(&idr_lock);
++
++kfree_pps:
++	kfree(pps);
++
++pps_register_source_exit:
++	printk(KERN_ERR "pps: %s: unable to register source\n", info->name);
++
++	return err;
++}
++EXPORT_SYMBOL(pps_register_source);
++
++void pps_unregister_source(int source)
++{
++	struct pps_device *pps;
++
++	spin_lock_irq(&idr_lock);
++	pps = idr_find(&pps_idr, source);
++
++	if (!pps) {
++		spin_unlock_irq(&idr_lock);
++		return;
++	}
++
++	/* This should be done first in order to deny IRQ handlers
++	 * to access PPS structs
++	 */
++
++	idr_remove(&pps_idr, pps->id);
++	spin_unlock_irq(&idr_lock);
++
++	wait_event(pps->usage_queue, atomic_read(&pps->usage) == 0);
++
++	pps_sysfs_remove_source_entry(pps);
++	pps_unregister_cdev(pps);
++	kfree(pps);
++}
++EXPORT_SYMBOL(pps_unregister_source);
++
++void pps_event(int source, int event, void *data)
++{
++	struct pps_device *pps;
++	struct timespec __ts;
++	struct pps_ktime ts;
++	unsigned long flags;
++
++	/* First of all we get the time stamp... */
++	getnstimeofday(&__ts);
++
++	/* ... and translate it to PPS time data struct */
++	ts.sec = __ts.tv_sec;
++	ts.nsec = __ts.tv_nsec;
++
++	if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0) {
++		printk(KERN_ERR "pps: unknown event (%x) for source %d\n",
++			event, source);
++		return;
++	}
++
++	spin_lock_irqsave(&idr_lock, flags);
++	pps = idr_find(&pps_idr, source);
++
++	/* If we find a valid PPS source we lock it before leaving
++	 * the lock!
++	 */
++	if (pps)
++		atomic_inc(&pps->usage);
++	spin_unlock_irqrestore(&idr_lock, flags);
++
++	if (!pps)
++		return;
++
++	pr_debug("PPS event on source %d at at %llu.%06u\n",
++			pps->id, ts.sec, ts.nsec);
++
++	spin_lock_irqsave(&pps->lock, flags);
++
++	/* Must call the echo function? */
++	if ((pps->params.mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)))
++		pps->info.echo(source, event, data);
++
++	/* Check the event */
++	pps->current_mode = pps->params.mode;
++	if (event & PPS_CAPTUREASSERT) {
++		/* We have to add an offset? */
++		if (pps->params.mode & PPS_OFFSETASSERT)
++			pps_add_offset(&ts, &pps->params.assert_off_tu);
++
++		/* Save the time stamp */
++		pps->assert_tu = ts;
++		pps->assert_sequence++;
++		pr_debug("capture assert seq #%u for source %d\n",
++			pps->assert_sequence, source);
++	}
++	if (event & PPS_CAPTURECLEAR) {
++		/* We have to add an offset? */
++		if (pps->params.mode & PPS_OFFSETCLEAR)
++			pps_add_offset(&ts, &pps->params.clear_off_tu);
++
++		/* Save the time stamp */
++		pps->clear_tu = ts;
++		pps->clear_sequence++;
++		pr_debug("capture clear seq #%u for source %d\n",
++			pps->clear_sequence, source);
++	}
++
++	pps->go = ~0;
++	wake_up_interruptible(&pps->queue);
++
++	kill_fasync(&pps->async_queue, SIGIO, POLL_IN);
++
++	spin_unlock_irqrestore(&pps->lock, flags);
++
++	/* Now we can release the PPS source for (possible) deregistration */
++	spin_lock_irqsave(&idr_lock, flags);
++	atomic_dec(&pps->usage);
++	wake_up_all(&pps->usage_queue);
++	spin_unlock_irqrestore(&idr_lock, flags);
++}
++EXPORT_SYMBOL(pps_event);
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+new file mode 100644
+index 0000000..1e97f0e
+--- /dev/null
++++ b/drivers/pps/pps.c
+@@ -0,0 +1,331 @@
++/*
++ * pps.c -- Main PPS support file
++ *
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/uaccess.h>
++#include <linux/cdev.h>
++#include <linux/poll.h>
++#include <linux/pps.h>
++
++/*
++ * Local variables
++ */
++
++static dev_t pps_devt;
++static struct class *pps_class;
++
++/*
++ * Char device methods
++ */
++
++static unsigned int pps_cdev_poll(struct file *file, poll_table *wait)
++{
++	struct pps_device *pps = file->private_data;
++
++	poll_wait(file, &pps->queue, wait);
++
++	return POLLIN | POLLRDNORM;
++}
++
++static int pps_cdev_fasync(int fd, struct file *file, int on)
++{
++	struct pps_device *pps = file->private_data;
++	return fasync_helper(fd, file, on, &pps->async_queue);
++}
++
++static int pps_cdev_ioctl(struct inode *inode, struct file *file,
++		unsigned int cmd, unsigned long arg)
++{
++	struct pps_device *pps = file->private_data;
++	struct pps_kparams params;
++	struct pps_fdata fdata;
++	unsigned long ticks;
++	void __user *uarg = (void __user *) arg;
++	int __user *iuarg = (int __user *) arg;
++	int err;
 +
 +	switch (cmd) {
-+	default:
-+		return -ENOTTY;
-+	case WDIOC_GETSUPPORT:
-+		if (copy_to_user((struct watchdog_info *)arg, &ident,
-+				sizeof(ident)))
-+			return -EFAULT;
++	case PPS_CHECK:
++
++		/* This does nothing but signal we are a PPS source... */
++
 +		return 0;
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		if (put_user(0, (int *)arg))
-+			return -EFAULT;
-+		return 0;
-+	case WDIOC_KEEPALIVE:
-+		ar7_wdt_kick(1);
-+		return 0;
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(new_margin, (int *)arg))
-+			return -EFAULT;
-+		if (new_margin < 1)
++
++	case PPS_GETPARAMS:
++		pr_debug("PPS_GETPARAMS: source %d\n", pps->id);
++
++		/* Sanity checks */
++		if (!uarg)
 +			return -EINVAL;
 +
-+		ar7_wdt_update_margin(new_margin);
-+		ar7_wdt_kick(1);
-+
-+	case WDIOC_GETTIMEOUT:
-+		if (put_user(margin, (int *)arg))
++		/* Return current parameters */
++		err = copy_to_user(uarg, &pps->params,
++						sizeof(struct pps_kparams));
++		if (err)
 +			return -EFAULT;
-+		return 0;
++
++		break;
++
++	case PPS_SETPARAMS:
++		pr_debug("PPS_SETPARAMS: source %d\n", pps->id);
++
++		/* Check the capabilities */
++		if (!capable(CAP_SYS_TIME))
++			return -EPERM;
++
++		/* Sanity checks */
++		if (!uarg)
++			return -EINVAL;
++		err = copy_from_user(&params, uarg, sizeof(struct pps_kparams));
++		if (err)
++			return -EFAULT;
++		if (!(params.mode & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR))) {
++			pr_debug("capture mode unspecified (%x)\n",
++								params.mode);
++			return -EINVAL;
++		}
++
++		/* Check for supported capabilities */
++		if ((params.mode & ~pps->info.mode) != 0) {
++			pr_debug("unsupported capabilities (%x)\n",
++								params.mode);
++			return -EINVAL;
++		}
++
++		spin_lock_irq(&pps->lock);
++
++		/* Save the new parameters */
++		pps->params = params;
++
++		/* Restore the read only parameters */
++		if ((params.mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
++			/* section 3.3 of RFC 2783 interpreted */
++			pr_debug("time format unspecified (%x)\n",
++								params.mode);
++			pps->params.mode |= PPS_TSFMT_TSPEC;
++		}
++		if (pps->info.mode & PPS_CANWAIT)
++			pps->params.mode |= PPS_CANWAIT;
++		pps->params.api_version = PPS_API_VERS;
++
++		spin_unlock_irq(&pps->lock);
++
++		break;
++
++	case PPS_GETCAP:
++		pr_debug("PPS_GETCAP: source %d\n", pps->id);
++
++		/* Sanity checks */
++		if (!uarg)
++			return -EINVAL;
++
++		err = put_user(pps->info.mode, iuarg);
++		if (err)
++			return -EFAULT;
++
++		break;
++
++	case PPS_FETCH:
++		pr_debug("PPS_FETCH: source %d\n", pps->id);
++
++		if (!uarg)
++			return -EINVAL;
++		err = copy_from_user(&fdata, uarg, sizeof(struct pps_fdata));
++		if (err)
++			return -EFAULT;
++
++		pps->go = 0;
++
++		/* Manage the timeout */
++		if (fdata.timeout.flags & PPS_TIME_INVALID)
++			err = wait_event_interruptible(pps->queue, pps->go);
++		else {
++			pr_debug("timeout %lld.%09d\n",
++					fdata.timeout.sec, fdata.timeout.nsec);
++			ticks = fdata.timeout.sec * HZ;
++			ticks += fdata.timeout.nsec / (NSEC_PER_SEC / HZ);
++
++			if (ticks != 0) {
++				err = wait_event_interruptible_timeout(
++						pps->queue, pps->go, ticks);
++				if (err == 0)
++					return -ETIMEDOUT;
++			}
++		}
++
++		/* Check for pending signals */
++		if (err == -ERESTARTSYS) {
++			pr_debug("pending signal caught\n");
++			return -EINTR;
++		}
++
++		/* Return the fetched timestamp */
++		spin_lock_irq(&pps->lock);
++
++		fdata.info.assert_sequence = pps->assert_sequence;
++		fdata.info.clear_sequence = pps->clear_sequence;
++		fdata.info.assert_tu = pps->assert_tu;
++		fdata.info.clear_tu = pps->clear_tu;
++		fdata.info.current_mode = pps->current_mode;
++
++		spin_unlock_irq(&pps->lock);
++
++		err = copy_to_user(uarg, &fdata, sizeof(struct pps_fdata));
++		if (err)
++			return -EFAULT;
++
++		break;
++
++	default:
++		return -ENOTTY;
++		break;
 +	}
++
++	return 0;
 +}
 +
-+static struct file_operations ar7_wdt_fops = {
++static int pps_cdev_open(struct inode *inode, struct file *file)
++{
++	struct pps_device *pps = container_of(inode->i_cdev,
++						struct pps_device, cdev);
++
++	/* Lock the PPS source against (possible) deregistration */
++	atomic_inc(&pps->usage);
++
++	file->private_data = pps;
++
++	return 0;
++}
++
++static int pps_cdev_release(struct inode *inode, struct file *file)
++{
++	struct pps_device *pps = file->private_data;
++
++	/* Free the PPS source and wake up (possible) deregistration */
++	atomic_dec(&pps->usage);
++	wake_up_all(&pps->usage_queue);
++
++	return 0;
++}
++
++/*
++ * Char device stuff
++ */
++
++static const struct file_operations pps_cdev_fops = {
 +	.owner		= THIS_MODULE,
-+	.write		= ar7_wdt_write,
-+	.ioctl		= ar7_wdt_ioctl,
-+	.open		= ar7_wdt_open,
-+	.release	= ar7_wdt_release,
++	.llseek		= no_llseek,
++	.poll		= pps_cdev_poll,
++	.fasync		= pps_cdev_fasync,
++	.ioctl		= pps_cdev_ioctl,
++	.open		= pps_cdev_open,
++	.release	= pps_cdev_release,
 +};
 +
-+static struct miscdevice ar7_wdt_miscdev = {
-+	.minor		= WATCHDOG_MINOR,
-+	.name		= "watchdog",
-+	.fops		= &ar7_wdt_fops,
++int pps_register_cdev(struct pps_device *pps)
++{
++	int err;
++
++	pps->devno = MKDEV(MAJOR(pps_devt), pps->id);
++	cdev_init(&pps->cdev, &pps_cdev_fops);
++	pps->cdev.owner = pps->info.owner;
++
++	err = cdev_add(&pps->cdev, pps->devno, 1);
++	if (err) {
++		printk(KERN_ERR "pps: %s: failed to add char device %d:%d\n",
++				pps->info.name, MAJOR(pps_devt), pps->id);
++		return err;
++	}
++	pps->dev = device_create(pps_class, pps->info.dev, pps->devno,
++							"pps%d", pps->id);
++	if (err)
++		goto del_cdev;
++	dev_set_drvdata(pps->dev, pps);
++
++	pr_debug("source %s got cdev (%d:%d)\n", pps->info.name,
++			MAJOR(pps_devt), pps->id);
++
++	return 0;
++
++del_cdev:
++	cdev_del(&pps->cdev);
++
++	return err;
++}
++
++void pps_unregister_cdev(struct pps_device *pps)
++{
++	device_destroy(pps_class, pps->devno);
++	cdev_del(&pps->cdev);
++}
++
++/*
++ * Module staff
++ */
++
++static void __exit pps_exit(void)
++{
++	class_destroy(pps_class);
++
++	if (pps_devt)
++		unregister_chrdev_region(pps_devt, PPS_MAX_SOURCES);
++
++	pr_info("LinuxPPS API ver. %d removed\n", PPS_API_VERS);
++}
++
++static int __init pps_init(void)
++{
++	int err;
++
++	pps_class = class_create(THIS_MODULE, "pps");
++	if (!pps_class) {
++		printk(KERN_ERR "pps: ailed to allocate class\n");
++		return -ENOMEM;
++	}
++
++	err = alloc_chrdev_region(&pps_devt, 0, PPS_MAX_SOURCES, "pps");
++	if (err < 0) {
++		printk(KERN_ERR "pps: failed to allocate char device region\n");
++		goto remove_class;
++	}
++
++	pr_info("LinuxPPS API ver. %d registered\n", PPS_API_VERS);
++	pr_info("Software ver. %s - Copyright 2005-2007 Rodolfo Giometti "
++		"<giometti@linux.it>\n", PPS_VERSION);
++
++	return 0;
++
++remove_class:
++	class_destroy(pps_class);
++
++	return err;
++}
++
++subsys_initcall(pps_init);
++module_exit(pps_exit);
++
++MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
++MODULE_DESCRIPTION("LinuxPPS support (RFC 2783) - ver. " PPS_VERSION);
++MODULE_LICENSE("GPL");
+diff --git a/drivers/pps/sysfs.c b/drivers/pps/sysfs.c
+new file mode 100644
+index 0000000..9b65ddd
+--- /dev/null
++++ b/drivers/pps/sysfs.c
+@@ -0,0 +1,142 @@
++/*
++ * sysfs.c -- sysfs support
++ *
++ *
++ * Copyright (C) 2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/pps.h>
++
++/*
++ * Attribute functions
++ */
++
++static ssize_t pps_show_assert(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%lld.%09d#%d\n",
++			pps->assert_tu.sec, pps->assert_tu.nsec,
++			pps->assert_sequence);
++}
++DEVICE_ATTR(assert, S_IRUGO, pps_show_assert, NULL);
++
++static ssize_t pps_show_clear(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%lld.%09d#%d\n",
++			pps->clear_tu.sec, pps->clear_tu.nsec,
++			pps->clear_sequence);
++}
++DEVICE_ATTR(clear, S_IRUGO, pps_show_clear, NULL);
++
++static ssize_t pps_show_mode(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%4x\n", pps->info.mode);
++}
++DEVICE_ATTR(mode, S_IRUGO, pps_show_mode, NULL);
++
++static ssize_t pps_show_echo(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%d\n", !!pps->info.echo);
++}
++DEVICE_ATTR(echo, S_IRUGO, pps_show_echo, NULL);
++
++static ssize_t pps_show_name(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%s\n", pps->info.name);
++}
++DEVICE_ATTR(name, S_IRUGO, pps_show_name, NULL);
++
++static ssize_t pps_show_path(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct pps_device *pps = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%s\n", pps->info.path);
++}
++DEVICE_ATTR(path, S_IRUGO, pps_show_path, NULL);
++
++/*
++ * Public functions
++ */
++
++void pps_sysfs_remove_source_entry(struct pps_device *pps)
++{
++	/* Delete info files */
++	if (pps->info.mode & PPS_CAPTUREASSERT)
++		device_remove_file(pps->dev, &dev_attr_assert);
++
++	if (pps->info.mode & PPS_CAPTURECLEAR)
++		device_remove_file(pps->dev, &dev_attr_clear);
++
++	device_remove_file(pps->dev, &dev_attr_mode);
++	device_remove_file(pps->dev, &dev_attr_echo);
++	device_remove_file(pps->dev, &dev_attr_name);
++	device_remove_file(pps->dev, &dev_attr_path);
++}
++
++int pps_sysfs_create_source_entry(struct pps_device *pps)
++{
++	int ret;
++
++	/* Create file "assert" and "clear" according to source capability */
++	if (pps->info.mode & PPS_CAPTUREASSERT) {
++		ret = device_create_file(pps->dev, &dev_attr_assert);
++		if (ret)
++			dev_err(pps->dev, "unable to create \"assert\" "
++					"sysfs entry");
++	}
++
++	if (pps->info.mode & PPS_CAPTURECLEAR) {
++		ret = device_create_file(pps->dev, &dev_attr_clear);
++		if (ret)
++			dev_err(pps->dev, "unable to create \"clear\" "
++					"sysfs entry");
++	}
++
++	ret = device_create_file(pps->dev, &dev_attr_mode);
++	if (ret)
++		dev_err(pps->dev, "unable to create \"mode\" sysfs entry");
++	ret = device_create_file(pps->dev, &dev_attr_echo);
++	if (ret)
++		dev_err(pps->dev, "unable to create \"echo\" sysfs entry");
++	ret = device_create_file(pps->dev, &dev_attr_name);
++	if (ret)
++		dev_err(pps->dev, "unable to create \"name\" sysfs entry");
++	ret = device_create_file(pps->dev, &dev_attr_path);
++	if (ret)
++		dev_err(pps->dev, "unable to create \"path\" sysfs entry");
++
++	return 0;
++}
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index f94109c..a5e83f8 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2118,6 +2118,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+ 		up->ier |= UART_IER_MSI;
+ 	if (up->capabilities & UART_CAP_UUE)
+ 		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
++	if (up->port.flags & UPF_HARDPPS_CD)
++		up->ier |= UART_IER_MSI;	/* enable interrupts */
+ 
+ 	serial_out(up, UART_IER, up->ier);
+ 
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index a055f58..a40b87c 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -33,6 +33,7 @@
+ #include <linux/serial.h> /* for serial_state and serial_icounter_struct */
+ #include <linux/delay.h>
+ #include <linux/mutex.h>
++#include <linux/pps.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+@@ -633,6 +634,54 @@ static int uart_get_info(struct uart_state *state,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPS_CLIENT_UART
++
++static int
++uart_register_pps_port(struct uart_state *state, struct uart_port *port)
++{
++	struct tty_driver *drv = port->info->tty->driver;
++	int ret;
++
++	state->pps_info.owner = THIS_MODULE;
++	state->pps_info.dev = port->dev;
++	snprintf(state->pps_info.name, PPS_MAX_NAME_LEN, "%s%d",
++		drv->driver_name, port->line);
++	snprintf(state->pps_info.path, PPS_MAX_NAME_LEN, "/dev/%s%d",
++		drv->name, port->line);
++
++	state->pps_info.mode = PPS_CAPTUREBOTH | \
++			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
++			PPS_CANWAIT | PPS_TSFMT_TSPEC;
++
++	ret = pps_register_source(&state->pps_info, PPS_CAPTUREBOTH | \
++				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
++	if (ret < 0) {
++		dev_err(port->dev, "cannot register PPS source \"%s\"\n",
++						state->pps_info.path);
++		return ret;
++	}
++	port->pps_source = ret;
++	dev_dbg(port->dev, "PPS source #%d \"%s\" added\n",
++		port->pps_source, state->pps_info.path);
++
++	return 0;
++}
++
++static void
++uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
++{
++	pps_unregister_source(port->pps_source);
++	dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
++				port->pps_source, state->pps_info.path);
++}
++
++#else
++
++#define uart_register_pps_port(state, port)	do { } while (0)
++#define uart_unregister_pps_port(state, port)	do { } while (0)
++
++#endif /* CONFIG_PPS_CLIENT_UART */
++
+ static int uart_set_info(struct uart_state *state,
+ 			 struct serial_struct __user *newinfo)
+ {
+@@ -807,11 +856,19 @@ static int uart_set_info(struct uart_state *state,
+ 			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
+ 
+  check_and_exit:
++	/* PPS support enabled/disabled? */
++	if ((old_flags & UPF_HARDPPS_CD) != (new_flags & UPF_HARDPPS_CD)) {
++		if (new_flags & UPF_HARDPPS_CD)
++			uart_register_pps_port(state, port);
++		else
++			uart_unregister_pps_port(state, port);
++	}
++
+ 	retval = 0;
+ 	if (port->type == PORT_UNKNOWN)
+ 		goto exit;
+ 	if (state->info->flags & UIF_INITIALIZED) {
+-		if (((old_flags ^ port->flags) & UPF_SPD_MASK) ||
++		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
+ 		    old_custom_divisor != port->custom_divisor) {
+ 			/*
+ 			 * If they're setting up a custom divisor or speed,
+@@ -2110,6 +2167,12 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+ 		port->ops->config_port(port, flags);
+ 	}
+ 
++	/*
++	 * Add the PPS support for the current port.
++	 */
++	if (port->flags & UPF_HARDPPS_CD)
++		uart_register_pps_port(state, port);
++
+ 	if (port->type != PORT_UNKNOWN) {
+ 		unsigned long flags;
+ 
+@@ -2359,6 +2422,12 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
+ 	mutex_unlock(&state->mutex);
+ 
+ 	/*
++	 * Remove PPS support from the current port.
++	 */
++	if (port->flags & UPF_HARDPPS_CD)
++		uart_unregister_pps_port(state, port);
++
++	/*
+ 	 * Remove the devices from the tty layer
+ 	 */
+ 	tty_unregister_device(drv->tty_driver, port->line);
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 818cc3a..0a9394f 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -295,6 +295,7 @@ unifdef-y += pmu.h
+ unifdef-y += poll.h
+ unifdef-y += ppp_defs.h
+ unifdef-y += ppp-comp.h
++unifdef-y += pps.h
+ unifdef-y += ptrace.h
+ unifdef-y += qnx4_fs.h
+ unifdef-y += quota.h
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index 9cdd694..549de6e 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -100,6 +100,7 @@ typedef enum {
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
++#include <linux/pps.h>
+ #include <asm/system.h>
+ #include <asm/ptrace.h>
+ #include <asm/semaphore.h>
+@@ -327,6 +328,11 @@ struct parport {
+ 
+ 	struct list_head full_list;
+ 	struct parport *slaves[3];
++
++#ifdef CONFIG_PPS_CLIENT_LP
++	struct pps_source_info pps_info;
++	int pps_source;		/* PPS source ID */
++#endif
+ };
+ 
+ #define DEFAULT_SPIN_TIME 500 /* us */
+@@ -517,6 +523,12 @@ extern int parport_daisy_select (struct parport *port, int daisy, int mode);
+ /* Lowlevel drivers _can_ call this support function to handle irqs.  */
+ static __inline__ void parport_generic_irq(int irq, struct parport *port)
+ {
++#ifdef CONFIG_PPS_CLIENT_LP
++	pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
++	dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
++		jiffies, port->pps_source);
++#endif
++
+ 	parport_ieee1284_interrupt (irq, port);
+ 	read_lock(&port->cad_lock);
+ 	if (port->cad && port->cad->irq_func)
+diff --git a/include/linux/pps.h b/include/linux/pps.h
+new file mode 100644
+index 0000000..1e742a6
+--- /dev/null
++++ b/include/linux/pps.h
+@@ -0,0 +1,196 @@
++/*
++ * pps.h -- PPS API kernel header.
++ *
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#ifndef _PPS_H_
++#define _PPS_H_
++
++/* Implementation note: the logical states ``assert'' and ``clear''
++ * are implemented in terms of the chip register, i.e. ``assert''
++ * means the bit is set.  */
++
++/*
++ * 3.2 New data structures
++ */
++
++#ifndef __KERNEL__
++#include <linux/types.h>
++#include <sys/time.h>
++#include <sys/ioctl.h>
++#else
++#include <linux/time.h>
++#endif
++
++#define PPS_API_VERS		1
++#define PPS_MAX_NAME_LEN	32
++
++/* 32-bit vs. 64-bit compatibility.
++ *
++ * 0n i386, the alignment of a uint64_t is only 4 bytes, while on most other
++ * architectures it's 8 bytes. On i386, there will be no padding between the
++ * two consecutive 'struct pps_ktime' members of struct pps_kinfo and struct
++ * pps_kparams. But on most platforms there will be padding to ensure correct
++ * alignment.
++ *
++ * The simple fix is probably to add an explicit padding.
++ *					 		[David Woodhouse]
++ */
++struct pps_ktime {
++	__s64 sec;
++	__s32 nsec;
++	__u32 flags;
++};
++#define PPS_TIME_INVALID	(1<<0)	/* used to specify timeout==NULL */
++
++struct pps_kinfo {
++	__u32 assert_sequence;		/* seq. num. of assert event */
++	__u32 clear_sequence; 		/* seq. num. of clear event */
++	struct pps_ktime assert_tu;	/* time of assert event */
++	struct pps_ktime clear_tu;	/* time of clear event */
++	int current_mode;		/* current mode bits */
 +};
 +
-+static int __init ar7_wdt_init(void)
-+{
-+	int rc;
++struct pps_kparams {
++	int api_version;		/* API version # */
++	int mode;			/* mode bits */
++	struct pps_ktime assert_off_tu;	/* offset compensation for assert */
++	struct pps_ktime clear_off_tu;	/* offset compensation for clear */
++};
 +
-+	ar7_wdt_get_regs();
++/*
++ * 3.3 Mode bit definitions
++ */
 +
-+	if (!request_mem_region(ar7_regs_wdt, sizeof(struct ar7_wdt),
-+							LONGNAME)) {
-+		printk(KERN_WARNING DRVNAME ": watchdog I/O region busy\n");
-+		return -EBUSY;
++/* Device/implementation parameters */
++#define PPS_CAPTUREASSERT	0x01	/* capture assert events */
++#define PPS_CAPTURECLEAR	0x02	/* capture clear events */
++#define PPS_CAPTUREBOTH		0x03	/* capture assert and clear events */
++
++#define PPS_OFFSETASSERT	0x10	/* apply compensation for assert ev. */
++#define PPS_OFFSETCLEAR		0x20	/* apply compensation for clear ev. */
++
++#define PPS_CANWAIT		0x100	/* can we wait for an event? */
++#define PPS_CANPOLL		0x200	/* bit reserved for future use */
++
++/* Kernel actions */
++#define PPS_ECHOASSERT		0x40	/* feed back assert event to output */
++#define PPS_ECHOCLEAR		0x80	/* feed back clear event to output */
++
++/* Timestamp formats */
++#define PPS_TSFMT_TSPEC		0x1000	/* select timespec format */
++#define PPS_TSFMT_NTPFP		0x2000	/* select NTP format */
++
++/*
++ * 3.4.4 New functions: disciplining the kernel timebase
++ */
++
++/* Kernel consumers */
++#define PPS_KC_HARDPPS		0	/* hardpps() (or equivalent) */
++#define PPS_KC_HARDPPS_PLL	1	/* hardpps() constrained to
++					   use a phase-locked loop */
++#define PPS_KC_HARDPPS_FLL	2	/* hardpps() constrained to
++					   use a frequency-locked loop */
++/*
++ * Here begins the implementation-specific part!
++ */
++
++struct pps_fdata {
++	struct pps_kinfo info;
++	struct pps_ktime timeout;
++};
++
++#include <linux/ioctl.h>
++
++#define PPS_CHECK		_IO('P', 0)
++#define PPS_GETPARAMS		_IOR('P', 1, struct pps_kparams *)
++#define PPS_SETPARAMS		_IOW('P', 2, struct pps_kparams *)
++#define PPS_GETCAP		_IOR('P', 3, int *)
++#define PPS_FETCH		_IOWR('P', 4, struct pps_fdata *)
++
++#ifdef __KERNEL__
++
++#include <linux/cdev.h>
++#include <linux/device.h>
++
++#define PPS_VERSION		"5.0.0-rc3"
++#define PPS_MAX_SOURCES		16		/* should be enought... */
++
++/*
++ * Global defines
++ */
++
++/* The specific PPS source info */
++struct pps_source_info {
++	char name[PPS_MAX_NAME_LEN];		/* simbolic name */
++	char path[PPS_MAX_NAME_LEN];		/* path of connected device */
++	int mode;				/* PPS's allowed mode */
++
++	void (*echo)(int source, int event, void *data); /* PPS echo function */
++
++	struct module *owner;
++	struct device *dev;
++};
++
++/* The main struct */
++struct pps_device {
++	struct pps_source_info info;		/* PSS source info */
++
++	struct pps_kparams params;		/* PPS's current params */
++
++	__u32 assert_sequence;			/* PPS' assert event seq # */
++	__u32 clear_sequence;			/* PPS' clear event seq # */
++	struct pps_ktime assert_tu;
++	struct pps_ktime clear_tu;
++	int current_mode;			/* PPS mode at event time */
++
++	int go;					/* PPS event is arrived? */
++	wait_queue_head_t queue;		/* PPS event queue */
++
++	unsigned int id;			/* PPS source unique ID */
++	struct cdev cdev;
++	struct device *dev;
++	int devno;
++	struct fasync_struct *async_queue;	/* fasync method */
++	spinlock_t lock;
++
++	atomic_t usage;				/* usage count */
++	wait_queue_head_t usage_queue;
++
++	struct class class_dev;
++};
++
++/*
++ * Exported functions
++ */
++
++extern int pps_register_source(struct pps_source_info *info,
++				int default_params);
++extern void pps_unregister_source(int source);
++extern int pps_register_cdev(struct pps_device *pps);
++extern void pps_unregister_cdev(struct pps_device *pps);
++extern void pps_event(int source, int event, void *data);
++
++extern int pps_sysfs_create_source_entry(struct pps_device *pps);
++extern void pps_sysfs_remove_source_entry(struct pps_device *pps);
++
++#endif /* __KERNEL__ */
++
++#endif /* _PPS_H_ */
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 09d17b0..f9aefad 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -157,6 +157,7 @@
+ #include <linux/tty.h>
+ #include <linux/mutex.h>
+ #include <linux/sysrq.h>
++#include <linux/pps.h>
+ 
+ struct uart_port;
+ struct uart_info;
+@@ -236,6 +237,9 @@ struct uart_port {
+ 	unsigned char		regshift;		/* reg offset shift */
+ 	unsigned char		iotype;			/* io access style */
+ 	unsigned char		unused1;
++#ifdef CONFIG_PPS_CLIENT_UART
++	int			pps_source;		/* PPS source ID */
++#endif
+ 
+ #define UPIO_PORT		(0)
+ #define UPIO_HUB6		(1)
+@@ -280,7 +284,8 @@ struct uart_port {
+ #define UPF_IOREMAP		((__force upf_t) (1 << 31))
+ 
+ #define UPF_CHANGE_MASK		((__force upf_t) (0x17fff))
+-#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY))
++#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY\
++							|UPF_HARDPPS_CD))
+ 
+ 	unsigned int		mctrl;			/* current modem ctrl settings */
+ 	unsigned int		timeout;		/* character-based timeout */
+@@ -312,6 +317,10 @@ struct uart_state {
+ 	struct uart_info	*info;
+ 	struct uart_port	*port;
+ 
++#ifdef CONFIG_PPS_CLIENT_UART
++	struct pps_source_info	pps_info;
++#endif
++
+ 	struct mutex		mutex;
+ };
+ 
+@@ -476,13 +485,22 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
+ {
+ 	struct uart_info *info = port->info;
+ 
+-	port->icount.dcd++;
+-
+-#ifdef CONFIG_HARD_PPS
+-	if ((port->flags & UPF_HARDPPS_CD) && status)
+-		hardpps();
++#ifdef CONFIG_PPS_CLIENT_UART
++	if (port->flags & UPF_HARDPPS_CD) {
++		if (status) {
++			pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
++			dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
++				jiffies, port->pps_source);
++		} else {
++			pps_event(port->pps_source, PPS_CAPTURECLEAR, port);
++			dev_dbg(port->dev, "PPS clear at %lu on source #%d\n",
++				jiffies, port->pps_source);
++		}
 +	}
+ #endif
+ 
++	port->icount.dcd++;
 +
-+	ar7_wdt = (struct ar7_wdt *)
-+			ioremap(ar7_regs_wdt, sizeof(struct ar7_wdt));
-+
-+	ar7_wdt_disable_wdt();
-+	ar7_wdt_prescale(prescale_value);
-+	ar7_wdt_update_margin(margin);
-+
-+	sema_init(&open_semaphore, 1);
-+
-+	rc = register_reboot_notifier(&ar7_wdt_notifier);
-+	if (rc) {
-+		printk(KERN_ERR DRVNAME
-+			": unable to register reboot notifier\n");
-+		goto out_alloc;
-+	}
-+
-+	rc = misc_register(&ar7_wdt_miscdev);
-+	if (rc) {
-+		printk(KERN_ERR DRVNAME ": unable to register misc device\n");
-+		goto out_register;
-+	}
-+	goto out;
-+
-+out_register:
-+	unregister_reboot_notifier(&ar7_wdt_notifier);
-+out_alloc:
-+	iounmap(ar7_wdt);
-+	release_mem_region(ar7_regs_wdt, sizeof(struct ar7_wdt));
-+out:
-+	return rc;
-+}
-+
-+static void __exit ar7_wdt_cleanup(void)
-+{
-+	misc_deregister(&ar7_wdt_miscdev);
-+	unregister_reboot_notifier(&ar7_wdt_notifier);
-+	iounmap(ar7_wdt);
-+	release_mem_region(ar7_regs_wdt, sizeof(struct ar7_wdt));
-+}
-+
-+module_init(ar7_wdt_init);
-+module_exit(ar7_wdt_cleanup);
+ 	if (info->flags & UIF_CHECK_CD) {
+ 		if (status)
+ 			wake_up_interruptible(&info->open_wait);
+
+--HL3CiL6n73+IAdG4--
