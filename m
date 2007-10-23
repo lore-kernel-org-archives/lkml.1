@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXJWPKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXJWPLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbXJWPKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXJWPKc
+	id S1753154AbXJWPLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXJWPLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:10:32 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46467 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751827AbXJWPKb (ORCPT
+	Tue, 23 Oct 2007 11:11:07 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:44398 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbXJWPLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:10:31 -0400
-Date: Tue, 23 Oct 2007 17:11:00 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>,
-       Al Viro <viro@ftp.linux.org.uk>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Nix <nix@esperi.org.uk>,
-       Jeff Dike <jdike@addtoit.com>, Paolo Giarrusso <p.giarrusso@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: [uml-devel] User Mode Linux still doesn't build in
-	2.6.23-final.
-Message-ID: <20071023151059.GU30533@stusta.de>
-References: <471D2ECC.6090209@goop.org> <20071022231927.GA30814@elte.hu> <471D389E.40609@goop.org> <20071023084546.GA17007@elte.hu> <p73wste7zy5.fsf@bingen.suse.de> <20071023131009.GA32298@elte.hu> <p73sl427wvu.fsf@bingen.suse.de> <20071023142006.GA9961@elte.hu> <471E05C0.4010005@goop.org> <20071023144710.GA13785@elte.hu>
+	Tue, 23 Oct 2007 11:11:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071023144710.GA13785@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18206.3808.849690.113159@stoffel.org>
+Date: Tue, 23 Oct 2007 11:10:24 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: IDE crash...
+In-Reply-To: <20071023074554.GA5059@kernel.dk>
+References: <20071023070932.GB25962@kernel.dk>
+	<20071023.001850.130236174.davem@davemloft.net>
+	<20071023072359.GH25962@kernel.dk>
+	<20071023.004321.74750417.davem@davemloft.net>
+	<20071023074554.GA5059@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 04:47:10PM +0200, Ingo Molnar wrote:
-> 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > * Andi Kleen <andi@firstfloor.org> wrote:
-> > >
-> > >   
-> > >>>> You should rename it then to "asmcall" or something.
-> > >>>>         
-> > >>> if then that should be a separate renaming patch.
-> > >>>       
-> > >> Well you're asking for the ugly hacks for out of tree code.  [...]
-> > >>     
-> > >
-> > > nice word-bending there. I'm asking for pre-existing annotations to 
-> > > survive. It hurts you _nothing_ and it was a world of pain for us to 
-> > > recover those lost annotations. Anyway, if Jeremy does not object to the 
-> > > patch
-> > 
-> > I don't have any objections to the idea of the patch, but I'm still 
-> > concerned about the practical aspects of it.  Maintaining these kinds 
-> > of annotations is hard/fragile/etc when the compiler doesn't warn when 
-> > you get it wrong, and only a very specific use-case will reveal the 
-> > problem (and do so in a fairly obscure way).
-> 
-> it wont be any different from the situation before - we had no such 
-> warnings there either. Anyway, this shouldnt really bother you as at the 
-> moment it's only used for -rt. The issue is to keep something we had 
-> before (but which was stupidly/carelessly removed). If it breaks we'll 
-> fix it up.
->...
+>>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
 
-Until recently (read: before 2.6.20) fastcall had a semantics on i386
-that resulted in compile errors if you got it wrong.
+Jens> On Tue, Oct 23 2007, David Miller wrote:
+>> From: Jens Axboe <jens.axboe@oracle.com>
+>> Date: Tue, 23 Oct 2007 09:23:59 +0200
+>> 
+>> > On Tue, Oct 23 2007, David Miller wrote:
+>> > > From: Jens Axboe <jens.axboe@oracle.com>
+>> > > Date: Tue, 23 Oct 2007 09:09:33 +0200
+>> > > 
+>> > > > Eh this wont work, it's the wrong entry... Here's a temporary
+>> > > > work-around.
+>> > > > 
+>> > > > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+>> > > > index c89f0d3..108202b 100644
+>> > > > --- a/drivers/ide/ide-io.c
+>> > > > +++ b/drivers/ide/ide-io.c
+>> > > > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
+>> > > >  		return;
+>> > > >  
+>> > > >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+>> > > > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
+>> > > >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+>> > > >  	} else {
+>> > > >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+>> > > 
+>> > > That's the exact patch I'm about to boot test :-)
+>> > 
+>> > That should work - once you verify that, would you mind testing this one
+>> > as well? Thanks!
+>> 
+>> This one works here too, thanks.
 
-> 	Ingo
+Jens> Great, thanks for testing that as well. Thinking a bit more
+Jens> about it, I think the forced clear should stay in
+Jens> blk_rq_map_sg() since we don't want to advertise it to
+Jens> drivers. So I'll just open-code it in there.
 
-cu
-Adrian
+Should there be more bounds checking here, so that if you try to do a
+_force() you at least check to make sure that there's something beyond
+there and useable on the list?  
 
--- 
+We're saving the time from not reallocating from scratch, but let's
+make it robust by doing at least some more checks here.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+John
