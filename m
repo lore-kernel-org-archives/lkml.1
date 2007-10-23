@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbXJWWlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbXJWWly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbXJWWlh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXJWWkO
+	id S1756789AbXJWWly (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXJWWku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:40:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33171 "EHLO mail.dvmed.net"
+	Tue, 23 Oct 2007 18:40:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38784 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756216AbXJWWkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:40:12 -0400
-Message-ID: <471E784A.5090303@garzik.org>
-Date: Tue, 23 Oct 2007 18:40:10 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1756589AbXJWWks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:40:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: Resume problems
+Date: Wed, 24 Oct 2007 00:57:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+References: <471CCC98.10101@googlemail.com> <471D3C26.3090602@googlemail.com> <471D47D2.2070707@googlemail.com>
+In-Reply-To: <471D47D2.2070707@googlemail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 11/12] NET: fix subqueue bugs
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>	<20071023223646.550241F81B7@havoc.gtf.org> <20071023.153836.85407923.davem@davemloft.net>
-In-Reply-To: <20071023.153836.85407923.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200710240057.10131.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Tue, 23 Oct 2007 18:36:46 -0400 (EDT)
+On Tuesday, 23 October 2007 03:01, Gabriel C wrote:
 > 
->> net/sched/sch_prio.c: In function $,1rxprio_dequeue$,1ry:
->> net/sched/sch_prio.c:139: warning: passing argument 2 of $,1rxnetif_subqueue_stopped$,1ry makes pointer from integer without a cast
->> net/sched/sch_prio.c: In function $,1rxrr_dequeue$,1ry:
->> net/sched/sch_prio.c:169: warning: passing argument 2 of $,1rxnetif_subqueue_stopped$,1ry makes pointer from integer without a cast
->>
->> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> > Also box just froze on level 3 but I got a ACPI error at least which I didn't got in any other dmesg till now :
+> > ( also patch was tested with HT disabled and Suspend and Hibernation enabled in kernel and BIOS )
+> > 
+> > ...
+> > 
+> > Oct 23 01:51:05 lara [  273.512374] PM: Removing info for No Bus:input0
+> > Oct 23 01:51:05 lara [  274.545158] PM: Removing info for No Bus:mouse0
+> > Oct 23 01:51:05 lara [  274.551435] PM: Removing info for No Bus:event1
+> > Oct 23 01:51:05 lara [  274.559493] PM: Removing info for No Bus:input1
+> > Oct 23 01:53:06 lara [  394.869468] ACPI Error (evevent-0303): No installed handler for fixed event [00000002] [20070126]
+> > 
+> > ....
+> > 
+> > ( I hard reseted after that ) 
+> > 
+> > I try level 2 and 1 now I just wanted to let you know.
+> > 
 > 
-> I have another copy of this from Pavel earlier in my inbox
-> and I promise I will integrate his patch today :-)
+> Same issues with level 2 and 1.
 
-Either way, all good :)  Just dumping my fixes from last night.
+Yes.  If you have a problem at level n, it should always reappear for n-1 etc.
 
-	Jeff
+> BTW I found out why my box does not shutdown with acpi=ht. It seems like libata does not like that 
+> acpi mode =) dropping the '... read http://linux-ata.org/shutdown.html , power down manually' message.
+> 
+> That works perfectly with full acpi here.
+> 
+> After all I think all this problems may be some who ACPI related 
+> but the question is why they get triggered by Suspend/Hibernation.
 
+They certainly are ACPI-related, because the only difference between level 4
+and level 3 suspend testing is that some global ACPI methods are executed
+at level 3 (in addition to level 4).
 
+Unfortunately, I have no idea what to do next, for now.
+
+I think you can file a bug report at http://bugzilla.kernel.org and put a link
+to this thread in there (against ACPI and please add my address to the CC
+list).
+
+Greetings,
+Rafael
