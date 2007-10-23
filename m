@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXJWQxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXJWQz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbXJWQxU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXJWQxN
+	id S1753783AbXJWQz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXJWQzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:53:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:33795 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbXJWQxM (ORCPT
+	Tue, 23 Oct 2007 12:55:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58541 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752138AbXJWQzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:53:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=nAPAmSGlF2UxwNGwHn+mMoktqL3vMocAIackROvVGlW4NHdxcjYu4VfcWtAVqL4g4srSCxbUW9X8LplTqivN7ioOVvhGKFaIqEjfylpAOXUCqxiziGYiq3sfQ76mPNGzSt8sTlfgtomLxNeS4yAoxaGuwdjhoTUnHoEjj4Usq/g=
-Date: Tue, 23 Oct 2007 18:53:05 -0700
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-main <linux-kernel@vger.kernel.org>,
-       linuxsh <linuxsh-dev@lists.sourceforge.net>
-Subject: [SUPERH] dma-mapping.h structure has no member named page
-Message-Id: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Tue, 23 Oct 2007 12:55:18 -0400
+Date: Tue, 23 Oct 2007 09:55:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Philippe Elie <phil.el@wanadoo.fr>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sami Farin <safari-kernel@safari.iki.fi>
+Subject: Re: [patch 1/2] oProfile: oops when profile_pc() return ~0LU
+In-Reply-To: <20071023161321.GA2884@zaniah>
+Message-ID: <alpine.LFD.0.999.0710230951170.30120@woody.linux-foundation.org>
+References: <20071021120842.GA2886@zaniah>
+ <alpine.LFD.0.999.0710221936130.30120@woody.linux-foundation.org>
+ <20071023101007.3y62tufa6yxrqk4w@m.safari.iki.fi>
+ <20071023161321.GA2884@zaniah>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
 
-Got this after syncing my tree with linux-2.6.git.
 
-In file included from include/linux/dma-mapping.h:52,
-                 from include/linux/dmaengine.h:29,
-                 from include/linux/skbuff.h:29,
-                 from include/linux/netlink.h:155,
-                 from include/linux/genetlink.h:4,
-                 from include/net/genetlink.h:4,
-                 from include/linux/taskstats_kern.h:12,
-                 from init/main.c:46:
-include/asm/dma-mapping.h: In function `dma_map_sg':
-include/asm/dma-mapping.h:88: error: structure has no member named `page'
-include/asm/dma-mapping.h:91: error: structure has no member named `page'
-include/asm/dma-mapping.h: In function `dma_sync_sg':
-include/asm/dma-mapping.h:141: error: structure has no member named `page'
-include/asm/dma-mapping.h:144: error: structure has no member named `page'
-make[1]: *** [init/main.o] Error 1
-make: *** [init] Error 2
+On Tue, 23 Oct 2007, Philippe Elie wrote:
+> 
+> For the signed-offs I thought the From: was an implicit Signed-offs.
+
+No, there are no implicit sign-offs. The point of sign-offs is that it 
+makes the copyright and flow of patches explicit, so an "implicit 
+sign-off" would defeat the whole point.
+
+> Test was done privately, Sami helped to narrow down the trouble, but
+> he didn't test the last patch, nothing bad on Sami side, I was too
+> confident the fix was obvious after narrowing it.
+
+Well, I just wanted an ack that it was tested, since it seemed a bit 
+subtle and (like the sign-offs) that explicit "yes, this was tested" was 
+missing. Looks like I was right in asking for it:
+
+> > The previous patch I tested by Philippe, oprof-fix-profile_pc-use.patch,
+> > worked ok, but with this latest patch oprofiled aborts.
+> > But kernel does not oops or print msgs.
+> 
+> argh, I just moved the wrong eip from kernel to user space where the same
+> problem occur too, *sighs*, since I can't reproduce Sami problem, my own
+> test obviously worked...
+> 
+> Sami, can you test this new patch. After testing can you report
+> the contents of /dev/oprofile/stats/cpu*/sample_invalid_eip ?
+> 
+> Linus, there is two way to fix this problem, the attached patch fix it
+> by sanitizing the sampled eip,
+
+I'm perfectly happy with the attached patch, I just want it to be 
+properly tested and have all the sign-offs (and explanations etc) in 
+place, and I can apply it.
+
+Of course, I cannot think of a single architecture where an EIP of ~0UL is 
+valid anyway, so I'm also not opposed to just keeping ~0UL as the magic 
+value.
+
+		Linus
