@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbXJWQ0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbXJWQ06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbXJWQ0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 12:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbXJWQ0g
+	id S1754160AbXJWQ06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbXJWQ0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 12:26:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38054 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbXJWQ0f (ORCPT
+	Tue, 23 Oct 2007 12:26:39 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59624 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753276AbXJWQ0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 12:26:35 -0400
-Date: Tue, 23 Oct 2007 09:23:33 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anas Nashif <nashif@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Marek Dabek <marek.dabek@intel.com>
-Subject: Re: [PATCH] Intel Manageability Engine Interface driver
-Message-ID: <20071023092333.39982483@laptopd505.fenrus.org>
-In-Reply-To: <20071023150429.GK4003@csclub.uwaterloo.ca>
-References: <471CDC5E.4010300@linux.intel.com>
-	<20071022114001.40470c15.akpm@linux-foundation.org>
-	<20071023150429.GK4003@csclub.uwaterloo.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Tue, 23 Oct 2007 12:26:38 -0400
+Subject: Re: [RFC/PATCH 3/5] rt: plist_head_splice
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Daniel Walker <dwalker@mvista.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <Pine.LNX.4.58.0710231108050.31159@gandalf.stny.rr.com>
+References: <20071023120357.782284000@chello.nl>
+	 <20071023120745.122724000@chello.nl>
+	 <Pine.LNX.4.58.0710231108050.31159@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o3865CblFH4McvXQrR+C"
+Date: Tue, 23 Oct 2007 18:26:33 +0200
+Message-Id: <1193156793.6914.0.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 11:04:29 -0400
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
 
-> On Mon, Oct 22, 2007 at 11:40:01AM -0700, Andrew Morton wrote:
-> > - Here:
-> > 
-> > +		if (0 == memcmp(&heci_wd_guid,
-> > 
-> >   we boringly prefer "if (foo == 0)" rather than "if (0 == foo)".
-> > (lots of places).
-> 
-> But 0 == blah is safer.  If you accidentally do 0 = blah the compiler
-> will tell you. 
+--=-o3865CblFH4McvXQrR+C
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-gcc will tell you in the other direction just as well.
+On Tue, 2007-10-23 at 11:10 -0400, Steven Rostedt wrote:
+> --
+> On Tue, 23 Oct 2007, Peter Zijlstra wrote:
+> > +
+> > +void plist_head_splice(struct plist_head *src, struct plist_head *dst)
+> > +{
+> > +	struct plist_node *src_iter_first, *src_iter_last, *dst_iter;
+> > +	struct plist_node *tail =3D container_of(dst, struct plist_node, plis=
+t);
+> > +
+> > +	dst_iter =3D next_prio(tail);
+> > +
+> > +	while (!plist_head_empty(src) && dst_iter !=3D tail) {
+> > +		src_iter_first =3D plist_first(src);
+> > +
+> > +		src_iter_last =3D next_prio(src_iter_first);
+> > +		src_iter_last =3D prev_node(src_iter_last);
+> > +
+> > +		WARN_ON(src_iter_first->prio !=3D src_iter_last->prio);
+> > +		WARN_ON(list_empty(&src_iter_first->plist.prio_list));
+> > +
+> > +		while (src_iter_first->prio > dst_iter->prio) {
+> > +			dst_iter =3D next_prio(dst_iter);
+> > +			if (dst_iter =3D=3D tail)
+> > +				goto tail;
+> > +		}
+> > +
+> > +		list_del_init(&src_iter_first->plist.prio_list);
+> > +
+> > +		if (src_iter_first->prio < dst_iter->prio) {
+>=20
+> I may be confused here, but shouldn't we be linking the
+> src_iter_first->prio_list somewhere here? Doesn't all different prios nee=
+d
+> to be in its separate prio_list? Otherwise two splices in a row can cause
+> the above WARN_ON (prio !=3D prio).
+>=20
 
-and people read from left to right (at least in english) so coding in
-that direction is generally preferred in the Linux kernel as well.
+> > +			list_add_tail(&src_iter_first->plist.node_list,
+> > +					&dst_iter->plist.node_list);
+
+Uhm, yeah, that was supposed the be prio_list indeed.
+
+Thanks!
+
+> > +		} else if (src_iter_first->prio =3D=3D dst_iter->prio) {
+> > +			dst_iter =3D next_prio(dst_iter);
+> > +		} else BUG();
+> > +
+> > +		list_splice2_tail(&src_iter_first->plist.node_list,
+> > +			       	  &src_iter_last->plist.node_list,
+> > +				  &dst_iter->plist.node_list);
+> > +	}
+> > +
+> > +tail:
+> > +	list_splice_tail_init(&src->prio_list, &dst->prio_list);
+> > +	list_splice_tail_init(&src->node_list, &dst->node_list);
+> > +}
+> >
+> > --
+> >
+> >
+> >
+
+--=-o3865CblFH4McvXQrR+C
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHHiC5XA2jU0ANEf4RAm7dAJ93rWRrcWIlV9etfUYQtupsajvtfgCdHJoq
++AgRsNpgzea/l/jcmHc+9UQ=
+=kOAD
+-----END PGP SIGNATURE-----
+
+--=-o3865CblFH4McvXQrR+C--
+
