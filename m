@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbXJWBMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbXJWBQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbXJWBMA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 21:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXJWBLy
+	id S1752924AbXJWBQv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 21:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXJWBQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 21:11:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34930 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbXJWBLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 21:11:53 -0400
-Date: Mon, 22 Oct 2007 21:11:43 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, xemul@openvz.org,
-       raven@themaw.net
-Subject: Re: futex strangeness in 2.6.23-mm1/UML
-Message-ID: <20071022211143.5f69d790@bree.surriel.com>
-In-Reply-To: <20071022171624.0c00f8da.akpm@linux-foundation.org>
-References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
-	<20071022145321.195d929b@bree.surriel.com>
-	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
-	<20071022172926.03ca122a@bree.surriel.com>
-	<20071022200742.6f3acbb2@bree.surriel.com>
-	<20071022171624.0c00f8da.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Oct 2007 21:16:44 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:49487 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbXJWBQn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 21:16:43 -0400
+Message-ID: <471D4B79.2070500@tiscali.nl>
+Date: Tue, 23 Oct 2007 03:16:41 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Unlock before return in p9_mux_poll_start
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007 17:16:24 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+commit 9f822afc65cc094c905901f9d92bf25042f9ed22
+Author: Roel Kluin <12o3l@tiscali.nl>
+Date:   Tue Oct 23 03:15:55 2007 +0200
 
-> > > > > Oct 22 14:39:01 kenny automount[2299]: cache_readlock: mapent
-> > > > > cache rwlock lock failed
-> > > > > Oct 22 14:39:01 kenny automount[2299]: unexpected pthreads
-> > > > > error: 11 at 65 in cache.c
+    Unlock before return in p9_mux_poll_start
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-> I guess we can debug it in the old-fashioned ways.  The first of
-> which is to palm the problem off on Pavel ;)
-> 
-> I don't recall seeing a simple step-by-step way by which others can
-> reproduce this?
+diff --git a/net/9p/mux.c b/net/9p/mux.c
+index f140147..c9f0805 100644
+--- a/net/9p/mux.c
++++ b/net/9p/mux.c
+@@ -222,8 +222,10 @@ static int p9_mux_poll_start(struct p9_conn *m)
+ 	}
+ 
+ 	if (i >= ARRAY_SIZE(p9_mux_poll_tasks)) {
+-		if (vptlast == NULL)
++		if (vptlast == NULL) {
++			mutex_unlock(&p9_mux_task_lock);
+ 			return -ENOMEM;
++		}
+ 
+ 		P9_DPRINTK(P9_DEBUG_MUX, "put in proc %d\n", i);
+ 		list_add(&m->mux_list, &vptlast->mux_list);
 
-I have my systems set up to automount my home directory over
-NFS when I log in.  When trying to log in to the system with
-2.6.23-mm1, I get the messages from above in my syslog, and
-the NFS filesystem is not automounted.
-
-I am thinking something in autofs or the pid-namespace* patches
-does not match up and uses a wrong PID number or process pointer
-when trying to lock things.
-
-Which code is at fault I have no idea...
-
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
