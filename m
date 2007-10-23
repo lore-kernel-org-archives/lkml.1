@@ -1,165 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXJWMK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbXJWMKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173AbXJWMK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 08:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXJWMJN
+	id S1754036AbXJWMKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 08:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXJWMJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 08:09:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47698 "EHLO mx1.redhat.com"
+	Tue, 23 Oct 2007 08:09:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47701 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbXJWMJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 08:09:09 -0400
-Message-Id: <20071023120744.879638000@chello.nl>
+	id S1752093AbXJWMJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 08:09:13 -0400
+Message-Id: <20071023120745.369456000@chello.nl>
 References: <20071023120357.782284000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 23 Oct 2007 14:03:59 +0200
+Date: Tue, 23 Oct 2007 14:04:01 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Gregory Haskins <ghaskins@novell.com>, Oleg Nesterov <oleg@tv-sign.ru>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC/PATCH 2/5] rt: list_splice2
-Content-Disposition: inline; filename=rt-list-mods.patch
+Subject: [RFC/PATCH 4/5] rt: PI-workqueue support
+Content-Disposition: inline; filename=rt-workqeue-prio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce list_splice2{,_tail}() which will splice a sub-list denoted
-by two list items instead of the full list.
+Add support for priority queueing and priority inheritance to the workqueue
+infrastructure. This is done by replacing the linear linked worklist with a
+priority sorted plist.
 
+The drawback is that this breaks the workqueue barrier, needed to support
+flush_workqueue() and wait_on_work().
+
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- drivers/usb/host/ehci-q.c |    2 -
- include/linux/list.h      |   66 ++++++++++++++++++++++++++++++++++++++++------
- lib/lock_list.c           |    2 -
- 3 files changed, 60 insertions(+), 10 deletions(-)
+ include/linux/workqueue.h |    7 ++++---
+ kernel/power/poweroff.c   |    1 +
+ kernel/workqueue.c        |   40 +++++++++++++++++++++++++---------------
+ 3 files changed, 30 insertions(+), 18 deletions(-)
 
-Index: linux-2.6/include/linux/list.h
+Index: linux-2.6/include/linux/workqueue.h
 ===================================================================
---- linux-2.6.orig/include/linux/list.h
-+++ linux-2.6/include/linux/list.h
-@@ -320,17 +320,17 @@ static inline int list_empty_careful(con
- }
+--- linux-2.6.orig/include/linux/workqueue.h
++++ linux-2.6/include/linux/workqueue.h
+@@ -8,6 +8,7 @@
+ #include <linux/timer.h>
+ #include <linux/linkage.h>
+ #include <linux/bitops.h>
++#include <linux/plist.h>
+ #include <asm/atomic.h>
  
- static inline void __list_splice(struct list_head *list,
--				 struct list_head *head)
-+				 struct list_head *prev,
-+				 struct list_head *next)
- {
- 	struct list_head *first = list->next;
- 	struct list_head *last = list->prev;
--	struct list_head *at = head->next;
+ struct workqueue_struct;
+@@ -26,7 +27,7 @@ struct work_struct {
+ #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
+ #define WORK_STRUCT_FLAG_MASK (3UL)
+ #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+-	struct list_head entry;
++	struct plist_node entry;
+ 	work_func_t func;
+ };
  
--	first->prev = head;
--	head->next = first;
-+	first->prev = prev;
-+	prev->next = first;
+@@ -43,7 +44,7 @@ struct execute_work {
  
--	last->next = at;
--	at->prev = last;
-+	last->next = next;
-+	next->prev = last;
- }
- 
- /**
-@@ -341,7 +341,13 @@ static inline void __list_splice(struct 
- static inline void list_splice(struct list_head *list, struct list_head *head)
- {
- 	if (!list_empty(list))
--		__list_splice(list, head);
-+		__list_splice(list, head, head->next);
-+}
-+
-+static inline void list_splice_tail(struct list_head *list, struct list_head *head)
-+{
-+	if (!list_empty(list))
-+		__list_splice(list, head->prev, head);
- }
- 
- /**
-@@ -355,11 +361,55 @@ static inline void list_splice_init(stru
- 				    struct list_head *head)
- {
- 	if (!list_empty(list)) {
--		__list_splice(list, head);
-+		__list_splice(list, head, head->next);
-+		INIT_LIST_HEAD(list);
-+	}
-+}
-+
-+static inline void list_splice_tail_init(struct list_head *list,
-+					 struct list_head *head)
-+{
-+	if (!list_empty(list)) {
-+		__list_splice(list, head->prev, head);
- 		INIT_LIST_HEAD(list);
+ #define __WORK_INITIALIZER(n, f) {				\
+ 	.data = WORK_DATA_INIT(),				\
+-	.entry	= { &(n).entry, &(n).entry },			\
++	.entry	= PLIST_NODE_INIT(n.entry, MAX_PRIO),		\
+ 	.func = (f),						\
  	}
+ 
+@@ -79,7 +80,7 @@ struct execute_work {
+ #define INIT_WORK(_work, _func)						\
+ 	do {								\
+ 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
+-		INIT_LIST_HEAD(&(_work)->entry);			\
++		plist_node_init(&(_work)->entry, -1);			\
+ 		PREPARE_WORK((_work), (_func));				\
+ 	} while (0)
+ 
+Index: linux-2.6/kernel/power/poweroff.c
+===================================================================
+--- linux-2.6.orig/kernel/power/poweroff.c
++++ linux-2.6/kernel/power/poweroff.c
+@@ -8,6 +8,7 @@
+ #include <linux/sysrq.h>
+ #include <linux/init.h>
+ #include <linux/pm.h>
++#include <linux/sched.h>
+ #include <linux/workqueue.h>
+ #include <linux/reboot.h>
+ 
+Index: linux-2.6/kernel/workqueue.c
+===================================================================
+--- linux-2.6.orig/kernel/workqueue.c
++++ linux-2.6/kernel/workqueue.c
+@@ -44,7 +44,7 @@ struct cpu_workqueue_struct {
+ 
+ 	spinlock_t lock;
+ 
+-	struct list_head worklist;
++	struct plist_head worklist;
+ 	wait_queue_head_t more_work;
+ 	struct work_struct *current_work;
+ 
+@@ -127,16 +127,19 @@ struct cpu_workqueue_struct *get_wq_data
+ static void insert_work(struct cpu_workqueue_struct *cwq,
+ 				struct work_struct *work, int tail)
+ {
++	int prio = current->normal_prio;
++
+ 	set_wq_data(work, cwq);
+ 	/*
+ 	 * Ensure that we get the right work->data if we see the
+ 	 * result of list_add() below, see try_to_grab_pending().
+ 	 */
+ 	smp_wmb();
+-	if (tail)
+-		list_add_tail(&work->entry, &cwq->worklist);
+-	else
+-		list_add(&work->entry, &cwq->worklist);
++	plist_node_init(&work->entry, prio);
++	plist_add(&work->entry, &cwq->worklist);
++
++	if (prio < cwq->thread->prio)
++		task_setprio(cwq->thread, prio);
+ 	wake_up(&cwq->more_work);
  }
  
-+static inline void __list_splice2(struct list_head *first,
-+	       			struct list_head *last,
-+				struct list_head *prev,
-+				struct list_head *next)
-+{
-+	first->prev->next = last->next;
-+	last->next->prev = first->prev;
-+
-+	first->prev = prev;
-+	prev->next = first;
-+
-+	last->next = next;
-+	next->prev = last;
-+}
-+
-+/**
-+ * list_splice2 - join [first, last] to head
-+ * @first: list item
-+ * @last: list item further on the same list
-+ * @head: the place to add it on another list
-+ */
-+static inline void list_splice2(struct list_head *first,
-+				struct list_head *last,
-+				struct list_head *head)
-+{
-+	__list_splice2(first, last, head, head->next);
-+}
-+
-+static inline void list_splice2_tail(struct list_head *first,
-+				     struct list_head *last,
-+				     struct list_head *head)
-+{
-+	__list_splice2(first, last, head->prev, head);
-+}
-+
- /**
-  * list_splice_init_rcu - splice an RCU-protected list into an existing list.
-  * @list:	the RCU-protected list to splice
-Index: linux-2.6/drivers/usb/host/ehci-q.c
-===================================================================
---- linux-2.6.orig/drivers/usb/host/ehci-q.c
-+++ linux-2.6/drivers/usb/host/ehci-q.c
-@@ -887,7 +887,7 @@ static struct ehci_qh *qh_append_tds (
+@@ -168,7 +171,7 @@ int fastcall queue_work(struct workqueue
+ 	int ret = 0, cpu = raw_smp_processor_id();
  
- 			list_del (&qtd->qtd_list);
- 			list_add (&dummy->qtd_list, qtd_list);
--			__list_splice (qtd_list, qh->qtd_list.prev);
-+			list_splice_tail (qtd_list, &qh->qtd_list);
- 
- 			ehci_qtd_init(ehci, qtd, qtd->qtd_dma);
- 			qh->dummy = qtd;
-Index: linux-2.6/lib/lock_list.c
-===================================================================
---- linux-2.6.orig/lib/lock_list.c
-+++ linux-2.6/lib/lock_list.c
-@@ -128,7 +128,7 @@ void lock_list_splice_init(struct lock_l
- 	lock = __lock_list_reverse(list);
- 	if (!list_empty(&list->head)) {
- 		spin_lock_nested(&head->lock, LOCK_LIST_NESTING_NEXT);
--		__list_splice(&list->head, &head->head);
-+		__list_splice(&list->head, &head->head, head->head.next);
- 		INIT_LIST_HEAD(&list->head);
- 		spin_unlock(&head->lock);
+ 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+-		BUG_ON(!list_empty(&work->entry));
++		BUG_ON(!plist_node_empty(&work->entry));
+ 		__queue_work(wq_per_cpu(wq, cpu), work);
+ 		ret = 1;
  	}
+@@ -222,7 +225,7 @@ int queue_delayed_work_on(int cpu, struc
+ 
+ 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+ 		BUG_ON(timer_pending(timer));
+-		BUG_ON(!list_empty(&work->entry));
++		BUG_ON(!plist_node_empty(&work->entry));
+ 
+ 		/* This stores cwq for the moment, for the timer_fn */
+ 		set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
+@@ -264,13 +267,17 @@ static void run_workqueue(struct cpu_wor
+ 			__FUNCTION__, cwq->run_depth);
+ 		dump_stack();
+ 	}
+-	while (!list_empty(&cwq->worklist)) {
+-		struct work_struct *work = list_entry(cwq->worklist.next,
++	while (!plist_head_empty(&cwq->worklist)) {
++		struct work_struct *work = plist_first_entry(&cwq->worklist,
+ 						struct work_struct, entry);
+ 		work_func_t f = work->func;
+ 
++		if (likely(cwq->thread->prio != work->entry.prio))
++			task_setprio(cwq->thread, work->entry.prio);
++
+ 		cwq->current_work = work;
+-		list_del_init(cwq->worklist.next);
++		plist_del(&work->entry, &cwq->worklist);
++		plist_node_init(&work->entry, MAX_PRIO);
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		BUG_ON(get_wq_data(work) != cwq);
+@@ -283,6 +290,7 @@ static void run_workqueue(struct cpu_wor
+ 		spin_lock_irq(&cwq->lock);
+ 		cwq->current_work = NULL;
+ 	}
++	task_setprio(cwq->thread, current->normal_prio);
+ 	cwq->run_depth--;
+ 	spin_unlock_irq(&cwq->lock);
+ }
+@@ -301,7 +309,7 @@ static int worker_thread(void *__cwq)
+ 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
+ 		if (!freezing(current) &&
+ 		    !kthread_should_stop() &&
+-		    list_empty(&cwq->worklist))
++		    plist_head_empty(&cwq->worklist))
+ 			schedule();
+ 		finish_wait(&cwq->more_work, &wait);
+ 
+@@ -354,7 +362,8 @@ static int flush_cpu_workqueue(struct cp
+ 
+ 		active = 0;
+ 		spin_lock_irq(&cwq->lock);
+-		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
++		if (!plist_head_empty(&cwq->worklist) ||
++			cwq->current_work != NULL) {
+ 			insert_wq_barrier(cwq, &barr, 1);
+ 			active = 1;
+ 		}
+@@ -413,7 +422,7 @@ static int try_to_grab_pending(struct wo
+ 		return ret;
+ 
+ 	spin_lock_irq(&cwq->lock);
+-	if (!list_empty(&work->entry)) {
++	if (!plist_node_empty(&work->entry)) {
+ 		/*
+ 		 * This work is queued, but perhaps we locked the wrong cwq.
+ 		 * In that case we must see the new value after rmb(), see
+@@ -421,7 +430,8 @@ static int try_to_grab_pending(struct wo
+ 		 */
+ 		smp_rmb();
+ 		if (cwq == get_wq_data(work)) {
+-			list_del_init(&work->entry);
++			plist_del(&work->entry, &cwq->worklist);
++			plist_node_init(&work->entry, MAX_PRIO);
+ 			ret = 1;
+ 		}
+ 	}
+@@ -747,7 +757,7 @@ init_cpu_workqueue(struct workqueue_stru
+ 
+ 	cwq->wq = wq;
+ 	spin_lock_init(&cwq->lock);
+-	INIT_LIST_HEAD(&cwq->worklist);
++	plist_head_init(&cwq->worklist, NULL);
+ 	init_waitqueue_head(&cwq->more_work);
+ 
+ 	return cwq;
 
 --
 
