@@ -1,92 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXJWKHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbXJWKHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbXJWKHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 06:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXJWKHU
+	id S1754308AbXJWKHy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 06:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXJWKHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 06:07:20 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:64711 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbXJWKHQ (ORCPT
+	Tue, 23 Oct 2007 06:07:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54580 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbXJWKHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Oct 2007 06:07:16 -0400
-Date: Tue, 23 Oct 2007 03:06:38 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86_64: set cpu_index to NR_CPUS instead of 0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200710230306.38640.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Subject: Re: [PATCH] reiserfs: don't drop PG_dirty when releasing
+	sub-page-sized dirty file
+From: Peter Zijlstra <peterz@infradead.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com
+In-Reply-To: <393126119.26275@ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com>
+	 <200710221258.11384.maximlevitsky@gmail.com> <393051953.24752@ustc.edu.cn>
+	 <200710221421.21439.maximlevitsky@gmail.com>  <393126119.26275@ustc.edu.cn>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 12:07:07 +0200
+Message-Id: <1193134027.7406.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86_64: set cpu_index to NR_CPUS instead of 0
+[ adding reiserfs devs to the CC ]
 
-same BIOS will support two/four dualcore/quadcore system, and will get
+On Tue, 2007-10-23 at 15:55 +0800, Fengguang Wu wrote:
+> This is not a new problem in 2.6.23-git17.
+> 2.6.22/2.6.23 is buggy in the same way.
+> 
+> Reiserfs could leave newly created sub-page-size files in dirty state
+> for ever.  They cannot be synced to disk by pdflush routines or
+> explicit `sync' commands.  Only `umount' can do the trick.
+> 
+> The direct cause is: the dirty page's PG_dirty is wrongly _cleared_.
+> Call trace:
+> 	 [<ffffffff8027e920>] cancel_dirty_page+0xd0/0xf0
+> 	 [<ffffffff8816d470>] :reiserfs:reiserfs_cut_from_item+0x660/0x710
+> 	 [<ffffffff8816d791>] :reiserfs:reiserfs_do_truncate+0x271/0x530
+> 	 [<ffffffff8815872d>] :reiserfs:reiserfs_truncate_file+0xfd/0x3b0
+> 	 [<ffffffff8815d3d0>] :reiserfs:reiserfs_file_release+0x1e0/0x340
+> 	 [<ffffffff802a187c>] __fput+0xcc/0x1b0
+> 	 [<ffffffff802a1ba6>] fput+0x16/0x20
+> 	 [<ffffffff8029e676>] filp_close+0x56/0x90
+> 	 [<ffffffff8029fe0d>] sys_close+0xad/0x110
+> 	 [<ffffffff8020c41e>] system_call+0x7e/0x83
+> 
+> Fix the bug by removing the cancel_dirty_page() call. Tests show that
+> it causes no bad behaviors on various write sizes.
+> 
+> 
+> === for the patient ===
+> Here are more detailed demonstrations of the problem.
+> 
+> 1) the page has both PG_dirty(D)/PAGECACHE_TAG_DIRTY(d) after being written to;
+>    and then only PAGECACHE_TAG_DIRTY(d) remains after the file is closed.
+> 
+> ------------------------------ screen 0 ------------------------------
+> [T0] root /home/wfg# cat > /test/tiny
+> [T1] hi
+> [T2] root /home/wfg#
+> 
+> ------------------------------ screen 1 ------------------------------
+> [T1] root /home/wfg# echo /test/tiny > /proc/filecache
+> [T1] root /home/wfg# cat /proc/filecache
+>      # file /test/tiny
+>      # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
+>      # idx   len     state   refcnt
+>      0       1       ___UD__Bd_      2
+> [T2] root /home/wfg# cat /proc/filecache
+>      # file /test/tiny
+>      # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
+>      # idx   len     state   refcnt
+>      0       1       ___U___Bd_      2
+> 
+> 2) note the non-zero 'cancelled_write_bytes' after /tmp/hi is copied.
+> 
+> ------------------------------ screen 0 ------------------------------
+> [T0] root /home/wfg# echo hi > /tmp/hi
+> [T1] root /home/wfg# cp /tmp/hi /dev/stdin /test
+> [T2] hi
+> [T3] root /home/wfg#
+> 
+> ------------------------------ screen 1 ------------------------------
+> [T1] root /proc/4397# cd /proc/`pidof cp`
+> [T1] root /proc/4713# cat io
+>      rchar: 8396
+>      wchar: 3
+>      syscr: 20
+>      syscw: 1
+>      read_bytes: 0
+>      write_bytes: 20480
+>      cancelled_write_bytes: 4096
+> [T2] root /proc/4713# cat io
+>      rchar: 8399
+>      wchar: 6
+>      syscr: 21
+>      syscw: 2
+>      read_bytes: 0
+>      write_bytes: 24576
+>      cancelled_write_bytes: 4096
+> 
+> //Question: the 'write_bytes' is a bit more than expected ;-)
+> 
+> Cc: Maxim Levitsky <maximlevitsky@gmail.com>                                                                           
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> ---
+>  fs/reiserfs/stree.c |    3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> --- linux-2.6.24-git17.orig/fs/reiserfs/stree.c
+> +++ linux-2.6.24-git17/fs/reiserfs/stree.c
+> @@ -1458,9 +1458,6 @@ static void unmap_buffers(struct page *p
+>  				}
+>  				bh = next;
+>  			} while (bh != head);
+> -			if (PAGE_SIZE == bh->b_size) {
+> -				cancel_dirty_page(page, PAGE_CACHE_SIZE);
+> -			}
+>  		}
+>  	}
+>  }
+> 
 
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-Processor #0 15:1 APIC version 16
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-Processor #1 15:1 APIC version 16
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
-Processor #2 15:1 APIC version 16
-ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
-Processor #3 15:1 APIC version 16
-ACPI: LAPIC (acpi_id[0x05] lapic_id[0x84] disabled)
-ACPI: LAPIC (acpi_id[0x06] lapic_id[0x85] disabled)
-ACPI: LAPIC (acpi_id[0x07] lapic_id[0x86] disabled)
-ACPI: LAPIC (acpi_id[0x08] lapic_id[0x87] disabled)
-ACPI: LAPIC (acpi_id[0x09] lapic_id[0x88] disabled)
-ACPI: LAPIC (acpi_id[0x0a] lapic_id[0x89] disabled)
-ACPI: LAPIC (acpi_id[0x0b] lapic_id[0x8a] disabled)
-ACPI: LAPIC (acpi_id[0x0c] lapic_id[0x8b] disabled)
-ACPI: LAPIC (acpi_id[0x0d] lapic_id[0x8c] disabled)
-ACPI: LAPIC (acpi_id[0x0e] lapic_id[0x8d] disabled)
-ACPI: LAPIC (acpi_id[0x0f] lapic_id[0x8e] disabled)
-ACPI: LAPIC (acpi_id[0x10] lapic_id[0x8f] disabled)
-
-SMP: Allowing 16 CPUs, 12 hotplug CPUs
-
-the /proc/cpuinfo will show as bunch of NULL cpus with cpu_index=0
-
-so assign impossible cpu_index value at first instead of 0.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-Index: linux-2.6/arch/x86/kernel/smpboot_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/smpboot_64.c
-+++ linux-2.6/arch/x86/kernel/smpboot_64.c
-@@ -861,6 +861,18 @@ void __init smp_set_apicids(void)
- 	x86_cpu_to_apicid_ptr = NULL;
- }
- 
-+static void __init smp_cpu_index_default(void)
-+{
-+	int i;
-+	struct cpuinfo_x86 *c;
-+
-+	for_each_cpu_mask(i, cpu_possible_map) {
-+		c = &cpu_data(i);
-+		/* mark all to hotplug */
-+		c->cpu_index = NR_CPUS;
-+	}
-+}
-+
- /*
-  * Prepare for SMP bootup.  The MP table or ACPI has been read
-  * earlier.  Just do some sanity checking here and enable APIC mode.
-@@ -868,6 +880,7 @@ void __init smp_set_apicids(void)
- void __init smp_prepare_cpus(unsigned int max_cpus)
- {
- 	nmi_watchdog_default();
-+	smp_cpu_index_default();
- 	current_cpu_data = boot_cpu_data;
- 	current_thread_info()->cpu = 0;  /* needed? */
- 	smp_set_apicids();
