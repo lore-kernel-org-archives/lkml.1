@@ -1,150 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbXJWTmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbXJWTnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbXJWTmN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 15:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXJWTl7
+	id S1753303AbXJWTnY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 15:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXJWTnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 15:41:59 -0400
-Received: from keil-draco.com ([216.193.185.50]:50263 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbXJWTl6 (ORCPT
+	Tue, 23 Oct 2007 15:43:17 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46250 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752178AbXJWTnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 15:41:58 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Dan Williams <dcbw@redhat.com>
-Subject: Re: rt73usb: support for wireless in Kohjinsha subnotebook
-Date: Tue, 23 Oct 2007 15:41:42 -0400
-User-Agent: KMail/1.9.7
-Cc: Pavel Machek <pavel@ucw.cz>, Ivo van Doorn <ivdoorn@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       mwallis@serialmonkey.com
-References: <20071020184100.GA11640@elf.ucw.cz> <200710231307.25301.dhazelton@enter.net> <1193165694.26768.10.camel@localhost.localdomain>
-In-Reply-To: <1193165694.26768.10.camel@localhost.localdomain>
+	Tue, 23 Oct 2007 15:43:16 -0400
+Date: Tue, 23 Oct 2007 21:43:44 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: drivers/net/wireless/rt2x00/: struct data_desc strangeness
+Message-ID: <20071023194344.GX30533@stusta.de>
+References: <20071014175032.GI4211@stusta.de> <200710142106.20409.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200710231541.42943.dhazelton@enter.net>
+In-Reply-To: <200710142106.20409.IvDoorn@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 October 2007 14:54:54 Dan Williams wrote:
-> On Tue, 2007-10-23 at 13:07 -0400, Daniel Hazelton wrote:
-> > On Tuesday 23 October 2007 10:05:12 Dan Williams wrote:
-> > > On Tue, 2007-10-23 at 00:00 +0200, Pavel Machek wrote:
-> > > > Hi!
-> > > >
-> > > > > > > Yes, I'm quite sure. There's MODULE_LICENCE("GPL"), IIRC.
-> > > > > >
-> > > > > > That doesn't say much, some manufacturers add that line to their
-> > > > > > driver just to prevent the module loader complaining about a
-> > > > > > non-GPL driver...
-> > > > > >
-> > > > > > There should be a copyright notice or a license file accompanied
-> > > > > > with the driver that clearly states the license of the driver.
-> > > > >
-> > > > > Lacking an explicitly stated license it can be argued that, since
-> > > > > the MODULE_LICENSE() macro is meant to define the actual license on
-> > > > > the code, this code is GPL. No, it isn't an explicit definition,
-> > > > > but lacking any other signs of the license, the implicit
-> > > > > declaration of it being GPL is (or should be) enough to deflect
-> > > > > charges of copyright infringement.
-> > > >
-> > > > Yep, I believe this driver is GPLed. They published the source and
-> > > > there's nothing to suggest otherwise, and there's explicit:
-> > > >
-> > > > #define DRIVER_AUTHOR                   "Jeff
-> > > > Lee<YY_Lee@issc.com.tw>" #define DRIVER_DESC                         
-> > > >    "IS89C35 802.11bg WLAN USB Driver" MODULE_LICENSE("GPL");
-> > >
-> > > If there isn't an explicit COPYING or LICENSE file or something
-> > > distributed with the driver, and if there aren't copyright/license
-> > > headers at the top of the files in question, I have a hard time
-> > > agreeing that MODULE_LICENSE("GPL") _definitely_ means that the author
-> > > has GPL-ed the driver intentionally.  Of course that's the way it's
-> > > supposed to work, but to me this doesn't pass sufficient muster to be
-> > > definitely called GPL without additional clarification.
-> > >
-> > > Dan
-> >
-> > Lacking any other indication MODULE_LICENSE is supposed to mark the
-> > license that the code is being distributed under. If companies are
-> > intentionally
->
-> Step 1: Ask the author.
+On Sun, Oct 14, 2007 at 09:06:20PM +0200, Ivo van Doorn wrote:
+> On Sunday 14 October 2007, Adrian Bunk wrote:
+> > drivers/net/wireless/rt2x00/rt2x00ring.h contains the following:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > /*
+> >  * data_desc
+> >  * Each data entry also contains a descriptor which is used by the
+> >  * device to determine what should be done with the packet and
+> >  * what the current status is.
+> >  * This structure is greatly simplified, but the descriptors
+> >  * are basically a list of little endian 32 bit values.
+> >  * Make the array by default 1 word big, this will allow us
+> >  * to use sizeof() correctly.
+> >  */
+> > struct data_desc {
+> >         __le32 word[1];
+> > };
+> > ...
+> > /*
+> >  * TX/RX Descriptor access functions.
+> >  */
+> > static inline void rt2x00_desc_read(struct data_desc *desc,
+> >                                     const u8 word, u32 *value)
+> > {
+> >         *value = le32_to_cpu(desc->word[word]);
+> > }
+> > 
+> > static inline void rt2x00_desc_write(struct data_desc *desc,
+> >                                      const u8 word, const u32 value)
+> > {
+> >         desc->word[word] = cpu_to_le32(value);
+> > }
+> > ...
+> > 
+> > <--  snip  -->
+> > 
+> > I haven't checked whether it might work in all cases, but passing 
+> > non-zero values as second parameter to rt2x00_desc_{read,write}()
+> > (as is done in many cases) is even in the best case bad coding style.
+> 
+> Access to the array is correct, even with non-zero values the code that is
+> reading/writing to the array knows the exact size of the descriptor. Within
+> rt2x00 are however 5 drivers who have different descriptor sizes. That means
+> I can't create a structure which has the correct array length.
+> 
+> The structure itself is just a simple map over preallocated memory
+> (skb->data in case of USB or dma in case of PCI).
+> 
+> So possible solutions would be:
+>  - remove struct data_desc and make it a void* or __le32*
+>    This is at the cost of code readibility since the above pointers
+>    have less meaning then a pointer to a structure which can be nicely
+>    documented.
+>...
 
-Agreed. This should have been done before this discussion even started.
+The worst is a wrong meaning.
+__le32 word[1] is an array with _one_ element.
 
-> Step 2: if the author doesn't reply, then we can have this discussion
->
-> MODULE_LICENSE is just a random string that could have been added by
-> anybody, not necessarily the author.  Unless you can determine the
-> intent of the author explicitly, a single MODULE_LICENSE is not
-> sufficient to concretely determine the license of the code.  It's only
-> in one file.  There is nothing to explicitly state the overall license
-> of the whole work unless each file has a header referring to the license
-> or unless there is a license document distributed with the code as a
-> whole.
->
-> In the absence of any other indication, MODULE_LICENSE doesn't not
-> concretely determine the license of the code.  You can assume it does,
-> but that's your gun to put to your own head.
+And an __le32* can be used as an array.
 
-The intent of MODULE_LICENSE is to mark the license on the code. This is 
-clearly stated in several places in Documentation/ (if my memory serves).
+> Ivo
 
-> > mis-using this to get around the "internal interfaces" limitations (where
-> > some interfaces are not available unless the module is GPL'd) and the
-> > warning message printed in the logs when the module is not GPL'd then
-> > they are (technically) in violation of the law. (interfaces that are GPL
-> > only are considered so internal to the kernel that using them makes your
-> > code GPL because of the inclusion of GPL'd code. And no - I am not going
-> > to get into that discussion - it's pointless)
->
-> Just because the module may be loading illegally says _nothing_ about
-> the license of the code.
-
-No, but it is a mis-use of MODULE_LICENSE, which is supposed to state the 
-correct license on the code.
-
-> > In the end, using MODULE_LICENSE for any purpose other than declaring the
-> > chosen license for the code is deceptive. So it is easily arguable that
-> > by
->
-> "deceptive" is also not "this code code is definitely GPL".  Doesn't
-> matter whether it's deceptive or not.  We do not know that the code is
-> GPL.
-
-Deception in order to create a situation whereby you can prosecute people for 
-violation of the law is illegal. Therefore not distributing the code with any 
-indication as to the license other than MODULE_LICENSE and attempting to 
-prosecute afterwards is illegal. QED: even if the code is not GPL'd (and such 
-could be learned by contacting the author), the fact that it ships without 
-any indication of the license other than MODULE_LICENSE implies that the 
-license is what is stated and prosecution on the grounds that it isn't 
-becomes entrapment.
-
-> > not including any license with the code other than the MODULE_LICENSE
-> > statement and then trying to prosecute because MODULE_LICENSE doesn't
-> > accurately state the license on the code is entrapment and illegal.
->
-> Arguable doesn't mean that it's concrete enough to pass legal muster.  I
-> am not a lawyer, but this just doesn't pass the bar.
-
-I know several and have asked one that is a very good friend. He agreed with 
-my interpretation of the presented facts - that since the only indication of 
-what the license on the code might be is MODULE_LICENSE it can be safely 
-assumed that the license is what that states. Any attempt to later prosecute 
-because the license is not what is stated would constitute entrapment - which 
-is illegal.
-
-DRH
-
-PS: note that all legal information contained here-in is only known to be 
-valid in the US.
+cu
+Adrian
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
