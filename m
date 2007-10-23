@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXJWSF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbXJWSHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbXJWSF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 14:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJWSFt
+	id S1754552AbXJWSHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 14:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXJWSHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 14:05:49 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49656 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752481AbXJWSFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 14:05:48 -0400
-Date: Tue, 23 Oct 2007 14:05:48 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anas Nashif <nashif@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Marek Dabek <marek.dabek@intel.com>
-Subject: Re: [PATCH] Intel Manageability Engine Interface driver
-Message-ID: <20071023180547.GL4003@csclub.uwaterloo.ca>
-References: <471CDC5E.4010300@linux.intel.com> <20071022114001.40470c15.akpm@linux-foundation.org> <20071023150429.GK4003@csclub.uwaterloo.ca> <20071023092333.39982483@laptopd505.fenrus.org>
+	Tue, 23 Oct 2007 14:07:03 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:54670 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752614AbXJWSHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 14:07:01 -0400
+Date: Tue, 23 Oct 2007 20:06:27 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: Alon Bar-Lev <alon.barlev@gmail.com>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+Subject: Re: [BUG] rfcomm]
+In-Reply-To: <1193162106.6184.208.camel@violet>
+Message-ID: <Pine.LNX.4.64.0710232004260.18815@twin.jikos.cz>
+References: <200710231950.31313.alon.barlev@gmail.com> <1193162106.6184.208.camel@violet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071023092333.39982483@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 09:23:33AM -0700, Arjan van de Ven wrote:
-> gcc will tell you in the other direction just as well.
-> 
-> and people read from left to right (at least in english) so coding in
-> that direction is generally preferred in the Linux kernel as well.
+On Tue, 23 Oct 2007, Marcel Holtmann wrote:
 
-What does gcc have to say about if (foo = 0){ rather than if (foo == 0){
+> Second, can you try without uswsusp or suspend2. Both of them are not 
+> upstream and I can't tell how much these would effect this kind of 
+> behavior.
 
-Both are legal C so it shouldn't say anything.  Of course the first is
-usually a bug (or very bad style).
+Hi Marcel,
 
-On the other hand if (0 = foo) will give an error.
+actually uswsusp has been upstream for quite some time already. See 
+Documentation/power/userland-swsusp.txt
 
-It isn't about how you read in english, it is about not making mistakes.
-And why can't you say if 0 is equal to the variable foo rather than if
-the variable foo is equal to 0?  Both are valid english, so that is just
-a crappy excuse for sticking with a bad idea.
+Thanks,
 
---
-Len Sorensen
+-- 
+Jiri Kosina
