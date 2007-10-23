@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbXJWP0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbXJWP2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbXJWP0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXJWP0V
+	id S1753254AbXJWP2B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 11:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXJWP1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:26:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39382 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbXJWP0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:26:20 -0400
-From: Adam Jackson <ajax@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Adam Jackson <ajax@redhat.com>
-Subject: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-Date: Tue, 23 Oct 2007 10:58:50 -0400
-Message-Id: <11931515302013-git-send-email-ajax@redhat.com>
-X-Mailer: git-send-email 1.5.2.4
+	Tue, 23 Oct 2007 11:27:54 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:38263 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbXJWP1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 11:27:52 -0400
+Date: Tue, 23 Oct 2007 10:27:40 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, Jens@secretlab.ca,
+       "Axboe <jens.axboe"@oracle.com, linuxppc-dev@ozlabs.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org
+Subject: Re: [PATCH] Bugfix to commit
+ 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+Message-ID: <20071023102740.72b372ae@weaponx.rchland.ibm.com>
+In-Reply-To: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+References: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; powerpc-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the EEPROM gets corrupted, you can fix it with ethtool, but only if
-the module loads and creates a network device.  But, without this option,
-if the EEPROM is corrupted, the driver will not create a network device.
+On Tue, 23 Oct 2007 09:20:25 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
----
- drivers/net/e1000/e1000_main.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
+> dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
+> in include/asm-powerpc/dma-mapping.h
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+> Linus, I cannot build an arch/powerpc kernel without this patch.
 
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index f1ce348..b308c32 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -255,6 +255,10 @@ static int debug = NETIF_MSG_DRV | NETIF_MSG_PROBE;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
- 
-+static int eeprom_bad_csum_allow = 0;
-+module_param(eeprom_bad_csum_allow, int, 0);
-+MODULE_PARM_DESC(eeprom_bad_csum_allow, "Allow bad eeprom checksums");
-+
- /**
-  * e1000_init_module - Driver Registration Routine
-  *
-@@ -1012,7 +1016,8 @@ e1000_probe(struct pci_dev *pdev,
- 
- 	if (e1000_validate_eeprom_checksum(&adapter->hw) < 0) {
- 		DPRINTK(PROBE, ERR, "The EEPROM Checksum Is Not Valid\n");
--		goto err_eeprom;
-+		if (!eeprom_bad_csum_allow)
-+			goto err_eeprom;
- 	}
- 
- 	/* copy the MAC address out of the EEPROM */
-@@ -1024,7 +1029,8 @@ e1000_probe(struct pci_dev *pdev,
- 
- 	if (!is_valid_ether_addr(netdev->perm_addr)) {
- 		DPRINTK(PROBE, ERR, "Invalid MAC Address\n");
--		goto err_eeprom;
-+		if (!eeprom_bad_csum_allow)
-+			goto err_eeprom;
- 	}
- 
- 	e1000_get_bus_info(&adapter->hw);
--- 
-1.5.2.4
+Olof Johansson already sent a patch out for this that had some other
+fixes in it.  I think Jens already applied it to his tree.
 
+josh
