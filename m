@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXJWGTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbXJWGZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXJWGTj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 02:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXJWGTa
+	id S1752447AbXJWGZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 02:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXJWGZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 02:19:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40673 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751178AbXJWGTa (ORCPT
+	Tue, 23 Oct 2007 02:25:25 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:42029 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbXJWGZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 02:19:30 -0400
-Date: Mon, 22 Oct 2007 23:19:25 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, mingo@elte.hu, dmitry.adamushko@gmail.com,
-       ghaskins@novell.com, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
-Message-Id: <20071022231925.2b996db8.pj@sgi.com>
-In-Reply-To: <6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
-References: <20071023025900.927578809@goodmis.org>
-	<20071023032916.651749224@goodmis.org>
-	<20071022211709.7be79fea.pj@sgi.com>
-	<6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Tue, 23 Oct 2007 02:25:25 -0400
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       torvalds@linux-foundation.org
+Subject: [PATCH] ide: build fix
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071023152506I.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 23 Oct 2007 15:25:06 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> Cgroups doesn't change the locking rules for accessing a cpuset from a
-> task - you have to have one of:
+git-drivers/ide/ide-probe.c: In function 'hwif_init':
+drivers/ide/ide-probe.c:1327: error: implicit declaration of function 'sg_init_table'
 
-Good - could you comment task_cs() with this explanation?
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/ide/ide-probe.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-The rules are derived from the cpuset rules, as you explain,
-and as I suspected, but now task_cs() is the most popular
-way to access a tasks cpuset from code within kernel/cpuset.c,
-and that's code you added.
-
-The reason that I started this subthread is that I didn't see
-any immediate evidence that the RT code was honoring this locking,
-and I suspected that I clear comment over task_cs() could have
-clarified that for them.
-
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index ec55a17..6a6f2e0 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -47,6 +47,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/kmod.h>
+ #include <linux/pci.h>
++#include <linux/scatterlist.h>
+ 
+ #include <asm/byteorder.h>
+ #include <asm/irq.h>
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+1.5.2.4
+
