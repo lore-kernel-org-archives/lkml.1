@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXJWJ4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbXJWJ5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbXJWJ4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXJWJ4f
+	id S1752275AbXJWJ5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbXJWJ46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:56:35 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6447 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753683AbXJWJ4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:56:34 -0400
-Date: Tue, 23 Oct 2007 11:55:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071023095507.GE5059@kernel.dk>
-References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <471DC3D9.2070809@panasas.com>
+	Tue, 23 Oct 2007 05:56:58 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47875
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752553AbXJWJ45 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 05:56:57 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/7] Add section IDs to rapidio.tmpl
+Date: Tue, 23 Oct 2007 04:56:24 -0500
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, mporter@kernel.crashing.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <471DC3D9.2070809@panasas.com>
+Message-Id: <200710230456.24310.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23 2007, Boaz Harrosh wrote:
-> On Tue, Oct 23 2007 at 11:41 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Tue, Oct 23 2007, Boaz Harrosh wrote:
-> >> On Mon, Oct 22 2007 at 23:47 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >>> On Mon, 22 Oct 2007, Alan Cox wrote:
-> >>>
-> >>>> For structures, not array elements or stack objects. Does gcc now get
-> >>>> aligned correct as an attribute on a stack object ?
-> >>> I think m68k stack layout still guarantees 4-byte-alignment, no?
-> >>>
-> >>>> Still doesn't answer the rather more important question - why not just
-> >>>> stick a NULL on the end instead of all the nutty hacks ?
-> >>> You still do need one bit for the discontiguous case, so it's not like you 
-> >>> can avoid the hacks anyway (unless you just blow up the structure 
-> >>> entirely) and make it a separate member). So once you have that 
-> >>> bit+pointer, using a separate NULL entry isn't exactly prettier. 
-> >>>
-> >>> Especially as we actally want to see the difference between 
-> >>> "end-of-allocation" and "not yet filled in", so you shouldn't use NULL 
-> >>> anyway, you should probably use something like "all-ones".
-> >>>
-> >>> 			Linus
-> >>> -
-> >> Every one is so hysterical about this sg-chaining problem. And massive
-> >> patches produced, that when a simple none intrusive solution is proposed
-> >> it is totally ignored because every one thinks, "I can not be that stupid".
-> >> Well Einstein said: "Simplicity is the ultimate sophistication". So no one
-> >> need to feel bad.
-> > 
-> > It's all about the end goal - having maintainable and resilient code.
-> > And I think the sg code will be better once we get past the next day or
-> > so, and it'll be more robust. That is what matters to me, not the
-> > simplicity of the patch itself.
-> > 
-> 
-> But that is exactly what his patch is. Much more robust. Because you do not
-> relay on sglist content but on outside information, that you already have.
-> Have you had an hard look at his solution? It just simply falls into place.
-> Please try it out for yourself. I did, and it works.
+From: Rob Landley <rob@landley.net>
 
-Sure, I looked at it, it's not exactly rocket science, I do understand
-what it achieves. I don't think the patch is bad as such, I'm merely
-trying to state that I think the end code AND interface will be much
-nicer with the current direction that the sg helpers are moving.
+Add section IDs to rapidio.tmpl
 
-It does rely on outside context, because you need to pass in the sglist
-number. In my opinion, this patch would be a bandaid for the original
-chain code until we got around to fixing the PAGEALLOC crash. Which we
-did, it's now merged. The patch doesn't make the code cleaner, it makes
-it uglier. It'll work, but that still doesn't mean I have to agree it's
-a nice design.
+Signed-off-by: Rob Landley <rob@landley.net>
+---
+
+ Documentation/DocBook/rapidio.tmpl |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff -r a868e8217782 Documentation/DocBook/rapidio.tmpl
+--- a/Documentation/DocBook/rapidio.tmpl	Mon Oct 22 19:40:02 2007 -0700
++++ b/Documentation/DocBook/rapidio.tmpl	Mon Oct 22 23:45:49 2007 -0500
+@@ -77,11 +77,11 @@
+   <chapter id="bugs">
+      <title>Known Bugs and Limitations</title>
+ 
+-     <sect1>
++     <sect1 id="known_bugs">
+      	<title>Bugs</title>
+ 	  <para>None. ;)</para>
+      </sect1>
+-     <sect1>
++     <sect1 id="Limitations">
+      	<title>Limitations</title>
+ 	  <para>
+ 	    <orderedlist>
+@@ -100,7 +100,7 @@
+ 		on devices, request/map memory region resources,
+ 		and manage mailboxes/doorbells.
+ 	</para>
+-	<sect1>
++	<sect1 id="Functions">
+ 		<title>Functions</title>
+ !Iinclude/linux/rio_drv.h
+ !Edrivers/rapidio/rio-driver.c
+@@ -116,23 +116,23 @@
+      subsystem.
+      </para>
+ 
+-     <sect1><title>Structures</title>
++     <sect1 id="Structures"><title>Structures</title>
+ !Iinclude/linux/rio.h
+      </sect1>
+-     <sect1><title>Enumeration and Discovery</title>
++     <sect1 id="Enumeration_and_Discovery"><title>Enumeration and Discovery</title>
+ !Idrivers/rapidio/rio-scan.c
+      </sect1>
+-     <sect1><title>Driver functionality</title>
++     <sect1 id="Driver_functionality"><title>Driver functionality</title>
+ !Idrivers/rapidio/rio.c
+ !Idrivers/rapidio/rio-access.c
+      </sect1>
+-     <sect1><title>Device model support</title>
++     <sect1 id="Device_model_support"><title>Device model support</title>
+ !Idrivers/rapidio/rio-driver.c
+      </sect1>
+-     <sect1><title>Sysfs support</title>
++     <sect1 id="Sysfs_support"><title>Sysfs support</title>
+ !Idrivers/rapidio/rio-sysfs.c
+      </sect1>
+-     <sect1><title>PPC32 support</title>
++     <sect1 id="PPC32_support"><title>PPC32 support</title>
+ !Iarch/ppc/kernel/rio.c
+ !Earch/ppc/syslib/ppc85xx_rio.c
+ !Iarch/ppc/syslib/ppc85xx_rio.c
 
 -- 
-Jens Axboe
-
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
