@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXJWWEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbXJWWHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbXJWWEG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 18:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJWWDz
+	id S1754052AbXJWWHL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 18:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbXJWWG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 18:03:55 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:44814 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbXJWWDy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 18:03:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GaUZkW53VCUFW6mngXE77UVJ7cyWLMjUl7JMTMAAR3eYxF+qy5E6Qns977UtQVx3ZSc3QI6etjmMxFUxbfMJiKHHBDb7ZOP70ZOo/beVVxUuTFE1AhYdT56X81DH3dqvdCnbpcDUWYtV1BN3j0RjfJrASYtM9UC/zJVVg1/o6kU=
-Message-ID: <471E6FC5.6070301@gmail.com>
-Date: Tue, 23 Oct 2007 18:03:49 -0400
-From: emist <emistz@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Tue, 23 Oct 2007 18:06:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47532 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbXJWWG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 18:06:57 -0400
+Message-ID: <471E707B.1020505@garzik.org>
+Date: Tue, 23 Oct 2007 18:06:51 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       Linux <linux-kernel@vger.kernel.org>, cornelia.huck@de.ibm.com
-Subject: Re: [PATCH] Bug fix for the s390 dcssblk driver
-References: <200710201451.57138.elendil@planet.nl>	 <471A39D2.1070303@gmail.com> <20071021100926.GA4420@osiris.ibm.com>	 <471C1D29.5020403@gmail.com>	 <20071022133723.089b84db@gondolin.boeblingen.de.ibm.com> <1193145774.5325.27.camel@localhost.localdomain>
-In-Reply-To: <1193145774.5325.27.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
+References: <1193173128.3434.1.camel@localhost.localdomain>	 <471E6313.1040704@garzik.org> <1193174424.3434.3.camel@localhost.localdomain>
+In-Reply-To: <1193174424.3434.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerald Schaefer wrote:
-> On Mon, 2007-10-22 at 13:37 +0200, Cornelia Huck wrote:
->> On Sun, 21 Oct 2007 23:46:49 -0400,
->> emist <emistz@gmail.com> wrote:
->>
->>> # This patch fixes a memory corruption bug in the s390 dcssblk driver.
->>> # The bug occurs when an attempt to change the type of a segment
->>> # returns an error. At this point the driver tries to remove the segment in
->>> # question while some of the device's attributes are in use. This causes the
->>> # driver to hang.
->> Hm, seems we missed another of those device attributes exhibiting
->> suicidal tendencies...
->>
->> Tejun has a patchset allowing device attributes to commit suicide (see
->> http://marc.info/?l=linux-kernel&m=119027371416452&w=2), although I'm
->> not sure what its current status is. Until then, you would need to use
->> device_schedule_callback() to commit suicide.
->>
->> This all of course only applies if killing the segment is better than
->> leaving it in its current state, but others can make a better judgement
->> on that :)
+James Bottomley wrote:
+> On Tue, 2007-10-23 at 17:09 -0400, Jeff Garzik wrote:
+>> James Bottomley wrote:
+>>> This should be the final SCSI updates; it's mainly just a few accessor
+>>> completion updates and two driver merges (sym2 and qla2xxx) we also
+>>> secured DaveM's agreement to remove fcal/fc4, which explains the high
+>>> removal line count.
+>>>
+>>> The patch is available here:
+>>>
+>>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+>> I guess I have the go-ahead to merge the end-CDROM-polling async 
+>> notification work you've been repeatedly ignoring?
 > 
-> Hi,
-> 
-> thanks for reporting this bug, seems like we forgot to consider the
-> suicidal behavior of this driver when the device_unregister() stuff was
-> changed.
-> 
-> The best solution for now would be to use the scheduled callback
-> function, like Cornelia described. If segment_modify_shared() should
-> fail, the DCSS segment will be unloaded. Calling the function again
-> with the old "shared" flag will not help because it will not reload
-> the segment. So we need to remove/unregister the device in this error
-> path, and for now this should be done with device_schedule_callback().
-> 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> ---
-> 
->  dcssblk.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.23/drivers/s390/block/dcssblk.c
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/s390/block/dcssblk.c
-> +++ linux-2.6.23/drivers/s390/block/dcssblk.c
-> @@ -193,6 +193,12 @@ dcssblk_segment_warn(int rc, char* seg_n
->         }
->  }
-> 
-> +static void dcssblk_unregister_callback(struct device *dev)
-> +{
-> +       device_unregister(dev);
-> +       put_device(dev);
-> +}
-> +
->  /*
->   * device attribute for switching shared/nonshared (exclusive)
->   * operation (show + store)
-> @@ -276,8 +282,7 @@ removeseg:
->         blk_cleanup_queue(dev_info->dcssblk_queue);
->         dev_info->gd->queue = NULL;
->         put_disk(dev_info->gd);
-> -       device_unregister(dev);
-> -       put_device(dev);
-> +       rc = device_schedule_callback(dev, dcssblk_unregister_callback);
->  out:
->         up_write(&dcssblk_devices_sem);
->         return rc;
-> 
-> 
-Hey,
+> I haven't been ignoring it ... it just needs quite a bit of work; the
+> best way to accelerate it seems to be simply to do it (add the
+> supported/trigger event bitmasks and expand the infrastructure).  I just
+> haven't had the time within the merge window.
 
-That makes sense. I no longer have access to an s390 system so I will
-not be able to provide a tested patch for this bug. I will however
-attempt to fix this issue and submit a patch using the scheduled
-callback function and maybe someone could make sure that it works properly.
+James, things cannot get bottlenecked like this.  You have had MONTHS to 
+say something like this.  The code was ready BEFORE the merge window.
 
-Have a good one,
+I really think you have the knowledge to be SCSI maintainer, but not the 
+time.
 
-Igor H.
+	Jeff
+
+
+
