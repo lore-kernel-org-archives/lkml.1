@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXJWFdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbXJWFga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbXJWFdm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 01:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXJWFde
+	id S1752876AbXJWFga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 01:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbXJWFgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 01:33:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:38720 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbXJWFde (ORCPT
+	Tue, 23 Oct 2007 01:36:23 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:47378 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbXJWFgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 01:33:34 -0400
+	Tue, 23 Oct 2007 01:36:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t2xTCdkYeZ8Bj2mfunRQyy0Z38d/agdFqGPHXu6FNN8qmRlKzwmEBG50Ete52hndYC56ut2TVQZA9Snk3gRUPpD0GitGkJE+y4aN935691jaFH6C8cva0Ba/5vll6Hticj2tHxBerJZnzTVluQrIF/hCp4AbSKkcs99ECNlIWMw=
-Message-ID: <de4d25e80710222233l21e93909u373a58b780b526b7@mail.gmail.com>
-Date: Tue, 23 Oct 2007 11:03:33 +0530
-From: Shreyansh <shreyansh.jain@gmail.com>
-To: "Boaz Harrosh" <bharrosh@panasas.com>
-Subject: Re: Query about Bio submission / Direct IO
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <471C8114.7020702@panasas.com>
+        b=tODaN6g08C+ItvdPnWiqYZ7UU+3ffKoqJRk7afGyyTr6bltcTxjWvxSIv7wkBFPeP3ceHs81/I8SUf0PFMuu2DdkL6nX27SAPX0tulFnk9OHva5/6v/1E4+tmYhJj5GYuTFZC0/wXDS3a/T3JuGMB92GNF2L6GMuMWdJcyA0Cog=
+Message-ID: <86802c440710222236j481d09a7odfa3ce279644f5bd@mail.gmail.com>
+Date: Mon, 22 Oct 2007 22:36:22 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "travis@sgi.com" <travis@sgi.com>
+Subject: Re: [PATCH 1/1] x86: convert-cpuinfo_x86-array-to-a-per_cpu-array fix
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Suresh B Siddha" <suresh.b.siddha@intel.com>,
+       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20071012225434.102879000@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <loom.20071019T055230-553@post.gmane.org>
-	 <471C8114.7020702@panasas.com>
+References: <20071012225433.928899000@sgi.com>
+	 <20071012225434.102879000@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list and Boaz,
-
-On 10/22/07, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On Fri, Oct 19 2007 at 8:17 +0200, Shreyansh Jain <shreyansh.jain@gmail.com> wrote:
-> > Hi List,
-> >
--------8<---------
-> > Any idea why it doesn't work (though I am expecting that this doc is 2.6
-> > starting era and things might have changed a lot now).
-> >
-> > Any help would be highly appreciated. Apologies if my channel of approach is
-> > wrong and if this post is huge (couldn't keep it shorter than this).
-> >
-> > Shreyansh
-> >
-> >
-> > [PS: Is this situation something to do with request flags REQ_PC /
-> > REQ_BLOCK_PC?? While searching code, I found these somewhere connected to
-> > direct IO (bio_add_pc_page) and could find more about them]
-> >
-----------8<----------
-> > -
+On 10/12/07, travis@sgi.com <travis@sgi.com> wrote:
+> This fix corrects the problem that early_identify_cpu() sets
+> cpu_index to '0' (needed when called by setup_arch) after
+> smp_store_cpu_info() had set it to the correct value.
 >
-> There was a related fix to a similar problem by Mike Christie, in resent
-> Kernels, If there is no chance for you working on newer kernels, than you
-> will have to back port it.
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+>  arch/x86_64/kernel/smpboot.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> it is:
-> commit bd441deaf341c524b28fd72831ebf6fef88f1c41
-> Author: Mike Christie <michaelc@cs.wisc.edu>
-> Date:   Tue Mar 13 12:52:29 2007 -0500
-
-Thanks a lot for pointing that out to me. I will have a look at that.
-
+> --- linux.orig/arch/x86_64/kernel/smpboot.c     2007-10-12 14:28:45.000000000 -0700
+> +++ linux/arch/x86_64/kernel/smpboot.c  2007-10-12 14:53:42.753508152 -0700
+> @@ -141,8 +141,8 @@ static void __cpuinit smp_store_cpu_info
+>         struct cpuinfo_x86 *c = &cpu_data(id);
 >
->     [SCSI] fix write buffer length in scsi_req_map_sg()
->
->
-> look it up the git trees on kernel.org
-
-Certainly I will do that :) ... Thanks
-
->
-> Boaz
+>         *c = boot_cpu_data;
+> -       c->cpu_index = id;
+>         identify_cpu(c);
+> +       c->cpu_index = id;
+>         print_cpu_info(c);
+>  }
 >
 
-Shreyansh
+why not removing assignment in early_identify_cpu?
+
+YH
