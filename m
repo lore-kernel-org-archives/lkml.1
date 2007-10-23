@@ -1,216 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbXJWJfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbXJWJiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797AbXJWJfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXJWJfY
+	id S1752638AbXJWJiV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJWJiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:35:24 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:25098 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbXJWJfX (ORCPT
+	Tue, 23 Oct 2007 05:38:14 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:55393 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbXJWJiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:35:23 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:to:subject:cc:message-id:date:from;
-	b=xDSdKVKtQXDFeq3ZoaUYdTo1KGTlT0/+OcPIaWctN68WivOdgtVsY5pg/LZAOJUjD
-	WUQoAXyqNvMW5VKsg0X3w==
-To: pj@sgi.com, vatsa@in.ibm.com
-Subject: [PATCH] Move cgroups destroy() callbacks to cgroup_diput()
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Message-Id: <20071023093150.50E683D6287@localhost>
-Date: Tue, 23 Oct 2007 02:31:50 -0700 (PDT)
-From: menage@google.com (Paul Menage)
+	Tue, 23 Oct 2007 05:38:13 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] USB: FIx locks and urb->status in adutux
+Date: Tue, 23 Oct 2007 11:38:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pete Zaitcev <zaitcev@redhat.com>, greg@kroah.com,
+       linux-kernel@vger.kernel.org, vitalivanov@gmail.com, netwiz@crc.id.au
+References: <20071022203447.db6d7950.zaitcev@redhat.com>
+In-Reply-To: <20071022203447.db6d7950.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710231138.38266.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the calls to the cgroup subsystem destroy() methods from
-cgroup_rmdir() to cgroup_diput(). This allows control file reads and
-writes to access their subsystem state without having to be concerned
-with locking against cgroup destruction - the control file dentry will
-keep the cgroup and its subsystem state objects alive until the file
-is closed.
+Am Dienstag 23 Oktober 2007 schrieb Pete Zaitcev:
+> Two main issues fixed here are:
+>  - An improper use of in-struct lock to protect an open count
+>  - Use of urb status for -EINPROGRESS
 
-The documentation is updated to reflect the changed semantics of
-destroy(); additionally the locking comments for destroy() and some
-other methods were clarified and decrustified.
+> +	/* XXX Anchor these instead */
+> +	spin_lock_irqsave(&dev->buflock, flags);
+> +	if (!dev->read_urb_finished) {
+> +		spin_unlock_irqrestore(&dev->buflock, flags);
+> +		usb_kill_urb(dev->interrupt_in_urb);
+> +	} else
+> +		spin_unlock_irqrestore(&dev->buflock, flags);
+> +
+> +	spin_lock_irqsave(&dev->buflock, flags);
+> +	if (!dev->out_urb_finished) {
+> +		spin_unlock_irqrestore(&dev->buflock, flags);
+> +		usb_kill_urb(dev->interrupt_out_urb);
+> +	} else
+> +		spin_unlock_irqrestore(&dev->buflock, flags);
 
-Signed-off-by: Paul Menage <menage@google.com>
+Why bother? Simply call usb_kill_urb() unconditionally.
+  
+>  exit:
+> +	mutex_unlock(&dev->mtx);
+>  	dbg(2," %s : leave", __FUNCTION__);
+>  }
+>  
+> @@ -162,8 +182,6 @@ static void adu_delete(struct adu_device *dev)
+>  {
+>  	dbg(2, "%s enter", __FUNCTION__);
+>  
+> -	adu_abort_transfers(dev);
+> -
+>  	/* free data structures */
+>  	usb_free_urb(dev->interrupt_in_urb);
+>  	usb_free_urb(dev->interrupt_out_urb);
+> @@ -239,7 +257,10 @@ static void adu_interrupt_out_callback(struct urb *urb)
+>  		goto exit;
+>  	}
+>  
+> +	spin_lock(&dev->buflock);
+> +	dev->out_urb_finished = 1;
+>  	wake_up_interruptible(&dev->write_wait);
+> +	spin_unlock(&dev->buflock);
 
----
- Documentation/cgroups.txt |   22 +++++++++++-----------
- kernel/cgroup.c           |   36 ++++++++++++++++++++++++------------
- 2 files changed, 35 insertions(+), 23 deletions(-)
+This leaves a race here:
 
-Index: container-2.6.23-mm1/kernel/cgroup.c
-===================================================================
---- container-2.6.23-mm1.orig/kernel/cgroup.c
-+++ container-2.6.23-mm1/kernel/cgroup.c
-@@ -592,6 +592,7 @@ static void cgroup_diput(struct dentry *
- 	/* is dentry a directory ? if so, kfree() associated cgroup */
- 	if (S_ISDIR(inode->i_mode)) {
- 		struct cgroup *cgrp = dentry->d_fsdata;
-+		struct cgroup_subsys *ss;
- 		BUG_ON(!(cgroup_is_removed(cgrp)));
- 		/* It's possible for external users to be holding css
- 		 * reference counts on a cgroup; css_put() needs to
-@@ -600,6 +601,23 @@ static void cgroup_diput(struct dentry *
- 		 * queue the cgroup to be handled by the release
- 		 * agent */
- 		synchronize_rcu();
-+
-+		mutex_lock(&cgroup_mutex);
-+		/*
-+		 * Release the subsystem state objects.
-+		 */
-+		for_each_subsys(cgrp->root, ss) {
-+			if (cgrp->subsys[ss->subsys_id])
-+				ss->destroy(ss, cgrp);
-+		}
-+
-+		cgrp->root->number_of_cgroups--;
-+		mutex_unlock(&cgroup_mutex);
-+
-+		/* Drop the active superblock reference that we took when we
-+		 * created the cgroup */
-+		deactivate_super(cgrp->root->sb);
-+
- 		kfree(cgrp);
- 	}
- 	iput(inode);
-@@ -1333,6 +1351,10 @@ static ssize_t cgroup_common_file_write(
- 
- 	mutex_lock(&cgroup_mutex);
- 
-+	/*
-+	 * This was already checked for in cgroup_file_write(), but
-+	 * check again now we're holding cgroup_mutex.
-+	 */
- 	if (cgroup_is_removed(cgrp)) {
- 		retval = -ENODEV;
- 		goto out2;
-@@ -1388,7 +1410,7 @@ static ssize_t cgroup_file_write(struct 
- 	struct cftype *cft = __d_cft(file->f_dentry);
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
- 
--	if (!cft)
-+	if (!cft || cgroup_is_removed(cgrp))
- 		return -ENODEV;
- 	if (cft->write)
- 		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
-@@ -1458,7 +1480,7 @@ static ssize_t cgroup_file_read(struct f
- 	struct cftype *cft = __d_cft(file->f_dentry);
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
- 
--	if (!cft)
-+	if (!cft || cgroup_is_removed(cgrp))
- 		return -ENODEV;
- 
- 	if (cft->read)
-@@ -2139,7 +2161,6 @@ static int cgroup_rmdir(struct inode *un
- 	struct cgroup *cgrp = dentry->d_fsdata;
- 	struct dentry *d;
- 	struct cgroup *parent;
--	struct cgroup_subsys *ss;
- 	struct super_block *sb;
- 	struct cgroupfs_root *root;
- 
-@@ -2164,11 +2185,6 @@ static int cgroup_rmdir(struct inode *un
- 		return -EBUSY;
- 	}
- 
--	for_each_subsys(root, ss) {
--		if (cgrp->subsys[ss->subsys_id])
--			ss->destroy(ss, cgrp);
--	}
--
- 	spin_lock(&release_list_lock);
- 	set_bit(CGRP_REMOVED, &cgrp->flags);
- 	if (!list_empty(&cgrp->release_list))
-@@ -2183,15 +2199,11 @@ static int cgroup_rmdir(struct inode *un
- 
- 	cgroup_d_remove_dir(d);
- 	dput(d);
--	root->number_of_cgroups--;
- 
- 	set_bit(CGRP_RELEASABLE, &parent->flags);
- 	check_for_release(parent);
- 
- 	mutex_unlock(&cgroup_mutex);
--	/* Drop the active superblock reference that we took when we
--	 * created the cgroup */
--	deactivate_super(sb);
- 	return 0;
- }
- 
-Index: container-2.6.23-mm1/Documentation/cgroups.txt
-===================================================================
---- container-2.6.23-mm1.orig/Documentation/cgroups.txt
-+++ container-2.6.23-mm1/Documentation/cgroups.txt
-@@ -456,7 +456,7 @@ methods are create/destroy. Any others t
- be successful no-ops.
- 
- struct cgroup_subsys_state *create(struct cgroup *cont)
--LL=cgroup_mutex
-+(cgroup_mutex held by caller)
- 
- Called to create a subsystem state object for a cgroup. The
- subsystem should allocate its subsystem state object for the passed
-@@ -471,14 +471,19 @@ it's the root of the hierarchy) and may 
- initialization code.
- 
- void destroy(struct cgroup *cont)
--LL=cgroup_mutex
-+(cgroup_mutex held by caller)
- 
--The cgroup system is about to destroy the passed cgroup; the
--subsystem should do any necessary cleanup
-+The cgroup system is about to destroy the passed cgroup; the subsystem
-+should do any necessary cleanup and free its subsystem state
-+object. By the time this method is called, the cgroup has already been
-+unlinked from the file system and from the child list of its parent;
-+cgroup->parent is still valid. (Note - can also be called for a
-+newly-created cgroup if an error occurs after this subsystem's
-+create() method has been called for the new cgroup).
- 
- int can_attach(struct cgroup_subsys *ss, struct cgroup *cont,
- 	       struct task_struct *task)
--LL=cgroup_mutex
-+(cgroup_mutex held by caller)
- 
- Called prior to moving a task into a cgroup; if the subsystem
- returns an error, this will abort the attach operation.  If a NULL
-@@ -489,25 +494,20 @@ remain valid while the caller holds cgro
- 
- void attach(struct cgroup_subsys *ss, struct cgroup *cont,
- 	    struct cgroup *old_cont, struct task_struct *task)
--LL=cgroup_mutex
--
- 
- Called after the task has been attached to the cgroup, to allow any
- post-attachment activity that requires memory allocations or blocking.
- 
- void fork(struct cgroup_subsy *ss, struct task_struct *task)
--LL=callback_mutex, maybe read_lock(tasklist_lock)
- 
- Called when a task is forked into a cgroup. Also called during
- registration for all existing tasks.
- 
- void exit(struct cgroup_subsys *ss, struct task_struct *task)
--LL=callback_mutex
- 
- Called during task exit
- 
- int populate(struct cgroup_subsys *ss, struct cgroup *cont)
--LL=none
- 
- Called after creation of a cgroup to allow a subsystem to populate
- the cgroup directory with file entries.  The subsystem should make
-@@ -524,7 +524,7 @@ example in cpusets, no task may attach b
- up.
- 
- void bind(struct cgroup_subsys *ss, struct cgroup *root)
--LL=callback_mutex
-+(cgroup_mutex held by caller)
- 
- Called when a cgroup subsystem is rebound to a different hierarchy
- and root cgroup. Currently this will only involve movement between
+	while (count > 0) {
+		spin_lock_irqsave(&dev->buflock, flags);
+		if (!dev->out_urb_finished) {
+			spin_unlock_irqrestore(&dev->buflock, flags);
+
+			timeout = COMMAND_TIMEOUT;
+			while (timeout > 0) {
+				if (signal_pending(current)) {
+					dbg(1," %s : interrupted", __FUNCTION__);
+					retval = -EINTR;
+					goto exit;
+				}
+				mutex_unlock(&dev->mtx);
+				timeout = interruptible_sleep_on_timeout(&dev->write_wait, timeout);
+
+You can detect that the urb has not finished but the notification happens before
+you go to sleep.
+
+>  exit:
+>  
+>  	adu_debug_data(5, __FUNCTION__, urb->actual_length,
+> @@ -272,13 +293,11 @@ static int adu_open(struct inode *inode, struct file *file)
+>  		goto exit_no_device;
+>  	}
+>  
+> -	/* lock this device */
+> -	if ((retval = mutex_lock_interruptible(&dev->mtx))) {
+> +	if ((retval = mutex_lock_interruptible(&adutux_mutex))) {
+>  		dbg(2, "%s : mutex lock failed", __FUNCTION__);
+>  		goto exit_no_device;
+>  	}
+
+This is racy:
+	dev = usb_get_intfdata(interface);
+	if (!dev) {
+		retval = -ENODEV;
+		goto exit_no_device;
+	}
+
+	if ((retval = mutex_lock_interruptible(&adutux_mutex))) {
+		dbg(2, "%s : mutex lock failed", __FUNCTION__);
+		goto exit_no_device;
+	}
+
+You need to manipulate intfdata under lock, or disconnect will
+happily free the datastructures.
+
+>  
+> -	/* increment our usage count for the device */
+>  	++dev->open_count;
+>  	dbg(2,"%s : open count %d", __FUNCTION__, dev->open_count);
+>  
+> @@ -297,13 +316,14 @@ static int adu_open(struct inode *inode, struct file *file)
+>  				 le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
+>  				 adu_interrupt_in_callback, dev,
+>  				 dev->interrupt_in_endpoint->bInterval);
+> -		/* dev->interrupt_in_urb->transfer_flags |= URB_ASYNC_UNLINK; */
+>  		dev->read_urb_finished = 0;
+>  		retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
+> -		if (retval)
+> +		if (retval) {
+> +			dev->read_urb_finished = 1;
+>  			--dev->open_count;
+> +		}
+
+You should set file->private_data to NULL in the error case.
+
+[..]
+> @@ -486,10 +495,14 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
+>  				/* we wait for I/O to complete */
+>  				set_current_state(TASK_INTERRUPTIBLE);
+>  				add_wait_queue(&dev->read_wait, &wait);
+> -				if (!dev->read_urb_finished)
+> +				spin_lock_irqsave(&dev->buflock, flags);
+> +				if (!dev->read_urb_finished) {
+> +					spin_unlock_irqrestore(&dev->buflock, flags);
+>  					timeout = schedule_timeout(COMMAND_TIMEOUT);
+
+I find it a bit silly to bother with _irqsave if you call schedule_timeout() in the
+next line.
+
+	Regards
+		Oliver
