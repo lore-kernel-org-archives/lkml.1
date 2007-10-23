@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbXJWTG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbXJWTP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbXJWTG0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 15:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbXJWTGO
+	id S1752783AbXJWTP4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 15:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbXJWTPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 15:06:14 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:64567 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbXJWTGM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 15:06:12 -0400
-Date: Tue, 23 Oct 2007 21:06:08 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 1/4] x86 gart: rename iommu.h to gart.h
-Message-ID: <20071023190608.GC4360@rhun.haifa.ibm.com>
-References: <11931612933917-git-send-email-joerg.roedel@amd.com> <11931612934151-git-send-email-joerg.roedel@amd.com>
-Mime-Version: 1.0
+	Tue, 23 Oct 2007 15:15:49 -0400
+Received: from xyzzy.farnsworth.org ([65.39.95.219]:49650 "HELO farnsworth.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752068AbXJWTPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 15:15:48 -0400
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 23 Oct 2007 12:15:46 -0700
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Dale Farnsworth <dale@farnsworth.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Fix fallout from sg_page changes
+Message-ID: <20071023191546.GA15210@xyzzy.farnsworth.org>
+References: <20071023145300.GA18989@xyzzy.farnsworth.org> <20071023184448.GE14671@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11931612934151-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071023184448.GE14671@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 07:41:30PM +0200, Joerg Roedel wrote:
-
-> This patch renames the include file asm-x86/iommu.h to asm-x86/gart.h to make
-> clear to which IOMMU implementation it belongs. The patch also adds "GART" to
-> the Kconfig line.
+On Tue, Oct 23, 2007 at 08:44:48PM +0200, Jens Axboe wrote:
+> On Tue, Oct 23 2007, Dale Farnsworth wrote:
+> > 
+> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > ---
+> >  include/asm-powerpc/dma-mapping.h |   10 +++++-----
+> >  1 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> Should already be merged in Linus' current tree.
 
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+Yes, it is.  Thank you.
 
-Cheers,
-Muli
--- 
-SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
-http://www.haifa.il.ibm.com/Workshops/systor2007/
-
-Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
+-Dale
