@@ -1,80 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbXJWLum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbXJWL4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbXJWLum (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 07:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbXJWLue
+	id S1752718AbXJWL4e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 07:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXJWL40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 07:50:34 -0400
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1789 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751491AbXJWLud (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 07:50:33 -0400
-Date: Tue, 23 Oct 2007 13:50:30 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: [PATCH] I2C: add support for the PCF8575 chip
-Message-ID: <20071023135030.750e9fa4@hyperion.delvare>
-In-Reply-To: <20071022145814.84e46287.akpm@linux-foundation.org>
-References: <e2e108260710050232s1b0a9cb7u604ab7e20b61646e@mail.gmail.com>
-	<20071022145814.84e46287.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 07:56:26 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:36491 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751601AbXJWL4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 07:56:25 -0400
+Message-ID: <393140585.27414@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 23 Oct 2007 19:56:20 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] reiserfs: don't drop PG_dirty when releasing
+	sub-page-sized dirty file
+Message-ID: <20071023115620.GA5678@mail.ustc.edu.cn>
+References: <200710220822.52370.maximlevitsky@gmail.com> <200710221258.11384.maximlevitsky@gmail.com> <393051953.24752@ustc.edu.cn> <200710221421.21439.maximlevitsky@gmail.com> <393126119.26275@ustc.edu.cn> <1193134027.7406.1.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193134027.7406.1.camel@twins>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tue, Oct 23, 2007 at 12:07:07PM +0200, Peter Zijlstra wrote:
+> [ adding reiserfs devs to the CC ]
 
-On Mon, 22 Oct 2007 14:58:14 -0700, Andrew Morton wrote:
-> On Fri, 5 Oct 2007 11:32:35 +0200
-> "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
-> 
-> > From: Bart Van Assche
-> > 
-> > Add support for the PCF8575 I2C chip.
-> 
-> I'll comment on this 17-day-old patch.
-> 
-> Jean, this illustrates why explicitly steering people *away* from lkml or
-> from any other mailing list is a poor idea.  If Bart has posted an updated
-> version to the i2c list then I end up reviewing an outdated patch, and
-> probably duplicating other people's comments.
+Thank you.
 
-You're unfair. I can use the same argument the other way around: if
-Bart did not post to the wrong list in the first place, then there
-would have been no risk for you to miss any update.
+This fix is kind of crude - even when it fixed Maxim's problem, and
+survived my stress testing of a lot of patching and kernel compiling.
+I'd be glad to see better solutions.
 
-I stand on my initial affirmation that sending all patches, bug reports
-etc. to LKML when more specialized lists exist, is a bad idea. Maybe it
-makes you happy because you want to know everything that's going on in
-every area on the kernel, and are lucky enough to be able to actually
-do that and survive. But for others, it's essentially wasting their
-time (not to mention bandwidth and disk space.)
+Fengguang
+---
 
-If you are so interested about i2c patches, then I'd suggest that you
-simply subscribe to the i2c list.
+reiserfs: don't drop PG_dirty when releasing sub-page-sized dirty file
 
-> googling for 'PCF8575 Assche' indicates that he has not sent an updated
-> patch.  Perhaps he was discouraged by your quite unconstructive response.
+This is not a new problem in 2.6.23-git17.
+2.6.22/2.6.23 is buggy in the same way.
 
-Actually Bart resent his patch to the i2c list 3 days later, twice. But
-it was probably the exact same patch (it didn't mention any changes at
-least.) There's no reason why Bart would have sent an updated patch as
-he did not receive feedback at this point. I fail to see how my
-response would have had any influence in that respect.
+Reiserfs could accumulate dirty sub-page-size files until umount time.
+They cannot be synced to disk by pdflush routines or explicit `sync'
+commands.  Only `umount' can do the trick.
 
-Anyway, thanks for the review. I didn't have much time left for reviews
-these last few weeks.
+The direct cause is: the dirty page's PG_dirty is wrongly _cleared_.
+Call trace:
+	 [<ffffffff8027e920>] cancel_dirty_page+0xd0/0xf0
+	 [<ffffffff8816d470>] :reiserfs:reiserfs_cut_from_item+0x660/0x710
+	 [<ffffffff8816d791>] :reiserfs:reiserfs_do_truncate+0x271/0x530
+	 [<ffffffff8815872d>] :reiserfs:reiserfs_truncate_file+0xfd/0x3b0
+	 [<ffffffff8815d3d0>] :reiserfs:reiserfs_file_release+0x1e0/0x340
+	 [<ffffffff802a187c>] __fput+0xcc/0x1b0
+	 [<ffffffff802a1ba6>] fput+0x16/0x20
+	 [<ffffffff8029e676>] filp_close+0x56/0x90
+	 [<ffffffff8029fe0d>] sys_close+0xad/0x110
+	 [<ffffffff8020c41e>] system_call+0x7e/0x83
 
-Still... I am worried that you, Andrew Morton, co-top-maintainer of the
-Linux 2.6 kernel, one of most brilliant kernel developers we have,
-waste your time doing the initial review of a random i2c patch that
-about anyone remotely involved in kernel development would have been
-able to review. There's something wrong here.
+Fix the bug by removing the cancel_dirty_page() call. Tests show that
+it causes no bad behaviors on various write sizes.
 
--- 
-Jean Delvare
+
+=== for the patient ===
+Here are more detailed demonstrations of the problem.
+
+1) the page has both PG_dirty(D)/PAGECACHE_TAG_DIRTY(d) after being written to;
+   and then only PAGECACHE_TAG_DIRTY(d) remains after the file is closed.
+
+------------------------------ screen 0 ------------------------------
+[T0] root /home/wfg# cat > /test/tiny
+[T1] hi
+[T2] root /home/wfg#
+
+------------------------------ screen 1 ------------------------------
+[T1] root /home/wfg# echo /test/tiny > /proc/filecache
+[T1] root /home/wfg# cat /proc/filecache
+     # file /test/tiny
+     # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
+     # idx   len     state   refcnt
+     0       1       ___UD__Bd_      2
+[T2] root /home/wfg# cat /proc/filecache
+     # file /test/tiny
+     # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback O:owner B:buffer d:dirty w:writeback
+     # idx   len     state   refcnt
+     0       1       ___U___Bd_      2
+
+2) note the non-zero 'cancelled_write_bytes' after /tmp/hi is copied.
+
+------------------------------ screen 0 ------------------------------
+[T0] root /home/wfg# echo hi > /tmp/hi
+[T1] root /home/wfg# cp /tmp/hi /dev/stdin /test
+[T2] hi
+[T3] root /home/wfg#
+
+------------------------------ screen 1 ------------------------------
+[T1] root /proc/4397# cd /proc/`pidof cp`
+[T1] root /proc/4713# cat io
+     rchar: 8396
+     wchar: 3
+     syscr: 20
+     syscw: 1
+     read_bytes: 0
+     write_bytes: 20480
+     cancelled_write_bytes: 4096
+[T2] root /proc/4713# cat io
+     rchar: 8399
+     wchar: 6
+     syscr: 21
+     syscw: 2
+     read_bytes: 0
+     write_bytes: 24576
+     cancelled_write_bytes: 4096
+
+//Question: the 'write_bytes' is a bit more than expected ;-)
+
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>                                                                           
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/reiserfs/stree.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- linux-2.6.24-git17.orig/fs/reiserfs/stree.c
++++ linux-2.6.24-git17/fs/reiserfs/stree.c
+@@ -1458,9 +1458,6 @@ static void unmap_buffers(struct page *p
+ 				}
+ 				bh = next;
+ 			} while (bh != head);
+-			if (PAGE_SIZE == bh->b_size) {
+-				cancel_dirty_page(page, PAGE_CACHE_SIZE);
+-			}
+ 		}
+ 	}
+ }
+
