@@ -1,80 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbXJWR3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXJWRdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbXJWR3I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXJWR2z
+	id S1753909AbXJWRdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXJWRdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:28:55 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:54313 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752199AbXJWR2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:28:54 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 3/3] faster workaround
-Date: Tue, 23 Oct 2007 19:28:49 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Soeren Sonnenburg <kernel@nn7.de>
-References: <200710081709.18253.bs@q-leap.de> <470E3A35.4000104@garzik.org> <471DABE1.40301@gmail.com>
-In-Reply-To: <471DABE1.40301@gmail.com>
+	Tue, 23 Oct 2007 13:33:07 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:33268 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbXJWRdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 13:33:06 -0400
+Date: Tue, 23 Oct 2007 18:32:59 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty_ioctl: Fix the baud_table check in encode_baud_rate
+In-Reply-To: <471543C3.3050502@tiscali.nl>
+Message-ID: <Pine.LNX.4.64N.0710231828180.8693@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0710161857280.22596@blysk.ds.pg.gda.pl>
+ <471543C3.3050502@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710231928.50207.bs@q-leap.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tejun,
+On Wed, 17 Oct 2007, Roel Kluin wrote:
 
-On Tuesday 23 October 2007 10:08:01 Tejun Heo wrote:
-> Jeff Garzik wrote:
-> > Alan Cox wrote:
-> >>> 2) Once we identified, over time, the set of drives affected by this
-> >>> 3112 quirk (aka drives that didn't fully comply to SATA spec), the
-> >>> debugging of corruption cases largely shifted to the standard
-> >>> routine: update the BIOS, replace the
-> >>> cables/RAM/power/mainboard/slot/etc. to be certain of problem location.
-> >>
-> >> Except for the continued series of later SI + Nvidia chipset (mostly)
-> >> pattern which seems unanswered but also being later chips I assume
-> >> unrelated to this problem.
-> >
-> > The SIL_FLAG_MOD15WRITE flag is set in sil_port_info[] is set according
-> > to the best info we have from SiI, which indicates that 3114 and 3512 do
-> > not have the same problem as the 3112.
->
-> I don't think this data corruption problem w/ sil3114 is related to
-> m15w.  m15w workaround slows down things quite a bit and is likely to
-> hide problems on PCI bus side.  There are reports of data corruption
-> with 3114 on nvidia (most common), via and now amd chipsets.  There's
-> one on intel too but IIRC wasn't too definite.
->
-> According to a user, freebsd didn't have data corruption problem on the
-> same hardware.  I copied PCI FIFO setup code (ours is broken BTW) but it
-> didn't fix the problem.
->
-> I'll try to reproduce the problem locally and hunt it down.
+> 		if (oclose >= abs(obaud - baud_table[i])) {
+> 
+> should work as well
 
-thanks for your help and please tell me, if I can do anything. We have this 
-problem on a production system, but the node in question will be rebooted in 
-Thursday (ups needs to be replaced). If there are some tests/reboots/whatever 
-I could do, it would be best to do it shortly after the scheduled reboot.
+ Hmm, I am not sure if it is clearer or produces better code, but send a 
+patch -- I will not object.
 
-Actually I now would have attempted to port your mod15 patch 
-(http://home-tj.org/wiki/index.php/Sil_m15w#Patches) to 2.6.23, hoping it 
-would solve Soerens problem and ours as well (ours magically already went 
-away using the mod15 fix). Well, maybe I port it anyway to 2.6.23 to see if 
-it also solves our problem.
-
-
-Thanks,
-Bernd
-
-
--- 
-Bernd Schubert
-Q-Leap Networks GmbH
+  Maciej
