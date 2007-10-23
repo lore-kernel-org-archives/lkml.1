@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbXJWHSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXJWHTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbXJWHSf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 03:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXJWHS1
+	id S1754533AbXJWHTD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 03:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXJWHSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 03:18:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38337
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752563AbXJWHS1 (ORCPT
+	Tue, 23 Oct 2007 03:18:53 -0400
+Received: from agave.telenet-ops.be ([195.130.137.77]:44794 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbXJWHSu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 03:18:27 -0400
-Date: Tue, 23 Oct 2007 00:18:50 -0700 (PDT)
-Message-Id: <20071023.001850.130236174.davem@davemloft.net>
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: IDE crash...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071023070932.GB25962@kernel.dk>
-References: <20071022.235010.59469063.davem@davemloft.net>
-	<20071023070252.GA25962@kernel.dk>
-	<20071023070932.GB25962@kernel.dk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 03:18:50 -0400
+Date: Tue, 23 Oct 2007 09:18:42 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0710230907370.7105@anakin>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+ <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+ <Pine.LNX.4.64.0710222137520.7105@anakin>
+ <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org>
+ <20071022211617.31f5c63d@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
+ <20071022224343.4abf3c96@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Date: Tue, 23 Oct 2007 09:09:33 +0200
-
-> Eh this wont work, it's the wrong entry... Here's a temporary
-> work-around.
+On Mon, 22 Oct 2007, Linus Torvalds wrote:
+> On Mon, 22 Oct 2007, Alan Cox wrote:
+> > For structures, not array elements or stack objects. Does gcc now get
+> > aligned correct as an attribute on a stack object ?
 > 
-> diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-> index c89f0d3..108202b 100644
-> --- a/drivers/ide/ide-io.c
-> +++ b/drivers/ide/ide-io.c
-> @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
->  		return;
->  
->  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
-> +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
->  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
->  	} else {
->  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+> I think m68k stack layout still guarantees 4-byte-alignment, no?
 
-That's the exact patch I'm about to boot test :-)
+The stack pointer must be even (i.e. 2 byte-alignment).
+But it looks like current gcc always allocates multiples of 4 bytes on
+the stack, probably for performance reasons.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
