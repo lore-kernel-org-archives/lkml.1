@@ -1,92 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbXJWAuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbXJWA70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751635AbXJWAuF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 20:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXJWAtx
+	id S1752882AbXJWA70 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 20:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXJWA7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 20:49:53 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:24608 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbXJWAtw (ORCPT
+	Mon, 22 Oct 2007 20:59:19 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:45060 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbXJWA7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 20:49:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:content-type:content-transfer-encoding;
-	b=OI5JA5NwvUB8NYMx1ZEX8xyi1OJSCDIUjAXosuVQnnS5VLGu618Gaf9zX3gDaKwyE
-	p/TiArQRJ8eHv6qDVZhgA==
-Message-ID: <471D4523.4040509@google.com>
-Date: Mon, 22 Oct 2007 17:49:39 -0700
-From: Paul Menage <menage@google.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 22 Oct 2007 20:59:18 -0400
+Message-ID: <471D4763.60604@tiscali.nl>
+Date: Tue, 23 Oct 2007 02:59:15 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] CFS CGroup: Report usage
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] several returns before unlocking in lmc_ioctl
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Report CPU usage in CFS Cgroup directories
-
-Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
-milliseconds for that cgroup's tasks
-
-This replaces the "example CPU Accounting CGroup subsystem" that
-was merged into mainline last week.
-
-Signed-off-by: Paul Menage <menage@google.com>
-
+    Several returns before unlocking in lmc_ioctl
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
- kernel/sched.c |   32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
-
-Index: container-2.6.23-mm1/kernel/sched.c
-===================================================================
---- container-2.6.23-mm1.orig/kernel/sched.c
-+++ container-2.6.23-mm1/kernel/sched.c
-@@ -7005,15 +7005,37 @@ static u64 cpu_shares_read_uint(struct c
- 	return (u64) tg->shares;
- }
+diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
+index 5ea8772..af7b3e4 100644
+--- a/drivers/net/wan/lmc/lmc_main.c
++++ b/drivers/net/wan/lmc/lmc_main.c
+@@ -142,9 +142,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+          * To date internally, just copy this out to the user.
+          */
+     case LMCIOCGINFO: /*fold01*/
+-        if (copy_to_user(ifr->ifr_data, &sc->ictl, sizeof (lmc_ctl_t)))
+-            return -EFAULT;
+-        ret = 0;
++	if (copy_to_user(ifr->ifr_data, &sc->ictl, sizeof(lmc_ctl_t)))
++		ret = -EFAULT;
++	else
++		ret = 0;
+         break;
  
--static struct cftype cpu_shares = {
--	.name = "shares",
--	.read_uint = cpu_shares_read_uint,
--	.write_uint = cpu_shares_write_uint,
-+static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
-+{
-+	struct task_group *tg = cgroup_tg(cgrp);
-+	int i;
-+	u64 res = 0;
-+	for_each_possible_cpu(i) {
-+		unsigned long flags;
-+		spin_lock_irqsave(&tg->cfs_rq[i]->rq->lock, flags);
-+		res += tg->se[i]->sum_exec_runtime;
-+		spin_unlock_irqrestore(&tg->cfs_rq[i]->rq->lock, flags);
+     case LMCIOCSINFO: /*fold01*/
+@@ -159,8 +160,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+             break;
+         }
+ 
+-        if (copy_from_user(&ctl, ifr->ifr_data, sizeof (lmc_ctl_t)))
+-            return -EFAULT;
++	if (copy_from_user(&ctl, ifr->ifr_data, sizeof(lmc_ctl_t))) {
++		ret = -EFAULT;
++		break;
 +	}
-+	/* Convert from ns to ms */
-+	do_div(res, 1000000);
-+	return res;
-+}
-+
-+static struct cftype cpu_files[] = {
-+	{
-+		.name = "shares",
-+		.read_uint = cpu_shares_read_uint,
-+		.write_uint = cpu_shares_write_uint,
-+	},
-+	{
-+		.name = "usage",
-+		.read_uint = cpu_usage_read,
-+	},
- };
  
- static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
- {
--	return cgroup_add_file(cont, ss, &cpu_shares);
-+	return cgroup_add_files(cont, ss, cpu_files, ARRAY_SIZE(cpu_files));
+         sc->lmc_media->set_status (sc, &ctl);
+ 
+@@ -190,8 +193,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+ 		break;
+ 	    }
+ 
+-	    if (copy_from_user(&new_type, ifr->ifr_data, sizeof(u_int16_t)))
+-                return -EFAULT;
++	    if (copy_from_user(&new_type, ifr->ifr_data, sizeof(u_int16_t))) {
++		ret = -EFAULT;
++		break;
++	    }
+ 
+             
+ 	    if (new_type == old_type)
+@@ -229,9 +234,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+         sc->lmc_xinfo.Magic1 = 0xDEADBEEF;
+ 
+         if (copy_to_user(ifr->ifr_data, &sc->lmc_xinfo,
+-                         sizeof (struct lmc_xinfo)))
+-            return -EFAULT;
+-        ret = 0;
++					sizeof(struct lmc_xinfo))) {
++		ret = -EFAULT;
++	else
++		ret = 0;
+ 
+         break;
+ 
+@@ -262,9 +268,9 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+ 
+         if (copy_to_user(ifr->ifr_data, &sc->stats,
+                          sizeof (struct lmc_statistics)))
+-            return -EFAULT;
+-
+-        ret = 0;
++		ret = -EFAULT;
++	else
++		ret = 0;
+         break;
+ 
+     case LMCIOCCLEARLMCSTATS: /*fold01*/
+@@ -292,8 +298,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+             break;
+         }
+ 
+-        if (copy_from_user(&ctl, ifr->ifr_data, sizeof (lmc_ctl_t)))
+-            return -EFAULT;
++	if (copy_from_user(&ctl, ifr->ifr_data, sizeof(lmc_ctl_t))) {
++		ret = -EFAULT;
++		break;
++	}
+         sc->lmc_media->set_circuit_type(sc, ctl.circuit_type);
+         sc->ictl.circuit_type = ctl.circuit_type;
+         ret = 0;
+@@ -318,12 +326,15 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+ 
+ #ifdef DEBUG
+     case LMCIOCDUMPEVENTLOG:
+-        if (copy_to_user(ifr->ifr_data, &lmcEventLogIndex, sizeof (u32)))
+-            return -EFAULT;
++	if (copy_to_user(ifr->ifr_data, &lmcEventLogIndex, sizeof(u32))) {
++		ret = -EFAULT;
++		break;
++	}
+         if (copy_to_user(ifr->ifr_data + sizeof (u32), lmcEventLogBuf, sizeof (lmcEventLogBuf)))
+-            return -EFAULT;
++		ret = -EFAULT;
++	else
++		ret = 0;
+ 
+-        ret = 0;
+         break;
+ #endif /* end ifdef _DBG_EVENTLOG */
+     case LMCIOCT1CONTROL: /*fold01*/
+@@ -346,8 +357,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+              */
+             netif_stop_queue(dev);
+ 
+-            if (copy_from_user(&xc, ifr->ifr_data, sizeof (struct lmc_xilinx_control)))
+-                return -EFAULT;
++	if (copy_from_user(&xc, ifr->ifr_data, sizeof(struct lmc_xilinx_control))) {
++		ret = -EFAULT;
++		break;
++	}
+             switch(xc.command){
+             case lmc_xilinx_reset: /*fold02*/
+                 {
+@@ -618,8 +631,8 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
+     }
+ 
+     spin_unlock_irqrestore(&sc->lmc_lock, flags); /*fold01*/
+-
+-    lmc_trace(dev, "lmc_ioctl out");
++    if (ret >= 0)
++	lmc_trace(dev, "lmc_ioctl out");
+ 
+     return ret;
  }
- 
- struct cgroup_subsys cpu_cgroup_subsys = {
