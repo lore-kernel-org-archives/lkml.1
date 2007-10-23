@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbXJWP6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbXJWQCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbXJWP6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 11:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXJWP57
+	id S1752519AbXJWQCd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 12:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbXJWQCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 11:57:59 -0400
-Received: from ns2.mountaincable.net ([24.215.0.12]:37491 "EHLO
-	ns2.mountaincable.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752732AbXJWP57 (ORCPT
+	Tue, 23 Oct 2007 12:02:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39891 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751968AbXJWQCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 11:57:59 -0400
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-From: Ryan Lortie <desrt@desrt.ca>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Zephaniah E. Hull" <warp@aehallh.com>, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <d120d5000710230621j3913384cn37dbab1a764de31c@mail.gmail.com>
-References: <20070609084800.GR6362@aehallh.com>
-	 <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com>
-	 <200706120135.06428.dtor@insightbb.com> <20070612054031.GY6362@aehallh.com>
-	 <20070702152044.GA24665@suse.cz> <20070703164555.GA20370@aehallh.com>
-	 <1191035147.7025.28.camel@moonpix.desrt.ca>
-	 <d120d5000710230621j3913384cn37dbab1a764de31c@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 11:57:38 -0400
-Message-Id: <1193155059.15426.15.camel@moonpix.desrt.ca>
+	Tue, 23 Oct 2007 12:02:24 -0400
+Date: Tue, 23 Oct 2007 09:00:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       linux-kernel@vger.kernel.org, raven@themaw.net
+Subject: Re: futex strangeness in 2.6.23-mm1/UML
+Message-Id: <20071023090039.94e1717a.akpm@linux-foundation.org>
+In-Reply-To: <20071023095208.06c62f59@bree.surriel.com>
+References: <E1Ik15P-0001wg-00@dorka.pomaz.szeredi.hu>
+	<20071022145321.195d929b@bree.surriel.com>
+	<E1Ik4Ch-000273-00@dorka.pomaz.szeredi.hu>
+	<20071022172926.03ca122a@bree.surriel.com>
+	<20071022200742.6f3acbb2@bree.surriel.com>
+	<20071022171624.0c00f8da.akpm@linux-foundation.org>
+	<E1IkEJP-0004Qp-00@dorka.pomaz.szeredi.hu>
+	<471DB710.1060603@openvz.org>
+	<20071023095208.06c62f59@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-23-10 at 09:21 -0400, Dmitry Torokhov wrote:
-> Priority/filter idea is different matter. I don't think it is a giood
-> solution. There will always be an "arms race", new applications would
-> like to get in front of the queue all the time and it will be hard to
-> manage. X should just keep console open in raw mode and simply ignore
-> all events coming from it while using evdev driver. I understand that
-> X's hotplug support is getting there so you should be able to switch
-> to pure evdev setup pretty easy.
+On Tue, 23 Oct 2007 09:52:08 -0400 Rik van Riel <riel@redhat.com> wrote:
 
-The only reason that I don't like the numeric priority system is that I
-believe it is arbitrary and a bit kludgy.  I don't think an arms race
-will be a problem.  We don't have a lot of closed source applications
-running as root on Linux and open source projects either choose sane
-values or get patched (by users, distributions, etc) or don't get used.
-
-I do believe there needs to be some concept of filtering events in such
-a way that they reach some clients but not others -- that's half of the
-purpose of this thread.  rfkill wants to be able to see keypresses while
-they are kept away from X.  I'd be open to another way of handling this
-but I think any other way will necessarily be more complex to use.
-
-As for X using evdev, it still puts you in a position of two pieces of
-software being required to know what events have been (conceptually)
-"filtered" by various filters running on the system.  ie: the filter
-itself needs to know, and also X needs to know so that it can remove
-those key events from normal delivery.
-
-So while I agree that the priority numbering is a bit kludgy (and have
-no particular affinity to it) I do think that some prioritising system
-is required and that pointing out the 'arms race' isn't a good reason to
-write the whole idea off.  I'd gladly accept another method.
-
-Note, of course, that the priorities mean nothing unless you actively
-switch on filtering.
-
-> >
-> >  - how should we decide what gets what priority level?
-> >
+> On Tue, 23 Oct 2007 12:55:44 +0400
+> Pavel Emelyanov <xemul@openvz.org> wrote:
 > 
-> Exactly. You can't predict all future uses. There will always be
-> someone wanting to get in front of the line.
+> > I look at the 2.6.23-mm1 and see that there's one hunk lost. This
+> > is the one Oleg re-sent some days ago (the mail thread subject was
+> > 2.6.23-mm1 thread exit_group issue). Here it is (sent 13 oct 2007):
+> > 
+> > --- kernel/fork.c~	2007-10-13 15:41:35.000000000 +0400
+> > +++ kernel/fork.c	2007-10-13 15:41:41.000000000 +0400
+> > @@ -1443,6 +1443,9 @@ long do_fork(unsigned long clone_flags,
+> >  			task_pid_nr_ns(p, current->nsproxy->pid_ns) :
+> >  				task_pid_vnr(p);
+> >  
+> > +		if (clone_flags & CLONE_PARENT_SETTID)
+> > +			put_user(nr, parent_tidptr);
+> > +
+> >  		if (clone_flags & CLONE_VFORK) {
+> >  			p->vfork_done = &vfork;
+> >  			init_completion(&vfork);
+> > 
+> > Please, try with this patch.
+> 
+> The patch above fixes the issue for me.
+> 
+> Autofs works again as expected.
 
-Two proposals here:
-
-1) Modules like rfkill could have parameters to set priority level.
-Presumably, programs hooking in via evdev could also have their priority
-configurable.  Leave it up to distributions (or users installing their
-own software) to make sure everything is sane.
-
-2) For matters like this, an unsigned int is a large place.  We could
-easily use numbers like 10, 100, 1000 while still leaving plenty of room
-between them and possibility for expansion on either side.
-
-> Input core now has prper locking. You may take device's event_lock to
-> stop event propagation.
-
-noted.
-
-Thanks for the review
-
-Cheers
-
+argh.  Sorry guys, I'd completely forgotten that that bug was present in
+-mm1 and I didn't upload the fix into hot-fixes/.  Bad me.
