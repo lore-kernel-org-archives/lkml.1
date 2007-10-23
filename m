@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbXJWC2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbXJWCeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbXJWC2z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 22:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXJWC2p
+	id S1753065AbXJWCeR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 22:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXJWCeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 22:28:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39459 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbXJWC2o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 22:28:44 -0400
-Date: Mon, 22 Oct 2007 19:28:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>,
-       virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] lguest: paravirt boot code
-In-Reply-To: <200710221237.14542.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.0.999.0710221927131.30120@woody.linux-foundation.org>
-References: <200710221237.14542.rusty@rustcorp.com.au>
+	Mon, 22 Oct 2007 22:34:04 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36940 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416AbXJWCeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 22:34:02 -0400
+Date: Tue, 23 Oct 2007 08:03:55 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
+Message-ID: <20071023023355.GA7829@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20071022065352.GA6489@in.ibm.com> <20071022135758.GA17051@lst.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071022135758.GA17051@lst.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 22 Oct 2007, Rusty Russell wrote:
+On Mon, Oct 22, 2007 at 03:57:58PM +0200, Christoph Hellwig wrote:
 > 
-> 	First attempt at git, so please pull carefully.  I've just put the
-> three i386 boot changes in the repo for the moment.  If this works I'll pile 
-> on the 44 lguest patches.
+> Any reason we've got this patchset posted by three people now? :)
 
-Well, it looked ok, but I had already merged the same patches through 
-Andrew, so when I pulled, I had no differences. So I ended up unpulling, 
-but not because there was anything *wrong* with your tree, just because 
-the pull didn't give me anything but a slightly more complex history ;)
+Two reasons actually !
 
-		Linus
+- The set of patches posted by Jan last was on 2.6.23-rc8-mm1. So I
+thought let me help Andrew a bit by making them available on latest
+-mm :) And I didn't know that these were already under consideration
+by Andrew.
+
+- The set of patches posted by Jan didn't even pass compile test for me.
+So I made sure that the patches compiled and worked on x86, x86_64 and powerpc.
+
+Regards,
+Bharata.
