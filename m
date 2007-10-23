@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbXJWCeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbXJWCei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753065AbXJWCeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Oct 2007 22:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbXJWCeE
+	id S1753762AbXJWCei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Oct 2007 22:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXJWCea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Oct 2007 22:34:04 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36940 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbXJWCeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Oct 2007 22:34:02 -0400
-Date: Tue, 23 Oct 2007 08:03:55 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
-Message-ID: <20071023023355.GA7829@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20071022065352.GA6489@in.ibm.com> <20071022135758.GA17051@lst.de>
-MIME-Version: 1.0
+	Mon, 22 Oct 2007 22:34:30 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:44374 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbXJWCe2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Oct 2007 22:34:28 -0400
+Date: Tue, 23 Oct 2007 08:16:54 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] CFS CGroup: Code cleanup
+Message-ID: <20071023024654.GD3324@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <471D4510.9030200@google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071022135758.GA17051@lst.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <471D4510.9030200@google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22, 2007 at 03:57:58PM +0200, Christoph Hellwig wrote:
+On Mon, Oct 22, 2007 at 05:49:20PM -0700, Paul Menage wrote:
+> Clean up some CFS CGroup code
 > 
-> Any reason we've got this patchset posted by three people now? :)
+> - replace "cont" with "cgrp" in a few places in the CFS cgroup code, 
 
-Two reasons actually !
+This change looks good to me. Thanks for doing it.
 
-- The set of patches posted by Jan last was on 2.6.23-rc8-mm1. So I
-thought let me help Andrew a bit by making them available on latest
--mm :) And I didn't know that these were already under consideration
-by Andrew.
+> - use write_uint rather than write for cpu.shares write function
 
-- The set of patches posted by Jan didn't even pass compile test for me.
-So I made sure that the patches compiled and worked on x86, x86_64 and powerpc.
-
+Minor nit: From pov of making this patch series git bisect safe, shouldn't we 
+be registering a write_uint() handler in this patch as well?
+ 
+-- 
 Regards,
-Bharata.
+vatsa
