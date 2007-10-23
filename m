@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbXJWFAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXJWFBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbXJWFAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 01:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXJWFAh
+	id S1753280AbXJWFBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 01:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXJWFBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 01:00:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58311 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbXJWFAg (ORCPT
+	Tue, 23 Oct 2007 01:01:11 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:60197 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbXJWFBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 01:00:36 -0400
-Date: Mon, 22 Oct 2007 21:57:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: James Morris <jmorris@namei.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LSM conversion to static interface [revert patch]
-Message-ID: <20071022215739.121e5ea3@laptopd505.fenrus.org>
-In-Reply-To: <Xine.LNX.4.64.0710231450450.31564@us.intercode.com.au>
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com>
-	<alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
-	<200710192226.53233.agruen@suse.de>
-	<alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
-	<Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
-	<20071022210956.31f7bbcf@laptopd505.fenrus.org>
-	<Xine.LNX.4.64.0710231450450.31564@us.intercode.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Tue, 23 Oct 2007 01:01:09 -0400
+To: jens.axboe@oracle.com
+Cc: torvalds@linux-foundation.org, anil.s.keshavamurthy@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] intel-iommu: fix sg_page()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <20071023135926A.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 23 Oct 2007 13:59:26 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 14:56:52 +1000 (EST)
-James Morris <jmorris@namei.org> wrote:
+drivers/pci/intel-iommu.c: In function 'intel_unmap_sg':
+drivers/pci/intel-iommu.c:1987: error: 'struct scatterlist' has no member named 'page'
+drivers/pci/intel-iommu.c: In function 'intel_nontranslate_map_sg':
+drivers/pci/intel-iommu.c:2013: error: 'struct scatterlist' has no member named 'page'
+drivers/pci/intel-iommu.c:2014: error: 'struct scatterlist' has no member named 'page'
+drivers/pci/intel-iommu.c: In function 'intel_map_sg':
+drivers/pci/intel-iommu.c:2044: error: 'struct scatterlist' has no member named 'page'
+drivers/pci/intel-iommu.c:2068: error: 'struct scatterlist' has no member named 'page'
 
-> On Mon, 22 Oct 2007, Arjan van de Ven wrote:
-> 
-> > @@ -4895,6 +4908,7 @@ static struct security_operations selinu
-> >  	.sem_semop =			selinux_sem_semop,
-> >  
-> >  	.register_security =
-> > selinux_register_security,
-> > +	.unregister_security =
-> > selinux_unregister_security, 
-> >  	.d_instantiate =                selinux_d_instantiate,
-> 
-> You also need to consider whether to allow capabilities to be built
-> as an unloadable module.  If not, then we don't need this hook added
-> back into SELinux.  Otherwise, if it is desired, you also need to
-> reinstate capability_exit and general modular bits for
-> security/capability.c.
-> 
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/pci/intel-iommu.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-this just allows 3d party replacements of capability like functions;
-there is no need/point to have the existing capability back as modular
-to be honest.
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index b3d7031..0f6e528 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1962,7 +1962,6 @@ static void intel_free_coherent(struct device *hwdev, size_t size,
+ 	free_pages((unsigned long)vaddr, order);
+ }
+ 
+-#define SG_ENT_VIRT_ADDRESS(sg)	(page_address((sg)->page) + (sg)->offset)
+ static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
+ 	int nelems, int dir)
+ {
+@@ -1984,7 +1983,7 @@ static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
+ 	if (!iova)
+ 		return;
+ 	for_each_sg(sglist, sg, nelems, i) {
+-		addr = SG_ENT_VIRT_ADDRESS(sg);
++		addr = sg_virt(sg);
+ 		size += aligned_size((u64)addr, sg->length);
+ 	}
+ 
+@@ -2010,8 +2009,8 @@ static int intel_nontranslate_map_sg(struct device *hddev,
+ 	struct scatterlist *sg;
+ 
+ 	for_each_sg(sglist, sg, nelems, i) {
+-		BUG_ON(!sg->page);
+-		sg->dma_address = virt_to_bus(SG_ENT_VIRT_ADDRESS(sg));
++		BUG_ON(!sg_page(sg));
++		sg->dma_address = virt_to_bus(sg_virt(sg));
+ 		sg->dma_length = sg->length;
+ 	}
+ 	return nelems;
+@@ -2041,7 +2040,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
+ 		return 0;
+ 
+ 	for_each_sg(sglist, sg, nelems, i) {
+-		addr = SG_ENT_VIRT_ADDRESS(sg);
++		addr = sg_virt(sg);
+ 		addr = (void *)virt_to_phys(addr);
+ 		size += aligned_size((u64)addr, sg->length);
+ 	}
+@@ -2065,7 +2064,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
+ 	start_addr = iova->pfn_lo << PAGE_SHIFT_4K;
+ 	offset = 0;
+ 	for_each_sg(sglist, sg, nelems, i) {
+-		addr = SG_ENT_VIRT_ADDRESS(sg);
++		addr = sg_virt(sg);
+ 		addr = (void *)virt_to_phys(addr);
+ 		size = aligned_size((u64)addr, sg->length);
+ 		ret = domain_page_mapping(domain, start_addr + offset,
+-- 
+1.5.2.4
+
