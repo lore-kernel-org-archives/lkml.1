@@ -1,160 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbXJWJiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXJWJnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbXJWJiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 05:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXJWJiO
+	id S1752448AbXJWJnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 05:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXJWJnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 05:38:14 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:55393 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbXJWJiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 05:38:13 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] USB: FIx locks and urb->status in adutux
-Date: Tue, 23 Oct 2007 11:38:37 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pete Zaitcev <zaitcev@redhat.com>, greg@kroah.com,
-       linux-kernel@vger.kernel.org, vitalivanov@gmail.com, netwiz@crc.id.au
-References: <20071022203447.db6d7950.zaitcev@redhat.com>
-In-Reply-To: <20071022203447.db6d7950.zaitcev@redhat.com>
+	Tue, 23 Oct 2007 05:43:10 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26807 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbXJWJnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 05:43:08 -0400
+Date: Tue, 23 Oct 2007 11:41:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071023094142.GD5059@kernel.dk>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <Pine.LNX.4.64.0710222137520.7105@anakin> <alpine.LFD.0.999.0710221248120.30120@woody.linux-foundation.org> <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710231138.38266.oliver@neukum.org>
+In-Reply-To: <471DBEF4.4030303@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 23 Oktober 2007 schrieb Pete Zaitcev:
-> Two main issues fixed here are:
->  - An improper use of in-struct lock to protect an open count
->  - Use of urb status for -EINPROGRESS
+On Tue, Oct 23 2007, Boaz Harrosh wrote:
+> On Mon, Oct 22 2007 at 23:47 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > On Mon, 22 Oct 2007, Alan Cox wrote:
+> > 
+> >> For structures, not array elements or stack objects. Does gcc now get
+> >> aligned correct as an attribute on a stack object ?
+> > 
+> > I think m68k stack layout still guarantees 4-byte-alignment, no?
+> > 
+> >> Still doesn't answer the rather more important question - why not just
+> >> stick a NULL on the end instead of all the nutty hacks ?
+> > 
+> > You still do need one bit for the discontiguous case, so it's not like you 
+> > can avoid the hacks anyway (unless you just blow up the structure 
+> > entirely) and make it a separate member). So once you have that 
+> > bit+pointer, using a separate NULL entry isn't exactly prettier. 
+> > 
+> > Especially as we actally want to see the difference between 
+> > "end-of-allocation" and "not yet filled in", so you shouldn't use NULL 
+> > anyway, you should probably use something like "all-ones".
+> > 
+> > 			Linus
+> > -
+> 
+> Every one is so hysterical about this sg-chaining problem. And massive
+> patches produced, that when a simple none intrusive solution is proposed
+> it is totally ignored because every one thinks, "I can not be that stupid".
+> Well Einstein said: "Simplicity is the ultimate sophistication". So no one
+> need to feel bad.
 
-> +	/* XXX Anchor these instead */
-> +	spin_lock_irqsave(&dev->buflock, flags);
-> +	if (!dev->read_urb_finished) {
-> +		spin_unlock_irqrestore(&dev->buflock, flags);
-> +		usb_kill_urb(dev->interrupt_in_urb);
-> +	} else
-> +		spin_unlock_irqrestore(&dev->buflock, flags);
-> +
-> +	spin_lock_irqsave(&dev->buflock, flags);
-> +	if (!dev->out_urb_finished) {
-> +		spin_unlock_irqrestore(&dev->buflock, flags);
-> +		usb_kill_urb(dev->interrupt_out_urb);
-> +	} else
-> +		spin_unlock_irqrestore(&dev->buflock, flags);
+It's all about the end goal - having maintainable and resilient code.
+And I think the sg code will be better once we get past the next day or
+so, and it'll be more robust. That is what matters to me, not the
+simplicity of the patch itself.
 
-Why bother? Simply call usb_kill_urb() unconditionally.
-  
->  exit:
-> +	mutex_unlock(&dev->mtx);
->  	dbg(2," %s : leave", __FUNCTION__);
->  }
->  
-> @@ -162,8 +182,6 @@ static void adu_delete(struct adu_device *dev)
->  {
->  	dbg(2, "%s enter", __FUNCTION__);
->  
-> -	adu_abort_transfers(dev);
-> -
->  	/* free data structures */
->  	usb_free_urb(dev->interrupt_in_urb);
->  	usb_free_urb(dev->interrupt_out_urb);
-> @@ -239,7 +257,10 @@ static void adu_interrupt_out_callback(struct urb *urb)
->  		goto exit;
->  	}
->  
-> +	spin_lock(&dev->buflock);
-> +	dev->out_urb_finished = 1;
->  	wake_up_interruptible(&dev->write_wait);
-> +	spin_unlock(&dev->buflock);
+-- 
+Jens Axboe
 
-This leaves a race here:
-
-	while (count > 0) {
-		spin_lock_irqsave(&dev->buflock, flags);
-		if (!dev->out_urb_finished) {
-			spin_unlock_irqrestore(&dev->buflock, flags);
-
-			timeout = COMMAND_TIMEOUT;
-			while (timeout > 0) {
-				if (signal_pending(current)) {
-					dbg(1," %s : interrupted", __FUNCTION__);
-					retval = -EINTR;
-					goto exit;
-				}
-				mutex_unlock(&dev->mtx);
-				timeout = interruptible_sleep_on_timeout(&dev->write_wait, timeout);
-
-You can detect that the urb has not finished but the notification happens before
-you go to sleep.
-
->  exit:
->  
->  	adu_debug_data(5, __FUNCTION__, urb->actual_length,
-> @@ -272,13 +293,11 @@ static int adu_open(struct inode *inode, struct file *file)
->  		goto exit_no_device;
->  	}
->  
-> -	/* lock this device */
-> -	if ((retval = mutex_lock_interruptible(&dev->mtx))) {
-> +	if ((retval = mutex_lock_interruptible(&adutux_mutex))) {
->  		dbg(2, "%s : mutex lock failed", __FUNCTION__);
->  		goto exit_no_device;
->  	}
-
-This is racy:
-	dev = usb_get_intfdata(interface);
-	if (!dev) {
-		retval = -ENODEV;
-		goto exit_no_device;
-	}
-
-	if ((retval = mutex_lock_interruptible(&adutux_mutex))) {
-		dbg(2, "%s : mutex lock failed", __FUNCTION__);
-		goto exit_no_device;
-	}
-
-You need to manipulate intfdata under lock, or disconnect will
-happily free the datastructures.
-
->  
-> -	/* increment our usage count for the device */
->  	++dev->open_count;
->  	dbg(2,"%s : open count %d", __FUNCTION__, dev->open_count);
->  
-> @@ -297,13 +316,14 @@ static int adu_open(struct inode *inode, struct file *file)
->  				 le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
->  				 adu_interrupt_in_callback, dev,
->  				 dev->interrupt_in_endpoint->bInterval);
-> -		/* dev->interrupt_in_urb->transfer_flags |= URB_ASYNC_UNLINK; */
->  		dev->read_urb_finished = 0;
->  		retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
-> -		if (retval)
-> +		if (retval) {
-> +			dev->read_urb_finished = 1;
->  			--dev->open_count;
-> +		}
-
-You should set file->private_data to NULL in the error case.
-
-[..]
-> @@ -486,10 +495,14 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
->  				/* we wait for I/O to complete */
->  				set_current_state(TASK_INTERRUPTIBLE);
->  				add_wait_queue(&dev->read_wait, &wait);
-> -				if (!dev->read_urb_finished)
-> +				spin_lock_irqsave(&dev->buflock, flags);
-> +				if (!dev->read_urb_finished) {
-> +					spin_unlock_irqrestore(&dev->buflock, flags);
->  					timeout = schedule_timeout(COMMAND_TIMEOUT);
-
-I find it a bit silly to bother with _irqsave if you call schedule_timeout() in the
-next line.
-
-	Regards
-		Oliver
