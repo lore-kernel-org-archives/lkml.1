@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXJWRKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXJWRLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXJWRKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 13:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbXJWRKX
+	id S1755469AbXJWRLo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 13:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbXJWRLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 13:10:23 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:19879 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753950AbXJWRKV (ORCPT
+	Tue, 23 Oct 2007 13:11:35 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42760 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752913AbXJWRLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 13:10:21 -0400
-Message-ID: <471E2A96.7050304@panasas.com>
-Date: Tue, 23 Oct 2007 19:08:38 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 23 Oct 2007 13:11:33 -0400
+Date: Tue, 23 Oct 2007 19:12:02 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Franck Bui-Huu <vagabon.xyz@gmail.com>,
+       linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Discardable strings for init and exit sections
+Message-ID: <20071023171201.GW30533@stusta.de>
+References: <Pine.LNX.4.64N.0710121711120.21684@blysk.ds.pg.gda.pl> <20071012171938.GB6476@stusta.de> <20071012175209.GA1110@linux-mips.org> <20071012181544.GC6476@stusta.de> <Pine.LNX.4.64N.0710231753250.8693@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 09/10] Change table chaining layout
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com> <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Oct 2007 17:08:02.0548 (UTC) FILETIME=[45362340:01C81597]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64N.0710231753250.8693@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 22 2007 at 20:11 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> Change the page member of the scatterlist structure to be an unsigned
-> long, and encode more stuff in the lower bits:
+On Tue, Oct 23, 2007 at 05:57:38PM +0100, Maciej W. Rozycki wrote:
+> On Fri, 12 Oct 2007, Adrian Bunk wrote:
 > 
-> - Bits 0 and 1 zero: this is a normal sg entry. Next sg entry is located
->   at sg + 1.
-> - Bit 0 set: this is a chain entry, the next real entry is at ->page_link
->   with the two low bits masked off.
-> - Bit 1 set: this is the final entry in the sg entry. sg_next() will return
->   NULL when passed such an entry.
+> > - Most of the string annotations are (naturally) dev{init,exit}
+> >   annotations, and bugs there are therefore in configurations that have
+> >   only extremely low testing coverage during -rc.
+> > - I'm counting 22 annotations in the driver Maciej converted as an
+> >   example. When estimating the number of possible annotations based
+> >   on the number of C files in the kernel I'm getting a six digit
+> >   number.
+> > 
+> > No matter how hard it would be to teach gcc about it, when thinking of 
+> > the amount of __*init*/__*exit* bugs we already have I simply can't 
+> > imagine the string annotations as a maintainable solution.
 > 
-> It's thus important that sg table users use the proper accessors to get
-> and set the page member.
-> 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
-<snip>
->  
->  /**
->   * sg_set_page - Set sg entry to point at given page
-> @@ -20,11 +37,20 @@
->   **/
->  static inline void sg_set_page(struct scatterlist *sg, struct page *page)
->  {
-> -	sg->page = page;
-> +	unsigned long page_link = sg->page_link & 0x3;
-> +
-You might want to put a BUG_ON(page & 0x3); Make sure
-you're not loosing information. (The m68k problem)
+>  Well, it is up to the maintainer of code in question to get it right if 
+> interested.  Otherwise having no annotation and leaving the relevant 
+> strings resident in the memory throughout the lifespan of the system is a 
+> valid and perfectly working option.
 
-> +	sg->page_link = page_link | (unsigned long) page;
->  }
->  
-> -#define sg_page(sg)	((sg)->page)
-> +#define sg_page(sg)	((struct page *) ((sg)->page_link & ~0x3))
->  
-<snip>
+If we want to go this route users may want to have this for all code 
+they are using. This is not a per-maintainer question, that's a global 
+thing: If janitors start annotating all source files in the kernel the 
+resulting patches can't be accepted or rejected only based on the 
+personal preferences of the maintainers.
 
-Boaz
+>  If you worry about the reverse case, where an annotation should be 
+> removed because the containing function is no longer __*init*/__*exit*, 
+> then I think `modpost' does a reasonably good job finding such places.
+
+As long as the modpost warnings are just warnings they will often be 
+missed at compile time.
+
+And most of the annotations (also in the driver you converted as an 
+example) will be dev{init,exit} annotations, and bugs there are in 
+configurations virtually noone tests during -rc
+
+>   Maciej
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
