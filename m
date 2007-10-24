@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXJXOIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXJXOI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbXJXOIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbXJXOH0
+	id S1759388AbXJXOI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758637AbXJXOHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:07:26 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49074
+	Wed, 24 Oct 2007 10:07:31 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49082
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757955AbXJXOHX (ORCPT
+	by vger.kernel.org with ESMTP id S1758720AbXJXOH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:07:23 -0400
+	Wed, 24 Oct 2007 10:07:29 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/9] RT: Fixes for push-rt patch
+Subject: [PATCH 3/9] RT: Clean up some of the push-rt logic
 To: linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Darren Hart <dvhltc@us.ibm.com>
-Date: Wed, 24 Oct 2007 09:52:43 -0400
-Message-ID: <20071024135243.7960.31298.stgit@novell1.haskins.net>
+Date: Wed, 24 Oct 2007 09:52:48 -0400
+Message-ID: <20071024135248.7960.54006.stgit@novell1.haskins.net>
 In-Reply-To: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 References: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -29,169 +29,162 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <rostedt@goodmis.org>
-
-Steve found these errors in the original patch
+Get rid of the superfluous dst_cpu, move the cpu_mask inside the search
+function, and collapse the two redundant pick-next-rt() functions.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c    |   15 ++++++++-
- kernel/sched_rt.c |   90 +----------------------------------------------------
- 2 files changed, 15 insertions(+), 90 deletions(-)
+ kernel/sched.c    |   27 ++++++++++++---------------
+ kernel/sched_rt.c |   44 --------------------------------------------
+ 2 files changed, 12 insertions(+), 59 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 0dabf89..821f115 100644
+index 821f115..de5fc1c 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1505,7 +1505,7 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
- 		for_each_cpu_mask(cpu, *cpu_mask) {
+@@ -1471,9 +1471,10 @@ next_in_queue:
+ 	 * Return the highest-prio non-running RT task (if task
+ 	 * may run on this CPU):
+ 	 */
+-	if (!task_running(src_rq, tmp) &&
+-				cpu_isset(this_cpu, tmp->cpus_allowed))
+-		return tmp;
++	if (!task_running(src_rq, tmp)) {
++		if ((this_cpu == -1) || cpu_isset(this_cpu, tmp->cpus_allowed))
++			return tmp;
++	}
+ 
+ 	curr = curr->next;
+ 	if (curr != head)
+@@ -1489,20 +1490,21 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
+ #define RT_PUSH_MAX_TRIES 3
+ 
+ /* Will lock the rq it finds */
+-static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
+-				      struct task_struct *task,
++static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ 				      struct rq *this_rq)
+ {
+ 	struct rq *lowest_rq = NULL;
+-	int dst_cpu = -1;
+ 	int cpu;
+ 	int tries;
++	cpumask_t cpu_mask;
++
++	cpus_and(cpu_mask, cpu_online_map, task->cpus_allowed);
+ 
+ 	for (tries = 0; tries < RT_PUSH_MAX_TRIES; tries++) {
+ 		/*
+ 		 * Scan each rq for the lowest prio.
+ 		 */
+-		for_each_cpu_mask(cpu, *cpu_mask) {
++		for_each_cpu_mask(cpu, cpu_mask) {
  			struct rq *rq = &per_cpu(runqueues, cpu);
  
--			if (cpu == smp_processor_id())
-+			if (cpu == this_rq->cpu)
- 				continue;
- 
+ 			if (cpu == this_rq->cpu)
+@@ -1511,7 +1513,6 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
  			/* We look for lowest RT prio or non-rt CPU */
-@@ -1533,7 +1533,8 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
- 			 * the mean time, task could have
- 			 * migrated already or had its affinity changed.
+ 			if (rq->curr_prio >= MAX_RT_PRIO) {
+ 				lowest_rq = rq;
+-				dst_cpu = cpu;
+ 				break;
+ 			}
+ 
+@@ -1519,7 +1520,6 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
+ 			if (rq->curr_prio > task->prio &&
+ 			    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
+ 				lowest_rq = rq;
+-				dst_cpu = cpu;
+ 			}
+ 		}
+ 
+@@ -1535,7 +1535,7 @@ static struct rq *find_lock_lowest_rq(cpumask_t *cpu_mask,
  			 */
--			if (unlikely(task_rq(task) != this_rq ||
-+			if (unlikely(task_running(this_rq, task) ||
-+				     task_rq(task) != this_rq ||
- 				     !cpu_isset(dst_cpu, task->cpus_allowed))) {
+ 			if (unlikely(task_running(this_rq, task) ||
+ 				     task_rq(task) != this_rq ||
+-				     !cpu_isset(dst_cpu, task->cpus_allowed))) {
++				     !cpu_isset(lowest_rq->cpu, task->cpus_allowed))) {
  				spin_unlock(&lowest_rq->lock);
  				lowest_rq = NULL;
-@@ -2342,6 +2343,7 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 		spin_unlock(&rq->lock);
- 	}
- #endif
-+
- 	fire_sched_in_preempt_notifiers(current);
- 	trace_stop_sched_switched(current);
- 	/*
-@@ -4064,6 +4066,15 @@ asmlinkage void __sched __schedule(void)
- 		context_switch(rq, prev, next); /* unlocks the rq */
- 		__preempt_enable_no_resched();
- 	} else {
-+#if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
-+		/*
-+		 * If we hit the condition where we do not need to actually
-+		 * reschedule, we need to check if there are any tasks that
-+		 * should be pushed away
-+		 */
-+		if (unlikely(rq->rt_nr_running > 1))
-+			push_rt_tasks(rq);
-+#endif
- 		__preempt_enable_no_resched();
- 		spin_unlock(&rq->lock);
- 		trace_stop_sched_switched(next);
+ 				break;
+@@ -1566,21 +1566,18 @@ static int push_rt_task(struct rq *this_rq)
+ 	struct rq *lowest_rq;
+ 	int dst_cpu;
+ 	int ret = 0;
+-	cpumask_t cpu_mask;
+ 
+ 	assert_spin_locked(&this_rq->lock);
+ 
+-	next_task = rt_next_highest_task(this_rq);
++	next_task = pick_rt_task(this_rq, -1);
+ 	if (!next_task)
+ 		return 0;
+ 
+-	cpus_and(cpu_mask, cpu_online_map, next_task->cpus_allowed);
+-
+ 	/* We might release this_rq lock */
+ 	get_task_struct(next_task);
+ 
+ 	/* find_lock_lowest_rq locks the rq if found */
+-	lowest_rq = find_lock_lowest_rq(&cpu_mask, next_task, this_rq);
++	lowest_rq = find_lock_lowest_rq(next_task, this_rq);
+ 	if (!lowest_rq)
+ 		goto out;
+ 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 8d59e62..546526b 100644
+index 546526b..9b677c1 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -146,100 +146,14 @@ static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
- 	p->se.exec_start = 0;
+@@ -96,50 +96,6 @@ static struct task_struct *pick_next_task_rt(struct rq *rq)
+ 	return next;
  }
  
--/*
-- * Load-balancing iterator. Note: while the runqueue stays locked
-- * during the whole iteration, the current task might be
-- * dequeued so the iterator has to be dequeue-safe. Here we
-- * achieve that by always pre-iterating before returning
-- * the current task:
-- */
--static struct task_struct *load_balance_start_rt(void *arg)
+-#ifdef CONFIG_PREEMPT_RT
+-static struct task_struct *rt_next_highest_task(struct rq *rq)
 -{
--	struct rq *rq = arg;
 -	struct rt_prio_array *array = &rq->rt.active;
--	struct list_head *head, *curr;
--	struct task_struct *p;
+-	struct task_struct *next;
+-	struct list_head *queue;
 -	int idx;
 -
--	idx = sched_find_first_bit(array->bitmap);
--	if (idx >= MAX_RT_PRIO)
+-	if (likely (rq->rt_nr_running < 2))
 -		return NULL;
 -
--	head = array->queue + idx;
--	curr = head->prev;
--
--	p = list_entry(curr, struct task_struct, run_list);
--
--	curr = curr->prev;
--
--	rq->rt.rt_load_balance_idx = idx;
--	rq->rt.rt_load_balance_head = head;
--	rq->rt.rt_load_balance_curr = curr;
--
--	return p;
--}
--
--static struct task_struct *load_balance_next_rt(void *arg)
--{
--	struct rq *rq = arg;
--	struct rt_prio_array *array = &rq->rt.active;
--	struct list_head *head, *curr;
--	struct task_struct *p;
--	int idx;
--
--	idx = rq->rt.rt_load_balance_idx;
--	head = rq->rt.rt_load_balance_head;
--	curr = rq->rt.rt_load_balance_curr;
--
--	/*
--	 * If we arrived back to the head again then
--	 * iterate to the next queue (if any):
--	 */
--	if (unlikely(head == curr)) {
--		int next_idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
--
--		if (next_idx >= MAX_RT_PRIO)
--			return NULL;
--
--		idx = next_idx;
--		head = array->queue + idx;
--		curr = head->prev;
--
--		rq->rt.rt_load_balance_idx = idx;
--		rq->rt.rt_load_balance_head = head;
+-	idx = sched_find_first_bit(array->bitmap);
+-	if (idx >= MAX_RT_PRIO) {
+-		WARN_ON(1); /* rt_nr_running is bad */
+-		return NULL;
 -	}
 -
--	p = list_entry(curr, struct task_struct, run_list);
+-	queue = array->queue + idx;
+-	next = list_entry(queue->next, struct task_struct, run_list);
+-	if (unlikely(next != current))
+-		return next;
 -
--	curr = curr->prev;
+-	if (queue->next->next != queue) {
+-		/* same prio task */
+-		next = list_entry(queue->next->next, struct task_struct, run_list);
+-		goto out;
+-	}
 -
--	rq->rt.rt_load_balance_curr = curr;
+-	/* slower, but more flexible */
+-	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
+-	if (idx >= MAX_RT_PRIO) {
+-		WARN_ON(1); /* rt_nr_running was 2 and above! */
+-		return NULL;
+-	}
 -
--	return p;
+-	queue = array->queue + idx;
+-	next = list_entry(queue->next, struct task_struct, run_list);
+-
+- out:
+-	return next;
+-
 -}
+-#endif /* CONFIG_PREEMPT_RT */
 -
- static unsigned long
- load_balance_rt(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 			unsigned long max_nr_move, unsigned long max_load_move,
- 			struct sched_domain *sd, enum cpu_idle_type idle,
- 			int *all_pinned, int *this_best_prio)
+ static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
  {
--	int nr_moved;
--	struct rq_iterator rt_rq_iterator;
--	unsigned long load_moved;
--
--	rt_rq_iterator.start = load_balance_start_rt;
--	rt_rq_iterator.next = load_balance_next_rt;
--	/* pass 'busiest' rq argument into
--	 * load_balance_[start|next]_rt iterators
--	 */
--	rt_rq_iterator.arg = busiest;
--
--	nr_moved = balance_tasks(this_rq, this_cpu, busiest, max_nr_move,
--			max_load_move, sd, idle, all_pinned, &load_moved,
--			this_best_prio, &rt_rq_iterator);
--
--	return load_moved;
-+	/* No passive migration for RT */
-+	return 0;
- }
- 
- static void task_tick_rt(struct rq *rq, struct task_struct *p)
+ 	update_curr_rt(rq);
 
