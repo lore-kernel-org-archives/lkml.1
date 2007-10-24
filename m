@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbXJXFzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbXJXGFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbXJXFzF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbXJXFyw
+	id S1755958AbXJXGFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 02:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbXJXGFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:54:52 -0400
-Received: from smile.2scale.net ([212.12.33.142]:52727 "EHLO smile.2scale.net"
+	Wed, 24 Oct 2007 02:05:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36070 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753634AbXJXFyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:54:50 -0400
-Subject: 2.6.22.7 reboots if PCI-X eth card is used for capture
-From: Michael Stiller <ms@2scale.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: 2scale GmbH
-Date: Wed, 24 Oct 2007 07:54:43 +0200
-Message-Id: <1193205283.3659.24.camel@blackberry>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1753634AbXJXGFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 02:05:35 -0400
+Message-ID: <471EE0A9.2040008@garzik.org>
+Date: Wed, 24 Oct 2007 02:05:29 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH 2/12] X86: fix nvidia HPET warning
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223635.24CE01F81A1@havoc.gtf.org> <471EC48E.2080506@goop.org>
+In-Reply-To: <471EC48E.2080506@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jeremy Fitzhardinge wrote:
+> Jeff Garzik wrote:
+>> arch/x86/kernel/early-quirks.c:40: warning: ‘nvidia_hpet_check’ defined but not used
+>>
+>> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>> ---
+>>
+>> diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+>> index dc34acb..639e632 100644
+>> --- a/arch/x86/kernel/early-quirks.c
+>> +++ b/arch/x86/kernel/early-quirks.c
+>> @@ -35,12 +35,14 @@ static void __init via_bugs(void)
+>>  }
+>>  
+>>  #ifdef CONFIG_ACPI
+>> +#ifdef CONFIG_X86_IO_APIC
+>>   
+> 
+> Why not #if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)?  Saves
+> a line and a layer of #if(def).
 
-i run a machine with 4 dual gigabit ethernet cards utilizing 2.6.22.7.
-All cards are PCI-E, one card is PCI-X, all Gigabit Ethernet from Intel.
-This is working fine and stable if only the PCI-E cards are used.
+quite agreed, but I was merely duplicating (with precision :)) the 
+ifdef-ery used in the caller
 
-If i try to capture packets on the PCI-X card, the machine reboots after
-some seconds. I think i can rule out a hardware defect, as i actually
-run two of this machines with equal hard and software and the problem
-occurs on both machines. This is perfectly reproducible but i am unable
-to debug this, as no (oops) messages are ever written to the syslog. 
-As the machine instantly reboots i guess there will be nothing valueable
-shown on the display. 
+	Jeff
 
-The interrupt layout:
 
-(cat /proc/interrupts)
-
- 16:         36          6        430          0   IO-APIC-fasteoi   eth0
- 18:         33          5        305        126   IO-APIC-fasteoi   uhci_hcd:us
-b1, ehci_hcd:usb4, eth1
-211:       2143       2210     127682        533   PCI-MSI-edge      eth9
-212:       5332       5818      10298    3594001   PCI-MSI-edge      eth8
-213:        129      46419    5525683          6   PCI-MSI-edge      eth7
-214:      13528      14184      34425   11239040   PCI-MSI-edge      eth6
-215:      50277        116    5821388         14   PCI-MSI-edge      eth5
-216:        595        590     347154        857   PCI-MSI-edge      eth4
-217:         48        153       5760       2653   PCI-MSI-edge      eth2
-
-The card in question is eth0+eth1. I even tried the following boot kernel parameters
-with NO success.
-	
-	nousb (don't need it, suspected the irq sharing as problem source)
-	
-	pci=nomsi (this recommended my hardware vendor)
-
-I need some advice, howto debug or solve this.
-
-As i usually don't read the list, i would like to be cc'd. 
-
-Cheers
-
-Michael
 
