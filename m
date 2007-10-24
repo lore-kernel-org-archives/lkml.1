@@ -1,68 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbXJXQ6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXJXQ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761012AbXJXQ6k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbXJXQnt
+	id S1764710AbXJXQ7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764237AbXJXQo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:43:49 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47017 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764070AbXJXQnr (ORCPT
+	Wed, 24 Oct 2007 12:44:56 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:59003 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764235AbXJXQoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:43:47 -0400
-Date: Wed, 24 Oct 2007 12:43:47 -0400
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] some overdue I2C driver removal
-Message-ID: <20071024164347.GN4003@csclub.uwaterloo.ca>
-References: <20071024162528.GX30533@stusta.de>
+	Wed, 24 Oct 2007 12:44:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=JzNZjRwLDpmeBSYl40JhruS/I259DfoYzpPM1rsm003ahaHw5/a8nMa9tQlBgWR+XJLwwoFC60635XPkNicUudkWVneH6Bjw2Scw8f2Mi0a6R8mypuhSclHNY8V+W8nwhjcszzd12+WSoyRqjHaacNeZRL1lRHrEIamgF9hSTrc=
+Date: Wed, 24 Oct 2007 12:44:46 -0400
+From: Joseph Fannin <jfannin@gmail.com>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc1 fails with lockup and BUG:
+Message-ID: <20071024164445.GA6452@nineveh.local>
+Mail-Followup-To: Romano Giannetti <romanol@upcomillas.es>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <1193232344.32208.0.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024162528.GX30533@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <1193232344.32208.0.camel@localhost>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 06:25:28PM +0200, Adrian Bunk wrote:
-> This patch contains the overdue removal of three I2C drivers.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  Documentation/feature-removal-schedule.txt |    8 
->  drivers/i2c/busses/Kconfig                 |   59 ------
->  drivers/i2c/busses/Makefile                |    3 
->  drivers/i2c/busses/i2c-ixp2000.c           |  167 -------------------
->  drivers/i2c/busses/i2c-ixp4xx.c            |  178 ---------------------
->  drivers/i2c/busses/scx200_i2c.c            |  131 ---------------
->  6 files changed, 546 deletions(-)
-> 
-> 6a8e0e37019c0ffeb0071fae30210baf2c3bdd75 
-> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> index 2af3835..9114379 100644
-> --- a/Documentation/feature-removal-schedule.txt
-> +++ b/Documentation/feature-removal-schedule.txt
-> @@ -218,14 +218,6 @@ Who:	Len Brown <len.brown@intel.com>
->  
->  ---------------------------
->  
-> -What:	i2c-ixp2000, i2c-ixp4xx and scx200_i2c drivers
-> -When:	September 2007
-> -Why:	Obsolete. The new i2c-gpio driver replaces all hardware-specific
-> -	I2C-over-GPIO drivers.
-> -Who:	Jean Delvare <khali@linux-fr.org>
-> -
-> ----------------------------
+On Wed, Oct 24, 2007 at 03:25:44PM +0200, Romano Giannetti wrote:
+>
+> Hi,
+>
+> 2.6.23-rc1 fails for me. I have the sensation it is network-related, but
+> I am not sure, so I send this message just to the list.
+> This same failure was present in git-5734-gd85714d, I sent
+> a message to the list but it seems it never arrived. I hope this will
+> pass through. My system is a toshiba satellite A305-S5077, dual core pentium.
+>
+> The symptoms are quite strange. At boot, NetworkManager fails to activate
+> my eth0 (r8169). Just stopping/restarting NM will make it works.
 
-Did anyone ever write a driver that does i2c on the scx200 using the new
-i2c-gpio method?  I sure haven't seen it, although I am still running
-2.6.18 (since that is what debian stable uses) on my scx200 systems.  I
-certainly haven't found any useful instructions on how to use the new
-i2c-gpio driver on an scx200.
+
+Denis V. Lunev wrote a patch for the NetworkManager thing a day or two
+ago (which DaveM has queued).
+
+Since netlink is involved in the traces you sent, this might do something
+for the other too.
+
+The patch I recieved follows:
+
+
+> Revert to original netlink behavior. Do not reply with ACK if the
+> netlink dump has bees successfully started.
+
+> libnl has been broken by the cd40b7d3983c708aabe3d3008ec64ffce56d33b0
+> The following command reproduce the problem:
+>    /nl-route-get 192.168.1.1
+
+> Signed-off-by: Denis V. Lunev <den@openvz.org>
+
+
+
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+index 98e313e..44a8b41 100644
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -1565,7 +1565,10 @@ int netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
+ 
+ 	netlink_dump(sk);
+ 	sock_put(sk);
+-	return 0;
++
++	/* We successfully started a dump, by returning -EINTR we
++	 * signal not to send ACK even if it was requested */
++	return -EINTR;
+ }
+ 
+ void netlink_ack(struct sk_buff *in_skb, struct nlmsghdr *nlh, int err)
+@@ -1619,17 +1622,21 @@ int netlink_rcv_skb(struct sk_buff *skb, int (*cb)(struct sk_buff *,
+ 
+ 		/* Only requests are handled by the kernel */
+ 		if (!(nlh->nlmsg_flags & NLM_F_REQUEST))
+-			goto skip;
++			goto ack;
+ 
+ 		/* Skip control messages */
+ 		if (nlh->nlmsg_type < NLMSG_MIN_TYPE)
+-			goto skip;
++			goto ack;
+ 
+ 		err = cb(skb, nlh);
+-skip:
++		if (err == -EINTR)
++			goto skip;
++
++ack:
+ 		if (nlh->nlmsg_flags & NLM_F_ACK || err)
+ 			netlink_ack(skb, nlh, err);
+ 
++skip:
+ 	        msglen = NLMSG_ALIGN(nlh->nlmsg_len);
+ 		if (msglen > skb->len)
+ 			msglen = skb->len;
+
+
+
+
 
 --
-Len Sorensen
+Joseph Fannin
+jfannin@gmail.com
