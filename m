@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765197AbXJXRBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765708AbXJXRCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765197AbXJXRBr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762312AbXJXQwM
+	id S1765708AbXJXRCi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760954AbXJXQyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:52:12 -0400
-Received: from iabervon.org ([66.92.72.58]:60133 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762578AbXJXQwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:52:09 -0400
-Date: Wed, 24 Oct 2007 12:52:07 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: David Miller <davem@davemloft.net>
-cc: linux-kernel@vger.kernel.org, jeff@garzik.org, linas@austin.ibm.com,
-       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
-Subject: Re: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks.
-In-Reply-To: <20071023.220622.68038077.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0710241234210.32497@iabervon.org>
-References: <20071023.195108.69018458.davem@davemloft.net>
- <Pine.LNX.4.64.0710240046220.32497@iabervon.org> <20071023.220622.68038077.davem@davemloft.net>
+	Wed, 24 Oct 2007 12:54:08 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37210 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764105AbXJXQyG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 12:54:06 -0400
+Date: Wed, 24 Oct 2007 18:54:34 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: yokota@netlab.is.tsukuba.ac.jp, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] nsp32_restart_autoscsi(): remove error check
+Message-ID: <20071024165434.GZ30533@stusta.de>
+References: <20071024162515.GV30533@stusta.de> <1193244072.3396.17.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1193244072.3396.17.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007, David Miller wrote:
-
-> From: Daniel Barkalow <barkalow@iabervon.org>
-> Date: Wed, 24 Oct 2007 00:58:45 -0400 (EDT)
+On Wed, Oct 24, 2007 at 12:41:12PM -0400, James Bottomley wrote:
+> On Wed, 2007-10-24 at 18:25 +0200, Adrian Bunk wrote:
+> > The Coverity checker noted that we'll anyway Oops later when we ran into 
+> > this condition - and the error check didn't prevent that.
+> > 
+> > Considering that the error condition shouldn't be possible, and we are 
+> > not able to handle it easily, this patch simply removes the pointless 
+> > error check.
 > 
-> > I'm not sure all of the pci_intx() calls in msi.c should be skipped when 
-> > the quirk applies; I think some of them might be there so that the legacy 
-> > interrupt won't be delivered while MSI is turned off (since the handler 
-> > isn't listening for the legacy interrupts). I'd guess this would cause 
-> > people to have their MSI-capable device kill their non-MSI-capable device 
-> > when they restore their laptop (and the shared interrupt fires and gets 
-> > stuck at just the wrong time). No idea if this is a real concern, but I'm 
-> > pretty sure that not all of those calls are recent.
-> 
-> I don't think it's a real concern.
+> This is the one where I said I don't like the fact that you're removing
+> the explanatory message that's printed before we crash.  if you want to
+> shut coverity up and stop sending the patch, I'm happy adding a BUG();
+> after the nsp32_msg().
 
-Okay, good. As long as someone more clueful than me has thought about it, 
-because I couldn't tell off hand.
+Sorry, I missed your answer when resending since it was in a different 
+thread.
 
-> > There's a couple of ATA drivers that look like they might be trying to 
-> > work around the same bug, but it's a bit hard to tell. It might be good to 
-> > have them use the quirk (or set the flag) because it's cleaner.
-> 
-> I noticed these cases as well, and I would hope that Jeff would help
-> out here using the infrastructure my patches created.
+I'm still not convinced we really need the nsp32_msg() here but you are 
+the maintainer and it's not a big deal anyway
 
-Or coordinate with someone with the quirky hardware, yes.
+A BUG() would IMHO be similarly pointless as the nsp32_msg() at this 
+point and there's no value in changing code only for the sake of the 
+Coverity checker.
 
-	-Daniel
-*This .sig left intentionally blank*
+> James
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
