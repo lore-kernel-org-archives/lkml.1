@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXJXNUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbXJXNVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbXJXNUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXJXNU2
+	id S1758785AbXJXNVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbXJXNVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:20:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51391 "EHLO mail.dvmed.net"
+	Wed, 24 Oct 2007 09:21:46 -0400
+Received: from smtp2b.orange.fr ([80.12.242.146]:6001 "EHLO smtp2b.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbXJXNU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:20:27 -0400
-Message-ID: <471F4692.1080309@garzik.org>
-Date: Wed, 24 Oct 2007 09:20:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] IDE updates (part 2)
-References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk> <4713C568.2060708@garzik.org> <20071015195807.GF8759@flint.arm.linux.org.uk> <4713C893.3050200@garzik.org> <20071024123851.GB32333@flint.arm.linux.org.uk> <471F4035.4030507@garzik.org> <20071024131243.GC32333@flint.arm.linux.org.uk>
-In-Reply-To: <20071024131243.GC32333@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1757308AbXJXNVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:21:46 -0400
+X-ME-UUID: 20071024132144422.6734570000E2@mwinf2b22.orange.fr
+Subject: Re: TODO list for kernel beginer?
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: jan sonnek <ha2nny@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <471F43F0.7000703@gmail.com>
+References: <471F43F0.7000703@gmail.com>
+Content-Type: text/plain
+Date: Wed, 24 Oct 2007 15:21:40 +0200
+Message-Id: <1193232100.10277.407.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Wed, Oct 24, 2007 at 08:53:09AM -0400, Jeff Garzik wrote:
->> Russell King wrote:
->>> On Mon, Oct 15, 2007 at 04:07:47PM -0400, Jeff Garzik wrote:
->>>> Russell King wrote:
->>>>> On Mon, Oct 15, 2007 at 03:54:16PM -0400, Jeff Garzik wrote:
->>>>>> Al Viro wrote:
->>>>>>> Proposed addition to icside part, provided that ARM folks ACK it - gets
->>>>>>> icside to build and AFAICS it's correct:
->>>>>> ACK from me too...  ARM folks?
->>>>> Will test tomorrow/Wednesday.
->>>> Thanks.  Sorry about missing your CC on the libata-wide ata_link 
->>>> changes.  We should have poked the maintainers on that, for the drivers 
->>>> we cannot build ourselves.
->>> I think Viro's patch got an ack from everyone.  Who's dealing with getting
->>> this regression fix into mainline?  It seems at the moment the patch is in
->>> limbo.
->> I was waiting on you, who last said "Will test tomorrow/Wednesday" (with 
->> presumably an ACK forthcoming after test results)
->>
->> If it now has your ACK, it's ready and waiting in my mbox queue to be 
->> merged upstream.
-> 
-> Looks like it got my ack more than a week ago:
+On Wed, 2007-10-24 at 15:09 +0200, jan sonnek wrote:
+> Hello,
+> where can I find actually TODO list for kernel beginer?
+> Many Thanks,
 
-Groovy.
+On http://kernelnewbies.org/
 
-	Jeff
-
+Cheers,
+	Xav
 
 
