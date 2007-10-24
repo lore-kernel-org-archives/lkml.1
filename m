@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbXJXN2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbXJXNd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758884AbXJXN2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbXJXN2Q
+	id S1758427AbXJXNd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXJXNdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:28:16 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:45678 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752859AbXJXN2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:28:14 -0400
-Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071023.153635.21595587.davem@davemloft.net>
-References: <471E6313.1040704@garzik.org>
-	 <1193174424.3434.3.camel@localhost.localdomain>
-	 <471E707B.1020505@garzik.org>
-	 <20071023.153635.21595587.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 24 Oct 2007 09:28:10 -0400
-Message-Id: <1193232490.3396.10.camel@localhost.localdomain>
+	Wed, 24 Oct 2007 09:33:19 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:38796 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753189AbXJXNdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:33:18 -0400
+Date: Wed, 24 Oct 2007 17:38:18 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
+Message-ID: <20071024133818.GA82@tv-sign.ru>
+References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024053716.GD27074@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-23 at 15:36 -0700, David Miller wrote:
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Tue, 23 Oct 2007 18:06:51 -0400
-> 
-> > James Bottomley wrote:
-> > > On Tue, 2007-10-23 at 17:09 -0400, Jeff Garzik wrote:
-> > >> James Bottomley wrote:
-> > >>> This should be the final SCSI updates; it's mainly just a few accessor
-> > >>> completion updates and two driver merges (sym2 and qla2xxx) we also
-> > >>> secured DaveM's agreement to remove fcal/fc4, which explains the high
-> > >>> removal line count.
-> > >>>
-> > >>> The patch is available here:
-> > >>>
-> > >>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> > >> I guess I have the go-ahead to merge the end-CDROM-polling async 
-> > >> notification work you've been repeatedly ignoring?
-> > > 
-> > > I haven't been ignoring it ... it just needs quite a bit of work; the
-> > > best way to accelerate it seems to be simply to do it (add the
-> > > supported/trigger event bitmasks and expand the infrastructure).  I just
-> > > haven't had the time within the merge window.
-> > 
-> > James, things cannot get bottlenecked like this.  You have had MONTHS to 
-> > say something like this.  The code was ready BEFORE the merge window.
-> > 
-> > I really think you have the knowledge to be SCSI maintainer, but not the 
-> > time.
-> 
-> Unfortunately, I think this is an important point.
-> 
-> Developers depend strongly upon a subsystem maintainer to
-> "make time" for these things so that work integration does
-> not get delayed past the merge window if at all possible.
-> 
-> Not being able to "make time" to do these things is a great
-> way to lose contributers.
-> 
-> James, whilst there is no doubt in my mind that skill-wise
-> you are probably the most capable scsi maintainer, your "lack
-> of time" is sounding like a broken record and harming the
-> development process.
+On 10/24, Gautham R Shenoy wrote:
+>
 
-OK, so it's no secret that I'm the last of the subsystem maintainers
-whose day job isn't working on the linux kernel.  If you want a full
-time person, who did you have in mind?
+(reordered)
 
-James
+> With get_online_cpus()/put_online_cpus(), we can eliminate
+> the workqueue_mutex and reintroduce the workqueue_lock,
+> which is a spinlock which serializes the accesses to the 
+> workqueues list.
 
+This change is obviously good, can't it go into the previous patch?
+
+Because,
+
+> Solution is not to cleanup the worker thread. Instead let it remain
+> even after the cpu goes offline. Since no one can queue any work
+> on an offlined cpu, this thread will be forever sleeping, untill
+> someone onlines the cpu.
+
+I still think this patch is questionable. Please look at my previous
+response http://marc.info/?l=linux-kernel&m=119262203729543
+
+In short: with this patch it is not possible to guarantee that work->fun()
+will run on the correct CPU.
+
+>  static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
+>  {
+>  	/*
+> -	 * Our caller is either destroy_workqueue() or CPU_DEAD,
+> -	 * workqueue_mutex protects cwq->thread
+> +	 * Our caller is destroy_workqueue().  So warn on a double
+> +	 * destroy.
+>  	 */
+> -	if (cwq->thread == NULL)
+> +	if (cwq->thread == NULL) {
+> +		WARN_ON(1);
+
+Looks wrong. It is possible that cwq->thread == NULL, because currently we
+never "shrink" cpu_populated_map.
+
+> cleanup_workqueue_thread() in the CPU_DEAD and CPU_UP_CANCELLED path
+> will cause a deadlock if the worker thread is executing a work item
+> which is blocked on get_online_cpus(). This will lead to a irrecoverable
+> hang.
+
+Yes. But there is nothing new. Currently, work->func() can't share the locks
+with cpu_down's patch. Not only only it can't take workqueue_mutex, it can't
+take any other lock which could be taken by notifier callbacks, etc.
+
+Can't we ignore this problem, at least for now? I believe we need intrusive
+changes to solve this problem correctly. Perhaps I am wrong, of course, but
+I don't see a simple solution.
+
+Another option. Note that get_online_cpus() does more than just pinning
+cpu maps, actually it blocks hotplug entirely. Now let's look at
+schedule_on_each_cpu(), for example. It doesn't need to block hotplug,
+it only needs a stable cpu_online_map.
+
+Suppose for a moment that _cpu_down() does cpu_hotplug_done() earlier,
+right after __cpu_die(cpu) which removes CPU from the map (yes, this
+is wrong, I know). Now, we don't need to change workqueue_cpu_callback(),
+work->func() can use get_online_cpus() without fear of deadlock.
+
+So, can't we introduce 2 nested rw locks? The first one blocks cpu hotplug
+(like get_online_cpus does currently), the second one just pins cpu maps.
+I think most users needs only this, not more.
+
+What do you think?
+
+(Gautham, I apologize in advance, can't be responsive till weekend).
+
+Oleg.
 
