@@ -1,64 +1,350 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbXJXWqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760277AbXJXWvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758872AbXJXWqn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:46:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXJXWqf
+	id S1760277AbXJXWvF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbXJXWuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:46:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:51739 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753796AbXJXWqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:46:35 -0400
-Message-ID: <471FCB38.10106@goop.org>
-Date: Wed, 24 Oct 2007 15:46:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Andi Kleen <andi@firstfloor.org>, dean gaudet <dean@arctic.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
+	Wed, 24 Oct 2007 18:50:50 -0400
+Received: from xenotime.net ([66.160.160.81]:53734 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755272AbXJXWut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 18:50:49 -0400
+Date: Wed, 24 Oct 2007 15:50:43 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
-       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-       Mark Williamson <mark.williamson@cl.cam.ac.uk>
-Subject: Re: [PATCH] Allow lazy unmapping by taking extra page references
- V3
-References: <p73sl439s7k.fsf@bingen.suse.de> <471CEEB4.9040807@goop.org> <20071022190740.GA1695@one.firstfloor.org> <20071022223224.GC995458@sgi.com> <20071022233514.GA9057@one.firstfloor.org> <20071023003641.GF995458@sgi.com> <20071023070414.GM66820511@sgi.com> <20071023093035.GB24536@one.firstfloor.org> <20071024043619.GE66820511@sgi.com> <471ED35F.3020605@goop.org> <20071024214826.GH66820511@sgi.com>
-In-Reply-To: <20071024214826.GH66820511@sgi.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=us-ascii
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC - GIT pull] first step to get rid of x86_64 and i386 dirs
+Message-Id: <20071024155043.04ba31cd.rdunlap@xenotime.net>
+In-Reply-To: <20071024213052.GA5469@uranus.ravnborg.org>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+	<20071024080451.GA32690@infradead.org>
+	<20071024110733.GA1374@uranus.ravnborg.org>
+	<20071024121218.GA23548@elte.hu>
+	<20071024213052.GA5469@uranus.ravnborg.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> Allow lazy unmapping of vmap()d regions be taking a reference
-> on each page in the region being vmap()ed. The page references
-> get released after the region is vunmap()ed, thereby ensuring
-> we don't leave stray mappings on freed pages that could lead to
-> problems pages being reallocated with incorrect mappings
-> associated with them.
->
-> Tested with XFS filesystems with 64k directory blocks with
-> dirstress and XFSQA.
->
-> Version 3:
->   - compile on latest -git
->   
+On Wed, 24 Oct 2007 23:30:52 +0200 Sam Ravnborg wrote:
 
-Not quite:
+> Hi Ingo.
+> 
+> This is first step in getting rid of the two directories.
+> I had to do some very minor modifications in common files
+> to let it work out - but nothing really hackish.
+> 
+> If you & Thomas + hpa are OK with the changes they can be
+> pulled from:
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
+> 
+> As this is mostly renames I have attached a git -M diff only.
+> 
+> The remaining stuff is Kconfig files.
+> 
+> Before looking into these I am hoping someone could
+> step in and make the two Kconfig.debug
+> files 100% equal - because then I can fix the kconfig
+> stuff and finally kill the two directories.
 
-  CC      mm/vmalloc.o
-/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c: In function 'vm_area_alloc_pagearray':
-/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: 'GFP_LEVEL_MASK' undeclared (first use in this function)
-/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: (Each undeclared identifier is reported only once
-/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: for each function it appears in.)
-make[3]: *** [mm/vmalloc.o] Error 1
-make[2]: *** [mm] Error 2
-make[2]: *** Waiting for unfinished jobs....
+Uh, maybe I jumped too far.  I merged the 2 x86 Kconfig.debug files
+into arch/x86/Kconfig.debug....
 
+---
 
-GFP_RECLAM_MASK now?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-J
+Merge i386/Kconfig.debug and x86_64/Kconfig.debug into x86/Kconfig.debug,
+using "depends on X86_32" or X86_64 when needed.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/i386/Kconfig.debug   |   88 ----------------------------------
+ arch/x86/Kconfig.debug    |  119 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86_64/Kconfig.debug |   61 -----------------------
+ 3 files changed, 119 insertions(+), 149 deletions(-)
+
+--- linux-2.6.24-rc1.orig/arch/i386/Kconfig.debug
++++ /dev/null
+@@ -1,88 +0,0 @@
+-menu "Kernel hacking"
+-
+-config TRACE_IRQFLAGS_SUPPORT
+-	bool
+-	default y
+-
+-source "lib/Kconfig.debug"
+-
+-config EARLY_PRINTK
+-	bool "Early printk" if EMBEDDED && DEBUG_KERNEL
+-	default y
+-	help
+-	  Write kernel log output directly into the VGA buffer or to a serial
+-	  port.
+-
+-	  This is useful for kernel debugging when your machine crashes very
+-	  early before the console code is initialized. For normal operation
+-	  it is not recommended because it looks ugly and doesn't cooperate
+-	  with klogd/syslogd or the X server. You should normally N here,
+-	  unless you want to debug such a crash.
+-
+-config DEBUG_STACKOVERFLOW
+-	bool "Check for stack overflows"
+-	depends on DEBUG_KERNEL
+-	help
+-	  This option will cause messages to be printed if free stack space
+-	  drops below a certain limit.
+-
+-config DEBUG_STACK_USAGE
+-	bool "Stack utilization instrumentation"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+-comment "Page alloc debug is incompatible with Software Suspend on i386"
+-	depends on DEBUG_KERNEL && HIBERNATION
+-
+-config DEBUG_PAGEALLOC
+-	bool "Debug page memory allocations"
+-	depends on DEBUG_KERNEL && !HIBERNATION && !HUGETLBFS
+-	help
+-	  Unmap pages from the kernel linear mapping after free_pages().
+-	  This results in a large slowdown, but helps to find certain types
+-	  of memory corruptions.
+-
+-config DEBUG_RODATA
+-	bool "Write protect kernel read-only data structures"
+-	depends on DEBUG_KERNEL
+-	help
+-	  Mark the kernel read-only data as write-protected in the pagetables,
+-	  in order to catch accidental (and incorrect) writes to such const
+-	  data. This option may have a slight performance impact because a
+-	  portion of the kernel code won't be covered by a 2MB TLB anymore.
+-	  If in doubt, say "N".
+-
+-config 4KSTACKS
+-	bool "Use 4Kb for kernel stacks instead of 8Kb"
+-	depends on DEBUG_KERNEL
+-	help
+-	  If you say Y here the kernel will use a 4Kb stacksize for the
+-	  kernel stack attached to each process/thread. This facilitates
+-	  running more threads on a system and also reduces the pressure
+-	  on the VM subsystem for higher order allocations. This option
+-	  will also use IRQ stacks to compensate for the reduced stackspace.
+-
+-config X86_FIND_SMP_CONFIG
+-	bool
+-	depends on X86_LOCAL_APIC || X86_VOYAGER
+-	default y
+-
+-config X86_MPPARSE
+-	bool
+-	depends on X86_LOCAL_APIC && !X86_VISWS
+-	default y
+-
+-config DOUBLEFAULT
+-	default y
+-	bool "Enable doublefault exception handler" if EMBEDDED
+-	help
+-          This option allows trapping of rare doublefault exceptions that
+-          would otherwise cause a system to silently reboot. Disabling this
+-          option saves about 4k and might cause you much additional grey
+-          hair.
+-
+-endmenu
+--- /dev/null
++++ linux-2.6.24-rc1/arch/x86/Kconfig.debug
+@@ -0,0 +1,119 @@
++menu "Kernel hacking"
++
++config TRACE_IRQFLAGS_SUPPORT
++	def_bool y
++
++source "lib/Kconfig.debug"
++
++config EARLY_PRINTK
++	bool "Early printk" if EMBEDDED && DEBUG_KERNEL
++	default y
++	depends on X86_32
++	help
++	  Write kernel log output directly into the VGA buffer or to a serial
++	  port.
++
++	  This is useful for kernel debugging when your machine crashes very
++	  early before the console code is initialized. For normal operation
++	  it is not recommended because it looks ugly and doesn't cooperate
++	  with klogd/syslogd or the X server. You should normally N here,
++	  unless you want to debug such a crash.
++
++config DEBUG_STACKOVERFLOW
++	bool "Check for stack overflows"
++	depends on DEBUG_KERNEL
++	help
++	  This option will cause messages to be printed if free stack space
++	  drops below a certain limit.
++
++config DEBUG_STACK_USAGE
++	bool "Stack utilization instrumentation"
++	depends on DEBUG_KERNEL
++	help
++	  Enables the display of the minimum amount of free stack which each
++	  task has ever had available in the sysrq-T and sysrq-P debug output.
++
++	  This option will slow down process creation somewhat.
++
++comment "Page alloc debug is incompatible with Software Suspend on i386"
++	depends on DEBUG_KERNEL && HIBERNATION
++	depends on X86_32
++
++config DEBUG_PAGEALLOC
++	bool "Debug page memory allocations"
++	depends on DEBUG_KERNEL && !HIBERNATION && !HUGETLBFS
++	depends on X86_32
++	help
++	  Unmap pages from the kernel linear mapping after free_pages().
++	  This results in a large slowdown, but helps to find certain types
++	  of memory corruptions.
++
++config DEBUG_RODATA
++	bool "Write protect kernel read-only data structures"
++	depends on DEBUG_KERNEL
++	help
++	  Mark the kernel read-only data as write-protected in the pagetables,
++	  in order to catch accidental (and incorrect) writes to such const
++	  data. This option may have a slight performance impact because a
++	  portion of the kernel code won't be covered by a 2MB TLB anymore.
++	  If in doubt, say "N".
++
++config 4KSTACKS
++	bool "Use 4Kb for kernel stacks instead of 8Kb"
++	depends on DEBUG_KERNEL
++	depends on X86_32
++	help
++	  If you say Y here the kernel will use a 4Kb stacksize for the
++	  kernel stack attached to each process/thread. This facilitates
++	  running more threads on a system and also reduces the pressure
++	  on the VM subsystem for higher order allocations. This option
++	  will also use IRQ stacks to compensate for the reduced stackspace.
++
++config X86_FIND_SMP_CONFIG
++	def_bool y
++	depends on X86_LOCAL_APIC || X86_VOYAGER
++	depends on X86_32
++
++config X86_MPPARSE
++	def_bool y
++	depends on X86_LOCAL_APIC && !X86_VISWS
++	depends on X86_32
++
++config DOUBLEFAULT
++	default y
++	bool "Enable doublefault exception handler" if EMBEDDED
++	depends on X86_32
++	help
++	  This option allows trapping of rare doublefault exceptions that
++	  would otherwise cause a system to silently reboot. Disabling this
++	  option saves about 4k and might cause you much additional grey
++	  hair.
++
++config IOMMU_DEBUG
++	bool "Enable IOMMU debugging"
++	depends on IOMMU && DEBUG_KERNEL
++	depends on X86_64
++	help
++	  Force the IOMMU to on even when you have less than 4GB of
++	  memory and add debugging code. On overflow always panic. And
++	  allow to enable IOMMU leak tracing. Can be disabled at boot
++	  time with iommu=noforce. This will also enable scatter gather
++	  list merging.  Currently not recommended for production
++	  code. When you use it make sure you have a big enough
++	  IOMMU/AGP aperture.  Most of the options enabled by this can
++	  be set more finegrained using the iommu= command line
++	  options. See Documentation/x86_64/boot-options.txt for more
++	  details.
++
++config IOMMU_LEAK
++	bool "IOMMU leak tracing"
++	depends on DEBUG_KERNEL
++	depends on IOMMU_DEBUG
++	help
++	  Add a simple leak tracer to the IOMMU code. This is useful when you
++	  are debugging a buggy device driver that leaks IOMMU mappings.
++
++#config X86_REMOTE_DEBUG
++#	bool "kgdb debugging stub"
++
++endmenu
+--- linux-2.6.24-rc1.orig/arch/x86_64/Kconfig.debug
++++ /dev/null
+@@ -1,61 +0,0 @@
+-menu "Kernel hacking"
+-
+-config TRACE_IRQFLAGS_SUPPORT
+-	bool
+-	default y
+-
+-source "lib/Kconfig.debug"
+-
+-config DEBUG_RODATA
+-       bool "Write protect kernel read-only data structures"
+-       depends on DEBUG_KERNEL
+-       help
+-	 Mark the kernel read-only data as write-protected in the pagetables,
+-	 in order to catch accidental (and incorrect) writes to such const data.
+-	 This option may have a slight performance impact because a portion
+-	 of the kernel code won't be covered by a 2MB TLB anymore.
+-	 If in doubt, say "N".
+-
+-config IOMMU_DEBUG
+-       depends on IOMMU && DEBUG_KERNEL
+-       bool "Enable IOMMU debugging"
+-       help
+-         Force the IOMMU to on even when you have less than 4GB of
+-	 memory and add debugging code. On overflow always panic. And
+-	 allow to enable IOMMU leak tracing. Can be disabled at boot
+-	 time with iommu=noforce. This will also enable scatter gather
+-	 list merging.  Currently not recommended for production
+-	 code. When you use it make sure you have a big enough
+-	 IOMMU/AGP aperture.  Most of the options enabled by this can
+-	 be set more finegrained using the iommu= command line
+-	 options. See Documentation/x86_64/boot-options.txt for more
+-	 details.
+-
+-config IOMMU_LEAK
+-       bool "IOMMU leak tracing"
+-       depends on DEBUG_KERNEL
+-       depends on IOMMU_DEBUG
+-       help
+-         Add a simple leak tracer to the IOMMU code. This is useful when you
+-	 are debugging a buggy device driver that leaks IOMMU mappings.
+-
+-config DEBUG_STACKOVERFLOW
+-        bool "Check for stack overflows"
+-        depends on DEBUG_KERNEL
+-        help
+-	  This option will cause messages to be printed if free stack space
+-	  drops below a certain limit.
+-
+-config DEBUG_STACK_USAGE
+-        bool "Stack utilization instrumentation"
+-        depends on DEBUG_KERNEL
+-        help
+-	  Enables the display of the minimum amount of free stack which each
+-	  task has ever had available in the sysrq-T and sysrq-P debug output.
+-
+-	  This option will slow down process creation somewhat.
+-
+-#config X86_REMOTE_DEBUG
+-#       bool "kgdb debugging stub"
+-
+-endmenu
