@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbXJXPVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbXJXPWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbXJXPVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbXJXPU6
+	id S1755957AbXJXPWU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbXJXPWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:20:58 -0400
-Received: from waste.org ([66.93.16.53]:34706 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752882AbXJXPU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:20:58 -0400
-Date: Wed, 24 Oct 2007 10:20:36 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071024152036.GX19691@waste.org>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx> <20071023221116.GL17536@waste.org> <20071024014920.GU27248@parisc-linux.org>
+	Wed, 24 Oct 2007 11:22:12 -0400
+Received: from smtp-out3.libero.it ([212.52.84.43]:52954 "EHLO
+	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbXJXPWM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 11:22:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAADMAH0fAqBA5/2dsb2JhbAAMj3c8
+Date: Wed, 24 Oct 2007 17:05:34 +0200
+Message-Id: <JQF8LA$1D0858D77D0D0389288C048A1E433E9B@libero.it>
+Subject: Sr Nr: 0909AOB09
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024014920.GU27248@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "mailerawardpost" <mailerawardpost@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl19)
+X-SenderIP: 81.202.161.49
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 07:49:20PM -0600, Matthew Wilcox wrote:
-> On Tue, Oct 23, 2007 at 05:11:16PM -0500, Matt Mackall wrote:
-> > You might want to consider growing the buffer by no less than a small
-> > constant factor like 1.3x. This will keep things that do short concats
-> > in a loop from degrading to O(n^2) performance due to realloc and
-> > memcpy.
-> 
-> I looked at slab and slub, and would grow the buffer by no less than
-> 1.5x each time, thanks to the buckets.  I'd initially implemented 2x,
-> but switched to allocating size+1 and calling ksize() as being a more
-> efficient implementation.
+YOU 'VE WON.
 
-Fair enough.
- 
-> I presume slob is different?  Actually, slob doesn't seem to
-> provide krealloc, so I think stringbuf won't work on slob.  Will you
-> have time to fix this?
+You have won $655,000.00 Dollars in DE EUROMILLIONES ONLINE INT.LOTTERY SPAIN.For further development for Clearification and procedure please Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es) TEL:  +34 692 486 797.
 
-http://lxr.linux.no/source/mm/slob.c#L207
+(1) Tic Nr: 6460DGH
+(2) Sr Nr: 0909AOB09
+(3) LU Nr: 726726XZJHN
+(4) BT Nr: 2GH267XZZ1-5-42
+(5) RF Nr 9527BCV-33-7-7-7
 
-Yep, slob is different, it has no kmalloc buckets.
+Regards.
+Mss.Sodic Lasy
 
-> > Should probably just bite the bullet and pass a flag.
-> 
-> Hrm.
-> 
-> extern void sb_printf(struct stringbuf *sb, gfp_t gfp, const char *fmt, ...)
->         __attribute__((format(printf, 3, 4)));
-> 
-> ?  Any objections?
-
-Fine by me.
- 
-> > > +#define INITIAL_SIZE 32
-> > 
-> > Too small. That will guarantee that most users end up doing a realloc.
-> > Can we have 128 instead?
-> 
-> I don't care.  Sure!
-
-Most of these objects will have very short lifetimes, so there's very
-little downside.
-
--- 
-Mathematics is the supreme nostalgia of our time.
