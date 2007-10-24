@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbXJXRTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbXJXRTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbXJXRTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXJXRTF
+	id S1759562AbXJXRTf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbXJXRTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:19:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:36430 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbXJXRTD (ORCPT
+	Wed, 24 Oct 2007 13:19:10 -0400
+Received: from lnx130.hrz.tu-darmstadt.de ([130.83.174.24]:40422 "EHLO
+	lnx130.hrz.tu-darmstadt.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753202AbXJXRTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:19:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=T5amex2M2M6GBfbGFa4uo7XFJXjAYLVQfVmY8prwX75xvlCCTAiG72/fwZOm56+3fUCQN6R8rl3Q9wmjbapSnNVtLDaa6rZ+JM/3EcFQT3yCvUUxLnOR96vb6/yJbULLrIWnY40HIizk4FbBelOMxD9j+LtX9drZqAr4qLomAdA=
-Message-ID: <471F7E7D.1080501@gmail.com>
-Date: Wed, 24 Oct 2007 21:18:53 +0400
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Wed, 24 Oct 2007 13:19:08 -0400
+X-Greylist: delayed 414 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 13:19:08 EDT
+Date: Wed, 24 Oct 2007 19:11:29 +0200
+From: Volker Sauer <vsauer@dvs.tu-darmstadt.de>
+To: linux-kernel@vger.kernel.org
+Cc: adi@postpi.com
+Subject: D-Link DFE-580TX and snmpd problems, who's maintainer of
+	sundance.c ?
+Message-ID: <20071024171129.GA14255@volker-sauer.de>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] acpi/battery.c: remove dead code
-References: <20071024162537.GA30533@stusta.de>
-In-Reply-To: <20071024162537.GA30533@stusta.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
+Content-Disposition: inline
+X-Mailer: Mutt http://www.mutt.org/
+X-Editor: Vim http://www.vim.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-TUD-HRZ-MailScanner: Found to be clean
+X-TUD-HRZ-MailScanner-SpamCheck: 
+X-MailScanner-From: vsauer@dvs.tu-darmstadt.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> After commit f1d4661abe05d0a2c014166042d15ed8b69ae8f2 this was dead 
-> code.
-> 
-> Spotted by the Coverity checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked. Thanks.
-> 
-> ---
-> --- linux-2.6/drivers/acpi/battery.c.old	2007-10-23 18:44:13.000000000 +0200
-> +++ linux-2.6/drivers/acpi/battery.c	2007-10-23 18:44:43.000000000 +0200
-> @@ -550,18 +550,14 @@ static ssize_t acpi_battery_write_alarm(
->  	int result = 0;
->  	char alarm_string[12] = { '\0' };
->  	struct seq_file *m = file->private_data;
->  	struct acpi_battery *battery = m->private;
->  
->  	if (!battery || (count > sizeof(alarm_string) - 1))
->  		return -EINVAL;
-> -	if (result) {
-> -		result = -ENODEV;
-> -		goto end;
-> -	}
->  	if (!acpi_battery_present(battery)) {
->  		result = -ENODEV;
->  		goto end;
->  	}
->  	if (copy_from_user(alarm_string, buffer, count)) {
->  		result = -EFAULT;
->  		goto end;
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
 
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi,
+
+there already was a thread on this topic in summer but with no result:
+
+http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/4b433f881e3585b2/a36ccba40ef2e59d?hl=en&lnk=gst&q=Re%3A+D-Link+DFE-580TX+4+port+NIC+problems#a36ccba40ef2e59d
+
+Adi tracked down, that the messages in the syslog (in my case appearing
+exactly every 30 seconds), come from snmpd running on the same machine
+calling SIOCDEVPRIVATE.
+
+This behaviour still exists in 2.6.23.1
+
+I'm neither a skilled C-programmer nor a kernel-expert, but looking at
+drivers/net/sundance.c:1605 I see, that SIOCDEVPRIVATE does
+nothing else then printing this debug message.
+
+So the questions is: why? What is this good for?
+And: can I remove it? I can not abandon snmpd and the messages spam my
+syslog.
+Or: do I have to patch snmpd?
+
+Regards
+Volker
+
+-> Please CC: me, I'm not on the list <-
+
+P.S.: there's no one in the MAINTAINERS file for sundance.c. Is someone
+here who still cares about this driver?
+
+
+--nFreZHaLTZJo0R7j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHH3zBfjVOTV3V0OARAnhqAJwI42BY05Dyhi/dqA2UqI+vtYwJxgCgkGJQ
+z58SSnHzJS3j/y52fqHbI5o=
+=Y9JW
+-----END PGP SIGNATURE-----
+
+--nFreZHaLTZJo0R7j--
