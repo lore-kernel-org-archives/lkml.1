@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbXJXRQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbXJXRR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758382AbXJXRQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbXJXRQt
+	id S1759187AbXJXRR7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXJXRRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:16:49 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41553 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753099AbXJXRQs (ORCPT
+	Wed, 24 Oct 2007 13:17:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47727 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850AbXJXRRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:16:48 -0400
-Date: Wed, 24 Oct 2007 18:19:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] unexport sys_{open,read}
-Message-ID: <20071024181935.1302b1e1@the-village.bc.nu>
-In-Reply-To: <20071024162434.GL30533@stusta.de>
-References: <20071024162434.GL30533@stusta.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Oct 2007 13:17:48 -0400
+Message-ID: <471F7E2D.3010705@zytor.com>
+Date: Wed, 24 Oct 2007 10:17:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Mark Hounschell <markh@compro.net>
+Subject: Re: test_and_set_bit and friends ?
+References: <471DC9E8.7040104@cfl.rr.com> <471F2636.20408@cfl.rr.com>
+In-Reply-To: <471F2636.20408@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 18:24:34 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> sys_{open,read} can finally be unexported.
+Mark Hounschell wrote:
+> Mark Hounschell wrote:
+>> These calls apparently are gone. Can someone tell me why and what are
+>> the replacements.
+>>
+>> Thanks in advance
+>> Mark
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> I got no response from the glibc people on this and the kernel-newbies
+> list appears dead so I thought I'd try here since these calls are/were
+> actually kernel based to begin with. Why are they no longer available in
+> user space and what is one supposed to use now?
+> 
 
-Acked-by: Alan Cox <alan@redhat.com>
+There was talk of a libarch for these sorts of things.  Don't know if 
+that ever happened.
+
+	-hpa
