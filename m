@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbXJXQYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbXJXQYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbXJXQYf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXJXQWq
+	id S1759230AbXJXQYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXJXQWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:22:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33290 "EHLO
+	Wed, 24 Oct 2007 12:22:48 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33294 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754532AbXJXQWo (ORCPT
+	with ESMTP id S1756091AbXJXQWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:22:44 -0400
-Date: Wed, 24 Oct 2007 18:23:14 +0200
+	Wed, 24 Oct 2007 12:22:47 -0400
+Date: Wed, 24 Oct 2007 18:23:16 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] video/saa7134/: make 2 functions static
-Message-ID: <20071024162314.GI30533@stusta.de>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fujitsu-laptop.c: make 2 functions static
+Message-ID: <20071024162316.GJ30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,66 +24,35 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-saa7134_buffer_requeue() and set_tvnorm() can become static.
+acpi_fujitsu_{add,remove}() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/video/saa7134/saa7134-core.c  |    4 ++--
- drivers/media/video/saa7134/saa7134-video.c |    2 +-
- drivers/media/video/saa7134/saa7134.h       |    4 ----
- 3 files changed, 3 insertions(+), 7 deletions(-)
+ drivers/misc/fujitsu-laptop.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-47fd0eba0eadebc28eac13b320e8f72879dc785a 
-diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
-index 1a4a244..81ad03b 100644
---- a/drivers/media/video/saa7134/saa7134-core.c
-+++ b/drivers/media/video/saa7134/saa7134-core.c
-@@ -395,8 +395,8 @@ void saa7134_buffer_timeout(unsigned long data)
+175c8b648a54b625037916a8f6e3851574141532 
+diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
+index d366a6c..d686ba7 100644
+--- a/drivers/misc/fujitsu-laptop.c
++++ b/drivers/misc/fujitsu-laptop.c
+@@ -198,7 +198,7 @@ static struct platform_driver fujitsupf_driver = {
  
- /* resends a current buffer in queue after resume */
+ /* ACPI device */
  
--int saa7134_buffer_requeue(struct saa7134_dev *dev,
--			 struct saa7134_dmaqueue *q)
-+static int saa7134_buffer_requeue(struct saa7134_dev *dev,
-+				  struct saa7134_dmaqueue *q)
+-int acpi_fujitsu_add(struct acpi_device *device)
++static int acpi_fujitsu_add(struct acpi_device *device)
  {
- 	struct saa7134_buf *buf, *next;
+ 	int result = 0;
+ 	int state = 0;
+@@ -229,7 +229,7 @@ int acpi_fujitsu_add(struct acpi_device *device)
+ 	return result;
+ }
  
-diff --git a/drivers/media/video/saa7134/saa7134-video.c b/drivers/media/video/saa7134/saa7134-video.c
-index 471b927..bd3b303 100644
---- a/drivers/media/video/saa7134/saa7134-video.c
-+++ b/drivers/media/video/saa7134/saa7134-video.c
-@@ -540,7 +540,7 @@ void res_free(struct saa7134_dev *dev, struct saa7134_fh *fh, unsigned int bits)
- 
- /* ------------------------------------------------------------------ */
- 
--void set_tvnorm(struct saa7134_dev *dev, struct saa7134_tvnorm *norm)
-+static void set_tvnorm(struct saa7134_dev *dev, struct saa7134_tvnorm *norm)
+-int acpi_fujitsu_remove(struct acpi_device *device, int type)
++static int acpi_fujitsu_remove(struct acpi_device *device, int type)
  {
+ 	ACPI_FUNCTION_TRACE("acpi_fujitsu_remove");
  
- 	dprintk("set tv norm = %s\n",norm->name);
-diff --git a/drivers/media/video/saa7134/saa7134.h b/drivers/media/video/saa7134/saa7134.h
-index 28ec680..ac3ce77 100644
---- a/drivers/media/video/saa7134/saa7134.h
-+++ b/drivers/media/video/saa7134/saa7134.h
-@@ -595,9 +595,6 @@ void saa7134_buffer_next(struct saa7134_dev *dev, struct saa7134_dmaqueue *q);
- void saa7134_buffer_timeout(unsigned long data);
- void saa7134_dma_free(struct videobuf_queue *q,struct saa7134_buf *buf);
- 
--int saa7134_buffer_requeue(struct saa7134_dev *dev,
--			 struct saa7134_dmaqueue *q);
--
- int saa7134_set_dmabits(struct saa7134_dev *dev);
- 
- extern int (*saa7134_dmasound_init)(struct saa7134_dev *dev);
-@@ -630,7 +627,6 @@ void saa7134_i2c_call_clients(struct saa7134_dev *dev,
- extern struct video_device saa7134_video_template;
- extern struct video_device saa7134_radio_template;
- 
--void set_tvnorm(struct saa7134_dev *dev, struct saa7134_tvnorm *norm);
- int saa7134_videoport_init(struct saa7134_dev *dev);
- void saa7134_set_decoder(struct saa7134_dev *dev);
- 
-
