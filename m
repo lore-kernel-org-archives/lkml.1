@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXJXNjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXJXNlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXJXNjE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbXJXNiy
+	id S1759158AbXJXNlp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXJXNlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:38:54 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46116 "EHLO mail.screens.ru"
+	Wed, 24 Oct 2007 09:41:35 -0400
+Received: from nn7.de ([85.214.94.156]:52448 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753084AbXJXNix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:38:53 -0400
-Date: Wed, 24 Oct 2007 17:44:04 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: ego@in.ibm.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
-Message-ID: <20071024134404.GB82@tv-sign.ru>
-References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com> <200710241721.05163.rusty@rustcorp.com.au>
+	id S1756341AbXJXNlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:41:35 -0400
+Subject: Re: [PATCH 3/3] faster workaround
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bernd Schubert <bs@q-leap.de>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <471DABE1.40301@gmail.com>
+References: <200710081709.18253.bs@q-leap.de>
+	 <200710101112.20448.bs@q-leap.de>	<200710111409.56210.bs@q-leap.de>
+	 <200710111433.23833.bs@q-leap.de>
+	 <20071011142628.48272a4a@the-village.bc.nu>	<470E30F9.5060705@garzik.org>
+	 <20071011155024.46007973@the-village.bc.nu> <470E3A35.4000104@garzik.org>
+	 <471DABE1.40301@gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Oct 2007 15:39:28 +0200
+Message-Id: <1193233168.5427.5.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710241721.05163.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24, Rusty Russell wrote:
->
-> On Wednesday 24 October 2007 15:37:16 Gautham R Shenoy wrote:
-> > @@ -712,7 +712,7 @@ static void start_workqueue_thread(struc
-> >
-> >  	if (p != NULL) {
-> >  		if (cpu >= 0)
-> > -			kthread_bind(p, cpu);
-> > +			set_cpus_allowed(p, cpumask_of_cpu(cpu));
-> >  		wake_up_process(p);
-> >  	}
+On Tue, 2007-10-23 at 17:08 +0900, Tejun Heo wrote:
+> Jeff Garzik wrote:
+> > Alan Cox wrote:
+> >>> 2) Once we identified, over time, the set of drives affected by this
+> >>> 3112 quirk (aka drives that didn't fully comply to SATA spec), the
+> >>> debugging of corruption cases largely shifted to the standard
+> >>> routine: update the BIOS, replace the
+> >>> cables/RAM/power/mainboard/slot/etc. to be certain of problem location.
+> >>
+> >> Except for the continued series of later SI + Nvidia chipset (mostly)
+> >> pattern which seems unanswered but also being later chips I assume
+> >> unrelated to this problem.
+> > 
+> > The SIL_FLAG_MOD15WRITE flag is set in sil_port_info[] is set according
+> > to the best info we have from SiI, which indicates that 3114 and 3512 do
+> > not have the same problem as the 3112.
 > 
-> Hi Gautham!
+> I don't think this data corruption problem w/ sil3114 is related to
+> m15w.  m15w workaround slows down things quite a bit and is likely to
+> hide problems on PCI bus side.  There are reports of data corruption
+> with 3114 on nvidia (most common), via and now amd chipsets.  There's
+> one on intel too but IIRC wasn't too definite.
+
+err wait, the motherboard I am having is also via based. however the
+m15w workaround just slowed down everything but the problem still
+appeared.
+
+also to be sure that it is really some problem related to the particular
+seagate drive vs. sil3114 I created a 200G file of zeros on one of the
+known to work seagates. and indeed it was all zeros... 
+
+> According to a user, freebsd didn't have data corruption problem on the
+> same hardware.  I copied PCI FIFO setup code (ours is broken BTW) but it
+> didn't fix the problem.
 > 
-> 	This works, although the change is unnecessary.
+> I'll try to reproduce the problem locally and hunt it down.
 
-kthread_bind() changes ->cpu/->cpus_allowed without any locks.
-
-Currently this is possible because nobody can wakeup the new thread
-after wait_task_inactive() succeeds. With this patch this is not true
-any longer, cwq->thread can sleep, for example, on cwq->more_work.
-
-Oleg.
-
+Thanks in advance...
+Soeren
