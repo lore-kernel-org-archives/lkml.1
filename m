@@ -1,391 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbXJXCMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXJXCQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbXJXCMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXJXCMM
+	id S1754773AbXJXCQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXJXCQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:12:12 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:59877 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbXJXCMJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:12:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=cnGYQmvgL1LMnsoZa/1t7NMeTOhC1pLJgCIBzgscqedIBhdA5+Xwu+SvdmXFolvexDj2ss9i22x9xW2bAizxXwRAIWLuv0GBHz2/KRL8FljhItLnzrz8r1IIxY/9Op2fLcmdG9RP1pMtiycKLmRbFf/P9tNJBLl6CpUk4BxLpio=
-Date: Wed, 24 Oct 2007 12:11:59 +1000
-From: Gilles Gigan <gilles.gigan@gmail.com>
-To: akpm@linux-foundation.org, wim@iguana.be
+	Tue, 23 Oct 2007 22:16:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:15794 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751944AbXJXCQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 22:16:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,321,1188802800"; 
+   d="scan'208";a="254256511"
+Subject: [PATCH -v2] x86 boot: document for 32 bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] watchdog: add Nano 7240 driver
-Message-Id: <20071024121159.03d209ec.gilles.gigan@gmail.com>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Oct 2007 10:18:49 +0800
+Message-Id: <1193192329.23935.121.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 24 Oct 2007 02:16:05.0121 (UTC) FILETIME=[D4C09710:01C815E3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gilles Gigan<gilles.gigan@gmail.com>
+This patch documents the 32-bit boot protocol of x86. It has been used
+by Kexec and LinuxBIOS. This patch is based on the proposal of Peter
+Anvin.
 
-Adds support for the built-in watchdog on EPIC Nano 7240 boards from IEI.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Tested on Nano-7240RS.
 
-Hardware documentation of the platform (including watchdog) can be found 
-on the IEI website: http://www.ieiworld.com
+v2:
 
-Signed-off-by: Gilles Gigan <gilles.gigan@gmail.com>
+- Fixes a bug about which registers should be set to zero.
+
 
 ---
- drivers/char/watchdog/sbc7240_wdt.c |  303 +++++++++++++++++++++++++++++++++++
- drivers/watchdog/Kconfig            |   13 ++
- drivers/watchdog/Makefile           |    1 
- 3 files changed, 317 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/char/watchdog/sbc7240_wdt.c b/drivers/char/watchdog/sbc7240_wdt.c
-new file mode 100644
-index 0000000..9f065e1
---- /dev/null
-+++ b/drivers/char/watchdog/sbc7240_wdt.c
-@@ -0,0 +1,303 @@
-+/*
-+ *	NANO7240 SBC Watchdog device driver
-+ *
-+ *	Based on w83877f.c by Scott Jennings,
-+ *
-+ *	This program is free software; you can redistribute it and/or modify
-+ *	it under the terms of the GNU General Public License version 2 as
-+ *	published by the Free Software Foundation;
-+ *
-+ *	Software distributed under the License is distributed on an "AS IS"
-+ *	basis, WITHOUT WARRANTY OF ANY KIND, either express or
-+ *	implied. See the License for the specific language governing
-+ *	rights and limitations under the License.
-+ *
-+ *	(c) Copyright 2007  Gilles GIGAN <gilles.gigan@jcu.edu.au>
-+ *
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/ioport.h>
-+#include <linux/jiffies.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/miscdevice.h>
-+#include <linux/notifier.h>
-+#include <linux/types.h>
-+#include <linux/watchdog.h>
-+#include <asm/atomic.h>
-+#include <asm/io.h>
-+#include <asm/system.h>
-+#include <asm/uaccess.h>
-+
-+#define SBC7240_PREFIX "sbc7240_wdt: "
-+
-+#define SBC7240_ENABLE_PORT		0x443
-+#define SBC7240_DISABLE_PORT		0x043
-+#define SBC7240_SET_TIMEOUT_PORT	SBC7240_ENABLE_PORT
-+#define SBC7240_MAGIC_CHAR		'V'
-+
-+#define SBC7240_TIMEOUT		30
-+#define SBC7240_MAX_TIMEOUT		255
-+static int timeout = SBC7240_TIMEOUT;	/* in seconds */
-+module_param(timeout, int, 0);
-+MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. (1<=timeout<="
-+		  __MODULE_STRING(SBC7240_MAX_TIMEOUT) ", default="
-+		  __MODULE_STRING(SBC7240_TIMEOUT) ")");
-+
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout, "Disable watchdog when closing device file");
-+
-+#define OPEN_STATUS_BIT			0
-+#define ENABLED_STATUS_BIT		1
-+static unsigned long wdt_status;
-+
-+/*
-+ * Utility routines
-+ */
-+
-+static void wdt_disable(void)
-+{
-+	/* disable the watchdog */
-+	if (test_and_clear_bit(ENABLED_STATUS_BIT, &wdt_status)) {
-+		inb_p(SBC7240_DISABLE_PORT);
-+		printk(KERN_INFO SBC7240_PREFIX 
-+		       "Watchdog timer is now disabled.\n");
-+	}
-+}
-+
-+static void wdt_enable(void)
-+{
-+	/* enable the watchdog */
-+	if (!test_and_set_bit(ENABLED_STATUS_BIT, &wdt_status)) {
-+		inb_p(SBC7240_ENABLE_PORT);
-+		printk(KERN_INFO SBC7240_PREFIX 
-+		       "Watchdog timer is now enabled.\n");
-+	}
-+}
-+
-+static int wdt_set_timeout(int t)
-+{
-+	if (t < 1 || t > SBC7240_MAX_TIMEOUT) {
-+		printk(KERN_ERR SBC7240_PREFIX 
-+		       "timeout value must be 1<=x<=%d\n",
-+		       SBC7240_MAX_TIMEOUT);
-+		return -1;
-+	}
-+	/* set the timeout */
-+	outb_p((unsigned)t, SBC7240_SET_TIMEOUT_PORT);
-+	printk(KERN_INFO SBC7240_PREFIX "timeout set to %d seconds\n", t);
-+	return 0;
-+}
-+
-+/* Whack the dog */
-+static inline void wdt_keepalive(void)
-+{
-+	if (test_bit(ENABLED_STATUS_BIT, &wdt_status))
-+		inb_p(SBC7240_ENABLE_PORT);
-+}
-+
-+/*
-+ * /dev/watchdog handling
-+ */
-+static ssize_t fop_write(struct file *file, const char __user *buf,
-+			  size_t count, loff_t *ppos)
-+{
-+	size_t i;
-+	char c;
-+	int got_magic_char = 0;
-+
-+	/* is there a magic char ? */
-+	for (i = 0; i != count; i++) {
-+		if (get_user(c, buf + i))
-+			return -EFAULT;
-+		if (c == SBC7240_MAGIC_CHAR) {
-+			got_magic_char = 1;
-+			break;
-+		}
-+	}
-+
-+	if (got_magic_char)
-+		wdt_disable();
-+	else
-+		wdt_keepalive();
-+
-+	return count;
-+}
-+
-+static int fop_open(struct inode *inode, struct file *file)
-+{
-+	if (test_and_set_bit(OPEN_STATUS_BIT, &wdt_status))
-+		return -EBUSY;
-+
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int fop_close(struct inode *inode, struct file *file)
-+{
-+	if (!nowayout)
-+		wdt_disable();
-+
-+	clear_bit(OPEN_STATUS_BIT, &wdt_status);
-+	return 0;
-+}
-+
-+static struct watchdog_info ident = {
-+	.options = WDIOF_KEEPALIVEPING |WDIOF_SETTIMEOUT |
-+		   WDIOF_MAGICCLOSE,
-+	.firmware_version = 1,
-+	.identity = "SBC7240",
-+};
+ boot.txt      |   38 ++++++++++++++++
+ zero-page.txt |  130 +++++++++++++---------------------------------------------
+ 2 files changed, 69 insertions(+), 99 deletions(-)
+
+Index: linux-2.6/Documentation/i386/boot.txt
+===================================================================
+--- linux-2.6.orig/Documentation/i386/boot.txt	2007-10-24 09:21:57.000000000 +0800
++++ linux-2.6/Documentation/i386/boot.txt	2007-10-24 10:01:42.000000000 +0800
+@@ -785,3 +785,41 @@
+ 	After completing your hook, you should jump to the address
+ 	that was in this field before your boot loader overwrote it
+ 	(relocated, if appropriate.)
 +
 +
-+static int fop_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+		      unsigned long arg)
-+{
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user
-+			((void __user *)arg, &ident, sizeof(ident))
-+			 ? -EFAULT : 0;
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(0, (int __user *)arg);
-+	case WDIOC_KEEPALIVE:
-+		wdt_keepalive();
-+		return 0;
-+	case WDIOC_SETOPTIONS:{
-+			int retval = -EINVAL;
++**** 32-bit BOOT PROTOCOL
 +
-+			if (arg & WDIOS_DISABLECARD) {
-+				wdt_disable();
-+				retval = 0;
-+			}
++For machine with some new BIOS other than legacy BIOS, such as EFI,
++LinuxBIOS, etc, and kexec, the 16-bit real mode setup code in kernel
++based on legacy BIOS can not be used, so a 32-bit boot protocol needs
++to be defined.
 +
-+			if (arg & WDIOS_ENABLECARD) {
-+				wdt_enable();
-+				retval = 0;
-+			}
++In 32-bit boot protocol, the first step in loading a Linux kernel
++should be to setup the boot parameters (struct boot_params,
++traditionally known as "zero page"). The memory for struct boot_params
++should be allocated and initialized to all zero. Then the setup header
++from offset 0x01f1 of kernel image on should be loaded into struct
++boot_params and examined. The end of setup header can be calculated as
++follow:
 +
-+			return retval;
-+		}
-+	case WDIOC_SETTIMEOUT:{
-+			int new_timeout;
++	0x0202 + byte value at offset 0x0201
 +
-+			if (get_user(new_timeout, (int __user *)arg))
-+				return -EFAULT;
++In addition to read/modify/write the setup header of the struct
++boot_params as that of 16-bit boot protocol, the boot loader should
++also fill the additional fields of the struct boot_params as that
++described in zero-page.txt.
 +
-+			if (wdt_set_timeout(new_timeout))
-+				return -EINVAL;
++After setupping the struct boot_params, the boot loader can load the
++32/64-bit kernel in the same way as that of 16-bit boot protocol.
 +
-+			timeout = new_timeout;
-+			return 0;
-+		}
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(timeout, (int __user *)arg);
-+	default:
-+		return -ENOTTY;
-+	}
-+}
++In 32-bit boot protocol, the kernel is started by jumping to the
++32-bit kernel entry point, which is the start address of loaded
++32/64-bit kernel.
 +
-+static const struct file_operations wdt_fops = {
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = fop_write,
-+	.open = fop_open,
-+	.release = fop_close,
-+	.ioctl = fop_ioctl,
-+};
++At entry, the CPU must be in 32-bit protected mode with paging
++disabled; a GDT must be loaded with the descriptors for selectors
++__BOOT_CS(0x10) and __BOOT_DS(0x18); both descriptors must be 4G flat
++segment; __BOOS_CS must have execute/read permission, and __BOOT_DS
++must have read/write permission; CS must be __BOOT_CS and DS, ES, SS
++must be __BOOT_DS; interrupt must be disabled; %esi must hold the base
++address of the struct boot_params; %ebp, %edi and %ebx must be zero.
+Index: linux-2.6/Documentation/i386/zero-page.txt
+===================================================================
+--- linux-2.6.orig/Documentation/i386/zero-page.txt	2007-10-24 09:21:57.000000000 +0800
++++ linux-2.6/Documentation/i386/zero-page.txt	2007-10-24 09:31:52.000000000 +0800
+@@ -1,99 +1,31 @@
+----------------------------------------------------------------------------
+-!!!!!!!!!!!!!!!WARNING!!!!!!!!
+-The zero page is a kernel internal data structure, not a stable ABI.  It might change
+-without warning and the kernel has no way to detect old version of it.
+-If you're writing some external code like a boot loader you should only use
+-the stable versioned real mode boot protocol described in boot.txt. Otherwise the kernel
+-might break you at any time.
+-!!!!!!!!!!!!!WARNING!!!!!!!!!!!
+-----------------------------------------------------------------------------
+-
+-Summary of boot_params layout (kernel point of view)
+-     ( collected by Hans Lermen and Martin Mares )
+- 
+-The contents of boot_params are used to pass parameters from the
+-16-bit realmode code of the kernel to the 32-bit part. References/settings
+-to it mainly are in:
+-
+-  arch/i386/boot/setup.S
+-  arch/i386/boot/video.S
+-  arch/i386/kernel/head.S
+-  arch/i386/kernel/setup.c
+- 
+-
+-Offset	Type		Description
+-------  ----		-----------
+-    0	32 bytes	struct screen_info, SCREEN_INFO
+-			ATTENTION, overlaps the following !!!
+-    2	unsigned short	EXT_MEM_K, extended memory size in Kb (from int 0x15)
+- 0x20	unsigned short	CL_MAGIC, commandline magic number (=0xA33F)
+- 0x22	unsigned short	CL_OFFSET, commandline offset
+-			Address of commandline is calculated:
+-			  0x90000 + contents of CL_OFFSET
+-			(only taken, when CL_MAGIC = 0xA33F)
+- 0x40	20 bytes	struct apm_bios_info, APM_BIOS_INFO
+- 0x60	16 bytes	Intel SpeedStep (IST) BIOS support information
+- 0x80	16 bytes	hd0-disk-parameter from intvector 0x41
+- 0x90	16 bytes	hd1-disk-parameter from intvector 0x46
+-
+- 0xa0	16 bytes	System description table truncated to 16 bytes.
+-			( struct sys_desc_table_struct )
+- 0xb0 - 0x13f		Free. Add more parameters here if you really need them.
+- 0x140- 0x1be		EDID_INFO Video mode setup
+-
+-0x1c4	unsigned long	EFI system table pointer
+-0x1c8	unsigned long	EFI memory descriptor size
+-0x1cc	unsigned long	EFI memory descriptor version
+-0x1d0	unsigned long	EFI memory descriptor map pointer
+-0x1d4	unsigned long	EFI memory descriptor map size
+-0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
+-0x1e4	unsigned long	Scratch field for the kernel setup code
+-0x1e8	char		number of entries in E820MAP (below)
+-0x1e9	unsigned char	number of entries in EDDBUF (below)
+-0x1ea	unsigned char	number of entries in EDD_MBR_SIG_BUFFER (below)
+-0x1f1	char		size of setup.S, number of sectors
+-0x1f2	unsigned short	MOUNT_ROOT_RDONLY (if !=0)
+-0x1f4	unsigned short	size of compressed kernel-part in the
+-			(b)zImage-file (in 16 byte units, rounded up)
+-0x1f6	unsigned short	swap_dev (unused AFAIK)
+-0x1f8	unsigned short	RAMDISK_FLAGS
+-0x1fa	unsigned short	VGA-Mode (old one)
+-0x1fc	unsigned short	ORIG_ROOT_DEV (high=Major, low=minor)
+-0x1ff	char		AUX_DEVICE_INFO
+-
+-0x200	short jump to start of setup code aka "reserved" field.
+-0x202	4 bytes		Signature for SETUP-header, ="HdrS"
+-0x206	unsigned short	Version number of header format
+-			Current version is 0x0201...
+-0x208	8 bytes		(used by setup.S for communication with boot loaders,
+-			 look there)
+-0x210	char		LOADER_TYPE, = 0, old one
+-			else it is set by the loader:
+-			0xTV: T=0 for LILO
+-				1 for Loadlin
+-				2 for bootsect-loader
+-				3 for SYSLINUX
+-				4 for ETHERBOOT
+-				5 for ELILO
+-				7 for GRuB
+-				8 for U-BOOT
+-				9 for Xen
+-				V = version
+-0x211	char		loadflags:
+-			bit0 = 1: kernel is loaded high (bzImage)
+-			bit7 = 1: Heap and pointer (see below) set by boot
+-				  loader.
+-0x212	unsigned short	(setup.S)
+-0x214	unsigned long	KERNEL_START, where the loader started the kernel
+-0x218	unsigned long	INITRD_START, address of loaded ramdisk image
+-0x21c	unsigned long	INITRD_SIZE, size in bytes of ramdisk image
+-0x220	4 bytes		(setup.S)
+-0x224	unsigned short	setup.S heap end pointer
+-0x226   unsigned short	zero_pad
+-0x228   unsigned long	cmd_line_ptr
+-0x22c   unsigned long	ramdisk_max
+-0x230   16 bytes 	trampoline
+-0x290 - 0x2cf		EDD_MBR_SIG_BUFFER (edd.S)
+-0x2d0 - 0xd00		E820MAP
+-0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
+-0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
++The additional fields in struct boot_params as a part of 32-bit boot
++protocol of kernel. These should be filled by bootloader or 16-bit
++real-mode setup code of the kernel. References/settings to it mainly
++are in:
 +
-+static struct miscdevice wdt_miscdev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &wdt_fops,
-+};
++  include/asm-x86/bootparam.h
 +
-+/*
-+ *	Notifier for system down
-+ */
 +
-+static int wdt_notify_sys(struct notifier_block *this, unsigned long code,
-+			   void *unused)
-+{
-+	if (code == SYS_DOWN || code == SYS_HALT)
-+		wdt_disable();
-+	return NOTIFY_DONE;
-+}
++Offset	Proto	Name		Meaning
++/Size
 +
-+static struct notifier_block wdt_notifier = {
-+	.notifier_call = wdt_notify_sys,
-+};
-+
-+static void __exit sbc7240_wdt_unload(void)
-+{
-+	printk(KERN_INFO SBC7240_PREFIX "Removing watchdog\n");
-+	misc_deregister(&wdt_miscdev);
-+
-+	unregister_reboot_notifier(&wdt_notifier);
-+	release_region(SBC7240_ENABLE_PORT, 1);
-+}
-+
-+static int __init sbc7240_wdt_init(void)
-+{
-+	int rc = -EBUSY;
-+
-+	if (!request_region(SBC7240_ENABLE_PORT, 1, "SBC7240 WDT")) {
-+		printk(KERN_ERR SBC7240_PREFIX "I/O address 0x%04x already in use\n",
-+		       SBC7240_ENABLE_PORT);
-+		rc = -EIO;
-+		goto err_out;
-+	}
-+
-+	/* The IO port 0x043 used to disable the watchdog
-+	 * is already claimed by the system timer, so we
-+	 * cant request_region() it ...*/
-+
-+	rc = misc_register(&wdt_miscdev);
-+	if (rc) {
-+		printk(KERN_ERR SBC7240_PREFIX
-+		       "cannot register miscdev on minor=%d (err=%d)\n",
-+		       wdt_miscdev.minor, rc);
-+		goto err_out_region1;
-+	}
-+
-+	rc = register_reboot_notifier(&wdt_notifier);
-+	if (rc) {
-+		printk(KERN_ERR SBC7240_PREFIX
-+		       "cannot register reboot notifier (err=%d)\n", rc);
-+		goto err_out_miscdev;
-+	}
-+
-+	if (timeout < 1 || timeout > SBC7240_MAX_TIMEOUT) {
-+		timeout = SBC7240_TIMEOUT;
-+		printk(KERN_INFO SBC7240_PREFIX
-+		       "timeout value must be 1<=x<=%d, using %d\n",
-+		       SBC7240_MAX_TIMEOUT, timeout);
-+	}
-+	wdt_set_timeout(timeout);
-+
-+	printk(KERN_INFO SBC7240_PREFIX
-+	       "Watchdog driver for SBC7240 initialised (nowayout=%d)\n",
-+	       nowayout);
-+
-+	return 0;
-+
-+err_out_miscdev:
-+	misc_deregister(&wdt_miscdev);
-+err_out_region1:
-+	release_region(SBC7240_ENABLE_PORT, 1);
-+err_out:
-+	return rc;
-+}
-+
-+module_init(sbc7240_wdt_init);
-+module_exit(sbc7240_wdt_unload);
-+
-+MODULE_AUTHOR("Gilles Gigan");
-+MODULE_DESCRIPTION("Watchdog device driver for single board"
-+		   " computers EPIC Nano 7240 from iEi");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-+
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 37bddc1..d44e86d 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -455,6 +455,19 @@ config SBC8360_WDT
- 
- 	  Most people will say N.
- 
-+config SBC7240_WDT
-+	tristate "SBC Nano 7240 Watchdog Timer"
-+	depends on X86_32
-+	---help---
-+	  This is the driver for the hardware watchdog found on the IEI
-+	  single board computers EPIC Nano 7240 (and likely others). This
-+	  watchdog simply watches your kernel to make sure it doesn't freeze,
-+	  and if it does, it reboots your computer after a certain amount of
-+	  time.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called sbc7240_wdt.
-+
- config CPU5_WDT
- 	tristate "SMA CPU5 Watchdog"
- 	depends on X86
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 389f8b1..a3a9a13 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -71,6 +71,7 @@ obj-$(CONFIG_SCx200_WDT) += scx200_wdt.o
- obj-$(CONFIG_PC87413_WDT) += pc87413_wdt.o
- obj-$(CONFIG_60XX_WDT) += sbc60xxwdt.o
- obj-$(CONFIG_SBC8360_WDT) += sbc8360.o
-+obj-$(CONFIG_SBC7240_WDT) += sbc7240_wdt.o
- obj-$(CONFIG_CPU5_WDT) += cpu5wdt.o
- obj-$(CONFIG_SMSC37B787_WDT) += smsc37b787_wdt.o
- obj-$(CONFIG_W83627HF_WDT) += w83627hf_wdt.o
++000/040	ALL	screen_info	Text mode or frame buffer information
++				(struct screen_info)
++040/014	ALL	apm_bios_info	APM BIOS information (struct apm_bios_info)
++060/010	ALL	ist_info	Intel SpeedStep (IST) BIOS support information
++				(struct ist_info)
++080/010	ALL	hd0_info	hd0 disk parameter, OBSOLETE!!
++090/010	ALL	hd1_info	hd1 disk parameter, OBSOLETE!!
++0A0/010	ALL	sys_desc_table	System description table (struct sys_desc_table)
++140/080	ALL	edid_info	Video mode setup (struct edid_info)
++1C0/020	ALL	efi_info	EFI 32 information (struct efi_info)
++1E0/004	ALL	alk_mem_k	Alternative mem check, in KB
++1E4/004	ALL	scratch		Scratch field for the kernel setup code
++1E8/001	ALL	e820_entries	Number of entries in e820_map (below)
++1E9/001	ALL	eddbuf_entries	Number of entries in eddbuf (below)
++1EA/001	ALL	edd_mbr_sig_buf_entries	Number of entries in edd_mbr_sig_buffer
++				(below)
++290/040	ALL	edd_mbr_sig_buffer EDD MBR signatures
++2D0/A00	ALL	e820_map	E820 memory map table
++				(array of struct e820entry)
++D00/1EC	ALL	eddbuf		EDD data (array of struct edd_info)
