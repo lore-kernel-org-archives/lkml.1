@@ -1,99 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbXJXM7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbXJXNDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757719AbXJXM7Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXJXM7E
+	id S1757661AbXJXNDD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbXJXNCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:59:04 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:9821 "EHLO kernel.dk"
+	Wed, 24 Oct 2007 09:02:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbXJXM7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:59:02 -0400
-Date: Wed, 24 Oct 2007 14:58:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
-Message-ID: <20071024125858.GY14671@kernel.dk>
-References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org> <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain> <20071024122120.GV14671@kernel.dk> <20071024124123.GD30533@stusta.de> <Pine.LNX.4.64.0710240840390.1257@localhost.localdomain>
+	id S1752993AbXJXNCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:02:52 -0400
+Message-ID: <471F4254.9040206@redhat.com>
+Date: Wed, 24 Oct 2007 09:02:12 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710240840390.1257@localhost.localdomain>
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] VFS: new fgetattr() file operation
+References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, Robert P. J. Day wrote:
-> On Wed, 24 Oct 2007, Adrian Bunk wrote:
-> 
-> > On Wed, Oct 24, 2007 at 02:21:20PM +0200, Jens Axboe wrote:
-> > > On Wed, Oct 24 2007, Robert P. J. Day wrote:
-> 
-> > > > i was just about to ask -- is this one of those cases where the
-> > > > asm versions of scatterlist.h should have a warning/error that
-> > > > they should not be included directly, and to include
-> > > > linux/scatterlist.h instead?
-> 
-> > > No, using asm/scatterlist.h is perfectly fine. The problem is code
-> > > using the sg helpers should include linux/scatterlist.h since that
-> > > is where those are defined.
-> 
-> > > If you just need the scatterlist structure definition, then
-> > > asm/scatterlist.h is the correct include.
-> 
-> > But there's also the general question whether it's good practice for
-> > not architecture specific code to include asm/ headers.
-> 
-> > For APIs available on all architectures linux/ header are the right
-> > thing to use, and what is in the asm/ header and what in the linux/
-> > header becomes an implementation detail that can be changed.
-> 
-> more to the point, what the above shows is that the headers aren't
-> well defined.  one would think that a header file whose name is
-> "scatterlist.h" should provide content related solely to that name.
-> 
-> if there's different content, such as the "sg helpers" mentioned
-> above, then those should require a different header file inclusion.
-> it makes no sense to suggest that one should include
-> <asm/scatterlist.h> if you need *only* that content, but to include
-> <linux/scatterlist.h> if you need stuff *in addition to* the
-> scatterlist content.  that's just begging for confusion.
+Miklos Szeredi wrote:
+> I don't think Christoph will like the patch better, regardless of how
+> I change the description.
+>
+> Of course, I'm open to suggestion on how to improve the interface, but
+> I think fundamentally this is the only way to correctly deal with the
+> below problem.
+>
+> Anyway, here's the patch another time, please consider adding it to
+> -mm.  For 2.6.25 obviously.
+>
+> Thanks,
+> Miklos
+> ----
+>
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Add a new file operation: f_op->fgetattr(), that is invoked by
+> fstat().  Fall back to i_op->getattr() if it is not defined.
+>
+> We need this because fstat() semantics can in some cases be better
+> implemented if the filesystem has the open file available.
+>
+> Let's take the following example: we have a network filesystem, with
+> the server implemented as an unprivileged userspace process running on
+> a UNIX system (this is basically what sshfs does).
+>
+> We want the filesystem to follow the familiar UNIX file semantics as
+> closely as possible.  If for example we have this sequence of events,
+> we still would like fstat to work correctly:
+>
+>  1) file X is opened on client
+>  2) file X is renamed to Y on server
+>  3) fstat() is performed on open file descriptor on client
+>
+> This is only possible if the filesystem server acutally uses fstat()
+> on a file descriptor obtained when the file was opened.  Which means,
+> the filesystem client needs a way to get this information from the
+> VFS.
+>
+>   
 
-Completely disagree, it's well defined. The asm/ header adds the arch
-private stuff, like the actual structure definition. That absolutely has
-to reside there. The linux/ header adds manipulation headers for that
-structure. You'd want to put that in all the asm/ headers? I didn't
-think so.
+This true iff the protocol that this mythical network file
+system uses the name of the file on the server to actually
+identify the file on the server.
 
-So I'll repeat - arch code may use the asm/ header, if they just need
-the structure definition. Drivers should use the linux/ header, since
-they should also use the accessor functions. Right now there's still a
-lot of open coding of
+Clearly, this is broken on many levels.  It can't handle
+situations as described nor can it handle different instances
+of the same filename being used.
 
-        for (i = 0; i < sg_nents; i++)
-                sg_table[i] ...
+This is why NFS, a network file system, does not use the filename
+as part of the file handle.
 
-usage which should go away eventually and use a
+Wouldn't you be better off by attempting to implement an "open
+by ino" operation and an operation to get the generation count
+for the file and then modifying the network protocol of interest
+to use these as identifiers for the file to be manipulated?
 
-        sg = sg_table;
-        do {
-                ...
-        } while ((sg = sg_next(sg)) != NULL);
+I agree with Christoph on this one.  It is the wrong path.
 
-construct, in which case there's no way around using the linux/ header.
-arch IOMMU code will want to be using the linux/ header as well, since
-they will be browsing the list also. That switch should happen when the
-driver actually needs it, not needlessly. The problems seen in the last
-few days have been code that actually use sg accessors AND don't use the
-linux/ header, and that problem only showing up on archs where
-linux/scatterlist.h doesn't get magically included from some other file.
-That is of course a bug, you should include the header with the
-functions that you use. It has nothing to do with asm/ vs linux/ include
-messiness.
+       ps
 
--- 
-Jens Axboe
+
+> Even if we assume, that the remote filesystem never changes, it is
+> difficult to implement open-unlink-fstat semantics correctly in the
+> client, without having this information.
+>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>
+> Index: linux/fs/stat.c
+> ===================================================================
+> --- linux.orig/fs/stat.c	2007-10-24 11:59:46.000000000 +0200
+> +++ linux/fs/stat.c	2007-10-24 11:59:47.000000000 +0200
+> @@ -55,6 +55,33 @@ int vfs_getattr(struct vfsmount *mnt, st
+>  
+>  EXPORT_SYMBOL(vfs_getattr);
+>  
+> +/*
+> + * Perform getattr on an open file
+> + *
+> + * Fall back to i_op->getattr (or generic_fillattr) if the filesystem
+> + * doesn't define an f_op->fgetattr operation.
+> + */
+> +static int vfs_fgetattr(struct file *file, struct kstat *stat)
+> +{
+> +	struct vfsmount *mnt = file->f_path.mnt;
+> +	struct dentry *dentry = file->f_path.dentry;
+> +	struct inode *inode = dentry->d_inode;
+> +	int retval;
+> +
+> +	retval = security_inode_getattr(mnt, dentry);
+> +	if (retval)
+> +		return retval;
+> +
+> +	if (file->f_op && file->f_op->fgetattr) {
+> +		return file->f_op->fgetattr(file, stat);
+> +	} else if (inode->i_op->getattr) {
+> +		return inode->i_op->getattr(mnt, dentry, stat);
+> +	} else {
+> +		generic_fillattr(inode, stat);
+> +		return 0;
+> +	}
+> +}
+> +
+>  int vfs_stat_fd(int dfd, char __user *name, struct kstat *stat)
+>  {
+>  	struct nameidata nd;
+> @@ -101,7 +128,7 @@ int vfs_fstat(unsigned int fd, struct ks
+>  	int error = -EBADF;
+>  
+>  	if (f) {
+> -		error = vfs_getattr(f->f_path.mnt, f->f_path.dentry, stat);
+> +		error = vfs_fgetattr(f, stat);
+>  		fput(f);
+>  	}
+>  	return error;
+> Index: linux/include/linux/fs.h
+> ===================================================================
+> --- linux.orig/include/linux/fs.h	2007-10-24 11:59:46.000000000 +0200
+> +++ linux/include/linux/fs.h	2007-10-24 11:59:47.000000000 +0200
+> @@ -1195,6 +1195,7 @@ struct file_operations {
+>  	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+>  	int (*setlease)(struct file *, long, struct file_lock **);
+>  	int (*revoke)(struct file *, struct address_space *);
+> +	int (*fgetattr)(struct file *, struct kstat *);
+>  };
+>  
+>  struct inode_operations {
+> Index: linux/fs/fuse/file.c
+> ===================================================================
+> --- linux.orig/fs/fuse/file.c	2007-10-24 11:59:46.000000000 +0200
+> +++ linux/fs/fuse/file.c	2007-10-24 12:01:00.000000000 +0200
+> @@ -871,6 +871,17 @@ static int fuse_file_flock(struct file *
+>  	return err;
+>  }
+>  
+> +static int fuse_file_fgetattr(struct file *file, struct kstat *stat)
+> +{
+> +	struct inode *inode = file->f_dentry->d_inode;
+> +	struct fuse_conn *fc = get_fuse_conn(inode);
+> +
+> +	if (!fuse_allow_task(fc, current))
+> +		return -EACCES;
+> +
+> +	return fuse_update_attributes(inode, stat, file, NULL);
+> +}
+> +
+>  static sector_t fuse_bmap(struct address_space *mapping, sector_t block)
+>  {
+>  	struct inode *inode = mapping->host;
+> @@ -920,6 +931,7 @@ static const struct file_operations fuse
+>  	.fsync		= fuse_fsync,
+>  	.lock		= fuse_file_lock,
+>  	.flock		= fuse_file_flock,
+> +	.fgetattr	= fuse_file_fgetattr,
+>  	.splice_read	= generic_file_splice_read,
+>  };
+>  
+> @@ -933,6 +945,7 @@ static const struct file_operations fuse
+>  	.fsync		= fuse_fsync,
+>  	.lock		= fuse_file_lock,
+>  	.flock		= fuse_file_flock,
+> +	.fgetattr	= fuse_file_fgetattr,
+>  	/* no mmap and splice_read */
+>  };
+>  
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
 
