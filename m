@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbXJXQTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXJXQTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbXJXQTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbXJXQTK
+	id S1756848AbXJXQTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbXJXQTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:19:10 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4134 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752268AbXJXQTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:19:09 -0400
-Date: Thu, 11 Oct 2007 20:54:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>, nigel@suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       linux-pm@lists.linux-foundation.org,
-       huang ying <huang.ying.caritas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Message-ID: <20071011205445.GA3975@ucw.cz>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <BF08447B-234F-4851-89BF-92A57EA801C6@mac.com> <200709220947.58872.nigel@nigel.suspend2.net> <200709221240.25614.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Oct 2007 12:19:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:10473 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbXJXQTP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 12:19:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Z7TkwOyxwX1IoChPdebCMUkwmduxjXQIXzLtPA3zIHXvcaTw6AaMiShmwxK1nASrxhXxJbaCOj9O/O66kIAlo7cCgigFrLuP2T2q+RbgqGVB4oJAXjCD9JfN0EBuDkXqv1Nmv3EX1Ja0tGf9kBnSmRkkFR8dttGcXsUBECmYXpE=
+Message-ID: <2c0942db0710240919x26f0803arae3776cac7add8fa@mail.gmail.com>
+Date: Wed, 24 Oct 2007 09:19:13 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "John Sigler" <linux.kernel@free.fr>
+Subject: Re: How to debug complete kernel lock-ups
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <471F0DB4.1080709@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200709221240.25614.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+References: <471E1D3A.8000705@free.fr> <471F0DB4.1080709@free.fr>
+X-Google-Sender-Auth: 8509a3f7a2bfacb8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 10/24/07, John Sigler <linux.kernel@free.fr> wrote:
+> > I have an x86 system with two PCI slots, in which I inserted two
+> > specialized output cards (Dektec DTA-105).
+> >
+> > http://www.dektec.com/Products/DTA-105/
+> > (They provide an open source driver.)
+> >
+> > My problem is: when I write to the 4 ports (each card has 2 ports) "at
+> > the same time" (not really "at the same time" because I have a
+> > uni-processor system, so "within a short time frame" is more accurate)
+> > the system *completely* locks up.
+> >
+> > The manufacturer told me they had seen the problem in their lab. I'm
+> > just trying to provide some helpful debug output to speed up the process
+> > of fixing the problem :-)
+[...]
+> > Suppose the PCI bus "crashes" (whatever that means) or locks up.
+> > Would that make the system completely unresponsive? The I/O does have to
+> > get to/from the south bridge, through the PCI bus AFAIU. I can imagine
+> > that a locked PCI bus would be slightly problematic.
+> >
+> > Does this mean I need some kind of PCI bus analyzer (i.e. hardware) at
+> > this point? Is there anything more I can try?
 
-> > That's certainly possible. We already pass a very small amount of data between 
-> > the boot and resuming kernels at the moment, and it's done quite simply - by 
-> > putting the variables we want to 'transfer' in a nosave page/section.
-> 
-> Well, if the boot and image kernels are different, which is now possible on
-> x86_64 with some recent patches (currently in -mm), the nosave trick won't
-> work.
+You need visibility into the actual place where the issue is
+happening, and by your description it's the two cards fighting each
+other on the PCI bus. (I'm assuming that the problem doesn't occur
+when there's only one card.)
 
-I guess we should remove the nosave.... at least from x86-64. If
-someone tries to use it, he'll get a nasty surprise.
+I've worked on a platform where only a few things went through the PCI
+bus, and via the firmware's debugger (completely outside the kernel),
+I was able to do the setup of the PCI chip and mappings, and then
+pound on the hardware directly to exhibit a lockup of the bus. That
+provided pretty strong proof that it wasn't some other unrelated issue
+in the kernel causing us grief.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+At that point, it was pretty clear that was it, as there was no kernel
+running, and the CPU was still responsive. Renting a logic analyzer
+was the next step.
+
+> How do driver writers deal with complete kernel hangs?
+
+Lots of sleeps in between each and every write to the hardware, with
+regular output. Of course, if it's a timing issue (which is what it
+sounds like), you're screwed.
+
+Other than that, I look at the hardware guys and say "Your turn," and
+walk out of the room to get a cup of coffee.
+
+Ray
