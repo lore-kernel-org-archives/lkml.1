@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbXJXTU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXJXTZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbXJXTU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 15:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXJXTUT
+	id S1755372AbXJXTZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 15:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXJXTZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 15:20:19 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:54376 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbXJXTUS (ORCPT
+	Wed, 24 Oct 2007 15:25:15 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62136 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbXJXTZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 15:20:18 -0400
-Date: Wed, 24 Oct 2007 15:17:44 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: CONFIG variables:  defined but unused
-Message-ID: <Pine.LNX.4.64.0710241512330.1108@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 24 Oct 2007 15:25:13 -0400
+Date: Wed, 24 Oct 2007 15:23:18 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [CFP] 2008 Linux Storage and Filesystem Workshop
+Message-ID: <20071024152318.256400b4@think.oraclecorp.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  at the moment, i'm running a quick-and-dirty script that identifies
-Kconfig variables that are defined in a Kconfig file somewhere but
-don't appear to be used.  this will take a while to run, but here's
-the first few variables printed:
+Hello everyone,
 
+We are organizing another filesystem and storage workshop in San Jose
+next Feb 25 and 26.  You can find some great writeups of last year's
+conference on LWN:
 
->>>>> 64BIT_CONTEXT
-arch/mips/Kconfig:config 64BIT_CONTEXT
->>>>> ACPI_DEBUG_FUNC_TRACE
-drivers/acpi/Kconfig:config ACPI_DEBUG_FUNC_TRACE
->>>>> ADB_KEYBOARD
-arch/m68k/Kconfig:config ADB_KEYBOARD
-drivers/macintosh/adbhid.c:#define ADB_KEYBOARD_UNKNOWN 0
-drivers/macintosh/adbhid.c:#define ADB_KEYBOARD_ANSI    0x0100
-drivers/macintosh/adbhid.c:#define ADB_KEYBOARD_ISO     0x0200
-drivers/macintosh/adbhid.c:#define ADB_KEYBOARD_JIS     0x0300
-drivers/macintosh/adbhid.c:     case ADB_KEYBOARD:
-drivers/macintosh/adbhid.c:                     input_dev->id.version = ADB_KEYBOARD_UNKNOWN;
-drivers/macintosh/adbhid.c:                     input_dev->id.version = ADB_KEYBOARD_ANSI;
-drivers/macintosh/adbhid.c:                     input_dev->id.version = ADB_KEYBOARD_ISO;
-drivers/macintosh/adbhid.c:                     input_dev->id.version = ADB_KEYBOARD_JIS;
-drivers/macintosh/adbhid.c:     if (default_id == ADB_KEYBOARD) {
-drivers/macintosh/adbhid.c:     adb_register(ADB_KEYBOARD, 0, &keyboard_ids, adbhid_keyboard_input);
-include/linux/adb.h:#define ADB_KEYBOARD        2
->>>>> AEDSP16_MSS
-sound/oss/Kconfig:config AEDSP16_MSS
-sound/oss/aedsp16.c:#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
->>>>> AEDSP16_SBPRO
-sound/oss/Kconfig:config AEDSP16_SBPRO
-sound/oss/aedsp16.c:#if defined(CONFIG_SOUND_AEDSP16_SBPRO) && defined(CONFIG_SOUND_AEDSP16_MSS)
->>>>> ALPHA_EV7
-arch/alpha/Kconfig:config ALPHA_EV7
-... etc etc ...
+http://lwn.net/Articles/226351/
 
+This year we're trying to concentrate on more problem solving sessions,
+short term projects and joint sessions.  You can find all the details
+on the conference webpages:
 
-  just from the above, you can see the variety of results:
+http://www.usenix.org/events/lsf08/
 
-* both 64BIT_CONTEXT and ACPI_DEBUG_FUNC_TRACE are defined but are
-apparently never referenced anywhere
-* ADB_KEYBOARD is defined but apparently ignored in favour of some
-hard-coded constants
-* AEDSP16_MSS and AEDSP16_SBPRO appear to be typoes, but they're part
-of OSS which is going away so who cares?
-* ALPHA_EV7 appears to be unused
+Soon there will be a link for submitting your position statement, which
+is basically a note to the organizers that you are interested in
+attending and which topics you think should be covered.
 
-   ... and on and on, and i'm not even out of the A's yet.  i suspect
-the script will finish by this evening sometime.
+We're also looking for people to lead the discussion around the major
+topics, so please let us know if you're interested in that.  The
+discussion leaders will have input into the people that get invited and
+the format of the discussion.
 
-rday
+Please let me know if there are any questions about the workshop.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Thanks,
+Chris
