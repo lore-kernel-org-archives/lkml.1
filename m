@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXJXOed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbXJXOes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbXJXOed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbXJXOdL
+	id S1760258AbXJXOes (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbXJXOdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:33:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46160 "EHLO mx2.suse.de"
+	Wed, 24 Oct 2007 10:33:13 -0400
+Received: from smtp01.cdmon.com ([212.36.75.232]:57924 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759897AbXJXOdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:33:09 -0400
-Subject: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: linux-acpi <linux-acpi@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Jean Delvare <khali@linux-fr.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: Novell/SUSE
-Date: Wed, 24 Oct 2007 16:33:07 +0200
-Message-Id: <1193236387.4590.230.camel@queen.suse.de>
+	id S1759887AbXJXOdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 10:33:08 -0400
+Date: Wed, 24 Oct 2007 16:33:40 +0200
+From: DervishD <lkml@dervishd.net>
+To: Thierry Vignaud <tvignaud@mandriva.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: libata PATA status for VIA 8237
+Message-ID: <20071024143340.GA8895@DervishD>
+Mail-Followup-To: Thierry Vignaud <tvignaud@mandriva.com>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <20071024095602.GA2607@DervishD> <m2k5pche63.fsf@vador.mandriva.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <m2k5pche63.fsf@vador.mandriva.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export acpi_check_resource_conflict(), sometimes drivers already have
-a struct resource at hand so no need to use the wrappers to build a new
-one.
+    Hi Thierry :)
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
----
- drivers/acpi/osl.c   |    3 ++-
- include/linux/acpi.h |    5 +++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ * Thierry Vignaud <tvignaud@mandriva.com> dixit:
+> DervishD <lkml@dervishd.net> writes:
+> > I'm thinking about switching fully to libata in the near future
+> > (currently I'm using CONFIG_IDE for all my PATA drives, both hard disks
+> > and DVD recorder), and I was wondering if PATA support for VIA8237 was
+> > full or not. For what I've googled, it seems that it is usable both for
+> > PATA and for SATA, but I want to be sure.
+> > 
+> > If I'm asking here is because I have SATA support for my VIA chipset
+> > enabled in the kernel (CONFIG_SATA_VIA), but I'm getting these messages:
+> > 
+> >     sata_via 0000:00:0c.0: version 2.0
+> >     sata_via 0000:00:0c.0: routed to hard irq line 10
+> >     ata1: SATA max UDMA/133 cmd 0xFE00 ctl 0xFE0A bmdma 0xFA00 irq 10
+> >     ata2: SATA max UDMA/133 cmd 0xFD00 ctl 0xFD0A bmdma 0xFA08 irq 10
+> >     scsi0 : sata_via
+> >     ata1: SATA link down (SStatus 0 SControl 310)
+> > >>  ATA: abnormal status 0x7F on port 0xFE07
+> >     scsi1 : sata_via
+> >     ata2: SATA link down (SStatus 0 SControl 310)
+> > >>  ATA: abnormal status 0x7F on port 0xFD07
+> >     sata_via 0000:00:0f.0: routed to hard irq line 11
+> >     ata3: SATA max UDMA/133 cmd 0xF900 ctl 0xF802 bmdma 0xF500 irq 11
+> >     ata4: SATA max UDMA/133 cmd 0xF700 ctl 0xF602 bmdma 0xF508 irq 11
+> >     scsi2 : sata_via
+> >     ata3: SATA link down 1.5 Gbps (SStatus 0 SControl 300)
+> > >>  ATA: abnormal status 0x7F on port 0xF907
+> >     scsi3 : sata_via
+> >     ata4: SATA link down 1.5 Gbps (SStatus 0 SControl 300)
+> > >>  ATA: abnormal status 0x7F on port 0xF707
+> 
+> I saw those too from times to times on boot with a VIA VT6421 with no
+> consequences.
+> So I would say they're non important (but who know for real until you
+> test with real disk attached?)
 
---- linux-2.6.24-rc0.orig/drivers/acpi/osl.c	2007-10-21 14:36:08.000000000 +0200
-+++ linux-2.6.24-rc0/drivers/acpi/osl.c	2007-10-21 14:36:13.000000000 +0200
-@@ -1097,7 +1097,7 @@ __setup("acpi_enforce_resources=", acpi_
- 
- /* Check for resource conflicts between ACPI OperationRegions and native
-  * drivers */
--static int acpi_check_resource_conflict(struct resource *res)
-+int acpi_check_resource_conflict(struct resource *res)
- {
- 	struct acpi_res_list *res_list_elem;
- 	int ioport;
-@@ -1147,6 +1147,7 @@ static int acpi_check_resource_conflict(
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL(acpi_check_resource_conflict);
- 
- int acpi_check_region(resource_size_t start, resource_size_t n,
- 		      const char *name)
---- linux-2.6.24-rc0.orig/include/linux/acpi.h	2007-10-21 14:36:00.000000000 +0200
-+++ linux-2.6.24-rc0/include/linux/acpi.h	2007-10-21 14:36:13.000000000 +0200
-@@ -123,6 +123,8 @@ extern int pci_mmcfg_config_num;
- extern int sbf_port;
- extern unsigned long acpi_realmode_flags;
- 
-+int acpi_check_resource_conflict(struct resource *res);
-+
- int acpi_check_region(resource_size_t start, resource_size_t n,
- 		      const char *name);
- int acpi_check_mem_region(resource_size_t start, resource_size_t n,
-@@ -131,6 +133,9 @@ int acpi_check_mem_region(resource_size_
- 
- #define acpi_mp_config	0
- 
-+static inline int acpi_check_resource_conflict(struct resource *res)
-+{ return 0; }
-+
- static inline int acpi_check_region(resource_size_t start, resource_size_t n,
- 				    const char *name) { return 0 };
- 
+I think I can manage to get a SATA disk to make tests, but the problem
+is that I won't be able to make destructive (destroying the data, I
+mean, not the hardware XD) tests on it :((
+
+Merci :)
+
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Thomas Renninger
-
-Research and Developement Departement
-SUSE LINUX Products GmbH,
-Maxfeldstr. 5, D - 90409 NÃ¼rnberg
-Phone: +49 (0)911 - 740 53 675
-e-mail: trenn@suse.de
-
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG NÃ¼rnberg)
-
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
+We are waiting for 13 Feb 2009 23:31:30 +0000 ...
