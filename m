@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbXJXET0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbXJXE1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbXJXET0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 00:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJXETT
+	id S1754675AbXJXE1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 00:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJXE1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 00:19:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58714 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750716AbXJXETS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 00:19:18 -0400
-Date: Tue, 23 Oct 2007 21:19:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux v2.6.24-rc1
-Message-ID: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 24 Oct 2007 00:27:17 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51288 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750733AbXJXE1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 00:27:16 -0400
+Date: Wed, 24 Oct 2007 10:09:16 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: containers@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+Message-ID: <20071024043916.GA5357@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <471D4523.4040509@google.com> <20071023164704.GE4667@linux.vnet.ibm.com> <6599ad830710230941y5d175688ob3a4d9ac42ba8c8f@mail.gmail.com> <20071023173837.GG4667@linux.vnet.ibm.com> <6599ad830710231928n65a80021w582a07b5993377f8@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830710231928n65a80021w582a07b5993377f8@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 23, 2007 at 07:28:22PM -0700, Paul Menage wrote:
+> > Good point. I think we need to subtract out the time it was waiting on runqueue
+> > when calculating idle time.
+> >
+> >         |------- . . . . . . ---------zzzzzzzzzzzz.......-----------|
+> >         t0     t1            t2       t3         t4     t5          t6
+> >
+> >
+> >         ----    -> Running time
+> >         ....    -> Waiting time (to get on the cpu)
+> >         zzzz    -> Sleeping time (when it didnt want to run because of
+> >                    lack of tasks)
+> >
+> > So, in this case,
+> >
+> >         idle time = (t4 - t3) / [ (t6 - t1) - (t2-t1) - (t5-t4)
+> >
+> 
+> Do you mean (t6 - t0) where you have (t6 - t1)?
 
-This may count as one of the biggest -rc releases ever. It's humongous. 
-Usually the compressed -rc1 diffs are in the 3-5MB range, with occasional 
-smaller ones, and the occasional ones that top 6M, but this one is 
-*eleven* megs.
+Ah ..yes.
 
-I'd blame the x86 renames (and the watchdog ones), but the thing is, it's 
-absolutely huge even when I generate the diff with git turning all those 
-renames into relatively small rename diffs (which I don't do for the 
-public diffs, since I expect that git people use git to get the changes, 
-and non-git people won't have tools that understand a diff that involves 
-renames).
+> > ?
+> >
+> > This idle time will be a per-cpu stat for every cgroup and needs to be
+> > consolidated across cpus into a single idle-stat number, just like how
+> > top does it.
+> 
+> This would be an idle fraction, not an idle time. (seconds divided by seconds)
 
-In short, we just had an unusually large amount of not just x86 merges, 
-but also tons of new drivers (wireless networking stands out, but is by no 
-means the only thing - we've got dvb, regular wired network, mmc etc all 
-joining in), and a fair amount or architecture stuff, filesystems, 
-networking etc too.
+agreed, we need to be reporting idle time in (milli)seconds, although
+the requirement we had was to report it back in percentage. I guess the
+percentage figure can be derived from the raw idle time number.
 
-So there's just lots of new stuff. The diffstat is ten thousand lines 
-long, and weighing in at comfortably over half a megabyte it is way over 
-the limits of this - or any sane - mailing list. The shortlog is barely 
-shorter, weighing in at "just" 8461 lines and almost 400k. The full 
-changelog (which I'm still producing for y'all, since people told me they 
-actually care last time I asked) is 4 megs.
+How about:
 
-In other words, I don't even know where to start. The big noticeable thing 
-is the x86 merge, and I think we all fervently hope that it won't cause 
-any issues. So far it's been pretty smooth sailing. Knock wood.
+	idle time = t4-t3 (effectively sleep time)
 
-Less smooth has the scatter-gather changes to the block layer been, but 
-they are hopefully all in reasonable shape by now too. And the VM changes? 
-I honestly hope nobody even notices. Same goes for some of the VFS layer 
-changes that affected basically every filesystem (although in mostly very 
-straightforward ways).
+in the above example?
 
-Just for fun, I'd really encourage git users to just try the
+> It doesn't seem quite right to me that a cgroup's idle time metric be
+> affected by the activity of other cgroups on the machine,
 
-	git shortlog v2.6.23..
+I don't see how the idle time metric defined above (t4-t3) can be
+affected by other cgroup activity, unless the execution pattern of one
+cgroup is dependent on the others.
 
-thing, it really is quite impressive. 
+However the minute you tranlsate this idle time into a percentage wrt
+wall-clock time, then yes a cgroup's idle percentage can be affected by
+others. For idle percentage to be meaningfull, I would imagine that
+user-space tools will need to calculate it after discarding a group's
+wait time.
 
-			Linus
+> but it's
+> hard to come up with a way of measuring it that doesn't have this
+> behaviour - which is why, in the absence of hard CPU partitioning,
+> it's not clear to me how much use this would be.
+> 
+> What would people be planning to use it for?
+
+I think primarily for systems management tools to report back various
+statistics about a OpenVZ/VServer-like container (just like top reports stats 
+for a OS currently). Let me check if there are other uses envisoned for
+it.
+
+-- 
+Regards,
+vatsa
