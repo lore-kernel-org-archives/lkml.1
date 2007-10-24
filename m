@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbXJXJay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXJXJdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbXJXJay (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXJXJaK
+	id S1755773AbXJXJdb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXJXJdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:30:10 -0400
-Received: from mga03.intel.com ([143.182.124.21]:49969 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbXJXJaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:30:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,323,1188802800"; 
-   d="scan'208";a="304503162"
-Subject: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Antonino A. Daplas" <adaplas@pol.net>
+	Wed, 24 Oct 2007 05:33:24 -0400
+Received: from smtp110.plus.mail.re1.yahoo.com ([69.147.102.73]:47893 "HELO
+	smtp110.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752808AbXJXJdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 05:33:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=4KKYlj6f04mjXalLqJQGVN29BCmiyYv4wxPgbLXjJFP7GR7hSfEPbpqjqdWB+nGVodSNuAacra93NKsJu6U3tC3IK8CrPdaimutjTKsqXInVEHCPJTOEYULIj01zvuvI6aReDMIaCHAhVxqS3ytfIQizeqFgqtCsjyVaXPRbD5g=  ;
+X-YMail-OSG: fmy_OJ8VM1mUPSNMR_Tcfu.d7B58lkKuf53LuTsz1fNJkxGfYMIwwQ1AtThckSlIqQRMw6wS.Q--
+Date: Wed, 24 Oct 2007 11:32:53 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 24 Oct 2007 17:32:22 +0800
-Message-Id: <1193218342.23935.147.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 24 Oct 2007 09:29:37.0099 (UTC) FILETIME=[651971B0:01C81620]
+Subject: Re: [PATCH] fs/partitions/check.c: add error handling for
+	kobject_add
+Message-ID: <20071024093253.GA6191@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20071022052255.GA9095@gollum.tnic> <20071023233900.7e683516.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071023233900.7e683516.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch set has been dropped because the 32-bit boot protocol is
-not ready. Now, the 32-bit boot protocol has been merged, so I resend
-this patch set.
+On Tue, Oct 23, 2007 at 11:39:00PM -0700, Andrew Morton wrote:
+> I get 100% rejects from this.  Please redo against latest mainline.
+Here you go, this one is against today's 24-rc1.
 
-Can this patch set and 32-bit boot protocol document patch catch up
-with the merge window of 2.6.24?
+---
+From: Borislav Petkov <bbpetkov@yahoo.de>
 
+Add error handling to the kobject_add()-call and signal (the even highly
+		unlikely) error condition.
 
-Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-Interface) boot support to x86_64 architecture.
-
-The patches have been tested against 2.6.24-rc1 kernel on Intel
-platforms with EFI1.10 and UEFI2.0 firmware. With this set of patches
-applied, the 64 bit and 32 bit x86 kernel can be booted on x86_64
-machine with UEFI64 firmware.
-
-Because the EFI memory map is converted to E820 map in bootloader, now
-the only needed code for booting Linux kernel on x86_64 UEFI platform
-is the framebuffer driver.
-
-UEFI specification can be found here: http://www.uefi.org
-
-For booting the UEFI x86_64 enabled kernel, the machine with EFI/UEFI
-firmware and the support of bootloader is required. Detailed usage
-guide can be found in Documentation/x86_64/uefi.txt, which is added in
-the patch: EFI boot document
-
-
-v2:
-
-- The include files of efifb.c is cleaned up.
-- Make CONFIG_FB_EFI not depend on CONFIG_EFI.
-
-
-Best Regards,
-Huang Ying
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+--
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 722e12e..6ba66b4 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -371,11 +371,12 @@ void delete_partition(struct gendisk *disk, int part)
+ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
+ {
+ 	struct hd_struct *p;
++	int err = -EINVAL;
+ 
+ 	p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	if (!p)
+ 		return;
+-	
++
+ 	p->start_sect = start;
+ 	p->nr_sects = len;
+ 	p->partno = part;
+@@ -390,7 +391,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
+ 	p->kobj.parent = &disk->kobj;
+ 	p->kobj.ktype = &ktype_part;
+ 	kobject_init(&p->kobj);
+-	kobject_add(&p->kobj);
++
++	err = kobject_add(&p->kobj);
++	if (err) {
++		pr_err("%s: error adding %s to sysfs.\n", __FUNCTION__,
++				kobject_name(&p->kobj));
++	}
++
+ 	if (!disk->part_uevent_suppress)
+ 		kobject_uevent(&p->kobj, KOBJ_ADD);
+ 	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
+-- 
+Regards/Gruﬂ,
+    Boris.
