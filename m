@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbXJXWva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXJXWxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761077AbXJXWva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbXJXWvQ
+	id S1760834AbXJXWxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXJXWxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:51:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:52759 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760592AbXJXWvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:51:11 -0400
-To: Adrian Bunk <bunk@kernel.org>
-cc: Andy Gospodarek <andy@greyhouse.net>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] bonding/bond_main.c: fix cut'n'paste error 
-In-reply-to: <20071024162743.GV30533@stusta.de> 
-References: <20071024162743.GV30533@stusta.de>
-Comments: In-reply-to Adrian Bunk <bunk@kernel.org>
-   message dated "Wed, 24 Oct 2007 18:27:43 +0200."
-X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
-Date: Wed, 24 Oct 2007 15:51:08 -0700
-Message-ID: <4858.1193266268@death>
-From: Jay Vosburgh <fubar@us.ibm.com>
+	Wed, 24 Oct 2007 18:53:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53533 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755532AbXJXWxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 18:53:08 -0400
+Date: Wed, 24 Oct 2007 15:48:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: ak@suse.de, jeremy@goop.org, ying.huang@intel.com, ebiederm@xmission.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
+Message-Id: <20071024154800.4e0735eb.akpm@linux-foundation.org>
+In-Reply-To: <471E89E1.7060903@zytor.com>
+References: <1193126771.23935.79.camel@caritas-dev.intel.com>
+	<471E70E0.2090802@goop.org>
+	<200710240118.21160.ak@suse.de>
+	<471E89E1.7060903@zytor.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 23 Oct 2007 16:55:13 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
+> Andi Kleen wrote:
+> > 
+> > With the early reserve code in 
+> > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-reserve
+> > and
+> > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-alloc
+> > this could be likely done cleaner.
+> > 
+> 
+> Indeed it could.  For i386, the equivalent code would have another 
+> significant benefit: reserving memory and then mapping and accessing it 
+> later would (at least eventually) allow accesses > 4 GB on PAE kernels 
+> (or with a PSE36 hack, on non-PAE kernels.)
+> 
 
-Adrian Bunk <bunk@kernel.org> wrote:
->This patch fixes a cut'n'paste error in
->commit 1b76b31693d4a6088dec104ff6a6ead54081a3c2.
->
->Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Cleaner sounds good.  I'll duck these patches for now.
 
-	Please apply.
-
-	-J
-
-Acked-by: Jay Vosburgh <fubar@us.ibm.com>
-
-
->---
->4888742f8d7fe3b97fbc2911aa46375048173d01 
->diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
->index e5fab4b..6937ef0 100644
->--- a/drivers/net/bonding/bond_main.c
->+++ b/drivers/net/bonding/bond_main.c
->@@ -3682,7 +3682,7 @@ static int bond_open(struct net_device *bond_dev)
-> 	}
->
-> 	if (bond->params.mode == BOND_MODE_8023AD) {
->-		INIT_DELAYED_WORK(&bond->ad_work, bond_alb_monitor);
->+		INIT_DELAYED_WORK(&bond->ad_work, bond_3ad_state_machine_handler);
-> 		queue_delayed_work(bond->wq, &bond->ad_work, 0);
-> 		/* register to receive LACPDUs */
-> 		bond_register_lacpdu(bond);
->
+This one doesn't apply, btw: setup_32.h disappeared.
