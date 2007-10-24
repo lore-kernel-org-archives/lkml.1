@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXJXClg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbXJXCoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbXJXClg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXJXCl2
+	id S1755411AbXJXCoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXJXCoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:41:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38378
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752925AbXJXCl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:41:28 -0400
-Date: Tue, 23 Oct 2007 19:41:55 -0700 (PDT)
-Message-Id: <20071023.194155.112293423.davem@davemloft.net>
-To: Shane.Huang@amd.com
-Cc: david.gaarenstroom@gmail.com, linux-kernel@vger.kernel.org,
-       linas@austin.ibm.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       jgarzik@pobox.com
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D91F2@sshaexmb1.amd.com>
-References: <BLU120-W12C06900EC932864CC13A8E2980@phx.gbl>
-	<9783dadb0710201352p28969b4bs573d817d70b1fff7@mail.gmail.com>
-	<5CAB7B5D6F8AB84AA868A46B47A507055D91F2@sshaexmb1.amd.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 23 Oct 2007 22:44:05 -0400
+Received: from mga11.intel.com ([192.55.52.93]:34736 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752763AbXJXCoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 22:44:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,322,1188802800"; 
+   d="scan'208";a="356462602"
+Subject: [patch] pcie port driver: correctly detect native PME feature
+From: Shaohua Li <shaohua.li@intel.com>
+To: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Wed, 24 Oct 2007 10:43:23 +0800
+Message-Id: <1193193803.27150.13.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Shane Huang" <Shane.Huang@amd.com>
-Date: Tue, 23 Oct 2007 18:56:03 +0800
+Native PME is capability of root port or root complex event collector.
+It's not determined by PCI PME capability.
 
-> Also I wonder why the USB MSI patch is not added into kernel at last?
-> Will it lead to other bugs?
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+---
+ drivers/pci/pcie/portdrv_core.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Probably someone just needs to be more vocal and active in pushing it
-to the USB subsystem maintainer(s).  I've even had trouble getting
-even simple bug fixes integrated recently, so perhaps it will take a
-few retransmits and some patience to get it included.
-
-Anyways, thanks for bringing it to our attention.
-
-Greg, can you at least devote a few minutes to going over that USB MSI
-patch, giving it any obvious things it needs (perhaps some
-pci_msi_enable() return value checks, for example, but may not be
-needed at all in this case) and then stash it somewhere so it doesn't
-get lost in the void?
-
-Thanks.
+Index: linux/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux.orig/drivers/pci/pcie/portdrv_core.c	2007-10-22 09:36:05.000000000 +0800
++++ linux/drivers/pci/pcie/portdrv_core.c	2007-10-22 09:41:25.000000000 +0800
+@@ -192,9 +192,8 @@ static int get_port_device_capability(st
+ 		if (reg32 & SLOT_HP_CAPABLE_MASK)
+ 			services |= PCIE_PORT_SERVICE_HP;
+ 	} 
+-	/* PME Capable */
+-	pos = pci_find_capability(dev, PCI_CAP_ID_PME);
+-	if (pos) 
++	/* PME Capable - root port capability */
++	if (((reg16 >> 4) & PORT_TYPE_MASK) == PCIE_RC_PORT)
+ 		services |= PCIE_PORT_SERVICE_PME;
+ 	
+ 	pos = PCI_CFG_SPACE_SIZE;
