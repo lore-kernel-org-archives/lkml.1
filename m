@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXJXJak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbXJXJay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXJXJak (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbXJXJaA
+	id S1753960AbXJXJay (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXJXJaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:30:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49630 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755119AbXJXJ35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:29:57 -0400
-Message-ID: <471F104C.5040005@torque.net>
-Date: Wed, 24 Oct 2007 11:28:44 +0200
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: James Bottomley <James.Bottomley@SteelEye.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 24 Oct 2007 05:30:10 -0400
+Received: from mga03.intel.com ([143.182.124.21]:49969 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755424AbXJXJaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 05:30:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,323,1188802800"; 
+   d="scan'208";a="304503162"
+Subject: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
-References: <1193173128.3434.1.camel@localhost.localdomain>	 <471E6313.1040704@garzik.org> <1193174424.3434.3.camel@localhost.localdomain> <471E707B.1020505@garzik.org>
-In-Reply-To: <471E707B.1020505@garzik.org>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=ISO-8859-1
+       "Antonino A. Daplas" <adaplas@pol.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Oct 2007 17:32:22 +0800
+Message-Id: <1193218342.23935.147.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 24 Oct 2007 09:29:37.0099 (UTC) FILETIME=[651971B0:01C81620]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> James Bottomley wrote:
->> On Tue, 2007-10-23 at 17:09 -0400, Jeff Garzik wrote:
->>> James Bottomley wrote:
->>>> This should be the final SCSI updates; it's mainly just a few accessor
->>>> completion updates and two driver merges (sym2 and qla2xxx) we also
->>>> secured DaveM's agreement to remove fcal/fc4, which explains the high
->>>> removal line count.
->>>>
->>>> The patch is available here:
->>>>
->>>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
->>> I guess I have the go-ahead to merge the end-CDROM-polling async
->>> notification work you've been repeatedly ignoring?
->>
->> I haven't been ignoring it ... it just needs quite a bit of work; the
->> best way to accelerate it seems to be simply to do it (add the
->> supported/trigger event bitmasks and expand the infrastructure).  I just
->> haven't had the time within the merge window.
-> 
-> James, things cannot get bottlenecked like this.  You have had MONTHS to
-> say something like this.  The code was ready BEFORE the merge window.
-> 
-> I really think you have the knowledge to be SCSI maintainer, but not the
-> time.
+This patch set has been dropped because the 32-bit boot protocol is
+not ready. Now, the 32-bit boot protocol has been merged, so I resend
+this patch set.
 
-Jeff,
-If only I had a dollar (Canadian unit please) for
-each day some of my libata patches were queued
-up to you before you accepted them.
-
-Remember MODE SELECT ...
+Can this patch set and 32-bit boot protocol document patch catch up
+with the merge window of 2.6.24?
 
 
-On a more serious note, it looks like the job of the SCSI
-maintainer is getting larger and more onerous. Perhaps
-some folks should check if James has been provided with
-the appropriate resources.
+Following sets of patches add EFI/UEFI (Unified Extensible Firmware
+Interface) boot support to x86_64 architecture.
 
-Doug Gilbert
+The patches have been tested against 2.6.24-rc1 kernel on Intel
+platforms with EFI1.10 and UEFI2.0 firmware. With this set of patches
+applied, the 64 bit and 32 bit x86 kernel can be booted on x86_64
+machine with UEFI64 firmware.
+
+Because the EFI memory map is converted to E820 map in bootloader, now
+the only needed code for booting Linux kernel on x86_64 UEFI platform
+is the framebuffer driver.
+
+UEFI specification can be found here: http://www.uefi.org
+
+For booting the UEFI x86_64 enabled kernel, the machine with EFI/UEFI
+firmware and the support of bootloader is required. Detailed usage
+guide can be found in Documentation/x86_64/uefi.txt, which is added in
+the patch: EFI boot document
+
+
+v2:
+
+- The include files of efifb.c is cleaned up.
+- Make CONFIG_FB_EFI not depend on CONFIG_EFI.
+
+
+Best Regards,
+Huang Ying
