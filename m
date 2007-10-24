@@ -1,63 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbXJXCaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbXJXCcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbXJXCaq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXJXCai
+	id S1755905AbXJXCcp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbXJXCch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:30:38 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52231 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbXJXCah (ORCPT
+	Tue, 23 Oct 2007 22:32:37 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34415 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbXJXCcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:30:37 -0400
-Date: Tue, 23 Oct 2007 20:30:35 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071024023035.GV27248@parisc-linux.org>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx> <alpine.LFD.0.999.0710231641480.30120@woody.linux-foundation.org>
+	Tue, 23 Oct 2007 22:32:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:content-type:content-transfer-encoding;
+	b=VEQT2mGrLRAmyb97J5A1vF6gHr5AtgiK5zzDfBP8t6PAYPKoAqSdG1O+hc0UvAErn
+	fVXPxK1aNnhrFPhXzC2DA==
+Message-ID: <471EAEBB.8000302@google.com>
+Date: Tue, 23 Oct 2007 19:32:27 -0700
+From: Paul Menage <menage@google.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710231641480.30120@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] CFS CGroup: Code cleanup
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 04:43:53PM -0700, Linus Torvalds wrote:
-> On Tue, 23 Oct 2007, Matthew Wilcox wrote:
-> > This is a generic string buffer which can also be used for non-printk
-> > purposes.  There is no sb_scanf implementation yet as I haven't identified
-> > a user for it.
-> 
-> Hmm. Have you looked at the git "strbuf" code? 
+Clean up some CFS CGroup code
 
-I hadn't.  It's quite spookily similar in some ways.  There's a lot of
-things you've added because you presumably have use for them in git that
-could easily be added once we had users for them in the kernel.  There's
-a few things stringbufs do that strbufs don't need to because they're in
-userspace.
+- replace "cont" with "cgrp" in a few places in the CFS cgroup code, 
+- use write_uint rather than write for cpu.shares write function
 
-I can easily change the API at this point, so if renaming things will
-make you happier, just say so.
+Signed-off-by: Paul Menage <menage@google.com>
 
-> And stuff like "sb_string()" are just evil. The string is there. Just call 
-> it something better than "s", and let people just use "sb->buf" or 
-> something. Why make the interface harder to use than necessary?
+---
 
-It's a matter of taste ... some people prefer to use accessors for
-everything, other people prefer to expose the underlying structure
-directly.  I have to confess to being influenced by Java in 1998-99,
-so possibly I tend to go for accessors too often.  Or possibly it's
-just my experience of restructuring things in Linux where diffs would
-be smaller if we only had used accessors for something.  In any case,
-I don't care to fight about this; if you want it to be called buf,
-then buf it shall be called, and I'll get rid of sb_string.
+This is a resend of yesterday's mail with the same subject; the final hunk was missing from yesterday's patch. The second patch in the series was unaffected by this.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+ kernel/sched.c |   53 ++++++++++++++++++-----------------------------------
+ 1 file changed, 18 insertions(+), 35 deletions(-)
+
+Index: container-2.6.23-mm1/kernel/sched.c
+===================================================================
+--- container-2.6.23-mm1.orig/kernel/sched.c
++++ container-2.6.23-mm1/kernel/sched.c
+@@ -6936,25 +6936,25 @@ unsigned long sched_group_shares(struct 
+ #ifdef CONFIG_FAIR_CGROUP_SCHED
+ 
+ /* return corresponding task_group object of a cgroup */
+-static inline struct task_group *cgroup_tg(struct cgroup *cont)
++static inline struct task_group *cgroup_tg(struct cgroup *cgrp)
+ {
+-	return container_of(cgroup_subsys_state(cont, cpu_cgroup_subsys_id),
+-					 struct task_group, css);
++	return container_of(cgroup_subsys_state(cgrp, cpu_cgroup_subsys_id),
++			    struct task_group, css);
+ }
+ 
+ static struct cgroup_subsys_state *
+-cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
++cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ {
+ 	struct task_group *tg;
+ 
+-	if (!cont->parent) {
++	if (!cgrp->parent) {
+ 		/* This is early initialization for the top cgroup */
+-		init_task_group.css.cgroup = cont;
++		init_task_group.css.cgroup = cgrp;
+ 		return &init_task_group.css;
+ 	}
+ 
+ 	/* we support only 1-level deep hierarchical scheduler atm */
+-	if (cont->parent->parent)
++	if (cgrp->parent->parent)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	tg = sched_create_group();
+@@ -6962,21 +6962,21 @@ cpu_cgroup_create(struct cgroup_subsys *
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	/* Bind the cgroup to task_group object we just created */
+-	tg->css.cgroup = cont;
++	tg->css.cgroup = cgrp;
+ 
+ 	return &tg->css;
+ }
+ 
+ static void cpu_cgroup_destroy(struct cgroup_subsys *ss,
+-					struct cgroup *cont)
++			       struct cgroup *cgrp)
+ {
+-	struct task_group *tg = cgroup_tg(cont);
++	struct task_group *tg = cgroup_tg(cgrp);
+ 
+ 	sched_destroy_group(tg);
+ }
+ 
+ static int cpu_cgroup_can_attach(struct cgroup_subsys *ss,
+-			     struct cgroup *cont, struct task_struct *tsk)
++			     struct cgroup *cgrp, struct task_struct *tsk)
+ {
+ 	/* We don't support RT-tasks being in separate groups */
+ 	if (tsk->sched_class != &fair_sched_class)
+@@ -6986,38 +6986,21 @@ static int cpu_cgroup_can_attach(struct 
+ }
+ 
+ static void
+-cpu_cgroup_attach(struct cgroup_subsys *ss, struct cgroup *cont,
++cpu_cgroup_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
+ 			struct cgroup *old_cont, struct task_struct *tsk)
+ {
+ 	sched_move_task(tsk);
+ }
+ 
+-static ssize_t cpu_shares_write(struct cgroup *cont, struct cftype *cftype,
+-				struct file *file, const char __user *userbuf,
+-				size_t nbytes, loff_t *ppos)
++static int cpu_shares_write_uint(struct cgroup *cgrp, struct cftype *cftype,
++				u64 shareval)
+ {
+-	unsigned long shareval;
+-	struct task_group *tg = cgroup_tg(cont);
+-	char buffer[2*sizeof(unsigned long) + 1];
+-	int rc;
+-
+-	if (nbytes > 2*sizeof(unsigned long))	/* safety check */
+-		return -E2BIG;
+-
+-	if (copy_from_user(buffer, userbuf, nbytes))
+-		return -EFAULT;
+-
+-	buffer[nbytes] = 0;	/* nul-terminate */
+-	shareval = simple_strtoul(buffer, NULL, 10);
+-
+-	rc = sched_group_set_shares(tg, shareval);
+-
+-	return (rc < 0 ? rc : nbytes);
++	return sched_group_set_shares(cgroup_tg(cgrp), shareval);
+ }
+ 
+-static u64 cpu_shares_read_uint(struct cgroup *cont, struct cftype *cft)
++static u64 cpu_shares_read_uint(struct cgroup *cgrp, struct cftype *cft)
+ {
+-	struct task_group *tg = cgroup_tg(cont);
++	struct task_group *tg = cgroup_tg(cgrp);
+ 
+ 	return (u64) tg->shares;
+ }
+@@ -7025,7 +7008,7 @@ static u64 cpu_shares_read_uint(struct c
+ static struct cftype cpu_shares = {
+ 	.name = "shares",
+ 	.read_uint = cpu_shares_read_uint,
+-	.write = cpu_shares_write,
++	.write_uint = cpu_shares_write_uint,
+ };
+ 
+ static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
