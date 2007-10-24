@@ -1,101 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbXJXCTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXJXCUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbXJXCTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbXJXCTI
+	id S1755451AbXJXCUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbXJXCUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:19:08 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:47556 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752858AbXJXCTH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:19:07 -0400
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-In-Reply-To: <1193173966-3550-1-git-send-email-matthew@wil.cx>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 22:19:06 -0400
-Message-Id: <1193192346.8691.36.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 22:20:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37406 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753183AbXJXCUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 22:20:34 -0400
+Message-ID: <471EABEE.8030900@garzik.org>
+Date: Tue, 23 Oct 2007 22:20:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, davej@redhat.com, auke-jan.h.kok@intel.com,
+       ajax@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
+References: <20071023.145339.55504234.davem@davemloft.net>	<471E9801.2000006@garzik.org>	<471E99E8.6030404@garzik.org> <20071023.180744.115914004.davem@davemloft.net>
+In-Reply-To: <20071023.180744.115914004.davem@davemloft.net>
+Content-Type: multipart/mixed;
+ boundary="------------050906060804060408070304"
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050906060804060408070304
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, 2007-10-23 at 17:12 -0400, Matthew Wilcox wrote:
-> Consecutive calls to printk are non-atomic, which leads to various
-> implementations for accumulating strings which can be printed in one call.
-> This is a generic string buffer which can also be used for non-printk
-> purposes.  There is no sb_scanf implementation yet as I haven't identified
-> a user for it.
+David Miller wrote:
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Tue, 23 Oct 2007 21:03:36 -0400
 > 
-> +
-> +struct stringbuf {
-> +	char *s;
-> +	int alloc;
-> +	int len;
-> +};
-> +
+>> I'm wondering if there is a way to avoid adding
+>>
+>> 	if (!is_valid_ether_addr(dev->dev_addr))
+>> 		return -EINVAL;
+>>
+>> to every ethernet driver's ->open() hook.
+> 
+> The first idea I get is:
+> 
+> 1) Create netdev->validate_dev_addr().
+> 
+> 2) If it exists, invoke it before ->open(), abort
+>    and return if any errors signaled.
+> 
+> etherdev init hooks up a function that does the above
+> check, which allows us to avoid editing every ethernet
+> driver
+> 
+> What do you think?
 
-I don't know if copy-on-write semantics are really useful for current
-in-kernel uses, but I've coded and used a C++ string class like this in
-the past:
+Seems sane to me.  Something like this (attached)?
 
-struct string_data
-{
-	int nrefs;
-	unsigned len;
-	unsigned capacity;
-	//char data[capacity];	/* allocated along string_data */
-};
-
-struct string	/* or typedef in C... */
-{
-	struct string *data;
-};
-
-[ struct string_data is a hidden implementation detail, only struct
-string is exposed ]
-
-Multiple string objects can share the same data, by increasing the nrefs
-count, a new data is allocated if the string is modified and nrefs > 1.
-
-Not having to iterate over the string to calculate it's length,
-allocating a larger buffer to eliminate re-allocation and copy-on-write
-semantics make a string like this a vast performance improvement over a
-normal C string for a minimal (about 3 ints per data buffer) memory
-cost.
-
-By using it correctly it can prevents buffer overflows.
-
-You still always null terminate the string stored in data to directly
-use it a normal C string.
-
-You also statically allocate an empty string which is shared by all
-"uninitialized" or empty strings.
-
-
-Even without copy-on-write semantics and reference counting, I think
-this approach is better because it uses 1 less "object" and allocation:
-
-struct string - "handle" (pointer really) to string data
-struct string_data - string data
-
-versus:
-
-struct stringbuf *sb - pointer to string object
-struct stringbuf - string object
-char *s (member of stringbuf) - string data
+	Jeff
 
 
 
-Best regards,
 
-- Eric
+--------------050906060804060408070304
+Content-Type: text/plain;
+ name="patch.validate-addr"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch.validate-addr"
 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 4a3f54e..962d1de 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -669,6 +669,8 @@ struct net_device
+ #define HAVE_SET_MAC_ADDR  		 
+ 	int			(*set_mac_address)(struct net_device *dev,
+ 						   void *addr);
++#define HAVE_VALIDATE_ADDR  		 
++	int			(*validate_addr)(struct net_device *dev);
+ #define HAVE_PRIVATE_IOCTL
+ 	int			(*do_ioctl)(struct net_device *dev,
+ 					    struct ifreq *ifr, int cmd);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 8726589..f861555 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1007,17 +1007,20 @@ int dev_open(struct net_device *dev)
+ 	 *	Call device private open method
+ 	 */
+ 	set_bit(__LINK_STATE_START, &dev->state);
+-	if (dev->open) {
++
++	if (dev->validate_addr)
++		ret = dev->validate_addr(dev);
++
++	if (!ret && dev->open)
+ 		ret = dev->open(dev);
+-		if (ret)
+-			clear_bit(__LINK_STATE_START, &dev->state);
+-	}
+ 
+ 	/*
+ 	 *	If it went open OK then:
+ 	 */
+ 
+-	if (!ret) {
++	if (ret)
++		clear_bit(__LINK_STATE_START, &dev->state);
++	else {
+ 		/*
+ 		 *	Set the flags.
+ 		 */
+@@ -1038,6 +1041,7 @@ int dev_open(struct net_device *dev)
+ 		 */
+ 		call_netdevice_notifiers(NETDEV_UP, dev);
+ 	}
++
+ 	return ret;
+ }
+ 
+diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
+index ed8a3d4..5471cd2 100644
+--- a/net/ethernet/eth.c
++++ b/net/ethernet/eth.c
+@@ -298,6 +298,14 @@ static int eth_change_mtu(struct net_device *dev, int new_mtu)
+ 	return 0;
+ }
+ 
++static int eth_validate_addr(struct net_device *dev)
++{
++	if (!is_valid_ether_addr(dev->dev_addr))
++		return -EINVAL;
++	
++	return 0;
++}
++
+ const struct header_ops eth_header_ops ____cacheline_aligned = {
+ 	.create		= eth_header,
+ 	.parse		= eth_header_parse,
+@@ -317,6 +325,7 @@ void ether_setup(struct net_device *dev)
+ 
+ 	dev->change_mtu		= eth_change_mtu;
+ 	dev->set_mac_address 	= eth_mac_addr;
++	dev->validate_addr	= eth_validate_addr;
+ 
+ 	dev->type		= ARPHRD_ETHER;
+ 	dev->hard_header_len 	= ETH_HLEN;
 
+--------------050906060804060408070304--
