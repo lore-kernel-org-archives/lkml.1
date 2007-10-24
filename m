@@ -1,110 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbXJXSlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXJXSvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759681AbXJXSlr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbXJXSlh
+	id S1754030AbXJXSvl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXJXSvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:41:37 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36232 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbXJXSlf (ORCPT
+	Wed, 24 Oct 2007 14:51:32 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57307 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbXJXSva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:41:35 -0400
-Message-ID: <471F91CB.1020607@oracle.com>
-Date: Wed, 24 Oct 2007 14:41:15 -0400
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Corporate Architecture team, Oracle USA
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Wed, 24 Oct 2007 14:51:30 -0400
+Date: Wed, 24 Oct 2007 20:51:28 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <471F8AC5.9080300@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
+ <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
+ <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
+ <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org>
+ <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org>
+ <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de>
+ <471F8AC5.9080300@simon.arlott.org.uk>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Tom Talpey <tmt@netapp.com>, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make sunrpc/xprtsock.c:xs_setup_{udp,tcp}() static
-References: <20071024162402.GB30533@stusta.de>
-In-Reply-To: <20071024162402.GB30533@stusta.de>
-Content-Type: multipart/mixed;
- boundary="------------060300020602040407090407"
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060300020602040407090407
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Adrian Bunk wrote:
-> xs_setup_{udp,tcp}() can now become static.
+On Oct 24 2007 19:11, Simon Arlott wrote:
+>
+>* (I've got a list of access rules which are scanned in order until one of 
+>them matches, and an array of one bit for every port for per-port default 
+>allow/deny - although the latter could be removed.
+>http://svn.lp0.eu/simon/portac/trunk/)
 
-ACK.  Sorry this was overlooked.
-
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  include/linux/sunrpc/xprtsock.h |    6 ------
->  net/sunrpc/xprtsock.c           |    4 ++--
->  2 files changed, 2 insertions(+), 8 deletions(-)
-> 
-> 833a31c8caef70589f33be8e3a1fc9d8e01ce3c2 
-> diff --git a/include/linux/sunrpc/xprtsock.h b/include/linux/sunrpc/xprtsock.h
-> index 2c6c2c2..c2a46c4 100644
-> --- a/include/linux/sunrpc/xprtsock.h
-> +++ b/include/linux/sunrpc/xprtsock.h
-> @@ -9,12 +9,6 @@
->  
->  #ifdef __KERNEL__
->  
-> -/*
-> - * Socket transport setup operations
-> - */
-> -struct rpc_xprt *xs_setup_udp(struct xprt_create *args);
-> -struct rpc_xprt *xs_setup_tcp(struct xprt_create *args);
-> -
->  int		init_socket_xprt(void);
->  void		cleanup_socket_xprt(void);
->  
-> diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-> index 02298f5..2f630a5 100644
-> --- a/net/sunrpc/xprtsock.c
-> +++ b/net/sunrpc/xprtsock.c
-> @@ -1828,7 +1828,7 @@ static struct rpc_xprt *xs_setup_xprt(struct xprt_create *args,
->   * @args: rpc transport creation arguments
->   *
->   */
-> -struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
-> +static struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
->  {
->  	struct sockaddr *addr = args->dstaddr;
->  	struct rpc_xprt *xprt;
-> @@ -1894,7 +1894,7 @@ struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
->   * @args: rpc transport creation arguments
->   *
->   */
-> -struct rpc_xprt *xs_setup_tcp(struct xprt_create *args)
-> +static struct rpc_xprt *xs_setup_tcp(struct xprt_create *args)
->  {
->  	struct sockaddr *addr = args->dstaddr;
->  	struct rpc_xprt *xprt;
-> 
-
-
---------------060300020602040407090407
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-YmVnaW46dmNhcmQNCmZuOkNodWNrIExldmVyDQpuOkxldmVyO0NodWNrDQpvcmc6T3JhY2xl
-IENvcnBvcmF0aW9uO0NvcnBvcmF0ZSBBcmNoaXRlY3R1cmU6IExpbnV4IFByb2plY3RzIEdy
-b3VwDQphZHI6OzsxMDE1IEdyYW5nZXIgQXZlbnVlO0FubiBBcmJvcjtNSTs0ODEwNDtVU0EN
-CmVtYWlsO2ludGVybmV0OmNodWNrIGRvdCBsZXZlciBhdCBub3NwYW0gb3JhY2xlIGRvdCBj
-b20NCnRpdGxlOlByaW5jaXBhbCBNZW1iZXIgb2YgU3RhZmYNCnRlbDt3b3JrOisxIDI0OCA2
-MTQgNTA5MQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6dmNhcmQN
-Cg0K
---------------060300020602040407090407--
+Besides the 'feature' of inhibiting port binding,
+is not this task of blocking connections something for a firewall?
