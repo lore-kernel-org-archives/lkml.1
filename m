@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXJXNeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbXJXNen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866AbXJXNeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXJXNeB
+	id S1759164AbXJXNen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbXJXNeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:34:01 -0400
-Received: from styx.suse.cz ([82.119.242.94]:46598 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755743AbXJXNeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:34:01 -0400
-Date: Wed, 24 Oct 2007 15:59:00 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andy Whitcroft <andyw@uk.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-git18: ext2_check_page: bad entry in directory
-Message-ID: <20071024135900.GC2652@duck.suse.cz>
-References: <20071024131540.GV32058@shadowen.org>
+	Wed, 24 Oct 2007 09:34:31 -0400
+Received: from ts.adaptec.com ([162.62.93.58]:54507 "EHLO mail-gw3.adaptec.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757919AbXJXNea convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:34:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024131540.GV32058@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
+Date: Wed, 24 Oct 2007 09:34:23 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F3DAB4@otce2k301.adaptec.com>
+In-Reply-To: <20071024173019I.tomof@acm.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
+Thread-Index: AcgWK3TGCpPeROWUQnWJeHYO1VFt+QAFQRHg
+References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org> <20071024173019I.tomof@acm.org>
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "FUJITA Tomonori" <tomof@acm.org>, <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <James.Bottomley@SteelEye.com>, "AACRAID" <aacraid@adaptec.com>,
+       <fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+ACK
 
-On Wed 24-10-07 14:15:40, Andy Whitcroft wrote:
-> Seems that we are now getting strange errors mounting an ext2 root
-> filesystem under 2.6.23-git18:
-> 
->   EXT2-fs error (device sda1): ext2_check_page: bad entry in directory #2:
->   rec_len is smaller than minimal - offset=0, inode=0, rec_len=0,
->   name_len=0
-  Hmm, zero length entry in a root directory. Not nice.
+Based on the presence of the call. 2.6.22, for instance, does not have
+this capability...
 
-> This seems to be occuring consistently since 2.6.23-git18.  I have been
-> back and rerun a -git17 job to confirm its not visible at that level.
-> This bug is expressing itself in 2.6.23-rc1 also.
-> 
-> I am suspicious of this commit in the -git17 -> -git18 block:
-> 
->   commit 89910cccb8fec0c1140d33a743e72a712efd4f05
->   Author: Jan Kara <jack@suse.cz>
->   Date:   Sun Oct 21 16:41:40 2007 -0700
-> 
->       ext2: avoid rec_len overflow with 64KB block size
-> 
-> /me goes debug this a bit more.
-  Hmm, I'd suspect that too ;) But I swear I actually tested the code ;)
-So what are you using the filesystem for (or do you get the error
-immediately when mounting)? How large is the filesystem?
+I did not test this change, just accepting on the principals. How much
+testing of the change did you do Fujita?
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Sincerely -- Mark Salyzyn
+
+> -----Original Message-----
+> From: FUJITA Tomonori [mailto:tomof@acm.org] 
+> Sent: Wednesday, October 24, 2007 6:49 AM
+> To: akpm@linux-foundation.org
+> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; 
+> James.Bottomley@SteelEye.com; AACRAID; fujita.tomonori@lab.ntt.co.jp
+> Subject: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
+> 
+> This sets the segment size limit properly via pci_set_dma_max_seg_size
+> and remove blk_queue_max_segment_size because scsi-ml calls it.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  drivers/scsi/aacraid/linit.c |    9 ++++++---
+>  1 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/scsi/aacraid/linit.c 
+> b/drivers/scsi/aacraid/linit.c
+> index 038980b..04d6a65 100644
+> --- a/drivers/scsi/aacraid/linit.c
+> +++ b/drivers/scsi/aacraid/linit.c
+> @@ -435,9 +435,6 @@ static int aac_slave_configure(struct 
+> scsi_device *sdev)
+>  		else if (depth < 2)
+>  			depth = 2;
+>  		scsi_adjust_queue_depth(sdev, MSG_ORDERED_TAG, depth);
+> -		if (!(((struct aac_dev 
+> *)host->hostdata)->adapter_info.options &
+> -				AAC_OPT_NEW_COMM))
+> -			
+> blk_queue_max_segment_size(sdev->request_queue, 65536);
+>  	} else
+>  		scsi_adjust_queue_depth(sdev, 0, 1);
+>  
+> @@ -1045,6 +1042,12 @@ static int __devinit 
+> aac_probe_one(struct pci_dev *pdev,
+>  	if (error < 0)
+>  		goto out_deinit;
+>  
+> +	if (!(aac->adapter_info.options & AAC_OPT_NEW_COMM)) {
+> +		error = pci_set_dma_max_seg_size(pdev, 65536);
+> +		if (error)
+> +			goto out_deinit;
+> +	}
+> +
+>  	/*
+>   	 * Lets override negotiations and drop the maximum SG 
+> limit to 34
+>   	 */
+> -- 
+> 1.5.2.4
+> 
