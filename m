@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXJXMHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbXJXMHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbXJXMHQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbXJXMHF
+	id S1758143AbXJXMHj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbXJXMH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:07:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37294 "EHLO
+	Wed, 24 Oct 2007 08:07:27 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37297 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752754AbXJXMHD (ORCPT
+	with ESMTP id S1757001AbXJXMHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:07:03 -0400
-Date: Wed, 24 Oct 2007 14:07:33 +0200
+	Wed, 24 Oct 2007 08:07:25 -0400
+Date: Wed, 24 Oct 2007 14:07:55 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>, bryan.wu@analog.com
+To: Jens Axboe <jens.axboe@oracle.com>, chris@zankel.net
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] blackfin: fix sg fallout
-Message-ID: <20071024120732.GB30533@stusta.de>
+Subject: [2.6 patch] xtensa: fix sg fallout
+Message-ID: <20071024120755.GC30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,17 +26,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-dc3f9077912fb66aabb61f336f7e2324ec2fa911 
-diff --git a/arch/blackfin/kernel/dma-mapping.c b/arch/blackfin/kernel/dma-mapping.c
-index a16cb03..d6b61d5 100644
---- a/arch/blackfin/kernel/dma-mapping.c
-+++ b/arch/blackfin/kernel/dma-mapping.c
-@@ -35,6 +35,7 @@
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
-+#include <linux/scatterlist.h>
- #include <asm/cacheflush.h>
- #include <asm/bfin-global.h>
+d1794cb192dcd1212c9bc2f3f78f5ca4860bf6ce 
+diff --git a/include/asm-xtensa/dma-mapping.h b/include/asm-xtensa/dma-mapping.h
+index 8bd9d2c..791e1c9 100644
+--- a/include/asm-xtensa/dma-mapping.h
++++ b/include/asm-xtensa/dma-mapping.h
+@@ -11,7 +11,7 @@
+ #ifndef _XTENSA_DMA_MAPPING_H
+ #define _XTENSA_DMA_MAPPING_H
  
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <asm/cache.h>
+ #include <asm/io.h>
+ #include <linux/mm.h>
 
