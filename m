@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbXJXSMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbXJXSNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbXJXSMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760913AbXJXSLg
+	id S1758464AbXJXSNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbXJXSM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:11:36 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:38271 "EHLO proxima.lp0.eu"
+	Wed, 24 Oct 2007 14:12:58 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51498 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760843AbXJXSLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:11:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=fF1/mqG/1WJN99DJElyRUMtP+iD3QSgWcm0ZthXCP7RM2Xby9bwgBOdwbuwBQmD99+FtmagSAdYYr2n7mHuVgrDu///bEUF63PPxLfxpAJH87qWoEmINyEoQOoKG4Yov;
-Message-ID: <471F8AC5.9080300@simon.arlott.org.uk>
-Date: Wed, 24 Oct 2007 19:11:17 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
+	id S1755767AbXJXSM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:12:57 -0400
+Date: Wed, 24 Oct 2007 22:17:54 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au> <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de>
-In-Reply-To: <20071024125533.GE30533@stusta.de>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul E McKenney <paulmck@us.ibm.com>,
+       Richard Gooch <rgooch@atnf.csiro.au>,
+       Tigran Aivazian <tigran@aivazian.fs.co.uk>,
+       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Nathan Lynch <ntl@pobox.com>, David Miller <davem@davemloft.net>,
+       Paul Jackson <pj@sgi.com>, Josh Triplett <josh@freedesktop.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [RFC PATCH 0/5] Refcount based Cpu Hotplug. V2
+Message-ID: <20071024181754.GC345@tv-sign.ru>
+References: <20071024052931.GA22722@in.ibm.com> <Pine.LNX.4.64.0710241001160.26202@schroedinger.engr.sgi.com> <20071024180034.GB8663@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024180034.GB8663@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/10/07 13:55, Adrian Bunk wrote:
-> On Wed, Oct 24, 2007 at 12:50:29PM +0100, Simon Arlott wrote:
->> I currently have an LSM that only handles permissions for socket_bind
->> and socket_listen, I load it and then "capability" as secondary on
->> boot - but now I can't because the LSM framework is now just the LS
->> framework.
->> 
->> Why can't this "static LSM" change be a Kconfig option?
->> (I don't want to have to maintain my own reverted copy of security/,
->> or compile this into the kernel because then I can't ever modify and
->> reload it without rebooting.)
+On 10/24, Gautham R Shenoy wrote:
+>
+> On Wed, Oct 24, 2007 at 10:04:41AM -0700, Christoph Lameter wrote:
+> > On Wed, 24 Oct 2007, Gautham R Shenoy wrote:
+> > 
+> > > This is the version 2 of the refcount based cpu-hotplug "locking" 
+> > > implementation. 
+> > 
+> > Uggh. This introduces a global lock that has to be taken always when 
+> > scanning over cpus? 
 > 
-> Let's start with the more important questions:
-> 
-> Did you submit your LSM for inclusion into the kernel?
+> Well, no! we take the global lock only while bumping up the refcount. 
+> We don't hold the lock while scanning over the cpus. And this is
+> definitely an improvement over the lock_cpu_hotplug() global mutex
+> we have now.
 
-No, because the interface for configuring it would be rejected... I have 
-a /proc file which I write a binary configuration file to. This works 
-fine for me but it would take a lot of work to write a proper interface 
-- which I'm still not sure how to do*.
+Just to be sure I didn't miss something... preempt_disable() still works,
+yes?
 
-That doesn't solve the problem that it's no longer possible to reload LSM 
-modules to make changes at runtime. Why should I have to reboot to change 
-something from now on when it works ok? The reasoning seems to be based 
-around a dislike of some out of tree modules. (Although it doesn't look 
-like there's appropriate locking around the register/unregister process.)
+Oleg.
 
-
-* (I've got a list of access rules which are scanned in order until one of 
-them matches, and an array of one bit for every port for per-port default 
-allow/deny - although the latter could be removed.
-http://svn.lp0.eu/simon/portac/trunk/)
-
--- 
-Simon Arlott
