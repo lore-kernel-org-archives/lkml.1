@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXJXFlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXJXFtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbXJXFlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXJXFlM
+	id S1756242AbXJXFtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXJXFtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:41:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54289 "EHLO mx1.redhat.com"
+	Wed, 24 Oct 2007 01:49:12 -0400
+Received: from mail.progtech.ru ([62.117.85.73]:38570 "EHLO mail.progtech.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXJXFlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:41:10 -0400
-Date: Wed, 24 Oct 2007 01:38:15 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Adam Jackson <ajax@redhat.com>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
-Message-ID: <20071024053815.GC28298@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Kok, Auke" <auke-jan.h.kok@intel.com>,
-	Jeff Garzik <jeff@garzik.org>, Adam Jackson <ajax@redhat.com>,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	netdev <netdev@vger.kernel.org>
-References: <11931515302013-git-send-email-ajax@redhat.com> <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org> <20071023212026.GF7793@redhat.com> <471E7DCA.9030700@intel.com>
+	id S1751247AbXJXFtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:49:11 -0400
+X-Spam-Scaned: by SPAMASSASSIN
+Date: Wed, 24 Oct 2007 09:49:07 +0400
+From: "Oleg A. Arkhangelsky" <sysoleg@progtech.ru>
+X-Mailer: The Bat! (v2.12.00) Business
+Reply-To: "Oleg A. Arkhangelsky" <sysoleg@progtech.ru>
+X-Priority: 3 (Normal)
+Message-ID: <1397016698.20071024094907@progtech.ru>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Hard lockups on 2.6.22.4-SMP
+In-Reply-To: <1696948867.20071023164555@progtech.ru>
+References: <1696948867.20071023164555@progtech.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471E7DCA.9030700@intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 04:03:38PM -0700, Kok, Auke wrote:
- > Dave Jones wrote:
- > > On Tue, Oct 23, 2007 at 04:40:01PM -0400, Jeff Garzik wrote:
- > > 
- > >  > > In any case, this patch should not be merged. We often send it around to users to
- > >  > > debug their issue in case it involves eeproms, but merging it will just conceal
- > >  > > the real issue and all of a sudden a flood of people stop reporting *real* issues
- > >  > > to us.
- > >  > 
- > >  > Sorry, I disagree.  Just as with e100, if there is a clear way the user 
- > >  > can recover their setup -- and Adam says his was effective -- I don't 
- > >  > see why we should be denying users the ability to use their own hardware.
- > >  
- > > Indeed. This is a common enough problem that not including it causes more pain
- > > than its worth.  I have two affected boxes myself that I actually thought
- > > the hardware was dead before I tried ajax's patch.
- > 
- > 
- > look: You should have reported this to us and you didn't. Now you are using the
- > fact that you did not report it as an argument which is out of place.
+Hello,
 
-you're missing the point.  It looks like a hardware failure. Why would I report this? 
+      Answering to myself.
 
- > why do you say it is common? how often have you seen this and not reported it back
- > to our support? are you willingly trying to frustrate this issue?
+OAA> We  have  a  problem  with  spontaneous (there is no relation with CPU
+OAA> load,  memory  load,  uptime)  hard  lockups  on  linux  2.6.22.4  (no
+OAA> additional patches) on SMP system (Intel E7230 ICH7 Montherboard). Num
+OAA> Lock  (Caps  Lock - no matter) on keyboard is not responding. There is
+OAA> no  debug  on  console (no oops, no kernel panic, no NMI watchdog info
+OAA> [but nmi_watchdog=1 and NMI in /proc/interrupts is OK]). All we see is
+OAA> just previous console state (for example - login: prompt). We have the
+OAA> same  situation  on  another PC with abosolutely the some hardware and
+OAA> software  configuration.  Could  you  give  us some hints about how to
+OAA> debug  this  situation?  If you need some additional information about
+OAA> our  system, feel free to ask. I can post a lot of output (i.e. lspci,
+OAA> dmesg, etc...) but i don't want to post any useless information.
 
-Not at all. The only frustration here is that I used to have a kernel that
-worked, upgraded, and thought that my hardware was broken.
-How many other users thought the same ?
+     Yesterday we added CONFIG_DEBUG_SPINLOCK and
+     CONFIG_DEBUG_SPINLOCK_SLEEP to our kernel config.
 
-	Dave
+     After six hours of uptime we got the same lockup, but the kernel
+     became a little verbose:
+
+     BUG: spinlock lockup on CPU#1, swapper/0, e9bcb200
+
+     Nothing else. No call trace, no cpu registers dump. Just this
+     line. Any hints?
 
 -- 
-http://www.codemonkey.org.uk
+wbr,
+ Oleg                            mailto:sysoleg@progtech.ru
+
