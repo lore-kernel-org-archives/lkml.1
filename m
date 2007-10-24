@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXJXMzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbXJXM7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbXJXMzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXJXMzG
+	id S1757719AbXJXM7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXJXM7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:55:06 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37335 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752218AbXJXMzE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:55:04 -0400
-Date: Wed, 24 Oct 2007 14:55:33 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
+	Wed, 24 Oct 2007 08:59:04 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:9821 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751494AbXJXM7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 08:59:02 -0400
+Date: Wed, 24 Oct 2007 14:58:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.no>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-	static interface
-Message-ID: <20071024125533.GE30533@stusta.de>
-References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au> <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid>
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
+Message-ID: <20071024125858.GY14671@kernel.dk>
+References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org> <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain> <20071024122120.GV14671@kernel.dk> <20071024124123.GD30533@stusta.de> <Pine.LNX.4.64.0710240840390.1257@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <55615.simon.1193226629@5ec7c279.invalid>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <Pine.LNX.4.64.0710240840390.1257@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 12:50:29PM +0100, Simon Arlott wrote:
-> I currently have an LSM that only handles permissions for socket_bind
-> and socket_listen, I load it and then "capability" as secondary on
-> boot - but now I can't because the LSM framework is now just the LS
-> framework.
+On Wed, Oct 24 2007, Robert P. J. Day wrote:
+> On Wed, 24 Oct 2007, Adrian Bunk wrote:
 > 
-> Why can't this "static LSM" change be a Kconfig option?
-> (I don't want to have to maintain my own reverted copy of security/,
-> or compile this into the kernel because then I can't ever modify and
-> reload it without rebooting.)
+> > On Wed, Oct 24, 2007 at 02:21:20PM +0200, Jens Axboe wrote:
+> > > On Wed, Oct 24 2007, Robert P. J. Day wrote:
+> 
+> > > > i was just about to ask -- is this one of those cases where the
+> > > > asm versions of scatterlist.h should have a warning/error that
+> > > > they should not be included directly, and to include
+> > > > linux/scatterlist.h instead?
+> 
+> > > No, using asm/scatterlist.h is perfectly fine. The problem is code
+> > > using the sg helpers should include linux/scatterlist.h since that
+> > > is where those are defined.
+> 
+> > > If you just need the scatterlist structure definition, then
+> > > asm/scatterlist.h is the correct include.
+> 
+> > But there's also the general question whether it's good practice for
+> > not architecture specific code to include asm/ headers.
+> 
+> > For APIs available on all architectures linux/ header are the right
+> > thing to use, and what is in the asm/ header and what in the linux/
+> > header becomes an implementation detail that can be changed.
+> 
+> more to the point, what the above shows is that the headers aren't
+> well defined.  one would think that a header file whose name is
+> "scatterlist.h" should provide content related solely to that name.
+> 
+> if there's different content, such as the "sg helpers" mentioned
+> above, then those should require a different header file inclusion.
+> it makes no sense to suggest that one should include
+> <asm/scatterlist.h> if you need *only* that content, but to include
+> <linux/scatterlist.h> if you need stuff *in addition to* the
+> scatterlist content.  that's just begging for confusion.
 
-Let's start with the more important questions:
+Completely disagree, it's well defined. The asm/ header adds the arch
+private stuff, like the actual structure definition. That absolutely has
+to reside there. The linux/ header adds manipulation headers for that
+structure. You'd want to put that in all the asm/ headers? I didn't
+think so.
 
-Did you submit your LSM for inclusion into the kernel?
+So I'll repeat - arch code may use the asm/ header, if they just need
+the structure definition. Drivers should use the linux/ header, since
+they should also use the accessor functions. Right now there's still a
+lot of open coding of
 
-If yes, why wasn't it accepted?
-If no, why not?
+        for (i = 0; i < sg_nents; i++)
+                sg_table[i] ...
 
-> Simon Arlott
+usage which should go away eventually and use a
 
-cu
-Adrian
+        sg = sg_table;
+        do {
+                ...
+        } while ((sg = sg_next(sg)) != NULL);
+
+construct, in which case there's no way around using the linux/ header.
+arch IOMMU code will want to be using the linux/ header as well, since
+they will be browsing the list also. That switch should happen when the
+driver actually needs it, not needlessly. The problems seen in the last
+few days have been code that actually use sg accessors AND don't use the
+linux/ header, and that problem only showing up on archs where
+linux/scatterlist.h doesn't get magically included from some other file.
+That is of course a bug, you should include the header with the
+functions that you use. It has nothing to do with asm/ vs linux/ include
+messiness.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jens Axboe
 
