@@ -1,128 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbXJXKRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbXJXKUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755086AbXJXKRn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 06:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXJXKRf
+	id S1755872AbXJXKUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 06:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXJXKT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 06:17:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55573 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752195AbXJXKRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 06:17:34 -0400
-Date: Wed, 24 Oct 2007 12:17:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Linux v2.6.24-rc1, x86 arch code quality, unifications
-Message-ID: <20071024101715.GB18882@elte.hu>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071024080451.GA32690@infradead.org>
+	Wed, 24 Oct 2007 06:19:56 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:34194 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXJXKTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 06:19:55 -0400
+Message-ID: <471F1C48.1000803@tiscali.nl>
+Date: Wed, 24 Oct 2007 12:19:52 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024080451.GA32690@infradead.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0008]
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/?] Unlock when sn_oemdata can't be extended
+References: <471E9322.1030408@tiscali.nl>
+In-Reply-To: <471E9322.1030408@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+     Several unlocking issues
+     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/net/9p/mux.c b/net/9p/mux.c
+index f140147..c9f0805 100644
+--- a/net/9p/mux.c
++++ b/net/9p/mux.c
+@@ -222,8 +222,10 @@ static int p9_mux_poll_start(struct p9_conn *m)
+ 	}
+ 
+ 	if (i >= ARRAY_SIZE(p9_mux_poll_tasks)) {
+-		if (vptlast == NULL)
++		if (vptlast == NULL) {
++			mutex_unlock(&p9_mux_task_lock);
+ 			return -ENOMEM;
++		}
+ 
+ 		P9_DPRINTK(P9_DEBUG_MUX, "put in proc %d\n", i);
+ 		list_add(&m->mux_list, &vptlast->mux_list);
+diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
+index 817169e..b09c499 100644
+--- a/net/bridge/netfilter/ebtables.c
++++ b/net/bridge/netfilter/ebtables.c
+@@ -282,8 +282,10 @@ find_inlist_lock_noload(struct list_head *head, const char *name, int *error,
+ 		return NULL;
+ 
+ 	list_for_each_entry(e, head, list) {
+-		if (strcmp(e->name, name) == 0)
++		if (strcmp(e->name, name) == 0) {
++			mutex_unlock(mutex);
+ 			return e;
++		}
+ 	}
+ 	*error = -ENOENT;
+ 	mutex_unlock(mutex);
+diff --git a/net/netfilter/nf_conntrack_netlink.c b/net/netfilter/nf_conntrack_netlink.c
+index 9be1826..cf18097 100644
+--- a/net/netfilter/nf_conntrack_netlink.c
++++ b/net/netfilter/nf_conntrack_netlink.c
+@@ -1079,7 +1079,7 @@ ctnetlink_new_conntrack(struct sock *ctnl, struct sk_buff *skb,
+ 						    CTA_TUPLE_MASTER,
+ 						    u3);
+ 			if (err < 0)
+-				return err;
++				goto out_unlock;
+ 
+ 			master_h = __nf_conntrack_find(&master, NULL);
+ 			if (master_h == NULL) {
+diff --git a/net/rose/af_rose.c b/net/rose/af_rose.c
+index 509defe..859fdc0 100644
+--- a/net/rose/af_rose.c
++++ b/net/rose/af_rose.c
+@@ -750,8 +750,10 @@ static int rose_connect(struct socket *sock, struct sockaddr *uaddr, int addr_le
+ 
+ 	rose->neighbour = rose_get_neigh(&addr->srose_addr, &cause,
+ 					 &diagnostic);
+-	if (!rose->neighbour)
+-		return -ENETUNREACH;
++	if (!rose->neighbour) {
++		err = -ENETUNREACH;
++		goto out_release;
++	}
+ 
+ 	rose->lci = rose_new_lci(rose->neighbour);
+ 	if (!rose->lci) {
+diff --git a/sound/oss/au1550_ac97.c b/sound/oss/au1550_ac97.c
+index 23018a7..5b0e9bd 100644
+--- a/sound/oss/au1550_ac97.c
++++ b/sound/oss/au1550_ac97.c
+@@ -1833,12 +1833,16 @@ au1550_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	if (file->f_mode & FMODE_READ) {
+-		if ((ret = prog_dmabuf_adc(s)))
++		if ((ret = prog_dmabuf_adc(s))) {
++			mutex_unlock(&s->open_mutex);
+ 			return ret;
++		}
+ 	}
+ 	if (file->f_mode & FMODE_WRITE) {
+-		if ((ret = prog_dmabuf_dac(s)))
++		if ((ret = prog_dmabuf_dac(s))) {
++			mutex_unlock(&s->open_mutex);
+ 			return ret;
++		}
+ 	}
+ 
+ 	s->open_mode |= file->f_mode & (FMODE_READ | FMODE_WRITE);
+diff --git a/sound/oss/dmasound/dmasound_atari.c b/sound/oss/dmasound/dmasound_atari.c
+index 285239d..d23a089 100644
+--- a/sound/oss/dmasound/dmasound_atari.c
++++ b/sound/oss/dmasound/dmasound_atari.c
+@@ -1276,6 +1276,7 @@ static irqreturn_t AtaInterrupt(int irq, void *dummy)
+ 		 * (almost) like on the TT.
+ 		 */
+ 		write_sq_ignore_int = 0;
++		spin_unlock(&dmasound.lock);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+@@ -1284,6 +1285,7 @@ static irqreturn_t AtaInterrupt(int irq, void *dummy)
+ 		 * the sq variables, so better don't do anything here.
+ 		 */
+ 		WAKE_UP(write_sq.sync_queue);
++		spin_unlock(&dmasound.lock);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+diff --git a/sound/pci/mixart/mixart.c b/sound/pci/mixart/mixart.c
+index 880b824..2f62ad6 100644
+--- a/sound/pci/mixart/mixart.c
++++ b/sound/pci/mixart/mixart.c
+@@ -608,6 +608,7 @@ static int snd_mixart_hw_params(struct snd_pcm_substream *subs,
+ 	/* set the format to the board */
+ 	err = mixart_set_format(stream, format);
+ 	if(err < 0) {
++		mutex_unlock(&mgr->setup_mutex);
+ 		return err;
+ 	}
+ 
 
-* Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Tue, Oct 23, 2007 at 09:19:16PM -0700, Linus Torvalds wrote:
-> > In short, we just had an unusually large amount of not just x86 merges, 
-> 
-> Btw, can we please finis up this merge a little more before we freeze 
-> 2.6.24?  The way we currently have leftovers of arch/i386/ and 
-> arch/x86_64/ is quite a nightmare and not how the other architectures 
-> were merged.
-> 
-> Thomas, what again prevents us from just killing these leftovers?
-
-to answer that question one should first be aware of the fundamental 
-code quality problems that the unified x86 architecture has inherited 
-from the split i386 and x86_64 architectures.
-
-To get objective and automated metrics about code quality, i've 
-constructed a table of "coding style errors per one thousand lines of 
-source code" numbers with the help of the latest checkpatch.pl. The 
-codebases i measured are the pre-merge i386 and x86_64 tree, the 
-post-merge arch/x86 unified architecture, and i've also added a handful 
-of other architectures and selected core subsystems, as comparison:
-
-               -------------------------------------------------------
-               |    errors  | lines of code  |    errors/KLOC
-               |            |                |    (smaller is better)
- --------------|------------|----------------|------------------------
-  arch/i386/          5717            73865         77.3
-  arch/x86_64/        2993            31155         96.0
-  arch/x86/           8504           114654         74.1
- ..............|............|................|........................
-  arch/ia64/          1779            64022         27.7
-  arch/mips/          2110            94692         22.2
-  arch/sparc64/       1387            49253         28.1
- ..............|............|................|........................
-  kernel/              762            83540          9.1
-  kernel/time/          15             4191          3.5
-  kernel/irq/            1             2317          0.4
-  mm/                  464            46324         10.0
-  net/core             176            24413          7.2
- ..............|............|................|........................
-
-a couple of observations. Firstly, it is plainly obvious that the x86_64 
-and i386 architectures were in a dreadful state of code quality before 
-the unification. Their code quality was almost an order of magnitude 
-worse than that of the core kernel (!) - and their code quality was 
-significantly worse than that of a couple of other, comparable 
-architectures. (we knew this when we started the x86 unification effort 
-- but i suspect it's even more apparent via the hard numbers in this 
-table.)
-
- ( Note: code metrics should be taken with a grain of salt, as they
-   often over-simplify the picture, but in this particular situation the
-   trends are clear and the numbers match my personal impressions of
-   code quality and robustness of these codebases. )
-
-paradoxically the x86_64 architecture that had a _worse_ code quality 
-than the "legacy" 32-bit code - so much about the "newer code must be 
-better" misconception. The first, mechanic round of unifications thus 
-brought a net degradation in quality - but we've reversed that trend in 
-2.6.24-rc1 already, via unifications and cleanups, as it can be seen 
-from the table. (and we did that while adding new features like 
-high-resolution timers and dynticks to the x86-64bit architecture in 
-v2.6.24-rc1 - or the new IOMMU code. So the x86 architecture is not 
-standing still at all while the unification is going on.)
-
-so to answer your question: full unification is no easy task and it is 
-not automatic at all. The x86_64 tree has diverged from the i386 tree in 
-the past 5 years due to their illogical, forced separation and a 
-resulting bitrot. The two architectures have grown different sets of 
-cleanliness problems and different sets of functions with arbitrary 
-differences that often cover the same functionality. It's all compounded 
-by the fact that the 64-bit code is in worse shape than the 32-bit - so 
-it's not like we could just pick the 64-bit code and use that as the 
-unified code. The 32-bit code is also used about 8-10 times more 
-frequently than the 64-bit code. So there is no easy "just unify it" 
-path.
-
-The new maintainers of the x86 architecture (Thomas, Peter and me), and 
-many other x86 developers are highly motivated to improve the x86 
-architecture's code quality and unify the heck out of it, and there are 
-some real improvements in 2.6.24-rc1 already, but we _must_ be (and are) 
-working on this carefully. So we do unifications on a case by case 
-basis, with the highest priority being to not introduce "unification 
-regressions". The x86 architecture is the most common Linux architecture 
-after all - and users care much more about having a working kernel than 
-they care about cleanups and unifications. So yes, we agree with you, 
-but please be patient! :-) This cannot be realistically finished in 
-v2.6.24, without upsetting the codebase.
-
-	Ingo
