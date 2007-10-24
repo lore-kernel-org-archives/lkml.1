@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbXJXMqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbXJXMrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758659AbXJXMqw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXJXMqn
+	id S1758801AbXJXMrY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbXJXMrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:46:43 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:40840 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757128AbXJXMqm (ORCPT
+	Wed, 24 Oct 2007 08:47:13 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51040 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757128AbXJXMrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:46:42 -0400
-To: apw@shadowen.org
-Cc: jens.axboe@oracle.com, kamalesh@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071024115436.GT32058@shadowen.org>
-References: <471E110C.20404@linux.vnet.ibm.com>
-	<20071023184419.GD14671@kernel.dk>
-	<20071024115436.GT32058@shadowen.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 24 Oct 2007 21:40:14 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Wed, 24 Oct 2007 08:47:12 -0400
+Date: Wed, 24 Oct 2007 08:44:24 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Adrian Bunk <bunk@kernel.org>
+cc: Jens Axboe <jens.axboe@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.no>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
+In-Reply-To: <20071024124123.GD30533@stusta.de>
+Message-ID: <Pine.LNX.4.64.0710240840390.1257@localhost.localdomain>
+References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com>
+ <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain>
+ <20071024122120.GV14671@kernel.dk> <20071024124123.GD30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 12:54:36 +0100
-Andy Whitcroft <apw@shadowen.org> wrote:
+On Wed, 24 Oct 2007, Adrian Bunk wrote:
 
-> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
-> > On Tue, Oct 23 2007, Kamalesh Babulal wrote:
-> > > Hi,
-> > > 
-> > > Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
-> > > over the AMD box
-> > > 
-> > > Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
-> > >  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
-> > > PGD 10185b067 PUD 10075b067 PMD 0 
-> > > Oops: 0002 [1] SMP 
-> > > CPU 3 
-> > > Modules linked in:
-> > > Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
-> > > RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
-> > > RSP: 0000:ffff810181edf948  EFLAGS: 00010002
-> > 
-> > Can you check where gart_map_sg+0x26c is at? Make sure you have
-> > CONFIG_DEBUG_INFO defined, then do:
-> > 
-> > $ gdb vmlinux
-> > $ l *gart_map_sg+0x26c
-> 
-> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
-> output from that version, the panic (also below) seems the same:
-> 
-> (gdb) l *gart_map_sg+0x26c
-> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
-> 428                     goto error;
-> 429             out++;
-> 430             flush_gart();
-> 431             if (out < nents) {
-> 432                     sgmap = sg_next(sgmap);
-> 433                     sgmap->dma_length = 0;
-> 434             }
-> 435             return out;
-> 436
-> 437     error:
-> 
-> So it seems sg_next has returned 0.
+> On Wed, Oct 24, 2007 at 02:21:20PM +0200, Jens Axboe wrote:
+> > On Wed, Oct 24 2007, Robert P. J. Day wrote:
 
-Have you tried this?
+> > > i was just about to ask -- is this one of those cases where the
+> > > asm versions of scatterlist.h should have a warning/error that
+> > > they should not be included directly, and to include
+> > > linux/scatterlist.h instead?
 
-http://marc.info/?l=linux-kernel&m=119317981406073&w=2
+> > No, using asm/scatterlist.h is perfectly fine. The problem is code
+> > using the sg helpers should include linux/scatterlist.h since that
+> > is where those are defined.
+
+> > If you just need the scatterlist structure definition, then
+> > asm/scatterlist.h is the correct include.
+
+> But there's also the general question whether it's good practice for
+> not architecture specific code to include asm/ headers.
+
+> For APIs available on all architectures linux/ header are the right
+> thing to use, and what is in the asm/ header and what in the linux/
+> header becomes an implementation detail that can be changed.
+
+more to the point, what the above shows is that the headers aren't
+well defined.  one would think that a header file whose name is
+"scatterlist.h" should provide content related solely to that name.
+
+if there's different content, such as the "sg helpers" mentioned
+above, then those should require a different header file inclusion.
+it makes no sense to suggest that one should include
+<asm/scatterlist.h> if you need *only* that content, but to include
+<linux/scatterlist.h> if you need stuff *in addition to* the
+scatterlist content.  that's just begging for confusion.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
