@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbXJXWPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761105AbXJXWPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbXJXWPS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXJXWOA
+	id S1761105AbXJXWPv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXJXWOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:14:00 -0400
-Received: from xenotime.net ([66.160.160.81]:50034 "HELO xenotime.net"
+	Wed, 24 Oct 2007 18:14:01 -0400
+Received: from xenotime.net ([66.160.160.81]:36516 "HELO xenotime.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754334AbXJXWN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754255AbXJXWN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Oct 2007 18:13:57 -0400
 Date: Wed, 24 Oct 2007 15:08:48 -0700
 From: Randy Dunlap <rdunlap@xenotime.net>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>,
        sam@ravnborg.org
-Subject: [PATCH 4/6] kernel-doc: process functions, not DOC:
-Message-ID: <11932637281563@xenotime.net>
+Subject: [PATCH 3/6] kernel-doc: single DOC: selection
+Message-ID: <11932637281577@xenotime.net>
 In-Reply-To: <11932637282902@xenotime.net>
 X-Mailer: gregkh_patchbomb
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,74 +23,165 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Johannes Berg <johannes@sipsolutions.net>
 
-This flag is necessary for the next patch for docproc to output
-only the functions and not DOC: sections when a function list
-is requested.
+Currently, DOC: sections are always output even if only a single
+function is requested, fix this and also make it possible to just
+output a single DOC: section by giving its title as the function
+name to output.
+
+Also fixes docbook XML well-formedness for sections with examples.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
 ---
- scripts/kernel-doc |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ scripts/kernel-doc |   63 ++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 43 insertions(+), 20 deletions(-)
 
 --- linux-2.6.23-git19.orig/scripts/kernel-doc
 +++ linux-2.6.23-git19/scripts/kernel-doc
-@@ -46,13 +46,16 @@ use strict;
- # Note: This only supports 'c'.
- 
- # usage:
--# kernel-doc [ -docbook | -html | -text | -man ]
-+# kernel-doc [ -docbook | -html | -text | -man ] [ -no-doc-sections ]
- #           [ -function funcname [ -function funcname ...] ] c file(s)s > outputfile
- # or
- #           [ -nofunction funcname [ -function funcname ...] ] c file(s)s > outputfile
- #
+@@ -54,13 +54,13 @@ use strict;
  #  Set output format using one of -docbook -html -text or -man.  Default is man.
  #
-+#  -no-doc-sections
-+#	Do not output DOC: sections
-+#
  #  -function funcname
- #	If set, then only generate documentation for the given function(s) or
- #	DOC: section titles.  All other functions and DOC: sections are ignored.
-@@ -211,7 +214,7 @@ my $blankline_text = "";
+-#	If set, then only generate documentation for the given function(s).  All
+-#	other functions are ignored.
++#	If set, then only generate documentation for the given function(s) or
++#	DOC: section titles.  All other functions and DOC: sections are ignored.
+ #
+ #  -nofunction funcname
+-#	If set, then only generate documentation for the other function(s).
+-#	Cannot be used together with -function
+-#	(yes, that's a bug -- perl hackers can fix it 8))
++#	If set, then only generate documentation for the other function(s)/DOC:
++#	sections. Cannot be used together with -function (yes, that's a bug --
++#	perl hackers can fix it 8))
+ #
+ #  c files - list of 'c' files to process
+ #
+@@ -374,6 +374,25 @@ sub dump_section {
+ }
  
+ ##
++# dump DOC: section after checking that it should go out
++#
++sub dump_doc_section {
++    my $name = shift;
++    my $contents = join "\n", @_;
++
++    if (($function_only == 0) ||
++	( $function_only == 1 && defined($function_table{$name})) ||
++	( $function_only == 2 && !defined($function_table{$name})))
++    {
++	dump_section $name, $contents;
++	output_blockhead({'sectionlist' => \@sectionlist,
++			  'sections' => \%sections,
++			  'module' => $modulename,
++			  'content-only' => ($function_only != 0), });
++    }
++}
++
++##
+ # output function
+ #
+ # parameterdescs, a hash.
+@@ -564,8 +583,8 @@ sub output_function_html(%) {
+     print "<hr>\n";
+ }
  
- sub usage {
--    print "Usage: $0 [ -v ] [ -docbook | -html | -text | -man ]\n";
-+    print "Usage: $0 [ -v ] [ -docbook | -html | -text | -man ] [ -no-doc-sections ]\n";
-     print "         [ -function funcname [ -function funcname ...] ]\n";
-     print "         [ -nofunction funcname [ -nofunction funcname ...] ]\n";
-     print "         c source file(s) > outputfile\n";
-@@ -225,6 +228,7 @@ if ($#ARGV==-1) {
+-# output intro in html
+-sub output_intro_html(%) {
++# output DOC: block header in html
++sub output_blockhead_html(%) {
+     my %args = %{$_[0]};
+     my ($parameter, $section);
+     my $count;
+@@ -871,7 +890,7 @@ sub output_typedef_xml(%) {
+ }
  
- my $verbose = 0;
- my $output_mode = "man";
-+my $no_doc_sections = 0;
- my %highlights = %highlights_man;
- my $blankline = $blankline_man;
- my $modulename = "Kernel API";
-@@ -329,6 +333,8 @@ while ($ARGV[0] =~ m/^-(.*)/) {
- 	usage();
-     } elsif ($cmd eq '-filelist') {
- 	    $filelist = shift @ARGV;
-+    } elsif ($cmd eq '-no-doc-sections') {
-+	    $no_doc_sections = 1;
+ # output in XML DocBook
+-sub output_intro_xml(%) {
++sub output_blockhead_xml(%) {
+     my %args = %{$_[0]};
+     my ($parameter, $section);
+     my $count;
+@@ -882,15 +901,23 @@ sub output_intro_xml(%) {
+     # print out each section
+     $lineprefix="   ";
+     foreach $section (@{$args{'sectionlist'}}) {
+-	print "<refsect1>\n <title>$section</title>\n <para>\n";
++    	if (!$args{'content-only'}) {
++		print "<refsect1>\n <title>$section</title>\n";
++	}
+ 	if ($section =~ m/EXAMPLE/i) {
+ 	    print "<example><para>\n";
++	} else {
++	    print "<para>\n";
+ 	}
+ 	output_highlight($args{'sections'}{$section});
+ 	if ($section =~ m/EXAMPLE/i) {
+ 	    print "</para></example>\n";
++	} else {
++	    print "</para>";
++	}
++	if (!$args{'content-only'}) {
++		print "\n</refsect1>\n";
+ 	}
+-	print " </para>\n</refsect1>\n";
+     }
+ 
+     print "\n\n";
+@@ -1137,7 +1164,7 @@ sub output_typedef_man(%) {
      }
  }
  
-@@ -380,6 +386,10 @@ sub dump_doc_section {
-     my $name = shift;
-     my $contents = join "\n", @_;
+-sub output_intro_man(%) {
++sub output_blockhead_man(%) {
+     my %args = %{$_[0]};
+     my ($parameter, $section);
+     my $count;
+@@ -1294,7 +1321,7 @@ sub output_struct_text(%) {
+     output_section_text(@_);
+ }
  
-+    if ($no_doc_sections) {
-+	return;
-+    }
-+
-     if (($function_only==0) ||
- 	( $function_only == 1 && defined($function_table{$name})) ||
- 	( $function_only == 2 && !defined($function_table{$name})))
+-sub output_intro_text(%) {
++sub output_blockhead_text(%) {
+     my %args = %{$_[0]};
+     my ($parameter, $section);
+ 
+@@ -1325,9 +1352,9 @@ sub output_declaration {
+ 
+ ##
+ # generic output function - calls the right one based on current output mode.
+-sub output_intro {
++sub output_blockhead {
+     no strict 'refs';
+-    my $func = "output_intro_".$output_mode;
++    my $func = "output_blockhead_".$output_mode;
+     &$func(@_);
+     $section_counter++;
+ }
+@@ -1926,9 +1953,7 @@ sub process_file($) {
+ 	} elsif ($state == 4) {
+ 		# Documentation block
+ 		if (/$doc_block/) {
+-			dump_section($section, xml_escape($contents));
+-			output_intro({'sectionlist' => \@sectionlist,
+-				      'sections' => \%sections });
++			dump_doc_section($section, xml_escape($contents));
+ 			$contents = "";
+ 			$function = "";
+ 			%constants = ();
+@@ -1946,9 +1971,7 @@ sub process_file($) {
+ 		}
+ 		elsif (/$doc_end/)
+ 		{
+-			dump_section($section, xml_escape($contents));
+-			output_intro({'sectionlist' => \@sectionlist,
+-				      'sections' => \%sections });
++			dump_doc_section($section, xml_escape($contents));
+ 			$contents = "";
+ 			$function = "";
+ 			%constants = ();
 
 
 -- 
