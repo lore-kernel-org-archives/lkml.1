@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759957AbXJXUrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXJXUrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759957AbXJXUrT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXJXUrE
+	id S1760147AbXJXUrv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 16:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXJXUrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:47:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50615 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753947AbXJXUrB (ORCPT
+	Wed, 24 Oct 2007 16:47:41 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53728
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754636AbXJXUrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:47:01 -0400
-Date: Wed, 24 Oct 2007 22:46:58 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Crispin Cowan <crispin@crispincowan.com>
-cc: Simon Arlott <simon@fire.lp0.eu>, Adrian Bunk <bunk@kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-In-Reply-To: <471FA8A1.6070904@crispincowan.com>
-Message-ID: <Pine.LNX.4.64.0710242232260.17781@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org>
- <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
- <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
- <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
- <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org>
- <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org>
- <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de>
- <471F8AC5.9080300@simon.arlott.org.uk> <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr>
- <471FA8A1.6070904@crispincowan.com>
+	Wed, 24 Oct 2007 16:47:40 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Jeff Dike <jdike@addtoit.com>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+Date: Wed, 24 Oct 2007 16:46:54 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+References: <200710111754.46854.rob@landley.net> <20071024152240.GA7733@c2.user-mode-linux.org>
+In-Reply-To: <20071024152240.GA7733@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710241646.54942.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 24 October 2007 10:22:40 am Jeff Dike wrote:
+> I poked around a bit for a sparc cross-toolchain, didn't find one, so
+> I couldn't see what exactly the problem was.
 
-On Oct 24 2007 13:18, Crispin Cowan wrote:
->Jan Engelhardt wrote:
->> On Oct 24 2007 19:11, Simon Arlott wrote:
->>   
->>> * (I've got a list of access rules which are scanned in order until one of 
->>> them matches, and an array of one bit for every port for per-port default 
->>> allow/deny - although the latter could be removed.
->>> http://svn.lp0.eu/simon/portac/trunk/)
->>>     
->> Besides the 'feature' of inhibiting port binding,
->> is not this task of blocking connections something for a firewall?
->>   
->So now you are criticizing his module. Arguing about the merits of
->security semantics. This is exactly why Linus wanted LSM, so we don't
->have to have these kinds of discussions, at least not on LKML :)
+Prebuilt for Ubuntu 7.04:
+http://landley.net/code/firmware/downloads/cross-compiler/host-i686/cross-compiler-sparc.tar.bz2
 
-This was a question. I was perfectly aware that iptables alone
-does not prohibit binding, and there are reasons to inhibit binding.
+Source code:
+Or http://landley.net/code/firmware/downloads/firmware-0.2.2.tar.bz2
 
-But sometimes, a coder does not know where to start - chances are,
-that someone else wanting to do bind(2) inhibiting is doing it
-with a syscall table change. Or coder did not notice that a firewall
-is sufficient for the task to be achieved (which is not always the
-case - hence the question).
+For the second one, extract it, cd into it, "./build.sh sparc", and when it 
+finishes your sparc-gcc should be in "build/cross-compiler-sparc/bin".
+
+You can move the cross-compiler-sparc directory anywhere you want in the 
+filesystem, and it should still work.  Just add the "bin" subdirectory of it 
+to $PATH and CROSS_COMPILE=sparc-
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
