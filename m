@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbXJXF1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbXJXF3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbXJXF1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXJXF1W
+	id S1756662AbXJXF3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXJXF3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:27:22 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:2308 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753056AbXJXF1V (ORCPT
+	Wed, 24 Oct 2007 01:29:05 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:13109 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753956AbXJXF3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:27:21 -0400
-Message-ID: <fa686aa40710232227x7984097bk8bc55fe6cf194d63@mail.gmail.com>
-Date: Tue, 23 Oct 2007 23:27:21 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] mpc5200: psc-spi driver must not touch port_config or cdm registers
-Cc: "Dragos Carp" <dragos.carp@toptica.com>, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
-In-Reply-To: <20071024050100.GA3369@nd47.coderock.org>
+	Wed, 24 Oct 2007 01:29:02 -0400
+Date: Wed, 24 Oct 2007 07:29:00 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Schmitt <schmichr@de.ibm.com>, Swen Schillig <swen@vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [PATCH] sg: add missing sg_init_table calls to zfcp
+Message-ID: <20071024052900.GB12335@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071024033457.8657.8708.stgit@trillian.cg.shawcable.net>
-	 <20071024050100.GA3369@nd47.coderock.org>
-X-Google-Sender-Auth: 3383967f098a4a3a
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 23/10/07 21:39 -0600, Grant Likely wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > port_config and the cdm are the responsibility of firmware; and if
-> > firmware doesn't set it up correctly, it should be fixed up by
-> > platform code on a per-board basis because it's a property of the
-> > board.
-> >
-> > Drivers should never touch these registers.  They are completely
-> > unprotected and the platform may do odd things with them that the
-> > driver must not interfere with.
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >
-> > Domen, Dragos; can you please check your usage of this driver.  None of
-> > the in-tree board ports use it as-is, but they are of course just a
-> > device tree change away from being usable on the lite5200b.
->
-> My test cases were just a jumper on RX-TX line.
->
-> It's not even allowed to set mclken_div_pscX?
-> There can be different speed devices on same SPI
-> (spi_board_info->max_speed_hz).
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Nope; do it in the platform code or a cdm driver.  Otherwise there is
-no protection against collisions on the cdm registers.  The driver
-could call a platform hook to fiddle with clocking, but it must not
-touch it directly.
+CONFIG_DEBUG_SG reveals two missing sg_init_table calls. Add them.
 
-(BTW, I don't intended to push this version of the patch; I just want
-to get everyone's brain juices flowing to figure out the best way to
-solve it.)
+kernel BUG at include/linux/scatterlist.h:50!
+illegal operation: 0001 [#1]
+[...]
+Call Trace:
+([<000000000026f184>] zfcp_ns_gid_pn_request+0x4c/0x2a0)
+ [<0000000000276dd4>] zfcp_erp_strategy_do_action+0x1410/0x1938
+ [<0000000000278412>] zfcp_erp_thread+0x4fa/0x1430
+ [<000000000001990a>] kernel_thread_starter+0x6/0xc
+ [<0000000000019904>] kernel_thread_starter+0x0/0xc
 
-Cheers,
-g.
+Cc: Swen Schillig <swen@vnet.ibm.com>
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jens, could you please push this one via your tree? Thanks!
+
+ drivers/s390/scsi/zfcp_aux.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/drivers/s390/scsi/zfcp_aux.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/scsi/zfcp_aux.c
++++ linux-2.6/drivers/s390/scsi/zfcp_aux.c
+@@ -1518,6 +1518,8 @@ zfcp_gid_pn_buffers_alloc(struct zfcp_gi
+                 return -ENOMEM;
+ 
+ 	memset(data, 0, sizeof(*data));
++	sg_init_table(&data->req , 1);
++	sg_init_table(&data->resp , 1);
+         data->ct.req = &data->req;
+         data->ct.resp = &data->resp;
+ 	data->ct.req_count = data->ct.resp_count = 1;
