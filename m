@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXJXLlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbXJXLtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbXJXLlO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbXJXLk6
+	id S1757039AbXJXLtD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbXJXLsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:40:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46754 "EHLO mail.dvmed.net"
+	Wed, 24 Oct 2007 07:48:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55825 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbXJXLk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:40:57 -0400
-Message-ID: <471F2F42.1080806@garzik.org>
-Date: Wed, 24 Oct 2007 07:40:50 -0400
+	id S1751799AbXJXLsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 07:48:53 -0400
+Message-ID: <471F311D.8010302@garzik.org>
+Date: Wed, 24 Oct 2007 07:48:45 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: FUJITA Tomonori <tomof@acm.org>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com,
-       jens.axboe@oracle.com, greg@kroah.com, muli@il.ibm.com,
-       paulus@samba.org, tony.luck@intel.com, davem@davemloft.net,
-       kyle@parisc-linux.org, aacraid@adaptec.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm 0/11] fix iommu sg merging problem
-References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
-In-Reply-To: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 arch updates
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071024113043.GA11897@elte.hu>
+In-Reply-To: <20071024113043.GA11897@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
+X-Spam-Score: -3.7 (---)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Content analysis details:   (-3.7 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> IOMMUs merges scatter/gather segments without considering a low level
-> driver's restrictions. The problem is that IOMMUs can't access to the
-> limitations because they are in request_queue.
+Ingo Molnar wrote:
+> Linus, please pull the latest x86 git tree from:
 > 
-> This patchset introduces a new structure, device_dma_parameters,
-> including dma information. A pointer to device_dma_parameters is added
-> to struct device. The bus specific structures (like pci_dev) includes
-> device_dma_parameters. Low level drivers can use dma_set_max_seg_size
-> to tell IOMMUs about the restrictions.
+>    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 > 
-> We can move more dma stuff in struct device (like dma_mask) to struct
-> device_dma_parameters later (needs some cleanups before that).
-> 
-> This includes patches for all the IOMMUs that could merge sg (x86_64,
-> ppc, IA64, alpha, sparc64, and parisc) though only the ppc patch was
-> tested. The patches for other IOMMUs are only compile tested.
-> 
-> Thanks to everyone for the comments on the previous submission
-> to linux-scsi.
-> 
-> This is against 2.6.24-rc1. The same patchset is also available:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git iommu-sg-fixes
+> it contains two build fixes and an oops-printout-ugliness fix.
 
-Are you interested in collecting patches to libata that eliminate the 
-hand-rolled S/G splitting?  e.g. now ata_fill_sg() and mv_fill_sg() can 
-be made much more efficient.
+Any chance you can kill the warnings that appear on !CONFIG_SMP, 
+!LOCAL_APIC ?  :)
 
-Again, thanks for doing this!  It's been needed for a long time.
+http://marc.info/?l=linux-kernel&m=119317911305274&w=2
+http://marc.info/?l=linux-kernel&m=119317911105258&w=2
+
+It is /likely/ that my fixes are not upstream-worthy, these patches 
+mainly illustrate the problem, not necessarily the best solution.
 
 	Jeff
 
