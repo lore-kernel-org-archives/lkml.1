@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXJXWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbXJXWOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbXJXWNP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXJXWNA
+	id S1754782AbXJXWOO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbXJXWN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:13:00 -0400
-Received: from www.tglx.de ([62.245.132.106]:39873 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbXJXWM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:12:59 -0400
-Date: Thu, 25 Oct 2007 00:12:42 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86_64 and AMD with C1E
-In-Reply-To: <471FBC09.8050201@redhat.com>
-Message-ID: <alpine.LFD.0.9999.0710250007230.3186@localhost.localdomain>
-References: <20071001101532.025d652f@localhost> <4718DDB7.7070707@redhat.com> <b70f2f960710241426y40d25647v3f25b275fad5ce76@mail.gmail.com> <471FBC09.8050201@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Oct 2007 18:13:58 -0400
+Received: from xenotime.net ([66.160.160.81]:58840 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753135AbXJXWN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 18:13:57 -0400
+Date: Wed, 24 Oct 2007 15:08:48 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>,
+       sam@ravnborg.org
+Subject: [PATCH 1/6] kernel-doc: fix xml output mode
+Message-ID: <11932637283188@xenotime.net>
+In-Reply-To: <11932637282902@xenotime.net>
+X-Mailer: gregkh_patchbomb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007, Chuck Ebbert wrote:
-> On 10/24/2007 05:26 PM, Mikhail Kshevetskiy wrote:
-> >>>
-> >>> I fill something wrong here.
-> >>> Is it possible to reduce the amount of timer interrupts?
-> >>> Is it possible to force enable C1,C2 and C3 states when c1e disabled?
-> >>>
-> >> How are you disabling C1E?
-> >>
-> >>
-> > dirty hack, i just follow the FreeBSD way and clear C1e bit in lapic
-> > initialization code. I make it for test purpose only, so i do not produce a
-> > patch.
-> > 
-> 
-> Why does disabling C1E disable C1, C2 and C3?
-> 
-> Thomas, in the case of the machines where C1E is disabled on CPU 0 but
-> enabled on CPU 1, could we just disable it? Maybe it's a BIOS bug and the
-> vendor just forgot to disable CPU 1...
+From: Johannes Berg <johannes@sipsolutions.net>
 
-It's definitely a BIOS bug and I doubt that disabling the bit works on
-every BIOS. I have a system here on my desk, where neither of the CPUs
-has the bit set, but the lapic timer stops wreckage is there once both
-CPUs go into idle. 
+After Randy's patch fixing the HTML output in DOC: sections
+(6b5b55f6c404fa730a09a8254eb19f5a038afcc2) the same bug remained in XML
+mode, this fixes it.
 
-The mindless creativity of BIOS writers seems to exceed the ability of
-hardware designers to produce strange chips by orders of magnitude.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-   tglx
+---
+ scripts/kernel-doc |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- linux-2.6.23-git19.orig/scripts/kernel-doc
++++ linux-2.6.23-git19/scripts/kernel-doc
+@@ -182,10 +182,10 @@ my $blankline_html = $local_lt . "p" . $
+ my %highlights_xml = ( "([^=])\\\"([^\\\"<]+)\\\"", "\$1<quote>\$2</quote>",
+ 			$type_constant, "<constant>\$1</constant>",
+ 			$type_func, "<function>\$1</function>",
+-			$type_struct, "<structname>\$1</structname>",
++			$type_struct_xml, "<structname>\$1</structname>",
+ 			$type_env, "<envar>\$1</envar>",
+ 			$type_param, "<parameter>\$1</parameter>" );
+-my $blankline_xml = "</para><para>\n";
++my $blankline_xml = $local_lt . "/para" . $local_gt . $local_lt . "para" . $local_gt . "\n";
+ 
+ # gnome, docbook format
+ my %highlights_gnome = ( $type_constant, "<replaceable class=\"option\">\$1</replaceable>",
+@@ -394,7 +394,7 @@ sub output_highlight {
+ #	confess "output_highlight got called with no args?\n";
+ #   }
+ 
+-    if ($output_mode eq "html") {
++    if ($output_mode eq "html" || $output_mode eq "xml") {
+ 	$contents = local_unescape($contents);
+ 	# convert data read & converted thru xml_escape() into &xyz; format:
+ 	$contents =~ s/\\\\\\/&/g;
+
+
+-- 
 
