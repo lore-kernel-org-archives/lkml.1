@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXJXWxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbXJXW6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbXJXWxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXJXWxJ
+	id S1759409AbXJXW6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXJXW6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:53:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53533 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755532AbXJXWxI (ORCPT
+	Wed, 24 Oct 2007 18:58:05 -0400
+Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:39305 "HELO
+	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755874AbXJXW6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:53:08 -0400
-Date: Wed, 24 Oct 2007 15:48:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: ak@suse.de, jeremy@goop.org, ying.huang@intel.com, ebiederm@xmission.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v7 1/3] x86 boot: setup data
-Message-Id: <20071024154800.4e0735eb.akpm@linux-foundation.org>
-In-Reply-To: <471E89E1.7060903@zytor.com>
-References: <1193126771.23935.79.camel@caritas-dev.intel.com>
-	<471E70E0.2090802@goop.org>
-	<200710240118.21160.ak@suse.de>
-	<471E89E1.7060903@zytor.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 24 Oct 2007 18:58:03 -0400
+X-YMail-OSG: 5hFqyZkVM1ngE0LSgfDDNbvbISt5heLxtsaJNiW5R8Pud.JZ99W0nFwuWtE2Da1GEQA_Qmy4HA--
+X-RocketYMMF: rancidfat
+Date: Wed, 24 Oct 2007 15:58:02 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+To: Adrian Bunk <bunk@kernel.org>, Simon Arlott <simon@fire.lp0.eu>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20071024223124.GI30533@stusta.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <446110.89443.qm@web36608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 16:55:13 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> Andi Kleen wrote:
-> > 
-> > With the early reserve code in 
-> > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-reserve
-> > and
-> > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/early-alloc
-> > this could be likely done cleaner.
-> > 
+--- Adrian Bunk <bunk@kernel.org> wrote:
+
+> ...
 > 
-> Indeed it could.  For i386, the equivalent code would have another 
-> significant benefit: reserving memory and then mapping and accessing it 
-> later would (at least eventually) allow accesses > 4 GB on PAE kernels 
-> (or with a PSE36 hack, on non-PAE kernels.)
-> 
+> There are other points in this thread that might or might not warrant 
+> making LSM modular again, but even though it might sound harsh breaking 
+> external modules and thereby making people aware that their code should 
+> get into the kernel is IMHO a positive point.
 
-Cleaner sounds good.  I'll duck these patches for now.
+Those proposing LSM modules over the past couple years have
+been treated most harshly. I have personally taken the least
+flak of anyone on my proposal, and at that there have been
+times where I felt like pulling out the #5 clue stick and
+taking a few swings. It's no wonder that people are afraid
+to suggest a module. I didn't do it until I had combed through
+the archives and prepared answers for the most common attacks.
+I hope that Smack moving forward will defuse some of the bad
+vibes that have clouded the LSM for so long. I don't blame
+anyone who kept their module to themself given the hostility
+which even successful products have encountered.
 
-This one doesn't apply, btw: setup_32.h disappeared.
+And don't give me the old "LKML is a tough crowd" feldercarb.
+Security modules have been much worse. Innovation, even in
+security, is a good thing and treating people harshly, even
+"for their own good", is an impediment to innovation.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
