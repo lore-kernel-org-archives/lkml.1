@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbXJXU5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbXJXVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbXJXU5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXJXU5F
+	id S1754408AbXJXVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJXVAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:57:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43407 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbXJXU5C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:57:02 -0400
-Date: Wed, 24 Oct 2007 14:57:01 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Joe Perches <joe@perches.com>
+	Wed, 24 Oct 2007 17:00:04 -0400
+Received: from smtpoutm.mac.com ([17.148.16.72]:53792 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752321AbXJXVAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:00:03 -0400
+In-Reply-To: <1193255992-14385-1-git-send-email-matthew@wil.cx>
+References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0533759C-81D0-45CB-A663-088A6D4E56A9@mac.com>
 Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Stringbuf, v2
-Message-ID: <20071024205701.GF27248@parisc-linux.org>
-References: <20071024195847.GE27248@parisc-linux.org> <1193259097.19617.18.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193259097.19617.18.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Date: Wed, 24 Oct 2007 16:59:48 -0400
+To: Matthew Wilcox <matthew@wil.cx>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 01:51:37PM -0700, Joe Perches wrote:
-> On Wed, 2007-10-24 at 13:58 -0600, Matthew Wilcox wrote:
-> >  - Pass a gfp_t to sb_printk
-> 
-> sb_printf
+On Oct 24, 2007, at 15:59:49, Matthew Wilcox wrote:
+> +static void sb_vprintf(struct stringbuf *sb, gfp_t gfp, const char  
+> *format, va_list args)
+> +{
 
-indeed.
+[...]
 
-> As it doesn't actually output anything but extends
-> a buffer pointer in a struct, perhaps it's better to
-> rename sb_printf to sb_sprintf.
+> +	s = sb->buf + sb->len;
+> +	size = vsnprintf(s, sb->alloc - sb->len, format, args);
 
-printf prints to stdout.  fprintf prints to a file.  sprintf prints to
-a string.  sb_printf prints to an sb.
+[...]
 
-> I believe the common use will be GFP_ATOMIC.
+> +	/* Point to the end of the old string since we already updated - 
+> >len */
+> +	s += sb->len - size;
+> +	vsprintf(s, format, args);
 
-An interesting belief.  Of the three users I've converted, one uses
-GFP_ATOMIC and two use GFP_KERNEL.
+[...]
 
-> Perhaps a default wrapper define and a renamed function?
-> 
-> void sb_sprintf_gfp(struct stringbuf *sb, gfp_t gfp, const char *fmt, ...)
-> 
-> #define sb_sprintf(sb, fmt, arg...) \
-> 	sb_sprintf_gfp(sb, GFP_ATOMIC, fmt, ##arg)
+> +void sb_printf(struct stringbuf *sb, gfp_t gfp, const char  
+> *format, ...)
+> +{
+> +	va_list args;
+> +
+> +	va_start(args, format);
+> +	sb_vprintf(sb, gfp, format, args);
+> +	va_end(args);
+> +}
 
-If you look at the patches, you'll see that they basically all have a
-wrapper around sb_printf that I was able to insert the GFP argument
-into, so I don't see this as a win.  I hadn't bothered with one for
-ISDN, and that one involved much more editing.
+This seems unlikely to work reliably as the various "v*printf"  
+functions modify the va_list argument they are passed.  It may happen  
+to work on your particular architecture depending on how that  
+argument data is passed and stored, but you probably actually want to  
+make a copy of the varargs list for the first vsnprintf call.   
+Example below:
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> va_list argscopy;
+> va_copy(argscopy, args);
+>
+> [...]
+>
+> size = vsnprintf(s, sb->alloc - sb->len, format, argscopy)
+>
+> [...]
+>
+> s += sb->len - size;
+> vsprintf(s, format, args);
+>
+> [...]
+>
+> va_end(argscopy);
+
+Cheers,
+Kyle Moffett
