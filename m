@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbXJYBnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbXJYBnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbXJYBnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXJYBm5
+	id S1757589AbXJYBnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXJYBnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:42:57 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57291 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752850AbXJYBm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:42:56 -0400
-Date: Wed, 24 Oct 2007 17:41:28 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Casey Schaufler <casey@schaufler-ca.com>,
-       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-	static interface)
-Message-ID: <20071025004128.GC3660@sequoia.sous-sol.org>
-References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com> <20071024233200.GJ30533@stusta.de> <alpine.LFD.0.999.0710241636010.30120@woody.linux-foundation.org>
+	Wed, 24 Oct 2007 21:43:12 -0400
+Received: from excu-mxob-1.symantec.com ([198.6.49.12]:52916 "EHLO
+	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756388AbXJYBnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 21:43:11 -0400
+X-Greylist: delayed 24080 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 21:43:11 EDT
+Date: Wed, 24 Oct 2007 20:01:16 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
+Message-ID: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710241636010.30120@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> Do other people want to stand up and be "LSM maintainers" in the sense 
-> that they also end up being informed members who can also stand up for new 
-> modules and help merge them, rather than just push the existing one(s)? 
-> Chris? Casey? Crispin?
+x86_32 CONFIG_HIGHMEM64G with 5GB RAM hung when booting, after issuing
+some "request_module: runaway loop modprobe binfmt-0000" messages in
+trying to exec /sbin/init.
 
-Stephen and James, despite their clear bias towards SELinux, do try to
-give good feedback.  But you are right, there's not enough active help
-for people trying to make a contribution to get their code in shape.
-Many of the modules that come along have been misguided conceptually,
-but I think that e.g. apparmor, tomoyo, smack could use that kind
-of constructive help to get into final mergable shape.  Personally,
-I haven't spent nearly enough time reviewing those, my apologies to
-those developers.  So, yes, help is welcome.
+The binprm buf doesn't see the right ".ELF" header because sg_phys()
+is providing the wrong physical addresses for high pages: a 32-bit
+unsigned long is too small in this case, we need to use dma_addr_t.
 
-thanks,
--chris
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+Whether this is a complete patch, suitable for all architectures,
+I'm not sure: it builds, boots and runs correctly on the x86_32 box
+in question, but you'll be a lot wiser than me about using dma_addr_t
+for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
+when I think all arches already get to include it one way or another,
+typically via asm/scatterlist.h; but I guess it's safest to repeat it.)
+
+ include/linux/scatterlist.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- 2.6.24-rc1/include/linux/scatterlist.h	2007-10-24 12:42:16.000000000 +0100
++++ linux/include/linux/scatterlist.h	2007-10-24 19:17:13.000000000 +0100
+@@ -1,6 +1,7 @@
+ #ifndef _LINUX_SCATTERLIST_H
+ #define _LINUX_SCATTERLIST_H
+ 
++#include <asm/types.h>
+ #include <asm/scatterlist.h>
+ #include <linux/mm.h>
+ #include <linux/string.h>
+@@ -237,7 +238,7 @@ static inline void sg_init_table(struct 
+  *   on the sg page.
+  *
+  **/
+-static inline unsigned long sg_phys(struct scatterlist *sg)
++static inline dma_addr_t sg_phys(struct scatterlist *sg)
+ {
+ 	return page_to_phys(sg_page(sg)) + sg->offset;
+ }
