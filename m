@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXJXHoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbXJXHp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbXJXHoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 03:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXJXHoN
+	id S1754720AbXJXHp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 03:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbXJXHpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 03:44:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:3939 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbXJXHoL (ORCPT
+	Wed, 24 Oct 2007 03:45:12 -0400
+Received: from aa013msr.fastwebnet.it ([85.18.95.73]:60364 "EHLO
+	aa013msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbXJXHpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 03:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=DTXj6/dFcwCxyJ6W9Nrr9C09DrZffgKygX9x4LxKQllfVbPJVVXzxT0xv37HRoysiNzlfJ5PfLNndN4uRE6SkLsLlI4qGPEIRtR7QgZLFjZ8TEscBjTN8/uIfUQmC6rUhvEmXtOAzYo/yn3VPY5ihzZrGW/+UeUzZ1e/0BFOPLQ=
-Message-ID: <471EF7C7.6020708@gmail.com>
-Date: Wed, 24 Oct 2007 09:44:07 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/12] riscom8: fix SMP brokenness
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>	<20071023223638.DD9FE1F81A8@havoc.gtf.org>	<471EEA7B.8070008@gmail.com> <20071024001052.4290adc7.akpm@linux-foundation.org>
-In-Reply-To: <20071024001052.4290adc7.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Oct 2007 03:45:11 -0400
+Date: Wed, 24 Oct 2007 09:44:27 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: kvm_main.c:220: error: implicit declaration of function
+ 'smp_call_function_mask'
+Message-ID: <20071024094427.31e3364a@localhost>
+In-Reply-To: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/2007 09:10 AM, Andrew Morton wrote:
-> On Wed, 24 Oct 2007 08:47:23 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->>> +static spinlock_t riscom_lock = SPIN_LOCK_UNLOCKED;
->> This is deprecated (see linux/spinlock_types.h for details), use DEFINE_SPINLOCK
->> instead, otherwise seems OK.
-> 
-> Hey, if only we had a little perl script to check stuff like that.
+  CC      drivers/kvm/kvm_main.o
+drivers/kvm/kvm_main.c: In function 'kvm_flush_remote_tlbs':
+drivers/kvm/kvm_main.c:220: error: implicit declaration of function 'smp_call_function_mask'
+make[2]: *** [drivers/kvm/kvm_main.o] Error 1
+make[1]: *** [drivers/kvm] Error 2
+make: *** [drivers] Error 2
 
-Can we integrate this into checkpatch?
+-----------
+
+"smp_call_function_mask" is defined only on "CONFIG_SMP" but kvm uses it
+unconditionally, oops!
+
+-- 
+	Paolo Ornati
+	Linux 2.6.23-ge8b8c977 on x86_64
