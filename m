@@ -1,85 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbXJXOQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbXJXORU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759236AbXJXOQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXJXOQO
+	id S1759541AbXJXORU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXJXORL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:16:14 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:49735 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757164AbXJXOQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:16:12 -0400
-Date: Wed, 24 Oct 2007 23:15:17 +0900
-To: jeff@garzik.org, jens.axboe@oracle.com
-Cc: tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm 09/11] call blk_queue_segment_boundary in
- __scsi_alloc_queue
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <471F2EE4.5000309@garzik.org>
-References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
-	<20071024172611B.tomof@acm.org>
-	<471F2EE4.5000309@garzik.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071024231724T.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+	Wed, 24 Oct 2007 10:17:11 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:35756 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbXJXORK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 10:17:10 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
+Date: Wed, 24 Oct 2007 14:16:14 -0000
+Message-ID: <66ED1F0546CFFE4BABB226CD6633D4A6016D9BD6@G3W0635.americas.hpqcorp.net>
+In-Reply-To: <200710231431.15267.bjorn.helgaas@hp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
+Thread-Index: AcgVtAgMrw6FpQ93QV+G6hfJ3GzxPAAlDH6w
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: "Helgaas, Bjorn" <bjorn.helgaas@hp.com>
+Cc: <linux-kernel@vger.kernel.org>, "Wim Van Sebroeck" <wim@iguana.be>
+X-OriginalArrivalTime: 24 Oct 2007 14:16:16.0075 (UTC) FILETIME=[707CE9B0:01C81648]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 07:39:16 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+As I stated before, we will never have more than one ilO2 device on a
+system. Also, this device will only be used on x86 and x86_64
+architectures. I will check in the dev_warn changes asap.
 
-> FUJITA Tomonori wrote:
-> > request_queue and device struct must have the same value of a segment
-> > size limit. This patch adds blk_queue_segment_boundary in
-> > __scsi_alloc_queue so LLDs don't need to call both
-> > blk_queue_segment_boundary and set_dma_max_seg_size. A LLD can change
-> > the default value (64KB) can call device_dma_parameters accessors like
-> > pci_set_dma_max_seg_size when allocating scsi_host.
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  drivers/scsi/scsi_lib.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> > index 61fdaf0..23a30ab 100644
-> > --- a/drivers/scsi/scsi_lib.c
-> > +++ b/drivers/scsi/scsi_lib.c
-> > @@ -1645,6 +1645,7 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
-> >  					 request_fn_proc *request_fn)
-> >  {
-> >  	struct request_queue *q;
-> > +	struct device *dev = shost->shost_gendev.parent;
-> >  
-> >  	q = blk_init_queue(request_fn, NULL);
-> >  	if (!q)
-> > @@ -1673,6 +1674,8 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
-> >  	blk_queue_bounce_limit(q, scsi_calculate_bounce_limit(shost));
-> >  	blk_queue_segment_boundary(q, shost->dma_boundary);
-> >  
-> > +	blk_queue_max_segment_size(q, dma_get_max_seg_size(dev));
-> > +
-> 
-> it would be nice to have something more general that's useable in 
-> drivers/block/sx8.c (for example), something like
-> 
-> 	static inline void
-> 	dev_blk_associate(struct device *dev, request_queue *q)
-> 	{
-> 		blk_queue_max_segment_size(q,
-> 					dma_get_max_seg_size(dev));
-> 	}
-> 
-> still, I will ACK the above patch (#9) in case you wish that to become a 
-> future cleanup, or others dislike this suggestion
+Tom 
 
-Yeah, I thought about something like that. But I can't find many
-non-scsi drivers (ide, sx8, mmc/card/, anymore?) doing dma and having
-the restrictions so I just call blk_queue_max_segment_size here.
+-----Original Message-----
+From: Helgaas, Bjorn 
+Sent: Tuesday, October 23, 2007 3:31 PM
+To: Mingarelli, Thomas
+Cc: linux-kernel@vger.kernel.org; Wim Van Sebroeck
+Subject: Re: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch
+<resend>
 
-Either is ok with me. I'll modify the patch if Jens prefers such
-function. Jens?
+On Monday 22 October 2007 05:09:51 pm thomas.mingarelli@hp.com wrote:
+> +config HP_WATCHDOG
+> +        tristate "Hewlett-Packard watchdog"
+> +        depends on WATCHDOG && X86
+
+I wouldn't be surprised if this device someday turned up on non-x86
+systems.  I know there's some x86 firmware stuff in there that clearly
+requires x86.  But it'd be nice if the rest of the driver compiled and
+worked (minus the x86 firmware functionality) on other architectures.
+For example, you could wrap all the event logging code in "#ifdef
+CONFIG_X86" and provide a null implementation for !X86.
+
+> +asmlinkage void asminline_call(struct cmn_registers *pi86Regs,
+> +			       unsigned long *pRomEntry)
+> +{
+> +#ifdef CONFIG_X86_64
+> +	asm("pushq      %rbp            \n\t"
+> +	    "movq       %rsp, %rbp      \n\t"
+> +	    "pushq      %rax            \n\t"
+> +	    "pushq      %rbx            \n\t"
+> +	    "pushq      %rdx            \n\t"
+> +	    "pushq      %r12            \n\t"
+> +	    "pushq      %r9             \n\t"
+> +	    "movq       %rsi, %r12      \n\t"
+> +	    "movq       %rdi, %r9       \n\t"
+> +	    "movl       4(%r9),%ebx     \n\t"
+> +	    "movl       8(%r9),%ecx     \n\t"
+> +	    "movl       12(%r9),%edx    \n\t"
+> +	    "movl       16(%r9),%esi    \n\t"
+> +	    "movl       20(%r9),%edi    \n\t"
+> +	    "movl       (%r9),%eax      \n\t"
+> +	    "call       *%r12           \n\t"
+> +	    "pushfq                     \n\t"
+> +	    "popq        %r12           \n\t"
+> +	    "popfq                      \n\t"
+> +	    "movl       %eax, (%r9)     \n\t"
+> +	    "movl       %ebx, 4(%r9)    \n\t"
+> +	    "movl       %ecx, 8(%r9)    \n\t"
+> +	    "movl       %edx, 12(%r9)   \n\t"
+> +	    "movl       %esi, 16(%r9)   \n\t"
+> +	    "movl       %edi, 20(%r9)   \n\t"
+> +	    "movq       %r12, %rax      \n\t"
+> +	    "movl       %eax, 28(%r9)   \n\t"
+> +	    "popq       %r9             \n\t"
+> +	    "popq       %r12            \n\t"
+> +	    "popq       %rdx            \n\t"
+> +	    "popq       %rbx            \n\t"
+> +	    "popq       %rax            \n\t"
+> +	    "leave                      \n\t" "ret");
+> +#endif
+
+This is more dangerous than using the gcc assembler operand syntax,
+because it assumes things about how the parameters are put on the stack.
+
+> +static int __devinit hpwdt_init_one(struct pci_dev *dev,
+> +				    const struct pci_device_id *ent) {
+> +	int retval;
+> +
+> +	if (pci_enable_device(dev)) {
+> +		printk(KERN_WARNING
+> +		       "hpwdt: Not possible to enable PCI Device\n");
+
+You might consider using dev_printk(), dev_warn(), etc, instead of most
+of your printk calls.  Then you get the device ID and driver name
+automatically.
+
+> +		return -ENODEV;
+> +	}
+> +	pci_enable = 1;
+
+The driver assumes only a single instance of the device.  But PCI being
+what it is, it's often possible to have multiple cards, so you might
+want some protection in case you trip over more than one.
+
