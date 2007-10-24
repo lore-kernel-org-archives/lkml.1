@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbXJXOJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759714AbXJXOJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759608AbXJXOJY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759016AbXJXOHs
+	id S1759714AbXJXOJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759124AbXJXOHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:07:48 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49109
+	Wed, 24 Oct 2007 10:07:54 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49117
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757410AbXJXOHp (ORCPT
+	by vger.kernel.org with ESMTP id S1759043AbXJXOHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:07:45 -0400
+	Wed, 24 Oct 2007 10:07:50 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 6/9] RT: Maintain the highest RQ priority
+Subject: [PATCH 7/9] RT: Add support for low-priority wake-up to push_rt
+	feature
 To: linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Darren Hart <dvhltc@us.ibm.com>
-Date: Wed, 24 Oct 2007 09:53:04 -0400
-Message-ID: <20071024135304.7960.70606.stgit@novell1.haskins.net>
+Date: Wed, 24 Oct 2007 09:53:09 -0400
+Message-ID: <20071024135309.7960.25431.stgit@novell1.haskins.net>
 In-Reply-To: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 References: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -29,134 +30,181 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an implementation of Steve's idea where we should update the RQ
-concept of priority to show the highest-task, even if that task is not (yet)
-running.  This prevents us from pushing multiple tasks to the RQ before it
-gets a chance to reschedule.
+There are three events that require consideration for redistributing RT
+tasks:
+
+1) When one or more higher-priority tasks preempts a lower-one from a
+   RQ
+2) When a lower-priority task is woken up on a RQ
+3) When a RQ downgrades its current priority
+
+Steve Rostedt's push_rt patch addresses (1).  It hooks in right after
+a new task has been switched-in.  If this was the result of an RT
+preemption, or if more than one task was awoken at the same time, we
+can try to push some of those other tasks away.
+
+This patch addresses (2).  When we wake up a task, we check to see
+if it would preempt the current task on the queue.  If it will not, we
+attempt to find a better suited CPU (e.g. one running something lower
+priority than the task being woken) and try to activate the task there.
+
+Finally, we have (3).  In theory, we only need to balance_rt_tasks() if
+the following conditions are met:
+   1) One or more CPUs are in overload, AND
+   2) We are about to switch to a task that lowers our priority.
+
+(3) will be addressed in a later patch.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c |   43 ++++++++++++++++++++++++++++++++++---------
- 1 files changed, 34 insertions(+), 9 deletions(-)
+ kernel/sched.c |  109 ++++++++++++++++++++++++++++++++------------------------
+ 1 files changed, 62 insertions(+), 47 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index ce5292f..9e5cc2c 100644
+index 9e5cc2c..6cc4389 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -304,7 +304,7 @@ struct rq {
- #ifdef CONFIG_PREEMPT_RT
- 	unsigned long rt_nr_running;
- 	unsigned long rt_nr_uninterruptible;
--	int curr_prio;
-+	int highest_prio;
- #endif
+@@ -1636,6 +1636,13 @@ out:
+ 	return ret;
+ }
  
- 	unsigned long switch_timestamp;
-@@ -368,11 +368,29 @@ static DEFINE_MUTEX(sched_hotcpu_mutex);
- #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
- static inline void set_rq_prio(struct rq *rq, int prio)
- {
--	rq->curr_prio = prio;
-+	rq->highest_prio = prio;
++/* Push all tasks that we can to other CPUs */
++static void push_rt_tasks(struct rq *this_rq)
++{
++	while (push_rt_task(this_rq))
++		;
 +}
 +
-+/*
-+ * We dont care what the exact normal priority is.  We only care about
-+ * RT-priority, vs non-RT (normal or idle).  So flatten the priority if its a
-+ * non-RT variety. This will reduce cache-thrashing on the rq->highest_prio.
-+ */
-+static inline void update_rq_prio(struct rq *rq)
-+{
-+	struct rt_prio_array *array = &rq->rt.active;
-+	int                   prio  = sched_find_first_bit(array->bitmap);
+ /*
+  * Pull RT tasks from other CPUs in the RT-overload
+  * case. Interrupts are disabled, local rq is locked.
+@@ -1996,6 +2003,46 @@ out_set_cpu:
+ 		this_cpu = smp_processor_id();
+ 		cpu = task_cpu(p);
+ 	}
++	
++#if defined(CONFIG_PREEMPT_RT)
++       /*
++        * If a newly woken up RT task will not run immediately on its affined
++        * RQ, try to find another CPU it can preempt:
++        */
++	if (rt_task(p) && (p->prio >= rq->highest_prio)) {
++		struct rq *lowest_rq = find_lock_lowest_rq(p, rq);
 +
-+	if ((prio != MAX_PRIO) && (prio > MAX_RT_PRIO))
-+		prio = MAX_RT_PRIO;
++		if (lowest_rq) {
++			/*
++			 * We may have dropped this_rq->lock, so check to be
++			 * sure we are still eligible to wake up this task
++			 * somewhere...
++			 *
++			 * Basically the task could already be running on this
++			 * RQ, or it could have already migrated away to a
++			 * different RQ. 
++			 */
++			if (!task_running(rq, p) && (task_rq(p) == rq)) {
++				set_task_cpu(p, lowest_rq->cpu);
++				spin_unlock(&rq->lock);
 +
-+	if (rq->highest_prio != prio)
-+		set_rq_prio(rq, prio);
- }
++				/*
++				 * The new lock was already acquired in
++				 * find_lowest
++				 */ 
++				rq  = lowest_rq;
++				cpu = task_cpu(p);
++			} else
++				spin_unlock(&lowest_rq->lock);
++		}
++
++		old_state = p->state;
++		if (!(old_state & state))
++			goto out;
++		if (p->se.on_rq)
++			goto out_running;
++	}
++#endif /* defined(CONFIG_PREEMPT_RT) */
  
- #else
- #define set_rq_prio(rq, prio) do { } while(0)
-+#define update_rq_prio(rq)    do { } while(0)
+ out_activate:
+ #endif /* CONFIG_SMP */
+@@ -2005,51 +2052,20 @@ out_activate:
+ 	trace_start_sched_wakeup(p, rq);
+ 
+ 	/*
+-	 * If a newly woken up RT task cannot preempt the
+-	 * current (RT) task (on a target runqueue) then try
+-	 * to find another CPU it can preempt:
++	 * Sync wakeups (i.e. those types of wakeups where the waker
++	 * has indicated that it will leave the CPU in short order)
++	 * don't trigger a preemption, if the woken up task will run on
++	 * this cpu. (in this case the 'I will reschedule' promise of
++	 * the waker guarantees that the freshly woken up task is going
++	 * to be considered on this CPU.)
+ 	 */
+-	if (rt_task(p) && !TASK_PREEMPTS_CURR(p, rq)) {
+-		struct rq *this_rq = cpu_rq(this_cpu);
+-		/*
+-		 * Special-case: the task on this CPU can be
+-		 * preempted. In that case there's no need to
+-		 * trigger reschedules on other CPUs, we can
+-		 * mark the current task for reschedule.
+-		 *
+-		 * (Note that it's safe to access this_rq without
+-		 * extra locking in this particular case, because
+-		 * we are on the current CPU.)
+-		 */
+-		if (TASK_PREEMPTS_CURR(p, this_rq))
+-			set_tsk_need_resched(this_rq->curr);
+-		else
+-			/*
+-			 * Neither the intended target runqueue
+-			 * nor the current CPU can take this task.
+-			 * Trigger a reschedule on all other CPUs
+-			 * nevertheless, maybe one of them can take
+-			 * this task:
+-			 */
+-			smp_send_reschedule_allbutself_cpumask(p->cpus_allowed);
+-
+-		schedstat_inc(this_rq, rto_wakeup);
+-	} else {
+-		/*
+-		 * Sync wakeups (i.e. those types of wakeups where the waker
+-		 * has indicated that it will leave the CPU in short order)
+-		 * don't trigger a preemption, if the woken up task will run on
+-		 * this cpu. (in this case the 'I will reschedule' promise of
+-		 * the waker guarantees that the freshly woken up task is going
+-		 * to be considered on this CPU.)
+-		 */
+-		if (!sync || cpu != this_cpu)
+-			check_preempt_curr(rq, p);
+-		else {
+-			if (TASK_PREEMPTS_CURR(p, rq))
+-				set_tsk_need_resched_delayed(rq->curr);
+-		}
++	if (!sync || cpu != this_cpu)
++		check_preempt_curr(rq, p);
++	else {
++		if (TASK_PREEMPTS_CURR(p, rq))
++			set_tsk_need_resched_delayed(rq->curr);
+ 	}
++
+ 	if (rq->curr && p && rq && _need_resched())
+ 		trace_special_pid(p->pid, PRIO(p), PRIO(rq->curr));
+ 
+@@ -2366,13 +2382,12 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	 * the lock was owned by prev, we need to release it
+ 	 * first via finish_lock_switch and then reaquire it.
+ 	 */
+-	if (unlikely(rt_task(current))) {
++	if (unlikely(rq->rt_nr_running > 1)) {
+ 		spin_lock(&rq->lock);
+-		/* push_rt_task will return true if it moved an RT */
+-		while (push_rt_task(rq))
+-			;
++		push_rt_tasks(rq);
+ 		spin_unlock(&rq->lock);
+ 	}
++
  #endif
  
- static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
-@@ -1023,12 +1041,14 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
- 	sched_info_queued(p);
- 	p->sched_class->enqueue_task(rq, p, wakeup);
- 	p->se.on_rq = 1;
-+	update_rq_prio(rq);
- }
- 
- static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
- {
- 	p->sched_class->dequeue_task(rq, p, sleep);
- 	p->se.on_rq = 0;
-+	update_rq_prio(rq);
- }
- 
- /*
-@@ -1527,14 +1547,14 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
- 				continue;
- 
- 			/* We look for lowest RT prio or non-rt CPU */
--			if (rq->curr_prio >= MAX_RT_PRIO) {
-+			if (rq->highest_prio >= MAX_RT_PRIO) {
- 				lowest_rq = rq;
- 				break;
- 			}
- 
- 			/* no locking for now */
--			if (rq->curr_prio > task->prio &&
--			    (!lowest_rq || rq->curr_prio < lowest_rq->curr_prio)) {
-+			if (rq->highest_prio > task->prio &&
-+			    (!lowest_rq || rq->highest_prio < lowest_rq->highest_prio)) {
- 				lowest_rq = rq;
- 			}
- 		}
-@@ -1560,7 +1580,7 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
- 		}
- 
- 		/* If this rq is still suitable use it. */
--		if (lowest_rq->curr_prio > task->prio)
-+		if (lowest_rq->highest_prio > task->prio)
- 			break;
- 
- 		/* try again */
-@@ -2336,10 +2356,8 @@ static inline void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	 */
- 	prev_state = prev->state;
- 	_finish_arch_switch(prev);
--
--	set_rq_prio(rq, current->prio);
--
- 	finish_lock_switch(rq, prev);
-+
- #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
- 	/*
- 	 * If we pushed an RT task off the runqueue,
-@@ -4654,6 +4672,9 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
- 	prev_resched = _need_resched();
- 
- 	if (on_rq) {
-+		/*
-+		 * Note: RQ priority gets updated in the enqueue/dequeue logic
-+		 */
- 		enqueue_task(rq, p, 0);
- 		/*
- 		 * Reschedule if we are currently running on this runqueue and
-@@ -4720,6 +4741,10 @@ void set_user_nice(struct task_struct *p, long nice)
- 		 */
- 		if (delta < 0 || (delta > 0 && task_running(rq, p)))
- 			resched_task(rq->curr);
-+
-+		/*
-+		 * Note: RQ priority gets updated in the enqueue/dequeue logic
-+		 */
- 	}
- out_unlock:
- 	task_rq_unlock(rq, &flags);
+ 	fire_sched_in_preempt_notifiers(current);
 
