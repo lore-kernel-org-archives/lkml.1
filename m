@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbXJXQge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbXJXQgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762694AbXJXQge (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbXJXQY2
+	id S1760561AbXJXQgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbXJXQYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:24:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60927 "EHLO
+	Wed, 24 Oct 2007 12:24:32 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60931 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759321AbXJXQY0 (ORCPT
+	with ESMTP id S1759585AbXJXQYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:24:26 -0400
-Date: Wed, 24 Oct 2007 18:24:56 +0200
+	Wed, 24 Oct 2007 12:24:31 -0400
+Date: Wed, 24 Oct 2007 18:25:00 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Jordan Crouse <jordan.crouse@amd.com>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make video/geode/lxfb_core.c:geode_modedb[] static
-Message-ID: <20071024162456.GR30533@stusta.de>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [2.6 patch] cpqhp_pushbutton_thread(): remove a pointless if()
+	check
+Message-ID: <20071024162500.GS30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +24,56 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-geode_modedb[] can become static.
+The Coverity checker spotted that we'd have already oops'ed if "ctrl"
+was NULL.
+
+Additionally, "func" had just been checked for not being NULL.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-145d02fc23c7bea85aa3c934e0ceef78d0101e0a 
-diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
-index 583185f..eb6b881 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -34,7 +34,7 @@ static int fbsize;
-  * we try to make it something sane - 640x480-60 is sane
-  */
+
+This patch has been sent on:
+- 14 Aug 2007
+
+--- linux-2.6.23-rc1-mm2/drivers/pci/hotplug/cpqphp_ctrl.c.old	2007-08-08 14:00:24.000000000 +0200
++++ linux-2.6.23-rc1-mm2/drivers/pci/hotplug/cpqphp_ctrl.c	2007-08-08 14:01:16.000000000 +0200
+@@ -1951,30 +1951,28 @@ void cpqhp_pushbutton_thread(unsigned lo
+ 	if (is_slot_enabled(ctrl, hp_slot)) {
+ 		p_slot->state = POWEROFF_STATE;
+ 		/* power Down board */
+ 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
+ 		dbg("In power_down_board, func = %p, ctrl = %p\n", func, ctrl);
+ 		if (!func) {
+ 			dbg("Error! func NULL in %s\n", __FUNCTION__);
+ 			return ;
+ 		}
  
--const struct fb_videomode geode_modedb[] __initdata = {
-+static const struct fb_videomode geode_modedb[] __initdata = {
- 	/* 640x480-60 */
- 	{ NULL, 60, 640, 480, 39682, 48, 8, 25, 2, 88, 2,
- 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-		if (func != NULL && ctrl != NULL) {
+-			if (cpqhp_process_SS(ctrl, func) != 0) {
+-				amber_LED_on (ctrl, hp_slot);
+-				green_LED_on (ctrl, hp_slot);
+-				
+-				set_SOGO(ctrl);
++		if (cpqhp_process_SS(ctrl, func) != 0) {
++			amber_LED_on (ctrl, hp_slot);
++			green_LED_on (ctrl, hp_slot);
++			
++			set_SOGO(ctrl);
+ 
+-				/* Wait for SOBS to be unset */
+-				wait_for_ctrl_irq (ctrl);
+-			}
++			/* Wait for SOBS to be unset */
++			wait_for_ctrl_irq (ctrl);
+ 		}
+ 
+ 		p_slot->state = STATIC_STATE;
+ 	} else {
+ 		p_slot->state = POWERON_STATE;
+ 		/* slot is off */
+ 
+ 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
+ 		dbg("In add_board, func = %p, ctrl = %p\n", func, ctrl);
+ 		if (!func) {
 
