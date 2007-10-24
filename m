@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbXJXULZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbXJXUMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbXJXULZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbXJXULO
+	id S1758459AbXJXUMp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 16:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXJXUMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:11:14 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45838 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753146AbXJXULL (ORCPT
+	Wed, 24 Oct 2007 16:12:36 -0400
+Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:8062 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754079AbXJXUMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:11:11 -0400
-In-Reply-To: <OF621D1730.3D3366AC-ON8825737E.0069CDD5-8825737E.006AEDF9@us.ibm.com>
-To: David Stevens <dlstevens@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
-MIME-Version: 1.0
-Subject: Re: [2.6 patch] unexport icmpmsg_statistics
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF4D25AE59.ADF06793-ON8825737E.006DD213-8825737E.006EC6C3@us.ibm.com>
-From: David Stevens <dlstevens@us.ibm.com>
-Date: Wed, 24 Oct 2007 13:11:02 -0700
-X-MIMETrack: Serialize by Router on D03NM121/03/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 10/24/2007 14:11:03,
-	Serialize complete at 10/24/2007 14:11:03
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 24 Oct 2007 16:12:35 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] portman2x4.c: fix boot hang
+Cc: linux-kernel@vger.kernel.org, perex@suse.cz, tiwai@suse.de,
+       torvalds@linux-foundation.org
+In-reply-To: <20071024194417.GA17025@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071024194417.GA17025@elte.hu>
+Message-Id: <E1Ikmae-0000at-OB@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Wed, 24 Oct 2007 22:12:32 +0200
+X-OriginalArrivalTime: 24 Oct 2007 20:12:32.0924 (UTC) FILETIME=[361535C0:01C8167A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I took a look at the DCCP references, and I think they're just
-incrementing the wrong MIB variable -- e.g., it's incrementing
-ICMP_MIB_INERRORS when the skb length is less than the
-header indicates. That's not an ICMP_MIB_INERRORS error,
-that's an IPSTATS_MIB_INHDRERRORS error. ICMP_MIB_INERRORS
-is when you receive an ICMP error packet; an IP header error
-is something else entirely.
+Ingo Molnar wrote:
+>  if ((parport_read_status(p) & ESTB) == ESTB)
+> -		return 1;	/* CODE 1 - Strobe Failure. */
+> +		return -EIO;	/* CODE 1 - Strobe Failure. */
+>  
+>  /* Set for RXDATA0 where no damage will be done. */
+>  /* 5 */
+> @@ -475,7 +475,7 @@ static int portman_probe(struct parport
+>  
+>  /* 6 */
+>  if ((parport_read_status(p) & ESTB) != ESTB)
+> -		return 1;	/* CODE 1 - Strobe Failure. */
+> +		return -EIO;	/* CODE 1 - Strobe Failure. */
 
-That's followed by a failed lookup incrementing ICMP_MIB_INERRORS
-which should be an unknown port error in the transport MIB (assuming
-it has one-- it's not an ICMP error; could be an IP error, if the address
-isn't local, rather than unknown port).
-
-In SCTP, it appears to have similar problems. SCTP errors are not
-ICMP errors, though it perhaps should be calling icmp_send() to
-send one to the offending host for some of the cases.
-
-I haven't seen any ICMP-relevant stats correctly referenced in
-these yet.
-
-I don't want to patch them directly, since I can't easily test them;
-if someone who works with DCCP and SCTP would like to, I'd
-be happy to review. Any volunteers?
-
-                                                +-DLS
-
+Why are you keeping the "CODE 1" comment? Just "Strobe Failure" as comment 
+would seem more consistent with the change.
