@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbXJXVJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbXJXVLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbXJXVJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXJXVJW
+	id S1758734AbXJXVLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXJXVLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:09:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57591 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753819AbXJXVJV (ORCPT
+	Wed, 24 Oct 2007 17:11:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33149 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753970AbXJXVLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:09:21 -0400
-Date: Wed, 24 Oct 2007 14:08:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: penberg@cs.helsinki.fi, ezk@cs.sunysb.edu, ryan@finnie.org,
-       mhalcrow@us.ibm.com, cjwatson@ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org
-Subject: Re: [PATCH] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
-Message-Id: <20071024140836.a0098180.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710242152020.13001@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI>
-	<200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
-	<84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
-	<Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0710242152020.13001@blonde.wat.veritas.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 24 Oct 2007 17:11:08 -0400
+Date: Wed, 24 Oct 2007 22:13:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: nick@ukfsn.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: New CD/DVD drive - 80-wire cable detection failure
+Message-ID: <20071024221353.2117fd76@the-village.bc.nu>
+In-Reply-To: <200710241803.03955.nick@ukfsn.org>
+References: <200710181832.42906.nick@ukfsn.org>
+	<200710201322.57178.nick@ukfsn.org>
+	<200710240133.08425.bzolnier@gmail.com>
+	<200710241803.03955.nick@ukfsn.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 22:02:15 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+> hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache<7>hdd: skipping 
+> word 93 validity check
+> , UDMA(66)
+> 
+> 
+> Many thanks indeed!
 
-> --- 2.6.24-rc1/mm/shmem.c	2007-10-24 07:16:04.000000000 +0100
-> +++ linux/mm/shmem.c	2007-10-24 20:24:31.000000000 +0100
-> @@ -915,6 +915,11 @@ static int shmem_writepage(struct page *
->  	struct inode *inode;
->  
->  	BUG_ON(!PageLocked(page));
-> +	if (!wbc->for_reclaim) {
-> +		set_page_dirty(page);
-> +		unlock_page(page);
-> +		return 0;
-> +	}
->  	BUG_ON(page_mapped(page));
+Sigh I'd hoped that libata could avoid the word 93 mess but apparently
+not. Bartlomiej - I've ported your IVB bits over into libata as a new
+horkage type.
 
-Needs a comment, methinks.
+Alan
