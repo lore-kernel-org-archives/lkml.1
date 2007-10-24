@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbXJXIHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXJXIJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbXJXIHR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 04:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbXJXIHA
+	id S1753651AbXJXIJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 04:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbXJXIJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 04:07:00 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:30454 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751086AbXJXIG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 04:06:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tEi6eDAohEIBoFBUhQe8YqHvv75xdv77RuwT08btB7c8J4br3q3uM5jbsckwKN2Xv9vI/EY3VOzhrFdi0ZyGcKJh1kaM6OC6THyvdbvLfHzkhAl2Nt9eL0HS2Y1DgLs40rnm5lkk7QkRxnD6lHCbrPkGjvAE1cs0K+OVYVu7GuQ=  ;
-X-YMail-OSG: e6A15N4VM1nUnwPYe4amOaprbSKDkdwv57.hNd1R65f2E71UUVULqALdTxL.K139e_.uxa2ydg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] bitops kernel-doc: expand macro
-Date: Wed, 24 Oct 2007 18:00:19 +1000
-User-Agent: KMail/1.9.5
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>
-References: <20071023220959.a359d57d.rdunlap@xenotime.net>
-In-Reply-To: <20071023220959.a359d57d.rdunlap@xenotime.net>
+	Wed, 24 Oct 2007 04:09:43 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43818 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751172AbXJXIJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 04:09:41 -0400
+Date: Wed, 24 Oct 2007 09:09:38 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+Subject: Re: SLUB 0:1 SLAB (OOM during massive parallel kernel builds)
+Message-ID: <20071024080937.GA10785@skynet.ie>
+References: <20071023181615.GA10377@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0710231227590.19626@schroedinger.engr.sgi.com> <471E5021.8090300@cs.helsinki.fi> <Pine.LNX.4.64.0710231250130.19904@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200710241800.19764.nickpiggin@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.64.0710231250130.19904@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 October 2007 15:09, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Can we expand this macro definition, or should I look for a way to
-> fool^W teach kernel-doc about this?
->
-> scripts/kernel-doc says:
-> Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand
-> prototype: 'test_and_set_bit_lock test_and_set_bit '
+On (23/10/07 12:57), Christoph Lameter didst pronounce:
+> On Tue, 23 Oct 2007, Pekka Enberg wrote:
+> 
+> > > > cc1 invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
+> > 
+> > Christoph Lameter wrote:
+> > > Regular Order 0 alloc .... but why is there no memory available , reclaimed?
+> > 
+> > I am too wondering where all that memory is going. Logging /proc/meminfo and
+> > slabinfo -S (see Documentation/vm/slabinfo.c) every few minutes or so probably
+> > might help answering that question
+> 
+> __GFP_HARDWALL and __GFP_MOVABLE is set. I guess we have no cpusets on the 
+> box? Wonder what the antifrag status is? Can we get /proc/pagetypeinfo?
+> 
 
-Actually, it probably looks a bit nicer like this anyway. If you grep
-for it, then you can actually see the parameters...
+I do not believe the anti-frag status will make a difference as this is
+a order-0 failure. Looking at the OOM messages;
 
-On third thoughts, an inline function might be the best thing to do,
-and also avoid setting a bad example. What do you think?
+Failure 1
+> Active:386969 inactive:66065 dirty:0 writeback:0 unstable:0 free:3431 slab:11685 mapped:243 pagetables:14621 bounce:0
+> DMA free:8036kB min:32kB low:40kB high:48kB active:2008kB inactive:1172kB present:12744kB pages_scanned:6852 all_unreclaimable? yes
+> lowmem_reserve[]: 0 2003 2003 2003
+> DMA32 free:5688kB min:5708kB low:7132kB high:8560kB active:1548100kB inactive:261040kB present:2051880kB pages_scanned:12798 112 all_unreclaimable? yes
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 13*4kB 86*8kB 60*16kB 26*32kB 6*64kB 8*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 8036kB
+> DMA32: 518*4kB 6*8kB 19*16kB 12*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 5688kB
+> Swap cache: add 4908248, delete 4908248, find 699858/1120395, race 92+89
+> Free swap  = 0kB
+> Total swap = 987956kB
+> Free swap:            0kB
 
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  include/asm-x86/bitops_32.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.24-rc1.orig/include/asm-x86/bitops_32.h
-> +++ linux-2.6.24-rc1/include/asm-x86/bitops_32.h
-> @@ -185,7 +185,7 @@ static inline int test_and_set_bit(int n
->   *
->   * This is the same as test_and_set_bit on x86
->   */
-> -#define test_and_set_bit_lock test_and_set_bit
-> +#define test_and_set_bit_lock(nr, addr) test_and_set_bit(nr, addr)
->
->  /**
->   * __test_and_set_bit - Set a bit and return its old value
-> ---
+No reclaimable memory, no free swap and free memory is below the min free
+watermark on the DMA32 zone being allocated from. That system is genuinely
+out of memory although I am surprised it didn't fallback to ZONE_DMA but
+the likely explanation is the lowmem reserves.
+
+Failure 2
+> Active:306488 inactive:146569 dirty:0 writeback:0 unstable:0 free:3415 slab:11631 mapped:2 pagetables:14611 bounce:0
+> DMA free:8044kB min:32kB low:40kB high:48kB active:1596kB
+> inactive:1576kB present:12744kB pages_scanned:14865 all_unreclaimable?  yes
+> lowmem_reserve[]: 0 2003 2003 2003
+> DMA32 free:5616kB min:5708kB low:7132kB high:8560kB active:1226588kB inactive:582396kB present:2051880kB pages_scanned:13650148 all_unreclaimable? yes
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 15*4kB 86*8kB 60*16kB 26*32kB 6*64kB 8*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 8044kB
+> DMA32: 498*4kB 5*8kB 20*16kB 12*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 5616kB
+> Swap cache: add 4908570, delete 4908570, find 699873/1120438, race 92+89
+> Free swap  = 0kB
+> Total swap = 987956kB
+> Free swap:            0kB
+
+Same again - really OOM.
+
+It seems to be the same all the way through.
+
+I am somewhat at a loss to explain why SLUB would fail in this case when
+SLAB wouldn't. One possibility is that SLAB is artifically holding up
+processes in allocation so that fewer are running at the same time allowing
+the overall job to complete. For a compile-time benchmark, it might not be
+very noticable as the processes are already pretty short-lived. It would be
+interesting to add more swap so that SLUB doesn't fail and see if there is
+a difference in time-to-completion.
+
+If SLUB is faster, it might imply that it is letting more compile-jobs
+running at the same time. Output of vmstat during both runs (preferably with
+an indication on the SLUB failure where the OOM occured) may tell us. If the
+"running" and "blocked" column for SLUB are significantly higher than the
+averages for SLAB, would it support that theory Christoph?
+
+Another possibility is that SLUBs runtime overhead is higher although I find
+that one harder to believe.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
