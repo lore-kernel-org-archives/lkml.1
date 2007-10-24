@@ -1,83 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbXJXT3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbXJXTcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbXJXT3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 15:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXJXT3I
+	id S1757473AbXJXTcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 15:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXJXTcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 15:29:08 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50242 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbXJXT3G (ORCPT
+	Wed, 24 Oct 2007 15:32:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:38198 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbXJXTcU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 15:29:06 -0400
-In-Reply-To: <20071024191437.GF30533@stusta.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netdev-owner@vger.kernel.org
+	Wed, 24 Oct 2007 15:32:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=DTcJOoJQ+i0Kh0zcMo8lbuKGPC4S5FiXSzAZpVlxMqbakGDGYfKLseFHYmoEl7EKYnxn09Lf0Wc+KJ/Ap+LfpP3plm9g1nr+uBlkJWC8/T/uRGsH2QAWjgNXQ4ugtQN/my/ykCgUa2czWCPnWXtJfX2qr37quynTqHV/tXvLL90=
+From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] b44: power down PHY when interface down
+Date: Wed, 24 Oct 2007 20:31:52 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com
 MIME-Version: 1.0
-Subject: Re: [2.6 patch] unexport icmpmsg_statistics
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF621D1730.3D3366AC-ON8825737E.0069CDD5-8825737E.006AEDF9@us.ibm.com>
-From: David Stevens <dlstevens@us.ibm.com>
-Date: Wed, 24 Oct 2007 12:29:01 -0700
-X-MIMETrack: Serialize by Router on D03NM121/03/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 10/24/2007 13:29:03,
-	Serialize complete at 10/24/2007 13:29:03
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710242031.52610.mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-netdev-owner@vger.kernel.org wrote on 10/24/2007 12:14:37 PM:
+This is just http://lkml.org/lkml/2007/7/1/51 but adapted to b44 ssb driver.
 
-> On Wed, Oct 24, 2007 at 12:07:45PM -0700, David Stevens wrote:
-> > netdev-owner@vger.kernel.org wrote on 10/24/2007 09:24:10 AM:
-> > 
-> > > This patch removes the unused EXPORT_SYMBOL(icmpmsg_statistics).
-> > > 
-> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > 
-> > > ---
-> > > 4ce74657ac0b1bdcb4c7bc359d05643f8cc4a08b 
-> > > diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
-> > > index 272c69e..233de06 100644
-> > > --- a/net/ipv4/icmp.c
-> > > +++ b/net/ipv4/icmp.c
-> > > @@ -1104,5 +1104,4 @@ void __init icmp_init(struct net_proto_family 
-> > *ops)
-> > >  EXPORT_SYMBOL(icmp_err_convert);
-> > >  EXPORT_SYMBOL(icmp_send);
-> > >  EXPORT_SYMBOL(icmp_statistics);
-> > > -EXPORT_SYMBOL(icmpmsg_statistics);
-> > >  EXPORT_SYMBOL(xrlim_allow);
-> > 
-> >         "icmpmsg_statistics" belongs with (and replaces some of the 
-> > old...)
-> > "icmp_statistics". I'm not sure that any modules use it, but I think 
-you
-> > should remove both or neither.
-> 
-> icmp_statistics is used by the dccp_ipv4 and sctp modules.
-
-        The only items left in icmp_statistics are "InMsgs, InErrs, 
-OutMsgs, OutErrs",
-so if dccp and sctp are sending or receiving any in or out ICMP messages, 
-they
-should be using the new macros (which reference icmpmsg_statistics, not
-icmp_statistics) to count them.
-        I took a quick look at SCTP. I don't know if that's going through 
-icmp_rcv()
-or not; if so, I think it's double-counting; if not, then it isn't 
-counting the
-individual types (as it should), and it should have ICMPMSG macros doing 
-that.
-
-        So, again, icmpmsg_statistics either should stay exported, or 
-neither
-icmpmsg_statistics nor icmp_statistics should be exported (depending on 
-how
-SCTP and DCCP code is resolved). It's incorrect in the current code to
-incrememnt ICMP_MIB_INMSGS without incrementing one of the types too.
-
- +-DLS
+I couldn't test it as I don't have a b44 ethernet device.
 
 
+diff -ruN linux-2.6.23.orig/drivers/net/b44.c linux-2.6.23/drivers/net/b44.c
+--- linux-2.6.23.orig/drivers/net/b44.c	2007-10-24 19:02:33.000000000 +0200
++++ linux-2.6.23/drivers/net/b44.c	2007-10-24 19:50:46.000000000 +0200
+@@ -113,6 +113,8 @@ static void b44_init_rings(struct b44 *);
+ #define B44_FULL_RESET		1
+ #define B44_FULL_RESET_SKIP_PHY	2
+ #define B44_PARTIAL_RESET	3
++#define B44_CHIP_RESET_FULL     4
++#define B44_CHIP_RESET_PARTIAL  5
+
+ static void b44_init_hw(struct b44 *, int);
+
+@@ -1283,7 +1285,7 @@ static void b44_clear_stats(struct b44 *bp)
+ }
+
+ /* bp->lock is held. */
+-static void b44_chip_reset(struct b44 *bp)
++static void b44_chip_reset(struct b44 *bp, int reset_kind)
+ {
+ 	if (ssb_is_core_up(bp)) {
+ 		bw32(bp, B44_RCV_LAZY, 0);
+@@ -1307,6 +1309,13 @@ static void b44_chip_reset(struct b44 *bp)
+ 	ssb_device_enable(bp->sdev, 0);
+ 	b44_clear_stats(bp);
+
++	/*
++	 * Don't enable PHY if we are doing a partial reset
++	 * we are probably going to power down
++	 */
++	if (reset_kind == B44_CHIP_RESET_PARTIAL)
++		return;
++
+ 	switch (sdev->bus->bustype) {
+ 	case SSB_BUSTYPE_SSB:
+ 		bw32(bp, B44_MDIO_CTRL, (MDIO_CTRL_PREAMBLE |
+@@ -1332,7 +1341,14 @@ static void b44_chip_reset(struct b44 *bp)
+ static void b44_halt(struct b44 *bp)
+ {
+ 	b44_disable_ints(bp);
+-	b44_chip_reset(bp);
++	/* reset PHY */
++	b44_phy_reset(bp);
++	/* power down PHY */
++	printk(KERN_INFO PFX "%s: powering down PHY\n", bp->dev->name);
++	bw32(bp, B44_MAC_CTRL, MAC_CTRL_PHY_PDOWN);
++	/* now reset the chip, but without enabling the MAC&PHY
++	 * part of it. This has to be done _after_ we shut down the PHY */
++	b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ }
+
+ /* bp->lock is held. */
+@@ -1376,7 +1392,7 @@ static void b44_init_hw(struct b44 *bp, int reset_kind)
+ {
+ 	u32 val;
+
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+ 	if (reset_kind == B44_FULL_RESET) {
+ 		b44_phy_reset(bp);
+ 		b44_setup_phy(bp);
+@@ -1430,7 +1446,7 @@ static int b44_open(struct net_device *dev)
+
+ 	err = request_irq(dev->irq, b44_interrupt, IRQF_SHARED, dev->name, dev);
+ 	if (unlikely(err < 0)) {
+-		b44_chip_reset(bp);
++		b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ 		b44_free_rings(bp);
+ 		b44_free_consistent(bp);
+ 		goto out;
+@@ -2250,7 +2266,7 @@ static int __devinit b44_init_one(struct pci_dev *pdev,
+ 	/* Chip reset provides power to the b44 MAC & PCI cores, which
+ 	 * is necessary for MAC register access.
+ 	 */
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+
+ 	printk(KERN_INFO "%s: Broadcom 4400 10/100BaseT Ethernet ", dev->name);
+ 	for (i = 0; i < 6; i++)
+@@ -2284,4 +2300,5 @@ static void __devexit b44_remove_one(struct ssb_dev 
+*sdev)
+ 	free_netdev(dev);
++	ssb_pci_set_power_state(sdev, PCI_D3hot);
+ 	ssb_set_drvdata(sdev, NULL);
+ }
+
+@@ -2312,6 +2329,7 @@ static int b44_suspend(struct ssb_dev *sdev, 
+pm_message_t state)
+ 		b44_setup_wol(bp);
+ 	}
+ 
++	ssb_pci_set_power_state(sdev, PCI_D3hot);
+ 	return 0;
+ }
+
+
+
+-- 
+	Miguel Botón
