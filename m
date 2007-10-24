@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760551AbXJXOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXJXOgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760551AbXJXOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbXJXOev
+	id S1760604AbXJXOgp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760273AbXJXOex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 24 Oct 2007 10:34:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59153 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759968AbXJXOev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Oct 2007 10:34:51 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:49509 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760252AbXJXOes (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:34:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=TpMxZQTEFjZRZvBPOA8+LL9J8IClee5b3WA+VlDJ3L7WvgnG7cZbhM4tce0LGBcSi7m0SXVT+DFtk9CL/Ovowv2ISCcXWGlEYlsZvsjk3HvcmRJXpA3Ce/IbSy5VvSYhY1RLbDFNjobK/L9r1ve2vT1MrVSaAqjufqqXinaPby8=
-Date: Wed, 24 Oct 2007 16:34:42 -0700
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       linux-main <linux-kernel@vger.kernel.org>,
-       linuxsh <linuxsh-dev@lists.sourceforge.net>
-Subject: Re: [SUPERH] dma-mapping.h structure has no member named page
-Message-Id: <20071024163442.1e3e6998.Kristoffer.ericson@gmail.com>
-In-Reply-To: <20071023230507.GP14671@kernel.dk>
-References: <20071023185305.4fd9a084.Kristoffer.ericson@gmail.com>
-	<20071023230507.GP14671@kernel.dk>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <471F5804.30305@garzik.org>
+Date: Wed, 24 Oct 2007 10:34:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: FUJITA Tomonori <tomof@acm.org>
+CC: jens.axboe@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@SteelEye.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH -mm 09/11] call blk_queue_segment_boundary in __scsi_alloc_queue
+References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>	<20071024172611B.tomof@acm.org>	<471F2EE4.5000309@garzik.org> <20071024231724T.tomof@acm.org>
+In-Reply-To: <20071024231724T.tomof@acm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 01:05:07 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+FUJITA Tomonori wrote:
+> On Wed, 24 Oct 2007 07:39:16 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>> FUJITA Tomonori wrote:
+>>> request_queue and device struct must have the same value of a segment
+>>> size limit. This patch adds blk_queue_segment_boundary in
+>>> __scsi_alloc_queue so LLDs don't need to call both
+>>> blk_queue_segment_boundary and set_dma_max_seg_size. A LLD can change
+>>> the default value (64KB) can call device_dma_parameters accessors like
+>>> pci_set_dma_max_seg_size when allocating scsi_host.
+>>>
+>>> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>>> ---
+>>>  drivers/scsi/scsi_lib.c |    3 +++
+>>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+>>> index 61fdaf0..23a30ab 100644
+>>> --- a/drivers/scsi/scsi_lib.c
+>>> +++ b/drivers/scsi/scsi_lib.c
+>>> @@ -1645,6 +1645,7 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
+>>>  					 request_fn_proc *request_fn)
+>>>  {
+>>>  	struct request_queue *q;
+>>> +	struct device *dev = shost->shost_gendev.parent;
+>>>  
+>>>  	q = blk_init_queue(request_fn, NULL);
+>>>  	if (!q)
+>>> @@ -1673,6 +1674,8 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
+>>>  	blk_queue_bounce_limit(q, scsi_calculate_bounce_limit(shost));
+>>>  	blk_queue_segment_boundary(q, shost->dma_boundary);
+>>>  
+>>> +	blk_queue_max_segment_size(q, dma_get_max_seg_size(dev));
+>>> +
+>> it would be nice to have something more general that's useable in 
+>> drivers/block/sx8.c (for example), something like
+>>
+>> 	static inline void
+>> 	dev_blk_associate(struct device *dev, request_queue *q)
+>> 	{
+>> 		blk_queue_max_segment_size(q,
+>> 					dma_get_max_seg_size(dev));
+>> 	}
+>>
+>> still, I will ACK the above patch (#9) in case you wish that to become a 
+>> future cleanup, or others dislike this suggestion
+> 
+> Yeah, I thought about something like that. But I can't find many
+> non-scsi drivers (ide, sx8, mmc/card/, anymore?) doing dma and having
+> the restrictions so I just call blk_queue_max_segment_size here.
 
-> On Tue, Oct 23 2007, Kristoffer Ericson wrote:
-> > Greetings,
-> > 
-> > Got this after syncing my tree with linux-2.6.git.
-> > 
-> > In file included from include/linux/dma-mapping.h:52,
-> >                  from include/linux/dmaengine.h:29,
-> >                  from include/linux/skbuff.h:29,
-> >                  from include/linux/netlink.h:155,
-> >                  from include/linux/genetlink.h:4,
-> >                  from include/net/genetlink.h:4,
-> >                  from include/linux/taskstats_kern.h:12,
-> >                  from init/main.c:46:
-> > include/asm/dma-mapping.h: In function `dma_map_sg':
-> > include/asm/dma-mapping.h:88: error: structure has no member named `page'
-> > include/asm/dma-mapping.h:91: error: structure has no member named `page'
-> > include/asm/dma-mapping.h: In function `dma_sync_sg':
-> > include/asm/dma-mapping.h:141: error: structure has no member named `page'
-> > include/asm/dma-mapping.h:144: error: structure has no member named `page'
-> > make[1]: *** [init/main.o] Error 1
-> > make: *** [init] Error 2
-> 
-> Pull again, should be ok now.
-Yeah, saw the posts on it last night. Everything worked fine after pulling again last night. Thx
+My main idea was that request_queue will eventually want to know struct 
+device details directly, if it can.
 
-> 
-> -- 
-> Jens Axboe
-> 
+
+> Either is ok with me. I'll modify the patch if Jens prefers such
+> function. Jens?
+
+I have no strong opinion... it was just a thought.
+
+	Jeff
+
+
+
