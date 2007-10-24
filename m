@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbXJXUZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbXJXU0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbXJXUZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXJXUZK
+	id S1759234AbXJXU0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 16:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbXJXU0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:25:10 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:46476 "EHLO atlrel9.hp.com"
+	Wed, 24 Oct 2007 16:26:47 -0400
+Received: from ns.suse.de ([195.135.220.2]:51830 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbXJXUZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:25:08 -0400
-Message-ID: <471FAA03.9090003@hp.com>
-Date: Wed, 24 Oct 2007 16:24:35 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	id S1753561AbXJXU0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 16:26:46 -0400
+Date: Wed, 24 Oct 2007 13:21:17 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Buesch <mb@bu3sch.de>, Al Viro <viro@ftp.linux.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] usb: fix ssb_ohci_probe() build bug
+Message-ID: <20071024202117.GA20463@suse.de>
+References: <20071014032948.GA25760@elte.hu> <20071015173840.GA26109@elte.hu> <20071015174321.GA27428@elte.hu> <200710152008.49590.mb@bu3sch.de> <20071024194619.GA18309@elte.hu>
 MIME-Version: 1.0
-To: David Stevens <dlstevens@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
-Subject: Re: [2.6 patch] unexport icmpmsg_statistics
-References: <OF4D25AE59.ADF06793-ON8825737E.006DD213-8825737E.006EC6C3@us.ibm.com>
-In-Reply-To: <OF4D25AE59.ADF06793-ON8825737E.006DD213-8825737E.006EC6C3@us.ibm.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024194619.GA18309@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Stevens wrote:
-> I took a look at the DCCP references, and I think they're just
-> incrementing the wrong MIB variable -- e.g., it's incrementing
-> ICMP_MIB_INERRORS when the skb length is less than the
-> header indicates. That's not an ICMP_MIB_INERRORS error,
-> that's an IPSTATS_MIB_INHDRERRORS error. ICMP_MIB_INERRORS
-> is when you receive an ICMP error packet; an IP header error
-> is something else entirely.
+On Wed, Oct 24, 2007 at 09:46:19PM +0200, Ingo Molnar wrote:
 > 
-> That's followed by a failed lookup incrementing ICMP_MIB_INERRORS
-> which should be an unknown port error in the transport MIB (assuming
-> it has one-- it's not an ICMP error; could be an IP error, if the address
-> isn't local, rather than unknown port).
+> * Michael Buesch <mb@bu3sch.de> wrote:
 > 
-> In SCTP, it appears to have similar problems. SCTP errors are not
-> ICMP errors, though it perhaps should be calling icmp_send() to
-> send one to the offending host for some of the cases.
+> > >  CONFIG_SSB=m
+> > >  CONFIG_USB_OHCI_HCD=y
+> > >  CONFIG_USB_OHCI_HCD_SSB=y
+> > > 
+> > > the fix is to require a modular USB_OHCI_HCD build when SSB is modular.
+> > > 
+> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > Acked-by: Michael Buesch <mb@bu3sch.de>
+> > 
+> > Somebody of the USB folks apply this, please.
 > 
-> I haven't seen any ICMP-relevant stats correctly referenced in
-> these yet.
-> 
-> I don't want to patch them directly, since I can't easily test them;
-> if someone who works with DCCP and SCTP would like to, I'd
-> be happy to review. Any volunteers?
+> FYI, this build fix is still not in v2.6.24-rc1.
 
-I'll take a look at the SCTP ones.  Thanks for review.
+Sorry, it's in my tree of patches to go to Linus in a few days.
 
--vlad
+thanks,
 
-> 
->                                                 +-DLS
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+greg k-h
