@@ -1,81 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbXJXQIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbXJXQL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbXJXQIy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJXQIq
+	id S1754175AbXJXQL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXJXQLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:08:46 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:47259 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbXJXQIp (ORCPT
+	Wed, 24 Oct 2007 12:11:20 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:39233 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXJXQLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:08:45 -0400
-Message-ID: <471F6DFE.3040304@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2007 21:38:30 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: apw@shadowen.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
-References: <471E110C.20404@linux.vnet.ibm.com> <20071023184419.GD14671@kernel.dk> <20071024115436.GT32058@shadowen.org> <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 12:11:20 -0400
+Subject: Re: 2.6.24-rc1 fails with lockup and BUG:
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Romano Giannetti <romanol@upcomillas.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071024155521.GA16690@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+	 <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu>
+	 <1193241191.14314.8.camel@localhost>  <20071024155521.GA16690@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-D6W2ZNuSxTtBaDsutZSs"
+Date: Wed, 24 Oct 2007 18:11:07 +0200
+Message-Id: <1193242267.6914.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Wed, 24 Oct 2007 12:54:36 +0100
-> Andy Whitcroft <apw@shadowen.org> wrote:
-> 
->> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
->>> On Tue, Oct 23 2007, Kamalesh Babulal wrote:
->>>> Hi,
->>>>
->>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
->>>> over the AMD box
->>>>
->>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
->>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
->>>> PGD 10185b067 PUD 10075b067 PMD 0 
->>>> Oops: 0002 [1] SMP 
->>>> CPU 3 
->>>> Modules linked in:
->>>> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
->>>> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
->>>> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
->>> Can you check where gart_map_sg+0x26c is at? Make sure you have
->>> CONFIG_DEBUG_INFO defined, then do:
->>>
->>> $ gdb vmlinux
->>> $ l *gart_map_sg+0x26c
->> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
->> output from that version, the panic (also below) seems the same:
->>
->> (gdb) l *gart_map_sg+0x26c
->> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
->> 428                     goto error;
->> 429             out++;
->> 430             flush_gart();
->> 431             if (out < nents) {
->> 432                     sgmap = sg_next(sgmap);
->> 433                     sgmap->dma_length = 0;
->> 434             }
->> 435             return out;
->> 436
->> 437     error:
->>
->> So it seems sg_next has returned 0.
-> 
-> Have you tried this?
-> 
-> http://marc.info/?l=linux-kernel&m=119317981406073&w=2
-> -
-Hi,
-Thanks, this patch solves the kernel oops.
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
+--=-D6W2ZNuSxTtBaDsutZSs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2007-10-24 at 17:55 +0200, Ingo Molnar wrote:
+> * Romano Giannetti <romanol@upcomillas.es> wrote:
+>=20
+> > Done. The results are at:
+> >=20
+> > http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_2/
+> >=20
+> > in the syslog-after-failed-suspend.txt file. After the failed suspend=20
+> > (at line 15766) there where the bunch of things in D-state. I have=20
+> > left the file intact.
+> >=20
+> > At line 17646 there is:
+> >=20
+> > WARNING: at kernel/lockdep.c:2033 trace_hardirqs_on()
+>=20
+> hm, this lockdep warning caused lockdep to turn itself off - hence we=20
+> wont get to the really interesting warnings. We'll try to come up with a=20
+> solution for this.
+
+Does this help?
+
+---
+Subject: lockdep: invalid irq usage
+
+this function can be called from hardirq context.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+
+Index: linux-2.6-2/kernel/sched_debug.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6-2.orig/kernel/sched_debug.c
++++ linux-2.6-2/kernel/sched_debug.c
+@@ -80,6 +80,7 @@ print_task(struct seq_file *m, struct rq
+ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
+ {
+ 	struct task_struct *g, *p;
++	unsigned long flags;
+=20
+ 	SEQ_printf(m,
+ 	"\nrunnable tasks:\n"
+@@ -88,7 +89,7 @@ static void print_rq(struct seq_file *m,
+ 	"------------------------------------------------------"
+ 	"----------------------------------------------------\n");
+=20
+-	read_lock_irq(&tasklist_lock);
++	read_lock_irqsave(&tasklist_lock, flags);
+=20
+ 	do_each_thread(g, p) {
+ 		if (!p->se.on_rq || task_cpu(p) !=3D rq_cpu)
+@@ -97,7 +98,7 @@ static void print_rq(struct seq_file *m,
+ 		print_task(m, rq, p);
+ 	} while_each_thread(g, p);
+=20
+-	read_unlock_irq(&tasklist_lock);
++	read_unlock_irqrestore(&tasklist_lock, flags);
+ }
+=20
+ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
+
+
+--=-D6W2ZNuSxTtBaDsutZSs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHH26bXA2jU0ANEf4RAquPAJ9IRF0fF8Eyp1URxmOLabvIOukbGACfRxS0
+1ER1AZXdEDf4N8r10Xa5z38=
+=+RUp
+-----END PGP SIGNATURE-----
+
+--=-D6W2ZNuSxTtBaDsutZSs--
+
