@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762618AbXJXQoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762634AbXJXQot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762618AbXJXQoa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbXJXQZ6
+	id S1762634AbXJXQot (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760059AbXJXQ0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:25:58 -0400
-Received: from ts.adaptec.com ([162.62.93.58]:58313 "EHLO mail-gw3.adaptec.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760059AbXJXQZz convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 12:26:01 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60985 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760071AbXJXQZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:25:55 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 24 Oct 2007 12:25:57 -0400
+Date: Wed, 24 Oct 2007 18:26:26 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Christoph Hellwig <hch@lst.de>, swhiteho@redhat.com
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: gfs2_fh_to_parent() array overflow
+Message-ID: <20071024162626.GJ30533@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
-Date: Wed, 24 Oct 2007 12:25:52 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F3DB6C@otce2k301.adaptec.com>
-In-Reply-To: <20071025012348Z.tomof@acm.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
-Thread-Index: AcgWWfPD+VeWx4DKTAO6dBDpHcYu6QAACvcw
-References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org><20071024173019I.tomof@acm.org><AE4F746F2AECFC4DA4AADD66A1DFEF01F3DAB4@otce2k301.adaptec.com> <20071025012348Z.tomof@acm.org>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
-       "AACRAID" <aacraid@adaptec.com>, <fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not requesting you to test (aacraid), just scoping any effort.
+The Coverity checker spotted the following array overflow caused by
+commit 34c0d154243dd913c5690ae6ceb9557017429b9c:
 
-The cards in question are the (old) Dell PERC variety that would trigger
-the need. I will notify our Dell liaison to see what they can do.
 
-Sincerely -- Mark Salyzyn
+include/linux/exportfs.h contains:
 
-> -----Original Message-----
-> From: FUJITA Tomonori [mailto:tomof@acm.org] 
-> Sent: Wednesday, October 24, 2007 12:22 PM
-> To: Salyzyn, Mark
-> Cc: tomof@acm.org; akpm@linux-foundation.org; 
-> linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; 
-> James.Bottomley@SteelEye.com; AACRAID; fujita.tomonori@lab.ntt.co.jp
-> Subject: RE: [PATCH -mm 11/11] aacraid: use pci_set_dma_max_seg_size
-> 
-> On Wed, 24 Oct 2007 09:34:23 -0400
-> "Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
-> 
-> > ACK
-> 
-> Thanks.
-> 
-> > Based on the presence of the call. 2.6.22, for instance, 
-> does not have
-> > this capability...
-> > 
-> > I did not test this change, just accepting on the 
-> principals. How much
-> > testing of the change did you do Fujita?
-> 
-> Unfortunately, I tested only the main component (device and pci
-> changes) with ppc64 IOMMU. I don't have the other IOMMUs.
-> 
-> I didn't test the aacraid patch but I guess that I have aacraid in the
-> workplace so I can test the patch (without the IOMMU chages).
-> 
+<--  snip  -->
+
+...
+struct fid {
+...
+                __u32 raw[6];
+        };
+};
+
+<--  snip  -->
+
+
+fs/gfs2/ops_export.c contains:
+
+<--  snip  -->
+
+...
+static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
+                int fh_len, int fh_type)
+{
+        struct gfs2_inum_host parent;
+        __be32 *fh = (__force __be32 *)fid->raw;  <------------
+
+        switch (fh_type) {
+        case GFS2_LARGE_FH_SIZE:
+        case GFS2_OLD_FH_SIZE:
+                parent.no_formal_ino = ((u64)be32_to_cpu(fh[4])) << 32;
+                parent.no_formal_ino |= be32_to_cpu(fh[5]);
+                parent.no_addr = ((u64)be32_to_cpu(fh[6])) << 32;
+                                                   ^^^^^
+                parent.no_addr |= be32_to_cpu(fh[7]);
+...                                           ^^^^^
+
+<--  snip  -->
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
