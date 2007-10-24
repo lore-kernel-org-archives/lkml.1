@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbXJXPZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXJXP17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbXJXPZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXJXPZn
+	id S1756840AbXJXP17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXJXP1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:25:43 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:58123 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758175AbXJXPZl (ORCPT
+	Wed, 24 Oct 2007 11:27:50 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51506 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXJXP1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:25:41 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] fix "passing argument # of '__memcpy' discards qualifiers from pointer target type" warnings
-To: Miguel =?ISO-8859-1?Q?Bot=F3n?= <mboton.lkml@gmail.com>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Wed, 24 Oct 2007 17:25:30 +0200
-References: <9hPIG-7In-19@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1Iki6s-0000g8-N2@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19PIN4q2Ewrp161WBZA5v45RRn6Rs5Ln9ReMeo
- pJ5HLDFeUsJjvX/ZRySBDmJrpUze7zK9JDTBLsexP6JhiWHSm7
- 2PdPTtRHW5Ey9RTcGcKfw==
+	Wed, 24 Oct 2007 11:27:49 -0400
+To: staubach@redhat.com
+CC: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <471F5EA2.8060203@redhat.com> (message from Peter Staubach on
+	Wed, 24 Oct 2007 11:02:58 -0400)
+Subject: Re: [PATCH] VFS: new fgetattr() file operation
+References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com>
+Message-Id: <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 24 Oct 2007 17:27:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miguel Botón <mboton.lkml@gmail.com> wrote:
-
-> This patch fixes the warnings "passing argument 1 of '__memcpy' discards
-> qualifiers from pointer target type" and "passing argument 2 of '__memcpy'
-> discards qualifiers from pointer target type" when compiling some files.
+> > The constraint is that the server has to be an ordinary unprivileged
+> > process.  How should it identify the file, other than by name, or by
+> > an open file descriptor?
+> >
+> >   
 > 
-> I don't really know if this is the best way but at least I don't get more
-> warnings.
+> I explained this.  The fileid and the generation count along
+> with the file system id will uniquely identify the file.
 
-> +++ linux-2.6.24-rc1/fs/cifs/dir.c    2007-10-24 15:49:44.000000000 +0200
-> @@ -585,6 +585,7 @@
+Yes, those filesystems, which have a file ID that can be used to index
+the inodes.  Lot of filesystems (mostly those not originating from
+UNIX) don't have such an ID.
 
-> +     unsigned char *dstname = (unsigned char *)a->name;
+> >> Clearly, this is broken on many levels.  It can't handle
+> >> situations as described nor can it handle different instances
+> >> of the same filename being used.
+> >>     
+> >
+> > Can you please give concrete examples what it can't handle, and how
+> > should the implementation be improved to be able to handle it, given
+> > the above constraints?
+> >
+> >   
+> >> This is why NFS, a network file system, does not use the filename
+> >> as part of the file handle.
+> >>     
+> >
+> > And the nfs server isn't a userspace process, or if it is, it must use
+> > horrible hacks to convert the file handle to a name, that don't work
+> > half the time.
+> >
+> >   
+> 
+> Nice try.  Wrong.  Try a different rationalization.
 
-> @@ -593,7 +594,7 @@
+What's wrong with it?
 
-> -             memcpy((unsigned char *)a->name, b->name, a->len);
-> +             memcpy(dstname, b->name, a->len);
+> >> Wouldn't you be better off by attempting to implement an "open
+> >> by ino" operation and an operation to get the generation count
+> >> for the file and then modifying the network protocol of interest
+> >> to use these as identifiers for the file to be manipulated?
+> >>     
+> >
+> > You mean an "open by inode" on the userspace API?  My guess, it
+> > wouldn't get very far.
+> >
+> >   
+> 
+> This isn't a new idea and has been implemented on a variety of
+> different systems.
 
-This looks like a compiler bug. Get the gcc people to fix it.
--- 
-Top 100 things you don't want the sysadmin to say:
-20. ...and if we just swap these two disc controllers like _this_...
+Like?
 
-Friß, Spammer: wd@bse.7eggert.dyndns.org esmpv@zxw.7eggert.dyndns.org
+> > Anyway, that would still not work on old servers, and servers running
+> > other OS's.
+> >
+> >   
+> 
+> I didn't think that we were talking about old servers and other
+> OS's.  My concern at the moment is Linux and the changes being
+> made to it.
+
+In what way does passing the open file to the filesystem for the
+fstat() syscall negatively impact Linux?
+
+Usually it is best to design midlayers, so that they do the minimal
+stuff, and pass the maximum of information to the low-layer, and
+providing helper functions that the low-layer doesn't want to do
+anything special.  Hiding information from the low-layer is pointless.
+
+> > Note, the point is _not_ to make a brand new NFS replacement
+> > filesystem, that can use names instead of file handles.  The point is
+> > to use existing infrastructure, to make the setup as easy as ssh'ing
+> > to a different machine.  And sshfs does just that.
+> 
+> And the solution is limiting.  It is not scalable nor particularly
+> interesting to anyone interested in security.  Unless there is a
+> way of limiting access to a particular set of files, then it is
+> not generally useful outside of hackers or perhaps small groups
+> of users not concerned about too many aspects of security.
+
+I'm not sure what you are talking about here.  AFAICS this change
+has absolutely nothing to do with filesystem (or any other kind of)
+security.
+
+> I am not interested in an extended discussion of this topic.
+
+No problem.  Thanks anyway for your comments.
+
+Miklos
