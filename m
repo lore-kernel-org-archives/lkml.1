@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbXJXTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbXJXTnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbXJXTcq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 15:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbXJXTcZ
+	id S1756707AbXJXTnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 15:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbXJXTnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 15:32:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:38198 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbXJXTcX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 15:32:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=lYmNlOMl7JcAOmz9xF4LsNRVteFry/+1XaihSNWjn6gaOQe5/L3TeXqhLdeRy4L0dfEMYIM3Mb7Y7VGVHxkA+8hvCvRQ+xqv9nGsKT4kQ1FogvQGvxmeA594Hu4vW+VeKZhT71GbOhysv3sJqepL1aAURBc/UR0F36s74MZtXHM=
-From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] ssb: Add "ssb_pci_set_power_state" function
-Date: Wed, 24 Oct 2007 21:31:21 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, mb@bu3sch.de
+	Wed, 24 Oct 2007 15:43:10 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49084 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754210AbXJXTnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 15:43:09 -0400
+To: Ram <vshrirama@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel processes - are they really needed?
+From: Andi Kleen <andi@firstfloor.org>
+References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
+Date: Wed, 24 Oct 2007 21:43:07 +0200
+In-Reply-To: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com> (Ram's message of "Wed\, 24 Oct 2007 19\:07\:02 +0530")
+Message-ID: <p73hckgqoxg.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710242131.21959.mboton.lkml@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add "ssb_pci_set_power_state" function. This allows set the power state of a 
-PCI device (for example b44 ethernet device).
+Ram <vshrirama@gmail.com> writes:
 
-diff -ruN linux-2.6.23/include/linux/ssb/ssb.h 
-linux-2.6.23.orig/include/linux/ssb/ssb.h
---- linux-2.6.23.orig/include/linux/ssb/ssb.h	2007-10-24 19:02:33.000000000 
-+0200
-+++ linux-2.6.23/include/linux/ssb/ssb.h	2007-10-24 19:49:37.000000000 +0200
-@@ -402,6 +402,14 @@
- {
- 	pci_unregister_driver(driver);
- }
-+
-+/* Set PCI device power state */
-+static inline
-+void ssb_pci_set_power_state(struct ssb_device *dev, pci_power_t state)
-+{
-+	if(dev->bus->bustype == SSB_BUSTYPE_PCI)
-+		pci_set_power_state(dev->bus->host_pci, state);
-+}
- #endif /* CONFIG_SSB_PCIHOST */
- 
- 
+> Hi,
+>     When i do ps -l. i see the following processes which are obviously
+> started by kernel.
+>
+>    Could any one tell me what each of these processes do 
 
--- 
-	Miguel Botón
+> and can anyone of them can be removed.?
+
+Some of them can probably. Or rather many depending on the configuration.
+
+Sometimes there are good reasons for an own thread, but often there are also 
+bad reasons.
+
+If the threads don't sleep or have special requirements long they
+should generally just use keventd instead.
+
+Unfortunately a lot of people seem to think they're cheap because 
+it's relatively easy to create them using work queues now, so we end
+up with more and more all the time.
+
+Especially on systems with many cores or threads which end up with a
+lot of dubious per CPU threads. Some scaling up is needed, but one per CPU 
+seems to be generally too many.
+
+My favourite for a ridiculous thread was and is "kpsmoused" 
+
+-Andi
