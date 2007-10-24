@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXJXQTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbXJXQTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbXJXQTd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbXJXQTR
+	id S1757558AbXJXQTs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXJXQTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:19:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:10473 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204AbXJXQTP (ORCPT
+	Wed, 24 Oct 2007 12:19:31 -0400
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:63567 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756703AbXJXQTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:19:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Z7TkwOyxwX1IoChPdebCMUkwmduxjXQIXzLtPA3zIHXvcaTw6AaMiShmwxK1nASrxhXxJbaCOj9O/O66kIAlo7cCgigFrLuP2T2q+RbgqGVB4oJAXjCD9JfN0EBuDkXqv1Nmv3EX1Ja0tGf9kBnSmRkkFR8dttGcXsUBECmYXpE=
-Message-ID: <2c0942db0710240919x26f0803arae3776cac7add8fa@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:19:13 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "John Sigler" <linux.kernel@free.fr>
-Subject: Re: How to debug complete kernel lock-ups
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-In-Reply-To: <471F0DB4.1080709@free.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 12:19:30 -0400
+X-Belgacom-Dynamic: yes
+Date: Wed, 24 Oct 2007 18:25:40 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: thomas.mingarelli@hp.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [HP ProLiant WatchDog driver] hpwdt HP WatchDog Patch <resend>
+Message-ID: <20071024162540.GD6015@infomag.infomag.iguana.be>
+References: <20071022180711.5246.49013.sendpatchset@tmingo.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <471E1D3A.8000705@free.fr> <471F0DB4.1080709@free.fr>
-X-Google-Sender-Auth: 8509a3f7a2bfacb8
+In-Reply-To: <20071022180711.5246.49013.sendpatchset@tmingo.cca.cpqcorp.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/07, John Sigler <linux.kernel@free.fr> wrote:
-> > I have an x86 system with two PCI slots, in which I inserted two
-> > specialized output cards (Dektec DTA-105).
-> >
-> > http://www.dektec.com/Products/DTA-105/
-> > (They provide an open source driver.)
-> >
-> > My problem is: when I write to the 4 ports (each card has 2 ports) "at
-> > the same time" (not really "at the same time" because I have a
-> > uni-processor system, so "within a short time frame" is more accurate)
-> > the system *completely* locks up.
-> >
-> > The manufacturer told me they had seen the problem in their lab. I'm
-> > just trying to provide some helpful debug output to speed up the process
-> > of fixing the problem :-)
-[...]
-> > Suppose the PCI bus "crashes" (whatever that means) or locks up.
-> > Would that make the system completely unresponsive? The I/O does have to
-> > get to/from the south bridge, through the PCI bus AFAIU. I can imagine
-> > that a locked PCI bus would be slightly problematic.
-> >
-> > Does this mean I need some kind of PCI bus analyzer (i.e. hardware) at
-> > this point? Is there anything more I can try?
+Hi Thomas,
 
-You need visibility into the actual place where the issue is
-happening, and by your description it's the two cards fighting each
-other on the PCI bus. (I'm assuming that the problem doesn't occur
-when there's only one card.)
+> --- linux-2.6.23.1/drivers/char/watchdog/Makefile.orig	2007-10-12 11:43:44.000000000 -0500
+> +++ linux-2.6.23.1/drivers/char/watchdog/Makefile	2007-10-15 07:56:31.000000000 -0500
+> @@ -118,3 +118,10 @@
+>  
+>  # Architecture Independant
+>  obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
+> +
+> +#
+> +# Makefile for the hp WatchDog driver.
+> +#
+> +CFLAGS_hpwdt.o += -O
+> +obj-$(CONFIG_HP_WATCHDOG) += hpwdt.o
+> +
+> --- linux-2.6.23.1/drivers/char/watchdog/Kconfig.orig	2007-10-12 11:43:44.000000000 -0500
+> +++ linux-2.6.23.1/drivers/char/watchdog/Kconfig	2007-10-15 07:57:27.000000000 -0500
+> @@ -55,6 +55,19 @@
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called softdog.
+>  
+> +config HP_WATCHDOG
+> +        tristate "Hewlett-Packard watchdog"
+> +        depends on WATCHDOG && X86
+> +        help
+> +          A software monitoring watchdog and NMI sourcing driver. This driver
+> +          will detect lockups and provide stack trace. Also, when an NMI
+> +          occurs this driver will make the necessary BIOS calls to log
+> +          the cause of the NMI. This is a driver that will only load on a
+> +          HP ProLiant system with a minimum of iLO2 support.
+> +          To compile this driver as a module, choose M here: the
+> +          module will be called hpwdt.
+> +
+> +
+>  # ALPHA Architecture
+>  
+>  # ARM Architecture
 
-I've worked on a platform where only a few things went through the PCI
-bus, and via the firmware's debugger (completely outside the kernel),
-I was able to do the setup of the PCI chip and mappings, and then
-pound on the hardware directly to exhibit a lockup of the bus. That
-provided pretty strong proof that it wasn't some other unrelated issue
-in the kernel causing us grief.
+Before reviewing the rest of your driver: can you please put your "X86 Architecture related"
+driver in the X86 related parts of Kconfig and Makefile ? Also the depend on WATCHDOG is not
+needed since we allready have a general dependency for all the drivers in Kconfig.
 
-At that point, it was pretty clear that was it, as there was no kernel
-running, and the CPU was still responsive. Renting a logic analyzer
-was the next step.
+Please also note that we just shifted the watchdog drivers from drivers/char/watchdog to
+drivers/watchdog -> so your driver will appear in the drivers/watchdog directory when it
+will be included.
 
-> How do driver writers deal with complete kernel hangs?
+Greetings,
+Wim.
 
-Lots of sleeps in between each and every write to the hardware, with
-regular output. Of course, if it's a timing issue (which is what it
-sounds like), you're screwed.
-
-Other than that, I look at the hardware guys and say "Your turn," and
-walk out of the room to get a cup of coffee.
-
-Ray
