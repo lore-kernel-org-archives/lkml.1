@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbXJXLJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbXJXLMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbXJXLJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXJXLJQ
+	id S1756404AbXJXLMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXJXLM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:09:16 -0400
-Received: from turtle-out.mxes.net ([216.86.168.191]:3174 "EHLO
-	turtle-out.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbXJXLJP (ORCPT
+	Wed, 24 Oct 2007 07:12:26 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:29286 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXJXLMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:09:15 -0400
-X-Greylist: delayed 1583 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 07:09:15 EDT
-Message-ID: <32892.86.7.220.119.1193222572.squirrel@wmbeta.mxes.net>
-Date: Wed, 24 Oct 2007 11:42:52 +0100 (BST)
-Subject: 2.6.24-rc1: NULL pointer dereference using netconsole
-From: "Andrew Nelless" <andrew@nelless.net>
-To: linux-kernel@vger.kernel.org
-Reply-To: "Andrew Nelless" <andrew@nelless.net>
-User-Agent: SquirrelMail/1.5.1
+	Wed, 24 Oct 2007 07:12:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jR65JNoxTe216ZPu6Sff5kn1+9HKbjSTTVjxzWDQM5zVUr5HyTEGubMus3F8hxFOakbPdRpIjg8QXl0nZAS9p6fVSd/IN0qhcUYDsDiM+NQLHATOWcrSS2KmNsAqpRwcSKan8yyTHT88HlhGBB2u5da7mL4jhxTObG3eXpNfx4k=
+Message-ID: <3ae72650710240412h55469ae4r4379df0a66412c94@mail.gmail.com>
+Date: Wed, 24 Oct 2007 13:12:25 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: sysfs sys/kernel/ namespace (was Re: [PATCH 0/2] add new notifier function ,take2)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Takenori Nagano" <t-nagano@ah.jp.nec.com>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <200710241648.55939.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-References: 
-In-Reply-To: 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <471700F4.1080200@ah.jp.nec.com>
+	 <200710212200.04361.nickpiggin@yahoo.com.au>
+	 <471D4668.4090300@ah.jp.nec.com>
+	 <200710241648.55939.nickpiggin@yahoo.com.au>
+X-Google-Sender-Auth: 0ef6d528795393d7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 10/24/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Tuesday 23 October 2007 10:55, Takenori Nagano wrote:
+> > Nick Piggin wrote:
+>
+> > > One thing I'd suggest is not to use debugfs, if it is going to
+> > > be a useful end-user feature.
+> >
+> > Is /sys/kernel/notifier_name/ an appropriate place?
 
-I booted up 2.6.24-rc1 this morning [Real early over a brew ;-)] and was
-having a problems with multiple ~5 second hangs on SATA/drive init
-(Something to do with "EH" something-or-other and resets but I'll email
-in separately about it later unless its fixed by the time I get the chance).
+> I'm curious about the /sys/kernel/ namespace. I had presumed that
+> it is intended to replace /proc/sys/ basically with the same
+> functionality.
 
-Anyway, I went to fire up netconsole to get a decent log dump and hit
-across the following nasty. Netconsole works fine in 2.6.23.1 with a
-similar config and the same kernel parameters.
+It was intended to be something like /proc/sys/kernel/ only.
 
-A shot of the screen is the only method I could come up with to capture
-the log, I hope that is OK, it is pretty readable.
+> I _assume_ these are system software stats and
+> tunables that are not exactly linked to device drivers (OTOH,
+> where do you draw the line? eg. Would filesystems go here?
 
+We already have /sys/fs/ ?
 
-The nasty:
-http://andotnet.nfshost.com/linux/2.6.24-rc1-netconsole-nullderef.jpg
+> Core network algorithm tunables might, but per interface ones probably
+> not...).
 
-The config:
-http://andotnet.nfshost.com/linux/config-2.6.24-rc1.txt
+We will merge the nonsense of "block/", "class/" and "bus/" to one
+"subsystem". The block, class, bus directories will only be kept as
+symlinks for compatibility. Then every subsystem has a directory like:
+/sys/subsystem/block/, /sys/subsystem/net/ and the devices of the
+subsystem are in a devices/ directory below that. Just like the
+/sys/bus/< name>/devices/ layout looks today. All subsystem-global
+tunables can go below the /sys/subsystem/<name>/ directory, without
+clashing with the list of devices or anything else.
 
-The 'old' 2.6.23.1 config:
-http://andotnet.nfshost.com/linux/config-2.6.23.1.txt
+> I don't know. Is there guidelines for sysfs (and procfs for that
+> matter)? Is anyone maintaining it (not the infrastructure, but
+> the actual content)?
 
-Netconsole log from successfully booting 2.6.23.1:
-http://andotnet.nfshost.com/linux/successful-nclog-2.6.23.1.txt
+Unfortunately, there was never really a guideline.
 
-The hardware, etc:
-eth0          : Netgear FA311 10/100Mbps ethernet adapter (netsemi driver)
-                connected directly to another PC using a crossover cable.
-cpu           : athlon64 3500+
-compiler      : gcc 4.2.2
-kernel params : root=/dev/sda3 vga=0x31B nmi_watchdog=0
-                netconsole=@192.168.2.1/eth0,6666@192.168.2.2/00:11:d8:c0:5e:96
+> It's kind of ironic that /proc/sys/ looks like one of the best
+> organised directories in proc, while /sys/kernel seems to be in
+> danger of becoming a mess: it has kexec and uevent files in the
+> base directory, rather than in subdirectories...
 
+True, just looking at it now, people do crazy things like:
+/sys/kernel/notes, which is a file with binary content, and a name
+nobody will ever be able to guess what it is good for. That should
+definitely go into a section/ directory.  Also the VM stuff there
+should probably move to a /sys/vm/ directory along with the weird
+placed top-level /sys/slab/.
 
-I hope this report is helpful and it's not too early in the release cycle,
-I'm still pretty new and not subscribed, so please CC :-)
-
-Btw, is it preferable for non-subscribers to use the kernel bugzilla? Or
-post to the list?
-
-
-Andrew (On his 3rd brew of the day)
-
+Thanks,
+Kay
