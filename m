@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764563AbXJXQ56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbXJXQ6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764563AbXJXQ56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763613AbXJXQmH
+	id S1761012AbXJXQ6k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbXJXQnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:42:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42228 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763608AbXJXQmF (ORCPT
+	Wed, 24 Oct 2007 12:43:49 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47017 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764070AbXJXQnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:42:05 -0400
-Date: Wed, 24 Oct 2007 09:38:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
+	Wed, 24 Oct 2007 12:43:47 -0400
+Date: Wed, 24 Oct 2007 12:43:47 -0400
 To: Adrian Bunk <bunk@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] #if 0 cpufreq.c:cpufreq_get()
-Message-ID: <20071024093839.232e5cd5@laptopd505.fenrus.org>
-In-Reply-To: <20071024162312.GH30533@stusta.de>
-References: <20071024162312.GH30533@stusta.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] some overdue I2C driver removal
+Message-ID: <20071024164347.GN4003@csclub.uwaterloo.ca>
+References: <20071024162528.GX30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024162528.GX30533@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 18:23:12 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> cpufreq.c:cpufreq_get() no longer has any user.
+On Wed, Oct 24, 2007 at 06:25:28PM +0200, Adrian Bunk wrote:
+> This patch contains the overdue removal of three I2C drivers.
 > 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  Documentation/feature-removal-schedule.txt |    8 
+>  drivers/i2c/busses/Kconfig                 |   59 ------
+>  drivers/i2c/busses/Makefile                |    3 
+>  drivers/i2c/busses/i2c-ixp2000.c           |  167 -------------------
+>  drivers/i2c/busses/i2c-ixp4xx.c            |  178 ---------------------
+>  drivers/i2c/busses/scx200_i2c.c            |  131 ---------------
+>  6 files changed, 546 deletions(-)
+> 
+> 6a8e0e37019c0ffeb0071fae30210baf2c3bdd75 
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 2af3835..9114379 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -218,14 +218,6 @@ Who:	Len Brown <len.brown@intel.com>
+>  
+>  ---------------------------
+>  
+> -What:	i2c-ixp2000, i2c-ixp4xx and scx200_i2c drivers
+> -When:	September 2007
+> -Why:	Obsolete. The new i2c-gpio driver replaces all hardware-specific
+> -	I2C-over-GPIO drivers.
+> -Who:	Jean Delvare <khali@linux-fr.org>
+> -
+> ----------------------------
 
-it's... also a really bad/buggy interface... frquency is a per cpu
-property for one, and constantly changing (esp in a multi-core world)
-even depending on what other parts of the system are doing.
+Did anyone ever write a driver that does i2c on the scx200 using the new
+i2c-gpio method?  I sure haven't seen it, although I am still running
+2.6.18 (since that is what debian stable uses) on my scx200 systems.  I
+certainly haven't found any useful instructions on how to use the new
+i2c-gpio driver on an scx200.
+
+--
+Len Sorensen
