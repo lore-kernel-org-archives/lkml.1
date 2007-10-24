@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764852AbXJXRKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764962AbXJXRLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764852AbXJXRKi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764457AbXJXRJr
+	id S1764962AbXJXRLX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXJXRLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:09:47 -0400
-Received: from flatline.sindominio.net ([82.144.4.26]:54184 "EHLO
-	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764445AbXJXRJq (ORCPT
+	Wed, 24 Oct 2007 13:11:00 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:5638 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756617AbXJXRK7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:09:46 -0400
-Date: Wed, 24 Oct 2007 19:09:52 +0200
-From: matthias.kaehlcke@gmail.com
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-Subject: [patch 3/3] MBCS: Convert dmareadlock to mutex
-Message-ID: <20071024170952.GK9824@traven>
-Mail-Followup-To: matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20071024170049.949862374@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=char-mbcs-dmareadlock-to-mutex
-User-Agent: quilt/0.46-1
+	Wed, 24 Oct 2007 13:10:59 -0400
+Message-Id: <471C8572.3C0A.0073.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 24 Oct 2007 11:10:50 -0600
+From: "Adam Jerome" <abj@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MBCS: Convert the semaphore dmareadlock to the mutex API
+On Wed, Oct 24, 2007 at  6:55 AM, Adrian Bunk <bunk@kernel.org> wrote: 
+> On Wed, Oct 24, 2007 at 12:50:29PM +0100, Simon Arlott wrote:
+>> I currently have an LSM that only handles permissions for socket_bind
+>> and socket_listen, I load it and then "capability" as secondary on
+>> boot - but now I can't because the LSM framework is now just the LS
+>> framework.
+>> 
+>> Why can't this "static LSM" change be a Kconfig option?
+>> (I don't want to have to maintain my own reverted copy of security/,
+>> or compile this into the kernel because then I can't ever modify and
+>> reload it without rebooting.)
+> 
+> Let's start with the more important questions:
+> 
+> Did you submit your LSM for inclusion into the kernel?
+> 
+> If yes, why wasn't it accepted?
+> If no, why not?
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Those are important questions, no doubt.  However, that does not
+address Simon's question.  Especially in light of Linus' statement:
 
---- kernel.orig/linux-2.6/drivers/char/mbcs.c	2007-10-23 17:43:36.000000000 +0200
-+++ kernel/linux-2.6/drivers/char/mbcs.c	2007-10-23 17:44:11.000000000 +0200
-@@ -348,7 +348,7 @@
- {
- 	int rv = 0;
- 
--	if (down_interruptible(&soft->dmareadlock))
-+	if (mutex_lock_interruptible(&soft->dmareadlock))
- 		return -ERESTARTSYS;
- 
- 	atomic_set(&soft->dmawrite_done, 0);
-@@ -373,7 +373,7 @@
- 	*off += len;
- 
- dmaread_exit:
--	up(&soft->dmareadlock);
-+	mutex_unlock(&soft->dmareadlock);
- 
- 	return rv;
- }
-@@ -765,7 +765,7 @@
- 	init_waitqueue_head(&soft->algo_queue);
- 
- 	mutex_init(&soft->dmawritelock);
--	init_MUTEX(&soft->dmareadlock);
-+	mutex_init(&soft->dmareadlock);
- 	mutex_init(&soft->algolock);
- 
- 	mbcs_getdma_init(&soft->getdma);
-Index: kernel/linux-2.6/drivers/char/mbcs.h
-===================================================================
---- kernel.orig/linux-2.6/drivers/char/mbcs.h	2007-10-23 17:43:38.000000000 +0200
-+++ kernel/linux-2.6/drivers/char/mbcs.h	2007-10-23 17:44:33.000000000 +0200
-@@ -538,7 +538,7 @@
- 	atomic_t dmaread_done;
- 	atomic_t algo_done;
- 	struct mutex dmawritelock;
--	struct semaphore dmareadlock;
-+	struct mutex dmareadlock;
- 	struct mutex algolock;
- };
- 
+ "I'm also perfectly willing to unapply it if there actually are
+  valid out-of-tree users that people push for not merging."
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+It seems that, whether submitted (and or accepted) into the kernel
+or not, Simon has the obligation to respond to Linus' challenge.
 
-              We build too many walls and not enough bridges
-                             (Isaac Newton)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+-adam
+
+
+
