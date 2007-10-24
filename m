@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXJXIAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbXJXIEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXJXIAx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 04:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXJXIAq
+	id S1753735AbXJXIEW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 04:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXJXIEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 04:00:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39241 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751304AbXJXIAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 04:00:45 -0400
-Date: Wed, 24 Oct 2007 01:00:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/12] riscom8: fix SMP brokenness
-Message-Id: <20071024010035.8ce8fa04.akpm@linux-foundation.org>
-In-Reply-To: <471EF7C7.6020708@gmail.com>
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>
-	<20071023223638.DD9FE1F81A8@havoc.gtf.org>
-	<471EEA7B.8070008@gmail.com>
-	<20071024001052.4290adc7.akpm@linux-foundation.org>
-	<471EF7C7.6020708@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 04:04:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57184 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbXJXIEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 04:04:08 -0400
+Date: Wed, 24 Oct 2007 10:04:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux v2.6.24-rc1
+Message-ID: <20071024080401.GA18882@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 09:44:07 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> On 10/24/2007 09:10 AM, Andrew Morton wrote:
-> > On Wed, 24 Oct 2007 08:47:23 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> > 
-> >>> +static spinlock_t riscom_lock = SPIN_LOCK_UNLOCKED;
-> >> This is deprecated (see linux/spinlock_types.h for details), use DEFINE_SPINLOCK
-> >> instead, otherwise seems OK.
-> > 
-> > Hey, if only we had a little perl script to check stuff like that.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> Just for fun, I'd really encourage git users to just try the
 > 
-> Can we integrate this into checkpatch?
+> 	git shortlog v2.6.23..
+> 
+> thing, it really is quite impressive. 
 
-We already did.
+what is also impressive is:
 
-Now we need to integrate checkpatch into git...
+   $ git shortlog v2.6.23.. | grep \):$ | wc -l
+   756
+
+756 individual contributors. Wow!
+
+	Ingo
