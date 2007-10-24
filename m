@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbXJXIfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbXJXIhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbXJXIfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 04:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXJXIfX
+	id S1755075AbXJXIhD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 04:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXJXIgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 04:35:23 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:42958 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbXJXIfV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 04:35:21 -0400
-Date: Wed, 24 Oct 2007 14:05:14 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
-Message-ID: <20071024083514.GA15451@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com> <200710241721.05163.rusty@rustcorp.com.au>
+	Wed, 24 Oct 2007 04:36:55 -0400
+Received: from il.qumranet.com ([82.166.9.18]:52416 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbXJXIgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 04:36:54 -0400
+Message-ID: <471F03F5.7090608@qumranet.com>
+Date: Wed, 24 Oct 2007 10:36:05 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710241721.05163.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Jeff Garzik <jeff@garzik.org>
+CC: Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 6/12] KVM: work around SMP requirement
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223640.EADF31F81AC@havoc.gtf.org> <20071023224455.GY30533@stusta.de> <471E79E2.2090204@garzik.org>
+In-Reply-To: <471E79E2.2090204@garzik.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rusty, 
-On Wed, Oct 24, 2007 at 05:21:04PM +1000, Rusty Russell wrote:
-> On Wednesday 24 October 2007 15:37:16 Gautham R Shenoy wrote:
-> > @@ -712,7 +712,7 @@ static void start_workqueue_thread(struc
-> >
-> >  	if (p != NULL) {
-> >  		if (cpu >= 0)
-> > -			kthread_bind(p, cpu);
-> > +			set_cpus_allowed(p, cpumask_of_cpu(cpu));
-> >  		wake_up_process(p);
-> >  	}
-> 
-> Hi Gautham!
-> 
-> 	This works, although the change is unnecessary.  
+Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> On Tue, Oct 23, 2007 at 06:36:40PM -0400, Jeff Garzik wrote:
+>>> KVM is currently completely broken for the !CONFIG_SMP case.
+>>>
+>>> drivers/kvm/kvm_main.c: In function ‘kvm_flush_remote_tlbs’:
+>>> drivers/kvm/kvm_main.c:220: error: implicit declaration of function 
+>>> ‘smp_call_function_mask’
+>>>
+>>> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>>> ---
+>>> I hope the KVM maintainer can come up with a better solution...
+>>>
+>>> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+>>> index 8749fa4..e35fbc6 100644
+>>> --- a/drivers/kvm/Kconfig
+>>> +++ b/drivers/kvm/Kconfig
+>>> @@ -16,7 +16,7 @@ if VIRTUALIZATION
+>>>  
+>>>  config KVM
+>>>      tristate "Kernel-based Virtual Machine (KVM) support"
+>>> -    depends on X86 && EXPERIMENTAL
+>>> +    depends on X86 && EXPERIMENTAL && SMP
+>>> ...
+>>
+>> Assuming it won't get fixed soon, the pattern would be "(SMP || 
+>> BROKEN)".
+>>
+>> The effect is the same, but this makes it more obvious that KVM does 
+>> not depend architecturally on SMP but just broken.
+>>
+>> Of course, the preferred solution is to simply get KVM fixed...
+>
+> In general I agree, but I specifically avoided CONFIG_BROKEN in case 
+> it was an intentional choice to require an SMP kernel.
+>
 
-This change was necessary because once a cpu goes offline, the worker
-threads for that particular cpu, sleep with their state being
-TASK_INTERRUPTIBLE. Thus, during CPU_ONLINE, when we call
-start_workqueue_thread(), kthread_bind() yells since the worker thread
-is not TASK_UNINTERRUPTIBLE.
+Of course SMP is not required.  I'll submit a patch to make 
+smp_call_function_mask() available on UP kernels.  Andrew, please don't 
+apply the KVM Kconfig patch.
 
-Probably later on when Oleg plans to re-introduce the ->should_stop
-flag, we can put the worker threads to uninterruptible sleep, and revert 
-back to kthread_bind().
-
-> If you're going to
-> do this I'd prefer "if (set_cpus_allowed(p, cpumask_of_cpu(cpu)) != 0) 
-> BUG();".
-
-Not sure if this is required. set_cpus_allowed() returns a non-zero
-value only if the cpumask passed doesn't intersect with the cpu-online
-map. In our case, start_workqueue_thread() is called only when the cpu 
-is online. i.e
-
-a) __create_workqueue_key() calls start_workqueue_thread() with
-get_online_cpus() protection only for those cpus which are online.
-
-b) workqueue_cpu_callback() calls start_workqueue_thread() on event
-of a CPU_ONLINE.
-
-> 
-> Cheers,
-> Rusty.
-
-Thanks and Regards
-gautham.
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+error compiling committee.c: too many arguments to function
+
