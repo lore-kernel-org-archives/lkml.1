@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbXJXQYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbXJXQZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbXJXQYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXJXQWs
+	id S1760000AbXJXQZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbXJXQWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:22:48 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33294 "EHLO
+	Wed, 24 Oct 2007 12:22:49 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33298 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756091AbXJXQWr (ORCPT
+	with ESMTP id S1755383AbXJXQWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:22:47 -0400
-Date: Wed, 24 Oct 2007 18:23:16 +0200
+	Wed, 24 Oct 2007 12:22:48 -0400
+Date: Wed, 24 Oct 2007 18:23:17 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fujitsu-laptop.c: make 2 functions static
-Message-ID: <20071024162316.GJ30533@stusta.de>
+To: Moni Shoua <monis@voltaire.com>, Jay Vosburgh <fubar@us.ibm.com>,
+       Jeff Garzik <jeff@garzik.org>, ctindel@users.sourceforge.net
+Cc: bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [2.6 patch] make bonding/bond_main.c:bond_deinit() static
+Message-ID: <20071024162317.GK30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,35 +25,48 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_fujitsu_{add,remove}() can become static.
+bond_deinit() can now become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/misc/fujitsu-laptop.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/bonding/bond_main.c |    3 ++-
+ drivers/net/bonding/bonding.h   |    1 -
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-175c8b648a54b625037916a8f6e3851574141532 
-diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
-index d366a6c..d686ba7 100644
---- a/drivers/misc/fujitsu-laptop.c
-+++ b/drivers/misc/fujitsu-laptop.c
-@@ -198,7 +198,7 @@ static struct platform_driver fujitsupf_driver = {
+5e5d2537b927f55a2199a0d9a073f41bb71290f6 
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 6f85cc3..8bb0092 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -188,6 +188,7 @@ struct bond_parm_tbl arp_validate_tbl[] = {
+ /*-------------------------- Forward declarations ---------------------------*/
  
- /* ACPI device */
+ static void bond_send_gratuitous_arp(struct bonding *bond);
++static void bond_deinit(struct net_device *bond_dev);
  
--int acpi_fujitsu_add(struct acpi_device *device)
-+static int acpi_fujitsu_add(struct acpi_device *device)
+ /*---------------------------- General routines -----------------------------*/
+ 
+@@ -4404,7 +4405,7 @@ static int bond_init(struct net_device *bond_dev, struct bond_params *params)
+ /* De-initialize device specific data.
+  * Caller must hold rtnl_lock.
+  */
+-void bond_deinit(struct net_device *bond_dev)
++static void bond_deinit(struct net_device *bond_dev)
  {
- 	int result = 0;
- 	int state = 0;
-@@ -229,7 +229,7 @@ int acpi_fujitsu_add(struct acpi_device *device)
- 	return result;
- }
+ 	struct bonding *bond = bond_dev->priv;
  
--int acpi_fujitsu_remove(struct acpi_device *device, int type)
-+static int acpi_fujitsu_remove(struct acpi_device *device, int type)
- {
- 	ACPI_FUNCTION_TRACE("acpi_fujitsu_remove");
- 
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index b818060..aceaabb 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -298,7 +298,6 @@ int bond_dev_queue_xmit(struct bonding *bond, struct sk_buff *skb, struct net_de
+ int bond_create(char *name, struct bond_params *params, struct bonding **newbond);
+ void bond_destroy(struct bonding *bond);
+ int  bond_release_and_destroy(struct net_device *bond_dev, struct net_device *slave_dev);
+-void bond_deinit(struct net_device *bond_dev);
+ int bond_create_sysfs(void);
+ void bond_destroy_sysfs(void);
+ void bond_destroy_sysfs_entry(struct bonding *bond);
+
