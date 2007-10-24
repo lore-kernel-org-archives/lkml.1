@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbXJXMVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbXJXMZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbXJXMVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbXJXMVY
+	id S1757797AbXJXMZL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbXJXMY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:21:24 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27863 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752754AbXJXMVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:21:24 -0400
-Date: Wed, 24 Oct 2007 14:21:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Haavard Skinnemoen <hskinnemoen@atmel.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
-Message-ID: <20071024122120.GV14671@kernel.dk>
-References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org> <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain>
+	Wed, 24 Oct 2007 08:24:58 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:59404 "EHLO
+	mail-08.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbXJXMY5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 08:24:57 -0400
+From: Matthew Wilcox <matthew@wil.cx>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 1/5] Use wake_up_locked() in eventpoll
+Date: Wed, 24 Oct 2007 08:24:54 -0400
+Message-Id: <11932286982175-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, Robert P. J. Day wrote:
-> On Wed, 24 Oct 2007, Sam Ravnborg wrote:
-> 
-> > On Wed, Oct 24, 2007 at 01:24:53PM +0200, Jens Axboe wrote:
-> > > On Wed, Oct 24 2007, Haavard Skinnemoen wrote:
-> > > > Hi Linus,
-> > > >
-> > > > Sorry about sending you pull requests so rapidly, but Jens broke my
-> > > > dma-mapping.h yesterday. Or you may say the bug was there to begin with
-> > > > and Jens merely exposed it, but that makes it sound like my fault ;-)
-> > > >
-> > > > Anyway, please pull from
-> > > >
-> > > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
-> > > >
-> > > > to receive the following update.
-> > >
-> > > You should not take the blame :-)
-> > >
-> > > I'm collecting these patches, so I'll pull your fix and make sure it
-> > > gets to Linus today along with the other fixes.
-> >
-> > How about doing a "git grep asm/scatterlist"
-> > and fix all victims to use linux/scatterlist?
-> > Or you maybe did this already.
-> 
-> i was just about to ask -- is this one of those cases where the asm
-> versions of scatterlist.h should have a warning/error that they should
-> not be included directly, and to include linux/scatterlist.h instead?
+Replace the uses of __wake_up_locked with wake_up_locked
 
-No, using asm/scatterlist.h is perfectly fine. The problem is code using
-the sg helpers should include linux/scatterlist.h since that is where
-those are defined.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ fs/eventpoll.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
-If you just need the scatterlist structure definition, then
-asm/scatterlist.h is the correct include.
-
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index 34f68f3..81c04ab 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -656,8 +656,7 @@ is_linked:
+ 	 * wait list.
+ 	 */
+ 	if (waitqueue_active(&ep->wq))
+-		__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-				 TASK_INTERRUPTIBLE);
++		wake_up_locked(&ep->wq);
+ 	if (waitqueue_active(&ep->poll_wait))
+ 		pwake++;
+ 
+@@ -780,7 +779,7 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
+ 
+ 		/* Notify waiting tasks that events are available */
+ 		if (waitqueue_active(&ep->wq))
+-			__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
++			wake_up_locked(&ep->wq);
+ 		if (waitqueue_active(&ep->poll_wait))
+ 			pwake++;
+ 	}
+@@ -854,8 +853,7 @@ static int ep_modify(struct eventpoll *ep, struct epitem *epi, struct epoll_even
+ 
+ 			/* Notify waiting tasks that events are available */
+ 			if (waitqueue_active(&ep->wq))
+-				__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-						 TASK_INTERRUPTIBLE);
++				wake_up_locked(&ep->wq);
+ 			if (waitqueue_active(&ep->poll_wait))
+ 				pwake++;
+ 		}
+@@ -978,8 +976,7 @@ errxit:
+ 		 * wait list (delayed after we release the lock).
+ 		 */
+ 		if (waitqueue_active(&ep->wq))
+-			__wake_up_locked(&ep->wq, TASK_UNINTERRUPTIBLE |
+-					 TASK_INTERRUPTIBLE);
++			wake_up_locked(&ep->wq);
+ 		if (waitqueue_active(&ep->poll_wait))
+ 			pwake++;
+ 	}
 -- 
-Jens Axboe
+1.4.4.2
 
