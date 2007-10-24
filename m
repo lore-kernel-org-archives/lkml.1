@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXJXPao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbXJXPa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbXJXPao (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757953AbXJXPac
+	id S1759203AbXJXPa4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758409AbXJXPah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:30:32 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14896 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757842AbXJXPaa convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 11:30:37 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:45706 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757955AbXJXPac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:30:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,325,1188802800"; 
-   d="scan'208";a="304676278"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 24 Oct 2007 11:30:32 -0400
+Date: Wed, 24 Oct 2007 09:30:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matt Mackall <mpm@selenic.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Message-ID: <20071024153031.GA27248@parisc-linux.org>
+References: <1193173966-3550-1-git-send-email-matthew@wil.cx> <20071023221116.GL17536@waste.org> <20071024014920.GU27248@parisc-linux.org> <20071024152036.GX19691@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Remove bogus default y for DMAR and NET_DMA
-Date: Wed, 24 Oct 2007 08:28:29 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C0349A7D2@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <471F0F44.4010102@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Remove bogus default y for DMAR and NET_DMA
-Thread-Index: AcgWH67qrnBplUQQQBCFK9qmCZSCTQAMI70A
-References: <200710241112.39451.ak@suse.de> <471F0F44.4010102@garzik.org>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Jeff Garzik" <jeff@garzik.org>, "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <akpm@osdl.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-X-OriginalArrivalTime: 24 Oct 2007 15:28:30.0146 (UTC) FILETIME=[87CBAA20:01C81652]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024152036.GX19691@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Jeff Garzik [mailto:jeff@garzik.org] 
->
->Andi Kleen wrote:
->> Index: linux-2.6.24-rc1-hack/arch/x86_64/Kconfig
->> ===================================================================
->> --- linux-2.6.24-rc1-hack.orig/arch/x86_64/Kconfig
->> +++ linux-2.6.24-rc1-hack/arch/x86_64/Kconfig
->> @@ -753,7 +753,6 @@ config PCI_DOMAINS
->>  config DMAR
->>  	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
->>  	depends on PCI_MSI && ACPI && EXPERIMENTAL
->> -	default y
->>  	help
->>  	  DMA remapping (DMAR) devices support enables 
->independent address
->>  	  translations for Direct Memory Access (DMA) from devices.
->
->ACK
->
->
->> Index: linux-2.6.24-rc1-hack/drivers/dma/Kconfig
->> ===================================================================
->> --- linux-2.6.24-rc1-hack.orig/drivers/dma/Kconfig
->> +++ linux-2.6.24-rc1-hack/drivers/dma/Kconfig
->> @@ -43,7 +43,6 @@ comment "DMA Clients"
->>  config NET_DMA
->>  	bool "Network: TCP receive copy offload"
->>  	depends on DMA_ENGINE && NET
->> -	default y
->>  	help
->>  	  This enables the use of DMA engines in the network stack to
->>  	  offload receive copy-to-user operations, freeing CPU cycles.
->
->ACK -- but its arguable that given the current code, its worth setting 
->this if DMA_ENGINE is also set.
->
+On Wed, Oct 24, 2007 at 10:20:36AM -0500, Matt Mackall wrote:
+> On Tue, Oct 23, 2007 at 07:49:20PM -0600, Matthew Wilcox wrote:
+> > I presume slob is different?  Actually, slob doesn't seem to
+> > provide krealloc, so I think stringbuf won't work on slob.  Will you
+> > have time to fix this?
+> 
+> http://lxr.linux.no/source/mm/slob.c#L207
 
-The intent is to give us a DMA offload for NIC-to-user operations.  At
-the moment the ioatdma device is the only gizmo supporting this through
-NET_DMA, and is the only DMA_ENGINE supported on x86.  As more devices
-are made available through DMA_ENGINE on platforms that don't have
-ioatdma, removing the "default y" makes sense.  I agree that this is
-ACK-able, but under the "it should just work" philosophy, and with the
-Intel servers coming out with the hardware support, it may want to wait
-until there are more DMA_ENGINE choices.
+That's 2.6.22.6; I was looking at 2.6.23, where clameter had moved
+krealloc into mm/util.c.  So that explains why I thought slob didn't
+provide it.  Apologies for the confusion.
 
-In any case, I'll ACK this and let the maintainers decide on the timing.
+> Yep, slob is different, it has no kmalloc buckets.
 
-sln
+OK.  I have no problem with making stringbuf allocate max(oldsize * 1.5,
+newsize+1).
+
+> > extern void sb_printf(struct stringbuf *sb, gfp_t gfp, const char *fmt, ...)
+> >         __attribute__((format(printf, 3, 4)));
+> > 
+> > ?  Any objections?
+> 
+> Fine by me.
+
+OK, I'll do that for the next round of patches.
+
+> Most of these objects will have very short lifetimes, so there's very
+> little downside.
+
+I agree.  It was good for testing though, when I inadvertently wrote to
+the wrong bit of the string on a realloc ;-)
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
