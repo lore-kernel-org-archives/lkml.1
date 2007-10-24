@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbXJXQ3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbXJXQaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760256AbXJXQ3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbXJXQXR
+	id S1761279AbXJXQaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758569AbXJXQXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:23:17 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33346 "EHLO
+	Wed, 24 Oct 2007 12:23:18 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33349 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758413AbXJXQXP (ORCPT
+	with ESMTP id S1758536AbXJXQXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:23:15 -0400
-Date: Wed, 24 Oct 2007 18:23:45 +0200
+	Wed, 24 Oct 2007 12:23:17 -0400
+Date: Wed, 24 Oct 2007 18:23:47 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: pavel@suse.cz, rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make kernel_shutdown_prepare() static
-Message-ID: <20071024162345.GV30533@stusta.de>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make cpu_shares_{show,store}() static
+Message-ID: <20071024162347.GW30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,40 +24,37 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel_shutdown_prepare() can now become static.
+cpu_shares_{show,store}() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/linux/reboot.h |    2 --
- kernel/sys.c           |    2 +-
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ kernel/user.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 85ea63f..b93b541 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -59,8 +59,6 @@ extern void machine_crash_shutdown(struct pt_regs *);
-  * Architecture independent implemenations of sys_reboot commands.
-  */
- 
--extern void kernel_shutdown_prepare(enum system_states state);
--
- extern void kernel_restart(char *cmd);
- extern void kernel_halt(void);
- extern void kernel_power_off(void);
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 304b541..4c77ed2 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -315,7 +315,7 @@ static void kernel_kexec(void)
- #endif
+ccebfda5cfe88df567a8b33f970bd6f2c167e79c 
+diff --git a/kernel/user.c b/kernel/user.c
+index e91331c..0f3aa02 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -129,7 +129,7 @@ static inline void uids_mutex_unlock(void)
  }
  
--void kernel_shutdown_prepare(enum system_states state)
-+static void kernel_shutdown_prepare(enum system_states state)
+ /* return cpu shares held by the user */
+-ssize_t cpu_shares_show(struct kset *kset, char *buffer)
++static ssize_t cpu_shares_show(struct kset *kset, char *buffer)
  {
- 	blocking_notifier_call_chain(&reboot_notifier_list,
- 		(state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+ 	struct user_struct *up = container_of(kset, struct user_struct, kset);
+ 
+@@ -137,7 +137,8 @@ ssize_t cpu_shares_show(struct kset *kset, char *buffer)
+ }
+ 
+ /* modify cpu shares held by the user */
+-ssize_t cpu_shares_store(struct kset *kset, const char *buffer, size_t size)
++static ssize_t cpu_shares_store(struct kset *kset, const char *buffer,
++				size_t size)
+ {
+ 	struct user_struct *up = container_of(kset, struct user_struct, kset);
+ 	unsigned long shares;
 
