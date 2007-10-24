@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762159AbXJXQeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbXJXQej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762159AbXJXQeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbXJXQYE
+	id S1761100AbXJXQej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbXJXQYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:24:04 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33391 "EHLO
+	Wed, 24 Oct 2007 12:24:07 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33393 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759481AbXJXQYB (ORCPT
+	with ESMTP id S1759481AbXJXQYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:24:01 -0400
-Date: Wed, 24 Oct 2007 18:24:30 +0200
+	Wed, 24 Oct 2007 12:24:05 -0400
+Date: Wed, 24 Oct 2007 18:24:34 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: trond.myklebust@fys.uio.no
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make nfs_wb_page_priority() static
-Message-ID: <20071024162430.GK30533@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] unexport sys_{open,read}
+Message-ID: <20071024162434.GL30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +22,7 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfs_wb_page_priority() can now become static.
+sys_{open,read} can finally be unexported.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -31,36 +30,35 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 This patch has been sent on:
 - 9 Sep 2007
+- 27 Aug 2007
 
- fs/nfs/write.c         |    3 ++-
- include/linux/nfs_fs.h |    1 -
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ fs/open.c       |    1 -
+ fs/read_write.c |    1 -
+ 2 files changed, 2 deletions(-)
 
-30370f47093c3d812929d84a5a6be79ccb55a2b3 
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 3e9e268..37953fd 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -1424,7 +1424,8 @@ out:
+6f6884f9ee675f2e804c6c58ca46337f9765dd0d 
+diff --git a/fs/open.c b/fs/open.c
+index 23f334d..c0814de 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -1057,7 +1057,6 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
+ 	prevent_tail_call(ret);
  	return ret;
  }
+-EXPORT_SYMBOL_GPL(sys_open);
  
--int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
-+static int nfs_wb_page_priority(struct inode *inode, struct page *page,
-+				int how)
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   int mode)
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 507ddff..d913d1e 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(sys_read);
+ 
+ asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
  {
- 	loff_t range_start = page_offset(page);
- 	loff_t range_end = range_start + (loff_t)(PAGE_CACHE_SIZE - 1);
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index f5414fc..e247a40 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -430,7 +430,6 @@ extern long nfs_sync_mapping_wait(struct address_space *, struct writeback_contr
- extern int nfs_wb_all(struct inode *inode);
- extern int nfs_wb_nocommit(struct inode *inode);
- extern int nfs_wb_page(struct inode *inode, struct page* page);
--extern int nfs_wb_page_priority(struct inode *inode, struct page* page, int how);
- extern int nfs_wb_page_cancel(struct inode *inode, struct page* page);
- #if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
- extern int  nfs_commit_inode(struct inode *, int);
 
