@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXJXFtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbXJXFzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbXJXFtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXJXFtM
+	id S1756109AbXJXFzF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbXJXFyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:49:12 -0400
-Received: from mail.progtech.ru ([62.117.85.73]:38570 "EHLO mail.progtech.ru"
+	Wed, 24 Oct 2007 01:54:52 -0400
+Received: from smile.2scale.net ([212.12.33.142]:52727 "EHLO smile.2scale.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbXJXFtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:49:11 -0400
-X-Spam-Scaned: by SPAMASSASSIN
-Date: Wed, 24 Oct 2007 09:49:07 +0400
-From: "Oleg A. Arkhangelsky" <sysoleg@progtech.ru>
-X-Mailer: The Bat! (v2.12.00) Business
-Reply-To: "Oleg A. Arkhangelsky" <sysoleg@progtech.ru>
-X-Priority: 3 (Normal)
-Message-ID: <1397016698.20071024094907@progtech.ru>
+	id S1753634AbXJXFyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:54:50 -0400
+Subject: 2.6.22.7 reboots if PCI-X eth card is used for capture
+From: Michael Stiller <ms@2scale.net>
 To: linux-kernel@vger.kernel.org
-Subject: Re: Hard lockups on 2.6.22.4-SMP
-In-Reply-To: <1696948867.20071023164555@progtech.ru>
-References: <1696948867.20071023164555@progtech.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Organization: 2scale GmbH
+Date: Wed, 24 Oct 2007 07:54:43 +0200
+Message-Id: <1193205283.3659.24.camel@blackberry>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-      Answering to myself.
+i run a machine with 4 dual gigabit ethernet cards utilizing 2.6.22.7.
+All cards are PCI-E, one card is PCI-X, all Gigabit Ethernet from Intel.
+This is working fine and stable if only the PCI-E cards are used.
 
-OAA> We  have  a  problem  with  spontaneous (there is no relation with CPU
-OAA> load,  memory  load,  uptime)  hard  lockups  on  linux  2.6.22.4  (no
-OAA> additional patches) on SMP system (Intel E7230 ICH7 Montherboard). Num
-OAA> Lock  (Caps  Lock - no matter) on keyboard is not responding. There is
-OAA> no  debug  on  console (no oops, no kernel panic, no NMI watchdog info
-OAA> [but nmi_watchdog=1 and NMI in /proc/interrupts is OK]). All we see is
-OAA> just previous console state (for example - login: prompt). We have the
-OAA> same  situation  on  another PC with abosolutely the some hardware and
-OAA> software  configuration.  Could  you  give  us some hints about how to
-OAA> debug  this  situation?  If you need some additional information about
-OAA> our  system, feel free to ask. I can post a lot of output (i.e. lspci,
-OAA> dmesg, etc...) but i don't want to post any useless information.
+If i try to capture packets on the PCI-X card, the machine reboots after
+some seconds. I think i can rule out a hardware defect, as i actually
+run two of this machines with equal hard and software and the problem
+occurs on both machines. This is perfectly reproducible but i am unable
+to debug this, as no (oops) messages are ever written to the syslog. 
+As the machine instantly reboots i guess there will be nothing valueable
+shown on the display. 
 
-     Yesterday we added CONFIG_DEBUG_SPINLOCK and
-     CONFIG_DEBUG_SPINLOCK_SLEEP to our kernel config.
+The interrupt layout:
 
-     After six hours of uptime we got the same lockup, but the kernel
-     became a little verbose:
+(cat /proc/interrupts)
 
-     BUG: spinlock lockup on CPU#1, swapper/0, e9bcb200
+ 16:         36          6        430          0   IO-APIC-fasteoi   eth0
+ 18:         33          5        305        126   IO-APIC-fasteoi   uhci_hcd:us
+b1, ehci_hcd:usb4, eth1
+211:       2143       2210     127682        533   PCI-MSI-edge      eth9
+212:       5332       5818      10298    3594001   PCI-MSI-edge      eth8
+213:        129      46419    5525683          6   PCI-MSI-edge      eth7
+214:      13528      14184      34425   11239040   PCI-MSI-edge      eth6
+215:      50277        116    5821388         14   PCI-MSI-edge      eth5
+216:        595        590     347154        857   PCI-MSI-edge      eth4
+217:         48        153       5760       2653   PCI-MSI-edge      eth2
 
-     Nothing else. No call trace, no cpu registers dump. Just this
-     line. Any hints?
+The card in question is eth0+eth1. I even tried the following boot kernel parameters
+with NO success.
+	
+	nousb (don't need it, suspected the irq sharing as problem source)
+	
+	pci=nomsi (this recommended my hardware vendor)
 
--- 
-wbr,
- Oleg                            mailto:sysoleg@progtech.ru
+I need some advice, howto debug or solve this.
+
+As i usually don't read the list, i would like to be cc'd. 
+
+Cheers
+
+Michael
 
