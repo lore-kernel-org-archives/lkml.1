@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbXJXMlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbXJXMl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbXJXMlF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXJXMkz
+	id S1757133AbXJXMl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXJXMlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:40:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53782 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751237AbXJXMky (ORCPT
+	Wed, 24 Oct 2007 08:41:17 -0400
+Received: from smtpout.hostsharing.net ([83.223.95.15]:46569 "EHLO
+	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbXJXMlP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:40:54 -0400
-Date: Wed, 24 Oct 2007 14:41:23 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
-Message-ID: <20071024124123.GD30533@stusta.de>
-References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org> <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain> <20071024122120.GV14671@kernel.dk>
+	Wed, 24 Oct 2007 08:41:15 -0400
+Date: Wed, 24 Oct 2007 14:41:09 +0200
+From: Elimar Riesebieter <riesebie@lxtec.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc1 freezes on powerbook at first boot stage
+Message-ID: <20071024124109.GA9442@frodo.home.lxtec.de>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20071024120739.GA4897@aragorn.home.lxtec.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071024122120.GV14671@kernel.dk>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20071024120739.GA4897@aragorn.home.lxtec.de>
+Organization: LXTEC
+X-gnupg-key-fingerprint: BE65 85E4 4867 7E9B 1F2A  B2CE DC88 3C6E C54F 7FB0
+X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled Oct 20 2007 16:04:42)
+User-Agent: Mutt/1.5.16+lxtec (2007-10-15)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 02:21:20PM +0200, Jens Axboe wrote:
-> On Wed, Oct 24 2007, Robert P. J. Day wrote:
-> > On Wed, 24 Oct 2007, Sam Ravnborg wrote:
-> > 
-> > > On Wed, Oct 24, 2007 at 01:24:53PM +0200, Jens Axboe wrote:
-> > > > On Wed, Oct 24 2007, Haavard Skinnemoen wrote:
-> > > > > Hi Linus,
-> > > > >
-> > > > > Sorry about sending you pull requests so rapidly, but Jens broke my
-> > > > > dma-mapping.h yesterday. Or you may say the bug was there to begin with
-> > > > > and Jens merely exposed it, but that makes it sound like my fault ;-)
-> > > > >
-> > > > > Anyway, please pull from
-> > > > >
-> > > > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
-> > > > >
-> > > > > to receive the following update.
-> > > >
-> > > > You should not take the blame :-)
-> > > >
-> > > > I'm collecting these patches, so I'll pull your fix and make sure it
-> > > > gets to Linus today along with the other fixes.
-> > >
-> > > How about doing a "git grep asm/scatterlist"
-> > > and fix all victims to use linux/scatterlist?
-> > > Or you maybe did this already.
-> > 
-> > i was just about to ask -- is this one of those cases where the asm
-> > versions of scatterlist.h should have a warning/error that they should
-> > not be included directly, and to include linux/scatterlist.h instead?
-> 
-> No, using asm/scatterlist.h is perfectly fine. The problem is code using
-> the sg helpers should include linux/scatterlist.h since that is where
-> those are defined.
-> 
-> If you just need the scatterlist structure definition, then
-> asm/scatterlist.h is the correct include.
+On Wed, 24 Oct 2007 the mental interface of
+Elimar Riesebieter told:
 
-But there's also the general question whether it's good practice for 
-not architecture specific code to include asm/ headers.
+[...]
+> The kernel is loaded from firmware but freezes at the moment to load
+> the radeon framebuffer. I can't get any debug info (don't know
+> how?).
 
-For APIs available on all architectures linux/ header are the right 
-thing to use, and what is in the asm/ header and what in the linux/ 
-header becomes an implementation detail that can be changed.
+Screen dump till freeze:
 
-> Jens Axboe
-
-cu
-Adrian
+Using PowerMac machine description
+Total memory = 1024MB; using 2048kB for hash table (at cfe00000)
+Linux version 2.6.24-rc1-aragorn (riesebie@aragorn) (gcc version 4.2.3 20071014 (prelelease) (Debian 4.2.2-3)) #1 Wed Oct 24 12:48:27 CEST 2007
+Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd2
+Mapped at 0xfdfc0000
+Found a Intrepid mac-io controller, rev: 0, mapped at 0xfdf40000
+PowerMac motherboard: PowerBook G4 15"
+console [udbg0] enabled
+setup_arch: bootmem
+Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
+Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->1
+Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->1
+via-pmu: Server Mode is disabled
+PMU driver v2 initialized for Core99, firmware: 0c
+nvram: Checking bank 0...
+nvram: gen0=741, gen1=740
+nvram: Active bank is: 0
+nvram: OF partition at 0x410
+nvram: XP partition at 0x1020
+nvram: NR partition at 0x1120
+arch: exit
+Zone PFN ranges:
+  DMA             0 ->   196608
+  Normal     196608 ->   196608
+  HighMem    196608 ->   262144
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->   262144
+Built 1 zonelists in Zone order.  Total pages: 260096
+Kernel command line: root=/pci@f4000000/ata-6@d/disk@0:5 root=/dev/hda5
+mpic: Setting up MPIC " MPIC 1   " version 1.2 at 80040000, max 4 CPUs
+mpic: ISU size: 64, shift: 6, mask: 3f
+mpic: Initializing for 64 sources
+PID hash table entries: 4096 (order: 12, 16384 bytes)
+GMT Delta read from XPRAM: 0 minutes, DST: off
+clocksource: timebase mult[d9038e4] shift [22] registered
+clockevent: decremeter mult[4b7] shift[16] cpu[0]
+Console: colour dummy device 80x25
+console handover: boot [udbg0] -> real [tty0]
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+  Alles was viel bedacht wird ist bedenklich!;-)
+         Friedrich Nietzsche
