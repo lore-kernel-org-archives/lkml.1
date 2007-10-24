@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbXJXB6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbXJXCEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbXJXB6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 21:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXJXB6g
+	id S1754741AbXJXCEQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXJXCEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 21:58:36 -0400
-Received: from ns3.mountaincable.net ([24.215.0.13]:41665 "EHLO
-	ns3.mountaincable.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbXJXB6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 21:58:35 -0400
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-From: Ryan Lortie <desrt@desrt.ca>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Zephaniah E. Hull" <warp@aehallh.com>, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com>
-References: <20070609084800.GR6362@aehallh.com>
-	 <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com>
-	 <200706120135.06428.dtor@insightbb.com> <20070612054031.GY6362@aehallh.com>
-	 <20070702152044.GA24665@suse.cz> <20070703164555.GA20370@aehallh.com>
-	 <1191035147.7025.28.camel@moonpix.desrt.ca>
-	 <d120d5000710230621j3913384cn37dbab1a764de31c@mail.gmail.com>
-	 <1193155059.15426.15.camel@moonpix.desrt.ca>
-	 <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 21:58:14 -0400
-Message-Id: <1193191094.32696.2.camel@moonpix.desrt.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Oct 2007 22:04:01 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:34291 "EHLO snapgear.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752645AbXJXCEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 22:04:00 -0400
+Date: Wed, 24 Oct 2007 12:03:10 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200710240203.l9O23AuS016632@goober>
+To: torvalds@linux-foundation.org
+Subject: [M68KNOMMU]: remove unused variables in setup.c
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-23-10 at 14:10 -0400, Dmitry Torokhov wrote:
-> No, rfkill want to see keypresses, period. It does not care if there
-> are other applications also seeing the same keypresses, it just does
-> not want keypresses stolen from it.
+Remove unused variables from setup.c code.
 
-Right.  This is exactly the problem.  The current grab API exists to
-prevent keys from being delivered to normal users, but rfkill still
-wants to see them.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-No matter how you slice it, if both of these desires are to be satisfied
-then there needs to be some sort of a system to differentiate between
-rfkill and "normal users".  That's what the priority is here.
 
-> Yes, applications need to decide whether they want to process certain
-> events or not. But I think that they shodul do it for themselves, not
-> for other applications. Otherwise dependencies are just insane and you
-> risk to disturb the peace just by adding another piece in the mix.
-
-I disagree.  Dependencies aren't a problem at all if people merely rely
-on the kernel to take care of the appropriate filtering.  Dependencies
-only become a problem when X needs to know about "ok... maybe I should
-ignore keys that are handled by [hal] [rfkill] [others] etc...".
-
-Cheers
-
+diff -Naurp linux-2.6.23/arch/m68knommu/kernel/setup.c linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c
+--- linux-2.6.23/arch/m68knommu/kernel/setup.c	2007-10-19 10:30:54.000000000 +1000
++++ linux-2.6.23-uc0/arch/m68knommu/kernel/setup.c	2007-10-19 10:35:38.000000000 +1000
+@@ -43,11 +43,8 @@ EXPORT_SYMBOL(memory_end);
+ char __initdata command_line[COMMAND_LINE_SIZE];
+ 
+ /* machine dependent timer functions */
+-void (*mach_sched_init)(irq_handler_t handler);
+-void (*mach_tick)(void);
+ void (*mach_gettod)(int*, int*, int*, int*, int*, int*);
+ int (*mach_set_clock_mmss)(unsigned long);
+-unsigned long (*mach_gettimeoffset)(void);
+ 
+ /* machine dependent reboot functions */
+ void (*mach_reset)(void);
