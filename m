@@ -1,47 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbXJXSkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbXJXSlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758696AbXJXSkB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbXJXSjw
+	id S1759681AbXJXSlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbXJXSlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:39:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41090 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753269AbXJXSjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:39:52 -0400
-Date: Wed, 24 Oct 2007 14:39:20 -0400
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] #if 0 cpufreq.c:cpufreq_get()
-Message-ID: <20071024183920.GF14357@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-	davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
-	linux-kernel@vger.kernel.org
-References: <20071024162312.GH30533@stusta.de>
+	Wed, 24 Oct 2007 14:41:37 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:36232 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200AbXJXSlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:41:35 -0400
+Message-ID: <471F91CB.1020607@oracle.com>
+Date: Wed, 24 Oct 2007 14:41:15 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Reply-To: chuck.lever@oracle.com
+Organization: Corporate Architecture team, Oracle USA
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024162312.GH30533@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Tom Talpey <tmt@netapp.com>, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make sunrpc/xprtsock.c:xs_setup_{udp,tcp}() static
+References: <20071024162402.GB30533@stusta.de>
+In-Reply-To: <20071024162402.GB30533@stusta.de>
+Content-Type: multipart/mixed;
+ boundary="------------060300020602040407090407"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 06:23:12PM +0200, Adrian Bunk wrote:
- > cpufreq.c:cpufreq_get() no longer has any user.
- > 
- > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+This is a multi-part message in MIME format.
+--------------060300020602040407090407
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-ARM uses it.
+Adrian Bunk wrote:
+> xs_setup_{udp,tcp}() can now become static.
 
-drivers/pcmcia/sa11xx_base.c:   return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
-drivers/pcmcia/sa11xx_base.c:   unsigned int clock = cpufreq_get(0);
-drivers/video/sa1100fb.c:               cpufreq_get(smp_processor_id()));
-drivers/video/sa1100fb.c:       pcd = get_pcd(var->pixclock, cpufreq_get(0));
+ACK.  Sorry this was overlooked.
 
-	Dave
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  include/linux/sunrpc/xprtsock.h |    6 ------
+>  net/sunrpc/xprtsock.c           |    4 ++--
+>  2 files changed, 2 insertions(+), 8 deletions(-)
+> 
+> 833a31c8caef70589f33be8e3a1fc9d8e01ce3c2 
+> diff --git a/include/linux/sunrpc/xprtsock.h b/include/linux/sunrpc/xprtsock.h
+> index 2c6c2c2..c2a46c4 100644
+> --- a/include/linux/sunrpc/xprtsock.h
+> +++ b/include/linux/sunrpc/xprtsock.h
+> @@ -9,12 +9,6 @@
+>  
+>  #ifdef __KERNEL__
+>  
+> -/*
+> - * Socket transport setup operations
+> - */
+> -struct rpc_xprt *xs_setup_udp(struct xprt_create *args);
+> -struct rpc_xprt *xs_setup_tcp(struct xprt_create *args);
+> -
+>  int		init_socket_xprt(void);
+>  void		cleanup_socket_xprt(void);
+>  
+> diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+> index 02298f5..2f630a5 100644
+> --- a/net/sunrpc/xprtsock.c
+> +++ b/net/sunrpc/xprtsock.c
+> @@ -1828,7 +1828,7 @@ static struct rpc_xprt *xs_setup_xprt(struct xprt_create *args,
+>   * @args: rpc transport creation arguments
+>   *
+>   */
+> -struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
+> +static struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
+>  {
+>  	struct sockaddr *addr = args->dstaddr;
+>  	struct rpc_xprt *xprt;
+> @@ -1894,7 +1894,7 @@ struct rpc_xprt *xs_setup_udp(struct xprt_create *args)
+>   * @args: rpc transport creation arguments
+>   *
+>   */
+> -struct rpc_xprt *xs_setup_tcp(struct xprt_create *args)
+> +static struct rpc_xprt *xs_setup_tcp(struct xprt_create *args)
+>  {
+>  	struct sockaddr *addr = args->dstaddr;
+>  	struct rpc_xprt *xprt;
+> 
 
--- 
-http://www.codemonkey.org.uk
+
+--------------060300020602040407090407
+Content-Type: text/x-vcard; charset=utf-8;
+ name="chuck.lever.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="chuck.lever.vcf"
+
+YmVnaW46dmNhcmQNCmZuOkNodWNrIExldmVyDQpuOkxldmVyO0NodWNrDQpvcmc6T3JhY2xl
+IENvcnBvcmF0aW9uO0NvcnBvcmF0ZSBBcmNoaXRlY3R1cmU6IExpbnV4IFByb2plY3RzIEdy
+b3VwDQphZHI6OzsxMDE1IEdyYW5nZXIgQXZlbnVlO0FubiBBcmJvcjtNSTs0ODEwNDtVU0EN
+CmVtYWlsO2ludGVybmV0OmNodWNrIGRvdCBsZXZlciBhdCBub3NwYW0gb3JhY2xlIGRvdCBj
+b20NCnRpdGxlOlByaW5jaXBhbCBNZW1iZXIgb2YgU3RhZmYNCnRlbDt3b3JrOisxIDI0OCA2
+MTQgNTA5MQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6dmNhcmQN
+Cg0K
+--------------060300020602040407090407--
