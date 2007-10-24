@@ -1,125 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbXJXXDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbXJXXOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbXJXXDx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 19:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbXJXXDn
+	id S1758704AbXJXXOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 19:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbXJXXNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 19:03:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33095 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756755AbXJXXDm (ORCPT
+	Wed, 24 Oct 2007 19:13:51 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35844 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbXJXXNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 19:03:42 -0400
-Date: Wed, 24 Oct 2007 16:03:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: dtor@insightbb.com, pavel@ucw.cz, lenb@kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fujitsu application panel driver
-Message-Id: <20071024160300.85e1cbda.akpm@linux-foundation.org>
-In-Reply-To: <20071023125555.38d63567@shemminger-laptop>
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
-	<200709140130.59732.dtor@insightbb.com>
-	<20070916215516.2934abad@oldman.hemminger.net>
-	<200709161623.00286.dtor@insightbb.com>
-	<20071023125555.38d63567@shemminger-laptop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 19:13:50 -0400
+Date: Thu, 25 Oct 2007 01:13:47 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+cc: "Serge E. Hallyn" <serue@us.ibm.com>, Simon Arlott <simon@fire.lp0.eu>,
+       Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <1193263335.30930.98.camel@moss-terrapins.epoch.ncsc.mil>
+Message-ID: <Pine.LNX.4.64.0710250100240.17781@fbirervta.pbzchgretzou.qr>
+References: <20071023051642.GA3908@sequoia.sous-sol.org>  <471E9260.6000704@goop.org>
+ <20071023220649.5a76af82@laptopd505.fenrus.org>  <55615.simon.1193226629@5ec7c279.invalid>
+  <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk>
+  <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr> 
+ <471F9603.9080308@simon.arlott.org.uk>  <Pine.LNX.4.64.0710242059500.17781@fbirervta.pbzchgretzou.qr>
+  <1193259748.30930.91.camel@moss-terrapins.epoch.ncsc.mil> 
+ <20071024213704.GA2867@sergelap.austin.ibm.com> 
+ <Pine.LNX.4.64.0710242342540.17781@fbirervta.pbzchgretzou.qr>
+ <1193263335.30930.98.camel@moss-terrapins.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 12:55:55 -0700
-Stephen Hemminger <shemminger@linux-foundation.org> wrote:
 
-> This driver supports the application buttons on some Fujitsu Lifebook
-> laptops. It is based on the earlier apanel driver done by Jochen
-> Eisenger, but with many changes.  The original driver used ioctl's and
-> a separate user space program (see http://apanel.sourceforge.net). This
-> driver hooks into the input subsystem so that the normal keys act as
-> expected without a daemon. In addition to buttons, the Mail Led is
-> handled via LEDs class device.
-> 
-> The driver now supports redefinable keymaps and no longer has to
-> have a DMI table for all Fujitsu laptops.
-> 
-> I thought about mixing this driver should be integrated into the Fujitsu laptop
-> extras driver that handles backlight, but rejected the idea because
-> it wasn't clear if all the Fujitsu laptops supported both.
-> 
-> ...
+On Oct 24 2007 18:02, David P. Quigley wrote:
+>> 
+>> But an LSM needs to _explicitly_ call the next LSM's function. No
+>> one (just a minimal grep in linux-2.6/security/) besides SELinux
+>> does that today. So while you could load AppArmor ontop of
+>> MultiAdm, it would never be invoked. This is what is known as
+>> "sufficient" in PAM parlance.
 >
-> +
-> +/* Magic constants in BIOS that tell about buttons */
-> +enum apanel_devid {
-> +	APANEL_DEV_NONE	  = 0,
-> +	APANEL_DEV_APPBTN = 1,
-> +	APANEL_DEV_CDBTN  = 2,
-> +	APANEL_DEV_LCD	  = 3,
-> +	APANEL_DEV_LED	  = 4,
-> +	APANEL_DEV_MAX,
-> +};
+>I would hate to think some module which is a subset of the
+>restrictiveness of another could override it because its
+>"sufficient". If that was the case I could load in a module which
+>just returns 0 for everything and make it "sufficient" bypassing
+>every other module. This also introduces ordering dependencies. If
+>you install MultiAdm before AppArmor or SELinux and make it
+>"sufficient" then you defeated the point of having AppArmor or
+>SELinux installed in the first place.
 
-APANEL_DEV_MAX == 5.
+If I had to run mtadm and aa alongside each other, I would put aa
+into the "secondary" LSM slot.
 
-> +enum apanel_chip {
-> +	CHIP_NONE    = 0,
-> +	CHIP_OZ992C  = 1,
-> +	CHIP_OZ163T  = 2,
-> +	CHIP_OZ711M3 = 4,
-> +};
-> +
-> +/* Result of BIOS snooping/probing -- what features are supported */
-> +static enum apanel_chip device_chip[APANEL_DEV_MAX];
-> +
-> +/* names for APANEL_XXX */
-> +static const char *device_names[APANEL_DEV_MAX] __initdata = {
+A number of people have said by now that LSM is supposed to be a
+restrict-my-rights block of code. As such, I would put the special,
+tiny, give-me-rights code at the front so that it be executed first.
+This is what would be intended with mtadm. It really just gives you a
+few caps when switching to UID 900 (or whatever), just as Linux
+traditionally gives you full caps when switching to UID 0 (e.g. by
+executing setuid files). From there on, it is just restrictions, and
+the order in which LSMs restrict your actions is probably not so
+important as long as they do restrict it.
 
-We just wasted sizeof(char *)?
-
-> +	[APANEL_DEV_APPBTN] = "Application Buttons",
-> +	[APANEL_DEV_LCD]    = "LCD",
-> +	[APANEL_DEV_LED]    = "LED",
-> +	[APANEL_DEV_CDBTN]  = "CD Buttons",
-> +};
-> +
-> +
-> +/* Poll for key changes
-> + *
-> + * Read Application keys via SMI
-> + *  A (0x4), B (0x8), Internet (0x2), Email (0x1).
-> + *
-> + * CD keys:
-> + * Forward (0x100), Rewind (0x200), Stop (0x400), Pause (0x800)
-> + */
-> +static void apanel_poll(struct input_polled_dev *ipdev)
-> +{
-> +	struct apanel *ap = ipdev->private;
-> +	struct input_dev *idev = ipdev->input;
-> +	u8 cmd = device_chip[APANEL_DEV_APPBTN] == CHIP_OZ992C ? 0 : 8;
-> +	s32 data;
-> +	int i;
-> +
-> +	data = i2c_smbus_read_word_data(&ap->client, cmd);
-> +	if (data < 0)
-> +		return;	/* ignore errors (due to ACPI??) */
-> +
-> +	/* write back to clear latch */
-> +	i2c_smbus_write_word_data(&ap->client, cmd, 0);
-> +
-> +	if (!data)
-> +		return;
-> +
-> +	dev_dbg(&ipdev->input->dev, APANEL ": data %#x\n", data);
-> +	for (i = 0; i < ipdev->input->keycodemax; i++)
-> +		if (1ul << i & data)
-
-You made me google for the c precedence table.
-
-> +			report_key(idev, ap->keymap[i]);
-> +}
->
-> ...
->
-
+Thankfully, Linux capabilities are so strangely designed that they
+actually become useful - they give you so much power that you _can_
+only restrict things afterwards again :-)
