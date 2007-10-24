@@ -1,114 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbXJXOlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbXJXOlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbXJXOlO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXJXOkq
+	id S1760682AbXJXOlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbXJXOlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:40:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:53799 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755514AbXJXOkp convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 10:41:22 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:1924 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757494AbXJXOlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:40:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=izXBSEONEgdm+vcwtOvAwrTe72ibm3vq1AyQXRoJcgMqN2artrxcZmgOc7Z+Stn2TQpzgidCTc/wi9LHc+0XBC5yr7Ct5PAdFdSwYTXoS906M+e9IICYu4k6UVTYqFnZMBGfvRkCj2eFhe8ZNXG+Z240H5TJ7ITzLKssHHR7S3I=
-From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix "passing argument # of '__memcpy' discards qualifiers from pointer target type" warnings
-Date: Wed, 24 Oct 2007 16:39:46 +0200
-User-Agent: KMail/1.9.7
+	Wed, 24 Oct 2007 10:41:21 -0400
+Message-ID: <471F598C.5030903@panasas.com>
+Date: Wed, 24 Oct 2007 16:41:16 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200710241639.46986.mboton.lkml@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+To: Rajkumar S <rajkumars@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: HIGHMEM64G Kernel (2.6.23.1) makes system crawl
+References: <64de5c8b0710240326q709ca7fbq4b365bcaf6e89fb9@mail.gmail.com>
+In-Reply-To: <64de5c8b0710240326q709ca7fbq4b365bcaf6e89fb9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Oct 2007 14:40:40.0196 (UTC) FILETIME=[D92C0C40:01C8164B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the warnings "passing argument 1 of '__memcpy' discards 
-qualifiers from pointer target type" and "passing argument 2 of '__memcpy' 
-discards qualifiers from pointer target type" when compiling some files.
+On Wed, Oct 24 2007 at 12:26 +0200, "Rajkumar S" <rajkumars@gmail.com> wrote:
+> Hello,
+> 
+> I am using a Core 2 Duo E6750 CPU on an intel DG33FB mother board with
+> 4GB Ram, running Debian Lenny.
+> 
+> Since the box has 4 GB ram I compiled a big mem kernel, but the
+> machine is very slow while running big mem kernel. It takes about 37
+> minutes to compile the intel e1000 driver  (e1000-7.6.5.tar.gz) from
+> intel site. But it's performing normally when using a non big mem
+> kernel. The diff of the .config between working and non working is as
+> follows.
+> 
+> --- config-nobigmem     2007-10-24 12:51:42.000000000 +0530
+> +++ config-bigmem       2007-10-24 12:48:56.000000000 +0530
+> @@ -1,7 +1,7 @@
+>  #
+>  # Automatically generated make config: don't edit
+>  # Linux kernel version: 2.6.23.1
+> -# Wed Oct 24 12:50:21 2007
+> +# Tue Oct 23 18:08:30 2007
+>  #
+>  CONFIG_X86_32=y
+>  CONFIG_GENERIC_TIME=y
+> @@ -189,10 +189,11 @@
+>  CONFIG_DELL_RBU=m
+>  CONFIG_DCDBAS=m
+>  CONFIG_DMIID=y
+> -CONFIG_NOHIGHMEM=y
+> +# CONFIG_NOHIGHMEM is not set
+>  # CONFIG_HIGHMEM4G is not set
+> -# CONFIG_HIGHMEM64G is not set
+> +CONFIG_HIGHMEM64G=y
+>  CONFIG_PAGE_OFFSET=0xC0000000
+> +CONFIG_HIGHMEM=y
+>  CONFIG_X86_PAE=y
+>  CONFIG_ARCH_FLATMEM_ENABLE=y
+>  CONFIG_ARCH_SPARSEMEM_ENABLE=y
+> @@ -211,6 +212,7 @@
+>  CONFIG_BOUNCE=y
+>  CONFIG_NR_QUICK=1
+>  CONFIG_VIRT_TO_BUS=y
+> +# CONFIG_HIGHPTE is not set
+>  # CONFIG_MATH_EMULATION is not set
+>  CONFIG_MTRR=y
+>  CONFIG_EFI=y
+> @@ -223,11 +225,13 @@
+>  # CONFIG_HZ_1000 is not set
+>  CONFIG_HZ=250
+>  CONFIG_KEXEC=y
+> +# CONFIG_CRASH_DUMP is not set
+>  CONFIG_PHYSICAL_START=0x100000
+>  # CONFIG_RELOCATABLE is not set
+>  CONFIG_PHYSICAL_ALIGN=0x100000
+>  CONFIG_HOTPLUG_CPU=y
+>  CONFIG_COMPAT_VDSO=y
+> +CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+> 
+>  #
+>  # Power management options (ACPI, APM)
+> @@ -1283,6 +1287,7 @@
+>  CONFIG_I2O=m
+>  CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
+>  CONFIG_I2O_EXT_ADAPTEC=y
+> +CONFIG_I2O_EXT_ADAPTEC_DMA64=y
+>  CONFIG_I2O_CONFIG=m
+>  CONFIG_I2O_CONFIG_OLD_IOCTL=y
+>  CONFIG_I2O_BUS=m
+> @@ -3323,6 +3328,7 @@
+>  # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+>  # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+>  # CONFIG_DEBUG_KOBJECT is not set
+> +# CONFIG_DEBUG_HIGHMEM is not set
+>  CONFIG_DEBUG_BUGVERBOSE=y
+>  # CONFIG_DEBUG_INFO is not set
+>  # CONFIG_DEBUG_VM is not set
+> 
+> I was having this same issue with debian kernel also (2.6.22-2-686),
+> ie stock kernel will work, but big mem is slow. Which is why I tried
+> latest kernel.
+> 
+> I am posting the full .config at http://pastebin.ca/747758 dmesg while
+> booting big mem kernel is at http://pastebin.ca/747766
+> 
+> raj
 
-I don't really know if this is the best way but at least I don't get more 
-warnings.
+I thought that for 4GB of memory the CONFIG_HIGHMEM4G=y CONFIG_HIGHMEM64G is not set
+would be enough.
 
+>From looking in source code the CONFIG_HIGHMEM64G is broken in many respects,
+in my opinion. It's really a 64-bit with 32-bit quirks enabled. Does it even
+run on None 64-bit machines? Not many! 
 
-diff -ruN linux-2.6.24-rc1.orig/fs/cifs/dir.c linux-2.6.24-rc1/fs/cifs/dir.c
---- linux-2.6.24-rc1.orig/fs/cifs/dir.c	2007-10-24 16:06:42.000000000 +0200
-+++ linux-2.6.24-rc1/fs/cifs/dir.c	2007-10-24 15:49:44.000000000 +0200
-@@ -585,6 +585,7 @@
- 			   struct qstr *b)
- {
- 	struct nls_table *codepage = CIFS_SB(dentry->d_inode->i_sb)->local_nls;
-+	unsigned char *dstname = (unsigned char *)a->name;
- 
- 	if ((a->len == b->len) &&
- 	    (nls_strnicmp(codepage, a->name, b->name, a->len) == 0)) {
-@@ -593,7 +594,7 @@
- 		 * case take precedence.  If a is not a negative dentry, this
- 		 * should have no side effects
- 		 */
--		memcpy((unsigned char *)a->name, b->name, a->len);
-+		memcpy(dstname, b->name, a->len);
- 		return 0;
- 	}
- 	return 1;
-diff -ruN linux-2.6.24-rc1.orig/fs/jfs/namei.c linux-2.6.24-rc1/fs/jfs/namei.c
---- linux-2.6.24-rc1.orig/fs/jfs/namei.c	2007-10-24 16:06:43.000000000 +0200
-+++ linux-2.6.24-rc1/fs/jfs/namei.c	2007-10-24 15:40:34.000000000 +0200
-@@ -1580,6 +1580,7 @@
- 
- static int jfs_ci_compare(struct dentry *dir, struct qstr *a, struct qstr *b)
- {
-+	unsigned char *dstname = (unsigned char *)a->name;
- 	int i, result = 1;
- 
- 	if (a->len != b->len)
-@@ -1597,7 +1598,7 @@
- 	 * dentry, we blindly replace it with b.  This should be harmless if
- 	 * a is not a negative dentry.
- 	 */
--	memcpy((unsigned char *)a->name, b->name, a->len);
-+	memcpy(dstname, b->name, a->len);
- out:
- 	return result;
- }
-diff -ruN linux-2.6.24-rc1.orig/fs/smbfs/cache.c 
-linux-2.6.24-rc1/fs/smbfs/cache.c
---- linux-2.6.24-rc1.orig/fs/smbfs/cache.c	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.24-rc1/fs/smbfs/cache.c	2007-10-24 16:01:46.000000000 +0200
-@@ -145,9 +145,10 @@
- 		if (!newdent)
- 			goto end_advance;
- 	} else {
-+		char *dstname = (char *)newdent->d_name.name;
-+
- 		hashed = 1;
--		memcpy((char *) newdent->d_name.name, qname->name,
--		       newdent->d_name.len);
-+		memcpy(dstname, qname->name, newdent->d_name.len);
- 	}
- 
- 	if (!newdent->d_inode) {
-diff -ruN linux-2.6.24-rc1.orig/include/asm-x86/io_32.h 
-linux-2.6.24-rc1/include/asm-x86/io_32.h
---- linux-2.6.24-rc1.orig/include/asm-x86/io_32.h	2007-10-24 
-16:06:45.000000000 +0200
-+++ linux-2.6.24-rc1/include/asm-x86/io_32.h	2007-10-24 15:56:42.000000000 
-+0200
-@@ -208,7 +208,8 @@
- static inline void
- memcpy_fromio(void *dst, const volatile void __iomem *src, int count)
- {
--	__memcpy(dst, (const void __force *)src, count);
-+	const void __force *src1 = (const void __force *)src;
-+	__memcpy(dst, src1, count);
- }
- 
- static inline void
+You have a magnificent 64-bit Machine, why?
 
--- 
-	Miguel Botón
+Boaz
+
