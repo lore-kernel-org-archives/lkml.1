@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbXJXQMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXJXQNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbXJXQMw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbXJXQMp
+	id S1754867AbXJXQNY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXJXQNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:12:45 -0400
-Received: from xenotime.net ([66.160.160.81]:58622 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752711AbXJXQMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:12:44 -0400
-Date: Wed, 24 Oct 2007 09:12:40 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Sam Ravnborg <sam@ravnborg.org>, Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC/git patch] move samples/ to Documentation/markers/
-Message-Id: <20071024091240.7978c2da.rdunlap@xenotime.net>
-In-Reply-To: <471F4649.3000000@garzik.org>
-References: <20071024095226.GA30326@havoc.gtf.org>
-	<20071024130557.GA18610@Krystal>
-	<471F4649.3000000@garzik.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 24 Oct 2007 12:13:15 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47781 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752003AbXJXQNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 12:13:14 -0400
+Date: Wed, 24 Oct 2007 18:14:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Dike <jdike@addtoit.com>, sparclinux@vger.kernel.org
+Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+Message-ID: <20071024161448.GA3166@uranus.ravnborg.org>
+References: <200710111754.46854.rob@landley.net> <20071024152240.GA7733@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024152240.GA7733@c2.user-mode-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 09:19:05 -0400 Jeff Garzik wrote:
+Hi Jeff.
 
-> Honestly, I don't care at all about building the code.  If that's what 
-> you want, great.
-
-Yes, that is wanted.  They bitrot too easily -- not good.
-
-> My objection is more to adding a samples/ directory, which is contra to 
-> past experience:
+On Wed, Oct 24, 2007 at 11:22:40AM -0400, Jeff Dike wrote:
+> On Thu, Oct 11, 2007 at 05:54:46PM -0500, Rob Landley wrote:
+> > Guess what?  I still need this patch to build the final 2.6.23, months later.
+> > 
+> > I know it may not be the right fix, but the build breaks for me without this 
+> > patch. The .config that breaks is attached.  ARCH=um.
 > 
-> A new net driver sample should go in drivers/net/ like the existing 
-> skeleton files I already listed, not samples/net/.  A top-level 
+> Can I get a Signed-off-by: on that?
+> 
+> It's not the right fix - the base of the problem is in swap.h, which
+> has this comment: 
+> 	/* only sparc can not include linux/pagemap.h in this file
+> 	 * so leave page_cache_release and release_pages undeclared... */
+> 
+> I poked around a bit for a sparc cross-toolchain, didn't find one, so
+> I couldn't see what exactly the problem was.
+> 
+> So, I'll take this fix.
 
-Can't disagree with that.
+Dan Kegel's crosstool builds sparc just fine.
+And for sparc issues I recommend cc:ing the sparc ML.
 
-> "samples/" seems like it exists only duplicate the rest of the tree 
-> hierarchy.
+[Original mail (with patch) is here: http://lkml.org/lkml/2007/10/11/288]
 
-It seems odd to be building code in Documentation/, but I can live
-with that.  It was primarily Christoph who was opposed to that.
-He suggested samples/ and I went along with it just to break the
-impasse (since no one else was making any comments on it at that
-time).
-
-Sam, would building code in Documentation/ cause problems for
-kbuild?
-
----
-~Randy
+	Sam
