@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbXJXPWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXJXPXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbXJXPWU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbXJXPWM
+	id S1756460AbXJXPXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXJXPXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:22:12 -0400
-Received: from smtp-out3.libero.it ([212.52.84.43]:52954 "EHLO
-	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbXJXPWM convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 11:23:07 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:40564 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbXJXPXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:22:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAADMAH0fAqBA5/2dsb2JhbAAMj3c8
-Date: Wed, 24 Oct 2007 17:05:34 +0200
-Message-Id: <JQF8LA$1D0858D77D0D0389288C048A1E433E9B@libero.it>
-Subject: Sr Nr: 0909AOB09
-MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "mailerawardpost" <mailerawardpost@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 81.202.161.49
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 24 Oct 2007 11:23:06 -0400
+Date: Wed, 24 Oct 2007 11:22:40 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
+Message-ID: <20071024152240.GA7733@c2.user-mode-linux.org>
+References: <200710111754.46854.rob@landley.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710111754.46854.rob@landley.net>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YOU 'VE WON.
+On Thu, Oct 11, 2007 at 05:54:46PM -0500, Rob Landley wrote:
+> Guess what?  I still need this patch to build the final 2.6.23, months later.
+> 
+> I know it may not be the right fix, but the build breaks for me without this 
+> patch. The .config that breaks is attached.  ARCH=um.
 
-You have won $655,000.00 Dollars in DE EUROMILLIONES ONLINE INT.LOTTERY SPAIN.For further development for Clearification and procedure please Contact,Dr.Pauly Anderson.E-mail:(sabadelltrust01@yahoo.es) TEL:  +34 692 486 797.
+Can I get a Signed-off-by: on that?
 
-(1) Tic Nr: 6460DGH
-(2) Sr Nr: 0909AOB09
-(3) LU Nr: 726726XZJHN
-(4) BT Nr: 2GH267XZZ1-5-42
-(5) RF Nr 9527BCV-33-7-7-7
+It's not the right fix - the base of the problem is in swap.h, which
+has this comment: 
+	/* only sparc can not include linux/pagemap.h in this file
+	 * so leave page_cache_release and release_pages undeclared... */
 
-Regards.
-Mss.Sodic Lasy
+I poked around a bit for a sparc cross-toolchain, didn't find one, so
+I couldn't see what exactly the problem was.
 
+So, I'll take this fix.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
