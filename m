@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbXJXJ41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbXJXKFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbXJXJ41 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXJXJ4T
+	id S1755185AbXJXKFX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 06:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXJXKFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:56:19 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47855 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbXJXJ4T (ORCPT
+	Wed, 24 Oct 2007 06:05:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:63526 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXJXKFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:56:19 -0400
-Date: Wed, 24 Oct 2007 11:56:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Alon Bar-Lev <alon.barlev@gmail.com>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net
-Subject: Re: [BUG] rfcomm]
-Message-ID: <20071024095626.GA18877@elf.ucw.cz>
-References: <200710231950.31313.alon.barlev@gmail.com> <1193162106.6184.208.camel@violet> <Pine.LNX.4.64.0710232004260.18815@twin.jikos.cz> <1193163905.6184.214.camel@violet> <Pine.LNX.4.64.0710232026180.18815@twin.jikos.cz>
+	Wed, 24 Oct 2007 06:05:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=W58j8wm++xWEz06t3Gftk65Ftk06GyLNY0/44dKSR/40gWeO/Q6LmgO9zTfq0EhUOC7e9plO4hpXlhWd5nahlQsiAodsrO64YEfx1uOALvTkJlYPya6rMrM3Vv6UZun9pgLgmTxlUqVBO0Oq1jEqd/tufxiVfb9y3U2ZIRIzX6Q=
+Message-ID: <661de9470710240305r7657431et3e8733fd830b735a@mail.gmail.com>
+Date: Wed, 24 Oct 2007 15:35:09 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: + fixing-the-warning-in-cgroupc.patch added to -mm tree
+Cc: mm-commits@vger.kernel.org, kamalesh@linux.vnet.ibm.com, menage@google.com
+In-Reply-To: <200710240628.l9O6SZdI026422@imap1.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710232026180.18815@twin.jikos.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <200710240628.l9O6SZdI026422@imap1.linux-foundation.org>
+X-Google-Sender-Auth: 72cf0926fcfc01a1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-10-23 20:28:04, Jiri Kosina wrote:
-> On Tue, 23 Oct 2007, Marcel Holtmann wrote:
-> 
-> > > actually uswsusp has been upstream for quite some time already. See 
-> > > Documentation/power/userland-swsusp.txt
-> > nice. I've never used it. Currently I am using what comes with Ubuntu
-> > 7.10 and that seems to work.
-> 
-> Never used ubuntu, so I have no idea what they ship, I guess you use 
-> s2ram/s2disk utilitie. If so, you are using uswsusp too.
+On 10/24/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+>
+> The patch titled
+>      Fix warning in cgroup.c
+> has been added to the -mm tree.  Its filename is
+>      fixing-the-warning-in-cgroupc.patch
+>
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+>
 
-Ubuntu may be crazy enough to use suspend2. Anyway, this is driver
-problem, and I believe it is reproducible even with plain-old
-in-kernel swsusp.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Looks like commit 3bdf590eac36ac5930deb9552febee3ff18cd2d1 already
+fixed this problem
+
+Balbir
