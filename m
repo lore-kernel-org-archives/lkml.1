@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbXJXJxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXJXJyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbXJXJxY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXJXJxQ
+	id S1755980AbXJXJyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXJXJyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:53:16 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:55584 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbXJXJxP (ORCPT
+	Wed, 24 Oct 2007 05:54:18 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:46337 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbXJXJyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:53:15 -0400
-Message-ID: <471F15D5.3050100@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2007 15:22:21 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Wed, 24 Oct 2007 05:54:17 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH] ehea: fix port_napi_disable/enable
+Date: Wed, 24 Oct 2007 11:53:34 +0200
+User-Agent: KMail/1.8.2
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-CC: paulus@samba.org, akpm@linux-foundation.org, linux390@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [PATCH] taskstats scaled time cleanup
-References: <8789.1193208897@neuling.org>
-In-Reply-To: <8789.1193208897@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200710241153.34992.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Neuling wrote:
-> This moves the ability to scale cputime into generic code.  This
-> allows us to fix the issue in kernel/timer.c (noticed by Balbir) where
-> we could only add an unscaled value to the scaled utime/stime.
-> 
-> This adds a cputime_to_scaled function.  As before, the POWERPC
-> version does the scaling based on the last SPURR/PURR ratio
-> calculated.  The generic and s390 (only other arch to implement
-> asm/cputime.h) versions are both NOPs.
-> 
-> Also moves the SPURR and PURR snapshots closer.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+napi_disable / napi_enable must be applied on all ehea queues.
 
-Looks good to me
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |    7 +++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index b557bb4..4b4b74e 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0078"
++#define DRV_VERSION	"EHEA_0079"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index fe5ffac..a8b05d2 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2329,7 +2329,7 @@ static void port_napi_disable(struct ehea_port *port)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < port->num_def_qps; i++)
++	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
+ 		napi_disable(&port->port_res[i].napi);
+ }
+ 
+@@ -2337,7 +2337,7 @@ static void port_napi_enable(struct ehea_port *port)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < port->num_def_qps; i++)
++	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
+ 		napi_enable(&port->port_res[i].napi);
+ }
+ 
+@@ -2373,8 +2373,6 @@ static int ehea_down(struct net_device *dev)
+ 	ehea_drop_multicast_list(dev);
+ 	ehea_free_interrupts(dev);
+ 
+-	port_napi_disable(port);
+-
+ 	port->state = EHEA_PORT_DOWN;
+ 
+ 	ret = ehea_clean_all_portres(port);
+@@ -2396,6 +2394,7 @@ static int ehea_stop(struct net_device *dev)
+ 	flush_scheduled_work();
+ 	down(&port->port_lock);
+ 	netif_stop_queue(dev);
++	port_napi_disable(port);
+ 	ret = ehea_down(dev);
+ 	up(&port->port_lock);
+ 	return ret;
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+1.5.2
+
