@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbXJXPfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbXJXPfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbXJXPfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXJXPfM
+	id S1758838AbXJXPfo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbXJXPfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:35:12 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:41680 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbXJXPfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:35:11 -0400
-Message-ID: <471F662E.9090502@free.fr>
-Date: Wed, 24 Oct 2007 17:35:10 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Wed, 24 Oct 2007 11:35:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45706 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754648AbXJXPfb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 11:35:31 -0400
+Date: Wed, 24 Oct 2007 08:35:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+cc: David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
+In-Reply-To: <1193232490.3396.10.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0710240818320.30120@woody.linux-foundation.org>
+References: <471E6313.1040704@garzik.org>  <1193174424.3434.3.camel@localhost.localdomain>
+  <471E707B.1020505@garzik.org>  <20071023.153635.21595587.davem@davemloft.net>
+ <1193232490.3396.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-CC: len.brown@intel.com, robert.moore@intel.com
-Subject: Re: halt and poweroff do not shut the system down
-References: <471EFF90.5070606@free.fr>
-In-Reply-To: <471EFF90.5070606@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Sigler wrote:
 
-> When I run 'halt' or 'poweroff' (sysvinit-2.86) the kernel prints:
+
+On Wed, 24 Oct 2007, James Bottomley wrote:
 > 
-> Halting.
-> Shutdown: hdc
-> ACPI: PCI interrupt for device 0000:01:05.0 disabled
-> ACPI: PCI interrupt for device 0000:01:04.0 disabled
-> ACPI: PCI interrupt for device 0000:01:03.0 disabled
-> ACPI: PCI interrupt for device 0000:01:02.0 disabled
-> Power down.
-> acpi_power_off called
-> 
-> But the system does not shut down. (The fans keep spinning, the LEDs
-> keep shining, the integrated LCD keeps displaying.) Basically, the
-> motherboard is still providing power to every component, as if the
-> power supply had refused to stop.
+> OK, so it's no secret that I'm the last of the subsystem maintainers
+> whose day job isn't working on the linux kernel.  If you want a full
+> time person, who did you have in mind?
 
-I noticed the following message at boot:
+Quite frankly, at least for me personally, what I would rather have (in 
+general: this is really not at all SCSI-specific in any way, shape, or 
+form, and not directed at James!) is a less rigid maintainership 
+structure.
 
-* The chipset may have PM-Timer Bug. Due to workarounds for a bug,
-* this clock source is slow. If you are sure your timer does not have
-* this bug, please use "acpi_pm_good" to disable the workaround
+Let's face it, we are *all* likely to be overworked at different times, 
+and even when not overworked, it's just the fact that people need to take 
+a breather etc. And there is seldom - if ever - a very strong argument for 
+having one person per subsystem.
 
-Is there any chance that the two issues are connected?
-(It seems very unlikely.)
+I think git is excellent for trying to spreading the "joy" of 
+maintainership, but even without something like that, I think it's much 
+better to try to find people you can trust, rather than strict 
+maintainership boundaries. For example, Andrew certainly seems to be very 
+productive as a kernel maintainer, and it has nothing to do with git, and 
+everything to do with trust.
 
-How can I tell whether the bug is fixed in my south bridge or not?
-http://linux.kernel.free.fr/halt/lspci.txt
+So I'd rather have less recriminations about "xyz is holding up abc", and 
+have people more open to just trying to help out even across strict 
+borders. And I don't mean that in a "two fighting people" kind of way 
+where there are two or more people who maintain things _despite_ each 
+other, but more in a 
 
-Regards.
+  "Hey we know each other, and we trust each other, and no, we won't 
+   guarantee that we always agree, but we can work on things, and if it 
+   turns out that one person merged somethign that the other person 
+   _really_ doesn't like, we'll revert it and/or work it out some other 
+   way".
+
+I've personally always been against _strict_ maintainer lines, so I've 
+always taken stuff "past" the maintainer anyway (and sometimes maintainers 
+have complained, because they feel like they "own" their subsystem, and I 
+either tell them to stuff it, or say "my bad", depending on whether they 
+had a valid _technical_ complaint or not).
+
+So rather than getting into a pissing match of "ok, who would be the best 
+maintainer", I'd much *much* prefer to take this as another "we really 
+don't need or even _want_ to have strict maintainer rules" opportunity.
+
+Now, the most important part here is the trust part. I need to be able to 
+trust maintainers, but when you have multiple people in the same "box", 
+those people need to trust each other even more than usual, because you 
+*are* going to get disagreements. And the only way it can work is if you 
+acknowledge that disagreements will happen, and that any situation is  not 
+a "my way or the highway" kind of thing - the trust also implies a certain 
+give and take.
+
+And this really *is* an issue that cuts across subsystem boundaries. 
+Anybody who thinks that SCSI is "unique" in this kind of issues is sadly 
+mistaken. We've had the exact same thing come up in every single subsystem 
+over time, and at every single level of maintainership (from individual 
+drivers all the way right up to me) over time.
+
+So I *really* don't want to throw any stones in a glass house here. Quite 
+the reverse. I'd like to get rid of some of the glass, and replace it with 
+padding. Because you all know we'd all fit better in a padded room than a 
+glass house..
+
+Are there any such people that think there s a sufficient mutual trust 
+with James that you think a blurring of maintainership lines could work 
+out? Or in any other subsystem, for that matter? Hmm?
+
+			Linus
