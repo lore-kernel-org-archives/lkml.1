@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbXJXVev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbXJXVgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbXJXVev (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXJXVem
+	id S1759658AbXJXVgk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXJXVgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:34:42 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36255 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbXJXVem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:34:42 -0400
-Date: Wed, 24 Oct 2007 15:34:41 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Stringbuf, v2
-Message-ID: <20071024213440.GH27248@parisc-linux.org>
-References: <20071024195847.GE27248@parisc-linux.org> <1193259097.19617.18.camel@localhost> <20071024205701.GF27248@parisc-linux.org> <1193259993.19617.23.camel@localhost>
-MIME-Version: 1.0
+	Wed, 24 Oct 2007 17:36:33 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:65454 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753994AbXJXVgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:36:32 -0400
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc1]EXPORT_SYMBOL(__set_page_dirty_no_writeback);
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200710250015.FFG17175.LSHOMOFVJFOFtQ@I-love.SAKURA.ne.jp>
+	<20071024091027.541d2e98@laptopd505.fenrus.org>
+In-Reply-To: <20071024091027.541d2e98@laptopd505.fenrus.org>
+Message-Id: <200710250636.JHG87098.VtOSQMFJOHLOFF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 25 Oct 2007 06:36:27 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193259993.19617.23.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 02:06:33PM -0700, Joe Perches wrote:
-> On Wed, 2007-10-24 at 14:57 -0600, Matthew Wilcox wrote:
-> > If you look at the patches, you'll see that they basically all have a
-> > wrapper around sb_printf that I was able to insert the GFP argument
-> > into, so I don't see this as a win.
-> 
-> I was hoping that each module/subsystem would not need a
-> separate wrapper and could use the plain sb_printf function.
+Hello.
 
-Then they should carefully think about whether they need GFP_ATOMIC or
-GFP_KERNEL.  Just like we don't have a kalloc() that uses GFP_ATOMIC
-to spare people from having to think about it.
+Arjan van de Ven wrote:
+> > I think __set_page_dirty_no_writeback should be exported so that
+> > tmpfs-like filesystems can use it.
+> which filesystem is ACTUALLY using it?
+> Please submit the export together with the actual user; we have too
+> many unused exports already; the only way to remotely deal with that
+> problem is to merge the exports together with the actual code...
+tmpfs is using it, but tmpfs is always built-in.
+I'm using a filesystem that is alike tmpfs.
 
-ISDN and sound had done that thinking for me -- one knew they needed
-GFP_ATOMIC, the other needed GFP_KERNEL.  I was able to work out that
-GFP_KERNEL made sense for the partition code.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
