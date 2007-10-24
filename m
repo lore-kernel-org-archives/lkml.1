@@ -1,55 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbXJXNl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXJXNoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759475AbXJXNl5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758675AbXJXNlj
+	id S1758894AbXJXNoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbXJXNoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:41:39 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:53679 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758567AbXJXNli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:41:38 -0400
-Date: Wed, 24 Oct 2007 22:41:12 +0900
-To: jeff@garzik.org
-Cc: tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, greg@kroah.com,
-       James.Bottomley@SteelEye.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm 02/11] PCI: add device_dma_parameters support
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <471F2DAF.7030800@garzik.org>
-References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
-	<20071024165323F.tomof@acm.org>
-	<471F2DAF.7030800@garzik.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071024224217K.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+	Wed, 24 Oct 2007 09:44:06 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:48807 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753003AbXJXNoF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:44:05 -0400
+To: staubach@redhat.com
+CC: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <471F4254.9040206@redhat.com> (message from Peter Staubach on
+	Wed, 24 Oct 2007 09:02:12 -0400)
+Subject: Re: [PATCH] VFS: new fgetattr() file operation
+References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com>
+Message-Id: <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 24 Oct 2007 15:43:21 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 07:34:07 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> FUJITA Tomonori wrote:
-> > index 463a5a9..54edea2 100644
-> > --- a/drivers/pci/probe.c
-> > +++ b/drivers/pci/probe.c
-> > @@ -985,8 +985,11 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-> >  
-> >  	set_dev_node(&dev->dev, pcibus_to_node(bus));
-> >  	dev->dev.dma_mask = &dev->dma_mask;
-> > +	dev->dev.dma_parms = &dev->dma_parms;
-> >  	dev->dev.coherent_dma_mask = 0xffffffffull;
-> >  
-> > +	pci_set_dma_max_seg_size(dev, 65536);
+> Miklos Szeredi wrote:
+> > I don't think Christoph will like the patch better, regardless of how
+> > I change the description.
+> >
+> > Of course, I'm open to suggestion on how to improve the interface, but
+> > I think fundamentally this is the only way to correctly deal with the
+> > below problem.
+> >
+> > Anyway, here's the patch another time, please consider adding it to
+> > -mm.  For 2.6.25 obviously.
+> >
+> > Thanks,
+> > Miklos
+> > ----
+> >
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> >
+> > Add a new file operation: f_op->fgetattr(), that is invoked by
+> > fstat().  Fall back to i_op->getattr() if it is not defined.
+> >
+> > We need this because fstat() semantics can in some cases be better
+> > implemented if the filesystem has the open file available.
+> >
+> > Let's take the following example: we have a network filesystem, with
+> > the server implemented as an unprivileged userspace process running on
+> > a UNIX system (this is basically what sshfs does).
+> >
+> > We want the filesystem to follow the familiar UNIX file semantics as
+> > closely as possible.  If for example we have this sequence of events,
+> > we still would like fstat to work correctly:
+> >
+> >  1) file X is opened on client
+> >  2) file X is renamed to Y on server
+> >  3) fstat() is performed on open file descriptor on client
+> >
+> > This is only possible if the filesystem server acutally uses fstat()
+> > on a file descriptor obtained when the file was opened.  Which means,
+> > the filesystem client needs a way to get this information from the
+> > VFS.
+> >
+> >   
 > 
-> this should check the return value of pci_set_dma_max_seg_size(), and do 
-> something useful.
-> 
-> ACK everything else
+> This true iff the protocol that this mythical
 
-Thanks.
+Not mythical at all.  As noted in the description, there's sshfs, a
+live and quite popular example of this sort of filesystem.
 
-I wasn't sure about what to do. Should pci_device_add fail in case of
-pci_set_dma_max_seg_size failure or just should we print warning?
+> network file system uses the name of the file on the server to
+> actually identify the file on the server.
+
+The constraint is that the server has to be an ordinary unprivileged
+process.  How should it identify the file, other than by name, or by
+an open file descriptor?
+
+> Clearly, this is broken on many levels.  It can't handle
+> situations as described nor can it handle different instances
+> of the same filename being used.
+
+Can you please give concrete examples what it can't handle, and how
+should the implementation be improved to be able to handle it, given
+the above constraints?
+
+> This is why NFS, a network file system, does not use the filename
+> as part of the file handle.
+
+And the nfs server isn't a userspace process, or if it is, it must use
+horrible hacks to convert the file handle to a name, that don't work
+half the time.
+
+> Wouldn't you be better off by attempting to implement an "open
+> by ino" operation and an operation to get the generation count
+> for the file and then modifying the network protocol of interest
+> to use these as identifiers for the file to be manipulated?
+
+You mean an "open by inode" on the userspace API?  My guess, it
+wouldn't get very far.
+
+Anyway, that would still not work on old servers, and servers running
+other OS's.
+
+Note, the point is _not_ to make a brand new NFS replacement
+filesystem, that can use names instead of file handles.  The point is
+to use existing infrastructure, to make the setup as easy as ssh'ing
+to a different machine.  And sshfs does just that.
+
+Miklos
