@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbXJXCsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbXJXCuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbXJXCsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXJXCse
+	id S1756264AbXJXCuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXJXCum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:48:34 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:36375 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754192AbXJXCsd (ORCPT
+	Tue, 23 Oct 2007 22:50:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43202
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752645AbXJXCul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:48:33 -0400
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-In-Reply-To: <20071024023512.GW27248@parisc-linux.org>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx>
-	 <1193192346.8691.36.camel@perkele>
-	 <20071024023512.GW27248@parisc-linux.org>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 22:48:32 -0400
-Message-Id: <1193194112.8866.7.camel@perkele>
+	Tue, 23 Oct 2007 22:50:41 -0400
+Date: Tue, 23 Oct 2007 19:51:08 -0700 (PDT)
+Message-Id: <20071023.195108.69018458.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+Cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
+       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2007-10-23 at 20:35 -0600, Matthew Wilcox wrote:
+The forthcoming patches are also available from:
 
-[...]
+	kernel.org:/pub/scm/linux/kernel/git/davem/msiquirk-2.6.git
 
-> > Multiple string objects can share the same data, by increasing the nrefs
-> > count, a new data is allocated if the string is modified and nrefs > 1.
-> 
-> If we were trying to get rid of char * throughout the kernel, that might
-> make some sense; stringbufs have a more limited target though.
-> 
+and clean up the handling of the common quirk wherein setting
+INTX_DISABLE will mistakedly disable MSI generation for some
+devices.
 
-[...]
+For devices without that problem, we want to keep the pci_intx() calls
+in drivers/pci/msi.c because those help protect against devices
+with the opposite problem.  Such devices always generate INTX
+interrupts even when MSI is enabled, unless INTX_DISABLE is set.
 
-No contest, my suggestions only make sense for a general uses string
-library.
+Michael, please pay special attention to patch #3.  I think I
+picked the correct PCI device IDs to match for the quirk
+(5714* and 5780*) but it's possible we might need more elaborate
+checks here.  It at least worked properly for the chips in my
+Niagara system.
 
-I suspect most in-kernel string manipulations are limited to prepare
-buffers to be copied to (and read from) user-space.
+In addition to the Tigon3 cases, I added quirk entries for the
+SB700/800 SATA chips and the IXP SB400 USB controllers.
 
-
-- Eric
-
-
+Signed-off-by: David S. Miller <davem@davemloft.net>
