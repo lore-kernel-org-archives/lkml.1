@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbXJXPQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbXJXPQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbXJXPQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXJXPQD
+	id S1755673AbXJXPQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXJXPQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:16:03 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:62696 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbXJXPQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:16:01 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.24-rc1] EXPORT_SYMBOL(__set_page_dirty_no_writeback);
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Message-Id: <200710250015.FFG17175.LSHOMOFVJFOFtQ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 25 Oct 2007 00:15:55 +0900
+	Wed, 24 Oct 2007 11:16:29 -0400
+Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:7661 "EHLO
+	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753247AbXJXPQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 11:16:29 -0400
+X-Belgacom-Dynamic: yes
+Date: Wed, 24 Oct 2007 17:22:40 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gilles Gigan <gilles.gigan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] watchdog: add Nano 7240 driver
+Message-ID: <20071024152240.GB6015@infomag.infomag.iguana.be>
+References: <20071024121159.03d209ec.gilles.gigan@gmail.com> <20071023192948.1fe5dd8d.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023192948.1fe5dd8d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think __set_page_dirty_no_writeback should be exported so that
-tmpfs-like filesystems can use it.
+Hi Andrew,
 
-Signed-off-by: Tetsuo Handa  <penguin-kernel@I-love.SAKURA.ne.jp>
+> > +	case WDIOC_SETOPTIONS:{
+> > +			int retval = -EINVAL;
+> > +
+> > +			if (arg & WDIOS_DISABLECARD) {
+> > +				wdt_disable();
+> > +				retval = 0;
+> > +			}
+> > +
+> > +			if (arg & WDIOS_ENABLECARD) {
+> > +				wdt_enable();
+> > +				retval = 0;
+> > +			}
+> > +
+> > +			return retval;
+> 
+> hrm.  So if userspace does ioctl(..., WDIOS_DISABLECARD|WDIOS_ENABLECARD,
+> that happens to be equivalent to WDIOS_ENABLECARD?
+> 
+> Do all watchdog drivers do it exactly the same way, or are we offering
+> inconsistent interfaces between different drivers?
 
----
- mm/page-writeback.c |    1 +
- 1 file changed, 1 insertion(+)
+I fear that all watchdog drivers do it more or less like this.
 
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c	2007-10-25 00:04:46.000000000 +0900
-+++ linux-2.6/mm/page-writeback.c	2007-10-25 00:05:45.000000000 +0900
-@@ -975,6 +975,7 @@
- 		SetPageDirty(page);
- 	return 0;
- }
-+EXPORT_SYMBOL(__set_page_dirty_no_writeback);
- 
- /*
-  * For address_spaces which do not use buffers.  Just tag the page as dirty in
+I'll have a look at it later on.
+
+Greetings,
+Wim.
 
