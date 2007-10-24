@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXJXQmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763982AbXJXQnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763923AbXJXQmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759890AbXJXQZw
+	id S1763982AbXJXQnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbXJXQZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:25:52 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60965 "EHLO
+	Wed, 24 Oct 2007 12:25:54 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60969 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760015AbXJXQZb (ORCPT
+	with ESMTP id S1760018AbXJXQZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:25:31 -0400
-Date: Wed, 24 Oct 2007 18:26:00 +0200
+	Wed, 24 Oct 2007 12:25:39 -0400
+Date: Wed, 24 Oct 2007 18:26:07 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] acpi/ec.c: fix use-after-free
-Message-ID: <20071024162600.GD30533@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] mm/: remove unused exports
+Message-ID: <20071024162607.GF30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,28 +22,52 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a use-after-free introduced by
-commit 30c08574da0ead1a47797ce028218ce5b2de61c7.
-
-Spotted by the Coverity checker.
+This patch removes the following unused EXPORT_SYMBOL's:
+- migrate.c: migrate_page
+- mmap.c: get_unmapped_area
+- nommu.c: get_unmapped_area
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6/drivers/acpi/ec.c.old	2007-10-23 19:39:47.000000000 +0200
-+++ linux-2.6/drivers/acpi/ec.c	2007-10-23 19:34:55.000000000 +0200
-@@ -434,11 +442,11 @@
- EXPORT_SYMBOL_GPL(acpi_ec_add_query_handler);
+
+This patch has been sent on:
+- 27 Aug 2007
+- 14 Aug 2007
+- 29 Jul 2007
+- 13 Jul 2007
+
+ mm/migrate.c |    1 -
+ mm/mmap.c    |    2 --
+ mm/nommu.c   |    2 --
+ 3 files changed, 5 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/mm/migrate.c.old	2007-07-12 03:15:05.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/migrate.c	2007-07-12 03:15:15.000000000 +0200
+@@ -426,7 +426,6 @@
+ 	migrate_page_copy(newpage, page);
+ 	return 0;
+ }
+-EXPORT_SYMBOL(migrate_page);
  
- void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
+ #ifdef CONFIG_BLOCK
+ /*
+--- linux-2.6.22-rc6-mm1/mm/mmap.c.old	2007-07-12 03:20:19.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/mmap.c	2007-07-12 03:20:33.000000000 +0200
+@@ -1408,8 +1408,6 @@
+ 	return addr;
+ }
+ 
+-EXPORT_SYMBOL(get_unmapped_area);
+-
+ /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
+ struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
  {
--	struct acpi_ec_query_handler *handler;
-+	struct acpi_ec_query_handler *handler, *tmp;
- 	mutex_lock(&ec->lock);
--	list_for_each_entry(handler, &ec->list, node) {
-+	list_for_each_entry_safe(handler, tmp, &ec->list, node) {
- 		if (query_bit == handler->query_bit) {
- 			list_del(&handler->node);
- 			kfree(handler);
- 		}
+--- linux-2.6.22-rc6-mm1/mm/nommu.c.old	2007-07-12 03:20:41.000000000 +0200
++++ linux-2.6.22-rc6-mm1/mm/nommu.c	2007-07-12 03:20:57.000000000 +0200
+@@ -1232,3 +1232,2 @@
+ }
+-EXPORT_SYMBOL(get_unmapped_area);
+
+
 
