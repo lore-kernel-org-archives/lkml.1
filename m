@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXJXFcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbXJXFbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbXJXFcr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbXJXFck
+	id S1756934AbXJXFbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXJXFbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:32:40 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36006 "EHLO e3.ny.us.ibm.com"
+	Wed, 24 Oct 2007 01:31:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:39654 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753725AbXJXFci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:32:38 -0400
-Date: Wed, 24 Oct 2007 11:02:19 +0530
+	id S1750747AbXJXFbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:31:04 -0400
+Date: Wed, 24 Oct 2007 11:00:57 +0530
 From: Gautham R Shenoy <ego@in.ibm.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -22,9 +22,12 @@ Cc: linux-kernel@vger.kernel.org, Rusty Russel <rusty@rustcorp.com.au>,
        Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
        Heiko Carstens <heiko.carstens@de.ibm.com>,
        Nathan Lynch <ntl@pobox.com>, David Miller <davem@davemloft.net>,
-       Paul Jackson <pj@sgi.com>, Josh Triplett <josh@freedesktop.org>
-Subject: [RFC PATCH 2/5] Replace lock_cpu_hotplug() with get_online_cpus()
-Message-ID: <20071024053219.GB27074@in.ibm.com>
+       Paul Jackson <pj@sgi.com>, Josh Triplett <josh@freedesktop.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [RFC PATCH 1/5] Refcount Based Cpu Hotplug implementation
+Message-ID: <20071024053057.GA27074@in.ibm.com>
 Reply-To: ego@in.ibm.com
 References: <20071024052931.GA22722@in.ibm.com>
 MIME-Version: 1.0
@@ -35,495 +38,345 @@ User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace all lock_cpu_hotplug/unlock_cpu_hotplug from the kernel and use 
-get_online_cpus and put_online_cpus instead as it highlights
-the refcount semantics in these operations.
+This patch implements a Refcount + Waitqueue based model for
+cpu-hotplug. 
 
-The new API guarantees protection against the cpu-hotplug operation,
-but it doesn't guarantee serialized access to any of the local data
-structures. Hence the changes needs to be reviewed.
+Now, a thread which wants to prevent cpu-hotplug, will bump up a 
+global refcount and the thread which wants to perform a cpu-hotplug
+operation will block till the global refcount goes to zero.
 
-In case of pseries_add_processor/pseries_remove_processor, use
-cpu_maps_update_begin()/cpu_maps_update_done() as we're modifying the
-cpu_present_map there.
+The readers, if any, during an ongoing cpu-hotplug operation are blocked
+until the cpu-hotplug operation is over.
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Paul Jackson <pj@sgi.com> [For !CONFIG_HOTPLUG_CPU ]
 ---
- arch/i386/kernel/cpu/mtrr/main.c             |    8 ++++----
- arch/i386/kernel/microcode.c                 |   16 ++++++++--------
- arch/mips/kernel/mips-mt-fpaff.c             |   10 +++++-----
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    8 ++++----
- arch/powerpc/platforms/pseries/rtasd.c       |    8 ++++----
- drivers/lguest/core.c                        |    8 ++++----
- drivers/s390/char/sclp_config.c              |    4 ++--
- include/linux/cpu.h                          |    8 ++++----
- kernel/cpu.c                                 |   10 +++++-----
- kernel/cpuset.c                              |   14 +++++++-------
- kernel/rcutorture.c                          |    6 +++---
- kernel/stop_machine.c                        |    4 ++--
- net/core/flow.c                              |    4 ++--
- 13 files changed, 54 insertions(+), 54 deletions(-)
+ include/linux/cpu.h |    3 +
+ init/main.c         |    1 
+ kernel/cpu.c        |  152 +++++++++++++++++++++++++++++++++++++---------------
+ 3 files changed, 115 insertions(+), 41 deletions(-)
 
+Index: linux-2.6.23/init/main.c
+===================================================================
+--- linux-2.6.23.orig/init/main.c
++++ linux-2.6.23/init/main.c
+@@ -614,6 +614,7 @@ asmlinkage void __init start_kernel(void
+ 	vfs_caches_init_early();
+ 	cpuset_init_early();
+ 	mem_init();
++	cpu_hotplug_init();
+ 	kmem_cache_init();
+ 	setup_per_cpu_pageset();
+ 	numa_policy_init();
 Index: linux-2.6.23/include/linux/cpu.h
 ===================================================================
 --- linux-2.6.23.orig/include/linux/cpu.h
 +++ linux-2.6.23/include/linux/cpu.h
-@@ -100,8 +100,8 @@ static inline void cpuhotplug_mutex_unlo
- 	mutex_unlock(cpu_hp_mutex);
- }
+@@ -83,6 +83,9 @@ static inline void unregister_cpu_notifi
  
--extern void lock_cpu_hotplug(void);
--extern void unlock_cpu_hotplug(void);
-+extern void get_online_cpus(void);
-+extern void put_online_cpus(void);
- #define hotcpu_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
- 		{ .notifier_call = fn, .priority = pri };	\
-@@ -119,8 +119,8 @@ static inline void cpuhotplug_mutex_lock
- static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
- { }
+ #endif /* CONFIG_SMP */
+ extern struct sysdev_class cpu_sysdev_class;
++extern void cpu_hotplug_init(void);
++extern void cpu_maps_update_begin(void);
++extern void cpu_maps_update_done(void);
  
--#define lock_cpu_hotplug()	do { } while (0)
--#define unlock_cpu_hotplug()	do { } while (0)
-+#define get_online_cpus()	do { } while (0)
-+#define put_online_cpus()	do { } while (0)
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
- /* These aren't inline functions due to a GCC bug. */
- #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
+ #ifdef CONFIG_HOTPLUG_CPU
+ /* Stop CPUs going up and down. */
 Index: linux-2.6.23/kernel/cpu.c
 ===================================================================
 --- linux-2.6.23.orig/kernel/cpu.c
 +++ linux-2.6.23/kernel/cpu.c
-@@ -48,7 +48,7 @@ void __init cpu_hotplug_init(void)
+@@ -15,9 +15,8 @@
+ #include <linux/stop_machine.h>
+ #include <linux/mutex.h>
  
- #ifdef CONFIG_HOTPLUG_CPU
+-/* This protects CPUs going up and down... */
++/* Serializes the updates to cpu_online_map, cpu_present_map */
+ static DEFINE_MUTEX(cpu_add_remove_lock);
+-static DEFINE_MUTEX(cpu_bitmask_lock);
  
--void lock_cpu_hotplug(void)
-+void get_online_cpus(void)
+ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
+ 
+@@ -26,52 +25,123 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(c
+  */
+ static int cpu_hotplug_disabled;
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
++static struct {
++	struct task_struct *active_writer;
++	struct mutex lock; /* Synchronizes accesses to refcount, */
++	/*
++	 * Also blocks the new readers during
++	 * an ongoing cpu hotplug operation.
++	 */
++	int refcount;
++	wait_queue_head_t writer_queue;
++} cpu_hotplug;
++
++#define writer_exists() (cpu_hotplug.active_writer != NULL)
++
++void __init cpu_hotplug_init(void)
++{
++	cpu_hotplug.active_writer = NULL;
++	mutex_init(&cpu_hotplug.lock);
++	cpu_hotplug.refcount = 0;
++	init_waitqueue_head(&cpu_hotplug.writer_queue);
++}
+ 
+-/* Crappy recursive lock-takers in cpufreq! Complain loudly about idiots */
+-static struct task_struct *recursive;
+-static int recursive_depth;
++#ifdef CONFIG_HOTPLUG_CPU
+ 
+ void lock_cpu_hotplug(void)
  {
- 	might_sleep();
- 	if (cpu_hotplug.active_writer == current)
-@@ -58,9 +58,9 @@ void lock_cpu_hotplug(void)
- 	mutex_unlock(&cpu_hotplug.lock);
- 
- }
--EXPORT_SYMBOL_GPL(lock_cpu_hotplug);
-+EXPORT_SYMBOL_GPL(get_online_cpus);
- 
--void unlock_cpu_hotplug(void)
-+void put_online_cpus(void)
- {
- 	if (cpu_hotplug.active_writer == current)
+-	struct task_struct *tsk = current;
+-
+-	if (tsk == recursive) {
+-		static int warnings = 10;
+-		if (warnings) {
+-			printk(KERN_ERR "Lukewarm IQ detected in hotplug locking\n");
+-			WARN_ON(1);
+-			warnings--;
+-		}
+-		recursive_depth++;
++	might_sleep();
++	if (cpu_hotplug.active_writer == current)
  		return;
-@@ -73,7 +73,7 @@ void unlock_cpu_hotplug(void)
- 	mutex_unlock(&cpu_hotplug.lock);
- 
+-	}
+-	mutex_lock(&cpu_bitmask_lock);
+-	recursive = tsk;
++	mutex_lock(&cpu_hotplug.lock);
++	cpu_hotplug.refcount++;
++	mutex_unlock(&cpu_hotplug.lock);
++
  }
--EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
-+EXPORT_SYMBOL_GPL(put_online_cpus);
+ EXPORT_SYMBOL_GPL(lock_cpu_hotplug);
+ 
+ void unlock_cpu_hotplug(void)
+ {
+-	WARN_ON(recursive != current);
+-	if (recursive_depth) {
+-		recursive_depth--;
++	if (cpu_hotplug.active_writer == current)
+ 		return;
+-	}
+-	recursive = NULL;
+-	mutex_unlock(&cpu_bitmask_lock);
++	mutex_lock(&cpu_hotplug.lock);
++	cpu_hotplug.refcount--;
++
++	if (unlikely(writer_exists()) && !cpu_hotplug.refcount)
++		wake_up(&cpu_hotplug.writer_queue);
++
++	mutex_unlock(&cpu_hotplug.lock);
++
+ }
+ EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
  
  #endif	/* CONFIG_HOTPLUG_CPU */
  
-@@ -110,7 +110,7 @@ void cpu_maps_update_done(void)
-  *   non zero and goes to sleep again.
-  *
-  * However, this is very difficult to achieve in practice since
-- * lock_cpu_hotplug() not an api which is called all that often.
-+ * get_online_cpus() not an api which is called all that often.
-  *
-  */
- static void cpu_hotplug_begin(void)
-Index: linux-2.6.23/kernel/stop_machine.c
-===================================================================
---- linux-2.6.23.orig/kernel/stop_machine.c
-+++ linux-2.6.23/kernel/stop_machine.c
-@@ -203,13 +203,13 @@ int stop_machine_run(int (*fn)(void *), 
++/*
++ * The following two API's must be used when attempting
++ * to serialize the updates to cpu_online_map, cpu_present_map.
++ */
++void cpu_maps_update_begin(void)
++{
++	mutex_lock(&cpu_add_remove_lock);
++}
++
++void cpu_maps_update_done(void)
++{
++	mutex_unlock(&cpu_add_remove_lock);
++}
++
++/*
++ * This ensures that the hotplug operation can begin only when the
++ * refcount goes to zero.
++ *
++ * Note that during a cpu-hotplug operation, the new readers, if any,
++ * will be blocked by the cpu_hotplug.lock
++ *
++ * Since cpu_maps_update_begin is always called after invoking
++ * cpu_maps_update_begin, we can be sure that only one writer is active.
++ *
++ * Note that theoretically, there is a possibility of a livelock:
++ * - Refcount goes to zero, last reader wakes up the sleeping
++ *   writer.
++ * - Last reader unlocks the cpu_hotplug.lock.
++ * - A new reader arrives at this moment, bumps up the refcount.
++ * - The writer acquires the cpu_hotplug.lock finds the refcount
++ *   non zero and goes to sleep again.
++ *
++ * However, this is very difficult to achieve in practice since
++ * lock_cpu_hotplug() not an api which is called all that often.
++ *
++ */
++static void cpu_hotplug_begin(void)
++{
++	DECLARE_WAITQUEUE(wait, current);
++
++	mutex_lock(&cpu_hotplug.lock);
++
++	cpu_hotplug.active_writer = current;
++	add_wait_queue_exclusive(&cpu_hotplug.writer_queue, &wait);
++	while (cpu_hotplug.refcount) {
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		mutex_unlock(&cpu_hotplug.lock);
++		schedule();
++		mutex_lock(&cpu_hotplug.lock);
++	}
++	remove_wait_queue_locked(&cpu_hotplug.writer_queue, &wait);
++}
++
++static void cpu_hotplug_done(void)
++{
++	cpu_hotplug.active_writer = NULL;
++	mutex_unlock(&cpu_hotplug.lock);
++}
+ /* Need to know about CPUs going up/down? */
+ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
+ {
  	int ret;
+-	mutex_lock(&cpu_add_remove_lock);
++	cpu_maps_update_begin();
+ 	ret = raw_notifier_chain_register(&cpu_chain, nb);
+-	mutex_unlock(&cpu_add_remove_lock);
++	cpu_maps_update_done();
+ 	return ret;
+ }
  
- 	/* No CPUs can come up or down during this. */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	p = __stop_machine_run(fn, data, cpu);
- 	if (!IS_ERR(p))
- 		ret = kthread_stop(p);
+@@ -81,9 +151,9 @@ EXPORT_SYMBOL(register_cpu_notifier);
+ 
+ void unregister_cpu_notifier(struct notifier_block *nb)
+ {
+-	mutex_lock(&cpu_add_remove_lock);
++	cpu_maps_update_begin();
+ 	raw_notifier_chain_unregister(&cpu_chain, nb);
+-	mutex_unlock(&cpu_add_remove_lock);
++	cpu_maps_update_done();
+ }
+ EXPORT_SYMBOL(unregister_cpu_notifier);
+ 
+@@ -147,6 +217,7 @@ static int _cpu_down(unsigned int cpu, i
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
++	cpu_hotplug_begin();
+ 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_ACQUIRE, hcpu);
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+@@ -166,9 +237,7 @@ static int _cpu_down(unsigned int cpu, i
+ 	cpu_clear(cpu, tmp);
+ 	set_cpus_allowed(current, tmp);
+ 
+-	mutex_lock(&cpu_bitmask_lock);
+ 	p = __stop_machine_run(take_cpu_down, &tcd_param, cpu);
+-	mutex_unlock(&cpu_bitmask_lock);
+ 
+ 	if (IS_ERR(p) || cpu_online(cpu)) {
+ 		/* CPU didn't die: tell everyone.  Can't complain. */
+@@ -203,6 +272,7 @@ out_allowed:
+ 	set_cpus_allowed(current, old_allowed);
+ out_release:
+ 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_RELEASE, hcpu);
++	cpu_hotplug_done();
+ 	return err;
+ }
+ 
+@@ -210,13 +280,13 @@ int cpu_down(unsigned int cpu)
+ {
+ 	int err = 0;
+ 
+-	mutex_lock(&cpu_add_remove_lock);
++	cpu_maps_update_begin();
+ 	if (cpu_hotplug_disabled)
+ 		err = -EBUSY;
  	else
- 		ret = PTR_ERR(p);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
+ 		err = _cpu_down(cpu, 0);
+ 
+-	mutex_unlock(&cpu_add_remove_lock);
++	cpu_maps_update_done();
+ 	return err;
+ }
+ #endif /*CONFIG_HOTPLUG_CPU*/
+@@ -231,6 +301,7 @@ static int __cpuinit _cpu_up(unsigned in
+ 	if (cpu_online(cpu) || !cpu_present(cpu))
+ 		return -EINVAL;
+ 
++	cpu_hotplug_begin();
+ 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_ACQUIRE, hcpu);
+ 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
+ 							-1, &nr_calls);
+@@ -243,9 +314,7 @@ static int __cpuinit _cpu_up(unsigned in
+ 	}
+ 
+ 	/* Arch-specific enabling code. */
+-	mutex_lock(&cpu_bitmask_lock);
+ 	ret = __cpu_up(cpu);
+-	mutex_unlock(&cpu_bitmask_lock);
+ 	if (ret != 0)
+ 		goto out_notify;
+ 	BUG_ON(!cpu_online(cpu));
+@@ -258,6 +327,7 @@ out_notify:
+ 		__raw_notifier_call_chain(&cpu_chain,
+ 				CPU_UP_CANCELED | mod, hcpu, nr_calls, NULL);
+ 	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_RELEASE, hcpu);
++	cpu_hotplug_done();
  
  	return ret;
  }
-Index: linux-2.6.23/arch/i386/kernel/cpu/mtrr/main.c
-===================================================================
---- linux-2.6.23.orig/arch/i386/kernel/cpu/mtrr/main.c
-+++ linux-2.6.23/arch/i386/kernel/cpu/mtrr/main.c
-@@ -351,7 +351,7 @@ int mtrr_add_page(unsigned long base, un
- 	replace = -1;
- 
- 	/* No CPU hotplug when we change MTRR entries */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	/*  Search for existing MTRR  */
- 	mutex_lock(&mtrr_mutex);
- 	for (i = 0; i < num_var_ranges; ++i) {
-@@ -407,7 +407,7 @@ int mtrr_add_page(unsigned long base, un
- 	error = i;
-  out:
- 	mutex_unlock(&mtrr_mutex);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 	return error;
- }
- 
-@@ -497,7 +497,7 @@ int mtrr_del_page(int reg, unsigned long
- 
- 	max = num_var_ranges;
- 	/* No CPU hotplug when we change MTRR entries */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	mutex_lock(&mtrr_mutex);
- 	if (reg < 0) {
- 		/*  Search for existing MTRR  */
-@@ -538,7 +538,7 @@ int mtrr_del_page(int reg, unsigned long
- 	error = reg;
-  out:
- 	mutex_unlock(&mtrr_mutex);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 	return error;
- }
- /**
-Index: linux-2.6.23/arch/i386/kernel/microcode.c
-===================================================================
---- linux-2.6.23.orig/arch/i386/kernel/microcode.c
-+++ linux-2.6.23/arch/i386/kernel/microcode.c
-@@ -436,7 +436,7 @@ static ssize_t microcode_write (struct f
+@@ -275,13 +345,13 @@ int __cpuinit cpu_up(unsigned int cpu)
  		return -EINVAL;
  	}
  
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	mutex_lock(&microcode_mutex);
- 
- 	user_buffer = (void __user *) buf;
-@@ -447,7 +447,7 @@ static ssize_t microcode_write (struct f
- 		ret = (ssize_t)len;
- 
- 	mutex_unlock(&microcode_mutex);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 
- 	return ret;
- }
-@@ -658,14 +658,14 @@ static ssize_t reload_store(struct sys_d
- 
- 		old = current->cpus_allowed;
- 
--		lock_cpu_hotplug();
-+		get_online_cpus();
- 		set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 
- 		mutex_lock(&microcode_mutex);
- 		if (uci->valid)
- 			err = cpu_request_microcode(cpu);
- 		mutex_unlock(&microcode_mutex);
--		unlock_cpu_hotplug();
-+		put_online_cpus();
- 		set_cpus_allowed(current, old);
- 	}
- 	if (err)
-@@ -817,9 +817,9 @@ static int __init microcode_init (void)
- 		return PTR_ERR(microcode_pdev);
- 	}
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	error = sysdev_driver_register(&cpu_sysdev_class, &mc_sysdev_driver);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 	if (error) {
- 		microcode_dev_exit();
- 		platform_device_unregister(microcode_pdev);
-@@ -839,9 +839,9 @@ static void __exit microcode_exit (void)
- 
- 	unregister_hotcpu_notifier(&mc_cpu_notifier);
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	sysdev_driver_unregister(&cpu_sysdev_class, &mc_sysdev_driver);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 
- 	platform_device_unregister(microcode_pdev);
- }
-Index: linux-2.6.23/arch/powerpc/platforms/pseries/hotplug-cpu.c
-===================================================================
---- linux-2.6.23.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ linux-2.6.23/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -151,7 +151,7 @@ static int pseries_add_processor(struct 
- 	for (i = 0; i < nthreads; i++)
- 		cpu_set(i, tmp);
- 
--	lock_cpu_hotplug();
+-	mutex_lock(&cpu_add_remove_lock);
 +	cpu_maps_update_begin();
+ 	if (cpu_hotplug_disabled)
+ 		err = -EBUSY;
+ 	else
+ 		err = _cpu_up(cpu, 0);
  
- 	BUG_ON(!cpus_subset(cpu_present_map, cpu_possible_map));
- 
-@@ -188,7 +188,7 @@ static int pseries_add_processor(struct 
- 	}
- 	err = 0;
- out_unlock:
--	unlock_cpu_hotplug();
+-	mutex_unlock(&cpu_add_remove_lock);
 +	cpu_maps_update_done();
  	return err;
  }
  
-@@ -209,7 +209,7 @@ static void pseries_remove_processor(str
+@@ -292,7 +362,7 @@ int disable_nonboot_cpus(void)
+ {
+ 	int cpu, first_cpu, error = 0;
  
- 	nthreads = len / sizeof(u32);
- 
--	lock_cpu_hotplug();
+-	mutex_lock(&cpu_add_remove_lock);
 +	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != intserv[i])
-@@ -223,7 +223,7 @@ static void pseries_remove_processor(str
- 			printk(KERN_WARNING "Could not find cpu to remove "
- 			       "with physical id 0x%x\n", intserv[i]);
+ 	first_cpu = first_cpu(cpu_online_map);
+ 	/* We take down all of the non-boot CPUs in one shot to avoid races
+ 	 * with the userspace trying to use the CPU hotplug at the same time
+@@ -319,7 +389,7 @@ int disable_nonboot_cpus(void)
+ 	} else {
+ 		printk(KERN_ERR "Non-boot CPUs are not disabled\n");
  	}
--	unlock_cpu_hotplug();
+-	mutex_unlock(&cpu_add_remove_lock);
++	cpu_maps_update_done();
+ 	return error;
+ }
+ 
+@@ -328,7 +398,7 @@ void enable_nonboot_cpus(void)
+ 	int cpu, error;
+ 
+ 	/* Allow everyone to use the CPU hotplug again */
+-	mutex_lock(&cpu_add_remove_lock);
++	cpu_maps_update_begin();
+ 	cpu_hotplug_disabled = 0;
+ 	if (cpus_empty(frozen_cpus))
+ 		goto out;
+@@ -344,6 +414,6 @@ void enable_nonboot_cpus(void)
+ 	}
+ 	cpus_clear(frozen_cpus);
+ out:
+-	mutex_unlock(&cpu_add_remove_lock);
 +	cpu_maps_update_done();
  }
- 
- static int pseries_smp_notifier(struct notifier_block *nb,
-Index: linux-2.6.23/arch/powerpc/platforms/pseries/rtasd.c
-===================================================================
---- linux-2.6.23.orig/arch/powerpc/platforms/pseries/rtasd.c
-+++ linux-2.6.23/arch/powerpc/platforms/pseries/rtasd.c
-@@ -382,7 +382,7 @@ static void do_event_scan_all_cpus(long 
- {
- 	int cpu;
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	cpu = first_cpu(cpu_online_map);
- 	for (;;) {
- 		set_cpus_allowed(current, cpumask_of_cpu(cpu));
-@@ -390,15 +390,15 @@ static void do_event_scan_all_cpus(long 
- 		set_cpus_allowed(current, CPU_MASK_ALL);
- 
- 		/* Drop hotplug lock, and sleep for the specified delay */
--		unlock_cpu_hotplug();
-+		put_online_cpus();
- 		msleep_interruptible(delay);
--		lock_cpu_hotplug();
-+		get_online_cpus();
- 
- 		cpu = next_cpu(cpu, cpu_online_map);
- 		if (cpu == NR_CPUS)
- 			break;
- 	}
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- }
- 
- static int rtasd(void *unused)
-Index: linux-2.6.23/drivers/s390/char/sclp_config.c
-===================================================================
---- linux-2.6.23.orig/drivers/s390/char/sclp_config.c
-+++ linux-2.6.23/drivers/s390/char/sclp_config.c
-@@ -29,12 +29,12 @@ static void sclp_cpu_capability_notify(s
- 	struct sys_device *sysdev;
- 
- 	printk(KERN_WARNING TAG "cpu capability changed.\n");
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	for_each_online_cpu(cpu) {
- 		sysdev = get_cpu_sysdev(cpu);
- 		kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
- 	}
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- }
- 
- static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
-Index: linux-2.6.23/kernel/rcutorture.c
-===================================================================
---- linux-2.6.23.orig/kernel/rcutorture.c
-+++ linux-2.6.23/kernel/rcutorture.c
-@@ -726,11 +726,11 @@ static void rcu_torture_shuffle_tasks(vo
- 	cpumask_t tmp_mask = CPU_MASK_ALL;
- 	int i;
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 
- 	/* No point in shuffling if there is only one online CPU (ex: UP) */
- 	if (num_online_cpus() == 1) {
--		unlock_cpu_hotplug();
-+		put_online_cpus();
- 		return;
- 	}
- 
-@@ -762,7 +762,7 @@ static void rcu_torture_shuffle_tasks(vo
- 	else
- 		rcu_idle_cpu--;
- 
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- }
- 
- /* Shuffle tasks across CPUs, with the intent of allowing each CPU in the
-Index: linux-2.6.23/net/core/flow.c
-===================================================================
---- linux-2.6.23.orig/net/core/flow.c
-+++ linux-2.6.23/net/core/flow.c
-@@ -296,7 +296,7 @@ void flow_cache_flush(void)
- 	static DEFINE_MUTEX(flow_flush_sem);
- 
- 	/* Don't want cpus going down or up during this. */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	mutex_lock(&flow_flush_sem);
- 	atomic_set(&info.cpuleft, num_online_cpus());
- 	init_completion(&info.completion);
-@@ -308,7 +308,7 @@ void flow_cache_flush(void)
- 
- 	wait_for_completion(&info.completion);
- 	mutex_unlock(&flow_flush_sem);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- }
- 
- static void __devinit flow_cache_cpu_prepare(int cpu)
-Index: linux-2.6.23/arch/mips/kernel/mips-mt-fpaff.c
-===================================================================
---- linux-2.6.23.orig/arch/mips/kernel/mips-mt-fpaff.c
-+++ linux-2.6.23/arch/mips/kernel/mips-mt-fpaff.c
-@@ -58,13 +58,13 @@ asmlinkage long mipsmt_sys_sched_setaffi
- 	if (copy_from_user(&new_mask, user_mask_ptr, sizeof(new_mask)))
- 		return -EFAULT;
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	read_lock(&tasklist_lock);
- 
- 	p = find_process_by_pid(pid);
- 	if (!p) {
- 		read_unlock(&tasklist_lock);
--		unlock_cpu_hotplug();
-+		put_online_cpus();
- 		return -ESRCH;
- 	}
- 
-@@ -106,7 +106,7 @@ asmlinkage long mipsmt_sys_sched_setaffi
- 
- out_unlock:
- 	put_task_struct(p);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 	return retval;
- }
- 
-@@ -125,7 +125,7 @@ asmlinkage long mipsmt_sys_sched_getaffi
- 	if (len < real_len)
- 		return -EINVAL;
- 
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	read_lock(&tasklist_lock);
- 
- 	retval = -ESRCH;
-@@ -140,7 +140,7 @@ asmlinkage long mipsmt_sys_sched_getaffi
- 
- out_unlock:
- 	read_unlock(&tasklist_lock);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 	if (retval)
- 		return retval;
- 	if (copy_to_user(user_mask_ptr, &mask, real_len))
-Index: linux-2.6.23/drivers/lguest/core.c
-===================================================================
---- linux-2.6.23.orig/drivers/lguest/core.c
-+++ linux-2.6.23/drivers/lguest/core.c
-@@ -735,7 +735,7 @@ static int __init init(void)
- 
- 	/* We don't need the complexity of CPUs coming and going while we're
- 	 * doing this. */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	if (cpu_has_pge) { /* We have a broader idea of "global". */
- 		/* Remember that this was originally set (for cleanup). */
- 		cpu_had_pge = 1;
-@@ -745,7 +745,7 @@ static int __init init(void)
- 		/* Turn off the feature in the global feature set. */
- 		clear_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability);
- 	}
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 
- 	/* All good! */
- 	return 0;
-@@ -759,13 +759,13 @@ static void __exit fini(void)
- 	unmap_switcher();
- 
- 	/* If we had PGE before we started, turn it back on now. */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	if (cpu_had_pge) {
- 		set_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability);
- 		/* adjust_pge's argument "1" means set PGE. */
- 		on_each_cpu(adjust_pge, (void *)1, 0, 1);
- 	}
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- }
- 
- /* The Host side of lguest can be a module.  This is a nice way for people to
-Index: linux-2.6.23/kernel/cpuset.c
-===================================================================
---- linux-2.6.23.orig/kernel/cpuset.c
-+++ linux-2.6.23/kernel/cpuset.c
-@@ -536,10 +536,10 @@ static int cpusets_overlap(struct cpuset
-  *
-  * Call with cgroup_mutex held.  May take callback_mutex during
-  * call due to the kfifo_alloc() and kmalloc() calls.  May nest
-- * a call to the lock_cpu_hotplug()/unlock_cpu_hotplug() pair.
-+ * a call to the get_online_cpus()/put_online_cpus() pair.
-  * Must not be called holding callback_mutex, because we must not
-- * call lock_cpu_hotplug() while holding callback_mutex.  Elsewhere
-- * the kernel nests callback_mutex inside lock_cpu_hotplug() calls.
-+ * call get_online_cpus() while holding callback_mutex.  Elsewhere
-+ * the kernel nests callback_mutex inside get_online_cpus() calls.
-  * So the reverse nesting would risk an ABBA deadlock.
-  *
-  * The three key local variables below are:
-@@ -673,9 +673,9 @@ restart:
- 
- rebuild:
- 	/* Have scheduler rebuild sched domains */
--	lock_cpu_hotplug();
-+	get_online_cpus();
- 	partition_sched_domains(ndoms, doms);
--	unlock_cpu_hotplug();
-+	put_online_cpus();
- 
- done:
- 	if (q && !IS_ERR(q))
-@@ -1503,10 +1503,10 @@ static struct cgroup_subsys_state *cpuse
-  *
-  * If the cpuset being removed has its flag 'sched_load_balance'
-  * enabled, then simulate turning sched_load_balance off, which
-- * will call rebuild_sched_domains().  The lock_cpu_hotplug()
-+ * will call rebuild_sched_domains().  The get_online_cpus()
-  * call in rebuild_sched_domains() must not be made while holding
-  * callback_mutex.  Elsewhere the kernel nests callback_mutex inside
-- * lock_cpu_hotplug() calls.  So the reverse nesting would risk an
-+ * get_online_cpus() calls.  So the reverse nesting would risk an
-  * ABBA deadlock.
-  */
- 
+ #endif /* CONFIG_PM_SLEEP_SMP */
 -- 
 Gautham R Shenoy
 Linux Technology Center
