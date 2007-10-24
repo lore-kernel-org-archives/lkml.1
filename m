@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXJXRZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbXJXRZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbXJXRZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbXJXRZI
+	id S1760122AbXJXRZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXJXRZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:25:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51117 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbXJXRZG (ORCPT
+	Wed, 24 Oct 2007 13:25:37 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60875 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755253AbXJXRZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:25:06 -0400
-Date: Wed, 24 Oct 2007 10:21:51 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, alan@redhat.com,
-       torvalds@linux-foundation.org, viro@ftp.linux.org.uk
-Subject: Re: [2.6 patch] unexport sys_{open,read}
-Message-ID: <20071024102151.54bb1749@laptopd505.fenrus.org>
-In-Reply-To: <20071024162434.GL30533@stusta.de>
-References: <20071024162434.GL30533@stusta.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 24 Oct 2007 13:25:36 -0400
+Date: Wed, 24 Oct 2007 19:26:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] acpi/ec.c: fix use-after-free
+Message-ID: <20071024172604.GD30533@stusta.de>
+References: <20071024162600.GD30533@stusta.de> <471F7DA6.2060907@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <471F7DA6.2060907@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 18:24:34 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+On Wed, Oct 24, 2007 at 09:15:18PM +0400, Alexey Starikovskiy wrote:
+> Adrian,
+> 
+> commit 30c08574da0ead1a47797ce028218ce5b2de61c7 can not introduce use-after-free.
+> 
+> Please check...
 
-> sys_{open,read} can finally be unexported.
 
-how about giving it a proper changelog like this:
+Commit 30c08574da0ead1a47797ce028218ce5b2de61c7 did:
+
+<--  snip  -->
+
+ 	list_for_each_entry(handler, &ec->list, node) {
+                if (query_bit == handler->query_bit) {
+                        list_del(&handler->node);
+                        kfree(handler);
+-                       break;
+                }
+	}
+
+<--  snip  -->
 
 
-From: Adrian Bunk <bunk@kernel.org>
-Subject: unexport sys_open and sys_read
+If you look at the definition of list_for_each_entry() in 
+include/linux/list.h:
 
-sys_open / sys_read were used in the early 1.2 days to load firmware from
-disk inside drivers. Since 2.0 or so this was deprecated behavior, but
-several drivers still were using this. Since a few years we have a
-request_firmware() API that implements this in a nice, consistent way. Only
-some old ISA sound drivers (pre-ALSA) still straggled along for some
-time.... however with commit c2b1239a9f22f19c53543b460b24507d0e21ea0c the
-last user is now gone.
+<--  snip  -->
 
-This is a good thing, since using sys_open / sys_read etc for firmware is a
-very buggy to dangerous thing to do; these operations put an fd in the
-process file descriptor table.... which then can be tampered with from other
-threads for example. For those who don't want the firmware loader,
-open_filp()/vfs_read are the better APIs to use, without this security
-issue.
+#define list_for_each_entry(pos, head, member)                          \
+        for (pos = list_entry((head)->next, typeof(*pos), member);      \
+             prefetch(pos->member.next), &pos->member != (head);        \
+             pos = list_entry(pos->member.next, typeof(*pos), member))
+                              ^^^^^^^^^^^^^^^^
 
-The patch below finally exports sys_open and sys_read now that they're
-really not used anymore.
+<--  snip  -->
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Alan Cox <alan@redhat.com>
 
----
+Without the "break", "handler" is being dereferenced after it was freed.
 
- fs/open.c       |    1 -
- fs/read_write.c |    1 -
- 2 files changed, 2 deletions(-)
 
-Index: linux-2.6.23-git8/fs/open.c
-===================================================================
---- linux-2.6.23-git8.orig/fs/open.c
-+++ linux-2.6.23-git8/fs/open.c
-@@ -1056,7 +1056,6 @@ asmlinkage long sys_open(const char __us
- 	prevent_tail_call(ret);
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(sys_open);
- 
- asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
- 			   int mode)
-Index: linux-2.6.23-git8/fs/read_write.c
-===================================================================
---- linux-2.6.23-git8.orig/fs/read_write.c
-+++ linux-2.6.23-git8/fs/read_write.c
-@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(sys_read);
- 
- asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
- {
+> Regards,
+> Alex.
+> Adrian Bunk wrote:
+> > This patch fixes a use-after-free introduced by
+> > commit 30c08574da0ead1a47797ce028218ce5b2de61c7.
+> > 
+> > Spotted by the Coverity checker.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > ---
+> > --- linux-2.6/drivers/acpi/ec.c.old	2007-10-23 19:39:47.000000000 +0200
+> > +++ linux-2.6/drivers/acpi/ec.c	2007-10-23 19:34:55.000000000 +0200
+> > @@ -434,11 +442,11 @@
+> >  EXPORT_SYMBOL_GPL(acpi_ec_add_query_handler);
+> >  
+> >  void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
+> >  {
+> > -	struct acpi_ec_query_handler *handler;
+> > +	struct acpi_ec_query_handler *handler, *tmp;
+> >  	mutex_lock(&ec->lock);
+> > -	list_for_each_entry(handler, &ec->list, node) {
+> > +	list_for_each_entry_safe(handler, tmp, &ec->list, node) {
+> >  		if (query_bit == handler->query_bit) {
+> >  			list_del(&handler->node);
+> >  			kfree(handler);
+> >  		}
+> > 
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
