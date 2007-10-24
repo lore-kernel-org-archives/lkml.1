@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXJXVIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbXJXVI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbXJXVIj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXJXVIc
+	id S1758860AbXJXVI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbXJXVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:08:32 -0400
-Received: from outbound-mail-63.bluehost.com ([69.89.21.23]:56992 "HELO
-	outbound-mail-63.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752590AbXJXVIb (ORCPT
+	Wed, 24 Oct 2007 17:08:45 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45884 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758554AbXJXVIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:08:31 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-Date: Wed, 24 Oct 2007 14:07:08 -0700
-User-Agent: KMail/1.9.7
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200710181401.50470.jbarnes@virtuousgeek.org> <200710222115.44549.jbarnes@virtuousgeek.org> <20071024201712.GH30533@stusta.de>
-In-Reply-To: <20071024201712.GH30533@stusta.de>
+	Wed, 24 Oct 2007 17:08:44 -0400
+Date: Wed, 24 Oct 2007 22:02:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Erez Zadok <ezk@cs.sunysb.edu>,
+       Ryan Finnie <ryan@finnie.org>, Michael Halcrow <mhalcrow@us.ibm.com>,
+       cjwatson@ubuntu.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org
+Subject: [PATCH] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
+In-Reply-To: <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0710242152020.13001@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI> 
+ <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
+ <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
+ <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710241407.08792.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, October 24, 2007 1:17 pm Adrian Bunk wrote:
-> > diff --git a/linux-core/Kconfig b/linux-core/Kconfig
-> > index 2d02c76..5e73fc7 100644
-> > --- a/linux-core/Kconfig
-> > +++ b/linux-core/Kconfig
-> > @@ -50,7 +50,7 @@ config DRM_I810
-> >
-> >  choice
-> >  	prompt "Intel 830M, 845G, 852GM, 855GM, 865G"
-> > -	depends on DRM && AGP && AGP_INTEL
-> > +	depends on DRM && AGP && AGP_INTEL && !FB_INTEL
-> >  	optional
-> >...
->
-> This sounds like a bad regression.
+It's possible to provoke unionfs (not yet in mainline, though in mm
+and some distros) to hit shmem_writepage's BUG_ON(page_mapped(page)).
+I expect it's possible to provoke the 2.6.23 ecryptfs in the same way
+(but the 2.6.24 ecryptfs no longer calls lower level's ->writepage).
 
-Well it's really documenting existing behavior.  Unless you're very 
-careful, running custom applications, the Intel FB and DRM drivers will 
-conflict.  IMO this is a long overdue change, but Dave has some custom 
-stuff that requires both drivers so he'd rather not see it go in, so 
-I'm fine with dropping this part.
+This came to light with the recent find that AOP_WRITEPAGE_ACTIVATE
+could leak from tmpfs via write_cache_pages and unionfs to userspace.
+There's already a fix (e423003028183df54f039dfda8b58c49e78c89d7 -
+writeback: don't propagate AOP_WRITEPAGE_ACTIVATE) in the tree for
+that, and it's okay so far as it goes; but insufficient because it
+doesn't address the underlying issue, that shmem_writepage expects
+to be called only by vmscan (relying on backing_dev_info capabilities
+to prevent the normal writeback path from ever approaching it).
 
-Jesse
+That's an increasingly fragile expectation, and ramdisk_writepage
+(the other source of AOP_WRITEPAGE_ACTIVATEs) is already careful
+to check wbc->for_reclaim before returning it.  Make the same check
+in shmem_writepage, thereby sidestepping the page_mapped BUG also.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+Unionfs intends its own, third fix to these issues, checking
+backing_dev_info capabilities as the normal writeback path does.
+And I intend a fourth fix, getting rid of AOP_WRITEPAGE_ACTIVATE
+entirely (mainly to put a stop to everybody asking what it means
+and when it happens and how to handle it) - but that's a slightly
+bigger patch, needing a little more testing, probably for 2.6.25.
+
+I've CC'ed this to stable as you did for the write_cache_pages
+fix: it's probably required for ecryptfs (but unionfs was much
+easier to set up and test), and helpful to distros using unionfs
+and checking stable for fixes.  Does this make the write_cache_pages
+fix redundant?  Probably, but let's have both in for safety.
+
+ mm/shmem.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- 2.6.24-rc1/mm/shmem.c	2007-10-24 07:16:04.000000000 +0100
++++ linux/mm/shmem.c	2007-10-24 20:24:31.000000000 +0100
+@@ -915,6 +915,11 @@ static int shmem_writepage(struct page *
+ 	struct inode *inode;
+ 
+ 	BUG_ON(!PageLocked(page));
++	if (!wbc->for_reclaim) {
++		set_page_dirty(page);
++		unlock_page(page);
++		return 0;
++	}
+ 	BUG_ON(page_mapped(page));
+ 
+ 	mapping = page->mapping;
