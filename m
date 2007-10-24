@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbXJXEJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXJXEK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbXJXEJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 00:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXJXEJb
+	id S1755894AbXJXEK1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 00:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXJXEKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 00:09:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35607
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750733AbXJXEJb (ORCPT
+	Wed, 24 Oct 2007 00:10:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:23475 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbXJXEKP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 00:09:31 -0400
-Date: Tue, 23 Oct 2007 21:09:15 -0700 (PDT)
-Message-Id: <20071023.210915.88476472.davem@davemloft.net>
-To: chuck.lever@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] NET: Remove unneeded implicit type case when
- calling tcp_minshall_update()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071023154433.28115.72800.stgit@ingres.1015granger.net>
-References: <20071023154433.28115.72800.stgit@ingres.1015granger.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 00:10:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Vkov83ELFn5C6ZIA1i2U+1aFCWy0Wcs9qbi7XJ0ehGx35QUmzAYYhHObUrL2RuQPgKy7q/7hfAV5I36wF2q2BUbVqj5RLQnJXVtrMCcHklbvXN/ZvsKvFYda2r9Yc4Ko2Kn7Uyj8rJ/qPp0gfFiN3UoYSIeB1RQpxtg0bs02ZfY=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: New version of Elantech touchpad driver for kernel 2.6.23.1
+Date: Wed, 24 Oct 2007 00:10:07 -0400
+User-Agent: KMail/1.9.7
+Cc: Arjan Opmeer <arjan@opmeer.net>, linux-kernel@vger.kernel.org
+References: <20071024035002.GA12026@adopmeer.homeip.net>
+In-Reply-To: <20071024035002.GA12026@adopmeer.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710240010.08023.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Lever <chuck.lever@oracle.com>
-Date: Tue, 23 Oct 2007 11:44:33 -0400
+On Tuesday 23 October 2007, Arjan Opmeer wrote:
+> @@ -88,6 +88,7 @@ enum psmouse_type {
+>         PSMOUSE_LIFEBOOK,
+>         PSMOUSE_TRACKPOINT,
+>         PSMOUSE_TOUCHKIT_PS2,
+> +       PSMOUSE_ELANTECH,
+>         PSMOUSE_CORTRON,
+>         PSMOUSE_AUTO            /* This one should always be last */
+>  };
 
-> The tcp_minshall_update() function is called in exactly one place, and is
-> passed an unsigned integer for the mss_len argument.  Make the sign of the
-> argument match the sign of the passed variable in order to eliminate an
-> unneeded implicit type cast and a mixed sign comparison in
-> tcp_minshall_update().
-> 
-> Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Do not move protocol constants around as they are exported to
+userspace. New protocols should go to the end of the list
+(right in front of PSMOUSE_AUTO).
 
-Applied, thanks.
+Thanks. 
 
-> Cc: <netdev@vger.kernel.org>
-
-Actually, you only CC:'d linux-kernel on these patches.
+-- 
+Dmitry
