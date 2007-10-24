@@ -1,115 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXJXP17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbXJXPaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXJXP17 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXJXP1u
+	id S1757744AbXJXPaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXJXPaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:27:50 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51506 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbXJXP1t (ORCPT
+	Wed, 24 Oct 2007 11:30:22 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:1235 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754225AbXJXPaV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:27:49 -0400
-To: staubach@redhat.com
-CC: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <471F5EA2.8060203@redhat.com> (message from Peter Staubach on
-	Wed, 24 Oct 2007 11:02:58 -0400)
-Subject: Re: [PATCH] VFS: new fgetattr() file operation
-References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com>
-Message-Id: <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 24 Oct 2007 17:27:04 +0200
+	Wed, 24 Oct 2007 11:30:21 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 24 Oct 2007 15:30:18.0713 (UTC) FILETIME=[C881AC90:01C81652]
+Content-class: urn:content-classes:message
+Subject: Re: kernel processes - are they really needed?
+Date: Wed, 24 Oct 2007 11:30:17 -0400
+Message-ID: <Pine.LNX.4.61.0710241125490.18050@chaos.analogic.com>
+In-reply-to: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kernel processes - are they really needed?
+Thread-Index: AcgWUsinGzBPmwWLTHuycyM8cOnRYg==
+References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Ram" <vshrirama@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The constraint is that the server has to be an ordinary unprivileged
-> > process.  How should it identify the file, other than by name, or by
-> > an open file descriptor?
-> >
-> >   
-> 
-> I explained this.  The fileid and the generation count along
-> with the file system id will uniquely identify the file.
 
-Yes, those filesystems, which have a file ID that can be used to index
-the inodes.  Lot of filesystems (mostly those not originating from
-UNIX) don't have such an ID.
+On Wed, 24 Oct 2007, Ram wrote:
 
-> >> Clearly, this is broken on many levels.  It can't handle
-> >> situations as described nor can it handle different instances
-> >> of the same filename being used.
-> >>     
-> >
-> > Can you please give concrete examples what it can't handle, and how
-> > should the implementation be improved to be able to handle it, given
-> > the above constraints?
-> >
-> >   
-> >> This is why NFS, a network file system, does not use the filename
-> >> as part of the file handle.
-> >>     
-> >
-> > And the nfs server isn't a userspace process, or if it is, it must use
-> > horrible hacks to convert the file handle to a name, that don't work
-> > half the time.
-> >
-> >   
-> 
-> Nice try.  Wrong.  Try a different rationalization.
+> Hi,
+>    When i do ps -l. i see the following processes which are obviously
+> started by kernel.
+>
+>   Could any one tell me what each of these processes do and can
+> anyone of them can be removed.?
+>
+> PID  Uid     VmSize Stat Command
+>    1 root        584 S   init
+>    2 root            SWN [ksoftirqd/0]
+>    3 root            SW  [watchdog/0]
+>    4 root            SW< [events/0]
+>    5 root            SW< [khelper]
+>    6 root            SW< [kthread]
+>   23 root            SW< [kblockd/0]
+>   38 root            SW  [pdflush]
+>   39 root            SW  [pdflush]
+>   40 root            SW< [kswapd0]
+>   41 root            SW< [aio/0]
+>   85 root            SW  [mtdblockd]
+>  116 root            SWN [jffs2_gcd_mtd9]
+> Regards,
+> ram
+> -
 
-What's wrong with it?
+Init is the 'mother' of all processes. It sleeps using
+no resources until some other process terminates. At
+that time,...............learn about Unix somewhere else.
 
-> >> Wouldn't you be better off by attempting to implement an "open
-> >> by ino" operation and an operation to get the generation count
-> >> for the file and then modifying the network protocol of interest
-> >> to use these as identifiers for the file to be manipulated?
-> >>     
-> >
-> > You mean an "open by inode" on the userspace API?  My guess, it
-> > wouldn't get very far.
-> >
-> >   
-> 
-> This isn't a new idea and has been implemented on a variety of
-> different systems.
+Other tasks are essential as well.
 
-Like?
 
-> > Anyway, that would still not work on old servers, and servers running
-> > other OS's.
-> >
-> >   
-> 
-> I didn't think that we were talking about old servers and other
-> OS's.  My concern at the moment is Linux and the changes being
-> made to it.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.59 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-In what way does passing the open file to the filesystem for the
-fstat() syscall negatively impact Linux?
 
-Usually it is best to design midlayers, so that they do the minimal
-stuff, and pass the maximum of information to the low-layer, and
-providing helper functions that the low-layer doesn't want to do
-anything special.  Hiding information from the low-layer is pointless.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-> > Note, the point is _not_ to make a brand new NFS replacement
-> > filesystem, that can use names instead of file handles.  The point is
-> > to use existing infrastructure, to make the setup as easy as ssh'ing
-> > to a different machine.  And sshfs does just that.
-> 
-> And the solution is limiting.  It is not scalable nor particularly
-> interesting to anyone interested in security.  Unless there is a
-> way of limiting access to a particular set of files, then it is
-> not generally useful outside of hackers or perhaps small groups
-> of users not concerned about too many aspects of security.
-
-I'm not sure what you are talking about here.  AFAICS this change
-has absolutely nothing to do with filesystem (or any other kind of)
-security.
-
-> I am not interested in an extended discussion of this topic.
-
-No problem.  Thanks anyway for your comments.
-
-Miklos
+Thank you.
