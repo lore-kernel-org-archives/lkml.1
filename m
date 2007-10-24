@@ -1,168 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbXJXAzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbXJXBDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbXJXAzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 20:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbXJXAzg
+	id S1754325AbXJXBDG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 21:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbXJXBCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 20:55:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36557 "EHLO mail.dvmed.net"
+	Tue, 23 Oct 2007 21:02:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:36043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752454AbXJXAzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 20:55:35 -0400
-Message-ID: <471E9801.2000006@garzik.org>
-Date: Tue, 23 Oct 2007 20:55:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: davej@redhat.com, auke-jan.h.kok@intel.com, ajax@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] e1000, e1000e valid-addr fixes
-References: <471E2AD0.1000500@intel.com>	<471E5C21.8030908@garzik.org>	<20071023212026.GF7793@redhat.com> <20071023.145339.55504234.davem@davemloft.net>
-In-Reply-To: <20071023.145339.55504234.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------060508080304030905080901"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1753762AbXJXBCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 21:02:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,320,1188802800"; 
+   d="scan'208";a="304279087"
+Subject: Re: [PATCH -v7 0/3] x86 boot: 32-bit boot protocol
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <471E7078.4050908@zytor.com>
+References: <1193126765.23935.74.camel@caritas-dev.intel.com>
+	 <471E7078.4050908@zytor.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Oct 2007 09:04:07 +0800
+Message-Id: <1193187847.23935.95.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 24 Oct 2007 01:01:23.0316 (UTC) FILETIME=[65636B40:01C815D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060508080304030905080901
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 2007-10-23 at 15:06 -0700, H. Peter Anvin wrote:
+> Huang, Ying wrote:
+> > This patch set defines a 32-bit boot protocol for x86 platform, adds
+> > an extensible boot parameter passing mechanism, export the boot
+> > parameters via sysfs.
+> > 
+> > The patch set has been tested against kernel of git version
+> > v2.6.23-6623-g55b70a0 (with Rusty's git tree pulled) on x86_64 and
+> > i386.
+> > 
+> > This patch set is based on the proposal of Peter Anvin.
+> > 
+> 
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
+> 
+> This patchset should spend a cycle in -mm before being merged, though.
 
-Actually, looking over the code I see obvious bugs in the logic:
+Do you think it is possible that the 3rd patch of the patchset: document
+for 32 bit boot protocol can be merged into upstream firstly? It has
+been used by kexec/LinuxBIOS already and the EFI support patches depend
+on it too.
 
-An invalid ethernet address should not cause device loading to fail, 
-because the user is given the opportunity to supply a MAC address via 
-userspace (ifconfig or whatever) before the interface goes up.
-
-I just created the attached -bug fix- patch as illustration, though I 
-have not committed it, waiting for comment.
-
-This patch will make no difference for users hitting invalid-eep-csum 
-rather than invalid-MAC-addr condition, but it's a problem I noticed 
-while reviewing Adam's patch in detail.
-
-	Jeff
-
-
-
-
-
---------------060508080304030905080901
-Content-Type: text/plain;
- name="patch.e1000-addr"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch.e1000-addr"
-
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index f1ce348..8936d48 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1022,11 +1022,6 @@ e1000_probe(struct pci_dev *pdev,
- 	memcpy(netdev->dev_addr, adapter->hw.mac_addr, netdev->addr_len);
- 	memcpy(netdev->perm_addr, adapter->hw.mac_addr, netdev->addr_len);
- 
--	if (!is_valid_ether_addr(netdev->perm_addr)) {
--		DPRINTK(PROBE, ERR, "Invalid MAC Address\n");
--		goto err_eeprom;
--	}
--
- 	e1000_get_bus_info(&adapter->hw);
- 
- 	init_timer(&adapter->tx_fifo_stall_timer);
-@@ -1134,7 +1129,9 @@ e1000_probe(struct pci_dev *pdev,
- 		 "32-bit"));
- 	}
- 
--	printk("%s\n", print_mac(mac, netdev->dev_addr));
-+	printk("%s%s\n",
-+	       print_mac(mac, netdev->dev_addr),
-+	       is_valid_ether_addr(netdev->dev_addr) ? "" : " (INVALID)");
- 
- 	/* reset the hardware with the new settings */
- 	e1000_reset(adapter);
-@@ -1396,6 +1393,9 @@ e1000_open(struct net_device *netdev)
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	int err;
- 
-+	if (!is_valid_ether_addr(netdev->dev_addr))
-+		return -EINVAL;
-+
- 	/* disallow open during test */
- 	if (test_bit(__E1000_TESTING, &adapter->flags))
- 		return -EBUSY;
-@@ -2377,7 +2377,7 @@ e1000_set_mac(struct net_device *netdev, void *p)
- 	struct sockaddr *addr = p;
- 
- 	if (!is_valid_ether_addr(addr->sa_data))
--		return -EADDRNOTAVAIL;
-+		return -EINVAL;
- 
- 	/* 82542 2.0 needs to be in reset to write receive address registers */
- 
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 033e124..0e3216c 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2557,6 +2557,9 @@ static int e1000_open(struct net_device *netdev)
- 	struct e1000_hw *hw = &adapter->hw;
- 	int err;
- 
-+	if (!is_valid_ether_addr(netdev->dev_addr))
-+		return -EINVAL;
-+
- 	/* disallow open during test */
- 	if (test_bit(__E1000_TESTING, &adapter->state))
- 		return -EBUSY;
-@@ -2670,7 +2673,7 @@ static int e1000_set_mac(struct net_device *netdev, void *p)
- 	struct sockaddr *addr = p;
- 
- 	if (!is_valid_ether_addr(addr->sa_data))
--		return -EADDRNOTAVAIL;
-+		return -EINVAL;
- 
- 	memcpy(netdev->dev_addr, addr->sa_data, netdev->addr_len);
- 	memcpy(adapter->hw.mac.addr, addr->sa_data, netdev->addr_len);
-@@ -3960,14 +3963,16 @@ static void e1000_print_device_info(struct e1000_adapter *adapter)
- 
- 	/* print bus type/speed/width info */
- 	ndev_info(netdev, "(PCI Express:2.5GB/s:%s) "
--		  "%02x:%02x:%02x:%02x:%02x:%02x\n",
-+		  "%02x:%02x:%02x:%02x:%02x:%02x%s\n",
- 		  /* bus width */
- 		 ((hw->bus.width == e1000_bus_width_pcie_x4) ? "Width x4" :
- 		  "Width x1"),
- 		  /* MAC address */
- 		  netdev->dev_addr[0], netdev->dev_addr[1],
- 		  netdev->dev_addr[2], netdev->dev_addr[3],
--		  netdev->dev_addr[4], netdev->dev_addr[5]);
-+		  netdev->dev_addr[4], netdev->dev_addr[5],
-+		  is_valid_ether_addr(netdev->dev_addr) ?
-+		  	"" : " (INVALID)");
- 	ndev_info(netdev, "Intel(R) PRO/%s Network Connection\n",
- 		  (hw->phy.type == e1000_phy_ife)
- 		   ? "10/100" : "1000");
-@@ -4170,16 +4175,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	memcpy(netdev->dev_addr, adapter->hw.mac.addr, netdev->addr_len);
- 	memcpy(netdev->perm_addr, adapter->hw.mac.addr, netdev->addr_len);
- 
--	if (!is_valid_ether_addr(netdev->perm_addr)) {
--		ndev_err(netdev, "Invalid MAC Address: "
--			 "%02x:%02x:%02x:%02x:%02x:%02x\n",
--			 netdev->perm_addr[0], netdev->perm_addr[1],
--			 netdev->perm_addr[2], netdev->perm_addr[3],
--			 netdev->perm_addr[4], netdev->perm_addr[5]);
--		err = -EIO;
--		goto err_eeprom;
--	}
--
- 	init_timer(&adapter->watchdog_timer);
- 	adapter->watchdog_timer.function = &e1000_watchdog;
- 	adapter->watchdog_timer.data = (unsigned long) adapter;
-
---------------060508080304030905080901--
+Best Regards,
+Huang Ying
