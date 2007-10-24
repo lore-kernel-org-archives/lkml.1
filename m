@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXJXAV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbXJXAXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbXJXAV5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 20:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXJXAVu
+	id S1754985AbXJXAXm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 20:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXJXAX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 20:21:50 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:50362 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbXJXAVu (ORCPT
+	Tue, 23 Oct 2007 20:23:28 -0400
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:59279 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753800AbXJXAX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 20:21:50 -0400
-Message-ID: <471E901A.1080903@tiscali.nl>
-Date: Wed, 24 Oct 2007 02:21:46 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 23 Oct 2007 20:23:26 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [PATCH 13/13] RT: Cache cpus_allowed weight for optimizing migration
+Date: Wed, 24 Oct 2007 02:19:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+References: <20071023164156.5536.95573.stgit@novell1.haskins.net> <20071023165130.5536.73345.stgit@novell1.haskins.net>
+In-Reply-To: <20071023165130.5536.73345.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix unlocking before return in gpio
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710240219.25487.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Fix unlocking before return in gpio
-    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/cris/arch-v10/drivers/gpio.c b/arch/cris/arch-v10/drivers/gpio.c
-index f389ed6..0d347a7 100644
---- a/arch/cris/arch-v10/drivers/gpio.c
-+++ b/arch/cris/arch-v10/drivers/gpio.c
-@@ -297,8 +297,10 @@ gpio_poll(struct file *file,
- 		data = *R_PORT_PB_DATA;
- 	else if (priv->minor == GPIO_MINOR_G)
- 		data = *R_PORT_G_DATA;
--	else
-+	else {
-+		spin_unlock(&gpio_lock);
- 		return 0;
-+	}
- 	
- 	if ((data & priv->highalarm) ||
- 	    (~data & priv->lowalarm)) {
-@@ -381,18 +383,21 @@ static ssize_t gpio_write(struct file * file, const char * buf, size_t count,
- 
- 	ssize_t retval = count;
- 	if (priv->minor !=GPIO_MINOR_A && priv->minor != GPIO_MINOR_B) {
--		return -EFAULT;
-+		retval = -EFAULT;
-+		goto out;
- 	}
-     
- 	if (!access_ok(VERIFY_READ, buf, count)) {
--		return -EFAULT;
-+		retval = -EFAULT;
-+		goto out;
- 	}
- 	clk_mask = priv->clk_mask;
- 	data_mask = priv->data_mask;
- 	/* It must have been configured using the IO_CFG_WRITE_MODE */
- 	/* Perhaps a better error code? */
- 	if (clk_mask == 0 || data_mask == 0) {
--		return -EPERM;
-+		retval = -EPERM;
-+		goto out;
- 	}
- 	write_msb = priv->write_msb;
- 	D(printk("gpio_write: %lu to data 0x%02X clk 0x%02X msb: %i\n",count, data_mask, clk_mask, write_msb));
-@@ -425,6 +430,7 @@ static ssize_t gpio_write(struct file * file, const char * buf, size_t count,
- 			}
- 		}
- 	}
-+out:
- 	spin_unlock(&gpio_lock);
- 	return retval;
- }
-@@ -506,6 +512,7 @@ gpio_release(struct inode *inode, struct file *filp)
- 	while (p) {
- 		if (p->highalarm | p->lowalarm) {
- 			gpio_some_alarms = 1;
-+			spin_unlock(&gpio_lock);
- 			return 0;
- 		}
- 		p = p->next;
+Hi Gregory,
+
+On Tuesday 23 October 2007, Gregory Haskins wrote:
+> Calculating the weight is probably relatively expensive, so it is only
+> done when the cpus_allowed mask is updated (which should be relatively
+> infrequent, especially compared to scheduling frequency) and cached in
+> the task_struct.
+
+Why not make it a task flag, since according to your code, you are only 
+interested whether this is <= 1 or > 1. Since !(x <= 1) <=> (x > 1)
+for any given unsigned integer x, the required data structure is
+a "boolean" or a flag.
+
+
+Best Regards
+
+Ingo Oeser
