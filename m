@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbXJXMxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXJXMzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbXJXMxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbXJXMxX
+	id S1758167AbXJXMzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXJXMzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:53:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36061 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756172AbXJXMxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:53:22 -0400
-Message-ID: <471F4035.4030507@garzik.org>
-Date: Wed, 24 Oct 2007 08:53:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Wed, 24 Oct 2007 08:55:06 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37335 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752218AbXJXMzE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 08:55:04 -0400
+Date: Wed, 24 Oct 2007 14:55:33 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] IDE updates (part 2)
-References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk> <4713C568.2060708@garzik.org> <20071015195807.GF8759@flint.arm.linux.org.uk> <4713C893.3050200@garzik.org> <20071024123851.GB32333@flint.arm.linux.org.uk>
-In-Reply-To: <20071024123851.GB32333@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface
+Message-ID: <20071024125533.GE30533@stusta.de>
+References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au> <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <55615.simon.1193226629@5ec7c279.invalid>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Mon, Oct 15, 2007 at 04:07:47PM -0400, Jeff Garzik wrote:
->> Russell King wrote:
->>> On Mon, Oct 15, 2007 at 03:54:16PM -0400, Jeff Garzik wrote:
->>>> Al Viro wrote:
->>>>> Proposed addition to icside part, provided that ARM folks ACK it - gets
->>>>> icside to build and AFAICS it's correct:
->>>> ACK from me too...  ARM folks?
->>> Will test tomorrow/Wednesday.
->> Thanks.  Sorry about missing your CC on the libata-wide ata_link 
->> changes.  We should have poked the maintainers on that, for the drivers 
->> we cannot build ourselves.
+On Wed, Oct 24, 2007 at 12:50:29PM +0100, Simon Arlott wrote:
+> I currently have an LSM that only handles permissions for socket_bind
+> and socket_listen, I load it and then "capability" as secondary on
+> boot - but now I can't because the LSM framework is now just the LS
+> framework.
 > 
-> I think Viro's patch got an ack from everyone.  Who's dealing with getting
-> this regression fix into mainline?  It seems at the moment the patch is in
-> limbo.
+> Why can't this "static LSM" change be a Kconfig option?
+> (I don't want to have to maintain my own reverted copy of security/,
+> or compile this into the kernel because then I can't ever modify and
+> reload it without rebooting.)
 
-I was waiting on you, who last said "Will test tomorrow/Wednesday" (with 
-presumably an ACK forthcoming after test results)
+Let's start with the more important questions:
 
-If it now has your ACK, it's ready and waiting in my mbox queue to be 
-merged upstream.
+Did you submit your LSM for inclusion into the kernel?
 
-	Jeff
+If yes, why wasn't it accepted?
+If no, why not?
 
+> Simon Arlott
 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
