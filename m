@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbXJXL2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbXJXLbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbXJXL2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbXJXL2F
+	id S1756451AbXJXLbE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbXJXLay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:28:05 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46868 "EHLO pasmtpB.tele.dk"
+	Wed, 24 Oct 2007 07:30:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53870 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753377AbXJXL2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:28:04 -0400
-Date: Wed, 24 Oct 2007 13:29:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
-Message-ID: <20071024112938.GA1770@uranus.ravnborg.org>
-References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk>
-Mime-Version: 1.0
+	id S1750711AbXJXLay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 07:30:54 -0400
+Date: Wed, 24 Oct 2007 13:30:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 arch updates
+Message-ID: <20071024113043.GA11897@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024112453.GP14671@kernel.dk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 01:24:53PM +0200, Jens Axboe wrote:
-> On Wed, Oct 24 2007, Haavard Skinnemoen wrote:
-> > Hi Linus,
-> > 
-> > Sorry about sending you pull requests so rapidly, but Jens broke my
-> > dma-mapping.h yesterday. Or you may say the bug was there to begin with
-> > and Jens merely exposed it, but that makes it sound like my fault ;-)
-> > 
-> > Anyway, please pull from
-> > 
-> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
-> > 
-> > to receive the following update.
-> 
-> You should not take the blame :-)
-> 
-> I'm collecting these patches, so I'll pull your fix and make sure it
-> gets to Linus today along with the other fixes.
 
-How about doing a "git grep asm/scatterlist"
-and fix all victims to use linux/scatterlist?
-Or you maybe did this already.
+Linus, please pull the latest x86 git tree from:
 
-	Sam
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+
+it contains two build fixes and an oops-printout-ugliness fix.
+
+Thanks!
+
+	Ingo
+
+------------------>
+Alexey Dobriyan (1):
+      x86: fix bogus KERN_ALERT on oops
+
+Jeff Garzik (1):
+      x86: lguest build fix
+
+Mike Galbraith (1):
+      x86: fix CONFIG_KEXEC build breakage
+
+ kernel/crash.c |    6 +++---
+ lguest/boot.c  |    1 +
+ mm/fault_32.c  |    2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
