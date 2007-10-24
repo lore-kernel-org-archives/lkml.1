@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbXJXLQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXJXLRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021AbXJXLQY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbXJXLOr
+	id S1757227AbXJXLRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXJXLRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:14:47 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:45460 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756609AbXJXLOp (ORCPT
+	Wed, 24 Oct 2007 07:17:36 -0400
+Received: from spiffy.freedom.ind.br ([201.35.65.91]:53701 "EHLO
+	freedom.ind.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751124AbXJXLRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:14:45 -0400
-Message-Id: <20071024111428.100395398@szeredi.hu>
-References: <20071024111333.530227696@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Wed, 24 Oct 2007 13:13:36 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 3/5] fuse: cleanup: add fuse_get_attr_version()
-Content-Disposition: inline; filename=fuse_attr_version_cleanup.patch
+	Wed, 24 Oct 2007 07:17:35 -0400
+X-Greylist: delayed 1811 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 07:17:35 EDT
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Build Failure with 2.6.24-rc1
+References: <1193221627.5685.2.camel@localhost>
+From: Otavio Salvador <otavio@debian.org>
+Organization: O.S. Systems Ltda.
+X-URL: http://www.debian.org/~otavio/
+X-Attribution: O.S.
+Date: Wed, 24 Oct 2007 08:47:34 -0200
+In-Reply-To: <1193221627.5685.2.camel@localhost> (Chris Holvenstot's message of "Wed\, 24 Oct 2007 05\:27\:07 -0500")
+Message-ID: <87d4v4ssah.fsf@lab.ossystems.com.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Chris Holvenstot <cholvenstot@comcast.net> writes:
 
-Extract repeated code into helper function, as suggested by Akpm.
+> When attempting to build the 2.6.24-rc1 kernel:
+>
+>
+> arch/x86/kernel/built-in.o: In function `smp_send_nmi_allbutself':
+> /build/linux/arch/x86/kernel/crash.c:85: undefined reference to
+> `genapic'
+> make: *** [.tmp_vmlinux1] Error 1
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
+Use the patch that Ingo sent on Message-ID: <20071024072322.GA2907@elte.hu>
 
-Index: linux/fs/fuse/dir.c
-===================================================================
---- linux.orig/fs/fuse/dir.c	2007-10-19 16:46:33.000000000 +0200
-+++ linux/fs/fuse/dir.c	2007-10-19 17:04:15.000000000 +0200
-@@ -132,6 +132,21 @@ static void fuse_lookup_init(struct fuse
- 	req->out.args[0].value = outarg;
- }
- 
-+static u64 fuse_get_attr_version(struct fuse_conn *fc)
-+{
-+	u64 curr_version;
-+
-+	/*
-+	 * The spin lock isn't actually needed on 64bit archs, but we
-+	 * don't yet care too much about such optimizations.
-+	 */
-+	spin_lock(&fc->lock);
-+	curr_version = fc->attr_version;
-+	spin_unlock(&fc->lock);
-+
-+	return curr_version;
-+}
-+
- /*
-  * Check whether the dentry is still valid
-  *
-@@ -171,9 +186,7 @@ static int fuse_dentry_revalidate(struct
- 			return 0;
- 		}
- 
--		spin_lock(&fc->lock);
--		attr_version = fc->attr_version;
--		spin_unlock(&fc->lock);
-+		attr_version = fuse_get_attr_version(fc);
- 
- 		parent = dget_parent(entry);
- 		fuse_lookup_init(req, parent->d_inode, entry, &outarg);
-@@ -264,9 +277,7 @@ static struct dentry *fuse_lookup(struct
- 		return ERR_PTR(PTR_ERR(forget_req));
- 	}
- 
--	spin_lock(&fc->lock);
--	attr_version = fc->attr_version;
--	spin_unlock(&fc->lock);
-+	attr_version = fuse_get_attr_version(fc);
- 
- 	fuse_lookup_init(req, dir, entry, &outarg);
- 	request_send(fc, req);
-@@ -733,9 +744,7 @@ static int fuse_do_getattr(struct inode 
- 	if (IS_ERR(req))
- 		return PTR_ERR(req);
- 
--	spin_lock(&fc->lock);
--	attr_version = fc->attr_version;
--	spin_unlock(&fc->lock);
-+	attr_version = fuse_get_attr_version(fc);
- 
- 	memset(&inarg, 0, sizeof(inarg));
- 	memset(&outarg, 0, sizeof(outarg));
-
---
+-- 
+        O T A V I O    S A L V A D O R
+---------------------------------------------
+ E-mail: otavio@debian.org      UIN: 5906116
+ GNU/Linux User: 239058     GPG ID: 49A5F855
+ Home Page: http://otavio.ossystems.com.br
+---------------------------------------------
+"Microsoft sells you Windows ... Linux gives
+ you the whole house."
