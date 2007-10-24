@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761931AbXJXQcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXJXQdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761931AbXJXQcz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbXJXQXr
+	id S1759314AbXJXQdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759357AbXJXQXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:23:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33378 "EHLO
+	Wed, 24 Oct 2007 12:23:51 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33381 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759309AbXJXQXo (ORCPT
+	with ESMTP id S1757345AbXJXQXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:23:44 -0400
-Date: Wed, 24 Oct 2007 18:24:14 +0200
+	Wed, 24 Oct 2007 12:23:50 -0400
+Date: Wed, 24 Oct 2007 18:24:19 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Pavel Emelyanov <xemul@openvz.org>, Ingo Molnar <mingo@elte.hu>
+To: Pavel Emelyanov <xemul@openvz.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] unexport find_task_by_*
-Message-ID: <20071024162414.GF30533@stusta.de>
+Subject: [2.6 patch] unexport kernel/pid.c:task_*
+Message-ID: <20071024162419.GG30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,9 +24,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This patch removes the following unused EXPORT_SYMBOL's:
-- find_task_by_pid_type_ns
-- find_task_by_vpid
-- find_task_by_pid_ns
+- task_pid_nr_ns
+- task_tgid_nr_ns
+- task_pgrp_nr_ns
+- task_session_nr_ns
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -35,32 +36,35 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
  kernel/pid.c |    4 ----
  1 file changed, 4 deletions(-)
 
-65b4847eb3d64c037d8b418d7560b71a3065d304 
+8fd7ba197fac407ae18c69798098be65096efdaf 
 diff --git a/kernel/pid.c b/kernel/pid.c
-index d1db36b..b09d7c9 100644
+index b09d7c9..a805a26 100644
 --- a/kernel/pid.c
 +++ b/kernel/pid.c
-@@ -378,8 +378,6 @@ struct task_struct *find_task_by_pid_type_ns(int type, int nr,
- 	return pid_task(find_pid_ns(nr, ns), type);
- }
- 
--EXPORT_SYMBOL(find_task_by_pid_type_ns);
--
- struct task_struct *find_task_by_pid(pid_t nr)
+@@ -443,25 +443,21 @@ pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
  {
- 	return find_task_by_pid_type_ns(PIDTYPE_PID, nr, &init_pid_ns);
-@@ -391,13 +389,11 @@ struct task_struct *find_task_by_vpid(pid_t vnr)
- 	return find_task_by_pid_type_ns(PIDTYPE_PID, vnr,
- 			current->nsproxy->pid_ns);
+ 	return pid_nr_ns(task_pid(tsk), ns);
  }
--EXPORT_SYMBOL(find_task_by_vpid);
+-EXPORT_SYMBOL(task_pid_nr_ns);
  
- struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
+ pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
  {
- 	return find_task_by_pid_type_ns(PIDTYPE_PID, nr, ns);
+ 	return pid_nr_ns(task_tgid(tsk), ns);
  }
--EXPORT_SYMBOL(find_task_by_pid_ns);
+-EXPORT_SYMBOL(task_tgid_nr_ns);
  
- struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
+ pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
  {
+ 	return pid_nr_ns(task_pgrp(tsk), ns);
+ }
+-EXPORT_SYMBOL(task_pgrp_nr_ns);
+ 
+ pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
+ {
+ 	return pid_nr_ns(task_session(tsk), ns);
+ }
+-EXPORT_SYMBOL(task_session_nr_ns);
+ 
+ /*
+  * Used by proc to find the first pid that is greater then or equal to nr.
 
