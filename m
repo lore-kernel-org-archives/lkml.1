@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbXJXQ2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbXJXQ27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760865AbXJXQ2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbXJXQXH
+	id S1760940AbXJXQ27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbXJXQXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:23:07 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33336 "EHLO
+	Wed, 24 Oct 2007 12:23:11 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33338 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757772AbXJXQXF (ORCPT
+	with ESMTP id S1754929AbXJXQXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:23:05 -0400
-Date: Wed, 24 Oct 2007 18:23:34 +0200
+	Wed, 24 Oct 2007 12:23:09 -0400
+Date: Wed, 24 Oct 2007 18:23:39 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
+To: Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make ipc/util.c:sysvipc_find_ipc() static
-Message-ID: <20071024162334.GS30533@stusta.de>
+Subject: [2.6 patch] kernel/cgroup.c: make 2 functions static
+Message-ID: <20071024162339.GT30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,25 +23,37 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysvipc_find_ipc() can become static.
+cgroup_is_releasable() and notify_on_release() should be static,
+not global inline.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-daadf1bd4c81e8b88cfc690cecace9adc8b783f0 
-diff --git a/ipc/util.c b/ipc/util.c
-index 1aa0ebf..76c1f34 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -802,8 +802,8 @@ struct ipc_proc_iter {
- /*
-  * This routine locks the ipc structure found at least at position pos.
-  */
--struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
--					loff_t *new_pos)
-+static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
-+					      loff_t *new_pos)
+
+ kernel/cgroup.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+626d10ec224de07fc7906b0aa82e035e153709ce 
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 5987dcc..fec1726 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -143,7 +143,7 @@ enum {
+ 	ROOT_NOPREFIX, /* mounted subsystems have no named prefix */
+ };
+ 
+-inline int cgroup_is_releasable(const struct cgroup *cgrp)
++static int cgroup_is_releasable(const struct cgroup *cgrp)
  {
- 	struct kern_ipc_perm *ipc;
- 	int total, id;
+ 	const int bits =
+ 		(1 << CGRP_RELEASABLE) |
+@@ -151,7 +151,7 @@ inline int cgroup_is_releasable(const struct cgroup *cgrp)
+ 	return (cgrp->flags & bits) == bits;
+ }
+ 
+-inline int notify_on_release(const struct cgroup *cgrp)
++static int notify_on_release(const struct cgroup *cgrp)
+ {
+ 	return test_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+ }
 
