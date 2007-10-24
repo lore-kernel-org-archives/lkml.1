@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbXJXNYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbXJXNZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758915AbXJXNYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbXJXNYk
+	id S1758863AbXJXNZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbXJXNZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:24:40 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:11884 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757510AbXJXNYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:24:38 -0400
-Date: Wed, 24 Oct 2007 15:24:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com,
-       greg@kroah.com, jeff@garzik.org, muli@il.ibm.com, paulus@samba.org,
-       tony.luck@intel.com, davem@davemloft.net, kyle@parisc-linux.org,
-       aacraid@adaptec.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH -mm 0/11] fix iommu sg merging problem
-Message-ID: <20071024132434.GZ14671@kernel.dk>
-References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
+	Wed, 24 Oct 2007 09:25:00 -0400
+Received: from flatline.sindominio.net ([82.144.4.26]:37148 "EHLO
+	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757371AbXJXNY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:24:58 -0400
+X-Greylist: delayed 1549 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 09:24:58 EDT
+Date: Wed, 24 Oct 2007 14:59:09 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: mhoffman@lightlink.com, Jean Delvare <khali@linux-fr.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, lm-sensors@lm-sensors.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] Hardware Monitor LM70: Convert semaphore to mutex
+Message-ID: <20071024125909.GA9095@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	mhoffman@lightlink.com, Jean Delvare <khali@linux-fr.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>, lm-sensors@lm-sensors.org,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, FUJITA Tomonori wrote:
-> IOMMUs merges scatter/gather segments without considering a low level
-> driver's restrictions. The problem is that IOMMUs can't access to the
-> limitations because they are in request_queue.
-> 
-> This patchset introduces a new structure, device_dma_parameters,
-> including dma information. A pointer to device_dma_parameters is added
-> to struct device. The bus specific structures (like pci_dev) includes
-> device_dma_parameters. Low level drivers can use dma_set_max_seg_size
-> to tell IOMMUs about the restrictions.
-> 
-> We can move more dma stuff in struct device (like dma_mask) to struct
-> device_dma_parameters later (needs some cleanups before that).
-> 
-> This includes patches for all the IOMMUs that could merge sg (x86_64,
-> ppc, IA64, alpha, sparc64, and parisc) though only the ppc patch was
-> tested. The patches for other IOMMUs are only compile tested.
-> 
-> Thanks to everyone for the comments on the previous submission
-> to linux-scsi.
-> 
-> This is against 2.6.24-rc1. The same patchset is also available:
+Hardware Monitor LM70: Convert the semaphore lm70->sem to the mutex
+API
 
-Looks good to me, I think we should get this included sooner rather than
-later.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
+--
+
+diff --git a/drivers/hwmon/lm70.c b/drivers/hwmon/lm70.c
+index dd36688..d435f00 100644
+--- a/drivers/hwmon/lm70.c
++++ b/drivers/hwmon/lm70.c
+@@ -31,14 +31,15 @@
+ #include <linux/err.h>
+ #include <linux/sysfs.h>
+ #include <linux/hwmon.h>
++#include <linux/mutex.h>
+ #include <linux/spi/spi.h>
+-#include <asm/semaphore.h>
++
+ 
+ #define DRVNAME		"lm70"
+ 
+ struct lm70 {
+ 	struct device *hwmon_dev;
+-	struct semaphore sem;
++	struct mutex lock;
+ };
+ 
+ /* sysfs hook function */
+@@ -51,7 +52,7 @@ static ssize_t lm70_sense_temp(struct device *dev,
+ 	s16 raw=0;
+ 	struct lm70 *p_lm70 = dev_get_drvdata(&spi->dev);
+ 
+-	if (down_interruptible(&p_lm70->sem))
++	if (mutex_lock_interruptible(&p_lm70->lock))
+ 		return -ERESTARTSYS;
+ 
+ 	/*
+@@ -83,7 +84,7 @@ static ssize_t lm70_sense_temp(struct device *dev,
+ 	val = ((int)raw/32) * 250;
+ 	status = sprintf(buf, "%d\n", val); /* millidegrees Celsius */
+ out:
+-	up(&p_lm70->sem);
++	mutex_unlock(&p_lm70->lock);
+ 	return status;
+ }
+ 
+@@ -112,7 +113,7 @@ static int __devinit lm70_probe(struct spi_device *spi)
+ 	if (!p_lm70)
+ 		return -ENOMEM;
+ 
+-	init_MUTEX(&p_lm70->sem);
++	mutex_init(&p_lm70->lock);
+ 
+ 	/* sysfs hook */
+ 	p_lm70->hwmon_dev = hwmon_device_register(&spi->dev);
+ 
 -- 
-Jens Axboe
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
+              We build too many walls and not enough bridges
+                             (Isaac Newton)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
