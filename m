@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750938AbXJXH4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXJXIAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750938AbXJXH4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 03:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXJXH4G
+	id S1753289AbXJXIAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 04:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXJXIAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 03:56:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59074 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751574AbXJXH4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 03:56:06 -0400
-Message-ID: <471EFA90.2030402@garzik.org>
-Date: Wed, 24 Oct 2007 03:56:00 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Paolo Ornati <ornati@fastwebnet.it>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: kvm_main.c:220: error: implicit declaration of function 'smp_call_function_mask'
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071024094427.31e3364a@localhost>
-In-Reply-To: <20071024094427.31e3364a@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Oct 2007 04:00:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39241 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751304AbXJXIAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 04:00:45 -0400
+Date: Wed, 24 Oct 2007 01:00:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/12] riscom8: fix SMP brokenness
+Message-Id: <20071024010035.8ce8fa04.akpm@linux-foundation.org>
+In-Reply-To: <471EF7C7.6020708@gmail.com>
+References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org>
+	<20071023223638.DD9FE1F81A8@havoc.gtf.org>
+	<471EEA7B.8070008@gmail.com>
+	<20071024001052.4290adc7.akpm@linux-foundation.org>
+	<471EF7C7.6020708@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ornati wrote:
->   CC      drivers/kvm/kvm_main.o
-> drivers/kvm/kvm_main.c: In function 'kvm_flush_remote_tlbs':
-> drivers/kvm/kvm_main.c:220: error: implicit declaration of function 'smp_call_function_mask'
-> make[2]: *** [drivers/kvm/kvm_main.o] Error 1
-> make[1]: *** [drivers/kvm] Error 2
-> make: *** [drivers] Error 2
+On Wed, 24 Oct 2007 09:44:07 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> On 10/24/2007 09:10 AM, Andrew Morton wrote:
+> > On Wed, 24 Oct 2007 08:47:23 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+> > 
+> >>> +static spinlock_t riscom_lock = SPIN_LOCK_UNLOCKED;
+> >> This is deprecated (see linux/spinlock_types.h for details), use DEFINE_SPINLOCK
+> >> instead, otherwise seems OK.
+> > 
+> > Hey, if only we had a little perl script to check stuff like that.
 > 
-> -----------
-> 
-> "smp_call_function_mask" is defined only on "CONFIG_SMP" but kvm uses it
-> unconditionally, oops!
+> Can we integrate this into checkpatch?
 
-Yep, posted a build fix for this the other day...
+We already did.
 
-	Jeff
-
-
-
+Now we need to integrate checkpatch into git...
