@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbXJXSGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbXJXSH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbXJXSGs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbXJXSGj
+	id S1759831AbXJXSH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbXJXSHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:06:39 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:48859 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbXJXSGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:06:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CL9mkKE3h17ELe/Yowqqxbw6zsMSCB+l8mRa34nlAam/qcb0mrVHc+ptJGLScLIz8BnW8OkTjWT2sZWuue+Bb5aVdbukFWQoR5ZpRbf2yQM36tjysKP7m8sLil2K5j+OabZwyLCEn5BKCdx69PtTyQPcUfGZYd4Fo8yvLrOa6R0=
-Message-ID: <7b9198260710241106l1c24ef8cgbd56da60ba28122@mail.gmail.com>
-Date: Wed, 24 Oct 2007 19:06:37 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Sky2 Driver Issue
-In-Reply-To: <7b9198260710241058o49a5eb93sf4fa8c22cc037a0e@mail.gmail.com>
+	Wed, 24 Oct 2007 14:07:05 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:9594 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755546AbXJXSHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:07:03 -0400
+Date: Wed, 24 Oct 2007 20:06:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+Message-ID: <20071024180656.GF14671@kernel.dk>
+References: <471E110C.20404@linux.vnet.ibm.com> <20071023184419.GD14671@kernel.dk> <20071024115436.GT32058@shadowen.org> <20071024214014C.fujita.tomonori@lab.ntt.co.jp> <471F6DFE.3040304@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7b9198260710241058o49a5eb93sf4fa8c22cc037a0e@mail.gmail.com>
+In-Reply-To: <471F6DFE.3040304@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/10/2007, Tom Spink <tspink@gmail.com> wrote:
+On Wed, Oct 24 2007, Kamalesh Babulal wrote:
+> FUJITA Tomonori wrote:
+> > On Wed, 24 Oct 2007 12:54:36 +0100
+> > Andy Whitcroft <apw@shadowen.org> wrote:
+> > 
+> >> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
+> >>> On Tue, Oct 23 2007, Kamalesh Babulal wrote:
+> >>>> Hi,
+> >>>>
+> >>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+> >>>> over the AMD box
+> >>>>
+> >>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+> >>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> >>>> PGD 10185b067 PUD 10075b067 PMD 0 
+> >>>> Oops: 0002 [1] SMP 
+> >>>> CPU 3 
+> >>>> Modules linked in:
+> >>>> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
+> >>>> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> >>>> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
+> >>> Can you check where gart_map_sg+0x26c is at? Make sure you have
+> >>> CONFIG_DEBUG_INFO defined, then do:
+> >>>
+> >>> $ gdb vmlinux
+> >>> $ l *gart_map_sg+0x26c
+> >> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
+> >> output from that version, the panic (also below) seems the same:
+> >>
+> >> (gdb) l *gart_map_sg+0x26c
+> >> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
+> >> 428                     goto error;
+> >> 429             out++;
+> >> 430             flush_gart();
+> >> 431             if (out < nents) {
+> >> 432                     sgmap = sg_next(sgmap);
+> >> 433                     sgmap->dma_length = 0;
+> >> 434             }
+> >> 435             return out;
+> >> 436
+> >> 437     error:
+> >>
+> >> So it seems sg_next has returned 0.
+> > 
+> > Have you tried this?
+> > 
+> > http://marc.info/?l=linux-kernel&m=119317981406073&w=2
+> > -
 > Hi,
->
-> A couple of kernels ago, I ran into an issue with the sky2 driver.
-> Basically, I began getting repeated errors on my console of the
-> following:
->
-> Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000000
-> Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0xc0000000
->
-> Which eventually led to:
-> Oct 21 16:33:49 holly kernel: printk: 92 messages suppressed.
->
-> Here is a section of the log that may be useful:
-> Oct 21 16:33:37 holly kernel: sky2 eth1: enabling interface
-> Oct 21 16:33:38 holly dhclient: DHCPDISCOVER on eth1 to
-> 255.255.255.255 port 67 interval 8
-> Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000010
-> Oct 21 16:33:39 holly kernel: sky2 eth1: Link is up at 1000 Mbps, full
-> duplex, flow control both
-> Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000000
-> Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0xc0000000
-> Oct 21 16:33:40 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000000
-> Oct 21 16:33:40 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0xc0000000
-> Oct 21 16:33:41 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000000
-> Oct 21 16:33:41 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0xc0000000
-> Oct 21 16:33:42 holly kernel: sky2 0000:04:00.0: error interrupt
-> status=0x80000000
->
-> These messages are appearing on all the VTs, and because they keep
-> popping up, I can't reasonably use the consoles to test if the network
-> driver is working.
->
-> The kernel I've got going at the moment is 2.6.23-rc9 with git
-> revision g804b3f9a, and it's fine.  The error surfaced _sometime_
-> after this.  Attached is my .config.
->
-> I'll try rebooting and pinging the machine to see if the network
-> driver is working, and this is just (unnecessary?) spew from the
-> kernel.
->
-> --
-> Regards,
-> Tom Spink
-> University of Edinburgh
->
->
+> Thanks, this patch solves the kernel oops.
 
-Hi again,
-
-So it seems the driver and the network card is functioning, but I'm
-getting the 'error interrupt' message plastered over every console.
-
-I can ping and ssh into the computer, but the message is still
-scrolling everything off my screens.
+Tomo, please do write the proper changelog so we can get this upstream.
 
 -- 
-Regards,
-Tom Spink
-University of Edinburgh
+Jens Axboe
+
