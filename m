@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbXJXRsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXJXR4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbXJXRsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXJXRsg
+	id S1756060AbXJXR4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXJXR4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:48:36 -0400
-Received: from xenotime.net ([66.160.160.81]:45088 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752218AbXJXRsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:48:35 -0400
-Date: Wed, 24 Oct 2007 10:48:34 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jeff Garzik <jeff@garzik.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] create instrumentation/ directory
-Message-Id: <20071024104834.5d4829c5.rdunlap@xenotime.net>
-In-Reply-To: <20071024173102.GA29958@Krystal>
-References: <20071024095226.GA30326@havoc.gtf.org>
-	<20071024130557.GA18610@Krystal>
-	<471F4649.3000000@garzik.org>
-	<20071024091240.7978c2da.rdunlap@xenotime.net>
-	<20071024173102.GA29958@Krystal>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Oct 2007 13:56:22 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:21292 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754039AbXJXR4V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 13:56:21 -0400
+Message-ID: <471F873C.6010002@panasas.com>
+Date: Wed, 24 Oct 2007 19:56:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Rajkumar S <rajkumars@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: HIGHMEM64G Kernel (2.6.23.1) makes system crawl
+References: <64de5c8b0710240326q709ca7fbq4b365bcaf6e89fb9@mail.gmail.com> <471F598C.5030903@panasas.com> <20071024163520.GM4003@csclub.uwaterloo.ca>
+In-Reply-To: <20071024163520.GM4003@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Oct 2007 17:55:35.0903 (UTC) FILETIME=[145B4EF0:01C81667]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 13:31:02 -0400 Mathieu Desnoyers wrote:
+On Wed, Oct 24 2007 at 18:35 +0200, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+> On Wed, Oct 24, 2007 at 04:41:16PM +0200, Boaz Harrosh wrote:
+>> I thought that for 4GB of memory the CONFIG_HIGHMEM4G=y CONFIG_HIGHMEM64G is not set
+>> would be enough.
+>>
+>> From looking in source code the CONFIG_HIGHMEM64G is broken in many respects,
+>> in my opinion. It's really a 64-bit with 32-bit quirks enabled. Does it even
+>> run on None 64-bit machines? Not many! 
+>>
+>> You have a magnificent 64-bit Machine, why?
+> 
+> CONFIG_HIGHMEM4G means 4GB address space.  Since PCI and BIOS use some
+> of the first 4GB address space, a machine with 4GB of actual RAM must
+> map some of that RAM above the 4GB address space, so you access it all
+> you need to enable PAE (address space extensions intel invented to give
+> 36bit addressing on 32bit machines), which lets the OS map memory above
+> 4GB (up to 64GB), to let applications use it.  Applications are still
+> limited to a 32bit address space.  64bit machines of course just use all
+> memory directly without any silly extensions.
+> 
+> The common intel BIOS bug relating to configuring the MTRR and such for
+> caching of memory makes the top portion of memory uncached and hence
+> very slow, which means any code placed in the top part of memory gets
+> slow.  The kernel likes to place itself at the top of memory which means
+> the kernel gets slow and hence the whole system gets slow.  Holefully
+> intel will learn to make proper BIOSes real soon so that people with
+> intel boards can stop having such slow machines when they have lots of
+> ram.
+> 
+> --
+> Len Sorensen
 
-> * Randy Dunlap (rdunlap@xenotime.net) wrote:
-> > On Wed, 24 Oct 2007 09:19:05 -0400 Jeff Garzik wrote:
-> > 
-> > > Honestly, I don't care at all about building the code.  If that's what 
-> > > you want, great.
-> > 
-> > Yes, that is wanted.  They bitrot too easily -- not good.
-> > 
-> > > My objection is more to adding a samples/ directory, which is contra to 
-> > > past experience:
-> > > 
-> > > A new net driver sample should go in drivers/net/ like the existing 
-> > > skeleton files I already listed, not samples/net/.  A top-level 
-> > 
-> > Can't disagree with that.
-> > 
-> > > "samples/" seems like it exists only duplicate the rest of the tree 
-> > > hierarchy.
-> > 
-> > It seems odd to be building code in Documentation/, but I can live
-> > with that.  It was primarily Christoph who was opposed to that.
-> > He suggested samples/ and I went along with it just to break the
-> > impasse (since no one else was making any comments on it at that
-> > time).
-> > 
-> > Sam, would building code in Documentation/ cause problems for
-> > kbuild?
-> 
-> Since we already have the Instrumentation menu in
-> kernel/Kconfig.instrumentation and instrumentation code all over the
-> kernel tree:
-> 
-> arch/*/oprofile/*.c
-> kernel/kprobes.c
-> arch/*/kernel/kprobes.c
-> kernel/marker.c
-> kernel/profile.c
-> kernel/profile.S
-> kernel/lockdep.c
-> vm/vmstat.c
-> block/blktrace.c
-> 
-> We could move them to 
-> 
-> instrumentation/
-> arch/*/instrumentation/
-> 
-> Therefore, we could also move the kprobes and marker samples under
-> 
-> instrumentation/samples/
-> 
-> My main concern is that 15 characters long directory name might be
-> inelegant (however, it only beats Documentation by 2).
+So one thing I don't understand is the difference between CONFIG_HIGHMEM4G
+and regular 32-bit. I always thought that 32 bit means 4GB address space
+and that the HIGHMEM4G is using your above trick but with 32-bit dma_addr_t
+since there is only actual 4GB of real memory and the rest is mapping tricks.
+But I guess I was wrong.
 
-Ack, instrumentation deserves that much (in the new world order).
+The other point I was making is why use 36 bit trickery when you have a machine
+that is capable of the full 64-bit, and runs much faster at that? Just a waste of
+a good machine, wont you say? Perhaps we learn to use x86_64 ARCHs before Intel
+fixes their BIOS, and they where right all along?
 
+Boaz
 
----
-~Randy
