@@ -1,60 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXJXS7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbXJXTBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbXJXS7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbXJXS7b
+	id S1755099AbXJXTBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 15:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbXJXTBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:59:31 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:33217 "EHLO proxima.lp0.eu"
+	Wed, 24 Oct 2007 15:01:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:58070 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbXJXS73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:59:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=TZVtv4ySOg0ZkCP/JRhSm/Vk8bm0FdKBo2gZ3yoIdtbEogp1b+3kMxvxpJmwxWrkgNbxF6oHRJla1JOHC3GQ5PTdKen4Xa9sb4UE67tF3hQJqFU7NdNI7llayMB32Op1;
-Message-ID: <471F9603.9080308@simon.arlott.org.uk>
-Date: Wed, 24 Oct 2007 19:59:15 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1752936AbXJXTBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 15:01:12 -0400
+Message-ID: <471F965B.6090200@goop.org>
+Date: Wed, 24 Oct 2007 12:00:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-References: <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au> <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
+To: Jan Beulich <jbeulich@novell.com>
+CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_XEN dependencies
+References: <471DE2F8.76E4.0078.0@novell.com> <471E38D6.5050202@xensource.com> <471F1EEE.76E4.0078.0@novell.com>
+In-Reply-To: <471F1EEE.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/10/07 19:51, Jan Engelhardt wrote:
-> On Oct 24 2007 19:11, Simon Arlott wrote:
->>
->>* (I've got a list of access rules which are scanned in order until one of 
->>them matches, and an array of one bit for every port for per-port default 
->>allow/deny - although the latter could be removed.
->>http://svn.lp0.eu/simon/portac/trunk/)
-> 
-> Besides the 'feature' of inhibiting port binding,
-> is not this task of blocking connections something for a firewall?
+Jan Beulich wrote:
+> The specific goal is to be able to enable the XEN option in our native kernel,
+> which gets configured with M586. So we could live with XEN depending on
+> X86_CMPXCHG, but would definitely need the dependency on X86_TSC
+> dropped. Nevertheless I'd favor even X86_CMPXCHG dropped unless that
+> causes unresolvable (or difficult to resolve) problems.
 
-The firewall blocks incoming connections where appropriate, yes, but it 
-doesn't stop one user binding to a port that another user expected to be able 
-to use. "Ownership" of ports (1-1023) shouldn't be something only root (via 
-CAP_NET_BIND_SERVICE) has. Lots of services also don't have standard ports 
-below 1024 and it's useful to be able to prevent users from binding to them 
-too.
+Seems reasonable.  Do you have a patch?
 
--- 
-Simon Arlott
+    J
+
