@@ -1,41 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbXJXV4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbXJXV6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbXJXV4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbXJXV4b
+	id S1760030AbXJXV6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbXJXV6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:56:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40952 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbXJXV4a (ORCPT
+	Wed, 24 Oct 2007 17:58:13 -0400
+Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:35177 "HELO
+	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754208AbXJXV6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:56:30 -0400
-Date: Wed, 24 Oct 2007 14:25:35 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Pete Zaitcev <zaitcev@redhat.com>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, vitalivanov@gmail.com, netwiz@crc.id.au
-Subject: Re: USB: FIx locks and urb->status in adutux
-Message-ID: <20071024212535.GA4638@kroah.com>
-References: <20071022203447.db6d7950.zaitcev@redhat.com> <200710231138.38266.oliver@neukum.org> <20071023185302.5ce9d187.zaitcev@redhat.com> <200710241649.13257.oliver@neukum.org>
+	Wed, 24 Oct 2007 17:58:12 -0400
+X-YMail-OSG: YW8ka8sVM1ncPzmq8cOJ.opYp6YKc7nFGq331S9m
+X-RocketYMMF: rancidfat
+Date: Wed, 24 Oct 2007 14:58:06 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Simon Arlott <simon@fire.lp0.eu>, Adrian Bunk <bunk@kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1193259748.30930.91.camel@moss-terrapins.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710241649.13257.oliver@neukum.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <153904.68258.qm@web36609.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 04:49:12PM +0200, Oliver Neukum wrote:
-> Am Mittwoch 24 Oktober 2007 schrieb Pete Zaitcev:
-> > Oliver, thanks for the inftdata catch. I also fixed the sleep_on.
+
+--- "David P. Quigley" <dpquigl@tycho.nsa.gov> wrote:
+
+> On Wed, 2007-10-24 at 21:04 +0200, Jan Engelhardt wrote:
+> > On Oct 24 2007 19:59, Simon Arlott wrote:
+> > >On 24/10/07 19:51, Jan Engelhardt wrote:
+> > >> On Oct 24 2007 19:11, Simon Arlott wrote:
+> > >>>
+> > >>>* (I've got a list of access rules which are scanned in order until one
+> of 
+> > >>>them matches, and an array of one bit for every port for per-port
+> default 
+> > >>>allow/deny - although the latter could be removed.
+> > >>>http://svn.lp0.eu/simon/portac/trunk/)
+> > >> 
+> > >> Besides the 'feature' of inhibiting port binding,
+> > >> is not this task of blocking connections something for a firewall?
+> > >
+> > >The firewall blocks incoming connections where appropriate, yes, but it 
+> > >doesn't stop one user binding to a port that another user expected to be
+> able 
+> > >to use. "Ownership" of ports (1-1023) shouldn't be something only root
+> (via 
+> > >CAP_NET_BIND_SERVICE) has. Lots of services also don't have standard ports
 > 
-> But you are leaving a function while still on a waitqueue left on the stack.
-> Here's a patch on top of yours.
+> > >below 1024 and it's useful to be able to prevent users from binding to
+> them 
+> > >too.
+> > 
+> > Indeed.
+> > 
+> > 
+> > There has been a feature in the security framework that probably did
+> > not get much attention. It looks like YAGNI first, but on a closer look,
+> > it becomes useful pretty quick - secondary_register.
+> > 
+> > As more and more simple LSM plugins pop up, stacking/chaining by means
+> > of secondary_register becomes attractive again, especially if these LSMs
+> > target different actions. This is probably the most useful thing why
+> > the LSM interface should remain modular:
+> > 
+> > # Secure my files
+> > modprobe apparmor
+> > # -*- assuming apparmor implemented secondaries -*-
+> > # Secure my ports
+> > modprobe portac
+> > # More rights to users
+> > modprobe multiadm
+> > # -*- whatever else comes along -*-
+> 
+> There is an issue that you overlook here and it is the successful
+> composition of security models. While your idea is appealing it presents
+> several problems. In your example you have 3 models with 3 policies.
+> AppArmor which has its own port security mechanisms is a MAC model that
+> from what I have seen appears to have a targeted least privilege policy.
+> This means that AppArmor picks applications it wishes to secure and
+> makes sure it can't do anything except what it needs to get its job
+> done. Your module multiadm takes a user which is completely orthogonal
+> to the concepts that AppArmor uses and gives him extra privileges. From
+> what I have read and correct me if I am wrong portac deals with users
+> instead of programs. Now lets try to reconcile this in a way that is
+> sane to the user/administrator.
+> 
+> Apparmor wants to lock down some application, it gives the application
+> access to a particular port, and the minimal set of privileges needed to
+> execute the application. Since Apparmor is "easy to use" (note the
+> quotes are to indicate they aren't my words not sarcasm) and SUSE comes
+> with a targeted policy the user isn't concerned with it. Now multiadm
+> comes along and an administrator wishes to grant extra rights to a user.
+> This is fine with multiadm alone since it is the main security module,
+> however we now have to compose this with AppArmor. So an administrator
+> runs into an error running his application. Is this because his user
+> isn't granted the proper escalated privileges? Is it because AppArmor
+> needs an extra rule to run the application?  It could also be that our
+> third module has blocked the application because it determined that even
+> though multiadm specified that the user should have the elevated
+> privileges to run the application that user shouldn't be able to bind to
+> that port. 
+> 
+> There might be a better example to illustrate the problem however, this
+> simple example shows the interdependency of three seemingly simple
+> modules. Imagine what happens when people really let loose and implement
+> all sorts of crazy ideas and stack them on top of each other. Stacking
+> works in things such as file systems because we have a clearly defined
+> interface with fixed solid semantics. You could attempt to do that but
+> once you have modules that step on each others toes you have to figure
+> out a way to reconcile that. It seems to me that you're going to
+> introduce usability problems that are hard to deal with.
+> 
+> Dave Quigley
 
-Hm, I think I'll wait for Pete and you to agree and send me a final
-version before applying anything here :)
+Two very important things to consider:
 
-thanks,
+The LSM is designed to be a restrictive mechanism. An LSM module
+is not allowed to grant access that would be denied by usual
+mechanisms. There are composition problems, but nothing that is
+worse than the problems you have to deal with when a filesystem
+is mounted read-only. True, one LSM module could muck with the
+data used by another, but that's something you can do today with
+setxattr() calls in an application.
 
-greg k-h
+Which brings up the second important point. The argument above
+has nothing whatever to do with mechanisms provided by the kernel
+and everything to do with the privileged applications used to
+administer a system. Those applications need to be written so as
+to deal properly with unexpected access failures, such as might
+be induced by a filesystem mounted read-only or being full. I
+am aware of the Holy Grail of a security package that does not
+interfere with the operation of "normal" administration. How close
+you can come to that in independent of wether your kernel is
+an integrated "security solution" or a collection of composed
+modules.
+
+This discussion is amazingly disconnected from the issues of LSM.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
