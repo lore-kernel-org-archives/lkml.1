@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXJXQBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbXJXQIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXJXQBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXJXQBI
+	id S1755045AbXJXQIy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJXQIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:01:08 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39177 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbXJXQBG (ORCPT
+	Wed, 24 Oct 2007 12:08:46 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:47259 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbXJXQIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:01:06 -0400
-Date: Wed, 24 Oct 2007 10:01:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 3/4] sound: Use stringbuf
-Message-ID: <20071024160105.GB27248@parisc-linux.org>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx> <1193173966-3550-2-git-send-email-matthew@wil.cx> <1193173966-3550-3-git-send-email-matthew@wil.cx> <s5h3aw0d29r.wl%tiwai@suse.de>
+	Wed, 24 Oct 2007 12:08:45 -0400
+Message-ID: <471F6DFE.3040304@linux.vnet.ibm.com>
+Date: Wed, 24 Oct 2007 21:38:30 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: apw@shadowen.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+References: <471E110C.20404@linux.vnet.ibm.com> <20071023184419.GD14671@kernel.dk> <20071024115436.GT32058@shadowen.org> <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h3aw0d29r.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 04:18:40PM +0200, Takashi Iwai wrote:
-> At Tue, 23 Oct 2007 17:12:45 -0400,
-> Matthew Wilcox wrote:
-> > 
-> > sound/ had its own snd_info_buffer for doing proc reads, which can be
-> > profitably replaced with stringbuf.  It actually finds a bug since ->read
-> > and ->write now have a different signature.
+FUJITA Tomonori wrote:
+> On Wed, 24 Oct 2007 12:54:36 +0100
+> Andy Whitcroft <apw@shadowen.org> wrote:
 > 
-> Do you mean the assignment of snd_ca0106_proc_reg_write?
-> I also found it out today coindentally :)
-
-I was referring to this hunk, so yes:
-
-@@ -448,10 +448,9 @@ int __devinit snd_ca0106_proc_init(struct snd_ca0106 * emu)
- //             entry->private_data = emu;
-        }
-        if(! snd_card_proc_new(emu->card, "ca0106_i2c", &entry)) {
--               snd_info_set_text_ops(entry, emu, snd_ca0106_proc_i2c_write);
-+               entry->private_data = emu;
-                entry->c.text.write = snd_ca0106_proc_i2c_write;
-                entry->mode |= S_IWUSR;
--//             entry->private_data = emu;
-        }
-        if(! snd_card_proc_new(emu->card, "ca0106_regs2", &entry)) 
-                snd_info_set_text_ops(entry, emu, snd_ca0106_proc_reg_read2);
-
-
-> Any other bugs I missed?
-
-Let me try to find them ... there was this warning fix:
-
-diff --git a/sound/isa/ad1848/ad1848_lib.c b/sound/isa/ad1848/ad1848_lib.c
-index a901cd1..9a64035 100644
---- a/sound/isa/ad1848/ad1848_lib.c
-+++ b/sound/isa/ad1848/ad1848_lib.c
-@@ -213,7 +213,7 @@ static void snd_ad1848_mce_down(struct snd_ad1848 *chip)
-        for (timeout = 12000; timeout > 0 && (inb(AD1848P(chip, REGSEL)) & AD184
-8_INIT); timeout--)
-                udelay(100);
- 
--       snd_printdd("(1) timeout = %d\n", timeout);
-+       snd_printdd("(1) timeout = %ld\n", timeout);
- 
- #ifdef CONFIG_SND_DEBUG
-        if (inb(AD1848P(chip, REGSEL)) & AD1848_INIT)
-
-but I think that's the only one.
-
-> > -static void snd_ac97_proc_regs_write(struct snd_info_entry *entry, struct snd_info_buffer *buffer)
-> > +static void snd_ac97_proc_regs_write(struct snd_info_entry *entry, struct stringbuf *buffer)
+>> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
+>>> On Tue, Oct 23 2007, Kamalesh Babulal wrote:
+>>>> Hi,
+>>>>
+>>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+>>>> over the AMD box
+>>>>
+>>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+>>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+>>>> PGD 10185b067 PUD 10075b067 PMD 0 
+>>>> Oops: 0002 [1] SMP 
+>>>> CPU 3 
+>>>> Modules linked in:
+>>>> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
+>>>> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+>>>> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
+>>> Can you check where gart_map_sg+0x26c is at? Make sure you have
+>>> CONFIG_DEBUG_INFO defined, then do:
+>>>
+>>> $ gdb vmlinux
+>>> $ l *gart_map_sg+0x26c
+>> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
+>> output from that version, the panic (also below) seems the same:
+>>
+>> (gdb) l *gart_map_sg+0x26c
+>> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
+>> 428                     goto error;
+>> 429             out++;
+>> 430             flush_gart();
+>> 431             if (out < nents) {
+>> 432                     sgmap = sg_next(sgmap);
+>> 433                     sgmap->dma_length = 0;
+>> 434             }
+>> 435             return out;
+>> 436
+>> 437     error:
+>>
+>> So it seems sg_next has returned 0.
 > 
-> This shouldn't be changed.
-
-Quite right, sorry about that, will omit it from the next round.
-
+> Have you tried this?
+> 
+> http://marc.info/?l=linux-kernel&m=119317981406073&w=2
+> -
+Hi,
+Thanks, this patch solves the kernel oops.
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
