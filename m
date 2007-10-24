@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXJXBQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbXJXBTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbXJXBQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 21:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXJXBP6
+	id S1754553AbXJXBTR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 21:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXJXBTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 21:15:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47239 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbXJXBP5 (ORCPT
+	Tue, 23 Oct 2007 21:19:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:7509 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752820AbXJXBTG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 21:15:57 -0400
-Message-ID: <471E9CC1.90102@zytor.com>
-Date: Tue, 23 Oct 2007 18:15:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 23 Oct 2007 21:19:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,321,1188802800"; 
+   d="scan'208";a="304285111"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v7 0/3] x86 boot: 32-bit boot protocol
-References: <1193126765.23935.74.camel@caritas-dev.intel.com>	 <471E7078.4050908@zytor.com> <1193187847.23935.95.camel@caritas-dev.intel.com>
-In-Reply-To: <1193187847.23935.95.camel@caritas-dev.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] I/OAT: Add support for version 2 of ioatdma device
+Date: Tue, 23 Oct 2007 18:18:54 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C0349A5C8@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20071023125613.4e90b764.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] I/OAT: Add support for version 2 of ioatdma device
+Thread-Index: AcgVrsYi3Q5eV82ZTm+9zn/q9eEaTAALL3uQ
+References: <20071019072024.5057.3665.stgit@localhost.localdomain> <20071023125613.4e90b764.akpm@linux-foundation.org>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+X-OriginalArrivalTime: 24 Oct 2007 01:18:56.0233 (UTC) FILETIME=[D8F9CD90:01C815DB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
-> 
-> Do you think it is possible that the 3rd patch of the patchset: document
-> for 32 bit boot protocol can be merged into upstream firstly? It has
-> been used by kexec/LinuxBIOS already and the EFI support patches depend
-> on it too.
-> 
+>From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+>On Fri, 19 Oct 2007 00:20:25 -0700
+>Shannon Nelson <shannon.nelson@intel.com> wrote:
+>
+>> Add support for version 2 of the ioatdma device.  This device handles
+>> the descriptor chain and DCA services slightly differently:
+>>  - Instead of moving the dma descriptors between a busy and 
+>an idle chain,
+>>    this new version uses a single circular chain so that we 
+>don't have
+>>    rewrite the next_descriptor pointers as we add new 
+>requests, and the
+>>    device doesn't need to re-read the last descriptor.
+>>  - The new device has the DCA tags defined internally 
+>instead of needing
+>>    them defined statically.
+>> 
 
-Well, the part of it that doesn't document the 2.08 boot protocol, at 
-least, since it documents existing practice.
+Andrew,
 
-	-hpa
+Thank you for your time and the review comments.  I'll attend to the
+details and repost.
+
+sln
