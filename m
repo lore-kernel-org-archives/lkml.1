@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765708AbXJXRCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765833AbXJXRCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765708AbXJXRCi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760954AbXJXQyI
+	id S1765833AbXJXRCy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764241AbXJXQ4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:54:08 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37210 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764105AbXJXQyG (ORCPT
+	Wed, 24 Oct 2007 12:56:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57300 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764213AbXJXQ4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:54:06 -0400
-Date: Wed, 24 Oct 2007 18:54:34 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: yokota@netlab.is.tsukuba.ac.jp, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] nsp32_restart_autoscsi(): remove error check
-Message-ID: <20071024165434.GZ30533@stusta.de>
-References: <20071024162515.GV30533@stusta.de> <1193244072.3396.17.camel@localhost.localdomain>
+	Wed, 24 Oct 2007 12:56:43 -0400
+Date: Wed, 24 Oct 2007 09:56:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux MM <linux-mm@kvack.org>
+Subject: Re: SLUB 0:1 SLAB (OOM during massive parallel kernel builds)
+In-Reply-To: <84144f020710231341p189435b1y5514e5be981b9b1c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0710240955480.26202@schroedinger.engr.sgi.com>
+References: <20071023181615.GA10377@martell.zuzino.mipt.ru> 
+ <Pine.LNX.4.64.0710231227590.19626@schroedinger.engr.sgi.com> 
+ <84144f020710231304h6cba8626na4ab4bec0acda7a0@mail.gmail.com> 
+ <Pine.LNX.4.64.0710231305050.20095@schroedinger.engr.sgi.com>
+ <84144f020710231341p189435b1y5514e5be981b9b1c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1193244072.3396.17.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 12:41:12PM -0400, James Bottomley wrote:
-> On Wed, 2007-10-24 at 18:25 +0200, Adrian Bunk wrote:
-> > The Coverity checker noted that we'll anyway Oops later when we ran into 
-> > this condition - and the error check didn't prevent that.
-> > 
-> > Considering that the error condition shouldn't be possible, and we are 
-> > not able to handle it easily, this patch simply removes the pointless 
-> > error check.
-> 
-> This is the one where I said I don't like the fact that you're removing
-> the explanatory message that's printed before we crash.  if you want to
-> shut coverity up and stop sending the patch, I'm happy adding a BUG();
-> after the nsp32_msg().
+On Tue, 23 Oct 2007, Pekka Enberg wrote:
 
-Sorry, I missed your answer when resending since it was in a different 
-thread.
+> Yeah, but we're _not failing_ when debugging is enabled. Thus, it's
+> likely, that the _failing_ (non-debug) case has potential for more
+> order 0 allocs, no? I am just guessing here but maybe it's
+> slab_order() behaving differently from calculate_slab_order() so that
+> we see more order 0 pressure in SLUB than SLAB?
 
-I'm still not convinced we really need the nsp32_msg() here but you are 
-the maintainer and it's not a big deal anyway
+Seesm that order 0 pressure is better than order 1?
 
-A BUG() would IMHO be similarly pointless as the nsp32_msg() at this 
-point and there's no value in changing code only for the sake of the 
-Coverity checker.
-
-> James
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
