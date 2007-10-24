@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbXJXVvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbXJXVv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbXJXVvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXJXVu5
+	id S1760636AbXJXVv2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760146AbXJXVvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:50:57 -0400
-Received: from animx.eu.org ([216.98.75.249]:53175 "EHLO animx.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754781AbXJXVu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:50:57 -0400
-Date: Wed, 24 Oct 2007 17:50:33 -0400
-From: Wakko Warner <wakko@animx.eu.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How do I get my aic94xx to see sata drives?
-Message-ID: <20071024215033.GC11824@animx.eu.org>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	linux-kernel@vger.kernel.org
-References: <20071024022124.GA6226@animx.eu.org> <471EB085.5080604@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471EB085.5080604@garzik.org>
-User-Agent: Mutt/1.5.6+20040907i
+	Wed, 24 Oct 2007 17:51:17 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57906 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759673AbXJXVvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:51:14 -0400
+Date: Wed, 24 Oct 2007 23:51:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       Simon Arlott <simon@fire.lp0.eu>, Adrian Bunk <bunk@kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <20071024213704.GA2867@sergelap.austin.ibm.com>
+Message-ID: <Pine.LNX.4.64.0710242342540.17781@fbirervta.pbzchgretzou.qr>
+References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org>
+ <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid>
+ <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk>
+ <Pine.LNX.4.64.0710242050540.17781@fbirervta.pbzchgretzou.qr>
+ <471F9603.9080308@simon.arlott.org.uk> <Pine.LNX.4.64.0710242059500.17781@fbirervta.pbzchgretzou.qr>
+ <1193259748.30930.91.camel@moss-terrapins.epoch.ncsc.mil>
+ <20071024213704.GA2867@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Wakko Warner wrote:
-> >Please CC me.
 
-> >I've looked around and the only thing I can find was a git repository for
-> >it.  I don't know anything about git.  I just want to get the driver so I
-> >can use the sata drives I have on this controller.
-> >
-> >I'm currently using 2.6.22.
-> 
-> hum, it should be working in 2.6.22.  There were some minor fixes and 
-> changes in 2.6.23 that you might want to try, but overall, we are 
-> interested in your bug report.
+On Oct 24 2007 16:37, Serge E. Hallyn wrote:
+>
+>Or, a better example, a privileged program reads some sensitive data -
+>as allowed by multiadm, writes it to a file, but apparmor prevented it
+>from chowning the file to the right user before writing,
 
-Definately does not work in 2.6.22, does work in 2.6.23.  I'm copying stuff
-to it right now!
+Interesting find, I should pay attention to that :-)
 
--- 
- Lab tests show that use of micro$oft causes cancer in lab animals
- Got Gas???
+But - note to dquigley - AFAICS, an LSM needs to _explicitly_ call
+the next LSM's function. No one (just a minimal grep in
+linux-2.6/security/) besides SELinux does that today. So
+while you could load AppArmor ontop of MultiAdm, it would never
+be invoked. This is what is known as "sufficient" in PAM parlance.
+SELinux OTOH is in "required" mode [again PAM-speak].
