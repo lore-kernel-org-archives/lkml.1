@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbXJXX11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbXJXXbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbXJXX11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 19:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbXJXX1R
+	id S1757191AbXJXXbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 19:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXJXXbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 19:27:17 -0400
-Received: from rwcrmhc12.comcast.net ([216.148.227.152]:35988 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754143AbXJXX1Q (ORCPT
+	Wed, 24 Oct 2007 19:31:33 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38699 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754126AbXJXXbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 19:27:16 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 19:27:16 EDT
-Date: Wed, 24 Oct 2007 19:22:10 -0400 (EDT)
-From: Parag Warudkar <kernel-stuff@comcast.net>
-X-X-Sender: parag@parag-desktop
-To: linux-kernel@vger.kernel.org
-cc: rt2400-devel@lists.sourceforge.net
-Subject: [PATCH] rt2500usb - Don't claim 050d:705{0/a}
-Message-ID: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
+	Wed, 24 Oct 2007 19:31:31 -0400
+Date: Thu, 25 Oct 2007 01:32:00 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface)
+Message-ID: <20071024233200.GJ30533@stusta.de>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <446110.89443.qm@web36608.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a Belkin USB Wireless adapter with ID 050d:705a.
-Both rt2500usb.c and rt73usb.c claim that they can drive the device with 
-this ID.
+On Wed, Oct 24, 2007 at 03:58:02PM -0700, Casey Schaufler wrote:
+> 
+> --- Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > ...
+> > 
+> > There are other points in this thread that might or might not warrant 
+> > making LSM modular again, but even though it might sound harsh breaking 
+> > external modules and thereby making people aware that their code should 
+> > get into the kernel is IMHO a positive point.
+> 
+> Those proposing LSM modules over the past couple years have
+> been treated most harshly. I have personally taken the least
+> flak of anyone on my proposal, and at that there have been
+> times where I felt like pulling out the #5 clue stick and
+> taking a few swings. It's no wonder that people are afraid
+> to suggest a module. I didn't do it until I had combed through
+> the archives and prepared answers for the most common attacks.
+> I hope that Smack moving forward will defuse some of the bad
+> vibes that have clouded the LSM for so long. I don't blame
+> anyone who kept their module to themself given the hostility
+> which even successful products have encountered.
+> 
+> And don't give me the old "LKML is a tough crowd" feldercarb.
+> Security modules have been much worse. Innovation, even in
+> security, is a good thing and treating people harshly, even
+> "for their own good", is an impediment to innovation.
 
-When using the distro kernel as well as custom 2.4.24-rc1 both rt73usb and 
-rt2500usb get loaded and fight for the register writes and fail. rt2500usb 
-is not able to drive my device. So I have to manually rmmod/modprobe or 
-delete rt2500usb.ko and depmod every time I get a new kernel.
+What I'm giving you is "Linus has decreed there can be LSMs other than 
+SELinux."
 
-If only rt73usb is loaded everything works well. To me it 
-sounds like rt2500usb should not be driving 050d:705a.
+Getting LSMs included should no longer be harder than for other 
+parts of the kernel.
 
-There is another ID 050d:7050 which is also claimed to be handled by both 
-rt3500usb and rt73usb. Assuming rt73usb can drive this as well (I have no 
-way to be sure as I don't have device with this ID) the following patch 
-makes sure only rt73usb claims the 2 devices.
+And don't get me wrong, I'm not saying my point should decide this 
+discussion. It's simply the point that making it harder for external 
+code also has advantages.
 
-Signed-off-by: Parag Warudkar <kernel-stuff@comcast.net>
+> Casey Schaufler
 
---- linux-2.6-wk/drivers/net/wireless/rt2x00/rt2500usb.c.orig	2007-10-24 18:51:45.000000000 -0400
-+++ linux-2.6-wk/drivers/net/wireless/rt2x00/rt2500usb.c	2007-10-24 18:52:31.000000000 -0400
-@@ -1758,9 +1758,7 @@
-  	{ USB_DEVICE(0x0b05, 0x1706), USB_DEVICE_DATA(&rt2500usb_ops) },
-  	{ USB_DEVICE(0x0b05, 0x1707), USB_DEVICE_DATA(&rt2500usb_ops) },
-  	/* Belkin */
--	{ USB_DEVICE(0x050d, 0x7050), USB_DEVICE_DATA(&rt2500usb_ops) },
-  	{ USB_DEVICE(0x050d, 0x7051), USB_DEVICE_DATA(&rt2500usb_ops) },
--	{ USB_DEVICE(0x050d, 0x705a), USB_DEVICE_DATA(&rt2500usb_ops) },
-  	/* Cisco Systems */
-  	{ USB_DEVICE(0x13b1, 0x000d), USB_DEVICE_DATA(&rt2500usb_ops) },
-  	{ USB_DEVICE(0x13b1, 0x0011), USB_DEVICE_DATA(&rt2500usb_ops) },
+cu
+Adrian
 
+-- 
 
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
