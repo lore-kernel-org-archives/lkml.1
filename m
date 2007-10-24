@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbXJXQnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXJXQoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764053AbXJXQnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbXJXQZz
+	id S1761349AbXJXQoK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbXJXQZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:25:55 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60972 "EHLO
+	Wed, 24 Oct 2007 12:25:57 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60978 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759384AbXJXQZl (ORCPT
+	with ESMTP id S1759661AbXJXQZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:25:41 -0400
-Date: Wed, 24 Oct 2007 18:26:10 +0200
+	Wed, 24 Oct 2007 12:25:45 -0400
+Date: Wed, 24 Oct 2007 18:26:14 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: geert@linux-m68k.org, zippel@linux-m68k.org, bzolnier@gmail.com,
-       kkeil@suse.de, James.Bottomley@SteelEye.com, adaplas@gmail.com
-Cc: linux-m68k@vger.kernel.org, linux-ide@vger.kernel.org,
-       isdn4linux@listserv.isdn4linux.de, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] cleanup after APUS removal
-Message-ID: <20071024162610.GG30533@stusta.de>
+To: Thomas Gleixner <tglx@cruncher.tec.linutronix.de>, dwmw2@infradead.org
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] remove 2 broken MTD drivers
+Message-ID: <20071024162614.GH30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,323 +23,724 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the APUS removal, some code can be removed.
+This patch removes two MTD drivers that have been marked as
+BROKEN 17 months ago due to requiring nonexisting header files.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/m68k/amiga/chipram.c           |    2 
- drivers/ide/ide-probe.c             |    8 +--
- drivers/isdn/hisax/avm_pci.c        |    8 ---
- drivers/scsi/a2091.c                |    3 -
- drivers/scsi/a3000.c                |    3 -
- drivers/scsi/gvp11.c                |    3 -
- drivers/scsi/oktagon_esp.c          |    2 
- drivers/scsi/oktagon_io.S           |   72 ----------------------------
- drivers/video/console/fbcon.c       |    2 
- drivers/video/console/fonts.c       |    4 -
- include/asm-m68k/pgtable.h          |    2 
- sound/oss/dmasound/Kconfig          |    2 
- sound/oss/dmasound/dmasound_paula.c |    4 -
- 13 files changed, 12 insertions(+), 103 deletions(-)
+ drivers/mtd/nand/Kconfig          |   12 
+ drivers/mtd/nand/Makefile         |    2 
+ drivers/mtd/nand/ppchameleonevb.c |  439 ------------------------------
+ drivers/mtd/nand/toto.c           |  208 --------------
+ 4 files changed, 661 deletions(-)
 
-557134975b5c1098cd42a6295670723ecfb35b57 
-diff --git a/arch/m68k/amiga/chipram.c b/arch/m68k/amiga/chipram.c
-index fa015d8..75d4626 100644
---- a/arch/m68k/amiga/chipram.c
-+++ b/arch/m68k/amiga/chipram.c
-@@ -29,12 +29,10 @@ void __init amiga_chip_init(void)
-     if (!AMIGAHW_PRESENT(CHIP_RAM))
- 	return;
+eb65564be12f427ae8a96a2ffa7e727a814e1129 
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 246d451..fa6b8b5 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -69,12 +69,6 @@ config MTD_NAND_AMS_DELTA
+ 	help
+ 	  Support for NAND flash on Amstrad E3 (Delta).
  
--#ifndef CONFIG_APUS_FAST_EXCEPT
-     /*
-      *  Remove the first 4 pages where PPC exception handlers will be located
-      */
-     amiga_chip_size -= 0x4000;
--#endif
-     chipram_res.end = amiga_chip_size-1;
-     request_resource(&iomem_resource, &chipram_res);
- 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 6a6f2e0..1664e2d 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1062,9 +1062,9 @@ static int init_irq (ide_hwif_t *hwif)
- 	 */
- 	if (!match || match->irq != hwif->irq) {
- 		int sa = IRQF_DISABLED;
--#if defined(__mc68000__) || defined(CONFIG_APUS)
-+#if defined(__mc68000__)
- 		sa = IRQF_SHARED;
--#endif /* __mc68000__ || CONFIG_APUS */
-+#endif /* __mc68000__ */
- 
- 		if (IDE_CHIPSET_IS_PCI(hwif->chipset)) {
- 			sa = IRQF_SHARED;
-@@ -1107,7 +1107,7 @@ static int init_irq (ide_hwif_t *hwif)
- 		spin_unlock_irq(&ide_lock);
- 	}
- 
--#if !defined(__mc68000__) && !defined(CONFIG_APUS)
-+#if !defined(__mc68000__)
- 	printk("%s at 0x%03lx-0x%03lx,0x%03lx on irq %d", hwif->name,
- 		hwif->io_ports[IDE_DATA_OFFSET],
- 		hwif->io_ports[IDE_DATA_OFFSET]+7,
-@@ -1115,7 +1115,7 @@ static int init_irq (ide_hwif_t *hwif)
- #else
- 	printk("%s at 0x%08lx on irq %d", hwif->name,
- 		hwif->io_ports[IDE_DATA_OFFSET], hwif->irq);
--#endif /* __mc68000__ && CONFIG_APUS */
-+#endif /* __mc68000__ */
- 	if (match)
- 		printk(" (%sed with %s)",
- 			hwif->sharing_irq ? "shar" : "serializ", match->name);
-diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
-index f8b7978..be55a26 100644
---- a/drivers/isdn/hisax/avm_pci.c
-+++ b/drivers/isdn/hisax/avm_pci.c
-@@ -263,11 +263,7 @@ hdlc_empty_fifo(struct BCState *bcs, int count)
- 		outl(idx, cs->hw.avm.cfg_reg + 4);
- 		while (cnt < count) {
- #ifdef __powerpc__
--#ifdef CONFIG_APUS
--			*ptr++ = in_le32((unsigned *)(cs->hw.avm.isac +_IO_BASE));
--#else
- 			*ptr++ = in_be32((unsigned *)(cs->hw.avm.isac +_IO_BASE));
--#endif /* CONFIG_APUS */
- #else
- 			*ptr++ = inl(cs->hw.avm.isac);
- #endif /* __powerpc__ */
-@@ -328,11 +324,7 @@ hdlc_fill_fifo(struct BCState *bcs)
- 	if (cs->subtyp == AVM_FRITZ_PCI) {
- 		while (cnt<count) {
- #ifdef __powerpc__
--#ifdef CONFIG_APUS
--			out_le32((unsigned *)(cs->hw.avm.isac +_IO_BASE), *ptr++);
--#else
- 			out_be32((unsigned *)(cs->hw.avm.isac +_IO_BASE), *ptr++);
--#endif /* CONFIG_APUS */
- #else
- 			outl(*ptr++, cs->hw.avm.isac);
- #endif /* __powerpc__ */
-diff --git a/drivers/scsi/a2091.c b/drivers/scsi/a2091.c
-index b7c5385..0d4c593 100644
---- a/drivers/scsi/a2091.c
-+++ b/drivers/scsi/a2091.c
-@@ -46,8 +46,7 @@ static int dma_setup(struct scsi_cmnd *cmd, int dir_in)
-     struct Scsi_Host *instance = cmd->device->host;
- 
-     /* don't allow DMA if the physical address is bad */
--    if (addr & A2091_XFER_MASK ||
--	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-+    if (addr & A2091_XFER_MASK)
-     {
- 	HDATA(instance)->dma_bounce_len = (cmd->SCp.this_residual + 511)
- 	    & ~0x1ff;
-diff --git a/drivers/scsi/a3000.c b/drivers/scsi/a3000.c
-index 796f1c4..b3a6c58 100644
---- a/drivers/scsi/a3000.c
-+++ b/drivers/scsi/a3000.c
-@@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *cmd, int dir_in)
-      * end of a physical memory chunk, then allocate a bounce
-      * buffer
-      */
--    if (addr & A3000_XFER_MASK ||
--	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-+    if (addr & A3000_XFER_MASK)
-     {
- 	HDATA(a3000_host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
- 	    & ~0x1ff;
-diff --git a/drivers/scsi/gvp11.c b/drivers/scsi/gvp11.c
-index 37741e9..91f8522 100644
---- a/drivers/scsi/gvp11.c
-+++ b/drivers/scsi/gvp11.c
-@@ -54,8 +54,7 @@ static int dma_setup(struct scsi_cmnd *cmd, int dir_in)
-     static int scsi_alloc_out_of_range = 0;
- 
-     /* use bounce buffer if the physical address is bad */
--    if (addr & HDATA(cmd->device->host)->dma_xfer_mask ||
--	(!dir_in && mm_end_of_chunk (addr, cmd->SCp.this_residual)))
-+    if (addr & HDATA(cmd->device->host)->dma_xfer_mask)
-     {
- 	HDATA(cmd->device->host)->dma_bounce_len = (cmd->SCp.this_residual + 511)
- 	    & ~0x1ff;
-diff --git a/drivers/scsi/oktagon_esp.c b/drivers/scsi/oktagon_esp.c
-index 8e5eadb..c2c65ac 100644
---- a/drivers/scsi/oktagon_esp.c
-+++ b/drivers/scsi/oktagon_esp.c
-@@ -7,7 +7,7 @@
-  */
- 
- 
--#if defined(CONFIG_AMIGA) || defined(CONFIG_APUS)
-+#if defined(CONFIG_AMIGA)
- #define USE_BOTTOM_HALF
- #endif
- 
-diff --git a/drivers/scsi/oktagon_io.S b/drivers/scsi/oktagon_io.S
-index 8a7340b..d294625 100644
---- a/drivers/scsi/oktagon_io.S
-+++ b/drivers/scsi/oktagon_io.S
-@@ -24,77 +24,6 @@ int oktag_from_io(long *addr,long *paddr,long len)
-  */
- 
- 
--#ifdef CONFIG_APUS
+-config MTD_NAND_TOTO
+-	tristate "NAND Flash device on TOTO board"
+-	depends on ARCH_OMAP && BROKEN
+-	help
+-	  Support for NAND flash on Texas Instruments Toto platform.
 -
--	.file	"oktagon_io.c"
+ config MTD_NAND_TS7250
+ 	tristate "NAND Flash device on TS-7250 board"
+ 	depends on MACH_TS72XX
+@@ -120,12 +114,6 @@ config MTD_NAND_RTC_FROM4
+ 	  This enables the driver for the Renesas Technology AG-AND
+ 	  flash interface board (FROM_BOARD4)
+ 
+-config MTD_NAND_PPCHAMELEONEVB
+-	tristate "NAND Flash device on PPChameleonEVB board"
+-	depends on PPCHAMELEONEVB && BROKEN
+-	help
+-	  This enables the NAND flash driver on the PPChameleon EVB Board.
 -
--gcc2_compiled.:
+ config MTD_NAND_S3C2410
+ 	tristate "NAND Flash support for S3C2410/S3C2440 SoC"
+ 	depends on ARCH_S3C2410
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+index 3ad6c01..f6b27de 100644
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -9,12 +9,10 @@ obj-$(CONFIG_MTD_NAND_IDS)		+= nand_ids.o
+ obj-$(CONFIG_MTD_NAND_CAFE)		+= cafe_nand.o
+ obj-$(CONFIG_MTD_NAND_SPIA)		+= spia.o
+ obj-$(CONFIG_MTD_NAND_AMS_DELTA)	+= ams-delta.o
+-obj-$(CONFIG_MTD_NAND_TOTO)		+= toto.o
+ obj-$(CONFIG_MTD_NAND_AUTCPU12)		+= autcpu12.o
+ obj-$(CONFIG_MTD_NAND_EDB7312)		+= edb7312.o
+ obj-$(CONFIG_MTD_NAND_AU1550)		+= au1550nd.o
+ obj-$(CONFIG_MTD_NAND_BF5XX)		+= bf5xx_nand.o
+-obj-$(CONFIG_MTD_NAND_PPCHAMELEONEVB)	+= ppchameleonevb.o
+ obj-$(CONFIG_MTD_NAND_S3C2410)		+= s3c2410.o
+ obj-$(CONFIG_MTD_NAND_DISKONCHIP)	+= diskonchip.o
+ obj-$(CONFIG_MTD_NAND_H1900)		+= h1910.o
+diff --git a/drivers/mtd/nand/ppchameleonevb.c b/drivers/mtd/nand/ppchameleonevb.c
+deleted file mode 100644
+index 082073a..0000000
+--- a/drivers/mtd/nand/ppchameleonevb.c
++++ /dev/null
+@@ -1,439 +0,0 @@
 -/*
--	.section ".text"
--*/
--	.align 2
--	.globl oktag_to_io
--	.type	 oktag_to_io,@function
--oktag_to_io:
--	addi 5,5,3
--	srwi 5,5,2
--	cmpwi 1,5,0
--	mr 9,3
--	mr 3,4
--	addi 5,5,-1
--	bc 12,6,.L3
--.L5:
--	cmpwi 1,5,0
--	lwz 0,0(3)
--	addi 3,3,4
--	addi 5,5,-1
--exp1:	stw 0,0(9)
--	bc 4,6,.L5
--.L3:
--ret1:	subf 3,4,3
--	srawi 3,3,2
--	blr
--.Lfe1:
--	.size	 oktag_to_io,.Lfe1-oktag_to_io
--	.align 2
--	.globl oktag_from_io
--	.type	 oktag_from_io,@function
--oktag_from_io:
--	addi 5,5,3
--	srwi 5,5,2
--	cmpwi 1,5,0
--	mr 9,3
--	addi 5,5,-1
--	bc 12,6,.L9
--.L11:
--	cmpwi 1,5,0
--exp2:	lwz 0,0(4)
--	addi 5,5,-1
--	stw 0,0(3)
--	addi 3,3,4
--	bc 4,6,.L11
--.L9:
--ret2:	subf 3,9,3
--	srawi 3,3,2
--	blr
--.Lfe2:
--	.size	 oktag_from_io,.Lfe2-oktag_from_io
--	.ident	"GCC: (GNU) egcs-2.90.29 980515 (egcs-1.0.3 release)"
--
--/*
-- * Exception table.
-- * Second longword shows where to jump when an exception at the addr the first
-- * longword is pointing to is caught.
+- *  drivers/mtd/nand/ppchameleonevb.c
+- *
+- *  Copyright (C) 2003 DAVE Srl (info@wawnet.biz)
+- *
+- *  Derived from drivers/mtd/nand/edb7312.c
+- *
+- *
+- * $Id: ppchameleonevb.c,v 1.7 2005/11/07 11:14:31 gleixner Exp $
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- *  Overview:
+- *   This is a device driver for the NAND flash devices found on the
+- *   PPChameleon/PPChameleonEVB system.
+- *   PPChameleon options (autodetected):
+- *   - BA model: no NAND
+- *   - ME model: 32MB (Samsung K9F5608U0B)
+- *   - HI model: 128MB (Samsung K9F1G08UOM)
+- *   PPChameleonEVB options:
+- *   - 32MB (Samsung K9F5608U0B)
 - */
 -
--.section __ex_table,"a"
--	.align	2
--oktagon_except:
--	.long	exp1,ret1
--	.long	exp2,ret2
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/mtd/mtd.h>
+-#include <linux/mtd/nand.h>
+-#include <linux/mtd/partitions.h>
+-#include <asm/io.h>
+-#include <platforms/PPChameleonEVB.h>
 -
+-#undef USE_READY_BUSY_PIN
+-#define USE_READY_BUSY_PIN
+-/* see datasheets (tR) */
+-#define NAND_BIG_DELAY_US		25
+-#define NAND_SMALL_DELAY_US		10
+-
+-/* handy sizes */
+-#define SZ_4M                           0x00400000
+-#define NAND_SMALL_SIZE                 0x02000000
+-#define NAND_MTD_NAME		"ppchameleon-nand"
+-#define NAND_EVB_MTD_NAME	"ppchameleonevb-nand"
+-
+-/* GPIO pins used to drive NAND chip mounted on processor module */
+-#define NAND_nCE_GPIO_PIN 		(0x80000000 >> 1)
+-#define NAND_CLE_GPIO_PIN 		(0x80000000 >> 2)
+-#define NAND_ALE_GPIO_PIN 		(0x80000000 >> 3)
+-#define NAND_RB_GPIO_PIN 		(0x80000000 >> 4)
+-/* GPIO pins used to drive NAND chip mounted on EVB */
+-#define NAND_EVB_nCE_GPIO_PIN 	(0x80000000 >> 14)
+-#define NAND_EVB_CLE_GPIO_PIN 	(0x80000000 >> 15)
+-#define NAND_EVB_ALE_GPIO_PIN 	(0x80000000 >> 16)
+-#define NAND_EVB_RB_GPIO_PIN 	(0x80000000 >> 31)
+-
+-/*
+- * MTD structure for PPChameleonEVB board
+- */
+-static struct mtd_info *ppchameleon_mtd = NULL;
+-static struct mtd_info *ppchameleonevb_mtd = NULL;
+-
+-/*
+- * Module stuff
+- */
+-static unsigned long ppchameleon_fio_pbase = CFG_NAND0_PADDR;
+-static unsigned long ppchameleonevb_fio_pbase = CFG_NAND1_PADDR;
+-
+-#ifdef MODULE
+-module_param(ppchameleon_fio_pbase, ulong, 0);
+-module_param(ppchameleonevb_fio_pbase, ulong, 0);
 -#else
--
- /*
- The code which follows is for 680x0 based assembler and is meant for
- Linux/m68k. It was created by cross compiling the code using the
-@@ -191,4 +120,3 @@ oktagon_except:
- 	.long	exp2,ret2
- 
- #endif
--#endif
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 0f32f4a..2cedb49 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -84,7 +84,7 @@
- #ifdef CONFIG_MAC
- #include <asm/macints.h>
- #endif
--#if defined(__mc68000__) || defined(CONFIG_APUS)
-+#if defined(__mc68000__)
- #include <asm/machdep.h>
- #include <asm/setup.h>
- #endif
-diff --git a/drivers/video/console/fonts.c b/drivers/video/console/fonts.c
-index 96979c3..d0c03fd 100644
---- a/drivers/video/console/fonts.c
-+++ b/drivers/video/console/fonts.c
-@@ -15,7 +15,7 @@
- #include <linux/module.h>
- #include <linux/types.h>
- #include <linux/string.h>
--#if defined(__mc68000__) || defined(CONFIG_APUS)
-+#if defined(__mc68000__)
- #include <asm/setup.h>
- #endif
- #include <linux/font.h>
-@@ -120,7 +120,7 @@ const struct font_desc *get_default_font(int xres, int yres, u32 font_w,
-     for(i=0; i<num_fonts; i++) {
- 	f = fonts[i];
- 	c = f->pref;
--#if defined(__mc68000__) || defined(CONFIG_APUS)
-+#if defined(__mc68000__)
- #ifdef CONFIG_FONT_PEARL_8x8
- 	if (MACH_IS_AMIGA && f->idx == PEARL8x8_IDX)
- 	    c = 100;
-diff --git a/include/asm-m68k/pgtable.h b/include/asm-m68k/pgtable.h
-index 778a4c5..0b604f0 100644
---- a/include/asm-m68k/pgtable.h
-+++ b/include/asm-m68k/pgtable.h
-@@ -107,8 +107,6 @@ extern void *empty_zero_page;
- /* 64-bit machines, beware!  SRB. */
- #define SIZEOF_PTR_LOG2			       2
- 
--#define mm_end_of_chunk(addr, len)	0
--
- extern void kernel_set_cachemode(void *addr, unsigned long size, int cmode);
- 
- /*
-diff --git a/sound/oss/dmasound/Kconfig b/sound/oss/dmasound/Kconfig
-index 71b3134..3eb7827 100644
---- a/sound/oss/dmasound/Kconfig
-+++ b/sound/oss/dmasound/Kconfig
-@@ -14,7 +14,7 @@ config DMASOUND_ATARI
- 
- config DMASOUND_PAULA
- 	tristate "Amiga DMA sound support"
--	depends on (AMIGA || APUS) && SOUND
-+	depends on AMIGA && SOUND
- 	select DMASOUND
- 	help
- 	  If you want to use the internal audio of your Amiga in Linux, answer
-diff --git a/sound/oss/dmasound/dmasound_paula.c b/sound/oss/dmasound/dmasound_paula.c
-index 90fc058..202e810 100644
---- a/sound/oss/dmasound/dmasound_paula.c
-+++ b/sound/oss/dmasound/dmasound_paula.c
-@@ -91,10 +91,6 @@ static irqreturn_t AmiInterrupt(int irq, void *dummy);
-      *  power LED are controlled by the same line.
-      */
- 
--#ifdef CONFIG_APUS
--#define mach_heartbeat	ppc_md.heartbeat
+-__setup("ppchameleon_fio_pbase=", ppchameleon_fio_pbase);
+-__setup("ppchameleonevb_fio_pbase=", ppchameleonevb_fio_pbase);
 -#endif
 -
- static void (*saved_heartbeat)(int) = NULL;
- 
- static inline void disable_heartbeat(void)
+-#ifdef CONFIG_MTD_PARTITIONS
+-/*
+- * Define static partitions for flash devices
+- */
+-static struct mtd_partition partition_info_hi[] = {
+-      { .name = "PPChameleon HI Nand Flash",
+-	.offset = 0,
+-	.size = 128 * 1024 * 1024
+-      }
+-};
+-
+-static struct mtd_partition partition_info_me[] = {
+-      { .name = "PPChameleon ME Nand Flash",
+-	.offset = 0,
+-	.size = 32 * 1024 * 1024
+-      }
+-};
+-
+-static struct mtd_partition partition_info_evb[] = {
+-      { .name = "PPChameleonEVB Nand Flash",
+-	.offset = 0,
+-	.size = 32 * 1024 * 1024
+-      }
+-};
+-
+-#define NUM_PARTITIONS 1
+-
+-extern int parse_cmdline_partitions(struct mtd_info *master, struct mtd_partition **pparts, const char *mtd_id);
+-#endif
+-
+-/*
+- *	hardware specific access to control-lines
+- */
+-static void ppchameleon_hwcontrol(struct mtd_info *mtdinfo, int cmd,
+-				  unsigned int ctrl)
+-{
+-	struct nand_chip *chip = mtd->priv;
+-
+-	if (ctrl & NAND_CTRL_CHANGE) {
+-#error Missing headerfiles. No way to fix this. -tglx
+-		switch (cmd) {
+-		case NAND_CTL_SETCLE:
+-			MACRO_NAND_CTL_SETCLE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		case NAND_CTL_CLRCLE:
+-			MACRO_NAND_CTL_CLRCLE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		case NAND_CTL_SETALE:
+-			MACRO_NAND_CTL_SETALE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		case NAND_CTL_CLRALE:
+-			MACRO_NAND_CTL_CLRALE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		case NAND_CTL_SETNCE:
+-			MACRO_NAND_ENABLE_CE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		case NAND_CTL_CLRNCE:
+-			MACRO_NAND_DISABLE_CE((unsigned long)CFG_NAND0_PADDR);
+-			break;
+-		}
+-	}
+-	if (cmd != NAND_CMD_NONE)
+-		writeb(cmd, chip->IO_ADDR_W);
+-}
+-
+-static void ppchameleonevb_hwcontrol(struct mtd_info *mtdinfo, int cmd,
+-				     unsigned int ctrl)
+-{
+-	struct nand_chip *chip = mtd->priv;
+-
+-	if (ctrl & NAND_CTRL_CHANGE) {
+-#error Missing headerfiles. No way to fix this. -tglx
+-		switch (cmd) {
+-		case NAND_CTL_SETCLE:
+-			MACRO_NAND_CTL_SETCLE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		case NAND_CTL_CLRCLE:
+-			MACRO_NAND_CTL_CLRCLE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		case NAND_CTL_SETALE:
+-			MACRO_NAND_CTL_SETALE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		case NAND_CTL_CLRALE:
+-			MACRO_NAND_CTL_CLRALE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		case NAND_CTL_SETNCE:
+-			MACRO_NAND_ENABLE_CE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		case NAND_CTL_CLRNCE:
+-			MACRO_NAND_DISABLE_CE((unsigned long)CFG_NAND1_PADDR);
+-			break;
+-		}
+-	}
+-	if (cmd != NAND_CMD_NONE)
+-		writeb(cmd, chip->IO_ADDR_W);
+-}
+-
+-#ifdef USE_READY_BUSY_PIN
+-/*
+- *	read device ready pin
+- */
+-static int ppchameleon_device_ready(struct mtd_info *minfo)
+-{
+-	if (in_be32((volatile unsigned *)GPIO0_IR) & NAND_RB_GPIO_PIN)
+-		return 1;
+-	return 0;
+-}
+-
+-static int ppchameleonevb_device_ready(struct mtd_info *minfo)
+-{
+-	if (in_be32((volatile unsigned *)GPIO0_IR) & NAND_EVB_RB_GPIO_PIN)
+-		return 1;
+-	return 0;
+-}
+-#endif
+-
+-#ifdef CONFIG_MTD_PARTITIONS
+-const char *part_probes[] = { "cmdlinepart", NULL };
+-const char *part_probes_evb[] = { "cmdlinepart", NULL };
+-#endif
+-
+-/*
+- * Main initialization routine
+- */
+-static int __init ppchameleonevb_init(void)
+-{
+-	struct nand_chip *this;
+-	const char *part_type = 0;
+-	int mtd_parts_nb = 0;
+-	struct mtd_partition *mtd_parts = 0;
+-	void __iomem *ppchameleon_fio_base;
+-	void __iomem *ppchameleonevb_fio_base;
+-
+-	/*********************************
+-	* Processor module NAND (if any) *
+-	*********************************/
+-	/* Allocate memory for MTD device structure and private data */
+-	ppchameleon_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
+-	if (!ppchameleon_mtd) {
+-		printk("Unable to allocate PPChameleon NAND MTD device structure.\n");
+-		return -ENOMEM;
+-	}
+-
+-	/* map physical address */
+-	ppchameleon_fio_base = ioremap(ppchameleon_fio_pbase, SZ_4M);
+-	if (!ppchameleon_fio_base) {
+-		printk("ioremap PPChameleon NAND flash failed\n");
+-		kfree(ppchameleon_mtd);
+-		return -EIO;
+-	}
+-
+-	/* Get pointer to private data */
+-	this = (struct nand_chip *)(&ppchameleon_mtd[1]);
+-
+-	/* Initialize structures */
+-	memset(ppchameleon_mtd, 0, sizeof(struct mtd_info));
+-	memset(this, 0, sizeof(struct nand_chip));
+-
+-	/* Link the private data with the MTD structure */
+-	ppchameleon_mtd->priv = this;
+-	ppchameleon_mtd->owner = THIS_MODULE;
+-
+-	/* Initialize GPIOs */
+-	/* Pin mapping for NAND chip */
+-	/*
+-	   CE   GPIO_01
+-	   CLE  GPIO_02
+-	   ALE  GPIO_03
+-	   R/B  GPIO_04
+-	 */
+-	/* output select */
+-	out_be32((volatile unsigned *)GPIO0_OSRH, in_be32((volatile unsigned *)GPIO0_OSRH) & 0xC0FFFFFF);
+-	/* three-state select */
+-	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xC0FFFFFF);
+-	/* enable output driver */
+-	out_be32((volatile unsigned *)GPIO0_TCR,
+-		 in_be32((volatile unsigned *)GPIO0_TCR) | NAND_nCE_GPIO_PIN | NAND_CLE_GPIO_PIN | NAND_ALE_GPIO_PIN);
+-#ifdef USE_READY_BUSY_PIN
+-	/* three-state select */
+-	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xFF3FFFFF);
+-	/* high-impedecence */
+-	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) & (~NAND_RB_GPIO_PIN));
+-	/* input select */
+-	out_be32((volatile unsigned *)GPIO0_ISR1H,
+-		 (in_be32((volatile unsigned *)GPIO0_ISR1H) & 0xFF3FFFFF) | 0x00400000);
+-#endif
+-
+-	/* insert callbacks */
+-	this->IO_ADDR_R = ppchameleon_fio_base;
+-	this->IO_ADDR_W = ppchameleon_fio_base;
+-	this->cmd_ctrl = ppchameleon_hwcontrol;
+-#ifdef USE_READY_BUSY_PIN
+-	this->dev_ready = ppchameleon_device_ready;
+-#endif
+-	this->chip_delay = NAND_BIG_DELAY_US;
+-	/* ECC mode */
+-	this->ecc.mode = NAND_ECC_SOFT;
+-
+-	/* Scan to find existence of the device (it could not be mounted) */
+-	if (nand_scan(ppchameleon_mtd, 1)) {
+-		iounmap((void *)ppchameleon_fio_base);
+-		ppchameleon_fio_base = NULL;
+-		kfree(ppchameleon_mtd);
+-		goto nand_evb_init;
+-	}
+-#ifndef USE_READY_BUSY_PIN
+-	/* Adjust delay if necessary */
+-	if (ppchameleon_mtd->size == NAND_SMALL_SIZE)
+-		this->chip_delay = NAND_SMALL_DELAY_US;
+-#endif
+-
+-#ifdef CONFIG_MTD_PARTITIONS
+-	ppchameleon_mtd->name = "ppchameleon-nand";
+-	mtd_parts_nb = parse_mtd_partitions(ppchameleon_mtd, part_probes, &mtd_parts, 0);
+-	if (mtd_parts_nb > 0)
+-		part_type = "command line";
+-	else
+-		mtd_parts_nb = 0;
+-#endif
+-	if (mtd_parts_nb == 0) {
+-		if (ppchameleon_mtd->size == NAND_SMALL_SIZE)
+-			mtd_parts = partition_info_me;
+-		else
+-			mtd_parts = partition_info_hi;
+-		mtd_parts_nb = NUM_PARTITIONS;
+-		part_type = "static";
+-	}
+-
+-	/* Register the partitions */
+-	printk(KERN_NOTICE "Using %s partition definition\n", part_type);
+-	add_mtd_partitions(ppchameleon_mtd, mtd_parts, mtd_parts_nb);
+-
+- nand_evb_init:
+-	/****************************
+-	* EVB NAND (always present) *
+-	****************************/
+-	/* Allocate memory for MTD device structure and private data */
+-	ppchameleonevb_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
+-	if (!ppchameleonevb_mtd) {
+-		printk("Unable to allocate PPChameleonEVB NAND MTD device structure.\n");
+-		if (ppchameleon_fio_base)
+-			iounmap(ppchameleon_fio_base);
+-		return -ENOMEM;
+-	}
+-
+-	/* map physical address */
+-	ppchameleonevb_fio_base = ioremap(ppchameleonevb_fio_pbase, SZ_4M);
+-	if (!ppchameleonevb_fio_base) {
+-		printk("ioremap PPChameleonEVB NAND flash failed\n");
+-		kfree(ppchameleonevb_mtd);
+-		if (ppchameleon_fio_base)
+-			iounmap(ppchameleon_fio_base);
+-		return -EIO;
+-	}
+-
+-	/* Get pointer to private data */
+-	this = (struct nand_chip *)(&ppchameleonevb_mtd[1]);
+-
+-	/* Initialize structures */
+-	memset(ppchameleonevb_mtd, 0, sizeof(struct mtd_info));
+-	memset(this, 0, sizeof(struct nand_chip));
+-
+-	/* Link the private data with the MTD structure */
+-	ppchameleonevb_mtd->priv = this;
+-
+-	/* Initialize GPIOs */
+-	/* Pin mapping for NAND chip */
+-	/*
+-	   CE   GPIO_14
+-	   CLE  GPIO_15
+-	   ALE  GPIO_16
+-	   R/B  GPIO_31
+-	 */
+-	/* output select */
+-	out_be32((volatile unsigned *)GPIO0_OSRH, in_be32((volatile unsigned *)GPIO0_OSRH) & 0xFFFFFFF0);
+-	out_be32((volatile unsigned *)GPIO0_OSRL, in_be32((volatile unsigned *)GPIO0_OSRL) & 0x3FFFFFFF);
+-	/* three-state select */
+-	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xFFFFFFF0);
+-	out_be32((volatile unsigned *)GPIO0_TSRL, in_be32((volatile unsigned *)GPIO0_TSRL) & 0x3FFFFFFF);
+-	/* enable output driver */
+-	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) | NAND_EVB_nCE_GPIO_PIN |
+-		 NAND_EVB_CLE_GPIO_PIN | NAND_EVB_ALE_GPIO_PIN);
+-#ifdef USE_READY_BUSY_PIN
+-	/* three-state select */
+-	out_be32((volatile unsigned *)GPIO0_TSRL, in_be32((volatile unsigned *)GPIO0_TSRL) & 0xFFFFFFFC);
+-	/* high-impedecence */
+-	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) & (~NAND_EVB_RB_GPIO_PIN));
+-	/* input select */
+-	out_be32((volatile unsigned *)GPIO0_ISR1L,
+-		 (in_be32((volatile unsigned *)GPIO0_ISR1L) & 0xFFFFFFFC) | 0x00000001);
+-#endif
+-
+-	/* insert callbacks */
+-	this->IO_ADDR_R = ppchameleonevb_fio_base;
+-	this->IO_ADDR_W = ppchameleonevb_fio_base;
+-	this->cmd_ctrl = ppchameleonevb_hwcontrol;
+-#ifdef USE_READY_BUSY_PIN
+-	this->dev_ready = ppchameleonevb_device_ready;
+-#endif
+-	this->chip_delay = NAND_SMALL_DELAY_US;
+-
+-	/* ECC mode */
+-	this->ecc.mode = NAND_ECC_SOFT;
+-
+-	/* Scan to find existence of the device */
+-	if (nand_scan(ppchameleonevb_mtd, 1)) {
+-		iounmap((void *)ppchameleonevb_fio_base);
+-		kfree(ppchameleonevb_mtd);
+-		if (ppchameleon_fio_base)
+-			iounmap(ppchameleon_fio_base);
+-		return -ENXIO;
+-	}
+-#ifdef CONFIG_MTD_PARTITIONS
+-	ppchameleonevb_mtd->name = NAND_EVB_MTD_NAME;
+-	mtd_parts_nb = parse_mtd_partitions(ppchameleonevb_mtd, part_probes_evb, &mtd_parts, 0);
+-	if (mtd_parts_nb > 0)
+-		part_type = "command line";
+-	else
+-		mtd_parts_nb = 0;
+-#endif
+-	if (mtd_parts_nb == 0) {
+-		mtd_parts = partition_info_evb;
+-		mtd_parts_nb = NUM_PARTITIONS;
+-		part_type = "static";
+-	}
+-
+-	/* Register the partitions */
+-	printk(KERN_NOTICE "Using %s partition definition\n", part_type);
+-	add_mtd_partitions(ppchameleonevb_mtd, mtd_parts, mtd_parts_nb);
+-
+-	/* Return happy */
+-	return 0;
+-}
+-
+-module_init(ppchameleonevb_init);
+-
+-/*
+- * Clean up routine
+- */
+-static void __exit ppchameleonevb_cleanup(void)
+-{
+-	struct nand_chip *this;
+-
+-	/* Release resources, unregister device(s) */
+-	nand_release(ppchameleon_mtd);
+-	nand_release(ppchameleonevb_mtd);
+-
+-	/* Release iomaps */
+-	this = (struct nand_chip *) &ppchameleon_mtd[1];
+-	iounmap((void *) this->IO_ADDR_R);
+-	this = (struct nand_chip *) &ppchameleonevb_mtd[1];
+-	iounmap((void *) this->IO_ADDR_R);
+-
+-	/* Free the MTD device structure */
+-	kfree (ppchameleon_mtd);
+-	kfree (ppchameleonevb_mtd);
+-}
+-module_exit(ppchameleonevb_cleanup);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("DAVE Srl <support-ppchameleon@dave-tech.it>");
+-MODULE_DESCRIPTION("MTD map driver for DAVE Srl PPChameleonEVB board");
+diff --git a/drivers/mtd/nand/toto.c b/drivers/mtd/nand/toto.c
+deleted file mode 100644
+index f9e2d4a..0000000
+--- a/drivers/mtd/nand/toto.c
++++ /dev/null
+@@ -1,208 +0,0 @@
+-/*
+- *  drivers/mtd/nand/toto.c
+- *
+- *  Copyright (c) 2003 Texas Instruments
+- *
+- *  Derived from drivers/mtd/autcpu12.c
+- *
+- *  Copyright (c) 2002 Thomas Gleixner <tgxl@linutronix.de>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- *  Overview:
+- *   This is a device driver for the NAND flash device found on the
+- *   TI fido board. It supports 32MiB and 64MiB cards
+- *
+- * $Id: toto.c,v 1.5 2005/11/07 11:14:31 gleixner Exp $
+- */
+-
+-#include <linux/slab.h>
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/delay.h>
+-#include <linux/mtd/mtd.h>
+-#include <linux/mtd/nand.h>
+-#include <linux/mtd/partitions.h>
+-#include <asm/io.h>
+-#include <asm/arch/hardware.h>
+-#include <asm/sizes.h>
+-#include <asm/arch/toto.h>
+-#include <asm/arch-omap1510/hardware.h>
+-#include <asm/arch/gpio.h>
+-
+-#define CONFIG_NAND_WORKAROUND 1
+-
+-/*
+- * MTD structure for TOTO board
+- */
+-static struct mtd_info *toto_mtd = NULL;
+-
+-static unsigned long toto_io_base = OMAP_FLASH_1_BASE;
+-
+-/*
+- * Define partitions for flash devices
+- */
+-
+-static struct mtd_partition partition_info64M[] = {
+-	{ .name =	"toto kernel partition 1",
+-	  .offset =	0,
+-	  .size	=	2 * SZ_1M },
+-	{ .name =	"toto file sys partition 2",
+-	  .offset =	2 * SZ_1M,
+-	  .size =	14 * SZ_1M },
+-	{ .name =	"toto user partition 3",
+-	  .offset =	16 * SZ_1M,
+-	  .size =	16 * SZ_1M },
+-	{ .name =	"toto devboard extra partition 4",
+-	  .offset =	32 * SZ_1M,
+-	  .size =	32 * SZ_1M },
+-};
+-
+-static struct mtd_partition partition_info32M[] = {
+-	{ .name =	"toto kernel partition 1",
+-	  .offset =	0,
+-	  .size =	2 * SZ_1M },
+-	{ .name =	"toto file sys partition 2",
+-	  .offset =	2 * SZ_1M,
+-	  .size =	14 * SZ_1M },
+-	{ .name =	"toto user partition 3",
+-	  .offset =	16 * SZ_1M,
+-	  .size =	16 * SZ_1M },
+-};
+-
+-#define NUM_PARTITIONS32M 3
+-#define NUM_PARTITIONS64M 4
+-
+-/*
+- *	hardware specific access to control-lines
+- *
+- *	ctrl:
+- *	NAND_NCE: bit 0 -> bit 14 (0x4000)
+- *	NAND_CLE: bit 1 -> bit 12 (0x1000)
+- *	NAND_ALE: bit 2 -> bit 1  (0x0002)
+- */
+-static void toto_hwcontrol(struct mtd_info *mtd, int cmd,
+-			   unsigned int ctrl)
+-{
+-	struct nand_chip *chip = mtd->priv;
+-
+-	if (ctrl & NAND_CTRL_CHANGE) {
+-		unsigned long bits;
+-
+-		/* hopefully enough time for tc make proceding write to clear */
+-		udelay(1);
+-
+-		bits = (~ctrl & NAND_NCE) << 14;
+-		bits |= (ctrl & NAND_CLE) << 12;
+-		bits |= (ctrl & NAND_ALE) >> 1;
+-
+-#warning Wild guess as gpiosetout() is nowhere defined in the kernel source - tglx
+-		gpiosetout(0x5002, bits);
+-
+-#ifdef CONFIG_NAND_WORKAROUND
+-		/* "some" dev boards busted, blue wired to rts2 :( */
+-		rts2setout(2, (ctrl & NAND_CLE) << 1);
+-#endif
+-		/* allow time to ensure gpio state to over take memory write */
+-		udelay(1);
+-	}
+-
+-	if (cmd != NAND_CMD_NONE)
+-		writeb(cmd, chip->IO_ADDR_W);
+-}
+-
+-/*
+- * Main initialization routine
+- */
+-static int __init toto_init(void)
+-{
+-	struct nand_chip *this;
+-	int err = 0;
+-
+-	/* Allocate memory for MTD device structure and private data */
+-	toto_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
+-	if (!toto_mtd) {
+-		printk(KERN_WARNING "Unable to allocate toto NAND MTD device structure.\n");
+-		err = -ENOMEM;
+-		goto out;
+-	}
+-
+-	/* Get pointer to private data */
+-	this = (struct nand_chip *)(&toto_mtd[1]);
+-
+-	/* Initialize structures */
+-	memset(toto_mtd, 0, sizeof(struct mtd_info));
+-	memset(this, 0, sizeof(struct nand_chip));
+-
+-	/* Link the private data with the MTD structure */
+-	toto_mtd->priv = this;
+-	toto_mtd->owner = THIS_MODULE;
+-
+-	/* Set address of NAND IO lines */
+-	this->IO_ADDR_R = toto_io_base;
+-	this->IO_ADDR_W = toto_io_base;
+-	this->cmd_ctrl = toto_hwcontrol;
+-	this->dev_ready = NULL;
+-	/* 25 us command delay time */
+-	this->chip_delay = 30;
+-	this->ecc.mode = NAND_ECC_SOFT;
+-
+-	/* Scan to find existance of the device */
+-	if (nand_scan(toto_mtd, 1)) {
+-		err = -ENXIO;
+-		goto out_mtd;
+-	}
+-
+-	/* Register the partitions */
+-	switch (toto_mtd->size) {
+-	case SZ_64M:
+-		add_mtd_partitions(toto_mtd, partition_info64M, NUM_PARTITIONS64M);
+-		break;
+-	case SZ_32M:
+-		add_mtd_partitions(toto_mtd, partition_info32M, NUM_PARTITIONS32M);
+-		break;
+-	default:{
+-			printk(KERN_WARNING "Unsupported Nand device\n");
+-			err = -ENXIO;
+-			goto out_buf;
+-		}
+-	}
+-
+-	gpioreserve(NAND_MASK);	/* claim our gpios */
+-	archflashwp(0, 0);	/* open up flash for writing */
+-
+-	goto out;
+-
+- out_mtd:
+-	kfree(toto_mtd);
+- out:
+-	return err;
+-}
+-
+-module_init(toto_init);
+-
+-/*
+- * Clean up routine
+- */
+-static void __exit toto_cleanup(void)
+-{
+-	/* Release resources, unregister device */
+-	nand_release(toto_mtd);
+-
+-	/* Free the MTD device structure */
+-	kfree(toto_mtd);
+-
+-	/* stop flash writes */
+-	archflashwp(0, 1);
+-
+-	/* release gpios to system */
+-	gpiorelease(NAND_MASK);
+-}
+-
+-module_exit(toto_cleanup);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Richard Woodruff <r-woodruff2@ti.com>");
+-MODULE_DESCRIPTION("Glue layer for NAND flash on toto board");
 
