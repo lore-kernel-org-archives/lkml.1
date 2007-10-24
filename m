@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbXJXNfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXJXNgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759221AbXJXNfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbXJXNf0
+	id S1759337AbXJXNgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbXJXNf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:35:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4634 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755829AbXJXNfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:35:24 -0400
-Date: Wed, 24 Oct 2007 13:35:14 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-Message-ID: <20071024133514.GB4898@ucw.cz>
-References: <200710181401.50470.jbarnes@virtuousgeek.org>
+	Wed, 24 Oct 2007 09:35:56 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:3500 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758029AbXJXNfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:35:55 -0400
+Date: Wed, 24 Oct 2007 15:35:53 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071024133553.GA39386@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/m68k <linux-m68k@vger.kernel.org>
+References: <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <471DC3D9.2070809@panasas.com> <20071023095507.GE5059@kernel.dk> <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org> <20071024080549.GZ14671@kernel.dk> <Pine.LNX.4.64.0710241103000.5840@anakin> <20071024091242.GK14671@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710181401.50470.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071024091242.GK14671@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Oct 24, 2007 at 11:12:42AM +0200, Jens Axboe wrote:
+> sg_set_buf() also sets length and offset, sg_set_page() is just a mirror
+> of that. So I'd prefer to keep the naming.
 
-> We seem to see a lot of bug reports along the lines of, "my machine
-> resumes but I can't see X" or, "I can see X but only with a bright
-> flashlight", etc.  These sorts of problems are due to the fact that
-> the X server isn't designed to do full state save/restore, and none
-> of the available kernel drivers do it on its behalf.
-> 
-> Since intelfb and the rest of the Intel drivers are fairly incompatible,
-> this patch makes the DRM bind to the PCI device so it can register real
-> suspend/resume handlers.  Those handlers take care of saving and
-> restoring enough state for X to come back reliably on at least one of my
-> problematic test machines, but text mode still has trouble (still
-> debugging VGA state save/restore, including trying to save/restore
-> actual VRAM contents for possible hibernate support).
-> 
-> How does this approach look?  Is a new DRM driver flag a good thing for
-> similar situations with other drivers?  Thoughts?
+Hmmm, sg_set_phys/sg_set_virt to be more symmetrical to
+sg_phys/sg_virt?
 
-Looks okay to me... from very quick look.
-
-> +	if (!i915_pipe_enabled(dev, pipe))
-> +		return;
-> +
-> +	if (pipe == PIPE_A)
-> +		array = dev_priv->savePaletteA;
-
-
-coding style, we probably want save_palette_A.
-
-> +	unsigned long reg = pipe == PIPE_A ? PALETTE_A : PALETTE_B;
-
-Uff. Mixing = and == and ? in one expression is evil.
-
-I think I seen some #if 0 code.... just remove that.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  OG.
