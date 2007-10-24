@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbXJXNd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXJXNeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758427AbXJXNd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXJXNdT
+	id S1758866AbXJXNeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXJXNeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:33:19 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:38796 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbXJXNdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:33:18 -0400
-Date: Wed, 24 Oct 2007 17:38:18 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
-Message-ID: <20071024133818.GA82@tv-sign.ru>
-References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com>
-Mime-Version: 1.0
+	Wed, 24 Oct 2007 09:34:01 -0400
+Received: from styx.suse.cz ([82.119.242.94]:46598 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755743AbXJXNeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:34:01 -0400
+Date: Wed, 24 Oct 2007 15:59:00 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andy Whitcroft <andyw@uk.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-git18: ext2_check_page: bad entry in directory
+Message-ID: <20071024135900.GC2652@duck.suse.cz>
+References: <20071024131540.GV32058@shadowen.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024053716.GD27074@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071024131540.GV32058@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24, Gautham R Shenoy wrote:
->
+  Hello,
 
-(reordered)
+On Wed 24-10-07 14:15:40, Andy Whitcroft wrote:
+> Seems that we are now getting strange errors mounting an ext2 root
+> filesystem under 2.6.23-git18:
+> 
+>   EXT2-fs error (device sda1): ext2_check_page: bad entry in directory #2:
+>   rec_len is smaller than minimal - offset=0, inode=0, rec_len=0,
+>   name_len=0
+  Hmm, zero length entry in a root directory. Not nice.
 
-> With get_online_cpus()/put_online_cpus(), we can eliminate
-> the workqueue_mutex and reintroduce the workqueue_lock,
-> which is a spinlock which serializes the accesses to the 
-> workqueues list.
+> This seems to be occuring consistently since 2.6.23-git18.  I have been
+> back and rerun a -git17 job to confirm its not visible at that level.
+> This bug is expressing itself in 2.6.23-rc1 also.
+> 
+> I am suspicious of this commit in the -git17 -> -git18 block:
+> 
+>   commit 89910cccb8fec0c1140d33a743e72a712efd4f05
+>   Author: Jan Kara <jack@suse.cz>
+>   Date:   Sun Oct 21 16:41:40 2007 -0700
+> 
+>       ext2: avoid rec_len overflow with 64KB block size
+> 
+> /me goes debug this a bit more.
+  Hmm, I'd suspect that too ;) But I swear I actually tested the code ;)
+So what are you using the filesystem for (or do you get the error
+immediately when mounting)? How large is the filesystem?
 
-This change is obviously good, can't it go into the previous patch?
-
-Because,
-
-> Solution is not to cleanup the worker thread. Instead let it remain
-> even after the cpu goes offline. Since no one can queue any work
-> on an offlined cpu, this thread will be forever sleeping, untill
-> someone onlines the cpu.
-
-I still think this patch is questionable. Please look at my previous
-response http://marc.info/?l=linux-kernel&m=119262203729543
-
-In short: with this patch it is not possible to guarantee that work->fun()
-will run on the correct CPU.
-
->  static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
->  {
->  	/*
-> -	 * Our caller is either destroy_workqueue() or CPU_DEAD,
-> -	 * workqueue_mutex protects cwq->thread
-> +	 * Our caller is destroy_workqueue().  So warn on a double
-> +	 * destroy.
->  	 */
-> -	if (cwq->thread == NULL)
-> +	if (cwq->thread == NULL) {
-> +		WARN_ON(1);
-
-Looks wrong. It is possible that cwq->thread == NULL, because currently we
-never "shrink" cpu_populated_map.
-
-> cleanup_workqueue_thread() in the CPU_DEAD and CPU_UP_CANCELLED path
-> will cause a deadlock if the worker thread is executing a work item
-> which is blocked on get_online_cpus(). This will lead to a irrecoverable
-> hang.
-
-Yes. But there is nothing new. Currently, work->func() can't share the locks
-with cpu_down's patch. Not only only it can't take workqueue_mutex, it can't
-take any other lock which could be taken by notifier callbacks, etc.
-
-Can't we ignore this problem, at least for now? I believe we need intrusive
-changes to solve this problem correctly. Perhaps I am wrong, of course, but
-I don't see a simple solution.
-
-Another option. Note that get_online_cpus() does more than just pinning
-cpu maps, actually it blocks hotplug entirely. Now let's look at
-schedule_on_each_cpu(), for example. It doesn't need to block hotplug,
-it only needs a stable cpu_online_map.
-
-Suppose for a moment that _cpu_down() does cpu_hotplug_done() earlier,
-right after __cpu_die(cpu) which removes CPU from the map (yes, this
-is wrong, I know). Now, we don't need to change workqueue_cpu_callback(),
-work->func() can use get_online_cpus() without fear of deadlock.
-
-So, can't we introduce 2 nested rw locks? The first one blocks cpu hotplug
-(like get_online_cpus does currently), the second one just pins cpu maps.
-I think most users needs only this, not more.
-
-What do you think?
-
-(Gautham, I apologize in advance, can't be responsive till weekend).
-
-Oleg.
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
