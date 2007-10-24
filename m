@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbXJXOEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbXJXOH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbXJXOEY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXJXOER
+	id S1758713AbXJXOH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXJXOHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:04:17 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:57806 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbXJXOEQ convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 10:07:14 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49056
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753197AbXJXOHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:04:16 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Subject: Re: USB: FIx locks and urb->status in adutux
-Date: Wed, 24 Oct 2007 16:04:42 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-usb-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org, vitalivanov@gmail.com, netwiz@crc.id.au
-References: <20071022203447.db6d7950.zaitcev@redhat.com> <200710231138.38266.oliver@neukum.org> <20071023143852.df06530a.zaitcev@redhat.com>
-In-Reply-To: <20071023143852.df06530a.zaitcev@redhat.com>
+	Wed, 24 Oct 2007 10:07:12 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/9] RT: balance rt tasks v6
+To: linux-rt-users@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+Date: Wed, 24 Oct 2007 09:52:31 -0400
+Message-ID: <20071024134431.7960.41984.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710241604.42832.oliver@neukum.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 23 Oktober 2007 schrieb Pete Zaitcev:
-> On Tue, 23 Oct 2007 11:38:37 +0200, Oliver Neukum <oliver@neukum.org> wrote:
-> 
-> > > +   /* XXX Anchor these instead */
-> > > +   spin_lock_irqsave(&dev->buflock, flags);
-> > > +   if (!dev->read_urb_finished) {
-> > > +           spin_unlock_irqrestore(&dev->buflock, flags);
-> > > +           usb_kill_urb(dev->interrupt_in_urb);
-> > > +   } else
-> > > +           spin_unlock_irqrestore(&dev->buflock, flags);
-> 
-> > Why bother? Simply call usb_kill_urb() unconditionally.
-> 
-> Is it always safe to kill unfilled URBs? The filled but unsubmitted ones
-> are ok, but in this case it's possible that we only allocated something
-> but never submitted. Our current implementation happens to be safe by
-> virtue of ->dev being NULL in such case. I do not remember if we always
-> guaranteed that and since Vitaly is going to take this code for a
-> backport, I decided to play it safe.
+Applies to 23-rt1
 
-I am not sure as far as 2.4 is concerned. In fact I am not sure 2.4 has
-usb_kill_urb() at all.
+Changes since v5:
 
-	Regards
-		Oliver
+*) Folded some of the smaller patches together to address feedback
+*) Fixed several minor bugs related to PI re-factoring and wakeup paths
 
+I still have yet to make Ingo Oeser's suggestion to the last patch.
+
+At this point, things are looking really really good.  So this is a request to
+provide a formal review (if one has not yet been done) and to consider for
+inclusion in -rt.
+
+In my testing, cyclictest look great (ran overnight on a 4-way with the max
+outlier at 32us), the preempt-test passes with flying colors, and we see a
+300% improvement in latency spikes on large SMP systems (16-way is the largest
+we have in our small lab).
+
+I will rebase to -rt2 when its available.
+
+You can find the preempt-test here:
+
+http://rt.wiki.kernel.org/index.php/Preemption_Test
+
+Regards,
+-Greg
