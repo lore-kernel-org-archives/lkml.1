@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbXJXSH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbXJXSJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759831AbXJXSH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbXJXSHF
+	id S1758581AbXJXSJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXJXSJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:07:05 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:9594 "EHLO kernel.dk"
+	Wed, 24 Oct 2007 14:09:16 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51460 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbXJXSHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:07:03 -0400
-Date: Wed, 24 Oct 2007 20:06:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, apw@shadowen.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
-Message-ID: <20071024180656.GF14671@kernel.dk>
-References: <471E110C.20404@linux.vnet.ibm.com> <20071023184419.GD14671@kernel.dk> <20071024115436.GT32058@shadowen.org> <20071024214014C.fujita.tomonori@lab.ntt.co.jp> <471F6DFE.3040304@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	id S1752842AbXJXSJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:09:15 -0400
+Date: Wed, 24 Oct 2007 22:14:21 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
+Message-ID: <20071024181421.GB345@tv-sign.ru>
+References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com> <20071024133818.GA82@tv-sign.ru> <20071024174553.GA8663@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <471F6DFE.3040304@linux.vnet.ibm.com>
+In-Reply-To: <20071024174553.GA8663@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, Kamalesh Babulal wrote:
-> FUJITA Tomonori wrote:
-> > On Wed, 24 Oct 2007 12:54:36 +0100
-> > Andy Whitcroft <apw@shadowen.org> wrote:
+On 10/24, Gautham R Shenoy wrote:
+>
+> On Wed, Oct 24, 2007 at 05:38:18PM +0400, Oleg Nesterov wrote:
 > > 
-> >> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
-> >>> On Tue, Oct 23 2007, Kamalesh Babulal wrote:
-> >>>> Hi,
-> >>>>
-> >>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
-> >>>> over the AMD box
-> >>>>
-> >>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
-> >>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
-> >>>> PGD 10185b067 PUD 10075b067 PMD 0 
-> >>>> Oops: 0002 [1] SMP 
-> >>>> CPU 3 
-> >>>> Modules linked in:
-> >>>> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
-> >>>> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
-> >>>> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
-> >>> Can you check where gart_map_sg+0x26c is at? Make sure you have
-> >>> CONFIG_DEBUG_INFO defined, then do:
-> >>>
-> >>> $ gdb vmlinux
-> >>> $ l *gart_map_sg+0x26c
-> >> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
-> >> output from that version, the panic (also below) seems the same:
-> >>
-> >> (gdb) l *gart_map_sg+0x26c
-> >> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
-> >> 428                     goto error;
-> >> 429             out++;
-> >> 430             flush_gart();
-> >> 431             if (out < nents) {
-> >> 432                     sgmap = sg_next(sgmap);
-> >> 433                     sgmap->dma_length = 0;
-> >> 434             }
-> >> 435             return out;
-> >> 436
-> >> 437     error:
-> >>
-> >> So it seems sg_next has returned 0.
+> > So, can't we introduce 2 nested rw locks? The first one blocks cpu hotplug
+> > (like get_online_cpus does currently), the second one just pins cpu maps.
+> > I think most users needs only this, not more.
 > > 
-> > Have you tried this?
-> > 
-> > http://marc.info/?l=linux-kernel&m=119317981406073&w=2
-> > -
-> Hi,
-> Thanks, this patch solves the kernel oops.
+> 
+> Well, rw locks/sems cannot recurse. However, refcount model supports
+> recursion naturally. Hence the implementation.
 
-Tomo, please do write the proper changelog so we can get this upstream.
+No, no, you misunderstood! (I was unclear). I meant, can't we introduce 2
+refcounted nested locks? Both implemented as get_online_cpus/cpu_hotplug_begin.
 
--- 
-Jens Axboe
+Oleg.
 
