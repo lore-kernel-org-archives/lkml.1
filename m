@@ -1,164 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbXJXWFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXJXWH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbXJXWFJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXJXWEx
+	id S1760760AbXJXWH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXJXWHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:04:53 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:50822 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757409AbXJXWEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:04:51 -0400
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-	static interface)
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: casey@schaufler-ca.com
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Simon Arlott <simon@fire.lp0.eu>,
-       Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <153904.68258.qm@web36609.mail.mud.yahoo.com>
-References: <153904.68258.qm@web36609.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Wed, 24 Oct 2007 18:04:47 -0400
-Message-Id: <1193263487.30930.101.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Wed, 24 Oct 2007 18:07:15 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:33148 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754891AbXJXWHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 18:07:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EXdtUVX79NGJ6YQC9D0JBPymGANJugPQ4HpOG6jTnu6h/lr28iOyUCKB6HOTTp6JIxEaYzOqZbZqY4OU/pZ4UkHRMLwVNCMqIgAZ7y7nSx8x7QkCS2iTLUHC0DCQR5GAeV1yzgeylu7A4RJZcjoqxSxgtSWafQkx9kzEuvGwDUg=
+Message-ID: <6844644e0710241507x3e579227paa2704b244ee1b34@mail.gmail.com>
+Date: Wed, 24 Oct 2007 18:07:12 -0400
+From: "Doug Reiland" <dreiland@gmail.com>
+To: "Randy Dunlap" <rdunlap@xenotime.net>
+Subject: Re: 2.6.xxx race condition in x86_64's global_flush_tlb???
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071024141418.907c7396.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6844644e0710241339i4d9ee450s98f9941f43a8cd6@mail.gmail.com>
+	 <20071024141418.907c7396.rdunlap@xenotime.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-24 at 14:58 -0700, Casey Schaufler wrote:
-> --- "David P. Quigley" <dpquigl@tycho.nsa.gov> wrote:
-> 
-> > On Wed, 2007-10-24 at 21:04 +0200, Jan Engelhardt wrote:
-> > > On Oct 24 2007 19:59, Simon Arlott wrote:
-> > > >On 24/10/07 19:51, Jan Engelhardt wrote:
-> > > >> On Oct 24 2007 19:11, Simon Arlott wrote:
-> > > >>>
-> > > >>>* (I've got a list of access rules which are scanned in order until one
-> > of 
-> > > >>>them matches, and an array of one bit for every port for per-port
-> > default 
-> > > >>>allow/deny - although the latter could be removed.
-> > > >>>http://svn.lp0.eu/simon/portac/trunk/)
-> > > >> 
-> > > >> Besides the 'feature' of inhibiting port binding,
-> > > >> is not this task of blocking connections something for a firewall?
-> > > >
-> > > >The firewall blocks incoming connections where appropriate, yes, but it 
-> > > >doesn't stop one user binding to a port that another user expected to be
-> > able 
-> > > >to use. "Ownership" of ports (1-1023) shouldn't be something only root
-> > (via 
-> > > >CAP_NET_BIND_SERVICE) has. Lots of services also don't have standard ports
-> > 
-> > > >below 1024 and it's useful to be able to prevent users from binding to
-> > them 
-> > > >too.
-> > > 
-> > > Indeed.
-> > > 
-> > > 
-> > > There has been a feature in the security framework that probably did
-> > > not get much attention. It looks like YAGNI first, but on a closer look,
-> > > it becomes useful pretty quick - secondary_register.
-> > > 
-> > > As more and more simple LSM plugins pop up, stacking/chaining by means
-> > > of secondary_register becomes attractive again, especially if these LSMs
-> > > target different actions. This is probably the most useful thing why
-> > > the LSM interface should remain modular:
-> > > 
-> > > # Secure my files
-> > > modprobe apparmor
-> > > # -*- assuming apparmor implemented secondaries -*-
-> > > # Secure my ports
-> > > modprobe portac
-> > > # More rights to users
-> > > modprobe multiadm
-> > > # -*- whatever else comes along -*-
-> > 
-> > There is an issue that you overlook here and it is the successful
-> > composition of security models. While your idea is appealing it presents
-> > several problems. In your example you have 3 models with 3 policies.
-> > AppArmor which has its own port security mechanisms is a MAC model that
-> > from what I have seen appears to have a targeted least privilege policy.
-> > This means that AppArmor picks applications it wishes to secure and
-> > makes sure it can't do anything except what it needs to get its job
-> > done. Your module multiadm takes a user which is completely orthogonal
-> > to the concepts that AppArmor uses and gives him extra privileges. From
-> > what I have read and correct me if I am wrong portac deals with users
-> > instead of programs. Now lets try to reconcile this in a way that is
-> > sane to the user/administrator.
-> > 
-> > Apparmor wants to lock down some application, it gives the application
-> > access to a particular port, and the minimal set of privileges needed to
-> > execute the application. Since Apparmor is "easy to use" (note the
-> > quotes are to indicate they aren't my words not sarcasm) and SUSE comes
-> > with a targeted policy the user isn't concerned with it. Now multiadm
-> > comes along and an administrator wishes to grant extra rights to a user.
-> > This is fine with multiadm alone since it is the main security module,
-> > however we now have to compose this with AppArmor. So an administrator
-> > runs into an error running his application. Is this because his user
-> > isn't granted the proper escalated privileges? Is it because AppArmor
-> > needs an extra rule to run the application?  It could also be that our
-> > third module has blocked the application because it determined that even
-> > though multiadm specified that the user should have the elevated
-> > privileges to run the application that user shouldn't be able to bind to
-> > that port. 
-> > 
-> > There might be a better example to illustrate the problem however, this
-> > simple example shows the interdependency of three seemingly simple
-> > modules. Imagine what happens when people really let loose and implement
-> > all sorts of crazy ideas and stack them on top of each other. Stacking
-> > works in things such as file systems because we have a clearly defined
-> > interface with fixed solid semantics. You could attempt to do that but
-> > once you have modules that step on each others toes you have to figure
-> > out a way to reconcile that. It seems to me that you're going to
-> > introduce usability problems that are hard to deal with.
-> > 
-> > Dave Quigley
-> 
-> Two very important things to consider:
-> 
-> The LSM is designed to be a restrictive mechanism. An LSM module
-> is not allowed to grant access that would be denied by usual
-> mechanisms. There are composition problems, but nothing that is
-> worse than the problems you have to deal with when a filesystem
-> is mounted read-only. True, one LSM module could muck with the
-> data used by another, but that's something you can do today with
-> setxattr() calls in an application.
-> 
-> Which brings up the second important point. The argument above
-> has nothing whatever to do with mechanisms provided by the kernel
-> and everything to do with the privileged applications used to
-> administer a system. Those applications need to be written so as
-> to deal properly with unexpected access failures, such as might
-> be induced by a filesystem mounted read-only or being full. I
-> am aware of the Holy Grail of a security package that does not
-> interfere with the operation of "normal" administration. How close
-> you can come to that in independent of wether your kernel is
-> an integrated "security solution" or a collection of composed
-> modules.
-> 
-> This discussion is amazingly disconnected from the issues of LSM.
+Your right. I thought I was updated but was at 23-rc9.
+Sorry!
 
-This branch of the tree seems to have gone in a direction similar to the
-stackable netfilter like architecture that was suggested by someone last
-time this came up.
-
-> 
-> 
-> Casey Schaufler
-> casey@schaufler-ca.com
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+On 10/24/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Wed, 24 Oct 2007 16:39:57 -0400 Doug Reiland wrote:
+>
+> > I have seen some hangs in 2.6-x86_64 in flush_kernel_map(). The tests
+> > cause alot of ioremap/iounmap to occur concurrently across many
+> > processor threads.
+> >
+> > Looking at the hung processor hangs, they are looping in
+> > flush_kernel_map() and the list they get from the smp_call_function()
+> > appears to be corrupt. In fact, I see deferred_pages as an entry and
+> > that isn't supposed to happen.
+> >
+> > I am questioning the locking in global_flush_tlb() listed below. The
+> > down_read/up_read protection doesn't seen safe. If several threads are
+> > rushing thru here, deferred_pages could be getting changed as they
+> > look at it. I don't think there any protection when
+> > list_replace_init() calls INIT_LIST_HEAD().
+> >
+> > I changed the down_read()/up_read() around list_replace_init() to
+> > down_write()/up_write() and my test runs fine.
+> >
+> >
+> > void global_flush_tlb(void)
+> > {
+> >         struct page *pg, *next;
+> >         struct list_head l;
+> >
+> >         down_read(&init_mm.mmap_sem); // XXX should be down_write()???
+> >         list_replace_init(&deferred_pages, &l);
+> >         up_read(&init_mm.mmap_sem); // XXX should be up_write()????
+> >         flush_map(&l);
+> >
+> >         list_for_each_entry_safe(pg, next, &l, lru) {
+> >                 ClearPagePrivate(pg);
+> >                 __free_page(pg);
+> >         }
+> > }
+>
+> Seems to be already fixed in current git tree.
+>
+> ---
+> ~Randy
+>
