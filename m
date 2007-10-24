@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbXJXPzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbXJXP4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026AbXJXPzh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXJXPz3
+	id S1758074AbXJXP4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbXJXP4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:55:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34704 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbXJXPz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:55:28 -0400
-Date: Wed, 24 Oct 2007 17:55:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-rc1 fails with lockup and BUG:
-Message-ID: <20071024155521.GA16690@elte.hu>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu> <1193241191.14314.8.camel@localhost>
+	Wed, 24 Oct 2007 11:56:00 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:10261 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753064AbXJXPz7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 11:55:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Lc58rNyIvbrO6OgHpUFLnNK0huMfLNIbC0c8CjzEmgatVmdhlYJMpSaXeaZW9Pq1Pxnmi6NGlJ6C5IO5zVoPfyNJ9+EMuAyLRkKjT4dlmj9aeHMwg6yYzT2lLeXISAD7LId6t/h94bZOehtpzoniOZOJfW12CKqxNDvV72faEVY=
+Message-ID: <e9c3a7c20710240855j7bf1f0a6qa1d11af3a12910e5@mail.gmail.com>
+Date: Wed, 24 Oct 2007 08:55:58 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
+Cc: "Shannon Nelson" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
+       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193241191.14314.8.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
+X-Google-Sender-Auth: 34c18c6d9756419a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Haavard,
 
-* Romano Giannetti <romanol@upcomillas.es> wrote:
+On 10/24/07, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> This patch corrects what I hope are invalid assumptions about the DMA
+> engine layer: Not only Intel(R) hardware can do DMA, and DMA can be
+> used for other things than memcpy and RAID offloading.
+>
+> At the same time, make the DMA Engine menu visible again on AVR32. I'm
+> currently working on a driver for a DMA controller that can do
+> mem-to-mem transfers (which is supported by the framework) as well as
+> device-to-mem and mem-to-device transfers (not currently supported.)
+>
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> ---
+> Don't get me wrong; I think Intel deserves lots of respect for
+> creating this framework. But this is also why I got a bit disappointed
+> when I discovered that it seems to be less generic than I initially
+> hoped.
+>
 
-> Done. The results are at:
-> 
-> http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_2/
-> 
-> in the syslog-after-failed-suspend.txt file. After the failed suspend 
-> (at line 15766) there where the bunch of things in D-state. I have 
-> left the file intact.
-> 
-> At line 17646 there is:
-> 
-> WARNING: at kernel/lockdep.c:2033 trace_hardirqs_on()
+Patches welcome :-)
 
-hm, this lockdep warning caused lockdep to turn itself off - hence we 
-wont get to the really interesting warnings. We'll try to come up with a 
-solution for this.
+> DMA controllers, which may support plain memcpy acceleration in
+> addition to more traditional "slave DMA", are very common in SoC
+> devices, and I think Linux needs a common framework for it. The
+> existing DMA Engine framework seems to come pretty close already, but
+> I think it needs more input from the embedded crowd before it can be
+> completely usable on a large number of embedded systems.
+>
 
-	Ingo
+Part of the problem of supporting slave/device DMA along side generic
+memcpy/xor/memset acceleration is that it adds a number of caveats and
+restrictions to the interface.  One idea is to create another client
+layer, similar to async_tx, that can handle the architecture specific
+address, bus, and device pairing restrictions.  In other words make
+device-dma a superset of the generic offload capabilities and move it
+to its own channel management layer.
+
+> I'm not going to suggest any changes to the actual framework for
+> 2.6.24, but I think the _intention_ of the framework needs to be
+> clarified.
+>
+
+Should this patch wait until the framework has been extended?
+
+Otherwise, Acked-by: Dan Williams <dan.j.williams@intel.com>
+
+> Haavard
+>
+
+Regards,
+Dan
