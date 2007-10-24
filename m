@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbXJXOoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbXJXOsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759815AbXJXOoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXJXOo3
+	id S1756120AbXJXOsu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbXJXOsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:44:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35768 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751628AbXJXOo2 (ORCPT
+	Wed, 24 Oct 2007 10:48:43 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:56102 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbXJXOsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:44:28 -0400
-Date: Wed, 24 Oct 2007 07:43:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, bunk@kernel.org
-Subject: Re: [PATCH] Define smp_call_function_mask() on uniprocessor builds
-Message-Id: <20071024074354.9edd4cee.akpm@linux-foundation.org>
-In-Reply-To: <11932158852325-git-send-email-avi@qumranet.com>
-References: <11932158852325-git-send-email-avi@qumranet.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Oct 2007 10:48:42 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: USB: FIx locks and urb->status in adutux
+Date: Wed, 24 Oct 2007 16:49:12 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-usb-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org, vitalivanov@gmail.com, netwiz@crc.id.au
+References: <20071022203447.db6d7950.zaitcev@redhat.com> <200710231138.38266.oliver@neukum.org> <20071023185302.5ce9d187.zaitcev@redhat.com>
+In-Reply-To: <20071023185302.5ce9d187.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710241649.13257.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 10:51:25 +0200 Avi Kivity <avi@qumranet.com> wrote:
+Am Mittwoch 24 Oktober 2007 schrieb Pete Zaitcev:
+> Oliver, thanks for the inftdata catch. I also fixed the sleep_on.
 
-> Rather than #ifdef users of smp_call_function_mask(), define it as an
-> empty macro to avoid build errors.  The function explicitly prohibits
-> callers from specifying the current cpu, so nothing needs to be done.
-> 
-> This unbreaks uniprocessor KVM builds.
-> 
-> Signed-off-by: Avi Kivity <avi@qumranet.com>
-> 
-> diff --git a/include/linux/smp.h b/include/linux/smp.h
-> index 259a13c..24e2e31 100644
-> --- a/include/linux/smp.h
-> +++ b/include/linux/smp.h
-> @@ -108,6 +108,9 @@ static inline void smp_send_reschedule(int cpu) { }
->  	0;			\
->  })
->  
-> +#define smp_call_function_mask(mask, func, info, wait) \
-> +	do { (void)(mask); (void)(func); (void)(info); (void)(wait); } while (0)
-> +
->  #endif /* !SMP */
->  
->  /*
+But you are leaving a function while still on a waitqueue left on the stack.
+Here's a patch on top of yours.
 
-The real smp_call_function_mask() returns int, so this version should do so
-also.
+	Regards
+		Oliver
 
-An inlined C function will provide the needed references to the arguments -
-no need for those funny (void) thingies.  And it will provide typechecking.
+----
 
-
+--- work/drivers/usb/misc/adutux.c.alt	2007-10-24 16:36:02.000000000 +0200
++++ work/drivers/usb/misc/adutux.c	2007-10-24 16:36:06.000000000 +0200
+@@ -567,19 +567,21 @@ static ssize_t adu_write(struct file *fi
+ 
+ 	retval = mutex_lock_interruptible(&dev->mtx);
+ 	if (retval)
+-		goto exit_nolock;
++		goto exit_nolock_intr;
+ 
+ 	/* verify that the device wasn't unplugged */
+ 	if (dev->udev == NULL) {
++		mutex_unlock(&dev->mtx);
+ 		retval = -ENODEV;
+ 		err("No device or device unplugged %d", retval);
+-		goto exit;
++		goto exit_nolock_intr;
+ 	}
+ 
+ 	/* verify that we actually have some data to write */
+ 	if (count == 0) {
++		mutex_unlock(&dev->mtx);
+ 		dbg(1," %s : write request of 0 bytes", __FUNCTION__);
+-		goto exit;
++		goto exit_nolock_intr;
+ 	}
+ 
+ 	add_wait_queue(&dev->write_wait, &waita);
+@@ -649,13 +651,14 @@ static ssize_t adu_write(struct file *fi
+ 			bytes_written += bytes_to_write;
+ 		}
+ 	}
+-	remove_wait_queue(&dev->write_wait, &waita);
+ 
+ 	retval = bytes_written;
+ 
+ exit:
+ 	mutex_unlock(&dev->mtx);
+ exit_nolock:
++	remove_wait_queue(&dev->write_wait, &waita);
++exit_nolock_intr:
+ 
+ 	dbg(2," %s : leave, return value %d", __FUNCTION__, retval);
+ 
