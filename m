@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbXJXMl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbXJXMod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbXJXMl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXJXMlR
+	id S1758082AbXJXMod (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXJXMoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:41:17 -0400
-Received: from smtpout.hostsharing.net ([83.223.95.15]:46569 "EHLO
-	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbXJXMlP (ORCPT
+	Wed, 24 Oct 2007 08:44:25 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44137 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbXJXMoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:41:15 -0400
-Date: Wed, 24 Oct 2007 14:41:09 +0200
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc1 freezes on powerbook at first boot stage
-Message-ID: <20071024124109.GA9442@frodo.home.lxtec.de>
-Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20071024120739.GA4897@aragorn.home.lxtec.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 24 Oct 2007 08:44:23 -0400
+Date: Wed, 24 Oct 2007 13:38:51 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE updates (part 2)
+Message-ID: <20071024123851.GB32333@flint.arm.linux.org.uk>
+References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk> <4713C568.2060708@garzik.org> <20071015195807.GF8759@flint.arm.linux.org.uk> <4713C893.3050200@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024120739.GA4897@aragorn.home.lxtec.de>
-Organization: LXTEC
-X-gnupg-key-fingerprint: BE65 85E4 4867 7E9B 1F2A  B2CE DC88 3C6E C54F 7FB0
-X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled Oct 20 2007 16:04:42)
-User-Agent: Mutt/1.5.16+lxtec (2007-10-15)
+In-Reply-To: <4713C893.3050200@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 the mental interface of
-Elimar Riesebieter told:
+On Mon, Oct 15, 2007 at 04:07:47PM -0400, Jeff Garzik wrote:
+> Russell King wrote:
+> >On Mon, Oct 15, 2007 at 03:54:16PM -0400, Jeff Garzik wrote:
+> >>Al Viro wrote:
+> >>>Proposed addition to icside part, provided that ARM folks ACK it - gets
+> >>>icside to build and AFAICS it's correct:
+> >>ACK from me too...  ARM folks?
+> >
+> >Will test tomorrow/Wednesday.
+> 
+> Thanks.  Sorry about missing your CC on the libata-wide ata_link 
+> changes.  We should have poked the maintainers on that, for the drivers 
+> we cannot build ourselves.
 
-[...]
-> The kernel is loaded from firmware but freezes at the moment to load
-> the radeon framebuffer. I can't get any debug info (don't know
-> how?).
-
-Screen dump till freeze:
-
-Using PowerMac machine description
-Total memory = 1024MB; using 2048kB for hash table (at cfe00000)
-Linux version 2.6.24-rc1-aragorn (riesebie@aragorn) (gcc version 4.2.3 20071014 (prelelease) (Debian 4.2.2-3)) #1 Wed Oct 24 12:48:27 CEST 2007
-Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd2
-Mapped at 0xfdfc0000
-Found a Intrepid mac-io controller, rev: 0, mapped at 0xfdf40000
-PowerMac motherboard: PowerBook G4 15"
-console [udbg0] enabled
-setup_arch: bootmem
-Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
-Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->1
-Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->1
-via-pmu: Server Mode is disabled
-PMU driver v2 initialized for Core99, firmware: 0c
-nvram: Checking bank 0...
-nvram: gen0=741, gen1=740
-nvram: Active bank is: 0
-nvram: OF partition at 0x410
-nvram: XP partition at 0x1020
-nvram: NR partition at 0x1120
-arch: exit
-Zone PFN ranges:
-  DMA             0 ->   196608
-  Normal     196608 ->   196608
-  HighMem    196608 ->   262144
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   262144
-Built 1 zonelists in Zone order.  Total pages: 260096
-Kernel command line: root=/pci@f4000000/ata-6@d/disk@0:5 root=/dev/hda5
-mpic: Setting up MPIC " MPIC 1   " version 1.2 at 80040000, max 4 CPUs
-mpic: ISU size: 64, shift: 6, mask: 3f
-mpic: Initializing for 64 sources
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-GMT Delta read from XPRAM: 0 minutes, DST: off
-clocksource: timebase mult[d9038e4] shift [22] registered
-clockevent: decremeter mult[4b7] shift[16] cpu[0]
-Console: colour dummy device 80x25
-console handover: boot [udbg0] -> real [tty0]
+I think Viro's patch got an ack from everyone.  Who's dealing with getting
+this regression fix into mainline?  It seems at the moment the patch is in
+limbo.
 
 -- 
-  Alles was viel bedacht wird ist bedenklich!;-)
-         Friedrich Nietzsche
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
