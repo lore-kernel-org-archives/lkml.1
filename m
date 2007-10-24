@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbXJXRYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXJXRZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbXJXRYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbXJXRYW
+	id S1759455AbXJXRZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbXJXRZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 13:24:22 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53998 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113AbXJXRYU (ORCPT
+	Wed, 24 Oct 2007 13:25:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51117 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166AbXJXRZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 13:24:20 -0400
-Subject: Re: [2.6 patch] mm/hugetlb.c: make a function static
-From: Adam Litke <agl@us.ibm.com>
+	Wed, 24 Oct 2007 13:25:06 -0400
+Date: Wed, 24 Oct 2007 10:21:51 -0700
+From: Arjan van de Ven <arjan@infradead.org>
 To: Adrian Bunk <bunk@kernel.org>
-Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071024162349.GX30533@stusta.de>
-References: <20071024162349.GX30533@stusta.de>
-Content-Type: text/plain
-Date: Wed, 24 Oct 2007 12:24:14 -0500
-Message-Id: <1193246654.18417.43.camel@localhost.localdomain>
+Cc: linux-kernel@vger.kernel.org, alan@redhat.com,
+       torvalds@linux-foundation.org, viro@ftp.linux.org.uk
+Subject: Re: [2.6 patch] unexport sys_{open,read}
+Message-ID: <20071024102151.54bb1749@laptopd505.fenrus.org>
+In-Reply-To: <20071024162434.GL30533@stusta.de>
+References: <20071024162434.GL30533@stusta.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-10-24 at 18:23 +0200, Adrian Bunk wrote:
-> return_unused_surplus_pages() can become static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Adam Litke <agl@us.ibm.com>
+On Wed, 24 Oct 2007 18:24:34 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> 
-> ---
-> 8932fe99341629d50863643229d25666e9f44e03 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 8b809ec..b65da0d 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -323,7 +323,7 @@ free:
->   * allocated to satisfy the reservation must be explicitly freed if they were
->   * never used.
->   */
-> -void return_unused_surplus_pages(unsigned long unused_resv_pages)
-> +static void return_unused_surplus_pages(unsigned long unused_resv_pages)
->  {
->  	static int nid = -1;
->  	struct page *page;
-> 
-> 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+> sys_{open,read} can finally be unexported.
 
+how about giving it a proper changelog like this:
+
+
+From: Adrian Bunk <bunk@kernel.org>
+Subject: unexport sys_open and sys_read
+
+sys_open / sys_read were used in the early 1.2 days to load firmware from
+disk inside drivers. Since 2.0 or so this was deprecated behavior, but
+several drivers still were using this. Since a few years we have a
+request_firmware() API that implements this in a nice, consistent way. Only
+some old ISA sound drivers (pre-ALSA) still straggled along for some
+time.... however with commit c2b1239a9f22f19c53543b460b24507d0e21ea0c the
+last user is now gone.
+
+This is a good thing, since using sys_open / sys_read etc for firmware is a
+very buggy to dangerous thing to do; these operations put an fd in the
+process file descriptor table.... which then can be tampered with from other
+threads for example. For those who don't want the firmware loader,
+open_filp()/vfs_read are the better APIs to use, without this security
+issue.
+
+The patch below finally exports sys_open and sys_read now that they're
+really not used anymore.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: Alan Cox <alan@redhat.com>
+
+---
+
+ fs/open.c       |    1 -
+ fs/read_write.c |    1 -
+ 2 files changed, 2 deletions(-)
+
+Index: linux-2.6.23-git8/fs/open.c
+===================================================================
+--- linux-2.6.23-git8.orig/fs/open.c
++++ linux-2.6.23-git8/fs/open.c
+@@ -1056,7 +1056,6 @@ asmlinkage long sys_open(const char __us
+ 	prevent_tail_call(ret);
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(sys_open);
+ 
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   int mode)
+Index: linux-2.6.23-git8/fs/read_write.c
+===================================================================
+--- linux-2.6.23-git8.orig/fs/read_write.c
++++ linux-2.6.23-git8/fs/read_write.c
+@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(sys_read);
+ 
+ asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
+ {
