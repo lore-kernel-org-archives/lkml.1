@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbXJXOJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbXJXOK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759460AbXJXOJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXJXOH6
+	id S1759187AbXJXOK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759278AbXJXOIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:07:58 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49127
+	Wed, 24 Oct 2007 10:08:05 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:49142
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759123AbXJXOHz (ORCPT
+	by vger.kernel.org with ESMTP id S1757666AbXJXOIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:07:55 -0400
+	Wed, 24 Oct 2007 10:08:01 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 8/9] RT: CPU priority management
+Subject: [PATCH 9/9] RT: Cache cpus_allowed weight for optimizing migration
 To: linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Darren Hart <dvhltc@us.ibm.com>
-Date: Wed, 24 Oct 2007 09:53:15 -0400
-Message-ID: <20071024135314.7960.55011.stgit@novell1.haskins.net>
+Date: Wed, 24 Oct 2007 09:53:20 -0400
+Message-ID: <20071024135320.7960.91479.stgit@novell1.haskins.net>
 In-Reply-To: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 References: <20071024134431.7960.41984.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -29,337 +29,257 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code tracks the priority of each CPU so that global migration
-  decisions are easy to calculate.  Each CPU can be in a state as follows:
+Some RT tasks (particularly kthreads) are bound to one specific CPU.
+It is fairly common for one or more bound tasks to get queued up at the
+same time.  Consider, for instance, softirq_timer and softirq_sched.  A
+timer goes off in an ISR which schedules softirq_thread to run at RT50.
+Then during the handling of the timer, the system determines that it's
+time to smp-rebalance the system so it schedules softirq_sched to run
+from within the softirq_timer kthread context. So we are in a situation
+where we have two RT50 tasks queued, and the system will go into
+rt-overload condition to request other CPUs for help.
 
-                 (INVALID), IDLE, NORMAL, RT1, ... RT99
+The problem is that these tasks cannot ever be pulled away since they
+are already running on their one and only valid RQ.  However, the other
+CPUs cannot determine that the tasks are unpullable without going
+through expensive checks/locking.  Therefore the helping CPUS
+experience unecessary overhead/latencies regardless as they
+ineffectively try to process the overload condition.
 
-  going from the lowest priority to the highest.  CPUs in the INVALID state
-  are not eligible for routing.  The system maintains this state with
-  a 2 dimensional bitmap (the first for priority class, the second for cpus
-  in that class).  Therefore a typical application without affinity
-  restrictions can find a suitable CPU with O(1) complexity (e.g. two bit
-  searches).  For tasks with affinity restrictions, the algorithm has a
-  worst case complexity of O(min(102, NR_CPUS)), though the scenario that
-  yields the worst case search is fairly contrived.
+This patch tries to optimize the situation by utilizing the hamming
+weight of the task->cpus_allowed mask.  A weight of 1 indicates that
+the task cannot be migrated, which may be utilized by the overload
+handling code to eliminate uncessary rebalance attempts.  We also
+introduce a per-rq variable to count the number of migratable tasks
+that are currently running.  We only go into overload if we have more
+than one rt task, AND at least one of them is migratable. 
+
+Calculating the weight is probably relatively expensive, so it is only
+done when the cpus_allowed mask is updated (which should be relatively
+infrequent, especially compared to scheduling frequency) and cached in
+the task_struct.
+
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/Makefile       |    2 
- kernel/sched.c        |   37 +++------
- kernel/sched_cpupri.c |  200 +++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/sched_cpupri.h |   10 ++
- 4 files changed, 222 insertions(+), 27 deletions(-)
+ include/linux/sched.h |    1 
+ kernel/fork.c         |    1 
+ kernel/sched.c        |  123 +++++++++++++++++++++++++++++++++++++------------
+ 3 files changed, 96 insertions(+), 29 deletions(-)
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index e4e2acf..d9d1351 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
- 	    rcupdate.o extable.o params.o posix-timers.o \
- 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o \
- 	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
--	    utsname.o
-+	    utsname.o sched_cpupri.o
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 7a3829f..b657c13 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1144,6 +1144,7 @@ struct task_struct {
  
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
- obj-y += time/
+ 	unsigned int policy;
+ 	cpumask_t cpus_allowed;
++	int nr_cpus_allowed;
+ 	unsigned int time_slice;
+ 
+ #ifdef CONFIG_PREEMPT_RCU
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 5f11f23..f808e18 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1257,6 +1257,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	 */
+ 	preempt_disable();
+ 	p->cpus_allowed = current->cpus_allowed;
++	p->nr_cpus_allowed = current->nr_cpus_allowed;
+ 	if (unlikely(!cpu_isset(task_cpu(p), p->cpus_allowed) ||
+ 			!cpu_online(task_cpu(p))))
+ 		set_task_cpu(p, smp_processor_id());
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 6cc4389..effcb63 100644
+index effcb63..63e1302 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -67,6 +67,8 @@
+@@ -305,6 +305,7 @@ struct rq {
  
- #include <asm/tlb.h>
- 
-+#include "sched_cpupri.h"
+ #ifdef CONFIG_PREEMPT_RT
+ 	unsigned long rt_nr_running;
++	unsigned long rt_nr_migratory;
+ 	unsigned long rt_nr_uninterruptible;
+ 	int highest_prio;
+ #endif
+@@ -665,20 +666,43 @@ static inline struct rq *this_rq_lock(void)
+ #if defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP)
+ static __cacheline_aligned_in_smp atomic_t rt_overload;
+ static cpumask_t rto_cpus;
+-#endif
 +
- /*
-  * Scheduler clock - returns current time in nanosec units.
-  * This is default implementation.
-@@ -384,8 +386,10 @@ static inline void update_rq_prio(struct rq *rq)
- 	if ((prio != MAX_PRIO) && (prio > MAX_RT_PRIO))
- 		prio = MAX_RT_PRIO;
- 
--	if (rq->highest_prio != prio)
-+	if (rq->highest_prio != prio) {
-+		cpupri_set(rq->cpu, prio);
- 		set_rq_prio(rq, prio);
++static void inc_rt_migration(struct rq *rq)
++{
++	rq->rt_nr_migratory++;
++
++	if ((rq->rt_nr_running > 1) && !cpu_isset(rq->cpu, rto_cpus)) {
++		cpu_set(rq->cpu, rto_cpus);
++		smp_wmb();
++		atomic_inc(&rt_overload);
 +	}
- }
++}
++
++static void dec_rt_migration(struct rq *rq)
++{
++	WARN_ON(!rq->rt_nr_migratory);
++	rq->rt_nr_migratory--;
++
++	if (((rq->rt_nr_running <= 1) || !rq->rt_nr_migratory)
++	    && cpu_isset(rq->cpu, rto_cpus)) {
++		atomic_dec(&rt_overload);
++		cpu_clear(rq->cpu, rto_cpus);
++	}
++}
++
++#else
++#define inc_rt_migration(rq) do { } while(0)
++#define dec_rt_migration(rq) do { } while(0)
++#endif /* defined(CONFIG_PREEMPT_RT) && defined(CONFIG_SMP) */
++
  
- #else
-@@ -1532,36 +1536,15 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
- 	struct rq *lowest_rq = NULL;
+ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+ {
+ #ifdef CONFIG_PREEMPT_RT
+ 	if (rt_task(p)) {
+ 		rq->rt_nr_running++;
+-# ifdef CONFIG_SMP
+-		if (rq->rt_nr_running == 2) {
+-			cpu_set(rq->cpu, rto_cpus);
+-			smp_wmb();
+-			atomic_inc(&rt_overload);
+-		}
+-# endif
++		if (p->nr_cpus_allowed > 1)
++			inc_rt_migration(rq);
+ 	}
+ #endif
+ }
+@@ -689,12 +713,8 @@ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+ 	if (rt_task(p)) {
+ 		WARN_ON(!rq->rt_nr_running);
+ 		rq->rt_nr_running--;
+-# ifdef CONFIG_SMP
+-		if (rq->rt_nr_running == 1) {
+-			atomic_dec(&rt_overload);
+-			cpu_clear(rq->cpu, rto_cpus);
+-		}
+-# endif
++		if (p->nr_cpus_allowed > 1)
++			dec_rt_migration(rq);
+ 	}
+ #endif
+ }
+@@ -1526,6 +1546,27 @@ next_in_queue:
+ 
+ static int double_lock_balance(struct rq *this_rq, struct rq *busiest);
+ 
++static int lock_migration_target(struct task_struct *p, struct rq *target_rq)
++{
++	struct rq *this_rq = task_rq(p);
++
++	if (double_lock_balance(this_rq, target_rq)) {
++		/*
++		 * We had to unlock the run queue. In
++		 * the mean time, task could have
++		 * migrated already or had its affinity changed.
++		 */
++		if (unlikely(task_running(this_rq, p) ||
++			     task_rq(p) != this_rq ||
++			     !cpu_isset(target_rq->cpu, p->cpus_allowed))) {
++			spin_unlock(&target_rq->lock);
++			return 0;
++		}
++	}	
++	
++	return 1;
++}
++
+ /* Only try this algorithm three times */
+ #define RT_PUSH_MAX_TRIES 3
+ 
+@@ -1537,6 +1578,28 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
  	int cpu;
  	int tries;
--	cpumask_t cpu_mask;
--
--	cpus_and(cpu_mask, cpu_online_map, task->cpus_allowed);
  
++	/*
++	 * We can optimize if the hamming weight of the cpus_allowed mask
++	 * is 1 because the task has nowhere to go but one CPU.  So don't
++	 * waste the time trying to find the lowest RQ in this case.
++	 */
++	if (task->nr_cpus_allowed == 1) {
++		/* If the task is already on the RQ, we are done */
++		if (cpu_isset(this_rq->cpu, task->cpus_allowed))
++			return NULL;
++
++		cpu = first_cpu(task->cpus_allowed);
++
++		lowest_rq = cpu_rq(cpu);
++		BUG_ON(this_rq == lowest_rq);
++
++		/* Otherwise, we can simply grab the new RQ */
++		if (lock_migration_target(task, lowest_rq))
++			return lowest_rq;
++		else
++			return NULL;
++	}
++
  	for (tries = 0; tries < RT_PUSH_MAX_TRIES; tries++) {
--		/*
--		 * Scan each rq for the lowest prio.
--		 */
--		for_each_cpu_mask(cpu, cpu_mask) {
--			struct rq *rq = &per_cpu(runqueues, cpu);
--
--			if (cpu == this_rq->cpu)
--				continue;
-+		cpu = cpupri_find(this_rq->cpu, task);
+ 		cpu = cpupri_find(this_rq->cpu, task);
  
--			/* We look for lowest RT prio or non-rt CPU */
--			if (rq->highest_prio >= MAX_RT_PRIO) {
--				lowest_rq = rq;
+@@ -1546,21 +1609,8 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ 		lowest_rq = cpu_rq(cpu);
+ 
+ 		/* if the prio of this runqueue changed, try again */
+-		if (double_lock_balance(this_rq, lowest_rq)) {
+-			/*
+-			 * We had to unlock the run queue. In
+-			 * the mean time, task could have
+-			 * migrated already or had its affinity changed.
+-			 */
+-			if (unlikely(task_running(this_rq, task) ||
+-				     task_rq(task) != this_rq ||
+-				     !cpu_isset(lowest_rq->cpu, task->cpus_allowed))) {
+-				spin_unlock(&lowest_rq->lock);
+-				lowest_rq = NULL;
 -				break;
 -			}
 -
--			/* no locking for now */
--			if (rq->highest_prio > task->prio &&
--			    (!lowest_rq || rq->highest_prio < lowest_rq->highest_prio)) {
--				lowest_rq = rq;
--			}
 -		}
--
--		if (!lowest_rq)
-+		if (cpu == this_rq->cpu)
- 			break;
++		if (!lock_migration_target(task, lowest_rq))
++			return NULL;
  
-+		lowest_rq = cpu_rq(cpu);
-+
- 		/* if the prio of this runqueue changed, try again */
- 		if (double_lock_balance(this_rq, lowest_rq)) {
- 			/*
-@@ -7395,6 +7378,8 @@ void __init sched_init(void)
- 	fair_sched_class.next = &idle_sched_class;
- 	idle_sched_class.next = NULL;
+ 		/* If this rq is still suitable use it. */
+ 		if (lowest_rq->highest_prio > task->prio)
+@@ -5794,6 +5844,7 @@ int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
+ 	unsigned long flags;
+ 	struct rq *rq;
+ 	int ret = 0;
++	int weight = cpus_weight(new_mask);
  
-+	cpupri_init();
-+
- 	for_each_possible_cpu(i) {
- 		struct rt_prio_array *array;
- 		struct rq *rq;
-diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
-new file mode 100644
-index 0000000..5cb51ae
---- /dev/null
-+++ b/kernel/sched_cpupri.c
-@@ -0,0 +1,200 @@
-+/*
-+ *  kernel/sched_cpupri.c
-+ *
-+ *  CPU priority management
-+ *
-+ *  Copyright (C) 2007 Novell
-+ *
-+ *  Author: Gregory Haskins <ghaskins@novell.com>
-+ *
-+ *  This code tracks the priority of each CPU so that global migration
-+ *  decisions are easy to calculate.  Each CPU can be in a state as follows:
-+ *
-+ *                 (INVALID), IDLE, NORMAL, RT1, ... RT99
-+ *
-+ *  going from the lowest priority to the highest.  CPUs in the INVALID state
-+ *  are not eligible for routing.  The system maintains this state with
-+ *  a 2 dimensional bitmap (the first for priority class, the second for cpus
-+ *  in that class).  Therefore a typical application without affinity
-+ *  restrictions can find a suitable CPU with O(1) complexity (e.g. two bit
-+ *  searches).  For tasks with affinity restrictions, the algorithm has a
-+ *  worst case complexity of O(min(102, NR_CPUS)), though the scenario that
-+ *  yields the worst case search is fairly contrived.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; version 2
-+ *  of the License.
-+ */
-+
-+#include <asm/idle.h>
-+
-+#include "sched_cpupri.h"
-+
-+#define CPUPRI_NR_PRIORITIES 2+MAX_RT_PRIO
-+
-+#define CPUPRI_INVALID -2
-+#define CPUPRI_IDLE    -1
-+#define CPUPRI_NORMAL   0
-+/* values 1-99 are RT priorities */
-+
-+struct cpu_priority {
-+	raw_spinlock_t lock;
-+	cpumask_t      pri_to_cpu[CPUPRI_NR_PRIORITIES];
-+	long           pri_active[CPUPRI_NR_PRIORITIES/BITS_PER_LONG];
-+	int            cpu_to_pri[NR_CPUS];
-+};
-+
-+static __cacheline_aligned_in_smp struct cpu_priority cpu_priority;
-+
-+/* Convert between a 140 based task->prio, and our 102 based cpupri */
-+static int convert_prio(int prio)
-+{
-+	int cpupri;
-+	
-+	if (prio == MAX_PRIO)
-+		cpupri = CPUPRI_IDLE;
-+	else if (prio >= MAX_RT_PRIO)
-+		cpupri = CPUPRI_NORMAL;
-+	else
-+		cpupri = MAX_RT_PRIO - prio;
-+    
-+	return cpupri;
-+}
-+
-+#define for_each_cpupri_active(array, idx)                   \
-+  for( idx = find_first_bit(array, CPUPRI_NR_PRIORITIES);    \
-+       idx < CPUPRI_NR_PRIORITIES;                           \
-+       idx = find_next_bit(array, CPUPRI_NR_PRIORITIES, idx+1))
-+
-+/**
-+ * cpupri_find - find the best (lowest-pri) CPU in the system
-+ * @cpu: The recommended/default CPU
-+ * @task_pri: The priority of the task being scheduled (IDLE-RT99)
-+ * @p: The task being scheduled
-+ *
-+ * Note: This function returns the recommended CPU as calculated during the
-+ * current invokation.  By the time the call returns, the CPUs may have in
-+ * fact changed priorities any number of times.  While not ideal, it is not
-+ * an issue of correctness since the normal rebalancer logic will correct
-+ * any discrepancies created by racing against the uncertainty of the current
-+ * priority configuration.
-+ *
-+ * Returns: (int)cpu - The recommended cpu to accept the task
-+ */
-+int cpupri_find(int def_cpu, struct task_struct *p)
-+{
-+	int                  idx      = 0;
-+	struct cpu_priority *cp       = &cpu_priority;
-+	int                  this_cpu = smp_processor_id();
-+	int                  cpu      = def_cpu;
-+	int                  task_pri = convert_prio(p->prio);
-+
-+	for_each_cpupri_active(cp->pri_active, idx) {
-+		cpumask_t mask;
-+		int       lowest_pri = idx-1;
-+		
-+		if (lowest_pri >= task_pri)
-+			break;
-+		
-+		cpus_and(mask, p->cpus_allowed, cp->pri_to_cpu[idx]);
-+		
-+		if (!cpus_empty(mask)) {
-+			/*
-+			 * We select a CPU in the following priority:
-+			 *
-+			 *       def_cpu, this_cpu, first_cpu
-+			 *
-+			 * for efficiency.  def_cpu preserves cache
-+			 * affinity, and this_cpu is cheaper to preempt
-+			 * (note that sometimes they are the same).
-+			 * Finally, we will take whatever is available
-+			 * if the first two don't pan out.
-+			 */
-+			if (cpu_isset(def_cpu, mask))
-+				break;
-+			
-+			if (cpu_isset(this_cpu, mask)) {
-+				cpu = this_cpu;
-+				break;
-+			}
-+			
-+			cpu = first_cpu(mask);
-+			break;
-+		}
-+	}
-+
-+	return cpu;
-+}
-+
-+/**
-+ * cpupri_set - update the cpu priority setting
-+ * @cpu: The target cpu
-+ * @pri: The priority (INVALID-RT99) to assign to this CPU
-+ *
-+ * Note: Assumes cpu_rq(cpu)->lock is locked
-+ *
-+ * Returns: (void)
-+ */
-+void cpupri_set(int cpu, int newpri)
-+{
-+	struct cpu_priority *cp      = &cpu_priority;
-+	int                 *currpri = &cp->cpu_to_pri[cpu];
-+	int                  oldpri  = *currpri;
-+	unsigned long        flags;
-+
-+	newpri = convert_prio(newpri);
-+
-+	WARN_ON(oldpri == newpri);
-+
-+	spin_lock_irqsave(&cp->lock, flags);
-+	
+ 	rq = task_rq_lock(p, &flags);
+ 	if (!cpus_intersects(new_mask, cpu_online_map)) {
+@@ -5801,7 +5852,21 @@ int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
+ 		goto out;
+ 	}
+ 
++#ifdef CONFIG_SMP
 +	/*
-+	 * If the cpu was currently mapped to a different value, we
-+	 * first need to unmap the old value
++	 * Update the migration status of the RQ if we have an RT task
++	 * which is running AND changing its weight value.
 +	 */
-+	if (likely(oldpri != CPUPRI_INVALID)) {
-+		int        idx  = oldpri+1;
-+		cpumask_t *mask = &cp->pri_to_cpu[idx];
-+		
-+		cpu_clear(cpu, *mask);
-+		if (cpus_empty(*mask))
-+			__clear_bit(idx, cp->pri_active);
++	if (rt_task(p) && p->se.on_rq && (weight != p->nr_cpus_allowed)) {
++		if ((p->nr_cpus_allowed <= 1) && (weight > 1))
++			inc_rt_migration(rq);
++		else if((p->nr_cpus_allowed > 1) && (weight <= 1))
++			dec_rt_migration(rq);
 +	}
-+	
-+	if (likely(newpri != CPUPRI_INVALID)) {
-+		int        idx  = newpri+1;
-+		cpumask_t *mask = &cp->pri_to_cpu[idx];
-+		
-+		cpu_set(cpu, *mask);
-+		__set_bit(idx, cp->pri_active);
-+	}
++#endif
+ 	p->cpus_allowed = new_mask;
++	p->nr_cpus_allowed = weight;
 +
-+	spin_unlock_irqrestore(&cp->lock, flags);
-+	
-+	*currpri = newpri;
-+}
-+
-+/**
-+ * cpupri_init - initialize the cpupri subsystem
-+ *
-+ * This must be called during the scheduler initialization before the 
-+ * other methods may be used.
-+ *
-+ * Returns: (void)
-+ */
-+void cpupri_init(void)
-+{
-+	struct cpu_priority *cp = &cpu_priority;
-+	int i;
-+
-+	memset(cp, 0, sizeof(*cp));
-+
-+	spin_lock_init(&cp->lock);
-+
-+	for_each_possible_cpu(i) {
-+		cp->cpu_to_pri[i] = CPUPRI_INVALID;
-+	}
-+}
-+
-+
-diff --git a/kernel/sched_cpupri.h b/kernel/sched_cpupri.h
-new file mode 100644
-index 0000000..a58a4e8
---- /dev/null
-+++ b/kernel/sched_cpupri.h
-@@ -0,0 +1,10 @@
-+#ifndef _LINUX_CPUPRI_H
-+#define _LINUX_CPUPRI_H
-+
-+#include <linux/sched.h>
-+
-+int  cpupri_find(int cpu, struct task_struct *p);
-+void cpupri_set(int cpu, int pri);
-+void cpupri_init(void);
-+
-+#endif /* _LINUX_CPUPRI_H */
+ 	/* Can the task run on the task's current CPU? If so, we're done */
+ 	if (cpu_isset(task_cpu(p), new_mask))
+ 		goto out;
 
