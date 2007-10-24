@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbXJXWmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbXJXWqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbXJXWmh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 18:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXJXWm3
+	id S1758872AbXJXWqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 18:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXJXWqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 18:42:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:61966 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754937AbXJXWm2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 18:42:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Laz1CZwATFPy4FY9wtGUU+SscYrqFs9ElM0GYlmC9Gb5NDzsZj8LzqNsqY2ubN9wNV/NG6854VBWudIxrkQJx/+F7sOlmJZitjyNaGwPylkWuEekxRXSQW/hteSP+WfjTmB6NL0QN6bqbfaIKZa3rM1p/31RahXfeOTJJaxyD5I=
-Message-ID: <b70f2f960710241542t6c3501a5k3d44e80906ce8b97@mail.gmail.com>
-Date: Thu, 25 Oct 2007 02:42:26 +0400
-From: "Mikhail Kshevetskiy" <mikhail.kshevetskiy@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: x86_64 and AMD with C1E
-Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <471FBC09.8050201@redhat.com>
+	Wed, 24 Oct 2007 18:46:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:51739 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753796AbXJXWqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 18:46:35 -0400
+Message-ID: <471FCB38.10106@goop.org>
+Date: Wed, 24 Oct 2007 15:46:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Chinner <dgc@sgi.com>
+CC: Andi Kleen <andi@firstfloor.org>, dean gaudet <dean@arctic.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Xen-devel <xen-devel@lists.xensource.com>, Morten@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?B=F8geskov?= <xen-users@morten.bogeskov.dk>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
+       Mark Williamson <mark.williamson@cl.cam.ac.uk>
+Subject: Re: [PATCH] Allow lazy unmapping by taking extra page references
+ V3
+References: <p73sl439s7k.fsf@bingen.suse.de> <471CEEB4.9040807@goop.org> <20071022190740.GA1695@one.firstfloor.org> <20071022223224.GC995458@sgi.com> <20071022233514.GA9057@one.firstfloor.org> <20071023003641.GF995458@sgi.com> <20071023070414.GM66820511@sgi.com> <20071023093035.GB24536@one.firstfloor.org> <20071024043619.GE66820511@sgi.com> <471ED35F.3020605@goop.org> <20071024214826.GH66820511@sgi.com>
+In-Reply-To: <20071024214826.GH66820511@sgi.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071001101532.025d652f@localhost> <4718DDB7.7070707@redhat.com>
-	 <b70f2f960710241426y40d25647v3f25b275fad5ce76@mail.gmail.com>
-	 <471FBC09.8050201@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/10/25, Chuck Ebbert <cebbert@redhat.com>:
-> On 10/24/2007 05:26 PM, Mikhail Kshevetskiy wrote:
-> >>>
-> >>> I fill something wrong here.
-> >>> Is it possible to reduce the amount of timer interrupts?
-> >>> Is it possible to force enable C1,C2 and C3 states when c1e disabled?
-> >>>
-> >> How are you disabling C1E?
-> >>
-> >>
-> > dirty hack, i just follow the FreeBSD way and clear C1e bit in lapic
-> > initialization code. I make it for test purpose only, so i do not produce a
-> > patch.
-> >
+David Chinner wrote:
+> Allow lazy unmapping of vmap()d regions be taking a reference
+> on each page in the region being vmap()ed. The page references
+> get released after the region is vunmap()ed, thereby ensuring
+> we don't leave stray mappings on freed pages that could lead to
+> problems pages being reallocated with incorrect mappings
+> associated with them.
 >
-> Why does disabling C1E disable C1, C2 and C3?
+> Tested with XFS filesystems with 64k directory blocks with
+> dirstress and XFSQA.
+>
+> Version 3:
+>   - compile on latest -git
+>   
 
-i don't know. Normally (C1E enabled) i have C1 power state only. When
-I disable C1E, i have no any power state (AMD spec say i should have
-C1 and C2; C3 is optional)
+Not quite:
 
-> Thomas, in the case of the machines where C1E is disabled on CPU 0 but
-> enabled on CPU 1, could we just disable it? Maybe it's a BIOS bug and the
-> vendor just forgot to disable CPU 1...
+  CC      mm/vmalloc.o
+/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c: In function 'vm_area_alloc_pagearray':
+/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: 'GFP_LEVEL_MASK' undeclared (first use in this function)
+/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: (Each undeclared identifier is reported only once
+/home/jeremy/hg/xen/paravirt/linux/mm/vmalloc.c:338: error: for each function it appears in.)
+make[3]: *** [mm/vmalloc.o] Error 1
+make[2]: *** [mm] Error 2
+make[2]: *** Waiting for unfinished jobs....
+
+
+GFP_RECLAM_MASK now?
+
+J
