@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXJXEK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbXJXET0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXJXEK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 00:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXJXEKR
+	id S1755075AbXJXET0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 00:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJXETT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 00:10:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:23475 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbXJXEKP convert rfc822-to-8bit (ORCPT
+	Wed, 24 Oct 2007 00:19:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58714 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750716AbXJXETS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 00:10:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Vkov83ELFn5C6ZIA1i2U+1aFCWy0Wcs9qbi7XJ0ehGx35QUmzAYYhHObUrL2RuQPgKy7q/7hfAV5I36wF2q2BUbVqj5RLQnJXVtrMCcHklbvXN/ZvsKvFYda2r9Yc4Ko2Kn7Uyj8rJ/qPp0gfFiN3UoYSIeB1RQpxtg0bs02ZfY=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: New version of Elantech touchpad driver for kernel 2.6.23.1
-Date: Wed, 24 Oct 2007 00:10:07 -0400
-User-Agent: KMail/1.9.7
-Cc: Arjan Opmeer <arjan@opmeer.net>, linux-kernel@vger.kernel.org
-References: <20071024035002.GA12026@adopmeer.homeip.net>
-In-Reply-To: <20071024035002.GA12026@adopmeer.homeip.net>
+	Wed, 24 Oct 2007 00:19:18 -0400
+Date: Tue, 23 Oct 2007 21:19:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux v2.6.24-rc1
+Message-ID: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710240010.08023.dmitry.torokhov@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 October 2007, Arjan Opmeer wrote:
-> @@ -88,6 +88,7 @@ enum psmouse_type {
->         PSMOUSE_LIFEBOOK,
->         PSMOUSE_TRACKPOINT,
->         PSMOUSE_TOUCHKIT_PS2,
-> +       PSMOUSE_ELANTECH,
->         PSMOUSE_CORTRON,
->         PSMOUSE_AUTO            /* This one should always be last */
->  };
 
-Do not move protocol constants around as they are exported to
-userspace. New protocols should go to the end of the list
-(right in front of PSMOUSE_AUTO).
+This may count as one of the biggest -rc releases ever. It's humongous. 
+Usually the compressed -rc1 diffs are in the 3-5MB range, with occasional 
+smaller ones, and the occasional ones that top 6M, but this one is 
+*eleven* megs.
 
-Thanks. 
+I'd blame the x86 renames (and the watchdog ones), but the thing is, it's 
+absolutely huge even when I generate the diff with git turning all those 
+renames into relatively small rename diffs (which I don't do for the 
+public diffs, since I expect that git people use git to get the changes, 
+and non-git people won't have tools that understand a diff that involves 
+renames).
 
--- 
-Dmitry
+In short, we just had an unusually large amount of not just x86 merges, 
+but also tons of new drivers (wireless networking stands out, but is by no 
+means the only thing - we've got dvb, regular wired network, mmc etc all 
+joining in), and a fair amount or architecture stuff, filesystems, 
+networking etc too.
+
+So there's just lots of new stuff. The diffstat is ten thousand lines 
+long, and weighing in at comfortably over half a megabyte it is way over 
+the limits of this - or any sane - mailing list. The shortlog is barely 
+shorter, weighing in at "just" 8461 lines and almost 400k. The full 
+changelog (which I'm still producing for y'all, since people told me they 
+actually care last time I asked) is 4 megs.
+
+In other words, I don't even know where to start. The big noticeable thing 
+is the x86 merge, and I think we all fervently hope that it won't cause 
+any issues. So far it's been pretty smooth sailing. Knock wood.
+
+Less smooth has the scatter-gather changes to the block layer been, but 
+they are hopefully all in reasonable shape by now too. And the VM changes? 
+I honestly hope nobody even notices. Same goes for some of the VFS layer 
+changes that affected basically every filesystem (although in mostly very 
+straightforward ways).
+
+Just for fun, I'd really encourage git users to just try the
+
+	git shortlog v2.6.23..
+
+thing, it really is quite impressive. 
+
+			Linus
