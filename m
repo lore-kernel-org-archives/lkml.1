@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbXJXXii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbXJXXol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757739AbXJXXii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 19:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbXJXXia
+	id S1757924AbXJXXol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 19:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXJXXob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 19:38:30 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:57579 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754851AbXJXXi3 (ORCPT
+	Wed, 24 Oct 2007 19:44:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38141 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753662AbXJXXoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 19:38:29 -0400
-Message-ID: <471FD772.2070305@snapgear.com>
-Date: Thu, 25 Oct 2007 09:38:26 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
+	Wed, 24 Oct 2007 19:44:30 -0400
+Date: Wed, 24 Oct 2007 16:42:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Adrian Bunk <bunk@kernel.org>
-CC: bryan.wu@analog.com, ysato@users.sourceforge.jp,
-       Miles Bader <miles@gnu.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove mm_{ptov,vtop}()
-References: <20071024162629.GK30533@stusta.de>
-In-Reply-To: <20071024162629.GK30533@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+cc: Casey Schaufler <casey@schaufler-ca.com>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <20071024233200.GJ30533@stusta.de>
+Message-ID: <alpine.LFD.0.999.0710241636010.30120@woody.linux-foundation.org>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
+ <20071024233200.GJ30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Adrian Bunk wrote:
-> This patch removes the unused mm_{ptov,vtop}().
+On Thu, 25 Oct 2007, Adrian Bunk wrote:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> What I'm giving you is "Linus has decreed there can be LSMs other than 
+> SELinux."
+> 
+> Getting LSMs included should no longer be harder than for other 
+> parts of the kernel.
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+Well, despite my heart-felt feelings that we should support different 
+people in trying out different things, one of the issues is also that I'm 
+obviously not myself a security person. I can "decree" all I want, but in 
+the end, I really want the people *involved* to merge security stuff. 
 
+Right now Chris Wrigt is the documented maintainer for LSM, and quite 
+frankly, I do not want to take it over. I really really really hope that
+people that are interested in security can work this thing out, and my 
+only requirement is that it doesn't end up being any kind of force-feeding 
+of opinions and ideas, since clearly there is tons of room for 
+disagreement in the area..
 
-> ---
-> 
->  include/asm-blackfin/io.h       |    2 --
->  include/asm-h8300/io.h          |    2 --
->  include/asm-h8300/virtconvert.h |    2 --
->  include/asm-m68knommu/io.h      |    2 --
->  include/asm-v850/io.h           |    2 --
->  5 files changed, 10 deletions(-)
-> 
-> c2472eb3a1eaaa4211863e6091817b4078b6a53e 
-> diff --git a/include/asm-blackfin/io.h b/include/asm-blackfin/io.h
-> index d1d2e6b..f3d8126 100644
-> --- a/include/asm-blackfin/io.h
-> +++ b/include/asm-blackfin/io.h
-> @@ -187,8 +187,6 @@ extern void blkfin_inv_cache_all(void);
->  #define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
->  #define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
->  
-> -#define mm_ptov(vaddr)		((void *) (vaddr))
-> -#define mm_vtop(vaddr)		((unsigned long) (vaddr))
->  #define phys_to_virt(vaddr)	((void *) (vaddr))
->  #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
->  
-> diff --git a/include/asm-h8300/io.h b/include/asm-h8300/io.h
-> index 7543a57..26dc6cc 100644
-> --- a/include/asm-h8300/io.h
-> +++ b/include/asm-h8300/io.h
-> @@ -302,8 +302,6 @@ static __inline__ void ctrl_outl(unsigned long b, unsigned long addr)
->  /*
->   * Macros used for converting between virtual and physical mappings.
->   */
-> -#define mm_ptov(vaddr)		((void *) (vaddr))
-> -#define mm_vtop(vaddr)		((unsigned long) (vaddr))
->  #define phys_to_virt(vaddr)	((void *) (vaddr))
->  #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
->  
-> diff --git a/include/asm-h8300/virtconvert.h b/include/asm-h8300/virtconvert.h
-> index ee7d5ea..19cfd62 100644
-> --- a/include/asm-h8300/virtconvert.h
-> +++ b/include/asm-h8300/virtconvert.h
-> @@ -10,8 +10,6 @@
->  #include <asm/setup.h>
->  #include <asm/page.h>
->  
-> -#define mm_ptov(vaddr)		((void *) (vaddr))
-> -#define mm_vtop(vaddr)		((unsigned long) (vaddr))
->  #define phys_to_virt(vaddr)	((void *) (vaddr))
->  #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
->  
-> diff --git a/include/asm-m68knommu/io.h b/include/asm-m68knommu/io.h
-> index 653d9b2..6adef1e 100644
-> --- a/include/asm-m68knommu/io.h
-> +++ b/include/asm-m68knommu/io.h
-> @@ -172,8 +172,6 @@ extern void iounmap(void *addr);
->  /*
->   * Macros used for converting between virtual and physical mappings.
->   */
-> -#define mm_ptov(vaddr)		((void *) (vaddr))
-> -#define mm_vtop(vaddr)		((unsigned long) (vaddr))
->  #define phys_to_virt(vaddr)	((void *) (vaddr))
->  #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
->  
-> diff --git a/include/asm-v850/io.h b/include/asm-v850/io.h
-> index cc364fc..cdad251 100644
-> --- a/include/asm-v850/io.h
-> +++ b/include/asm-v850/io.h
-> @@ -122,8 +122,6 @@ outsl (unsigned long port, const void *src, unsigned long count)
->  #endif
->  
->  /* Conversion between virtual and physical mappings.  */
-> -#define mm_ptov(addr)		((void *)__phys_to_virt (addr))
-> -#define mm_vtop(addr)		((unsigned long)__virt_to_phys (addr))
->  #define phys_to_virt(addr)	((void *)__phys_to_virt (addr))
->  #define virt_to_phys(addr)	((unsigned long)__virt_to_phys (addr))
->  
-> 
-> 
+Do other people want to stand up and be "LSM maintainers" in the sense 
+that they also end up being informed members who can also stand up for new 
+modules and help merge them, rather than just push the existing one(s)? 
+Chris? Casey? Crispin?
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+[ Ie there's the "core LSM hooks" on one side, but there's also the "what 
+  modules make any sense at all to merge?" on the other, and I really 
+  don't have the expertise to make any sensible judgements except for the 
+  pure "process" judgement that we should not hardcode things to just one 
+  module! ]
+
+		Linus
