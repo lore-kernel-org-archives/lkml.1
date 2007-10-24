@@ -1,82 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXJXMpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXJXMqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbXJXMpY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbXJXMpL
+	id S1758647AbXJXMqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbXJXMqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:45:11 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23434 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756462AbXJXMpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:45:10 -0400
-Date: Wed, 24 Oct 2007 14:45:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
-Message-ID: <20071024124506.GX14671@kernel.dk>
-References: <20071024132220.14070582@dhcp-255-175.norway.atmel.com> <20071024112453.GP14671@kernel.dk> <20071024112938.GA1770@uranus.ravnborg.org> <Pine.LNX.4.64.0710240814570.31881@localhost.localdomain> <20071024122120.GV14671@kernel.dk> <20071024124123.GD30533@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024124123.GD30533@stusta.de>
+	Wed, 24 Oct 2007 08:46:11 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:56407 "EHLO
+	mail-07.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbXJXMqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 08:46:10 -0400
+From: Matthew Wilcox <matthew@wil.cx>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH] hash: Add explicit u32 and u64 versions of hash
+Date: Wed, 24 Oct 2007 08:46:15 -0400
+Message-Id: <11932299753758-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, Adrian Bunk wrote:
-> On Wed, Oct 24, 2007 at 02:21:20PM +0200, Jens Axboe wrote:
-> > On Wed, Oct 24 2007, Robert P. J. Day wrote:
-> > > On Wed, 24 Oct 2007, Sam Ravnborg wrote:
-> > > 
-> > > > On Wed, Oct 24, 2007 at 01:24:53PM +0200, Jens Axboe wrote:
-> > > > > On Wed, Oct 24 2007, Haavard Skinnemoen wrote:
-> > > > > > Hi Linus,
-> > > > > >
-> > > > > > Sorry about sending you pull requests so rapidly, but Jens broke my
-> > > > > > dma-mapping.h yesterday. Or you may say the bug was there to begin with
-> > > > > > and Jens merely exposed it, but that makes it sound like my fault ;-)
-> > > > > >
-> > > > > > Anyway, please pull from
-> > > > > >
-> > > > > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
-> > > > > >
-> > > > > > to receive the following update.
-> > > > >
-> > > > > You should not take the blame :-)
-> > > > >
-> > > > > I'm collecting these patches, so I'll pull your fix and make sure it
-> > > > > gets to Linus today along with the other fixes.
-> > > >
-> > > > How about doing a "git grep asm/scatterlist"
-> > > > and fix all victims to use linux/scatterlist?
-> > > > Or you maybe did this already.
-> > > 
-> > > i was just about to ask -- is this one of those cases where the asm
-> > > versions of scatterlist.h should have a warning/error that they should
-> > > not be included directly, and to include linux/scatterlist.h instead?
-> > 
-> > No, using asm/scatterlist.h is perfectly fine. The problem is code using
-> > the sg helpers should include linux/scatterlist.h since that is where
-> > those are defined.
-> > 
-> > If you just need the scatterlist structure definition, then
-> > asm/scatterlist.h is the correct include.
-> 
-> But there's also the general question whether it's good practice for 
-> not architecture specific code to include asm/ headers.
-> 
-> For APIs available on all architectures linux/ header are the right 
-> thing to use, and what is in the asm/ header and what in the linux/ 
-> header becomes an implementation detail that can be changed.
+The 32-bit version is more efficient (and apparently gives better hash
+results than the 64-bit version), so users who are only hashing a 32-bit
+quantity can now opt to use the 32-bit version explicitly, rather than
+promoting to a long.
 
-I agree, for non-arch code you almost always want to use
-linux/scatterlist.h since you should be using proper accessor methods
-anyway.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ include/linux/hash.h |   42 +++++++++++++++++++++++++++---------------
+ 1 files changed, 27 insertions(+), 15 deletions(-)
 
+diff --git a/include/linux/hash.h b/include/linux/hash.h
+index acf17bb..06d25c1 100644
+--- a/include/linux/hash.h
++++ b/include/linux/hash.h
+@@ -1,6 +1,6 @@
+ #ifndef _LINUX_HASH_H
+ #define _LINUX_HASH_H
+-/* Fast hashing routine for a long.
++/* Fast hashing routine for ints,  longs and pointers.
+    (C) 2002 William Lee Irwin III, IBM */
+ 
+ /*
+@@ -13,23 +13,30 @@
+  * them can use shifts and additions instead of multiplications for
+  * machines where multiplications are slow.
+  */
+-#if BITS_PER_LONG == 32
++
++#include <asm/types.h>
++
+ /* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
+-#define GOLDEN_RATIO_PRIME 0x9e370001UL
+-#elif BITS_PER_LONG == 64
++#define GOLDEN_RATIO_PRIME_32 0x9e370001UL
+ /*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
+-#define GOLDEN_RATIO_PRIME 0x9e37fffffffc0001UL
++#define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
++
++#if BITS_PER_LONG == 32
++#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
++#define hash_long(val, bits) hash_32(val, bits)
++#elif BITS_PER_LONG == 64
++#define hash_long(val, bits) hash_64(val, bits)
++#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
+ #else
+-#error Define GOLDEN_RATIO_PRIME for your wordsize.
++#error Wordsize not 32 or 64
+ #endif
+ 
+-static inline unsigned long hash_long(unsigned long val, unsigned int bits)
++static inline u64 hash_64(u64 val, unsigned int bits)
+ {
+-	unsigned long hash = val;
++	u64 hash = val;
+ 
+-#if BITS_PER_LONG == 64
+ 	/*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
+-	unsigned long n = hash;
++	u64 n = hash;
+ 	n <<= 18;
+ 	hash -= n;
+ 	n <<= 33;
+@@ -42,15 +49,20 @@ static inline unsigned long hash_long(unsigned long val, unsigned int bits)
+ 	hash += n;
+ 	n <<= 2;
+ 	hash += n;
+-#else
++
++	/* High bits are more random, so use them. */
++	return hash >> (64 - bits);
++}
++
++static inline u32 hash_32(u32 val, unsigned int bits)
++{
+ 	/* On some cpus multiply is faster, on others gcc will do shifts */
+-	hash *= GOLDEN_RATIO_PRIME;
+-#endif
++	u32 hash = val * GOLDEN_RATIO_PRIME_32;
+ 
+ 	/* High bits are more random, so use them. */
+-	return hash >> (BITS_PER_LONG - bits);
++	return hash >> (32 - bits);
+ }
+-	
++
+ static inline unsigned long hash_ptr(void *ptr, unsigned int bits)
+ {
+ 	return hash_long((unsigned long)ptr, bits);
 -- 
-Jens Axboe
+1.4.4.2
 
