@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbXJXNlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbXJXNl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759158AbXJXNlp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 09:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXJXNlf
+	id S1759475AbXJXNl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 09:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758675AbXJXNlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 09:41:35 -0400
-Received: from nn7.de ([85.214.94.156]:52448 "EHLO nn7.de"
+	Wed, 24 Oct 2007 09:41:39 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:53679 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756341AbXJXNlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 09:41:35 -0400
-Subject: Re: [PATCH 3/3] faster workaround
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bernd Schubert <bs@q-leap.de>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <471DABE1.40301@gmail.com>
-References: <200710081709.18253.bs@q-leap.de>
-	 <200710101112.20448.bs@q-leap.de>	<200710111409.56210.bs@q-leap.de>
-	 <200710111433.23833.bs@q-leap.de>
-	 <20071011142628.48272a4a@the-village.bc.nu>	<470E30F9.5060705@garzik.org>
-	 <20071011155024.46007973@the-village.bc.nu> <470E3A35.4000104@garzik.org>
-	 <471DABE1.40301@gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 24 Oct 2007 15:39:28 +0200
-Message-Id: <1193233168.5427.5.camel@localhost>
+	id S1758567AbXJXNli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 09:41:38 -0400
+Date: Wed, 24 Oct 2007 22:41:12 +0900
+To: jeff@garzik.org
+Cc: tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, greg@kroah.com,
+       James.Bottomley@SteelEye.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH -mm 02/11] PCI: add device_dma_parameters support
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <471F2DAF.7030800@garzik.org>
+References: <67bb10d9f4e9473ddc84d9839114602c1966f19f.tomof@acm.org>
+	<20071024165323F.tomof@acm.org>
+	<471F2DAF.7030800@garzik.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071024224217K.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-23 at 17:08 +0900, Tejun Heo wrote:
-> Jeff Garzik wrote:
-> > Alan Cox wrote:
-> >>> 2) Once we identified, over time, the set of drives affected by this
-> >>> 3112 quirk (aka drives that didn't fully comply to SATA spec), the
-> >>> debugging of corruption cases largely shifted to the standard
-> >>> routine: update the BIOS, replace the
-> >>> cables/RAM/power/mainboard/slot/etc. to be certain of problem location.
-> >>
-> >> Except for the continued series of later SI + Nvidia chipset (mostly)
-> >> pattern which seems unanswered but also being later chips I assume
-> >> unrelated to this problem.
-> > 
-> > The SIL_FLAG_MOD15WRITE flag is set in sil_port_info[] is set according
-> > to the best info we have from SiI, which indicates that 3114 and 3512 do
-> > not have the same problem as the 3112.
+On Wed, 24 Oct 2007 07:34:07 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> FUJITA Tomonori wrote:
+> > index 463a5a9..54edea2 100644
+> > --- a/drivers/pci/probe.c
+> > +++ b/drivers/pci/probe.c
+> > @@ -985,8 +985,11 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+> >  
+> >  	set_dev_node(&dev->dev, pcibus_to_node(bus));
+> >  	dev->dev.dma_mask = &dev->dma_mask;
+> > +	dev->dev.dma_parms = &dev->dma_parms;
+> >  	dev->dev.coherent_dma_mask = 0xffffffffull;
+> >  
+> > +	pci_set_dma_max_seg_size(dev, 65536);
 > 
-> I don't think this data corruption problem w/ sil3114 is related to
-> m15w.  m15w workaround slows down things quite a bit and is likely to
-> hide problems on PCI bus side.  There are reports of data corruption
-> with 3114 on nvidia (most common), via and now amd chipsets.  There's
-> one on intel too but IIRC wasn't too definite.
-
-err wait, the motherboard I am having is also via based. however the
-m15w workaround just slowed down everything but the problem still
-appeared.
-
-also to be sure that it is really some problem related to the particular
-seagate drive vs. sil3114 I created a 200G file of zeros on one of the
-known to work seagates. and indeed it was all zeros... 
-
-> According to a user, freebsd didn't have data corruption problem on the
-> same hardware.  I copied PCI FIFO setup code (ours is broken BTW) but it
-> didn't fix the problem.
+> this should check the return value of pci_set_dma_max_seg_size(), and do 
+> something useful.
 > 
-> I'll try to reproduce the problem locally and hunt it down.
+> ACK everything else
 
-Thanks in advance...
-Soeren
+Thanks.
+
+I wasn't sure about what to do. Should pci_device_add fail in case of
+pci_set_dma_max_seg_size failure or just should we print warning?
