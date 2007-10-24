@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbXJXQid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763081AbXJXQiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbXJXQid (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759773AbXJXQYo
+	id S1763081AbXJXQiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbXJXQYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:24:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49894 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759722AbXJXQYm (ORCPT
+	Wed, 24 Oct 2007 12:24:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60943 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759807AbXJXQYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:24:42 -0400
-Date: Wed, 24 Oct 2007 17:27:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gilles Gigan <gilles.gigan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] watchdog: add Nano 7240 driver
-Message-ID: <20071024172731.202fb478@the-village.bc.nu>
-In-Reply-To: <20071024152240.GB6015@infomag.infomag.iguana.be>
-References: <20071024121159.03d209ec.gilles.gigan@gmail.com>
-	<20071023192948.1fe5dd8d.akpm@linux-foundation.org>
-	<20071024152240.GB6015@infomag.infomag.iguana.be>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 12:24:45 -0400
+Date: Wed, 24 Oct 2007 18:25:15 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: yokota@netlab.is.tsukuba.ac.jp, James.Bottomley@SteelEye.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] nsp32_restart_autoscsi(): remove error check
+Message-ID: <20071024162515.GV30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 17:22:40 +0200
-Wim Van Sebroeck <wim@iguana.be> wrote:
+The Coverity checker noted that we'll anyway Oops later when we ran into 
+this condition - and the error check didn't prevent that.
 
-> Hi Andrew,
-> 
-> > > +	case WDIOC_SETOPTIONS:{
-> > > +			int retval = -EINVAL;
-> > > +
-> > > +			if (arg & WDIOS_DISABLECARD) {
-> > > +				wdt_disable();
-> > > +				retval = 0;
-> > > +			}
-> > > +
-> > > +			if (arg & WDIOS_ENABLECARD) {
-> > > +				wdt_enable();
-> > > +				retval = 0;
-> > > +			}
-> > > +
-> > > +			return retval;
-> > 
-> > hrm.  So if userspace does ioctl(..., WDIOS_DISABLECARD|WDIOS_ENABLECARD,
-> > that happens to be equivalent to WDIOS_ENABLECARD?
-> > 
-> > Do all watchdog drivers do it exactly the same way, or are we offering
-> > inconsistent interfaces between different drivers?
-> 
-> I fear that all watchdog drivers do it more or less like this.
+Considering that the error condition shouldn't be possible, and we are 
+not able to handle it easily, this patch simply removes the pointless 
+error check.
 
-Not really an issue. "Mummy if I jump off a cliff it hurts"
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+This patch has been sent on:
+- 23 Jul 2007
+
+ drivers/scsi/nsp32.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/drivers/scsi/nsp32.c.old	2007-07-23 19:38:58.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/scsi/nsp32.c	2007-07-23 20:17:14.000000000 +0200
+@@ -1888,44 +1888,40 @@ static void nsp32_msgout_occur(struct sc
+ 
+ 	data->msgout_len = 0;
+ 
+ 	nsp32_dbg(NSP32_DEBUG_MSGOUTOCCUR, "exit");
+ }
+ 
+ /*
+  * Restart AutoSCSI
+  *
+  * Note: Restarting AutoSCSI needs set:
+  *		SYNC_REG, ACK_WIDTH, SGT_ADR, TRANSFER_CONTROL
+  */
+ static void nsp32_restart_autoscsi(struct scsi_cmnd *SCpnt, unsigned short command)
+ {
+ 	nsp32_hw_data *data = (nsp32_hw_data *)SCpnt->device->host->hostdata;
+ 	unsigned int   base = data->BaseAddress;
+ 	unsigned short transfer = 0;
+ 
+ 	nsp32_dbg(NSP32_DEBUG_RESTART, "enter");
+ 
+-	if (data->cur_target == NULL || data->cur_lunt == NULL) {
+-		nsp32_msg(KERN_ERR, "Target or Lun is invalid");
+-	}
+-
+ 	/*
+ 	 * set SYNC_REG
+ 	 * Don't set BM_START_ADR before setting this register.
+ 	 */
+ 	nsp32_write1(base, SYNC_REG, data->cur_target->syncreg);
+ 
+ 	/*
+ 	 * set ACKWIDTH
+ 	 */
+ 	nsp32_write1(base, ACK_WIDTH, data->cur_target->ackwidth);
+ 
+ 	/*
+ 	 * set SREQ hazard killer sampling rate
+ 	 */
+ 	nsp32_write1(base, SREQ_SMPL_RATE, data->cur_target->sample_reg);
+ 
+ 	/*
+ 	 * set SGT ADDR (physical address)
+ 	 */
+ 	nsp32_write4(base, SGT_ADR, data->cur_lunt->sglun_paddr);
 
