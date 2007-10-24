@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbXJXFji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXJXFlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbXJXFji (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbXJXFja
+	id S1756882AbXJXFlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXJXFlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:39:30 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43512 "EHLO e3.ny.us.ibm.com"
+	Wed, 24 Oct 2007 01:41:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54289 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753056AbXJXFja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:39:30 -0400
-Date: Wed, 24 Oct 2007 11:09:07 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russel <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nathan Lynch <ntl@pobox.com>
-Subject: [RFC PATCH 5/5] Update get_online_cpus() in Documentation/cpu-hotplug.c 
-Message-ID: <20071024053907.GE27074@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071024052931.GA22722@in.ibm.com>
+	id S1750893AbXJXFlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:41:10 -0400
+Date: Wed, 24 Oct 2007 01:38:15 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Adam Jackson <ajax@redhat.com>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+Message-ID: <20071024053815.GC28298@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Kok, Auke" <auke-jan.h.kok@intel.com>,
+	Jeff Garzik <jeff@garzik.org>, Adam Jackson <ajax@redhat.com>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	netdev <netdev@vger.kernel.org>
+References: <11931515302013-git-send-email-ajax@redhat.com> <471E1ECD.80002@intel.com> <1193156487.26974.39.camel@localhost.localdomain> <471E2AD0.1000500@intel.com> <471E5C21.8030908@garzik.org> <20071023212026.GF7793@redhat.com> <471E7DCA.9030700@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024052931.GA22722@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <471E7DCA.9030700@intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the documentation for cpu hotplug to reflect the use
-of newly added API's get_online_cpus()/put_online_cpus();
+On Tue, Oct 23, 2007 at 04:03:38PM -0700, Kok, Auke wrote:
+ > Dave Jones wrote:
+ > > On Tue, Oct 23, 2007 at 04:40:01PM -0400, Jeff Garzik wrote:
+ > > 
+ > >  > > In any case, this patch should not be merged. We often send it around to users to
+ > >  > > debug their issue in case it involves eeproms, but merging it will just conceal
+ > >  > > the real issue and all of a sudden a flood of people stop reporting *real* issues
+ > >  > > to us.
+ > >  > 
+ > >  > Sorry, I disagree.  Just as with e100, if there is a clear way the user 
+ > >  > can recover their setup -- and Adam says his was effective -- I don't 
+ > >  > see why we should be denying users the ability to use their own hardware.
+ > >  
+ > > Indeed. This is a common enough problem that not including it causes more pain
+ > > than its worth.  I have two affected boxes myself that I actually thought
+ > > the hardware was dead before I tried ajax's patch.
+ > 
+ > 
+ > look: You should have reported this to us and you didn't. Now you are using the
+ > fact that you did not report it as an argument which is out of place.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+you're missing the point.  It looks like a hardware failure. Why would I report this? 
 
----
- Documentation/cpu-hotplug.txt |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ > why do you say it is common? how often have you seen this and not reported it back
+ > to our support? are you willingly trying to frustrate this issue?
 
-Index: linux-2.6.23/Documentation/cpu-hotplug.txt
-===================================================================
---- linux-2.6.23.orig/Documentation/cpu-hotplug.txt
-+++ linux-2.6.23/Documentation/cpu-hotplug.txt
-@@ -109,12 +109,13 @@ Never use anything other than cpumask_t 
- 	for_each_cpu_mask(x,mask) - Iterate over some random collection of cpu mask.
- 
- 	#include <linux/cpu.h>
--	lock_cpu_hotplug() and unlock_cpu_hotplug():
-+	get_online_cpus() and put_online_cpus():
- 
--The above calls are used to inhibit cpu hotplug operations. While holding the
--cpucontrol mutex, cpu_online_map will not change. If you merely need to avoid
--cpus going away, you could also use preempt_disable() and preempt_enable()
--for those sections. Just remember the critical section cannot call any
-+The above calls are used to inhibit cpu hotplug operations. While the
-+cpu_hotplug.refcount is non zero, the cpu_online_map will not change.
-+If you merely need to avoid cpus going away, you could also use
-+preempt_disable() and preempt_enable() for those sections.
-+Just remember the critical section cannot call any
- function that can sleep or schedule this process away. The preempt_disable()
- will work as long as stop_machine_run() is used to take a cpu down.
- 
+Not at all. The only frustration here is that I used to have a kernel that
+worked, upgraded, and thought that my hardware was broken.
+How many other users thought the same ?
+
+	Dave
+
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+http://www.codemonkey.org.uk
