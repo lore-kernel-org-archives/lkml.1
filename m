@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763494AbXJXQla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbXJXQlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763494AbXJXQla (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXJXQZn
+	id S1763551AbXJXQlu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbXJXQZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:25:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60957 "EHLO
+	Wed, 24 Oct 2007 12:25:45 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60960 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759937AbXJXQZI (ORCPT
+	with ESMTP id S1759401AbXJXQZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:25:08 -0400
-Date: Wed, 24 Oct 2007 18:25:37 +0200
+	Wed, 24 Oct 2007 12:25:20 -0400
+Date: Wed, 24 Oct 2007 18:25:49 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] acpi/battery.c: remove dead code
-Message-ID: <20071024162537.GA30533@stusta.de>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fujitsu-laptop.c: remove dead code
+Message-ID: <20071024162549.GB30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,33 +23,45 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After commit f1d4661abe05d0a2c014166042d15ed8b69ae8f2 this was dead 
-code.
-
-Spotted by the Coverity checker.
+This patch removes dead code spotted by the Coverity checker.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
---- linux-2.6/drivers/acpi/battery.c.old	2007-10-23 18:44:13.000000000 +0200
-+++ linux-2.6/drivers/acpi/battery.c	2007-10-23 18:44:43.000000000 +0200
-@@ -550,18 +550,14 @@ static ssize_t acpi_battery_write_alarm(
- 	int result = 0;
- 	char alarm_string[12] = { '\0' };
- 	struct seq_file *m = file->private_data;
- 	struct acpi_battery *battery = m->private;
+--- linux-2.6/drivers/misc/fujitsu-laptop.c.old	2007-10-23 18:51:10.000000000 +0200
++++ linux-2.6/drivers/misc/fujitsu-laptop.c	2007-10-23 18:51:50.000000000 +0200
+@@ -110,33 +110,30 @@ static int get_lcd_level(void)
  
- 	if (!battery || (count > sizeof(alarm_string) - 1))
- 		return -EINVAL;
--	if (result) {
--		result = -ENODEV;
--		goto end;
--	}
- 	if (!acpi_battery_present(battery)) {
- 		result = -ENODEV;
- 		goto end;
- 	}
- 	if (copy_from_user(alarm_string, buffer, count)) {
- 		result = -EFAULT;
- 		goto end;
+ 	// Get the Brightness
+ 	status =
+ 	    acpi_evaluate_integer(fujitsu->acpi_handle, "GBLL", NULL, &state);
+ 	if (status < 0)
+ 		return status;
+ 
+ 	fujitsu->fuj02b1_state = state;
+ 	fujitsu->brightness_level = state & 0x0fffffff;
+ 
+ 	if (state & 0x80000000)
+ 		fujitsu->brightness_changed = 1;
+ 	else
+ 		fujitsu->brightness_changed = 0;
+ 
+-	if (status < 0)
+-		return status;
+-
+ 	return fujitsu->brightness_level;
+ }
+ 
+ /* Backlight device stuff */
+ 
+ static int bl_get_brightness(struct backlight_device *b)
+ {
+ 	return get_lcd_level();
+ }
+ 
+ static int bl_update_status(struct backlight_device *b)
+ {
+ 	return set_lcd_level(b->props.brightness);
+ }
+ 
 
