@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbXJXJMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbXJXJNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbXJXJMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXJXJMp
+	id S1754183AbXJXJNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXJXJMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:12:45 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51213 "EHLO mx2.suse.de"
+	Wed, 24 Oct 2007 05:12:47 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3122 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbXJXJMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752729AbXJXJMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Oct 2007 05:12:45 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove bogus default y for DMAR and NET_DMA
-Date: Wed, 24 Oct 2007 11:12:39 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@osdl.org, shannon.nelson@intel.com, anil.s.keshavamurthy@intel.com
+Date: Wed, 24 Oct 2007 11:12:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071024091242.GK14671@kernel.dk>
+References: <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <471DC3D9.2070809@panasas.com> <20071023095507.GE5059@kernel.dk> <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org> <20071024080549.GZ14671@kernel.dk> <Pine.LNX.4.64.0710241103000.5840@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710241112.39451.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0710241103000.5840@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, please queue for next merge. Thanks.
+On Wed, Oct 24 2007, Geert Uytterhoeven wrote:
+> On Wed, 24 Oct 2007, Jens Axboe wrote:
+> > On Tue, Oct 23 2007, Linus Torvalds wrote:
+> > > My biggest complaint right now is that a lot of users of the sg *filling* 
+> > > functions were mindlessly converted, so we have code like
+> > > 
+> > > 	cryptoloop.c:             sg_set_page(&sg_in, in_page);
+> > > 	cryptoloop.c:             sg_in.offset = in_offs;
+> > > 	cryptoloop.c:             sg_in.length = sz;
+> > > 
+> > > which is just really stupid, and we should have a function for that. But 
+> > > worse is code like this:
+> > > 
+> > > 	ub.c:     sg_set_page(sg, virt_to_page(sc->top_sense));
+> > > 	ub.c:     sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
+> > > 	ub.c:     sg->length = UB_SENSE_SIZE;
+> > > 
+> > > which again was converted "line by line" and we actually *do* have a 
+> > > function to do the above three lines as
+> > > 
+> > > 	sg_set_buf(sg, sc->top_sense, UB_SENSE_SIZE);
+> > > 
+> > > where that *single* line is just tons shorter but more importantly, more 
+> > > readable, than the mess that is a brute-force conversion.
+> > 
+> > I modified sg_set_page() to take a length and offset argument, and
+> 
+> As it no longer sets the page only, perhaps it's a good idea to rename
+> sg_set_page() to sg_set()?
 
-----
+sg_set_buf() also sets length and offset, sg_set_page() is just a mirror
+of that. So I'd prefer to keep the naming.
 
-No reason I can think of of making them default y
-Most people don't have the hardware and with default y they
-just pollute lots of configs during make oldconfig.
+-- 
+Jens Axboe
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux-2.6.24-rc1-hack/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6.24-rc1-hack.orig/arch/x86_64/Kconfig
-+++ linux-2.6.24-rc1-hack/arch/x86_64/Kconfig
-@@ -753,7 +753,6 @@ config PCI_DOMAINS
- config DMAR
- 	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
- 	depends on PCI_MSI && ACPI && EXPERIMENTAL
--	default y
- 	help
- 	  DMA remapping (DMAR) devices support enables independent address
- 	  translations for Direct Memory Access (DMA) from devices.
-Index: linux-2.6.24-rc1-hack/drivers/dma/Kconfig
-===================================================================
---- linux-2.6.24-rc1-hack.orig/drivers/dma/Kconfig
-+++ linux-2.6.24-rc1-hack/drivers/dma/Kconfig
-@@ -43,7 +43,6 @@ comment "DMA Clients"
- config NET_DMA
- 	bool "Network: TCP receive copy offload"
- 	depends on DMA_ENGINE && NET
--	default y
- 	help
- 	  This enables the use of DMA engines in the network stack to
- 	  offload receive copy-to-user operations, freeing CPU cycles.
