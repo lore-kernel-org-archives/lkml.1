@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXJXJdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbXJXJia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbXJXJdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXJXJdY
+	id S1755384AbXJXJia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXJXJiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:33:24 -0400
-Received: from smtp110.plus.mail.re1.yahoo.com ([69.147.102.73]:47893 "HELO
-	smtp110.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752808AbXJXJdX (ORCPT
+	Wed, 24 Oct 2007 05:38:23 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58541 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751237AbXJXJiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:33:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=4KKYlj6f04mjXalLqJQGVN29BCmiyYv4wxPgbLXjJFP7GR7hSfEPbpqjqdWB+nGVodSNuAacra93NKsJu6U3tC3IK8CrPdaimutjTKsqXInVEHCPJTOEYULIj01zvuvI6aReDMIaCHAhVxqS3ytfIQizeqFgqtCsjyVaXPRbD5g=  ;
-X-YMail-OSG: fmy_OJ8VM1mUPSNMR_Tcfu.d7B58lkKuf53LuTsz1fNJkxGfYMIwwQ1AtThckSlIqQRMw6wS.Q--
-Date: Wed, 24 Oct 2007 11:32:53 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs/partitions/check.c: add error handling for
-	kobject_add
-Message-ID: <20071024093253.GA6191@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20071022052255.GA9095@gollum.tnic> <20071023233900.7e683516.akpm@linux-foundation.org>
+	Wed, 24 Oct 2007 05:38:22 -0400
+Date: Wed, 24 Oct 2007 11:38:21 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Greg KH <gregkh@suse.de>
+cc: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-git12: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+In-Reply-To: <20071018160829.GE13346@suse.de>
+Message-ID: <Pine.LNX.4.62.0710241138050.31837@pademelon.sonytel.be>
+References: <4716F134.2060002@rtr.ca> <20071018160829.GE13346@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071023233900.7e683516.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1939898777-1193218701=:31837"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 11:39:00PM -0700, Andrew Morton wrote:
-> I get 100% rejects from this.  Please redo against latest mainline.
-Here you go, this one is against today's 24-rc1.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
----
-From: Borislav Petkov <bbpetkov@yahoo.de>
+---584337861-1939898777-1193218701=:31837
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Add error handling to the kobject_add()-call and signal (the even highly
-		unlikely) error condition.
+On Thu, 18 Oct 2007, Greg KH wrote:
+> On Thu, Oct 18, 2007 at 01:37:56AM -0400, Mark Lord wrote:
+> > usb 5-1: new high speed USB device using ehci_hcd and address 2
+> > usb 5-1: configuration #1 chosen from 1 choice
+> > hub 5-1:1.0: USB hub found
+> > hub 5-1:1.0: 4 ports detected
+> > sysfs: duplicate filename 'bInterfaceNumber' can not be created
+> 
+> Known issue, people are working on it, there's already a proposed patch
+> on lkml for this.
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
---
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 722e12e..6ba66b4 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -371,11 +371,12 @@ void delete_partition(struct gendisk *disk, int part)
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
- 	struct hd_struct *p;
-+	int err = -EINVAL;
+But it's not in 2.6.24-rc1, right?
+
+With kind regards,
  
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
- 		return;
--	
-+
- 	p->start_sect = start;
- 	p->nr_sects = len;
- 	p->partno = part;
-@@ -390,7 +391,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+
-+	err = kobject_add(&p->kobj);
-+	if (err) {
-+		pr_err("%s: error adding %s to sysfs.\n", __FUNCTION__,
-+				kobject_name(&p->kobj));
-+	}
-+
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
- 	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
--- 
-Regards/Gru�,
-    Boris.
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1939898777-1193218701=:31837--
