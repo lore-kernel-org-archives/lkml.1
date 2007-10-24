@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765555AbXJXRBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763620AbXJXRCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765555AbXJXRBa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 13:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbXJXQvG
+	id S1763620AbXJXRCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 13:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763865AbXJXQw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:51:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56428 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763463AbXJXQvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:51:04 -0400
-Date: Wed, 24 Oct 2007 18:50:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Wed, 24 Oct 2007 12:52:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40921 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763852AbXJXQw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 12:52:57 -0400
+Date: Wed, 24 Oct 2007 09:52:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Adrian Bunk <bunk@kernel.org>
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make kernel/sched.c:account_guest_time() static
-Message-ID: <20071024165027.GA32682@elte.hu>
-References: <20071024162517.GW30533@stusta.de>
+cc: linux-kernel@vger.kernel.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [2.6 patch] drivers/base/node.c: cleanups
+In-Reply-To: <20071024162453.GQ30533@stusta.de>
+Message-ID: <Pine.LNX.4.64.0710240948120.26032@schroedinger.engr.sgi.com>
+References: <20071024162453.GQ30533@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024162517.GW30533@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 24 Oct 2007, Adrian Bunk wrote:
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+> This patch contains the following cleanups:
+> - make the following needlessly globalcode static:
+>   - register_node()
+>   - node_state_attr[]
+> - #if 0 the following unused global functions:
+>   - unregister_node()
+>   - unregister_one_node()
 
-> account_guest_time() can become static.
-
-thanks, applied.
-
-btw., how about adding your 'check static functions' scripts to the 
-kernel, via a "make checkstatic" pass or something like that? That way 
-people could check this for themselves and could avoid letting them into 
-the kernel.
-
-	Ingo
+These may beneeded by the memory hotplug folks. Better leave them 
+alone.
