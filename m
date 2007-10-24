@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXJXO0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXJXO1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbXJXO0j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbXJXO03
+	id S1758997AbXJXO1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXJXO1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:26:29 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53463 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757296AbXJXO02 (ORCPT
+	Wed, 24 Oct 2007 10:27:32 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:42921 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757366AbXJXO1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:26:28 -0400
-Date: Wed, 24 Oct 2007 08:26:21 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: HIGHMEM64G Kernel (2.6.23.1) makes system crawl
-In-reply-to: <fa.7rN1uBoDAvdkB/ZVQAe63J/uvnk@ifi.uio.no>
-To: Rajkumar S <rajkumars@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <471F560D.4040909@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.7rN1uBoDAvdkB/ZVQAe63J/uvnk@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 24 Oct 2007 10:27:31 -0400
+Date: Wed, 24 Oct 2007 08:27:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
+Message-ID: <20071024142729.GZ27248@parisc-linux.org>
+References: <471E6313.1040704@garzik.org> <1193174424.3434.3.camel@localhost.localdomain> <471E707B.1020505@garzik.org> <20071023.153635.21595587.davem@davemloft.net> <1193232490.3396.10.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193232490.3396.10.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rajkumar S wrote:
-> Hello,
-> 
-> I am using a Core 2 Duo E6750 CPU on an intel DG33FB mother board with
-> 4GB Ram, running Debian Lenny.
-> 
-> Since the box has 4 GB ram I compiled a big mem kernel, but the
-> machine is very slow while running big mem kernel. It takes about 37
-> minutes to compile the intel e1000 driver  (e1000-7.6.5.tar.gz) from
-> intel site. But it's performing normally when using a non big mem
-> kernel. The diff of the .config between working and non working is as
-> follows.
+On Wed, Oct 24, 2007 at 09:28:10AM -0400, James Bottomley wrote:
+> OK, so it's no secret that I'm the last of the subsystem maintainers
+> whose day job isn't working on the linux kernel.  If you want a full
+> time person, who did you have in mind?
 
-Post your contents of /proc/mtrr. Likely a BIOS bug which has been seen 
-on a number of Intel boards, which doesn't mark all of RAM as cachable. 
-When the top memory starts being used with the bigmem kernel it causes a 
-major slowdown. Check for a BIOS update from Intel, first.
+I'm willing to take on the role of scsi git-monkey.  Alternatively, we
+could split the scsi maintainer role the same way that Dave and Jeff
+do for net where Dave handles the core and Jeff handles the drivers.
+Or we can negotiate some other arrangement.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
