@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764647AbXJXQrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbXJXQsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764647AbXJXQrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbXJXQ0R
+	id S1763788AbXJXQsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759586AbXJXQ0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:26:17 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32772 "EHLO
+	Wed, 24 Oct 2007 12:26:19 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32775 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760112AbXJXQ0K (ORCPT
+	with ESMTP id S1759566AbXJXQ0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:26:10 -0400
-Date: Wed, 24 Oct 2007 18:26:40 +0200
+	Wed, 24 Oct 2007 12:26:14 -0400
+Date: Wed, 24 Oct 2007 18:26:43 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: dmitry.torokhov@gmail.com
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] input/serio/hp_sdc.c section fix
-Message-ID: <20071024162640.GO30533@stusta.de>
+To: bryan.wu@analog.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] blackfin: "extern inline" -> "static inline"
+Message-ID: <20071024162643.GP30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,39 +23,54 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hp_sdc_exit() mustn't be __exit since it's called from the
-__init hp_sdc_register().
-
-This patch fixes the following section mismatch:
-
-<--  snip  -->
-
-...
-  MODPOST vmlinux.o
-...
-WARNING: vmlinux.o(.init.text+0x1af68): Section mismatch: reference to .exit.text:hp_sdc_exit (between 'hp_sdc_register' and 'hp_sdc_mlc_init')
-...
-
-<--  snip  -->
+"extern inline" will have different semantics with gcc 4.3.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-4022ed345d1b61dc5b6ac0fc35877656e444a11d 
-diff --git a/drivers/input/serio/hp_sdc.c b/drivers/input/serio/hp_sdc.c
-index 6af1998..02b3ad8 100644
---- a/drivers/input/serio/hp_sdc.c
-+++ b/drivers/input/serio/hp_sdc.c
-@@ -944,11 +944,7 @@ static int __init hp_sdc_init_hppa(struct parisc_device *d)
+
+ include/asm-blackfin/string.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+f2a6901348a61a13fc19a01f5584406190302919 
+diff --git a/include/asm-blackfin/string.h b/include/asm-blackfin/string.h
+index e8ada91..e4703a7 100644
+--- a/include/asm-blackfin/string.h
++++ b/include/asm-blackfin/string.h
+@@ -4,7 +4,7 @@
+ #ifdef __KERNEL__		/* only set these up for kernel code */
  
- #endif /* __hppa__ */
- 
--#if !defined(__mc68000__) /* Link error on m68k! */
--static void __exit hp_sdc_exit(void)
--#else
- static void hp_sdc_exit(void)
--#endif
+ #define __HAVE_ARCH_STRCPY
+-extern inline char *strcpy(char *dest, const char *src)
++static inline char *strcpy(char *dest, const char *src)
  {
- 	write_lock_irq(&hp_sdc.lock);
+ 	char *xdest = dest;
+ 	char temp = 0;
+@@ -23,7 +23,7 @@ extern inline char *strcpy(char *dest, const char *src)
+ }
  
+ #define __HAVE_ARCH_STRNCPY
+-extern inline char *strncpy(char *dest, const char *src, size_t n)
++static inline char *strncpy(char *dest, const char *src, size_t n)
+ {
+ 	char *xdest = dest;
+ 	char temp = 0;
+@@ -59,7 +59,7 @@ extern inline char *strncpy(char *dest, const char *src, size_t n)
+ }
+ 
+ #define __HAVE_ARCH_STRCMP
+-extern inline int strcmp(const char *cs, const char *ct)
++static inline int strcmp(const char *cs, const char *ct)
+ {
+ 	/* need to use int's here so the char's in the assembly don't get
+ 	 * sign extended incorrectly when we don't want them to be
+@@ -86,7 +86,7 @@ extern inline int strcmp(const char *cs, const char *ct)
+ }
+ 
+ #define __HAVE_ARCH_STRNCMP
+-extern inline int strncmp(const char *cs, const char *ct, size_t count)
++static inline int strncmp(const char *cs, const char *ct, size_t count)
+ {
+ 	/* need to use int's here so the char's in the assembly don't get
+ 	 * sign extended incorrectly when we don't want them to be
 
