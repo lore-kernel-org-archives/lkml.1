@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759867AbXJXOcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXJXOdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759867AbXJXOcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 10:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbXJXOcP
+	id S1759636AbXJXOdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 10:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbXJXOcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 10:32:15 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:50523 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758669AbXJXOcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 10:32:13 -0400
-Date: Wed, 24 Oct 2007 16:34:45 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20071024143444.GF9748@enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: PCMCIA insert on resume
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Wed, 24 Oct 2007 10:32:53 -0400
+Received: from mx1.suse.de ([195.135.220.2]:48470 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758409AbXJXOcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 10:32:52 -0400
+Subject: [PATCH 1/5] Small ACPICA extension to be able to store the name of
+	operation regions in osl.c later
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: linux-acpi <linux-acpi@vger.kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Wed, 24 Oct 2007 16:32:51 +0200
+Message-Id: <1193236371.4590.228.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+---
+ drivers/acpi/dispatcher/dsopcode.c |    4 +++-
+ include/acpi/acpiosxf.h            |    4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-I don't understand why, on resume, the function socket_resume() (in
-drivers/pcmcia/cs.c) do:
-
-       if (!(skt->state & SOCKET_PRESENT)) {
-               skt->state &= ~SOCKET_SUSPEND;
-               return socket_insert(skt);
-       }
-
-This cause a powered off socket before suspend to be powered on during
-resume.
-
-To avoid such (erroneous?) behaviour I propose this patch:
-
-diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
-index 729e37d..d69de74 100644
---- a/drivers/pcmcia/cs.c
-+++ b/drivers/pcmcia/cs.c
-@@ -562,10 +562,8 @@ static int socket_resume(struct pcmcia_socket *skt)
-        skt->ops->init(skt);
-        skt->ops->set_socket(skt, &skt->socket);
+Index: lenb/drivers/acpi/dispatcher/dsopcode.c
+===================================================================
+--- lenb.orig/drivers/acpi/dispatcher/dsopcode.c
++++ lenb/drivers/acpi/dispatcher/dsopcode.c
+@@ -359,7 +359,9 @@ acpi_status acpi_ds_get_region_arguments
  
--       if (!(skt->state & SOCKET_PRESENT)) {
--               skt->state &= ~SOCKET_SUSPEND;
--               return socket_insert(skt);
--       }
-+       if (!(skt->state & SOCKET_PRESENT))
-+               goto resume_exit;
+ 	status = acpi_os_validate_address(obj_desc->region.space_id,
+ 					  obj_desc->region.address,
+-					  (acpi_size) obj_desc->region.length);
++					  (acpi_size) obj_desc->region.length,
++					  acpi_ut_get_node_name(node));
++
+ 	if (ACPI_FAILURE(status)) {
+ 		/*
+ 		 * Invalid address/length. We will emit an error message and mark
+Index: lenb/include/acpi/acpiosxf.h
+===================================================================
+--- lenb.orig/include/acpi/acpiosxf.h
++++ lenb/include/acpi/acpiosxf.h
+@@ -239,8 +239,8 @@ acpi_status acpi_os_validate_interface(c
+ acpi_status acpi_osi_invalidate(char* interface);
  
-        ret = socket_setup(skt, SS_COMA, resume_delay);
-        if (ret == CS_SUCCESS) {
-@@ -599,6 +597,7 @@ static int socket_resume(struct pcmcia_socket *skt)
-                socket_shutdown(skt);
-        }
+ acpi_status
+-acpi_os_validate_address(u8 space_id,
+-			 acpi_physical_address address, acpi_size length);
++acpi_os_validate_address(u8 space_id, acpi_physical_address address,
++			 acpi_size length, char *name);
  
-+resume_exit:
-        skt->state &= ~SOCKET_SUSPEND;
+ u64 acpi_os_get_timer(void);
  
-        return CS_SUCCESS;
 
-With this patch if the socket was powered down before the suspend, at
-resume time it's not powered on and you need a "pccardctl insert" to
-activate the socket.
 
-Ciao,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
