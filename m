@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbXJXAXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbXJXAX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbXJXAXm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 20:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXJXAX2
+	id S1754149AbXJXAX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 20:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbXJXAXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 20:23:28 -0400
-Received: from smtprelay03.ispgateway.de ([80.67.18.15]:59279 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbXJXAX0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 20:23:26 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [PATCH 13/13] RT: Cache cpus_allowed weight for optimizing migration
-Date: Wed, 24 Oct 2007 02:19:23 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Darren Hart <dvhltc@us.ibm.com>
-References: <20071023164156.5536.95573.stgit@novell1.haskins.net> <20071023165130.5536.73345.stgit@novell1.haskins.net>
-In-Reply-To: <20071023165130.5536.73345.stgit@novell1.haskins.net>
+	Tue, 23 Oct 2007 20:23:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36027 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755577AbXJXAXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 20:23:43 -0400
+Message-ID: <471E9087.7030309@pobox.com>
+Date: Tue, 23 Oct 2007 20:23:35 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] defxx.c: dfx_bus_init() is __devexit not __devinit
+References: <Pine.LNX.4.64N.0710221809350.988@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0710221809350.988@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710240219.25487.ioe-lkml@rameria.de>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gregory,
+Maciej W. Rozycki wrote:
+>  The dfx_bus_uninit() call is called from dfx_unregister() which is 
+> __devexit and which is ultimately the ->remove call for the device.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  It should be obvious.  Please apply.
+> 
+>   Maciej
+> 
+> patch-mips-2.6.23-rc5-20070904-defxx-devexit-0
+> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/net/defxx.c linux-mips-2.6.23-rc5-20070904/drivers/net/defxx.c
+> --- linux-mips-2.6.23-rc5-20070904.macro/drivers/net/defxx.c	2007-09-04 04:55:41.000000000 +0000
+> +++ linux-mips-2.6.23-rc5-20070904/drivers/net/defxx.c	2007-10-12 00:21:35.000000000 +0000
+> @@ -806,7 +806,7 @@ static void __devinit dfx_bus_init(struc
+>   *   Interrupts are disabled at the adapter bus-specific logic.
+>   */
+>  
+> -static void __devinit dfx_bus_uninit(struct net_device *dev)
+> +static void __devexit dfx_bus_uninit(struct net_device *dev)
+>  {
+>  	DFX_board_t *bp = netdev_priv(dev);
 
-On Tuesday 23 October 2007, Gregory Haskins wrote:
-> Calculating the weight is probably relatively expensive, so it is only
-> done when the cpus_allowed mask is updated (which should be relatively
-> infrequent, especially compared to scheduling frequency) and cached in
-> the task_struct.
-
-Why not make it a task flag, since according to your code, you are only 
-interested whether this is <= 1 or > 1. Since !(x <= 1) <=> (x > 1)
-for any given unsigned integer x, the required data structure is
-a "boolean" or a flag.
+applied
 
 
-Best Regards
-
-Ingo Oeser
