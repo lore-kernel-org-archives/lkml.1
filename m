@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbXJXVhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbXJXViV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757110AbXJXVhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbXJXVhg
+	id S1760363AbXJXViV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbXJXViH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:37:36 -0400
-Received: from beast.tiendalinux.com ([65.99.217.191]:56883 "EHLO
-	beast.tiendalinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbXJXVhf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:37:35 -0400
-X-SMTP-Auth: no
-Message-ID: <471FBB1B.8010000@tiendalinux.com>
-Date: Wed, 24 Oct 2007 16:37:31 -0500
-From: "Nestor A. Diaz" <nestor@tiendalinux.com>
-Organization: TiendaLinux.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: RAID 10 w AHCI w NCQ = Spurius  I/O error
-References: <471FA857.8060702@tiendalinux.com> <20071024205212.GO4003@csclub.uwaterloo.ca>
-In-Reply-To: <20071024205212.GO4003@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 17:38:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50757 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754394AbXJXViF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:38:05 -0400
+Subject: patch usb-usbserial-fix-potential-deadlock-between-write-and-irq.patch added to gregkh-2.6 tree
+To: jikos@jikos.cz, gregkh@suse.de, jkosina@suse.cz, larry.finger@lwfinger.net,
+       linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 24 Oct 2007 14:37:36 -0700
+In-Reply-To: <Pine.LNX.4.64.0710200001520.18815@twin.jikos.cz>
+Message-Id: <20071024213801.A296014543E5@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Len, thenks for your answer, i need a clarification on wheter it
-could be a software or a hardware problem, fortunatelly i have an exact
-system, so what i am going to do is to swap the four drives on the first
-system to the second system, and with more time i will make the required
-tests.
 
-p.d. the machine is debian 4.0 amd64 system.
+This is a note to let you know that I've just added the patch titled
 
+     Subject: USB: usbserial - fix potential deadlock between write() and IRQ
 
-Lennart Sorensen wrote:
-> It seems to me that if the kernel says there is an io error explicitly 
-> on sdd, then I don't think it really should be any fault with the raid
-> setup.  My assumption would be that there is a flacky drive, a flacky
-> cable, or maybe a flacky port on the controller.
->   
-I change the drive and the problem remains, i will check changing the
-hard drive cables, to see if that is the problem, the problem has
-apperead three times in nearly five months, so what will be your bet ?
-> It would be interesting to know what happened if you swapped the cables
-> between sdd and another drive to see if the problem follows the port or
-> the drive or the cable (you could move sdd's cable to sda, and then
-> connect sdd to sdc's port and sdc to sdd's port, and if sda then fails,
-> it should be the cable, if sdd (was sdc) fails, then it must be the
-> port, and if sdc (was sdd) fails then it must be the drive.  At least
-> that is what I think.  the raid should deal with moving the drives
-> around just fine since it should be using the UUIDs for assembly anyhow.
->
-> --
-> Len Sorensen
->   
+to my gregkh-2.6 tree.  Its filename is
+
+     usb-usbserial-fix-potential-deadlock-between-write-and-irq.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
--- 
-Nestor A. Diaz
-Ingeniero de Sistemas
-Tel. +57 1-600-5490 x 211
-Cel. +57 316-227-3593
-Tel. SIP: sip:211@tiendalinux.com
-Email/MSN: nestor@tiendalinux.com
-http://www.tiendalinux.com/
-Bogota, Colombia
+>From jikos@jikos.cz  Wed Oct 24 14:28:04 2007
+From: Jiri Kosina <jikos@jikos.cz>
+Date: Sat, 20 Oct 2007 00:05:19 +0200 (CEST)
+Subject: USB: usbserial - fix potential deadlock between write() and IRQ
+To: Larry Finger <larry.finger@lwfinger.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.64.0710200001520.18815@twin.jikos.cz>
 
 
+From: Jiri Kosina <jkosina@suse.cz>
+
+USB: usbserial - fix potential deadlock between write() and IRQ
+
+usb_serial_generic_write() doesn't disable interrupts when taking port->lock,
+and could therefore deadlock with usb_serial_generic_read_bulk_callback()
+being called from interrupt, taking the same lock. Fix it.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Larry Finger <larry.finger@lwfinger.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/serial/generic.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/drivers/usb/serial/generic.c
++++ b/drivers/usb/serial/generic.c
+@@ -208,14 +208,15 @@ int usb_serial_generic_write(struct usb_
+ 
+ 	/* only do something if we have a bulk out endpoint */
+ 	if (serial->num_bulk_out) {
+-		spin_lock_bh(&port->lock);
++		unsigned long flags;
++		spin_lock_irqsave(&port->lock, flags);
+ 		if (port->write_urb_busy) {
+-			spin_unlock_bh(&port->lock);
++			spin_unlock_irqrestore(&port->lock, flags);
+ 			dbg("%s - already writing", __FUNCTION__);
+ 			return 0;
+ 		}
+ 		port->write_urb_busy = 1;
+-		spin_unlock_bh(&port->lock);
++		spin_unlock_irqrestore(&port->lock, flags);
+ 
+ 		count = (count > port->bulk_out_size) ? port->bulk_out_size : count;
+ 
+
+
+Patches currently in gregkh-2.6 which might be from jikos@jikos.cz are
+
+usb/usb-usbserial-fix-potential-deadlock-between-write-and-irq.patch
