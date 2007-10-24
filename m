@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbXJXGz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbXJXG5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbXJXGz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 02:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXJXGzt
+	id S1757329AbXJXG5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 02:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbXJXG5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 02:55:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44635 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755632AbXJXGzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 02:55:49 -0400
-Date: Tue, 23 Oct 2007 23:53:54 -0700
-From: Greg KH <greg@kroah.com>
-To: David Miller <davem@davemloft.net>
-Cc: Shane.Huang@amd.com, david.gaarenstroom@gmail.com,
-       linux-kernel@vger.kernel.org, linas@austin.ibm.com, gregkh@suse.de,
-       htejun@gmail.com, brice.goglin@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, jgarzik@pobox.com
-Subject: Re: [patch] PCI: disable MSI on more ATI NorthBridges
-Message-ID: <20071024065354.GA15916@kroah.com>
-References: <BLU120-W12C06900EC932864CC13A8E2980@phx.gbl> <9783dadb0710201352p28969b4bs573d817d70b1fff7@mail.gmail.com> <5CAB7B5D6F8AB84AA868A46B47A507055D91F2@sshaexmb1.amd.com> <20071023.194155.112293423.davem@davemloft.net>
+	Wed, 24 Oct 2007 02:57:03 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17341 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754010AbXJXG5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 02:57:01 -0400
+Date: Wed, 24 Oct 2007 08:56:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071024065658.GX14671@kernel.dk>
+References: <20071022211617.31f5c63d@the-village.bc.nu> <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org> <20071022224343.4abf3c96@the-village.bc.nu> <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org> <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk> <20071023103351.GA2795@elte.hu> <20071023105615.GI5059@kernel.dk> <20071023112738.GA13847@elte.hu> <Pine.LNX.4.64.0710232120080.21337@anakin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071023.194155.112293423.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0710232120080.21337@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 07:41:55PM -0700, David Miller wrote:
-> From: "Shane Huang" <Shane.Huang@amd.com>
-> Date: Tue, 23 Oct 2007 18:56:03 +0800
+On Tue, Oct 23 2007, Geert Uytterhoeven wrote:
+> On Tue, 23 Oct 2007, Ingo Molnar wrote:
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > > Linus' latest tree, which has your SG-list enhancements included, 
+> > > > certainly works fine here and does not have the problems of the 
+> > > > first iteration.
+> > > 
+> > > That's good to hear :-)
+> > > 
+> > > I have a series of pending patches where I've collected fallout 
+> > > patches from people and some from myself here:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=sg
+> > > 
+> > > or pullable from
+> > > 
+> > > git://git.kernel.dk/inux-2.6-block.git sg
+> > 
+> > i've attached your fixes as a diff against linus-latest below - for 
+> > those who'd like to have it in patch form.
 > 
-> > Also I wonder why the USB MSI patch is not added into kernel at last?
-> > Will it lead to other bugs?
-> 
-> Probably someone just needs to be more vocal and active in pushing it
-> to the USB subsystem maintainer(s).  I've even had trouble getting
-> even simple bug fixes integrated recently, so perhaps it will take a
-> few retransmits and some patience to get it included.
+> The below are still needed for m68k
 
-Yeah, I appologize for some of our developers, they seem a bit grumpy at
-times :(
+The wep.c was already applied, I applied the rest of them. Thanks!
 
-> Greg, can you at least devote a few minutes to going over that USB MSI
-> patch, giving it any obvious things it needs (perhaps some
-> pci_msi_enable() return value checks, for example, but may not be
-> needed at all in this case) and then stash it somewhere so it doesn't
-> get lost in the void?
+-- 
+Jens Axboe
 
-Can someone forward it to me so that I can see it?  I can't seem to
-locate it at the moment, was I copied on it?
-
-thanks,
-
-greg k-h
