@@ -1,86 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbXJXP4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbXJXP4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758074AbXJXP4Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbXJXP4A
+	id S1757494AbXJXP4z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXJXP4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:56:00 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:10261 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753064AbXJXPz7 (ORCPT
+	Wed, 24 Oct 2007 11:56:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50616 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbXJXP4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:55:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Lc58rNyIvbrO6OgHpUFLnNK0huMfLNIbC0c8CjzEmgatVmdhlYJMpSaXeaZW9Pq1Pxnmi6NGlJ6C5IO5zVoPfyNJ9+EMuAyLRkKjT4dlmj9aeHMwg6yYzT2lLeXISAD7LId6t/h94bZOehtpzoniOZOJfW12CKqxNDvV72faEVY=
-Message-ID: <e9c3a7c20710240855j7bf1f0a6qa1d11af3a12910e5@mail.gmail.com>
-Date: Wed, 24 Oct 2007 08:55:58 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
-Cc: "Shannon Nelson" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
-       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
+	Wed, 24 Oct 2007 11:56:46 -0400
+Date: Wed, 24 Oct 2007 08:56:37 -0700
+From: Greg KH <greg@kroah.com>
+To: John Sigler <linux.kernel@free.fr>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: How to debug complete kernel lock-ups
+Message-ID: <20071024155637.GA19062@kroah.com>
+References: <471E1D3A.8000705@free.fr> <471F0DB4.1080709@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
-X-Google-Sender-Auth: 34c18c6d9756419a
+In-Reply-To: <471F0DB4.1080709@free.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Haavard,
-
-On 10/24/07, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> This patch corrects what I hope are invalid assumptions about the DMA
-> engine layer: Not only Intel(R) hardware can do DMA, and DMA can be
-> used for other things than memcpy and RAID offloading.
+On Wed, Oct 24, 2007 at 11:17:40AM +0200, John Sigler wrote:
+> John Sigler wrote:
 >
-> At the same time, make the DMA Engine menu visible again on AVR32. I'm
-> currently working on a driver for a DMA controller that can do
-> mem-to-mem transfers (which is supported by the framework) as well as
-> device-to-mem and mem-to-device transfers (not currently supported.)
+>> I have an x86 system with two PCI slots, in which I inserted two
+>> specialized output cards (Dektec DTA-105).
+>> http://www.dektec.com/Products/DTA-105/
+>> (They provide an open source driver.)
+>> My problem is: when I write to the 4 ports (each card has 2 ports) "at the 
+>> same time" (not really "at the same time" because I have a uni-processor 
+>> system, so "within a short time frame" is more accurate) the system 
+>> *completely* locks up.
+>> The manufacturer told me they had seen the problem in their lab. I'm just 
+>> trying to provide some helpful debug output to speed up the process of 
+>> fixing the problem :-)
+>> I've built a debug 2.6.22.1-rt9 kernel, hoping to get the kernel to dump 
+>> something, anything.
+>> +CONFIG_KALLSYMS_ALL=y
+>> +CONFIG_PCI_DEBUG=y
+>> +CONFIG_DEBUG_DRIVER=y
+>> +CONFIG_PRINTK_TIME=y
+>> +CONFIG_MAGIC_SYSRQ=y
+>> +CONFIG_DEBUG_KERNEL=y
+>> +CONFIG_DEBUG_SHIRQ=y
+>> +CONFIG_DETECT_SOFTLOCKUP=y
+>> +CONFIG_DEBUG_SLAB=y
+>> +CONFIG_DEBUG_SLAB_LEAK=y
+>> +CONFIG_DEBUG_PREEMPT=y
+>> +CONFIG_DEBUG_RT_MUTEXES=y
+>> +CONFIG_DEBUG_PI_LIST=y
+>> +CONFIG_RT_MUTEX_TESTER=y
+>> +CONFIG_DEBUG_SPINLOCK=y
+>> +CONFIG_DEBUG_MUTEXES=y
+>> +CONFIG_DEBUG_LOCK_ALLOC=y
+>> +CONFIG_PROVE_LOCKING=y
+>> +CONFIG_LOCKDEP=y
+>> +CONFIG_TRACE_IRQFLAGS=y
+>> +CONFIG_DEBUG_SPINLOCK_SLEEP=y
+>> +CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
+>> +CONFIG_STACKTRACE=y
+>> +CONFIG_PREEMPT_TRACE=y
+>> +CONFIG_DEBUG_BUGVERBOSE=y
+>> +CONFIG_DEBUG_INFO=y
+>> +CONFIG_FRAME_POINTER=y
+>> +CONFIG_FORCED_INLINING=y
+>> +CONFIG_DEBUG_STACKOVERFLOW=y
+>> +CONFIG_DEBUG_RODATA=y
+>> +CONFIG_4KSTACKS=y
+>> I've enabled the serial console, and used SysRq to bump the console level 
+>> to 9 (I want everything, even KERN_DEBUG output).
+>> I've enabled the IO-APIC watchdog (nmi_watchdog=1).
+>> Once the system locks up, I get no output, no panic, no oops.
+>> The serial console is frozen, my ssh sessions are frozen.
+>> Suppose the PCI bus "crashes" (whatever that means) or locks up.
+>> Would that make the system completely unresponsive? The I/O does have to 
+>> get to/from the south bridge, through the PCI bus AFAIU. I can imagine 
+>> that a locked PCI bus would be slightly problematic.
+>> Does this mean I need some kind of PCI bus analyzer (i.e. hardware) at 
+>> this point? Is there anything more I can try?
 >
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> ---
-> Don't get me wrong; I think Intel deserves lots of respect for
-> creating this framework. But this is also why I got a bit disappointed
-> when I discovered that it seems to be less generic than I initially
-> hoped.
+> I've tested with a vanilla 2.6.22.10 kernel (no PREEMPT_RT patch).
+> That system also locks up and remains completely unresponsive (I can't open 
+> new ssh sessions, the system won't answer ICMP echo requests).
 >
+> How do driver writers deal with complete kernel hangs?
 
-Patches welcome :-)
+We slowly go crazy :)
 
-> DMA controllers, which may support plain memcpy acceleration in
-> addition to more traditional "slave DMA", are very common in SoC
-> devices, and I think Linux needs a common framework for it. The
-> existing DMA Engine framework seems to come pretty close already, but
-> I think it needs more input from the embedded crowd before it can be
-> completely usable on a large number of embedded systems.
->
+Seriously, try to add debugging messages for where you think things
+might be dying and slowly start working from there.  It's not a quick
+thing to do at times...
 
-Part of the problem of supporting slave/device DMA along side generic
-memcpy/xor/memset acceleration is that it adds a number of caveats and
-restrictions to the interface.  One idea is to create another client
-layer, similar to async_tx, that can handle the architecture specific
-address, bus, and device pairing restrictions.  In other words make
-device-dma a superset of the generic offload capabilities and move it
-to its own channel management layer.
+Oh, try using kdb, that sometimes will work for people, depending on
+your hardware and problem.
 
-> I'm not going to suggest any changes to the actual framework for
-> 2.6.24, but I think the _intention_ of the framework needs to be
-> clarified.
->
+good luck,
 
-Should this patch wait until the framework has been extended?
-
-Otherwise, Acked-by: Dan Williams <dan.j.williams@intel.com>
-
-> Haavard
->
-
-Regards,
-Dan
+greg k-h
