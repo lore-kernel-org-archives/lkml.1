@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762671AbXJXQpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764291AbXJXQpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762671AbXJXQpT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760085AbXJXQ0E
+	id S1764291AbXJXQpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbXJXQ0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:26:04 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60982 "EHLO
+	Wed, 24 Oct 2007 12:26:06 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60987 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760072AbXJXQZ5 (ORCPT
+	with ESMTP id S1759578AbXJXQ0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:25:57 -0400
-Date: Wed, 24 Oct 2007 18:26:22 +0200
+	Wed, 24 Oct 2007 12:26:04 -0400
+Date: Wed, 24 Oct 2007 18:26:29 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [2.6 patch] 53c7xx removal fallout
-Message-ID: <20071024162622.GI30533@stusta.de>
+To: bryan.wu@analog.com, ysato@users.sourceforge.jp, gerg@uclinux.org,
+       Miles Bader <miles@gnu.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove mm_{ptov,vtop}()
+Message-ID: <20071024162629.GK30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,169 +24,83 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch does some additional cleanups after the 53c7xx removal.
+This patch removes the unused mm_{ptov,vtop}().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- Documentation/dontdiff                |    2 
- Documentation/m68k/kernel-options.txt |   60 --------------------------
- Documentation/scsi/00-INDEX           |    2 
- Documentation/scsi/ncr53c7xx.txt      |   40 -----------------
- drivers/scsi/.gitignore               |    2 
- 5 files changed, 106 deletions(-)
+ include/asm-blackfin/io.h       |    2 --
+ include/asm-h8300/io.h          |    2 --
+ include/asm-h8300/virtconvert.h |    2 --
+ include/asm-m68knommu/io.h      |    2 --
+ include/asm-v850/io.h           |    2 --
+ 5 files changed, 10 deletions(-)
 
-cc96ec601a55800f9a6bce6e208c7ff1e2f618fd 
-diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index f2d658a..c09a96b 100644
---- a/Documentation/dontdiff
-+++ b/Documentation/dontdiff
-@@ -46,8 +46,6 @@
- .mailmap
- .mm
- 53c700_d.h
--53c7xx_d.h
--53c7xx_u.h
- 53c8xx_d.h*
- BitKeeper
- COPYING
-diff --git a/Documentation/m68k/kernel-options.txt b/Documentation/m68k/kernel-options.txt
-index 248589e..c93bed6 100644
---- a/Documentation/m68k/kernel-options.txt
-+++ b/Documentation/m68k/kernel-options.txt
-@@ -867,66 +867,6 @@ controller and should be autodetected by the driver. An example is the
- 24 bit region which is specified by a mask of 0x00fffffe.
+c2472eb3a1eaaa4211863e6091817b4078b6a53e 
+diff --git a/include/asm-blackfin/io.h b/include/asm-blackfin/io.h
+index d1d2e6b..f3d8126 100644
+--- a/include/asm-blackfin/io.h
++++ b/include/asm-blackfin/io.h
+@@ -187,8 +187,6 @@ extern void blkfin_inv_cache_all(void);
+ #define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
+ #define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
  
+-#define mm_ptov(vaddr)		((void *) (vaddr))
+-#define mm_vtop(vaddr)		((unsigned long) (vaddr))
+ #define phys_to_virt(vaddr)	((void *) (vaddr))
+ #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
  
--5.5) 53c7xx=
--------------
--
--Syntax: 53c7xx=<sub-options...>
--
--These options affect the A4000T, A4091, WarpEngine, Blizzard 603e+,
--and GForce 040/060 SCSI controllers on the Amiga, as well as the
--builtin MVME 16x SCSI controller.
--
--The <sub-options> is a comma-separated list of the sub-options listed
--below.
--
--5.5.1) nosync
---------------
--
--Syntax: nosync:0
--
--  Disables sync negotiation for all devices.  Any value after the
--  colon is acceptable (and has the same effect).
--
--5.5.2) noasync
----------------
--
--[OBSOLETE, REMOVED]
--
--5.5.3) nodisconnect
---------------------
--
--Syntax: nodisconnect:0
--
--  Disables SCSI disconnects.  Any value after the colon is acceptable
--  (and has the same effect).
--
--5.5.4) validids
-----------------
--
--Syntax: validids:0xNN
--
--  Specify which SCSI ids the driver should pay attention to.  This is
--  a bitmask (i.e. to only pay attention to ID#4, you'd use 0x10).
--  Default is 0x7f (devices 0-6).
--
--5.5.5) opthi
--5.5.6) optlo
--------------
--
--Syntax: opthi:M,optlo:N
--
--  Specify options for "hostdata->options".  The acceptable definitions
--  are listed in drivers/scsi/53c7xx.h; the 32 high bits should be in
--  opthi and the 32 low bits in optlo.  They must be specified in the
--  order opthi=M,optlo=N.
--
--5.5.7) next
-------------
--
--  No argument. Used to separate blocks of keywords when there's more
--  than one 53c7xx host adapter in the system.
--
--
- /* Local Variables: */
- /* mode: text       */
- /* End:             */
-diff --git a/Documentation/scsi/00-INDEX b/Documentation/scsi/00-INDEX
-index aa1f7e9..c2e18e1 100644
---- a/Documentation/scsi/00-INDEX
-+++ b/Documentation/scsi/00-INDEX
-@@ -64,8 +64,6 @@ lpfc.txt
- 	- LPFC driver release notes
- megaraid.txt
- 	- Common Management Module, shared code handling ioctls for LSI drivers
--ncr53c7xx.txt
--	- info on driver for NCR53c7xx based adapters
- ncr53c8xx.txt
- 	- info on driver for NCR53c8xx based adapters
- osst.txt
-diff --git a/Documentation/scsi/ncr53c7xx.txt b/Documentation/scsi/ncr53c7xx.txt
-deleted file mode 100644
-index 91e9552..0000000
---- a/Documentation/scsi/ncr53c7xx.txt
-+++ /dev/null
-@@ -1,40 +0,0 @@
--README for WarpEngine/A4000T/A4091 SCSI kernels.
--
--Use the following options to disable options in the SCSI driver.
--
--Using amiboot for example.....
--
--To disable Synchronous Negotiation....
--
--	amiboot -k kernel 53c7xx=nosync:0	
--
--To disable Disconnection....
--	
--	amiboot -k kernel 53c7xx=nodisconnect:0
--
--To disable certain SCSI devices...
--
--	amiboot -k kernel 53c7xx=validids:0x3F
--
--	this allows only device ID's 0,1,2,3,4 and 5 for linux to handle.
--	(this is a bitmasked field - i.e. each bit represents a SCSI ID)
--
--These commands work on a per controller basis and use the option 'next' to
--move to the next controller in the system.
--
--e.g.
--	amiboot -k kernel 53c7xx=nodisconnect:0,next,nosync:0
--
--	this uses No Disconnection on the first controller and Asynchronous
--	SCSI on the second controller.
--
--Known Issues:
--
--Two devices are known not to function with the default settings of using
--synchronous SCSI. These are the Archive Viper 150 Tape Drive and the 
--SyQuest SQ555 removeable hard drive. When using these devices on a controller
--use the 'nosync:0' option.
--
--Please try these options and post any problems/successes to me.
--
--Alan Hourihane <alanh@fairlite.demon.co.uk>
-diff --git a/drivers/scsi/.gitignore b/drivers/scsi/.gitignore
-index b385af3..c89ae9a 100644
---- a/drivers/scsi/.gitignore
-+++ b/drivers/scsi/.gitignore
-@@ -1,3 +1 @@
- 53c700_d.h
--53c7xx_d.h
--53c7xx_u.h
+diff --git a/include/asm-h8300/io.h b/include/asm-h8300/io.h
+index 7543a57..26dc6cc 100644
+--- a/include/asm-h8300/io.h
++++ b/include/asm-h8300/io.h
+@@ -302,8 +302,6 @@ static __inline__ void ctrl_outl(unsigned long b, unsigned long addr)
+ /*
+  * Macros used for converting between virtual and physical mappings.
+  */
+-#define mm_ptov(vaddr)		((void *) (vaddr))
+-#define mm_vtop(vaddr)		((unsigned long) (vaddr))
+ #define phys_to_virt(vaddr)	((void *) (vaddr))
+ #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
+ 
+diff --git a/include/asm-h8300/virtconvert.h b/include/asm-h8300/virtconvert.h
+index ee7d5ea..19cfd62 100644
+--- a/include/asm-h8300/virtconvert.h
++++ b/include/asm-h8300/virtconvert.h
+@@ -10,8 +10,6 @@
+ #include <asm/setup.h>
+ #include <asm/page.h>
+ 
+-#define mm_ptov(vaddr)		((void *) (vaddr))
+-#define mm_vtop(vaddr)		((unsigned long) (vaddr))
+ #define phys_to_virt(vaddr)	((void *) (vaddr))
+ #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
+ 
+diff --git a/include/asm-m68knommu/io.h b/include/asm-m68knommu/io.h
+index 653d9b2..6adef1e 100644
+--- a/include/asm-m68knommu/io.h
++++ b/include/asm-m68knommu/io.h
+@@ -172,8 +172,6 @@ extern void iounmap(void *addr);
+ /*
+  * Macros used for converting between virtual and physical mappings.
+  */
+-#define mm_ptov(vaddr)		((void *) (vaddr))
+-#define mm_vtop(vaddr)		((unsigned long) (vaddr))
+ #define phys_to_virt(vaddr)	((void *) (vaddr))
+ #define virt_to_phys(vaddr)	((unsigned long) (vaddr))
+ 
+diff --git a/include/asm-v850/io.h b/include/asm-v850/io.h
+index cc364fc..cdad251 100644
+--- a/include/asm-v850/io.h
++++ b/include/asm-v850/io.h
+@@ -122,8 +122,6 @@ outsl (unsigned long port, const void *src, unsigned long count)
+ #endif
+ 
+ /* Conversion between virtual and physical mappings.  */
+-#define mm_ptov(addr)		((void *)__phys_to_virt (addr))
+-#define mm_vtop(addr)		((unsigned long)__virt_to_phys (addr))
+ #define phys_to_virt(addr)	((void *)__phys_to_virt (addr))
+ #define virt_to_phys(addr)	((unsigned long)__virt_to_phys (addr))
+ 
 
