@@ -1,114 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXJXMqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbXJXMqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbXJXMqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 08:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbXJXMqL
+	id S1758659AbXJXMqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 08:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXJXMqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 08:46:11 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:56407 "EHLO
-	mail-07.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbXJXMqK (ORCPT
+	Wed, 24 Oct 2007 08:46:43 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:40840 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757128AbXJXMqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 08:46:10 -0400
-From: Matthew Wilcox <matthew@wil.cx>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	Wed, 24 Oct 2007 08:46:42 -0400
+To: apw@shadowen.org
+Cc: jens.axboe@oracle.com, kamalesh@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH] hash: Add explicit u32 and u64 versions of hash
-Date: Wed, 24 Oct 2007 08:46:15 -0400
-Message-Id: <11932299753758-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.4.4.2
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071024115436.GT32058@shadowen.org>
+References: <471E110C.20404@linux.vnet.ibm.com>
+	<20071023184419.GD14671@kernel.dk>
+	<20071024115436.GT32058@shadowen.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071024214014C.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 24 Oct 2007 21:40:14 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 32-bit version is more efficient (and apparently gives better hash
-results than the 64-bit version), so users who are only hashing a 32-bit
-quantity can now opt to use the 32-bit version explicitly, rather than
-promoting to a long.
+On Wed, 24 Oct 2007 12:54:36 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
- include/linux/hash.h |   42 +++++++++++++++++++++++++++---------------
- 1 files changed, 27 insertions(+), 15 deletions(-)
+> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
+> > On Tue, Oct 23 2007, Kamalesh Babulal wrote:
+> > > Hi,
+> > > 
+> > > Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+> > > over the AMD box
+> > > 
+> > > Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+> > >  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> > > PGD 10185b067 PUD 10075b067 PMD 0 
+> > > Oops: 0002 [1] SMP 
+> > > CPU 3 
+> > > Modules linked in:
+> > > Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
+> > > RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> > > RSP: 0000:ffff810181edf948  EFLAGS: 00010002
+> > 
+> > Can you check where gart_map_sg+0x26c is at? Make sure you have
+> > CONFIG_DEBUG_INFO defined, then do:
+> > 
+> > $ gdb vmlinux
+> > $ l *gart_map_sg+0x26c
+> 
+> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
+> output from that version, the panic (also below) seems the same:
+> 
+> (gdb) l *gart_map_sg+0x26c
+> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
+> 428                     goto error;
+> 429             out++;
+> 430             flush_gart();
+> 431             if (out < nents) {
+> 432                     sgmap = sg_next(sgmap);
+> 433                     sgmap->dma_length = 0;
+> 434             }
+> 435             return out;
+> 436
+> 437     error:
+> 
+> So it seems sg_next has returned 0.
 
-diff --git a/include/linux/hash.h b/include/linux/hash.h
-index acf17bb..06d25c1 100644
---- a/include/linux/hash.h
-+++ b/include/linux/hash.h
-@@ -1,6 +1,6 @@
- #ifndef _LINUX_HASH_H
- #define _LINUX_HASH_H
--/* Fast hashing routine for a long.
-+/* Fast hashing routine for ints,  longs and pointers.
-    (C) 2002 William Lee Irwin III, IBM */
- 
- /*
-@@ -13,23 +13,30 @@
-  * them can use shifts and additions instead of multiplications for
-  * machines where multiplications are slow.
-  */
--#if BITS_PER_LONG == 32
-+
-+#include <asm/types.h>
-+
- /* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
--#define GOLDEN_RATIO_PRIME 0x9e370001UL
--#elif BITS_PER_LONG == 64
-+#define GOLDEN_RATIO_PRIME_32 0x9e370001UL
- /*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
--#define GOLDEN_RATIO_PRIME 0x9e37fffffffc0001UL
-+#define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
-+
-+#if BITS_PER_LONG == 32
-+#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
-+#define hash_long(val, bits) hash_32(val, bits)
-+#elif BITS_PER_LONG == 64
-+#define hash_long(val, bits) hash_64(val, bits)
-+#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
- #else
--#error Define GOLDEN_RATIO_PRIME for your wordsize.
-+#error Wordsize not 32 or 64
- #endif
- 
--static inline unsigned long hash_long(unsigned long val, unsigned int bits)
-+static inline u64 hash_64(u64 val, unsigned int bits)
- {
--	unsigned long hash = val;
-+	u64 hash = val;
- 
--#if BITS_PER_LONG == 64
- 	/*  Sigh, gcc can't optimise this alone like it does for 32 bits. */
--	unsigned long n = hash;
-+	u64 n = hash;
- 	n <<= 18;
- 	hash -= n;
- 	n <<= 33;
-@@ -42,15 +49,20 @@ static inline unsigned long hash_long(unsigned long val, unsigned int bits)
- 	hash += n;
- 	n <<= 2;
- 	hash += n;
--#else
-+
-+	/* High bits are more random, so use them. */
-+	return hash >> (64 - bits);
-+}
-+
-+static inline u32 hash_32(u32 val, unsigned int bits)
-+{
- 	/* On some cpus multiply is faster, on others gcc will do shifts */
--	hash *= GOLDEN_RATIO_PRIME;
--#endif
-+	u32 hash = val * GOLDEN_RATIO_PRIME_32;
- 
- 	/* High bits are more random, so use them. */
--	return hash >> (BITS_PER_LONG - bits);
-+	return hash >> (32 - bits);
- }
--	
-+
- static inline unsigned long hash_ptr(void *ptr, unsigned int bits)
- {
- 	return hash_long((unsigned long)ptr, bits);
--- 
-1.4.4.2
+Have you tried this?
 
+http://marc.info/?l=linux-kernel&m=119317981406073&w=2
