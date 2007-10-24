@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXJXUrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXJXUwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbXJXUrv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXJXUrl
+	id S1756922AbXJXUwI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 16:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbXJXUv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:47:41 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53728
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754636AbXJXUrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:47:40 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [uml-devel] User Mode Linux still doesn't build in 2.6.23-final.
-Date: Wed, 24 Oct 2007 16:46:54 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-References: <200710111754.46854.rob@landley.net> <20071024152240.GA7733@c2.user-mode-linux.org>
-In-Reply-To: <20071024152240.GA7733@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 24 Oct 2007 16:51:56 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3636 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbXJXUvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 16:51:55 -0400
+Subject: Re: Stringbuf, v2
+From: Joe Perches <joe@perches.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071024195847.GE27248@parisc-linux.org>
+References: <20071024195847.GE27248@parisc-linux.org>
+Content-Type: text/plain
+Date: Wed, 24 Oct 2007 13:51:37 -0700
+Message-Id: <1193259097.19617.18.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710241646.54942.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 October 2007 10:22:40 am Jeff Dike wrote:
-> I poked around a bit for a sparc cross-toolchain, didn't find one, so
-> I couldn't see what exactly the problem was.
+On Wed, 2007-10-24 at 13:58 -0600, Matthew Wilcox wrote:
+>  - Pass a gfp_t to sb_printk
 
-Prebuilt for Ubuntu 7.04:
-http://landley.net/code/firmware/downloads/cross-compiler/host-i686/cross-compiler-sparc.tar.bz2
+sb_printf
 
-Source code:
-Or http://landley.net/code/firmware/downloads/firmware-0.2.2.tar.bz2
+As it doesn't actually output anything but extends
+a buffer pointer in a struct, perhaps it's better to
+rename sb_printf to sb_sprintf.
 
-For the second one, extract it, cd into it, "./build.sh sparc", and when it 
-finishes your sparc-gcc should be in "build/cross-compiler-sparc/bin".
+I believe the common use will be GFP_ATOMIC.
+Perhaps a default wrapper define and a renamed function?
 
-You can move the cross-compiler-sparc directory anywhere you want in the 
-filesystem, and it should still work.  Just add the "bin" subdirectory of it 
-to $PATH and CROSS_COMPILE=sparc-
+void sb_sprintf_gfp(struct stringbuf *sb, gfp_t gfp, const char *fmt, ...)
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+#define sb_sprintf(sb, fmt, arg...) \
+	sb_sprintf_gfp(sb, GFP_ATOMIC, fmt, ##arg)
+
