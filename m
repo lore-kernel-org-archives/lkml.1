@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbXJXBDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbXJXBEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbXJXBDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 21:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbXJXBDj
+	id S1755321AbXJXBEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 21:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbXJXBEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 21:03:39 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39594 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbXJXBDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 21:03:38 -0400
-Message-ID: <471E99E8.6030404@garzik.org>
-Date: Tue, 23 Oct 2007 21:03:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 23 Oct 2007 21:04:13 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42634 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953AbXJXBEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 21:04:12 -0400
+Message-ID: <471E9A09.4030607@tiscali.nl>
+Date: Wed, 24 Oct 2007 03:04:09 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: David Miller <davem@davemloft.net>, davej@redhat.com,
-       auke-jan.h.kok@intel.com, ajax@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] e1000, e1000e valid-addr fixes
-References: <471E2AD0.1000500@intel.com>	<471E5C21.8030908@garzik.org>	<20071023212026.GF7793@redhat.com> <20071023.145339.55504234.davem@davemloft.net> <471E9801.2000006@garzik.org>
-In-Reply-To: <471E9801.2000006@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] Fix unlock on error
+References: <471E9322.1030408@tiscali.nl>
+In-Reply-To: <471E9322.1030408@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Actually, looking over the code I see obvious bugs in the logic:
-> 
-> An invalid ethernet address should not cause device loading to fail, 
-> because the user is given the opportunity to supply a MAC address via 
-> userspace (ifconfig or whatever) before the interface goes up.
-> 
-> I just created the attached -bug fix- patch as illustration, though I 
-> have not committed it, waiting for comment.
-> 
-> This patch will make no difference for users hitting invalid-eep-csum 
-> rather than invalid-MAC-addr condition, but it's a problem I noticed 
-> while reviewing Adam's patch in detail.
-
-
-Adding my own comment :)
-
-Does the ethernet stack check is_valid_ether_addr() before permitting 
-interface-up?
-
-I'm wondering if there is a way to avoid adding
-
-	if (!is_valid_ether_addr(dev->dev_addr))
-		return -EINVAL;
-
-to every ethernet driver's ->open() hook.
-
-	Jeff
-
-
+    Fix unlock on error
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/mips/kernel/irixsig.c b/arch/mips/kernel/irixsig.c
+index a0a9105..a6e6e78 100644
+--- a/arch/mips/kernel/irixsig.c
++++ b/arch/mips/kernel/irixsig.c
+@@ -426,6 +426,7 @@ asmlinkage int irix_sigprocmask(int how, irix_sigset_t __user *new,
+ 			break;
+ 
+ 		default:
++			spin_unlock_irq(&current->sighand->siglock);
+ 			return -EINVAL;
+ 		}
+ 		recalc_sigpending();
+diff --git a/arch/mips/vr41xx/common/icu.c b/arch/mips/vr41xx/common/icu.c
+index 1899601..11f5f72 100644
+--- a/arch/mips/vr41xx/common/icu.c
++++ b/arch/mips/vr41xx/common/icu.c
+@@ -525,6 +525,7 @@ static inline int set_sysint1_assign(unsigned int irq, unsigned char assign)
+ 		intassign1 |= (uint16_t)assign << 9;
+ 		break;
+ 	default:
++		spin_unlock_irq(&desc->lock);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -592,6 +593,7 @@ static inline int set_sysint2_assign(unsigned int irq, unsigned char assign)
+ 		intassign3 |= (uint16_t)assign << 12;
+ 		break;
+ 	default:
++                spin_unlock_irq(&desc->lock);
+ 		return -EINVAL;
+ 	}
+ 
