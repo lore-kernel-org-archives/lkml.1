@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbXJXBlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXJXBta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbXJXBlJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 21:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXJXBk4
+	id S1753976AbXJXBta (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 21:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXJXBtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 21:40:56 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:19531 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752663AbXJXBk4 (ORCPT
+	Tue, 23 Oct 2007 21:49:22 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55523 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbXJXBtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 21:40:56 -0400
-Date: Tue, 23 Oct 2007 21:18:41 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <ak@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Dave Jones <davej@redhat.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] x86 gart: rename symbols only used for the GART	implementation
-Message-ID: <20071023191841.GF4360@rhun.haifa.ibm.com>
-References: <11931612933917-git-send-email-joerg.roedel@amd.com> <20071023175908.GD7793@redhat.com> <471E37B4.9010604@zytor.com> <200710232010.55074.ak@suse.de>
-Mime-Version: 1.0
+	Tue, 23 Oct 2007 21:49:22 -0400
+Date: Tue, 23 Oct 2007 19:49:20 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matt Mackall <mpm@selenic.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Message-ID: <20071024014920.GU27248@parisc-linux.org>
+References: <1193173966-3550-1-git-send-email-matthew@wil.cx> <20071023221116.GL17536@waste.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710232010.55074.ak@suse.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20071023221116.GL17536@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 08:10:54PM +0200, Andi Kleen wrote:
+On Tue, Oct 23, 2007 at 05:11:16PM -0500, Matt Mackall wrote:
+> You might want to consider growing the buffer by no less than a small
+> constant factor like 1.3x. This will keep things that do short concats
+> in a loop from degrading to O(n^2) performance due to realloc and
+> memcpy.
 
-> I think his goal was to get an prefix that describes the module
-> uniquely.  gart_* clearly does not fulfill that criteria.
+I looked at slab and slub, and would grow the buffer by no less than
+1.5x each time, thanks to the buckets.  I'd initially implemented 2x,
+but switched to allocating size+1 and calling ksize() as being a more
+efficient implementation.
+
+I presume slob is different?  Actually, slob doesn't seem to
+provide krealloc, so I think stringbuf won't work on slob.  Will you
+have time to fix this?
+
+> Should probably just bite the bullet and pass a flag.
+
+Hrm.
+
+extern void sb_printf(struct stringbuf *sb, gfp_t gfp, const char *fmt, ...)
+        __attribute__((format(printf, 3, 4)));
+
+?  Any objections?
+
+> > +#define INITIAL_SIZE 32
 > 
-> So basically he's replacing an
-> ambigious-with-other-IOMMU-implementations prefix with an
-> ambigious-with-AGP prefix. Seems like a rather pointless change.
+> Too small. That will guarantee that most users end up doing a realloc.
+> Can we have 128 instead?
 
-Not at all - the present situation where GART specific code
-masquerades as generic IOMMU code is confusing. I've heard from more
-than one person who was confused by "how come I can enable an IOMMU
-while CONFIG_IOMMU is off?" and "how come some iommu_xxx options
-(which were really gart options...) don't actually affect the
-(Calgary) IOMMU"?
+I don't care.  Sure!
 
-If the variable names clash the correct solution is to s/gart/agpgart/
-in the AGP code and then continue renaming gart specific bits 'gart'
-rather than 'iommu'.
-
-Cheers,
-Muli
 -- 
-SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
-http://www.haifa.il.ibm.com/Workshops/systor2007/
-
-Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
