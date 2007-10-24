@@ -1,102 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbXJXSKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXJXSLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760657AbXJXSKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbXJXSKK
+	id S1760420AbXJXSLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXJXSLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:10:10 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:8034 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755616AbXJXSKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:10:07 -0400
-Date: Wed, 24 Oct 2007 20:10:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: John Stoffel <john@stoffel.org>
-Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org
-Subject: Re: IDE crash...
-Message-ID: <20071024181002.GG14671@kernel.dk>
-References: <20071023070932.GB25962@kernel.dk> <20071023.001850.130236174.davem@davemloft.net> <20071023072359.GH25962@kernel.dk> <20071023.004321.74750417.davem@davemloft.net> <20071023074554.GA5059@kernel.dk> <18206.3808.849690.113159@stoffel.org> <20071024064859.GV14671@kernel.dk> <18207.29315.589451.547466@stoffel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18207.29315.589451.547466@stoffel.org>
+	Wed, 24 Oct 2007 14:11:07 -0400
+Received: from xenotime.net ([66.160.160.81]:54565 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756724AbXJXSLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:11:03 -0400
+Date: Wed, 24 Oct 2007 11:11:00 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
+Subject: Re: [PATCH 2/2] implement new notifier function to
+ panic_notifier_list ,take2
+Message-Id: <20071024111100.0f5d8b58.rdunlap@xenotime.net>
+In-Reply-To: <47171EEF.7030109@ah.jp.nec.com>
+References: <4716FFDB.7090502@ah.jp.nec.com>
+	<47171EEF.7030109@ah.jp.nec.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, John Stoffel wrote:
-> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
-> 
-> Jens> On Tue, Oct 23 2007, John Stoffel wrote:
-> >> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
-> >> 
-> Jens> On Tue, Oct 23 2007, David Miller wrote:
-> >> >> From: Jens Axboe <jens.axboe@oracle.com>
-> >> >> Date: Tue, 23 Oct 2007 09:23:59 +0200
-> >> >> 
-> >> >> > On Tue, Oct 23 2007, David Miller wrote:
-> >> >> > > From: Jens Axboe <jens.axboe@oracle.com>
-> >> >> > > Date: Tue, 23 Oct 2007 09:09:33 +0200
-> >> >> > > 
-> >> >> > > > Eh this wont work, it's the wrong entry... Here's a temporary
-> >> >> > > > work-around.
-> >> >> > > > 
-> >> >> > > > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-> >> >> > > > index c89f0d3..108202b 100644
-> >> >> > > > --- a/drivers/ide/ide-io.c
-> >> >> > > > +++ b/drivers/ide/ide-io.c
-> >> >> > > > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
-> >> >> > > >  		return;
-> >> >> > > >  
-> >> >> > > >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
-> >> >> > > > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
-> >> >> > > >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
-> >> >> > > >  	} else {
-> >> >> > > >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
-> >> >> > > 
-> >> >> > > That's the exact patch I'm about to boot test :-)
-> >> >> > 
-> >> >> > That should work - once you verify that, would you mind testing this one
-> >> >> > as well? Thanks!
-> >> >> 
-> >> >> This one works here too, thanks.
-> >> 
-> Jens> Great, thanks for testing that as well. Thinking a bit more
-> Jens> about it, I think the forced clear should stay in
-> Jens> blk_rq_map_sg() since we don't want to advertise it to
-> Jens> drivers. So I'll just open-code it in there.
-> >> 
-> >> Should there be more bounds checking here, so that if you try to do a
-> >> _force() you at least check to make sure that there's something beyond
-> >> there and useable on the list?  
-> >> 
-> >> We're saving the time from not reallocating from scratch, but let's
-> >> make it robust by doing at least some more checks here.
-> 
-> Jens> We have to rely on the caller passing in an sgtable that is big enough
-> Jens> to map the request, we have always made that assumption. Anything else
-> Jens> would be a bug, of course. Now, catching that bug would indeed be nice.
-> Jens> Any suggestions?
-> 
-> Poor mans slab poisoning maybe?  As Alan Cox was saying about keeping
-> it simple with a NULL entry on the end of the SG list, having an easy
-> way to not fall of the end seems key. 
-> 
-> But from reading and re-reading the thread and some of the code, it
-> looks like this list is really allocated, then the driver can just
-> re-use the list (or a subset) as much as it likes without clearing and
-> then reallocating.
-> 
-> So if you've got a chain of 127 items, does it make sense when you
-> only use 16 of them to poison the next three or four in the chain to
-> really make sure you don't fall off the end?
+On Thu, 18 Oct 2007 17:53:03 +0900 Takenori Nagano wrote:
 
-Yes, that is indeed how most drivers work. It's both cheaper and faster
-to keep the list than allocating and initializing it every time. With
-the current termination bit approach, only that bits needs to be
-set/cleared to properly terminate the sgtable. So it's free, since it
-happens with setting page/length/offset.
+> This patch implements new notifier function to panic_notifier_list. We can
+> change the list of order by debugfs.
 
--- 
-Jens Axboe
+Should be sysfs IMO.  debugfs isn't (should not be) required.
 
+> Thanks,
+> 
+> ---
+> 
+> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
+> 
+> ---
+> diff -uprN linux-2.6.23.orig/arch/alpha/kernel/setup.c linux-2.6.23/arch/alpha/kernel/setup.c
+> --- linux-2.6.23.orig/arch/alpha/kernel/setup.c	2007-10-10 05:31:38.000000000 +0900
+> +++ linux-2.6.23/arch/alpha/kernel/setup.c	2007-10-18 08:56:53.928000000 +0900
+> @@ -45,14 +45,22 @@
+>  #include <asm/io.h>
+>  #include <linux/log2.h>
+>  
+> -extern struct atomic_notifier_head panic_notifier_list;
+> +extern struct tunable_atomic_notifier_head panic_notifier_list;
+>  static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
+> -static struct notifier_block alpha_panic_block = {
+> +static struct notifier_block alpha_panic_block_base = {
+>  	alpha_panic_event,
+>          NULL,
+>          INT_MAX /* try to do it first */
+>  };
+>  
+> +static struct tunable_atomic_notifier_block alpha_panic_block = {
+> +	&alpha_panic_block_base,
+
+Use C99-style initializer.  and NULLs aren't needed.
+
+> +	NULL,
+> +	NULL,
+> +	NULL,
+> +	NULL
+> +};
+> +
+>  #include <asm/uaccess.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/system.h>
+
+> diff -uprN linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c
+> --- linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c	2007-10-10 05:31:38.000000000 +0900
+> +++ linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c	2007-10-18 09:00:35.900000000 +0900
+> @@ -228,14 +228,23 @@ static int panic_event(struct notifier_b
+>  	return NOTIFY_DONE;
+>  }
+>  
+> -static struct notifier_block panic_block = {
+> +static struct notifier_block panic_block_base = {
+>  	.notifier_call	= panic_event,
+>  };
+>  
+> +static struct tunable_atomic_notifier_block panic_block = {
+> +	.nb		= &panic_block_base,
+> +	.head		= NULL,
+> +	.dir		= NULL,
+> +	.pri_dentry	= NULL,
+> +	.desc_dentry	= NULL
+
+Drop the NULLs.
+
+> +};
+> +
+>  static int __init voiceblue_setup(void)
+>  {
+>  	/* Setup panic notifier */
+> -	notifier_chain_register(&panic_notifier_list, &panic_block);
+> +	tunable_atomic_notifier_chain_register(&panic_notifier_list,
+> +					       &panic_block, "VoiceBlue", NULL);
+>  
+>  	return 0;
+>  }
+> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c
+> --- linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c	2007-10-10 05:31:38.000000000 +0900
+> +++ linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c	2007-10-18 09:01:33.408000000 +0900
+> @@ -226,10 +226,18 @@ static int panic_event(struct notifier_b
+>  	return NOTIFY_DONE;
+>  }
+>  
+> -static struct notifier_block panic_block = {
+> +static struct notifier_block panic_block_base = {
+>  	.notifier_call	= panic_event,
+>  };
+>  
+> +static struct tunable_atomic_notifier_block panic_block = {
+> +	.nb		= &panic_block_base,
+> +	.head		= NULL,
+> +	.dir		= NULL,
+> +	.pri_dentry	= NULL,
+> +	.desc_dentry	= NULL
+
+Ditto.
+
+> +};
+> +
+>  static int __init reboot_setup(void)
+>  {
+>  	_machine_restart = sgi_machine_restart;
+
+> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c
+> --- linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c	2007-10-10 05:31:38.000000000 +0900
+> +++ linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c	2007-10-18 09:02:20.496000000 +0900
+> @@ -175,10 +175,18 @@ static int panic_event(struct notifier_b
+>  	return NOTIFY_DONE;
+>  }
+>  
+> -static struct notifier_block panic_block = {
+> +static struct notifier_block panic_block_base = {
+>  	.notifier_call = panic_event,
+>  };
+>  
+> +static struct tunable_atomic_notifier_block panic_block = {
+> +	.nb		= &panic_block_base,
+> +	.head		= NULL,
+> +	.dir		= NULL,
+> +	.pri_dentry	= NULL,
+> +	.desc_dentry	= NULL
+
+Ditto.
+
+> +};
+> +
+>  static __init int ip32_reboot_setup(void)
+>  {
+>  	/* turn on the green led only */
+
+> diff -uprN linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c linux-2.6.23/arch/parisc/kernel/pdc_chassis.c
+> --- linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c	2007-10-10 05:31:38.000000000 +0900
+> +++ linux-2.6.23/arch/parisc/kernel/pdc_chassis.c	2007-10-18 08:56:54.052000000 +0900
+> @@ -101,11 +101,18 @@ static int pdc_chassis_panic_event(struc
+>  }   
+>  
+>  
+> -static struct notifier_block pdc_chassis_panic_block = {
+> +static struct notifier_block pdc_chassis_panic_block_base = {
+>  	.notifier_call = pdc_chassis_panic_event,
+>  	.priority = INT_MAX,
+>  };
+>  
+> +static struct tunable_atomic_notifier_block pdc_chassis_panic_block = {
+> +	.nb		= &pdc_chassis_panic_block_base,
+> +	.head		= NULL,
+> +	.dir		= NULL,
+> +	.pri_dentry	= NULL,
+> +	.desc_dentry	= NULL
+
+Ditto... (I'll skip mentioning the rest of these.)
+
+> +};
+>  
+>  /**
+>   * parisc_reboot_event() - Called by the reboot handler.
+
+
+---
+~Randy
