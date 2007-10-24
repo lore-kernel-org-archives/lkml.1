@@ -1,131 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXJXPLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbXJXPLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbXJXPLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 11:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXJXPKy
+	id S1754264AbXJXPLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 11:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXJXPL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 11:10:54 -0400
-Received: from mailrelay001.isp.belgacom.be ([195.238.6.51]:20098 "EHLO
-	mailrelay001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751699AbXJXPKx (ORCPT
+	Wed, 24 Oct 2007 11:11:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:40628 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbXJXPLZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 11:10:53 -0400
-X-Belgacom-Dynamic: yes
-Date: Wed, 24 Oct 2007 17:16:56 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Gilles Gigan <gilles.gigan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] watchdog: add Nano 7240 driver
-Message-ID: <20071024151656.GA6015@infomag.infomag.iguana.be>
-References: <20071024121159.03d209ec.gilles.gigan@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024121159.03d209ec.gilles.gigan@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 24 Oct 2007 11:11:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,325,1188802800"; 
+   d="scan'208";a="184996098"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
+Date: Wed, 24 Oct 2007 08:11:23 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C0349A780@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
+Thread-Index: AcgWIdhZSEx2LZNUSaGjTkEmDCEPvAALil7Q
+References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Cc: <linux-kernel@vger.kernel.org>, "David Brownell" <david-b@pacbell.net>,
+       <kernel@avr32linux.org>, <linux-arm-kernel@lists.arm.linux.org.uk>
+X-OriginalArrivalTime: 24 Oct 2007 15:11:24.0090 (UTC) FILETIME=[2437F1A0:01C81650]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gilles,
+>From: Haavard Skinnemoen [mailto:hskinnemoen@atmel.com] 
+>Subject: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
+>
+>This patch corrects what I hope are invalid assumptions about the DMA
+>engine layer: Not only Intel(R) hardware can do DMA, and DMA can be
+>used for other things than memcpy and RAID offloading.
+>
+>At the same time, make the DMA Engine menu visible again on AVR32. I'm
+>currently working on a driver for a DMA controller that can do
+>mem-to-mem transfers (which is supported by the framework) as well as
+>device-to-mem and mem-to-device transfers (not currently supported.)
+>
+>Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+>---
+>Don't get me wrong; I think Intel deserves lots of respect for
+>creating this framework. But this is also why I got a bit disappointed
+>when I discovered that it seems to be less generic than I initially
+>hoped.
+>
+>DMA controllers, which may support plain memcpy acceleration in
+>addition to more traditional "slave DMA", are very common in SoC
+>devices, and I think Linux needs a common framework for it. The
+>existing DMA Engine framework seems to come pretty close already, but
+>I think it needs more input from the embedded crowd before it can be
+>completely usable on a large number of embedded systems.
+>
+>I'm not going to suggest any changes to the actual framework for
+>2.6.24, but I think the _intention_ of the framework needs to be
+>clarified.
+>
+>Haavard
+>
+> drivers/dma/Kconfig |   10 ++++++----
+> 1 files changed, 6 insertions(+), 4 deletions(-)
+>
+>diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+>index 9c91b0f..62a9fe5 100644
+>--- a/drivers/dma/Kconfig
+>+++ b/drivers/dma/Kconfig
+>@@ -3,11 +3,13 @@
+> #
+> 
+> menuconfig DMADEVICES
+>-	bool "DMA Offload Engine support"
+>-	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X 
+>|| ARCH_IOP13XX
+>+	bool "DMA Engine support"
+>+	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X 
+>|| ARCH_IOP13XX || AVR32
+> 	help
+>-	  Intel(R) offload engines enable offloading memory 
+>copies in the
+>-	  network stack and RAID operations in the MD driver.
+>+	  DMA engines can do asynchronous data transfers without
+>+	  involving the host CPU. This can be used to offload memory
+>+	  copies in the network stack and RAID operations in the MD
+>+	  driver.
+> 
+> if DMADEVICES
+> 
+>-- 
+>1.5.3.4
+>
 
-> +static ssize_t fop_write(struct file *file, const char __user *buf,
-> +			  size_t count, loff_t *ppos)
-> +{
-> +	size_t i;
-> +	char c;
-> +	int got_magic_char = 0;
-> +
-> +	/* is there a magic char ? */
-> +	for (i = 0; i != count; i++) {
-> +		if (get_user(c, buf + i))
-> +			return -EFAULT;
-> +		if (c == SBC7240_MAGIC_CHAR) {
-> +			got_magic_char = 1;
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (got_magic_char)
-> +		wdt_disable();
-> +	else
-> +		wdt_keepalive();
-> +
-> +	return count;
-> +}
-> +
-> +static int fop_open(struct inode *inode, struct file *file)
-> +{
-> +	if (test_and_set_bit(OPEN_STATUS_BIT, &wdt_status))
-> +		return -EBUSY;
-> +
-> +	return nonseekable_open(inode, file);
-> +}
-> +
-> +static int fop_close(struct inode *inode, struct file *file)
-> +{
-> +	if (!nowayout)
-> +		wdt_disable();
-> +
-> +	clear_bit(OPEN_STATUS_BIT, &wdt_status);
-> +	return 0;
-> +}
-
-Normal watchdog  behaviour: The magic char should be written and then
-/dev/watchdog can be closed and then the watchdog will stop.
-What you did here was: if you write the magic char then stop the watchdog
-even when the /dev/watchdog device is still open.
-This is not the way that it should work.
-
-> +static int __init sbc7240_wdt_init(void)
-> +{
-> +	int rc = -EBUSY;
-> +
-> +	if (!request_region(SBC7240_ENABLE_PORT, 1, "SBC7240 WDT")) {
-> +		printk(KERN_ERR SBC7240_PREFIX "I/O address 0x%04x already in use\n",
-> +		       SBC7240_ENABLE_PORT);
-> +		rc = -EIO;
-> +		goto err_out;
-> +	}
-> +
-> +	/* The IO port 0x043 used to disable the watchdog
-> +	 * is already claimed by the system timer, so we
-> +	 * cant request_region() it ...*/
-> +
-> +	rc = misc_register(&wdt_miscdev);
-> +	if (rc) {
-> +		printk(KERN_ERR SBC7240_PREFIX
-> +		       "cannot register miscdev on minor=%d (err=%d)\n",
-> +		       wdt_miscdev.minor, rc);
-> +		goto err_out_region1;
-> +	}
-> +
-> +	rc = register_reboot_notifier(&wdt_notifier);
-> +	if (rc) {
-> +		printk(KERN_ERR SBC7240_PREFIX
-> +		       "cannot register reboot notifier (err=%d)\n", rc);
-> +		goto err_out_miscdev;
-> +	}
-> +
-> +	if (timeout < 1 || timeout > SBC7240_MAX_TIMEOUT) {
-> +		timeout = SBC7240_TIMEOUT;
-> +		printk(KERN_INFO SBC7240_PREFIX
-> +		       "timeout value must be 1<=x<=%d, using %d\n",
-> +		       SBC7240_MAX_TIMEOUT, timeout);
-> +	}
-> +	wdt_set_timeout(timeout);
-> +
-> +	printk(KERN_INFO SBC7240_PREFIX
-> +	       "Watchdog driver for SBC7240 initialised (nowayout=%d)\n",
-> +	       nowayout);
-
-It's better to do the misc_register as last action. Reason herefor is that
-you want to only enable the user-space interface when all the other settings
-and interfacing was succesfull. Else you risk that userspace get's enabled and
-that you then exit the watchdog driver.
-Second problem that I see here is that you should make sure that the watchdog
-device driver is stopped/disabled before that you give userspace access via
-/dev/watchdog to the watchdog.
-
-Greetings,
-wim.
-
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
