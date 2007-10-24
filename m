@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbXJXIoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbXJXIvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197AbXJXIoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 04:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXJXIoM
+	id S1754420AbXJXIvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 04:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXJXIvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 04:44:12 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:24228 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbXJXIoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 04:44:11 -0400
-Date: Wed, 24 Oct 2007 10:43:52 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Cc: "Marcel Holtmann" <marcel@holtmann.org>, "Jiri Kosina" <jikos@jikos.cz>,
-       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [BUG] rfcomm]
-Message-ID: <20071024104352.294d3b03@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <9e0cf0bf0710231155n71cf38fey4d1edae6401db173@mail.gmail.com>
-References: <200710231950.31313.alon.barlev@gmail.com>
-	<1193162106.6184.208.camel@violet>
-	<Pine.LNX.4.64.0710232004260.18815@twin.jikos.cz>
-	<1193163905.6184.214.camel@violet>
-	<9e0cf0bf0710231127o485a52e1sc7a06df7c8bc0189@mail.gmail.com>
-	<1193164210.6184.221.camel@violet>
-	<9e0cf0bf0710231155n71cf38fey4d1edae6401db173@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 04:51:06 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45188 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752017AbXJXIvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 04:51:05 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, bunk@kernel.org, Andrew Morton <akpm@osdl.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH] Define smp_call_function_mask() on uniprocessor builds
+Date: Wed, 24 Oct 2007 10:51:25 +0200
+Message-Id: <11932158852325-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Oct 2007 20:55:54 +0200,
-"Alon Bar-Lev" <alon.barlev@gmail.com> wrote:
+Rather than #ifdef users of smp_call_function_mask(), define it as an
+empty macro to avoid build errors.  The function explicitly prohibits
+callers from specifying the current cpu, so nothing needs to be done.
 
-> On 10/23/07, Marcel Holtmann <marcel@holtmann.org> wrote:
-> > the code in net/bluetooth/rfcomm/tty.c contains two calls to
-> > device_move(). Please comment these out and try again. At least then we
-> > know that it is in issue on how we use the driver model.
-> 
-> No bugs...
-> Looks OK, although I don't know what removed :)
+This unbreaks uniprocessor KVM builds.
 
-Hm, this might be similar to
-http://marc.info/?l=linux-kernel&m=119124209009812&w=2. To confirm,
-could you try with CONFIG_DEBUG_DRIVER and CONFIG_DEBUG_KOBJECT set
-(and the device_move() calls in again)?
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 259a13c..24e2e31 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -108,6 +108,9 @@ static inline void smp_send_reschedule(int cpu) { }
+ 	0;			\
+ })
+ 
++#define smp_call_function_mask(mask, func, info, wait) \
++	do { (void)(mask); (void)(func); (void)(info); (void)(wait); } while (0)
++
+ #endif /* !SMP */
+ 
+ /*
