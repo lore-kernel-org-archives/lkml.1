@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXJXGaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbXJXGbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbXJXGaI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 02:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbXJXG3z
+	id S1755476AbXJXGbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 02:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXJXGbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 02:29:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35290 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754699AbXJXG3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 02:29:54 -0400
-Date: Tue, 23 Oct 2007 23:29:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: menage@google.com, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       vatsa@linux.vnet.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fixing the warning in cgroup.c
-Message-Id: <20071023232938.34102e7a.akpm@linux-foundation.org>
-In-Reply-To: <471B8CAC.2070904@linux.vnet.ibm.com>
-References: <471B8CAC.2070904@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 24 Oct 2007 02:31:33 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54910 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753139AbXJXGbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 02:31:32 -0400
+Date: Wed, 24 Oct 2007 12:01:41 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: hbabu@us.ibm.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org,
+       Fernando Luis Vazquez Cao <fernando@intellilink.co.jp>
+Subject: Re: [PATCH 2/3] x86: add safe_smp_processor_id for x86_64
+Message-ID: <20071024063141.GB4622@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <47195763.1090803@ct.jp.nec.com> <47195876.7080208@ct.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47195876.7080208@ct.jp.nec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007 23:00:20 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-
-> Removing the unused variable root.
+On Fri, Oct 19, 2007 at 06:23:02PM -0700, Hiroshi Shimamoto wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> kernel/cgroup.c: In function ‘proc_cgroupstats_show’:
-> kernel/cgroup.c:2405: warning: unused variable ‘root’
-
-ERROR: Invalid UTF-8
-#3: 
-kernel/cgroup.c: In function proc_cgroupstats_show:
-
-ERROR: Invalid UTF-8
-#4: 
-kernel/cgroup.c:2405: warning: unused variable root
-
-total: 2 errors, 0 warnings, 7 lines checked
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-
-
-Please use LANG=C so gcc doesn't do this.
-
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  include/asm-x86/smp_64.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> Index: linux-git/kernel/cgroup.c
-> ===================================================================
-> --- linux-git.orig/kernel/cgroup.c      2007-10-21 08:49:15.000000000 +0530
-> +++ linux-git/kernel/cgroup.c   2007-10-21 22:24:13.000000000 +0530
-> @@ -2402,7 +2402,6 @@ struct file_operations proc_cgroup_opera
->  static int proc_cgroupstats_show(struct seq_file *m, void *v)
->  {
->         int i;
-> -       struct cgroupfs_root *root;
+> diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
+> index 6f0e027..ab612b0 100644
+> --- a/include/asm-x86/smp_64.h
+> +++ b/include/asm-x86/smp_64.h
+> @@ -76,6 +76,8 @@ extern unsigned __cpuinitdata disabled_cpus;
 > 
->         seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\n");
->         mutex_lock(&cgroup_mutex);
+>  #endif /* CONFIG_SMP */
+> 
+> +#define safe_smp_processor_id()		smp_processor_id()
+> +
 
-your email client is converting tabs to spaces.
+Can you please implement a patch for safe_smp_processor_id() instead of
+using smp_processor_id(). safe_smp_processor_id() was introduced to make
+sure that we are not dependent on the stack of threads after kernel has
+crashed instead read the apic id and convert it to cpu id with other
+data structures. This helped in stack overflow case.
+
+Hardcoding it to smp_processor_id() will give the false impression.
+
+Thanks
+Vivek
