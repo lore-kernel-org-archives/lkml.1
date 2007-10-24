@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXJXLtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbXJXLur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbXJXLtj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbXJXLt1
+	id S1757548AbXJXLur (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXJXLui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:49:27 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52176 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbXJXLtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:49:25 -0400
-Message-ID: <471F2499.7030309@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2007 16:25:21 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 24 Oct 2007 07:50:38 -0400
+Received: from narury.org ([84.16.240.217]:41783 "EHLO narury.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756003AbXJXLuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 07:50:37 -0400
+Date: Wed, 24 Oct 2007 14:50:34 +0300
+From: Riku Voipio <riku.voipio@iki.fi>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] hwmon/f75375s.c: buggy if()
+Message-ID: <20071024115034.GA5797@kos.to>
+References: <20071017195439.GD3778@stusta.de> <20071017204508.GA32110@kos.to> <20071018133744.GC3526@jupiter.solarsys.private> <20071019143754.0aa4483b@hyperion.delvare>
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: linux390@de.ibm.com, linux-s390@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.23-git19 - S390x: Kernel panic while bringing up the
- network interface
-References: <471EBC02.5000907@linux.vnet.ibm.com> <20071024050633.GA12335@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20071024050633.GA12335@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071019143754.0aa4483b@hyperion.delvare>
+X-message-flag: Warning: message not sent with a DRM-Certified client
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> On Wed, Oct 24, 2007 at 08:59:06AM +0530, Kamalesh Babulal wrote:
->> Hi,
->>
->> Kernel panic's while bringing up the network interface with the 2.6.23-git19
->>
->> Setting network parameters:  Ý  OK  ¨
->> Bringing up loopback interface:  Ý  OK  ¨
->> Bringing up interface eth0:
->>  Ý<00000000002e2f72>¨ inet_ioctl+0xd6/0x110
->>  Ý<000000000027cae2>¨ sock_ioctl+0x26e/0x2a0
->>  Ý<00000000000b4c52>¨ do_ioctl+0x4a/0xac
->>  Ý<00000000000b5076>¨ vfs_ioctl+0x3c2/0x3d8
->>  Ý<00000000000b50ec>¨ sys_ioctl+0x60/0x88
->>  Ý<0000000000021b7e>¨ sysc_noemu+0x10/0x16
->>  Ý<00000200001201ca>¨ 0x200001201ca
->>
->>  <0>Kernel panic - not syncing: Fatal exception in interrupt
->> 00: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
->>  CPU 01.
->> 02: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
->>  CPU 01.
->> 03: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
->>  CPU 01.
->> 01: HCPGIR450W CP entered; disabled wait PSW 00020001 80000000 00000000 000164DE
-> 
-> That should be fixed with this one:
-> 
-> commit f1ecfd5d3b69d98b814435758c485e6fd0e112de
-> Author: Ursula Braun <braunu@de.ibm.com>
-> Date:   Mon Oct 22 16:16:14 2007 +0200
-> 
->     remove header_ops bug in qeth driver
->     
->     Remove qeth bug caused by commit:
->     [NET]: Move hardware header operations out of netdevice.
->     
->     This is the second part of the qeth header_ops patch, since
->     first patch sent 10/19 has been insufficient.
->     Nevertheless first patch is still valid and should be kept.
->     
->     Signed-off-by: Ursula Braun <braunu@de.ibm.com>
->     Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
-> Patch is in -rc1. Could you please pull and try again? Thanks.
+On Fri, Oct 19, 2007 at 02:37:54PM +0200, Jean Delvare wrote:
+> Riku, can you please submit a patch fixing this? The attribute should
+> be declared read-only, and then you can use sysfs_chmod_file() to
+> change it to read-write where supported. 
 
-Hi,
+Thanks, this was good suggestion. Patch attached.
 
-The kernel panic is not seen in the 2.6.24-rc1 kernel.
+> Take a look at the w83781d
+> driver for an example.
+
+Btw, I think your example code has a indentation bug:
+
+		if (kind != w83781d)
+			err = sysfs_chmod_file(&dev->kobj,
+				&sensor_dev_attr_temp3_alarm.dev_attr.attr,
+				S_IRUGO | S_IWUSR);
+			if (err)
+				return err;
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+"rm -rf" only sounds scary if you don't have backups
