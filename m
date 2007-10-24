@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbXJXGqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbXJXGrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbXJXGqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 02:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXJXGqU
+	id S1756647AbXJXGrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 02:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbXJXGrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 02:46:20 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14463 "EHLO kernel.dk"
+	Wed, 24 Oct 2007 02:47:12 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:14469 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756257AbXJXGqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 02:46:19 -0400
-Date: Wed, 24 Oct 2007 08:46:16 +0200
+	id S1754617AbXJXGrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 02:47:11 -0400
+Date: Wed, 24 Oct 2007 08:47:09 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Christoph Schmitt <schmichr@de.ibm.com>, Swen Schillig <swen@vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH] sg: add missing sg_init_table calls to zfcp
-Message-ID: <20071024064616.GT14671@kernel.dk>
-References: <20071024052900.GB12335@osiris.boeblingen.de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [SPARC64]: More SG build fixes
+Message-ID: <20071024064708.GU14671@kernel.dk>
+References: <20071023.223756.34760847.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024052900.GB12335@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20071023.223756.34760847.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24 2007, Heiko Carstens wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Tue, Oct 23 2007, David Miller wrote:
 > 
-> CONFIG_DEBUG_SG reveals two missing sg_init_table calls. Add them.
-> 
-> kernel BUG at include/linux/scatterlist.h:50!
-> illegal operation: 0001 [#1]
-> [...]
-> Call Trace:
-> ([<000000000026f184>] zfcp_ns_gid_pn_request+0x4c/0x2a0)
->  [<0000000000276dd4>] zfcp_erp_strategy_do_action+0x1410/0x1938
->  [<0000000000278412>] zfcp_erp_thread+0x4fa/0x1430
->  [<000000000001990a>] kernel_thread_starter+0x6/0xc
->  [<0000000000019904>] kernel_thread_starter+0x0/0xc
-> 
-> Cc: Swen Schillig <swen@vnet.ibm.com>
-> Cc: Christof Schmitt <christof.schmitt@de.ibm.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
-> 
-> Jens, could you please push this one via your tree? Thanks!
+> diff --git a/arch/sparc64/kernel/ldc.c b/arch/sparc64/kernel/ldc.c
+> index c8313cb..217478a 100644
+> --- a/arch/sparc64/kernel/ldc.c
+> +++ b/arch/sparc64/kernel/ldc.c
+> @@ -2121,7 +2121,7 @@ int ldc_map_sg(struct ldc_channel *lp,
+>  	state.nc = 0;
+>  
+>  	for (i = 0; i < num_sg; i++)
+> -		fill_cookies(&state, page_to_pfn(sg[i].page) << PAGE_SHIFT,
+> +		fill_cookies(&state, page_to_pfn(sg_page(&sg[i])) << PAGE_SHIFT,
+>  			     sg[i].offset, sg[i].length);
+>  
+>  	return state.nc;
+> diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
+> index 7276f7d..fac4c6c 100644
+> --- a/drivers/block/sunvdc.c
+> +++ b/drivers/block/sunvdc.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/init.h>
+>  #include <linux/list.h>
+> +#include <linux/scatterlist.h>
+>  
+>  #include <asm/vio.h>
+>  #include <asm/ldc.h>
 
-You bet, thanks!
+added
 
 -- 
 Jens Axboe
