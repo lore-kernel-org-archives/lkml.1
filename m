@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbXJXVAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbXJXVBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754408AbXJXVAQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJXVAE
+	id S1758016AbXJXVBA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbXJXVAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:00:04 -0400
-Received: from smtpoutm.mac.com ([17.148.16.72]:53792 "EHLO smtpoutm.mac.com"
+	Wed, 24 Oct 2007 17:00:50 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:51730 "EHLO atlrel9.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752321AbXJXVAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:00:03 -0400
-In-Reply-To: <1193255992-14385-1-git-send-email-matthew@wil.cx>
-References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0533759C-81D0-45CB-A663-088A6D4E56A9@mac.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+	id S1753427AbXJXVAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:00:48 -0400
+Message-ID: <471FB260.8090503@hp.com>
+Date: Wed, 24 Oct 2007 17:00:16 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: David Stevens <dlstevens@us.ibm.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
+Subject: Re: [2.6 patch] unexport icmpmsg_statistics
+References: <OF03E20988.736A2E51-ON8825737E.007067FE-8825737E.0071B902@us.ibm.com>
+In-Reply-To: <OF03E20988.736A2E51-ON8825737E.007067FE-8825737E.0071B902@us.ibm.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Date: Wed, 24 Oct 2007 16:59:48 -0400
-To: Matthew Wilcox <matthew@wil.cx>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 24, 2007, at 15:59:49, Matthew Wilcox wrote:
-> +static void sb_vprintf(struct stringbuf *sb, gfp_t gfp, const char  
-> *format, va_list args)
-> +{
+David Stevens wrote:
+> My bad -- I see what it's doing, and it looks ok after all.
+> 
+> I thought I saw an INMSGS (but didn't).  These are ICMP errors that
+> went through icmp_rcv() and were counted correctly before getting
+> to the protocol error handlers. These are failures due mostly to not
+> having enough, or the right protocol info in the error packet being
+> handled. I'm not sure I'd count those as ICMP errors, since the
+> ICMP header itself is correct, but ok...
+> 
+> SCTP doesn't look so bad, though I think the references are
+> still questionable (but debatable) as ICMP errors.
+> 
+> sctp_v4_err is incrementing ICMP_MIB_INERRORS if there
+> isn't enough IP header to find the ports, I see. I'm not sure
+> that counts as an ICMP error, but it's not so terrible.
+> 
+> It's doing the same thing if a lookup fails to match "vtag" from
+> the encapsulated error packet. Again, I don't know that those
+> are ICMP errors (which normally are something wrong with
+> the ICMP header).
 
-[...]
+This particular case is the one that bugs the most, but that
+error matches best.
 
-> +	s = sb->buf + sb->len;
-> +	size = vsnprintf(s, sb->alloc - sb->len, format, args);
+Seems like all ULPs treat socket lookup error as ICMP_MIB_INERRORS
+(tcp, udp, sctp, dccp).
 
-[...]
+SCTP is a little special in that in needs to check one one piece
+of data (the 'vtag') to correctly identify the connection.
+If that piece doesn't match, we treat that as the same error.
 
-> +	/* Point to the end of the old string since we already updated - 
-> >len */
-> +	s += sb->len - size;
-> +	vsprintf(s, format, args);
-
-[...]
-
-> +void sb_printf(struct stringbuf *sb, gfp_t gfp, const char  
-> *format, ...)
-> +{
-> +	va_list args;
-> +
-> +	va_start(args, format);
-> +	sb_vprintf(sb, gfp, format, args);
-> +	va_end(args);
-> +}
-
-This seems unlikely to work reliably as the various "v*printf"  
-functions modify the va_list argument they are passed.  It may happen  
-to work on your particular architecture depending on how that  
-argument data is passed and stored, but you probably actually want to  
-make a copy of the varargs list for the first vsnprintf call.   
-Example below:
-
-> va_list argscopy;
-> va_copy(argscopy, args);
->
-> [...]
->
-> size = vsnprintf(s, sb->alloc - sb->len, format, argscopy)
->
-> [...]
->
-> s += sb->len - size;
-> vsprintf(s, format, args);
->
-> [...]
->
-> va_end(argscopy);
-
-Cheers,
-Kyle Moffett
+-vlad
