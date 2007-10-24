@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbXJXJBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbXJXJEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbXJXJBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 05:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXJXJB2
+	id S1755171AbXJXJEE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 05:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXJXJDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 05:01:28 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48520 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbXJXJB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 05:01:27 -0400
-Date: Wed, 24 Oct 2007 14:31:28 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: h-shimamoto@ct.jp.nec.com
-Cc: hbabu@us.ibm.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org,
-       Fernando Luis Vazquez Cao <fernando@intellilink.co.jp>
-Subject: Re: [PATCH 2/3] x86: add safe_smp_processor_id for x86_64
-Message-ID: <20071024090128.GA4809@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <47195763.1090803@ct.jp.nec.com> <47195876.7080208@ct.jp.nec.com> <20071024063141.GB4622@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024063141.GB4622@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Wed, 24 Oct 2007 05:03:54 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:56313 "EHLO
+	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbXJXJDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 05:03:52 -0400
+Date: Wed, 24 Oct 2007 11:03:43 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <20071024080549.GZ14671@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0710241103000.5840@anakin>
+References: <20071022211617.31f5c63d@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221343330.30120@woody.linux-foundation.org>
+ <20071022224343.4abf3c96@the-village.bc.nu>
+ <alpine.LFD.0.999.0710221444220.30120@woody.linux-foundation.org>
+ <471DBEF4.4030303@panasas.com> <20071023094142.GD5059@kernel.dk>
+ <471DC3D9.2070809@panasas.com> <20071023095507.GE5059@kernel.dk>
+ <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org>
+ <20071024080549.GZ14671@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 12:01:41PM +0530, Vivek Goyal wrote:
-> On Fri, Oct 19, 2007 at 06:23:02PM -0700, Hiroshi Shimamoto wrote:
-> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Wed, 24 Oct 2007, Jens Axboe wrote:
+> On Tue, Oct 23 2007, Linus Torvalds wrote:
+> > My biggest complaint right now is that a lot of users of the sg *filling* 
+> > functions were mindlessly converted, so we have code like
 > > 
-> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > ---
-> >  include/asm-x86/smp_64.h |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 	cryptoloop.c:             sg_set_page(&sg_in, in_page);
+> > 	cryptoloop.c:             sg_in.offset = in_offs;
+> > 	cryptoloop.c:             sg_in.length = sz;
 > > 
-> > diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-> > index 6f0e027..ab612b0 100644
-> > --- a/include/asm-x86/smp_64.h
-> > +++ b/include/asm-x86/smp_64.h
-> > @@ -76,6 +76,8 @@ extern unsigned __cpuinitdata disabled_cpus;
+> > which is just really stupid, and we should have a function for that. But 
+> > worse is code like this:
 > > 
-> >  #endif /* CONFIG_SMP */
+> > 	ub.c:     sg_set_page(sg, virt_to_page(sc->top_sense));
+> > 	ub.c:     sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
+> > 	ub.c:     sg->length = UB_SENSE_SIZE;
 > > 
-> > +#define safe_smp_processor_id()		smp_processor_id()
-> > +
+> > which again was converted "line by line" and we actually *do* have a 
+> > function to do the above three lines as
+> > 
+> > 	sg_set_buf(sg, sc->top_sense, UB_SENSE_SIZE);
+> > 
+> > where that *single* line is just tons shorter but more importantly, more 
+> > readable, than the mess that is a brute-force conversion.
 > 
-> Can you please implement a patch for safe_smp_processor_id() instead of
-> using smp_processor_id(). safe_smp_processor_id() was introduced to make
-> sure that we are not dependent on the stack of threads after kernel has
-> crashed instead read the apic id and convert it to cpu id with other
-> data structures. This helped in stack overflow case.
-> 
-> Hardcoding it to smp_processor_id() will give the false impression.
-> 
+> I modified sg_set_page() to take a length and offset argument, and
 
-Just now Aneesh pointed that x86_64 using pda for retrieving processor id
-and not kernel stack.
+As it no longer sets the page only, perhaps it's a good idea to rename
+sg_set_page() to sg_set()?
 
-I think it is fine then.
+Gr{oetje,eeting}s,
 
-Thanks
-Vivek
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
