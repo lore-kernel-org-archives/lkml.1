@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbXJXGxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXJXGxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbXJXGxQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 02:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbXJXGxD
+	id S1756483AbXJXGxn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 02:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXJXGxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 02:53:03 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36914 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755003AbXJXGxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 02:53:01 -0400
-Message-ID: <471EEBCB.30804@garzik.org>
-Date: Wed, 24 Oct 2007 02:52:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 24 Oct 2007 02:53:35 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:60620 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbXJXGxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 02:53:34 -0400
+Date: Wed, 24 Oct 2007 02:51:10 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: is CONFIG_APUS sufficiently deceased to be removed?
+Message-ID: <Pine.LNX.4.64.0710240244490.7685@localhost.localdomain>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/12] riscom8: fix SMP brokenness
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223638.DD9FE1F81A8@havoc.gtf.org> <471EEA7B.8070008@gmail.com>
-In-Reply-To: <471EEA7B.8070008@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 10/24/2007 12:36 AM, Jeff Garzik wrote:
->> After analyzing the elements that save_flags/cli/sti/restore_flags were
->> protecting, convert their usages to a global spinlock (the easiest and
->> most obvious next-step).  There were some usages of flags being
->> intentionally cached, because the code already knew the state of
->> interrupts.  These have been taken into account.
->>
->> This allows us to remove CONFIG_BROKEN_ON_SMP.  Completely untested.
->>
->> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->> ---
->>
-> [...]
->> diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
->> index b37e626..45d109c 100644
->> --- a/drivers/char/riscom8.c
->> +++ b/drivers/char/riscom8.c
-> [...]
->> @@ -82,6 +83,8 @@
->>  static struct riscom_board * IRQ_to_board[16];
->>  static struct tty_driver *riscom_driver;
->>  
->> +static spinlock_t riscom_lock = SPIN_LOCK_UNLOCKED;
-> 
-> This is deprecated (see linux/spinlock_types.h for details), use DEFINE_SPINLOCK
-> instead, otherwise seems OK.
-> 
-> Revieweved-by: Jiri Slaby <jirislaby@gmail.com>
 
-I noticed you reviewed my other riscom8 patch... you don't have hardware 
-perchance, do you?  :)
+  since a couple relatively recent commits show support for APUS being
+ripped out of powerpc:
 
-	Jeff
+commit e6b6e3ffb9ee8926f9f2f7dc9147df73e27d5828
+Author: Adrian Bunk <bunk@kernel.org>
+Date:   Mon Aug 27 23:29:53 2007 +0200
 
+    [POWERPC] Remove APUS support from arch/ppc
 
+    Current status of APUS:
+    - arch/powerpc/: removed in 2.6.23
+    - arch/ppc/: marked BROKEN since 2 years
 
+    This therefore removes the remaining parts of APUS support from
+    arch/ppc, include/asm-ppc, arch/powerpc and include/asm-powerpc.
+
+    Signed-off-by: Adrian Bunk <bunk@stusta.de>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+...
+commit f21f49ea639ac3f24824177dac1268af75a2d373
+Author: David Gibson <david@gibson.dropbear.id.au>
+Date:   Wed Jun 13 14:52:54 2007 +1000
+
+    [POWERPC] Remove the dregs of APUS support from arch/powerpc
+
+    APUS (the Amiga Power-Up System) is not supported under arch/powerpc
+    and it's unlikely it ever will be.  Therefore, this patch removes the
+    fragments of APUS support code from arch/powerpc which have been
+    copied from arch/ppc.
+
+    A few APUS references are left in asm-powerpc in .h files which are
+    still used from arch/ppc.
+
+    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+...
+
+is it safe to assume that references to that non-existent Kconfig
+variable can be tossed?
+
+drivers/ide/ide-probe.c:#if defined(__mc68000__) || defined(CONFIG_APUS)
+drivers/ide/ide-probe.c:#endif /* __mc68000__ || CONFIG_APUS */
+drivers/ide/ide-probe.c:#if !defined(__mc68000__) && !defined(CONFIG_APUS)
+drivers/ide/ide-probe.c:#endif /* __mc68000__ && CONFIG_APUS */
+drivers/isdn/hisax/avm_pci.c:#ifdef CONFIG_APUS
+drivers/isdn/hisax/avm_pci.c:#endif /* CONFIG_APUS */
+drivers/isdn/hisax/avm_pci.c:#ifdef CONFIG_APUS
+drivers/isdn/hisax/avm_pci.c:#endif /* CONFIG_APUS */
+drivers/video/console/fbcon.c:#if defined(__mc68000__) || defined(CONFIG_APUS)
+drivers/video/console/fonts.c:#if defined(__mc68000__) || defined(CONFIG_APUS)
+drivers/video/console/fonts.c:#if defined(__mc68000__) || defined(CONFIG_APUS)
+drivers/scsi/oktagon_esp.c:#if defined(CONFIG_AMIGA) || defined(CONFIG_APUS)
+drivers/scsi/oktagon_io.S:#ifdef CONFIG_APUS
+sound/oss/dmasound/dmasound_paula.c:#ifdef CONFIG_APUS    [well, i'd ignore this one]
+
+  and i'm guessing this can be nullified as well, yes?  no?
+
+arch/m68k/amiga/chipram.c:#ifndef CONFIG_APUS_FAST_EXCEPT
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
