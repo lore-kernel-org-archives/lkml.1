@@ -1,104 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXJXSKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbXJXSKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbXJXSKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 14:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbXJXSKF
+	id S1760657AbXJXSKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 14:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbXJXSKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 14:10:05 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41517 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755272AbXJXSKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 14:10:03 -0400
-Message-ID: <471F8A24.70907@oracle.com>
-Date: Wed, 24 Oct 2007 14:08:36 -0400
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Corporate Architecture team, Oracle USA
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Wed, 24 Oct 2007 14:10:10 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8034 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755616AbXJXSKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 14:10:07 -0400
+Date: Wed, 24 Oct 2007 20:10:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: John Stoffel <john@stoffel.org>
+Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: IDE crash...
+Message-ID: <20071024181002.GG14671@kernel.dk>
+References: <20071023070932.GB25962@kernel.dk> <20071023.001850.130236174.davem@davemloft.net> <20071023072359.GH25962@kernel.dk> <20071023.004321.74750417.davem@davemloft.net> <20071023074554.GA5059@kernel.dk> <18206.3808.849690.113159@stoffel.org> <20071024064859.GV14671@kernel.dk> <18207.29315.589451.547466@stoffel.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] NET: Make ts_recent_stamp unsigned
-References: <20071023154428.28115.10406.stgit@ingres.1015granger.net> <20071023.210006.28787642.davem@davemloft.net>
-In-Reply-To: <20071023.210006.28787642.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------030708090605070902070602"
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18207.29315.589451.547466@stoffel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030708090605070902070602
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-David Miller wrote:
-> From: Chuck Lever <chuck.lever@oracle.com>
-> Date: Tue, 23 Oct 2007 11:44:28 -0400
+On Wed, Oct 24 2007, John Stoffel wrote:
+> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
 > 
->> The get_seconds() function returns an unsigned long.  To prevent incorrect
->> comparison results between values saved in ts_recent_stamp and later
->> invocations of get_seconds(), change the type of ts_recent_stamp to match
->> the return type of get_seconds().
->>
->> Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
->> Cc: <netdev@vger.kernel.org>
+> Jens> On Tue, Oct 23 2007, John Stoffel wrote:
+> >> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
+> >> 
+> Jens> On Tue, Oct 23 2007, David Miller wrote:
+> >> >> From: Jens Axboe <jens.axboe@oracle.com>
+> >> >> Date: Tue, 23 Oct 2007 09:23:59 +0200
+> >> >> 
+> >> >> > On Tue, Oct 23 2007, David Miller wrote:
+> >> >> > > From: Jens Axboe <jens.axboe@oracle.com>
+> >> >> > > Date: Tue, 23 Oct 2007 09:09:33 +0200
+> >> >> > > 
+> >> >> > > > Eh this wont work, it's the wrong entry... Here's a temporary
+> >> >> > > > work-around.
+> >> >> > > > 
+> >> >> > > > diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+> >> >> > > > index c89f0d3..108202b 100644
+> >> >> > > > --- a/drivers/ide/ide-io.c
+> >> >> > > > +++ b/drivers/ide/ide-io.c
+> >> >> > > > @@ -822,6 +822,7 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
+> >> >> > > >  		return;
+> >> >> > > >  
+> >> >> > > >  	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+> >> >> > > > +		sg_init_table(hwif->sg_table, hwif->sg_max_nents);
+> >> >> > > >  		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+> >> >> > > >  	} else {
+> >> >> > > >  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+> >> >> > > 
+> >> >> > > That's the exact patch I'm about to boot test :-)
+> >> >> > 
+> >> >> > That should work - once you verify that, would you mind testing this one
+> >> >> > as well? Thanks!
+> >> >> 
+> >> >> This one works here too, thanks.
+> >> 
+> Jens> Great, thanks for testing that as well. Thinking a bit more
+> Jens> about it, I think the forced clear should stay in
+> Jens> blk_rq_map_sg() since we don't want to advertise it to
+> Jens> drivers. So I'll just open-code it in there.
+> >> 
+> >> Should there be more bounds checking here, so that if you try to do a
+> >> _force() you at least check to make sure that there's something beyond
+> >> there and useable on the list?  
+> >> 
+> >> We're saving the time from not reallocating from scratch, but let's
+> >> make it robust by doing at least some more checks here.
 > 
-> I see two potential problems with this patch:
+> Jens> We have to rely on the caller passing in an sgtable that is big enough
+> Jens> to map the request, we have always made that assumption. Anything else
+> Jens> would be a bug, of course. Now, catching that bug would indeed be nice.
+> Jens> Any suggestions?
 > 
-> 1) If you update struct tcp_options_received you should also
->    update struct tcp_timewait_sock similarly.
+> Poor mans slab poisoning maybe?  As Alan Cox was saying about keeping
+> it simple with a NULL entry on the end of the SG list, having an easy
+> way to not fall of the end seems key. 
 > 
->    The fact that you missed this suggests that you didn't
->    grep the tree to see how else this variable is used and
->    this makes me extra concerned about this patch's correctness.
-
-Perhaps the result of wishful thinking on my part.  I was hoping for a 
-small and self-contained change.
-
-> 2) There are computations in the TCP stack using this member that
->    probably care about the signedness, such as:
+> But from reading and re-reading the thread and some of the code, it
+> looks like this list is really allocated, then the driver can just
+> re-use the list (or a subset) as much as it likes without clearing and
+> then reallocating.
 > 
-> net/ipv4/tcp_ipv4.c:			     get_seconds() - tcptw->tw_ts_recent_stamp > 1))) {
-> include/net/tcp.h:	if (get_seconds() >= rx_opt->ts_recent_stamp + TCP_PAWS_24DAYS)
-> include/net/tcp.h:	if (get_seconds() >= rx_opt->ts_recent_stamp + TCP_PAWS_24DAYS)
-> 
->    We should make sure we understand what is expected here, and
->    why it would still be correct after making both ts_recent_stamp
->    members unsigned.
+> So if you've got a chain of 127 items, does it make sense when you
+> only use 16 of them to poison the next three or four in the chain to
+> really make sure you don't fall off the end?
 
-Agreed.
+Yes, that is indeed how most drivers work. It's both cheaper and faster
+to keep the list than allocating and initializing it every time. With
+the current termination bit approach, only that bits needs to be
+set/cleared to properly terminate the sgtable. So it's free, since it
+happens with setting page/length/offset.
 
-I wonder how one could construct a series of mixed case time stamp 
-comparisons *on purpose* (and without documentation of this assumption) 
-that produces consistently correct results.
+-- 
+Jens Axboe
 
- From the invocations of get_seconds() that I sampled, the design of 
-these comparisons seems to assume that both sides of the comparison are 
-non-negative.  However, they do not seem to account for time crossing zero.
-
---------------030708090605070902070602
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-begin:vcard
-fn:Chuck Lever
-n:Lever;Chuck
-org:Oracle Corporation;Corporate Architecture: Linux Projects Group
-adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
-email;internet:chuck dot lever at nospam oracle dot com
-title:Principal Member of Staff
-tel;work:+1 248 614 5091
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------030708090605070902070602--
