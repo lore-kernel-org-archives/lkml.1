@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbXJXFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbXJXF1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbXJXFZj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXJXFZV
+	id S1756325AbXJXF1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXJXF1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:25:21 -0400
-Received: from bromine.webpack.hosteurope.de ([217.115.142.123]:59892 "EHLO
-	bromine.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756109AbXJXFZS (ORCPT
+	Wed, 24 Oct 2007 01:27:22 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:2308 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753056AbXJXF1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:25:18 -0400
-X-Greylist: delayed 1917 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 01:25:18 EDT
-Date: Wed, 24 Oct 2007 06:53:12 +0200
-From: speedy <speedy@3d-io.com>
-X-Mailer: The Bat! (v3.80.06) Professional
-Reply-To: speedy <speedy@3d-io.com>
-X-Priority: 3 (Normal)
-Message-ID: <982792802.20071024065312@3d-io.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add eeprom_bad_csum_allow module option to e1000.
+	Wed, 24 Oct 2007 01:27:21 -0400
+Message-ID: <fa686aa40710232227x7984097bk8bc55fe6cf194d63@mail.gmail.com>
+Date: Tue, 23 Oct 2007 23:27:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH] mpc5200: psc-spi driver must not touch port_config or cdm registers
+Cc: "Dragos Carp" <dragos.carp@toptica.com>, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071024050100.GA3369@nd47.coderock.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;speedy@3d-io.com;1193203518;a1a5594f;
+Content-Disposition: inline
+References: <20071024033457.8657.8708.stgit@trillian.cg.shawcable.net>
+	 <20071024050100.GA3369@nd47.coderock.org>
+X-Google-Sender-Auth: 3383967f098a4a3a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Auke, Kernel crew,
+On 10/23/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> On 23/10/07 21:39 -0600, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > port_config and the cdm are the responsibility of firmware; and if
+> > firmware doesn't set it up correctly, it should be fixed up by
+> > platform code on a per-board basis because it's a property of the
+> > board.
+> >
+> > Drivers should never touch these registers.  They are completely
+> > unprotected and the platform may do odd things with them that the
+> > driver must not interfere with.
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> > Domen, Dragos; can you please check your usage of this driver.  None of
+> > the in-tree board ports use it as-is, but they are of course just a
+> > device tree change away from being usable on the lite5200b.
+>
+> My test cases were just a jumper on RX-TX line.
+>
+> It's not even allowed to set mclken_div_pscX?
+> There can be different speed devices on same SPI
+> (spi_board_info->max_speed_hz).
 
-> I realize that you need the patch to actually create it but the
-> danger is that people will start using it *without* troubleshooting the real
-> issue.  
+Nope; do it in the platform code or a cdm driver.  Otherwise there is
+no protection against collisions on the cdm registers.  The driver
+could call a platform hook to fiddle with clocking, but it must not
+touch it directly.
 
-Just write out a big fat kernel output with explanations of
-the override parameter, possible repercusionss of not fixing it
-and an email address to which you (or, better yet - Intel) want
-stuff "this and that" reported.
+(BTW, I don't intended to push this version of the patch; I just want
+to get everyone's brain juices flowing to figure out the best way to
+solve it.)
 
-I hadn't the slightest idea from the kernel messages or the skim of
-the driver source that anyone is wanting feedback on this issue...
-
-ps. Were there recently (2.6.22+) any known issues about e1000 refusing
-to send packets out / getting stuck upon jumbo-frames being enabled?
-
-ps2. I'm not following this list, sorry about the poor thread CC:
-quality
-
+Cheers,
+g.
 
 -- 
-Best regards,
- speedy                          mailto:speedy@3d-io.com
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
