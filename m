@@ -1,116 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXJXCZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbXJXC2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXJXCZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 22:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXJXCZo
+	id S1755452AbXJXC2r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 22:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXJXC2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 22:25:44 -0400
-Received: from mail.suse.de ([195.135.220.2]:51028 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbXJXCZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 22:25:43 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: linux-kernel@vger.kernel.org
-Subject: nmi loop in 2.6.23-g0895e91d with nmi watchdog = 1
-Date: Wed, 24 Oct 2007 04:25:35 +0200
-User-Agent: KMail/1.9.6
+	Tue, 23 Oct 2007 22:28:40 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34067 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925AbXJXC2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 22:28:39 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=VGpUWUEBCr4rhV7hH4p//egaWZWBtrgsE2OlzhtfEy0YNM0lh6gNVr1m5MjlKzE8j
+	O0i4R/FoABRtK61Kfs6DA==
+Message-ID: <6599ad830710231928n65a80021w582a07b5993377f8@mail.gmail.com>
+Date: Tue, 23 Oct 2007 19:28:22 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] CFS CGroup: Report usage
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071023173837.GG4667@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710240425.35427.ak@suse.de>
+References: <471D4523.4040509@google.com>
+	 <20071023164704.GE4667@linux.vnet.ibm.com>
+	 <6599ad830710230941y5d175688ob3a4d9ac42ba8c8f@mail.gmail.com>
+	 <20071023173837.GG4667@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/23/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> > Suppose you have two cgroups that would each want to use, say, 55% of
+> > a CPU - technically they should each be regarded as having 45% idle
+> > time, but if they run on a the same CPU the chances are that they will
+> > both always have some processes on their runqueue due to contention
+> > with the other group. So how would you measure the difference between
+> > this and a cgroup that really is trying to use 100%?
+>
+> Good point. I think we need to subtract out the time it was waiting on runqueue
+> when calculating idle time.
+>
+>         |------- . . . . . . ---------zzzzzzzzzzzz.......-----------|
+>         t0     t1            t2       t3         t4     t5          t6
+>
+>
+>         ----    -> Running time
+>         ....    -> Waiting time (to get on the cpu)
+>         zzzz    -> Sleeping time (when it didnt want to run because of
+>                    lack of tasks)
+>
+> So, in this case,
+>
+>         idle time = (t4 - t3) / [ (t6 - t1) - (t2-t1) - (t5-t4)
+>
 
-FYI -- i had an unknown NMI loop once while booting a recent git kernel on a core2
-system with nmi_watchdog=1. Unfortunately I couldn't reproduce it later;
-so it's likely some race.
+Do you mean (t6 - t0) where you have (t6 - t1)?
 
-This is the first time this happened so I presume it's a new problem.
+> ?
+>
+> This idle time will be a per-cpu stat for every cgroup and needs to be
+> consolidated across cpus into a single idle-stat number, just like how
+> top does it.
 
--Andi
+This would be an idle fraction, not an idle time. (seconds divided by seconds)
 
-Console: colour VGA+ 80x60
-console [tty0] enabled
-Linux version 2.6.23-g0895e91d (andi@basil) (gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)) #2 SMP Tue Oct 23 22:51:10 CEST 2007
-Command line: ip=dhcp nfsroot=xxxx:/home/nfsroot/gaston root=/dev/nfs debug vga=0x0f07 rw pci=noacpi earlyprintk=serial,ttyS0,115200 kst
-ack=512 console=tty0 console=ttyS0,115200 earlyprintk=serial,ttyS0,115200 nmi_watchdog=1 BOOT_IMAGE=bzImage 
-BIOS-provided physical RAM map:
-...
-ACPI: PM-Timer IO Port: 0x408
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-Processor #0 (Bootup-CPU)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-Processor #1
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
-ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
-ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
-ACPI: HPET id: 0x8086a201 base: 0xfed00000
-Using ACPI for processor (LAPIC) configuration information
-Intel MultiProcessor Specification v1.4
-MPTABLE: OEM ID:  MPTABLE: Product ID:  MPTABLE: APIC at: 0xFEE00000
-Setting APIC routing to flat
-BIOS bug, no explicit IRQ entries, using default mptable. (tell your hw vendor)
-Processors: 2
-...
-Memory: 2034512k/2071552k available (3433k kernel code, 35572k reserved, 1958k data, 332k init)
-Calibrating delay using timer specific routine.. 4803.42 BogoMIPS (lpj=9606841)
-Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-Mount-cache hash table entries: 256
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-CPU 0/0 -> Node 0
-using mwait in idle threads.
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU0: Thermal monitoring enabled (TM2)
-SMP alternatives: switching to UP code
-ACPI: Core revision 20070126
-Using local APIC timer interrupts.
-APIC timer calibration result 16667236
-Detected 16.667 MHz APIC timer.
-APIC timer registered as dummy, due to nmi_watchdog=1!
-SMP alternatives: switching to SMP code
-Booting processor 1/2 APIC 0x1
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4800.16 BogoMIPS (lpj=9600338)
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-CPU 1/1 -> Node 0
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU1: Thermal monitoring enabled (TM2)
-Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
-testing NMI watchdog ... CPU#0: NMI appears to be stuck (0->0)!
-OK.
-net_namespace: 120 bytes
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: BIOS Bug: MCFG area at f0000000 is not E820-reserved
-PCI: Not using MMCONFIG.
-PCI: Using configuration type 1
-ACPI: EC: Look up EC in DSDT
-ACPI: Interpreter enabled
-Uhhuh. NMI received for unknown reason 2d.
-Do you have a strange power saving mode enabled?
-Dazed and confused, but trying to continue
-Uhhuh. NMI received for unknown reason 3d.
-Do you have a strange power saving mode enabled?
-Dazed and confused, but trying to continue
-Uhhuh. NMI received for unknown reason 3d.
-Do you have a strange power saving mode enabled?
-Dazed and confused, but trying to continue
-Uhhuh. NMI received for unknown reason 2d.
-Do you have a strange power saving mode enabled?
-Dazed and confused, but trying to continue
-... messages continue forever ...
+It doesn't seem quite right to me that a cgroup's idle time metric be
+affected by the activity of other cgroups on the machine, but it's
+hard to come up with a way of measuring it that doesn't have this
+behaviour - which is why, in the absence of hard CPU partitioning,
+it's not clear to me how much use this would be.
 
--Andi
+What would people be planning to use it for?
+
+Paul
