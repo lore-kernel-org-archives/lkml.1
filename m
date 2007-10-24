@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763604AbXJXQv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbXJXQwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763604AbXJXQv4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 12:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761808AbXJXQcd
+	id S1760887AbXJXQwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 12:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760268AbXJXQfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 12:32:33 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:36554 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761793AbXJXQcc (ORCPT
+	Wed, 24 Oct 2007 12:35:23 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37384 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761259AbXJXQfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 12:32:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=B17+oJIPUnh1yGQ29jvgLRJiqaYQOeS4M7dn73w+wnBKUsHweZ7g8DQN80Oesl1IF
-	ESA0B06KfYip65/RUGK+g==
-Message-ID: <6599ad830710240932s57656f04y2d753453ce590707@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:32:26 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] kernel/cgroup.c: make 2 functions static
-Cc: "Paul Jackson" <pj@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071024162339.GT30533@stusta.de>
+	Wed, 24 Oct 2007 12:35:21 -0400
+Date: Wed, 24 Oct 2007 12:35:20 -0400
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Rajkumar S <rajkumars@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: HIGHMEM64G Kernel (2.6.23.1) makes system crawl
+Message-ID: <20071024163520.GM4003@csclub.uwaterloo.ca>
+References: <64de5c8b0710240326q709ca7fbq4b365bcaf6e89fb9@mail.gmail.com> <471F598C.5030903@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071024162339.GT30533@stusta.de>
+In-Reply-To: <471F598C.5030903@panasas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/07, Adrian Bunk <bunk@kernel.org> wrote:
-> cgroup_is_releasable() and notify_on_release() should be static,
-> not global inline.
->
+On Wed, Oct 24, 2007 at 04:41:16PM +0200, Boaz Harrosh wrote:
+> I thought that for 4GB of memory the CONFIG_HIGHMEM4G=y CONFIG_HIGHMEM64G is not set
+> would be enough.
+> 
+> From looking in source code the CONFIG_HIGHMEM64G is broken in many respects,
+> in my opinion. It's really a 64-bit with 32-bit quirks enabled. Does it even
+> run on None 64-bit machines? Not many! 
+> 
+> You have a magnificent 64-bit Machine, why?
 
-They seem like they could be usefully static inline - or will the
-compiler inline them anyway since they're simple enough?
+CONFIG_HIGHMEM4G means 4GB address space.  Since PCI and BIOS use some
+of the first 4GB address space, a machine with 4GB of actual RAM must
+map some of that RAM above the 4GB address space, so you access it all
+you need to enable PAE (address space extensions intel invented to give
+36bit addressing on 32bit machines), which lets the OS map memory above
+4GB (up to 64GB), to let applications use it.  Applications are still
+limited to a 32bit address space.  64bit machines of course just use all
+memory directly without any silly extensions.
 
-Paul
+The common intel BIOS bug relating to configuring the MTRR and such for
+caching of memory makes the top portion of memory uncached and hence
+very slow, which means any code placed in the top part of memory gets
+slow.  The kernel likes to place itself at the top of memory which means
+the kernel gets slow and hence the whole system gets slow.  Holefully
+intel will learn to make proper BIOSes real soon so that people with
+intel boards can stop having such slow machines when they have lots of
+ram.
+
+--
+Len Sorensen
