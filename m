@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXJXLRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbXJXLWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757227AbXJXLRo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 07:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXJXLRg
+	id S1756447AbXJXLWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 07:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXJXLWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 07:17:36 -0400
-Received: from spiffy.freedom.ind.br ([201.35.65.91]:53701 "EHLO
-	freedom.ind.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751124AbXJXLRf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 07:17:35 -0400
-X-Greylist: delayed 1811 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 07:17:35 EDT
-To: Chris Holvenstot <cholvenstot@comcast.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Build Failure with 2.6.24-rc1
-References: <1193221627.5685.2.camel@localhost>
-From: Otavio Salvador <otavio@debian.org>
-Organization: O.S. Systems Ltda.
-X-URL: http://www.debian.org/~otavio/
-X-Attribution: O.S.
-Date: Wed, 24 Oct 2007 08:47:34 -0200
-In-Reply-To: <1193221627.5685.2.camel@localhost> (Chris Holvenstot's message of "Wed\, 24 Oct 2007 05\:27\:07 -0500")
-Message-ID: <87d4v4ssah.fsf@lab.ossystems.com.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Oct 2007 07:22:43 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:62978 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752624AbXJXLWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 07:22:43 -0400
+Date: Wed, 24 Oct 2007 13:22:20 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.no>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [GIT PATCH] Fix asm-avr32/dma-mapping.h breakage
+Message-ID: <20071024132220.14070582@dhcp-255-175.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Holvenstot <cholvenstot@comcast.net> writes:
+Hi Linus,
 
-> When attempting to build the 2.6.24-rc1 kernel:
->
->
-> arch/x86/kernel/built-in.o: In function `smp_send_nmi_allbutself':
-> /build/linux/arch/x86/kernel/crash.c:85: undefined reference to
-> `genapic'
-> make: *** [.tmp_vmlinux1] Error 1
+Sorry about sending you pull requests so rapidly, but Jens broke my
+dma-mapping.h yesterday. Or you may say the bug was there to begin with
+and Jens merely exposed it, but that makes it sound like my fault ;-)
 
-Use the patch that Ingo sent on Message-ID: <20071024072322.GA2907@elte.hu>
+Anyway, please pull from
 
--- 
-        O T A V I O    S A L V A D O R
----------------------------------------------
- E-mail: otavio@debian.org      UIN: 5906116
- GNU/Linux User: 239058     GPG ID: 49A5F855
- Home Page: http://otavio.ossystems.com.br
----------------------------------------------
-"Microsoft sells you Windows ... Linux gives
- you the whole house."
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
+
+to receive the following update.
+
+Haavard Skinnemoen (1):
+      AVR32: Fix sg_page breakage
+
+ include/asm-avr32/dma-mapping.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-avr32/dma-mapping.h b/include/asm-avr32/dma-mapping.h
+index a713163..57dc672 100644
+--- a/include/asm-avr32/dma-mapping.h
++++ b/include/asm-avr32/dma-mapping.h
+@@ -3,7 +3,7 @@
+ 
+ #include <linux/mm.h>
+ #include <linux/device.h>
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <asm/processor.h>
+ #include <asm/cacheflush.h>
+ #include <asm/io.h>
