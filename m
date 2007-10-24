@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbXJXDby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXJXDc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbXJXDby (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 23:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXJXDbn
+	id S1755378AbXJXDc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 23:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXJXDcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 23:31:43 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:33207 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbXJXDbm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 23:31:42 -0400
-Message-ID: <471EBC02.5000907@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2007 08:59:06 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 23 Oct 2007 23:32:18 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45940 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753670AbXJXDcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 23:32:17 -0400
+Date: Wed, 24 Oct 2007 09:01:47 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/13] Use struct path in struct nameidata
+Message-ID: <20071024033147.GA6355@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20071022065352.GA6489@in.ibm.com> <20071022135758.GA17051@lst.de> <20071023023355.GA7829@in.ibm.com> <20071023084305.GJ17591@hasse.suse.de>
 MIME-Version: 1.0
-To: linux390@de.ibm.com
-CC: linux-s390@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: [BUG] 2.6.23-git19 - S390x: Kernel panic while bringing up the network
- interface
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071023084305.GJ17591@hasse.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Oct 23, 2007 at 10:43:05AM +0200, Jan Blunck wrote:
+> 
+> The thing is: how do we keep going from here? Do you want to send my patches
+> in the future or are you going to ask me before sending things out? We don't
+> need to duplicate the work here. I already put my quilt stack into a public
+> place for you to work on them but I don't like the way this is going on at the
+> moment.
 
-Kernel panic's while bringing up the network interface with the 2.6.23-git19
+My intention was to help speed up the Union Mount effort by ensuring
+that patches don't rot waiting for developer's attention. Going by the
+past interactions, I got a feeling that you have lot of other work
+besides this, while I have time to spare on this. Hence wanted to do my
+bit to get patches moving as quickly as possible.
 
-Setting network parameters:  Ý  OK  ¨
-Bringing up loopback interface:  Ý  OK  ¨
-Bringing up interface eth0:
- Ý<00000000002e2f72>¨ inet_ioctl+0xd6/0x110
- Ý<000000000027cae2>¨ sock_ioctl+0x26e/0x2a0
- Ý<00000000000b4c52>¨ do_ioctl+0x4a/0xac
- Ý<00000000000b5076>¨ vfs_ioctl+0x3c2/0x3d8
- Ý<00000000000b50ec>¨ sys_ioctl+0x60/0x88
- Ý<0000000000021b7e>¨ sysc_noemu+0x10/0x16
- Ý<00000200001201ca>¨ 0x200001201ca
+As I have conveyed to you many times, I would still like you to maintain
+the patches and send out as timely as possible on lkml. If you can't do
+this because of your other commitments, then I would more than willing
+to maintain these and give them maximum attention.
 
- <0>Kernel panic - not syncing: Fatal exception in interrupt
-00: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
- CPU 01.
-02: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
- CPU 01.
-03: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
- CPU 01.
-01: HCPGIR450W CP entered; disabled wait PSW 00020001 80000000 00000000 000164DE
+And thanks for making available the patches publicly, I have been asking
+this for months now.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Regards,
+Bharata.
