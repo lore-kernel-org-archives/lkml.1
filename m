@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbXJXDPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXJXDR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbXJXDPt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Oct 2007 23:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbXJXDPl
+	id S1754569AbXJXDR5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Oct 2007 23:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXJXDRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Oct 2007 23:15:41 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:64480 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbXJXDPk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Oct 2007 23:15:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=gKz3ER+UcP2rRKNSsy0qvxJJcYG0b2udKmbe6I7r7rRQ94HJ2BdlXjfza7unRA3p+QQMKttr9ZxryLe1MJLU01ZCmICXIKDVIncUhGg2lUQlDsSgKlMlMw3Xt4FWP4WX/i4souMXwXFKeErjfjJSRdi4xIMzB0fomVZbUbQCVSc=
-Date: Wed, 24 Oct 2007 11:14:19 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: bluez-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] bluetooth: hidp_process_hid_control remove unnecessary parameter dealing
-Message-ID: <20071024031419.GA7409@darkstar.te-china.tietoenator.com>
+	Tue, 23 Oct 2007 23:17:50 -0400
+Received: from animx.eu.org ([216.98.75.249]:38699 "EHLO animx.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbXJXDRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Oct 2007 23:17:49 -0400
+Date: Tue, 23 Oct 2007 23:17:39 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How do I get my aic94xx to see sata drives?
+Message-ID: <20071024031739.GA6546@animx.eu.org>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org
+References: <20071024022124.GA6226@animx.eu.org> <471EB085.5080604@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <471EB085.5080604@garzik.org>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to the bluetooth HID spec v1.0 chapter 7.4.2
+Jeff Garzik wrote:
+> Wakko Warner wrote:
+> >Please CC me.
+> 
+> Please don't use
+> 
+> 	Mail-Followup-To: linux-kernel@vger.kernel.org
+> 
+> in your emails then :)
 
-"This code requests a major state change in a BT-HID device. A HID_CONTROL request does not generate a HANDSHAKE response."
+I'm not sending out that header.  Maybe I should with my address?
 
-"A HID_CONTROL packet with a parameter of VIRTUAL_CABLE_UNPLUG is the only HID_CONTROL packet a device can send to a host. A host will ignore all other packets."
+> >I've looked around and the only thing I can find was a git repository for
+> >it.  I don't know anything about git.  I just want to get the driver so I
+> >can use the sata drives I have on this controller.
+> >
+> >I'm currently using 2.6.22.
+> 
+> hum, it should be working in 2.6.22.  There were some minor fixes and 
+> changes in 2.6.23 that you might want to try, but overall, we are 
+> interested in your bug report.
 
-So in the hidp_precess_hid_control function, we just need to deal with the UNLUG packet.
+Dmesg says:
+[  335.120000] aic94xx: Adaptec aic94xx SAS/SATA driver version 1.0.3 loaded
+[  335.120000] ACPI: PCI Interrupt 0000:07:02.0[A] -> GSI 30 (level, low) ->
+IRQ 20
+[  335.120000] aic94xx: found Adaptec AIC-9410W SAS/SATA Host Adapter,
+device 0000:07:02.0
+[  335.120000] scsi12 : aic94xx
+[  337.748000] aic94xx: Found sequencer Firmware version 1.1 (V17/10c6)
+[  337.792000] aic94xx: device 0000:07:02.0: SAS addr 5003048000509c60, PCBA
+SN ORG, 8 phys, 8 enabled phys, flash present, BIOS build 1822
+[  337.836000] ERROR: Unidentified device type 5
+[  337.836000] ERROR: Unidentified device type 5
+[  337.836000] ERROR: Unidentified device type 5
+[  337.836000] ERROR: Unidentified device type 5
+[  337.836000] ERROR: Unidentified device type 5
+[  337.836000] ERROR: Unidentified device type 5
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+I currently have 6 sata devices attached to ports 0-2 and 4-6.  The
+controller's bios sees them properly.  libata is also loaded.
 
----
-net/bluetooth/hidp/core.c |   19 +------------------
-1 file changed, 1 insertion(+), 18 deletions(-)
+I'll give 2.6.23 a try tomorrow, I didn't realise it was available already.
 
-diff -upr linux/net/bluetooth/hidp/core.c linux.new/net/bluetooth/hidp/core.c
---- linux/net/bluetooth/hidp/core.c	2007-10-15 14:05:23.000000000 +0800
-+++ linux.new/net/bluetooth/hidp/core.c	2007-10-24 11:01:07.000000000 +0800
-@@ -369,30 +369,13 @@ static inline void hidp_process_hid_cont
- {
- 	BT_DBG("session %p param 0x%02x", session, param);
- 
--	switch (param) {
--	case HIDP_CTRL_NOP:
--		break;
--
--	case HIDP_CTRL_VIRTUAL_CABLE_UNPLUG:
-+	if (param == HIDP_CTRL_VIRTUAL_CABLE_UNPLUG) {
- 		/* Flush the transmit queues */
- 		skb_queue_purge(&session->ctrl_transmit);
- 		skb_queue_purge(&session->intr_transmit);
- 
- 		/* Kill session thread */
- 		atomic_inc(&session->terminate);
--		break;
--
--	case HIDP_CTRL_HARD_RESET:
--	case HIDP_CTRL_SOFT_RESET:
--	case HIDP_CTRL_SUSPEND:
--	case HIDP_CTRL_EXIT_SUSPEND:
--		/* FIXME: We have to parse these and return no error */
--		break;
--
--	default:
--		__hidp_send_ctrl_message(session,
--			HIDP_TRANS_HANDSHAKE | HIDP_HSHK_ERR_INVALID_PARAMETER, NULL, 0);
--		break;
- 	}
- }
- 
+-- 
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
