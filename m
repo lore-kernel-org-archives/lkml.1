@@ -1,100 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbXJXFF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbXJXFGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbXJXFF3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXJXFFW
+	id S1756221AbXJXFGs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXJXFGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 01:05:22 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55566 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXJXFFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 01:05:21 -0400
-In-Reply-To: <1193188894.27073.20.camel@heimdal.trondhjem.org>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
-       chuck.lever@oracle.com
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: LTP ustat01 test fails on NFSROOT
-Date: Wed, 24 Oct 2007 00:05:32 -0500
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 24 Oct 2007 01:06:37 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:35292 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753724AbXJXFGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:06:35 -0400
+Date: Wed, 24 Oct 2007 07:06:33 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux390@de.ibm.com, linux-s390@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.23-git19 - S390x: Kernel panic while bringing up the
+	network interface
+Message-ID: <20071024050633.GA12335@osiris.boeblingen.de.ibm.com>
+References: <471EBC02.5000907@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <471EBC02.5000907@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 24, 2007 at 08:59:06AM +0530, Kamalesh Babulal wrote:
+> Hi,
+> 
+> Kernel panic's while bringing up the network interface with the 2.6.23-git19
+> 
+> Setting network parameters:  Ý  OK  ¨
+> Bringing up loopback interface:  Ý  OK  ¨
+> Bringing up interface eth0:
+>  Ý<00000000002e2f72>¨ inet_ioctl+0xd6/0x110
+>  Ý<000000000027cae2>¨ sock_ioctl+0x26e/0x2a0
+>  Ý<00000000000b4c52>¨ do_ioctl+0x4a/0xac
+>  Ý<00000000000b5076>¨ vfs_ioctl+0x3c2/0x3d8
+>  Ý<00000000000b50ec>¨ sys_ioctl+0x60/0x88
+>  Ý<0000000000021b7e>¨ sysc_noemu+0x10/0x16
+>  Ý<00000200001201ca>¨ 0x200001201ca
+> 
+>  <0>Kernel panic - not syncing: Fatal exception in interrupt
+> 00: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
+>  CPU 01.
+> 02: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
+>  CPU 01.
+> 03: HCPGSP2629I The virtual machine is placed in CP mode due to a SIGP stop from
+>  CPU 01.
+> 01: HCPGIR450W CP entered; disabled wait PSW 00020001 80000000 00000000 000164DE
 
-On Oct 23, 2007, at 8:21 PM, Trond Myklebust wrote:
+That should be fixed with this one:
 
->
-> On Tue, 2007-10-23 at 17:52 -0500, Kumar Gala wrote:
->> I'm looking into an issue with LTP's ustat01 & ustat02 tests in which
->> they report the following:
->>
->> ustat01     1  FAIL  :  ustat(2) failed and setthe errno to 116 :
->> Stale NFS file handle
->> ustat02     2  FAIL  :  ustat(2) failed to produce expected error;
->> 14, errno: EFAULT and got 116
->>
->> It appears sometime between 2.6.21 and 2.6.22-rc1 some changes to NFS
->> got introduced that cause this.
->>
->> was wondering about any ideas while I try to debug what's going on.
->>
->> thanks
->>
->> - k
->
-> I'm seeing zero problems with the latest checkouts from Linus' git  
-> tree.
-> Mind giving us some more details?
+commit f1ecfd5d3b69d98b814435758c485e6fd0e112de
+Author: Ursula Braun <braunu@de.ibm.com>
+Date:   Mon Oct 22 16:16:14 2007 +0200
 
-I tried 2.6.24-rc1 w/the same result.
+    remove header_ops bug in qeth driver
+    
+    Remove qeth bug caused by commit:
+    [NET]: Move hardware header operations out of netdevice.
+    
+    This is the second part of the qeth header_ops patch, since
+    first patch sent 10/19 has been insufficient.
+    Nevertheless first patch is still valid and should be kept.
+    
+    Signed-off-by: Ursula Braun <braunu@de.ibm.com>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-The system is a 32-bit PPC embedded board that we mounting the rootfs  
-over nfs on.
-
-The defconfig is arch/powerpc/configs/mpc8641_hpcn_defconfig
-
-> 'strace' output would be useful, as would the standard NFS list of
-> client mount options, server export options, details on how your
-> exported partition is set up on the server, etc...
-
-strace:
-
-stat64("/", {st_dev=makedev(0, 14), st_ino=58821800, st_mode=S_IFDIR| 
-0775, st_nlink=18, st_uid=500, st_gid=500, st_blksize=4096,  
-st_blocks=8, st_size=4096, st_atime=2007/10/23-22:43:30,  
-st_mtime=2007/10/18-19:51:19, st_ctime=2007/10/18-19:51:19}) = 0
-ustat(0xe, 0x1001a008)                  = -1 ESTALE (Stale NFS file  
-handle)
-fstat64(1, {st_dev=makedev(0, 14), st_ino=58821964, st_mode=S_IFCHR| 
-0600, st_nlink=1, st_uid=0, st_gid=0, st_blksize=4096, st_blocks=0,  
-st_rdev=makedev(4, 64), st_atime=2007/10/16-18:32:59,  
-st_mtime=2007/10/16-18:32:59, st_ctime=2007/10/24-05:03:34}) = 0
-
-
-Info on the server:
-
-[root@ducky ~]# exportfs -v
-/               <world>(rw,async,wdelay,no_root_squash,no_subtree_check)
-[root@ducky ~]# uname -a
-Linux ducky.am.freescale.net 2.6.22.5-76.fc7 #1 SMP Thu Aug 30  
-13:04:34 EDT 2007 ppc64 ppc64 ppc64 GNU/Linux
-
-On the host system:
-
-(not sure how to get client mount options, mount reports:
-
-%root% on / type unknown (rw)
-
--sh-2.05b# cat /proc/cmdline
-root=/dev/nfs rw nfsroot=192.168.1.15:/home/galak/ltib-joust-8572/ 
-rootfs  
-ip=192.168.1.147:192.168.1.15:192.168.1.1:255.255.254.0:rocky:eth0:off c 
-onsole=ttyS0,115200
-
-If there is some other info that would be useful please let me know.
+Patch is in -rc1. Could you please pull and try again? Thanks.
