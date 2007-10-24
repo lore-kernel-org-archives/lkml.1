@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbXJXHR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbXJXHVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbXJXHR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 03:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbXJXHRs
+	id S1753339AbXJXHVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 03:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXJXHVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 03:17:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46988 "EHLO mx2.mail.elte.hu"
+	Wed, 24 Oct 2007 03:21:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:39635 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbXJXHRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 03:17:48 -0400
-Date: Wed, 24 Oct 2007 09:17:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patchlet] Re: [Git pull] x86 updates
-Message-ID: <20071024071733.GA614@elte.hu>
-References: <alpine.LFD.0.9999.0710232258190.5181@localhost.localdomain> <1193200355.7166.7.camel@Homer.simpson.net> <20071024070217.GA28160@elte.hu>
+	id S1751247AbXJXHVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 03:21:02 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: ego@in.ibm.com
+Subject: Re: [RFC PATCH 4/5] Remove CPU_DEAD/CPU_UP_CANCELLED handling from workqueue.c
+Date: Wed, 24 Oct 2007 17:21:04 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+References: <20071024052931.GA22722@in.ibm.com> <20071024053716.GD27074@in.ibm.com>
+In-Reply-To: <20071024053716.GD27074@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071024070217.GA28160@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200710241721.05163.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 24 October 2007 15:37:16 Gautham R Shenoy wrote:
+> @@ -712,7 +712,7 @@ static void start_workqueue_thread(struc
+>
+>  	if (p != NULL) {
+>  		if (cpu >= 0)
+> -			kthread_bind(p, cpu);
+> +			set_cpus_allowed(p, cpumask_of_cpu(cpu));
+>  		wake_up_process(p);
+>  	}
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi Gautham!
 
-> > X86_32 build fix to commit 62a31a03b3d2a9d20e7a073e2cd9b27bfb7d6a3f
-> > 
-> > Signed-off-by: Mike Galbraith <efault@gmx.de>
-> 
-> thanks - this is needed for CONFIG_KEXEC builds. Added to the queue.
+	This works, although the change is unnecessary.  If you're going to
+do this I'd prefer "if (set_cpus_allowed(p, cpumask_of_cpu(cpu)) != 0) 
+BUG();".
 
-hm, CONFIG_KEXEC builds fine even on 32-bit here - so it must be a 
-certain combination of .config that triggers this. Could you send me 
-your .config?
-
-	Ingo
+Cheers,
+Rusty.
