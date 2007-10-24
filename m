@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXJXFAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbXJXFF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbXJXFAP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 01:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbXJXE76
+	id S1756089AbXJXFF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 01:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXJXFFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 00:59:58 -0400
-Received: from mms2.broadcom.com ([216.31.210.18]:1538 "EHLO mms2.broadcom.com"
+	Wed, 24 Oct 2007 01:05:22 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55566 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754124AbXJXE75 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 00:59:57 -0400
-X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: Re: [PATCH 3/4]: [PCI]: Add quirk for devices which disable MSI
- when INTX_DISABLE is set.
-Date: Tue, 23 Oct 2007 21:59:39 -0700
-Message-ID: <1551EAE59135BE47B544934E30FC4FC002AABB0A@nt-irva-0751.brcm.ad.broadcom.com>
-In-Reply-To: <20071023.195310.131105752.davem@davemloft.net>
-Thread-Topic: [PATCH 3/4]: [PCI]: Add quirk for devices which disable
- MSI when INTX_DISABLE is set.
-Thread-Index: AcgV6Pjmaoan4M4hQhGGBTHR4MB4zAAESeXg
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
-       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com
-X-WSS-ID: 6B000EB72FS7169150-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+	id S1750747AbXJXFFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 01:05:21 -0400
+In-Reply-To: <1193188894.27073.20.camel@heimdal.trondhjem.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       chuck.lever@oracle.com
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: LTP ustat01 test fails on NFSROOT
+Date: Wed, 24 Oct 2007 00:05:32 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
 
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
-> +			PCI_DEVICE_ID_TIGON3_5780,
-> +			quirk_msi_intx_disable_bug);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
-> +			PCI_DEVICE_ID_TIGON3_5780S,
-> +			quirk_msi_intx_disable_bug);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
-> +			PCI_DEVICE_ID_TIGON3_5714,
-> +			quirk_msi_intx_disable_bug);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
-> +			PCI_DEVICE_ID_TIGON3_5714S,
-> +			quirk_msi_intx_disable_bug);
-> +
+On Oct 23, 2007, at 8:21 PM, Trond Myklebust wrote:
 
-Please add PCI_DEVICE_ID_TIGON3_5715 and
-PCI_DEVICE_ID_TIGON3_5715S as well.
+>
+> On Tue, 2007-10-23 at 17:52 -0500, Kumar Gala wrote:
+>> I'm looking into an issue with LTP's ustat01 & ustat02 tests in which
+>> they report the following:
+>>
+>> ustat01     1  FAIL  :  ustat(2) failed and setthe errno to 116 :
+>> Stale NFS file handle
+>> ustat02     2  FAIL  :  ustat(2) failed to produce expected error;
+>> 14, errno: EFAULT and got 116
+>>
+>> It appears sometime between 2.6.21 and 2.6.22-rc1 some changes to NFS
+>> got introduced that cause this.
+>>
+>> was wondering about any ideas while I try to debug what's going on.
+>>
+>> thanks
+>>
+>> - k
+>
+> I'm seeing zero problems with the latest checkouts from Linus' git  
+> tree.
+> Mind giving us some more details?
 
-Other than that,
-Acked-by: Michael Chan <mchan@broadcom.com>
+I tried 2.6.24-rc1 w/the same result.
 
+The system is a 32-bit PPC embedded board that we mounting the rootfs  
+over nfs on.
+
+The defconfig is arch/powerpc/configs/mpc8641_hpcn_defconfig
+
+> 'strace' output would be useful, as would the standard NFS list of
+> client mount options, server export options, details on how your
+> exported partition is set up on the server, etc...
+
+strace:
+
+stat64("/", {st_dev=makedev(0, 14), st_ino=58821800, st_mode=S_IFDIR| 
+0775, st_nlink=18, st_uid=500, st_gid=500, st_blksize=4096,  
+st_blocks=8, st_size=4096, st_atime=2007/10/23-22:43:30,  
+st_mtime=2007/10/18-19:51:19, st_ctime=2007/10/18-19:51:19}) = 0
+ustat(0xe, 0x1001a008)                  = -1 ESTALE (Stale NFS file  
+handle)
+fstat64(1, {st_dev=makedev(0, 14), st_ino=58821964, st_mode=S_IFCHR| 
+0600, st_nlink=1, st_uid=0, st_gid=0, st_blksize=4096, st_blocks=0,  
+st_rdev=makedev(4, 64), st_atime=2007/10/16-18:32:59,  
+st_mtime=2007/10/16-18:32:59, st_ctime=2007/10/24-05:03:34}) = 0
+
+
+Info on the server:
+
+[root@ducky ~]# exportfs -v
+/               <world>(rw,async,wdelay,no_root_squash,no_subtree_check)
+[root@ducky ~]# uname -a
+Linux ducky.am.freescale.net 2.6.22.5-76.fc7 #1 SMP Thu Aug 30  
+13:04:34 EDT 2007 ppc64 ppc64 ppc64 GNU/Linux
+
+On the host system:
+
+(not sure how to get client mount options, mount reports:
+
+%root% on / type unknown (rw)
+
+-sh-2.05b# cat /proc/cmdline
+root=/dev/nfs rw nfsroot=192.168.1.15:/home/galak/ltib-joust-8572/ 
+rootfs  
+ip=192.168.1.147:192.168.1.15:192.168.1.1:255.255.254.0:rocky:eth0:off c 
+onsole=ttyS0,115200
+
+If there is some other info that would be useful please let me know.
