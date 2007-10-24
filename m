@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbXJXVGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXJXVIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbXJXVGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 17:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbXJXVG2
+	id S1758166AbXJXVIj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 17:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXJXVIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 17:06:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43475 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754115AbXJXVG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 17:06:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
+	Wed, 24 Oct 2007 17:08:32 -0400
+Received: from outbound-mail-63.bluehost.com ([69.89.21.23]:56992 "HELO
+	outbound-mail-63.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752590AbXJXVIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 17:08:31 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Adrian Bunk <bunk@kernel.org>
 Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-Date: Wed, 24 Oct 2007 23:22:35 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200710181401.50470.jbarnes@virtuousgeek.org> <20071024133514.GB4898@ucw.cz> <200710240818.31128.jbarnes@virtuousgeek.org>
-In-Reply-To: <200710240818.31128.jbarnes@virtuousgeek.org>
+Date: Wed, 24 Oct 2007 14:07:08 -0700
+User-Agent: KMail/1.9.7
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200710181401.50470.jbarnes@virtuousgeek.org> <200710222115.44549.jbarnes@virtuousgeek.org> <20071024201712.GH30533@stusta.de>
+In-Reply-To: <20071024201712.GH30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710242322.36291.rjw@sisk.pl>
+Message-Id: <200710241407.08792.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 24 October 2007 17:18, Jesse Barnes wrote:
-> On Wednesday, October 24, 2007 6:35:14 am Pavel Machek wrote:
-> > Hi!
+On Wednesday, October 24, 2007 1:17 pm Adrian Bunk wrote:
+> > diff --git a/linux-core/Kconfig b/linux-core/Kconfig
+> > index 2d02c76..5e73fc7 100644
+> > --- a/linux-core/Kconfig
+> > +++ b/linux-core/Kconfig
+> > @@ -50,7 +50,7 @@ config DRM_I810
 > >
-> > > We seem to see a lot of bug reports along the lines of, "my machine
-> > > resumes but I can't see X" or, "I can see X but only with a bright
-> > > flashlight", etc.  These sorts of problems are due to the fact that
-> > > the X server isn't designed to do full state save/restore, and none
-> > > of the available kernel drivers do it on its behalf.
-> > >
-> > > Since intelfb and the rest of the Intel drivers are fairly incompatible,
-> > > this patch makes the DRM bind to the PCI device so it can register real
-> > > suspend/resume handlers.  Those handlers take care of saving and
-> > > restoring enough state for X to come back reliably on at least one of my
-> > > problematic test machines, but text mode still has trouble (still
-> > > debugging VGA state save/restore, including trying to save/restore
-> > > actual VRAM contents for possible hibernate support).
-> > >
-> > > How does this approach look?  Is a new DRM driver flag a good thing for
-> > > similar situations with other drivers?  Thoughts?
-> >
-> > Looks okay to me... from very quick look.
-> >
-> > > +	if (!i915_pipe_enabled(dev, pipe))
-> > > +		return;
-> > > +
-> > > +	if (pipe == PIPE_A)
-> > > +		array = dev_priv->savePaletteA;
-> >
-> > coding style, we probably want save_palette_A.
-> 
-> Yeah, I tried not to pull over uglies from the X code but I guess I forgot 
-> this bit.  I should also update the copyright.
-> 
-> > > +	unsigned long reg = pipe == PIPE_A ? PALETTE_A : PALETTE_B;
-> >
-> > Uff. Mixing = and == and ? in one expression is evil.
-> 
-> I could put parens around it if you think that would help, or just move it to 
-> a new line...
+> >  choice
+> >  	prompt "Intel 830M, 845G, 852GM, 855GM, 865G"
+> > -	depends on DRM && AGP && AGP_INTEL
+> > +	depends on DRM && AGP && AGP_INTEL && !FB_INTEL
+> >  	optional
+> >...
+>
+> This sounds like a bad regression.
 
-I'd use parens around "pipe == PIPE_A".
+Well it's really documenting existing behavior.  Unless you're very 
+careful, running custom applications, the Intel FB and DRM drivers will 
+conflict.  IMO this is a long overdue change, but Dave has some custom 
+stuff that requires both drivers so he'd rather not see it go in, so 
+I'm fine with dropping this part.
 
-Greetings,
-Rafael
+Jesse
