@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbXJXUbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbXJXUfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbXJXUbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 16:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbXJXUbM
+	id S1758305AbXJXUfR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 16:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbXJXUfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 16:31:12 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:59748 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001AbXJXUbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 16:31:11 -0400
-Message-ID: <471FAB6A.4050204@hp.com>
-Date: Wed, 24 Oct 2007 16:30:34 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Wed, 24 Oct 2007 16:35:06 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:4194 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190AbXJXUfE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 16:35:04 -0400
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sri@us.ibm.com, lksctp-developers@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6 patch] #if 0 sctp_update_copy_cksum()
-References: <20071024162407.GD30533@stusta.de>
-In-Reply-To: <20071024162407.GD30533@stusta.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 24 Oct 2007 20:35:02.0712 (UTC) FILETIME=[5A9E8380:01C8167D]
+Content-class: urn:content-classes:message
+Subject: Re: [PATCH] fix "passing argument # of '__memcpy' discards qualifiers from pointer target type" warnings
+Date: Wed, 24 Oct 2007 16:35:01 -0400
+Message-ID: <Pine.LNX.4.61.0710241632240.19021@chaos.analogic.com>
+In-reply-to: <E1Iki6s-0000g8-N2@be1.lrz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] fix "passing argument # of '__memcpy' discards qualifiers from pointer target type" warnings
+Thread-Index: AcgWfVqot1PQMwZySIW1Lsu7fZMWKw==
+References: <9hPIG-7In-19@gated-at.bofh.it> <E1Iki6s-0000g8-N2@be1.lrz>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Bodo Eggert" <7eggert@gmx.de>
+Cc: =?iso-8859-1?Q?Miguel_Bot=F3n?= <mboton.lkml@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> sctp_update_copy_cksum() is no longer used.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-ACK.
+On Wed, 24 Oct 2007, Bodo Eggert wrote:
 
--vlad
-
-> 
-> ---
-> 
->  include/net/sctp/sctp.h |    1 -
->  net/sctp/crc32c.c       |    2 ++
->  2 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> fc6646f84c07666228166c678ff2b5916db925ed 
-> diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
-> index 119f5a1..93eb708 100644
-> --- a/include/net/sctp/sctp.h
-> +++ b/include/net/sctp/sctp.h
-> @@ -156,7 +156,6 @@ int sctp_primitive_ASCONF(struct sctp_association *, void *arg);
->  __u32 sctp_start_cksum(__u8 *ptr, __u16 count);
->  __u32 sctp_update_cksum(__u8 *ptr, __u16 count, __u32 cksum);
->  __u32 sctp_end_cksum(__u32 cksum);
-> -__u32 sctp_update_copy_cksum(__u8 *, __u8 *, __u16 count, __u32 cksum);
->  
->  /*
->   * sctp/input.c
-> diff --git a/net/sctp/crc32c.c b/net/sctp/crc32c.c
-> index 59cf7b0..181edab 100644
-> --- a/net/sctp/crc32c.c
-> +++ b/net/sctp/crc32c.c
-> @@ -170,6 +170,7 @@ __u32 sctp_update_cksum(__u8 *buffer, __u16 length, __u32 crc32)
->  	return crc32;
->  }
->  
-> +#if 0
->  __u32 sctp_update_copy_cksum(__u8 *to, __u8 *from, __u16 length, __u32 crc32)
->  {
->  	__u32 i;
-> @@ -186,6 +187,7 @@ __u32 sctp_update_copy_cksum(__u8 *to, __u8 *from, __u16 length, __u32 crc32)
->  
->  	return crc32;
->  }
-> +#endif  /*  0  */
->  
->  __u32 sctp_end_cksum(__u32 crc32)
->  {
-> 
+> Miguel Botón <mboton.lkml@gmail.com> wrote:
+>
+>> This patch fixes the warnings "passing argument 1 of '__memcpy' discards
+>> qualifiers from pointer target type" and "passing argument 2 of '__memcpy'
+>> discards qualifiers from pointer target type" when compiling some files.
+>>
+>> I don't really know if this is the best way but at least I don't get more
+>> warnings.
+>
+>> +++ linux-2.6.24-rc1/fs/cifs/dir.c    2007-10-24 15:49:44.000000000 +0200
+>> @@ -585,6 +585,7 @@
+>
+>> +     unsigned char *dstname = (unsigned char *)a->name;
+>
+>> @@ -593,7 +594,7 @@
+>
+>> -             memcpy((unsigned char *)a->name, b->name, a->len);
+>> +             memcpy(dstname, b->name, a->len);
+>
+> This looks like a compiler bug. Get the gcc people to fix it.
+> -- 
+> Top 100 things you don't want the sysadmin to say:
+> 20. ...and if we just swap these two disc controllers like _this_...
+>
+> Friß, Spammer: wd@bse.7eggert.dyndns.org esmpv@zxw.7eggert.dyndns.org
 > -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
 
+According to the header, the pointer is a (const struct qstr *). Not
+a gcc bug if somebody is writing there. Probably the header needs
+fixing.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.59 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
