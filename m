@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbXJYVhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXJYVkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbXJYVhm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXJYVhd
+	id S1758102AbXJYVkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXJYVks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:37:33 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33787 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750701AbXJYVhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:37:32 -0400
-Date: Thu, 25 Oct 2007 22:36:44 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] serial: do not call ->pm() on initialization for console port
-Message-ID: <20071025213644.GA30141@flint.arm.linux.org.uk>
-References: <20071019.011355.39154656.anemo@mba.ocn.ne.jp> <20071018161827.GB16244@flint.arm.linux.org.uk> <20071026.010510.59032545.anemo@mba.ocn.ne.jp> <20071025134044.58ca9d35.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Oct 2007 17:40:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51280 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752723AbXJYVkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:40:47 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6 patch] unexport tick_nohz_get_sleep_length
+Date: Thu, 25 Oct 2007 17:40:22 -0400
+User-Agent: KMail/1.9.5
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <20071024162422.GH30533@stusta.de> <653FFBB4508B9042B5D43DC9E18836F5018EBEF1@scsmsx415.amr.corp.intel.com> <alpine.LFD.0.9999.0710251855510.3186@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710251855510.3186@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071025134044.58ca9d35.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710251740.22999.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 01:40:44PM -0700, Andrew Morton wrote:
-> On Fri, 26 Oct 2007 01:05:10 +0900 (JST)
-> Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> 
-> > On Thu, 18 Oct 2007 17:18:27 +0100, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > > > Attached patch fixes this problem.  Is this a right way?
-> > > > If not, I will fix the serial_txx9 driver to skip the initialization in
-> > > > ->pm() if oldstate was -1.
-> > > 
-> > > I'll have to investigate further to refresh myself with what's going
-> > > on here, but your patch looks wrong.
+Applied.
+
+thanks,
+-Len
+
+On Thursday 25 October 2007 12:56, Thomas Gleixner wrote:
+> On Thu, 25 Oct 2007, Pallipadi, Venkatesh wrote:
+> > >On Wed, 24 Oct 2007, Adrian Bunk wrote:
+> > >
+> > >> This patch removes the unused 
+> > >> EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length).
+> > >> 
+> > >> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > >> 
+> > >> ---
+> > >> f7c83dfe117f4fd072b2506ae090e4145abda362 
+> > >> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> > >> index 10a1347..5997456 100644
+> > >> --- a/kernel/time/tick-sched.c
+> > >> +++ b/kernel/time/tick-sched.c
+> > >> @@ -320,8 +320,6 @@ ktime_t tick_nohz_get_sleep_length(void)
+> > >>  	return ts->sleep_length;
+> > >>  }
+> > >>  
+> > >> -EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
+> > >> -
+> > >
+> > >Hmm, this was added to allow the cpuidle governers modular
+> > >build. Seems this was changed to compiled in only.
+> > >
+> > >Len, Venki, is this the final decision ?
+> > >
 > > 
-> > Now rc1 is released.  Any chances for this patch?
-> > If none, I should push other workaround to fix this issue on 2.6.24.
+> > Yes. This was done recently for proper fallback to old ACPI policy in
+> > case CPUIDLE is not selected. With that being module, falling back to
+> > ACPI policy at run time makes things ugly.
 > 
-> I don't know what patch you're referring to.  I don't appear to have
-> whatever-patch-this-is queued up anywhere?
-
-"Further investigation" is quite a good indication that a patch needs to
-be worked on, no?  In any case, I'm ill at the moment, so things are very
-much on hold.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> Makes sense. I go ahead and nuke the export.
+> 
+> Thanks,
+> 
+> 	tglx
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
