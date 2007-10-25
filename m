@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbXJYFdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXJYFe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbXJYFdp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 01:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbXJYFdW
+	id S1759198AbXJYFe2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 01:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbXJYFeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 01:33:22 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:35528 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753411AbXJYFdV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 01:33:21 -0400
-X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 01:33:17 EDT
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200710250507.l9P57Pwh003203@turbo.physics.adelaide.edu.au>
-Subject: Re: [2.6 patch] fujitsu-laptop.c: make 2 functions static
-To: bunk@kernel.org (Adrian Bunk)
-Date: Thu, 25 Oct 2007 14:37:25 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       len.brown@intel.com (Len Brown), linux-kernel@vger.kernel.org
-In-Reply-To: <20071024162316.GJ30533@stusta.de> from "Adrian Bunk" at Oct 24, 2007 06:23:16 PM
-X-Mailer: ELM [version 2.5 PL6]
+	Thu, 25 Oct 2007 01:34:20 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:29261 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753215AbXJYFeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 01:34:18 -0400
+Date: Thu, 25 Oct 2007 07:34:15 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: kamalesh@linux.vnet.ibm.com, fujita.tomonori@lab.ntt.co.jp,
+       apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
+Message-ID: <20071025053414.GI14671@kernel.dk>
+References: <20071024115436.GT32058@shadowen.org> <20071024214014C.fujita.tomonori@lab.ntt.co.jp> <471F6DFE.3040304@linux.vnet.ibm.com> <20071025071043P.tomof@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071025071043P.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> acpi_fujitsu_{add,remove}() can become static.
+On Thu, Oct 25 2007, FUJITA Tomonori wrote:
+> On Wed, 24 Oct 2007 21:38:30 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > FUJITA Tomonori wrote:
+> > > On Wed, 24 Oct 2007 12:54:36 +0100
+> > > Andy Whitcroft <apw@shadowen.org> wrote:
+> > > 
+> > >> On Tue, Oct 23, 2007 at 08:44:20PM +0200, Jens Axboe wrote:
+> > >>> On Tue, Oct 23 2007, Kamalesh Babulal wrote:
+> > >>>> Hi,
+> > >>>>
+> > >>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
+> > >>>> over the AMD box
+> > >>>>
+> > >>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
+> > >>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> > >>>> PGD 10185b067 PUD 10075b067 PMD 0 
+> > >>>> Oops: 0002 [1] SMP 
+> > >>>> CPU 3 
+> > >>>> Modules linked in:
+> > >>>> Pid: 18676, comm: fsx-linux Not tainted 2.6.23-git18-autokern1 #1
+> > >>>> RIP: 0010:[<ffffffff8021f2f6>]  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
+> > >>>> RSP: 0000:ffff810181edf948  EFLAGS: 00010002
+> > >>> Can you check where gart_map_sg+0x26c is at? Make sure you have
+> > >>> CONFIG_DEBUG_INFO defined, then do:
+> > >>>
+> > >>> $ gdb vmlinux
+> > >>> $ l *gart_map_sg+0x26c
+> > >> Ok, this problem still seems to be about in 2.6.24-rc1.  Here is the gdb
+> > >> output from that version, the panic (also below) seems the same:
+> > >>
+> > >> (gdb) l *gart_map_sg+0x26c
+> > >> 0xffffffff8022011e is in gart_map_sg (arch/x86/kernel/pci-gart_64.c:433).
+> > >> 428                     goto error;
+> > >> 429             out++;
+> > >> 430             flush_gart();
+> > >> 431             if (out < nents) {
+> > >> 432                     sgmap = sg_next(sgmap);
+> > >> 433                     sgmap->dma_length = 0;
+> > >> 434             }
+> > >> 435             return out;
+> > >> 436
+> > >> 437     error:
+> > >>
+> > >> So it seems sg_next has returned 0.
+> > > 
+> > > Have you tried this?
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=119317981406073&w=2
+> > > -
+> > Hi,
+> > Thanks, this patch solves the kernel oops.
+> 
+> Thanks for testing!
+> 
+> Jens, here's the proper changelog.
 
-Looks fine.  Ack.
+Thanks, applied!
 
-Signed-off-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-
-jonathan
-
----
- drivers/misc/fujitsu-laptop.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-175c8b648a54b625037916a8f6e3851574141532 
-diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
-index d366a6c..d686ba7 100644
---- a/drivers/misc/fujitsu-laptop.c
-+++ b/drivers/misc/fujitsu-laptop.c
-@@ -198,7 +198,7 @@ static struct platform_driver fujitsupf_driver = {
- 
- /* ACPI device */
- 
--int acpi_fujitsu_add(struct acpi_device *device)
-+static int acpi_fujitsu_add(struct acpi_device *device)
- {
- 	int result = 0;
- 	int state = 0;
-@@ -229,7 +229,7 @@ int acpi_fujitsu_add(struct acpi_device *device)
- 	return result;
- }
- 
--int acpi_fujitsu_remove(struct acpi_device *device, int type)
-+static int acpi_fujitsu_remove(struct acpi_device *device, int type)
- {
- 	ACPI_FUNCTION_TRACE("acpi_fujitsu_remove");
- 
+-- 
+Jens Axboe
 
