@@ -1,103 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbXJYUTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762705AbXJYUUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762004AbXJYUTu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbXJYUTk
+	id S1762705AbXJYUUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbXJYUTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:19:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55250 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751001AbXJYUTj (ORCPT
+	Thu, 25 Oct 2007 16:19:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:32611 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbXJYUTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:19:39 -0400
-Date: Thu, 25 Oct 2007 13:19:06 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dtor@insightbb.com, pavel@ucw.cz, lenb@kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: [PATCH] apanel: space savings.
-Message-ID: <20071025131906.36847ed7@shemminger-laptop>
-In-Reply-To: <20071024160300.85e1cbda.akpm@linux-foundation.org>
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
-	<200709140130.59732.dtor@insightbb.com>
-	<20070916215516.2934abad@oldman.hemminger.net>
-	<200709161623.00286.dtor@insightbb.com>
-	<20071023125555.38d63567@shemminger-laptop>
-	<20071024160300.85e1cbda.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 16:19:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XsZQzy/2BSLW6aEQQRM52JdnAaDjQ/cUY62KOdsGW2HqP/6NTs9jWb8VkyRh7E6cq65fFPbBZ1gMRAC4d3zDOG1CNSEG5aBz7ljm9rbZU/jjt1sj0W6POytWnL6ubcXN0ZrjD7etgznn95OOIruKlR1qAeJNA0varKujeJwOiMk=
+Message-ID: <3ae72650710251319y6bc4ad10u1b7ab271ba333072@mail.gmail.com>
+Date: Thu, 25 Oct 2007 22:19:40 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 0/6] kill i386 and x86_64 directories
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20071025201437.GA14671@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071025195644.GA14501@uranus.ravnborg.org>
+	 <20071025201437.GA14671@uranus.ravnborg.org>
+X-Google-Sender-Auth: a14e5b3091d3d8d4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eliminate the device_names they are only used for debug
-messages. Add paren's for one expression.
+On 10/25/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Thu, Oct 25, 2007 at 09:56:44PM +0200, Sam Ravnborg wrote:
+> > This series kill the old i386 and x86_64 directories.
+> > The relevant files are moved and adapted and
+> > Kconfig.debug was consolidated (thanks to Randy).
+> >
+> > I had to modify both the top-lvel Makefile and the kconfig
+> > Makefile to accomplish this. It was done in such a way that
+> > it is trivial for other archs to use the same mechanism
+> > should they have the need.
+> >
+> > To solve the defconfig issue (i386 and x86_64 cannot share one)
+> > the arch/x86/configs/ directory were introduced. This has
+> > been used by other archs for some time now but x86 had not had
+> > the need until now.
+> >
+> > The Kconfig files could be consolidated much more - I only
+> > did the minimal changes to make it work in the new place.
+> >
+> > Total diffstat (in git format):
+> >
+> >  Makefile                                           |    7 ++-
+> >  arch/i386/.gitignore                               |    1 -
+> >  arch/{i386 => x86}/Kconfig.cpu                     |    0
+> >  arch/{i386 => x86}/Kconfig.debug                   |   51 +++++++++++++---
+> >  arch/{i386/Kconfig => x86/Kconfig.i386}            |    4 +-
+> >  arch/{x86_64/Kconfig => x86/Kconfig.x86_64}        |    6 +--
+> >  arch/x86/Makefile                                  |   16 +++++
+> >  arch/{i386/Makefile => x86/Makefile_32}            |    7 +--
+> >  arch/{i386/Makefile.cpu => x86/Makefile_32.cpu}    |    0
+> >  arch/{x86_64/Makefile => x86/Makefile_64}          |    5 +-
+> >  .../{i386/defconfig => x86/configs/i386_defconfig} |    0
+> >  .../defconfig => x86/configs/x86_64_defconfig}     |    0
+> >  arch/x86_64/.gitignore                             |    1 -
+> >  arch/x86_64/Kconfig.debug                          |   61 --------------------
+> >  scripts/kconfig/Makefile                           |   35 +++++++-----
+> >  15 files changed, 89 insertions(+), 105 deletions(-)
+> >
+>
+> By the way I consider this -rc1 material.
+> Because:
+> 1) It sort of finishes the initial merge
+> 2) Any breakage should be easy to trigger (build breakage) and easy to fix.
+>
+> It is 1) that make me say this is -rc1 materail,
+>  and 2) that say that this is an acceptable 'breaking the rules' patch serie.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Hey Sam,
+I get this after a simple pull from your tree and a: make clean; make:
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+arch/x86/kernel/head_64.o: In function `early_idt_handler':
+(.text.head+0x1e5): undefined reference to `early_printk'
+arch/x86/kernel/head64.o: In function `x86_64_start_kernel':
+head64.c:(.init.text+0xa8): undefined reference to `early_printk'
+arch/x86/kernel/built-in.o: In function `early_panic':
+(.text+0x9c07): undefined reference to `early_printk'
+arch/x86/mm/built-in.o: In function `init_memory_mapping':
+(.init.text+0xc0a): undefined reference to `early_printk'
+make: *** [.tmp_vmlinux1] Error 1
 
---- a/drivers/input/misc/apanel.c	2007-10-25 09:20:23.000000000 -0700
-+++ b/drivers/input/misc/apanel.c	2007-10-25 12:07:00.000000000 -0700
-@@ -27,7 +27,7 @@
- #include <linux/leds.h>
- 
- #define APANEL_NAME	"Fujitsu Application Panel"
--#define APANEL_VERSION	"1.3"
-+#define APANEL_VERSION	"1.3.1"
- #define APANEL		"apanel"
- 
- /* How often we poll keys - msecs */
-@@ -40,6 +40,7 @@ enum apanel_devid {
- 	APANEL_DEV_CDBTN  = 2,
- 	APANEL_DEV_LCD	  = 3,
- 	APANEL_DEV_LED	  = 4,
-+
- 	APANEL_DEV_MAX,
- };
- 
-@@ -53,14 +54,6 @@ enum apanel_chip {
- /* Result of BIOS snooping/probing -- what features are supported */
- static enum apanel_chip device_chip[APANEL_DEV_MAX];
- 
--/* names for APANEL_XXX */
--static const char *device_names[APANEL_DEV_MAX] __initdata = {
--	[APANEL_DEV_APPBTN] = "Application Buttons",
--	[APANEL_DEV_LCD]    = "LCD",
--	[APANEL_DEV_LED]    = "LED",
--	[APANEL_DEV_CDBTN]  = "CD Buttons",
--};
--
- #define MAX_PANEL_KEYS	12
- 
- struct apanel {
-@@ -123,7 +116,7 @@ static void apanel_poll(struct input_pol
- 
- 	dev_dbg(&ipdev->input->dev, APANEL ": data %#x\n", data);
- 	for (i = 0; i < ipdev->input->keycodemax; i++)
--		if (1ul << i & data)
-+		if ((1u << i) & data)
- 			report_key(idev, ap->keymap[i]);
- }
- 
-@@ -366,17 +359,14 @@ static int __init apanel_init(void)
- 		}
- 
- 		if (devno >= APANEL_DEV_MAX)
--			pr_notice(APANEL ": unknown device %d found\n", devno);
-+			pr_notice(APANEL ": unknown device %u found\n", devno);
- 		else if (device_chip[devno] != CHIP_NONE)
--			pr_warning(APANEL ": duplicate entry for %s\n",
--				   device_names[devno]);
-+			pr_warning(APANEL ": duplicate entry for devno %u\n", devno);
- 
- 		else if (method != 1 && method != 2 && method != 4) {
--			pr_notice(APANEL ": unknown  method %u for %s\n",
--				  method, device_names[devno]);
-+			pr_notice(APANEL ": unknown method %u for devno %u\n",
-+				  method, devno);
- 		} else {
--			pr_debug(APANEL ": %s found.\n", device_names[devno]);
--
- 			device_chip[devno] = (enum apanel_chip) chip;
- 			++found;
- 		}
+Cheers,
+Kay
