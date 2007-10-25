@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbXJYFia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbXJYFrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbXJYFia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 01:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbXJYFh7
+	id S1758082AbXJYFrc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 01:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbXJYFrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 01:37:59 -0400
-Received: from ns3.mountaincable.net ([24.215.0.13]:41199 "EHLO
-	ns3.mountaincable.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755189AbXJYFh6 (ORCPT
+	Thu, 25 Oct 2007 01:47:24 -0400
+Received: from flatline.sindominio.net ([82.144.4.26]:50966 "EHLO
+	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581AbXJYFrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 01:37:58 -0400
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-From: Ryan Lortie <desrt@desrt.ca>
-To: "Zephaniah E. Hull" <warp@aehallh.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071024153508.GG26573@aehallh.com>
-References: <20070609084800.GR6362@aehallh.com>
-	 <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com>
-	 <1193191094.32696.2.camel@moonpix.desrt.ca>
-	 <200710232333.08306.dmitry.torokhov@gmail.com>
-	 <20071024153508.GG26573@aehallh.com>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 01:37:34 -0400
-Message-Id: <1193290654.15893.2.camel@moonpix.desrt.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 01:47:23 -0400
+Date: Thu, 25 Oct 2007 07:47:28 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/3] MBCS: Convert semaphores to the mutex API
+Message-ID: <20071025054727.GN9824@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20071024170858.GH9824@traven> <20071024211149.2520a4ea.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024211149.2520a4ea.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-24-10 at 11:35 -0400, Zephaniah E. Hull wrote:
-> We need a way to, at the absolute minimum, unbind the keyboard from the
-> text console.  The current solution sucks for things like rfkill.
+El Wed, Oct 24, 2007 at 09:11:49PM -0700 Andrew Morton ha dit:
+
+> On Wed, 24 Oct 2007 19:08:58 +0200 matthias.kaehlcke@gmail.com wrote:
 > 
-> I'm not convinced that Ryan's fix is any better, but just saying that X
-> should open the console and ignore the characters is simply not an
-> option as far as I am concerned for X.
+> > MBCS: Convert the semaphores algolock, dmareadlock and dmawritelock to the 
+> > mutex API
+> 
+> Thanks.  Has this actually been runtime-tested?
 
-Can you think of any other way to separate things like rfkill/evdev from
-things like the text console that's less hacky than my 'priority'
-scheme?
+no, i could only test successfull compilation as i don't have the
+device
+ 
+> btw, your patches are in `patch -p2' form:
+> 
+> --- kernel.orig/linux-2.6/drivers/char/mbcs.c
+> +++ kernel/linux-2.6/drivers/char/mbcs.c
+> 
+> should have been in `patch -p1' form:
+> 
+> --- linux-2.6/drivers/char/mbcs.c
+> +++ linux-2.6/drivers/char/mbcs.c
+> 
+> I'd suggest that you grab and learn
+> http://savannah.nongnu.org/projects/quilt/ - it takes care of all these
+> things for you.
 
-Cheers
+i actually used quilt for this patchset but must have missed
+something. thanks for the pointer!
 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
+          Dreams and reality are opposites. Action synthesizes them
+                             (Assata Shakur)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
