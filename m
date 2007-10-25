@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXJYXZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXJYXZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbXJYXZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXJYXZF
+	id S1761273AbXJYXZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXJYXZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:25:05 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37180 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752904AbXJYXZD (ORCPT
+	Thu, 25 Oct 2007 19:25:51 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:49713 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754941AbXJYXZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:25:03 -0400
-Subject: Re: [PATCH RESEND] SCSI not showing tray status correctly
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Maarten Bressers <mbres@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, axboe@kernel.dk,
-       tasio@hierro.tasio.net, dsd@gentoo.org
-In-Reply-To: <20071025223037.C077D65309@smtp.gentoo.org>
-References: <20071025223037.C077D65309@smtp.gentoo.org>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 18:24:53 -0500
-Message-Id: <1193354693.3301.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 19:25:50 -0400
+Date: Thu, 25 Oct 2007 17:27:23 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Is gcc thread-unsafe?
+In-reply-to: <fa.M4DOMggyrQmdTqekWSuw4xCxiTc@ifi.uio.no>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Message-id: <4721265B.2060504@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.JbRGo0cQWncrcfKHmiNdvchsA50@ifi.uio.no>
+ <fa.8qDECVaPIo7DWbjhQbyw6N5Infg@ifi.uio.no>
+ <fa.M4DOMggyrQmdTqekWSuw4xCxiTc@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 22:30 +0000, Maarten Bressers wrote:
-> From: David Martin <tasio@tasio.net>
+Arjan van de Ven wrote:
+> On Wed, 24 Oct 2007 21:29:56 -0700
+> "David Schwartz" <davids@webmaster.com> wrote:
 > 
-> Greetings,
+>>> Well that's exactly right. For threaded programs (and maybe even
+>>> real-world non-threaded ones in general), you don't want to be
+>>> even _reading_ global variables if you don't need to. Cache misses
+>>> and cacheline bouncing could easily cause performance to completely
+>>> tank in some cases while only gaining a cycle or two in
+>>> microbenchmarks for doing these funny x86 predication things.
+>> For some CPUs, replacing an conditional branch with a conditional
+>> move is a *huge* win because it cannot be mispredicted.
 > 
-> The following patch was submitted to the lkml in 2004 by David Martin
-> (http://lkml.org/lkml/2004/12/27/1). It wasn't accepted, but I was
-> unable to find a reason why, so I'm resending it now.
+> please name one...
+> Hint: It's not one made by either Intel or AMD in the last 4 years...
 
-Well, sending SCSI patches to the kernel mailing list but not to
-linux-scsi is usually a good enough reason.
+It is a win if the branch cannot be effectively predicted, i.e. if the 
+outcome is essentially random, as may occur with data-dependent 
+conditionals. I've seen a doubling of performance on one workload using 
+a predicated instruction instead of a branch on newer Xeons in such a case.
 
-> Without this patch the SCSI ioctl CDROM_DRIVE_STATUS always returns
-> CDS_TRAY_OPEN even if the tray is closed. This patch fixes that.
-> Gentoo bug report: http://bugs.gentoo.org/show_bug.cgi?id=196879
-> 
-> Signed-off by: Maarten Bressers <mbres@gentoo.org>
-> 
-> ---
-> 
-> --- a/drivers/scsi/sr_ioctl.c	2007-10-09 22:31:38.000000000 +0200
-> +++ b/drivers/scsi/sr_ioctl.c	2007-10-25 22:57:21.000000000 +0200
-> @@ -310,6 +310,8 @@ int sr_lock_door(struct cdrom_device_inf
->  
->  int sr_drive_status(struct cdrom_device_info *cdi, int slot)
->  {
-> +	struct media_event_desc med;
-> +
->  	if (CDSL_CURRENT != slot) {
->  		/* we have no changer support */
->  		return -EINVAL;
-> @@ -317,7 +319,10 @@ int sr_drive_status(struct cdrom_device_
->  	if (0 == test_unit_ready(cdi->handle))
->  		return CDS_DISC_OK;
->  
-> -	return CDS_TRAY_OPEN;
-> +	if (!cdrom_get_media_event(cdi, &med) && med.door_open)
-> +		return CDS_TRAY_OPEN;
-> +
-> +	return CDS_NO_DISC;
->  }
->  
->  int sr_disk_status(struct cdrom_device_info *cdi)
+I suspect that if branch prediction fails often, the data dependency 
+created by the cmov, etc. is less expensive than the pipeline flush 
+required by mispredicts..
 
-This patch is too simplistic.  ide-cd.c:ide_cdrom_drive_status() looks
-to be a reasonable implementation.  However, the worry is that
-GET_EVENT_NOTIFICATION is a MMC command; devices not conforming to MMC
-won't support it.  In theory, they should just return ILLEGAL_REQUEST,
-but USB devices have been known to crash when given commands they don't
-understand.  How widely tested has this been (if it's been in Gentoo
-since 2004, then it's probably widely tested enough)?
-
-James
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
