@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbXJYFKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbXJYFK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbXJYFKE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 01:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXJYFJx
+	id S1755895AbXJYFK4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 01:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbXJYFKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 01:09:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49843 "EHLO mail.dvmed.net"
+	Thu, 25 Oct 2007 01:10:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41819 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbXJYFJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 01:09:52 -0400
-Message-ID: <4720251E.1030206@garzik.org>
-Date: Thu, 25 Oct 2007 01:09:50 -0400
+	id S1753009AbXJYFKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 01:10:34 -0400
+Message-ID: <47202548.6040100@garzik.org>
+Date: Thu, 25 Oct 2007 01:10:32 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/4] [SCSI] ips: remove ips_ha members that duplicate
- struct pci_dev members
-References: <09821349085390234lkjasdflkjasflkdj24746@havoc.gtf.org>	<20071024234827.74AD61F81A1@havoc.gtf.org> <20071024212710.ae6e5120.akpm@linux-foundation.org>
-In-Reply-To: <20071024212710.ae6e5120.akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] napi: use non-interruptible sleep in napi_disable
+References: <20071025035920.C2D39DDECE@ozlabs.org>
+In-Reply-To: <20071025035920.C2D39DDECE@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -28,38 +28,29 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 24 Oct 2007 19:48:26 -0400 (EDT) Jeff Garzik <jeff@garzik.org> wrote:
+Benjamin Herrenschmidt wrote:
+> The current napi_disable() uses msleep_interruptible() but doesn't
+> (and can't) exit in case there's a signal, thus ending up doing a
+> hot spin without a cpu_relax. Use uninterruptible sleep instead.
 > 
->>  drivers/scsi/ips.c |  178 ++++++++++++++++++++++++----------------------------
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 > 
-> this driver seems a bit of a basket case :(
+>  include/linux/netdevice.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> 
-> What's going on here?
-> 
-> 		scb->dcdb.cmd_attribute =
-> 		    ips_command_direction[scb->scsi_cmd->cmnd[0]];
-> 
->         /* Allow a WRITE BUFFER Command to Have no Data */
->         /* This is Used by Tape Flash Utilites          */
->         if ((scb->scsi_cmd->cmnd[0] == WRITE_BUFFER) && (scb->data_len == 0)) 
->             scb->dcdb.cmd_attribute = 0;                  
-> 
-> 		if (!(scb->dcdb.cmd_attribute & 0x3))
-> 			scb->dcdb.transfer_length = 0;
-> 
-> 		if (scb->data_len >= IPS_MAX_XFER) {
-> 
-> I hope that's just busted indentation and not a missing {} block.
+> Index: linux-work/include/linux/netdevice.h
+> ===================================================================
+> --- linux-work.orig/include/linux/netdevice.h	2007-10-17 12:39:16.000000000 +1000
+> +++ linux-work/include/linux/netdevice.h	2007-10-17 12:45:00.000000000 +1000
+> @@ -390,7 +390,7 @@ static inline void napi_complete(struct 
+>  static inline void napi_disable(struct napi_struct *n)
+>  {
+>  	while (test_and_set_bit(NAPI_STATE_SCHED, &n->state))
+> -		msleep_interruptible(1);
+> +		msleep(1);
+>  }
 
-The driver is one of the grotty drivers people are afraid to touch, 
-therefore it bitrots even faster, in a vicious cycle.  You don't have to 
-look hard at all to find checkpatch pukeage, very real bugs, and 
-Pythonesque silliness.
+ACK
 
-Not having hardware I went only for changes that are provable and 
-obvious, really...
-
-	Jeff
 
