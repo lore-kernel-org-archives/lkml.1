@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbXJYUBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbXJYUC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbXJYUBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbXJYUBl
+	id S1760526AbXJYUC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbXJYUCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:01:41 -0400
-Received: from ranger.systems.pipex.net ([62.241.162.32]:52945 "EHLO
-	ranger.systems.pipex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759013AbXJYUBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:01:39 -0400
-X-Greylist: delayed 1572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 16:01:38 EDT
-From: Adam Baker <linux@baker-net.org.uk>
-To: rt2400-devel@lists.sourceforge.net
-Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
-Date: Thu, 25 Oct 2007 20:35:20 +0100
-User-Agent: KMail/1.9.5
-Cc: Parag Warudkar <kernel-stuff@comcast.net>, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
-In-Reply-To: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 16:02:12 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57535 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756450AbXJYUCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:02:10 -0400
+Date: Thu, 25 Oct 2007 22:03:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [PATCH 2/6] x86: move defconfig files for i386 and x86_64 to x86
+Message-ID: <20071025200344.GC14501@uranus.ravnborg.org>
+References: <20071025195644.GA14501@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710252035.20546.linux@baker-net.org.uk>
+In-Reply-To: <20071025195644.GA14501@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007 00:22, Parag Warudkar wrote:
-> I have a Belkin USB Wireless adapter with ID 050d:705a.
-> Both rt2500usb.c and rt73usb.c claim that they can drive the device with
-> this ID.
->
-> When using the distro kernel as well as custom 2.4.24-rc1 both rt73usb and
-> rt2500usb get loaded and fight for the register writes and fail. rt2500usb
-> is not able to drive my device. So I have to manually rmmod/modprobe or
-> delete rt2500usb.ko and depmod every time I get a new kernel.
->
-> If only rt73usb is loaded everything works well. To me it
-> sounds like rt2500usb should not be driving 050d:705a.
->
+>From 81ee173db26217c54731bbc4c5b864fa01c6f28c Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Thu, 25 Oct 2007 20:31:19 +0200
+Subject: [PATCH] x86: move defconfig files for i386 and x86_64 to x86
 
-Unfortunately Belkin have sold both RT73 and RT2500 devices with
-that USB ID. You don't say what distro you are runing or what version
-of RT2x00 it ships with but last time I checked with the git version of
-rt2x00 it tried to load both drivers but the rt2500 driver noticed it was the 
-wrong hardware and shut down.
+With some small changes to kconfig makefile we can now
+locate the defconfig files for i386 and x86_64 in
+the configs/ subdirectory under x86.
+make ARCH=i386 defconfig and make defconfig
+works as expected also after this change.
+But arch maintainers shall now update a defconfig file in
+the configs/ directory.
 
-My Belkin stick is busy right now but I'll test that still works later.
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/x86/Makefile                                  |    5 ++++-
+ .../{i386/defconfig => x86/configs/i386_defconfig} |    0 
+ .../defconfig => x86/configs/x86_64_defconfig}     |    0 
+ scripts/kconfig/Makefile                           |    6 +++---
+ 4 files changed, 7 insertions(+), 4 deletions(-)
+ rename arch/{i386/defconfig => x86/configs/i386_defconfig} (100%)
+ rename arch/{x86_64/defconfig => x86/configs/x86_64_defconfig} (100%)
 
-> There is another ID 050d:7050 which is also claimed to be handled by both
-> rt3500usb and rt73usb. Assuming rt73usb can drive this as well (I have no
-> way to be sure as I don't have device with this ID) the following patch
-> makes sure only rt73usb claims the 2 devices.
->
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 65077d7..3095973 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -1,6 +1,9 @@
+ # Unified Makefile for i386 and x86_64
+ 
+-# No need to remake these files
++# select defconfig based on actual architecture
++KBUILD_DEFCONFIG := $(ARCH)_defconfig
++
++# # No need to remake these files
+ $(srctree)/arch/x86/Makefile%: ;
+ 
+ ifeq ($(ARCH),i386)
+diff --git a/arch/i386/defconfig b/arch/x86/configs/i386_defconfig
+similarity index 100%
+rename from arch/i386/defconfig
+rename to arch/x86/configs/i386_defconfig
+diff --git a/arch/x86_64/defconfig b/arch/x86/configs/x86_64_defconfig
+similarity index 100%
+rename from arch/x86_64/defconfig
+rename to arch/x86/configs/x86_64_defconfig
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 83c5e76..fbf39cc 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -60,12 +60,12 @@ defconfig: $(obj)/conf
+ ifeq ($(KBUILD_DEFCONFIG),)
+ 	$< -d arch/$(ARCH)/Kconfig
+ else
+-	@echo *** Default configuration is based on '$(KBUILD_DEFCONFIG)'
+-	$(Q)$< -D arch/$(ARCH)/configs/$(KBUILD_DEFCONFIG) arch/$(ARCH)/Kconfig
++	@echo "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
++	$(Q)$< -D arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) arch/$(ARCH)/Kconfig
+ endif
+ 
+ %_defconfig: $(obj)/conf
+-	$(Q)$< -D arch/$(ARCH)/configs/$@ arch/$(ARCH)/Kconfig
++	$(Q)$< -D arch/$(SRCARCH)/configs/$@ arch/$(ARCH)/Kconfig
+ 
+ # Help text used by make help
+ help:
+-- 
+1.5.3.4.1157.g0e74-dirty
 
-There are a few such devices but they are all cases where there are reliable 
-reports of manufacturers shipping both device types with one USB ID. There 
-are some cases where the alternate chipset with the same USB ID isn't even a 
-ralink device but there isn't much we can do about those.
