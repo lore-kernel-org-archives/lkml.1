@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXJYSj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXJYSm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbXJYSj6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXJYSjr
+	id S1760598AbXJYSm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbXJYSmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:39:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33588 "EHLO
+	Thu, 25 Oct 2007 14:42:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33647 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756718AbXJYSjp (ORCPT
+	with ESMTP id S1753562AbXJYSmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:39:45 -0400
-Date: Thu, 25 Oct 2007 11:32:48 -0700
+	Thu, 25 Oct 2007 14:42:49 -0400
+Date: Thu, 25 Oct 2007 11:33:52 -0700
 From: Greg KH <greg@kroah.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
-       linas@austin.ibm.com, chunhao.huang@hotmail.com, gregkh@suse.de,
-       htejun@gmail.com, brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
-Subject: Re: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks, V2.
-Message-ID: <20071025183248.GA2176@kroah.com>
-References: <20071025.011445.80152909.davem@davemloft.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Arnd Bergmann <arnd@arndb.de>, gregkh@suse.de, linux-arch@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, matthew@wil.cx,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>, viro@zeniv.linux.org.uk,
+       viro@ftp.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, adobriyan@gmail.com
+Subject: Re: [linux-usb-devel] USB HCD: avoid duplicate local_irq_disable()
+Message-ID: <20071025183352.GB2176@kroah.com>
+References: <200710230328.33915.arnd@arndb.de> <Pine.LNX.4.44L0.0710222359290.13902-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071025.011445.80152909.davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.44L0.0710222359290.13902-100000@netrider.rowland.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 01:14:45AM -0700, David Miller wrote:
+On Tue, Oct 23, 2007 at 12:01:37AM -0400, Alan Stern wrote:
+> On Tue, 23 Oct 2007, Arnd Bergmann wrote:
 > 
-> Ok, I've respun the patches including all of the feedback I've
-> obtained.  Again, it's at:
+> > usb_hcd_flush_endpoint() has a retry loop that starts with a spin_lock_irq(),
+> > but only gives up the spinlock, not the irq_disable before jumping to the
+> > rescan label.
+> > 
+> > Split the spin_lock_irq into the retryable part and the local_irq_disable()
+> > that is only done once as a micro-optimization and slight cleanup.
 > 
-> 	kernel.org:/pub/scm/linux/kernel/git/davem/msiquirk-2.6.git
+> I agree with your sentiment, but it would be better to solve this 
+> problem without using local_irq_disable().  The patch below does this.
 > 
-> Greg, I think this stuff is ready to go so if you would pull
-> them in I would really appreciate it.
+> ---
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-These all look great to me, and I've pulled them into my trees.
-
-Thanks a lot for doing this work.
-
-I think they should go to Linus before 2.6.24 is out, any objection from
-anyone else with this?
+Alan, is this something you want added to the tree and in before 2.6.24
+is out?
 
 thanks,
 
