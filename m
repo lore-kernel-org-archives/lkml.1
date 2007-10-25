@@ -1,47 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760451AbXJYDf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXJYDoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760451AbXJYDf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 23:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbXJYDfT
+	id S1759547AbXJYDoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 23:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXJYDoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 23:35:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47568 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754899AbXJYDfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 23:35:18 -0400
-Message-ID: <47200EB1.1080500@redhat.com>
-Date: Wed, 24 Oct 2007 23:34:09 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Zurk Tech <zurktech@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Quad core CPU detected but shows as single core in 2.6.23.1
-References: <2ed59cbb0710242002r7ff3ab89k2b22582fc1de9d2c@mail.gmail.com>
-In-Reply-To: <2ed59cbb0710242002r7ff3ab89k2b22582fc1de9d2c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 24 Oct 2007 23:44:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57386 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752669AbXJYDoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 23:44:09 -0400
+Date: Wed, 24 Oct 2007 20:43:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>,
+       "linux-aio@kvack.org" <linux-aio@kvack.org>
+Subject: Re: [PATCH 5/5] Make wait_on_retry_sync_kiocb killable
+Message-Id: <20071024204357.d71e8ad4.akpm@linux-foundation.org>
+In-Reply-To: <11932286982021-git-send-email-matthew@wil.cx>
+References: <11932286982175-git-send-email-matthew@wil.cx>
+	<11932286982021-git-send-email-matthew@wil.cx>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zurk Tech wrote:
-> Hi guys,
-> I have a tyan s3992 h2000 with single barcelona amd quad core cpu (the
-> other cpu socket is empty). cat /proc/cpuinfo shows amd quad core
-> processor
-> but core : 1....ive compiled the kernel from scratch with smp and
-> amd64 + the numa stuff. i also tried debian etchs amd64 smp kernel and
-> same result.
-> is amd barcelona quad core cpu not yet supported or is it something else ?
-> Thanks for any insight. im completely stumped. ive dealt with
-> mutliprocessing machines before and have a couple of dual cores which
-> are fine with the
-> exact same kernel configs. my amd tk-53 x2 turions show 2 cores in cpuinfo....
+On Wed, 24 Oct 2007 08:24:58 -0400 Matthew Wilcox <matthew@wil.cx> wrote:
 
-The bootstrap protocol for Barcelona is a little different from older Opterons, 
-so an older BIOS that doesn't know the new protocol won't be able to bring up 
-any CPU other than the bootstrap processor.  My wild guess is that this is 
-what's happening and a BIOS update will fix it, but as Arjan said, please post 
-dmesg when reporting bugs like this.
+> Use TASK_KILLABLE to allow wait_on_retry_sync_kiocb to return -EINTR.
+> All callers then check the return value and break out of their loops.
+> 
 
-	-- Chris
+Let's cc the AIO list on AIO patches, please.
+
+> ---
+>  fs/read_write.c |   17 ++++++++++++-----
+>  1 files changed, 12 insertions(+), 5 deletions(-)
+> 
+> diff --git a/fs/read_write.c b/fs/read_write.c
+> index 124693e..3196a3b 100644
+> --- a/fs/read_write.c
+> +++ b/fs/read_write.c
+> @@ -218,14 +218,15 @@ Einval:
+>  	return -EINVAL;
+>  }
+>  
+> -static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
+> +static int wait_on_retry_sync_kiocb(struct kiocb *iocb)
+>  {
+> -	set_current_state(TASK_UNINTERRUPTIBLE);
+> +	set_current_state(TASK_KILLABLE);
+>  	if (!kiocbIsKicked(iocb))
+>  		schedule();
+>  	else
+>  		kiocbClearKicked(iocb);
+>  	__set_current_state(TASK_RUNNING);
+> +	return fatal_signal_pending(current) ? -EINTR : 0;
+>  }
+>  
+>  ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+> @@ -242,7 +243,9 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
+>  		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+>  		if (ret != -EIOCBRETRY)
+>  			break;
+> -		wait_on_retry_sync_kiocb(&kiocb);
+> +		ret = wait_on_retry_sync_kiocb(&kiocb);
+> +		if (ret)
+> +			break;
+>  	}
+>  
+>  	if (-EIOCBQUEUED == ret)
+> @@ -300,7 +303,9 @@ ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, lof
+>  		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+>  		if (ret != -EIOCBRETRY)
+>  			break;
+> -		wait_on_retry_sync_kiocb(&kiocb);
+> +		ret = wait_on_retry_sync_kiocb(&kiocb);
+> +		if (ret)
+> +			break;
+>  	}
+>  
+>  	if (-EIOCBQUEUED == ret)
+> @@ -466,7 +471,9 @@ ssize_t do_sync_readv_writev(struct file *filp, const struct iovec *iov,
+>  		ret = fn(&kiocb, iov, nr_segs, kiocb.ki_pos);
+>  		if (ret != -EIOCBRETRY)
+>  			break;
+> -		wait_on_retry_sync_kiocb(&kiocb);
+> +		ret = wait_on_retry_sync_kiocb(&kiocb);
+> +		if (ret)
+> +			break;
+>  	}
+>  
+>  	if (ret == -EIOCBQUEUED)
+> -- 
+> 1.4.4.2
