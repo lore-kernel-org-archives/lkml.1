@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbXJYLe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbXJYLgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760497AbXJYLe6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 07:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbXJYLeu
+	id S1760345AbXJYLgu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 07:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbXJYLgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 07:34:50 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57413 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbXJYLeu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 07:34:50 -0400
+	Thu, 25 Oct 2007 07:36:42 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:46099 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755510AbXJYLgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 07:36:41 -0400
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Thu, 25 Oct 2007 17:04:40 +0530
-Message-Id: <20071025113440.27531.47204.sendpatchset@balbir-laptop>
-Subject: [x86 patch] Fix UML ptrace-abi.h build error
+Date: Thu, 25 Oct 2007 17:06:30 +0530
+Message-Id: <20071025113630.27728.12797.sendpatchset@balbir-laptop>
+Subject: [x86 patch] Fix UML init/do_mounts.h build failure
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Fix the compilation error
+Fix stat.h to not use __i386__, but use BITS_PER_LONG. The UML architecture
+in turn includes this file. This helps resolve one build failure in the
+current UML code
 
-arch/um/kernel/sysrq.c: In function 'show_stack':
-arch/um/kernel/sysrq.c:63: error: 'UESP' undeclared (first use in this function)
-arch/um/kernel/sysrq.c:63: error: (Each undeclared identifier is reported only once
-arch/um/kernel/sysrq.c:63: error: for each function it appears in.)
-make[1]: *** [arch/um/kernel/sysrq.o] Error 1
-make: *** [arch/um/kernel] Error 2
+Before the fix, the failure was
 
-Use BITS_PER_LONG == 32 instead of the hardcode __i386__ as UML depends on
-this header.
+In file included from init/do_mounts.c:19:
+init/do_mounts.h: In function 'bstat':
+init/do_mounts.h:25: error: storage size of 'stat' isn't known
+init/do_mounts.h:25: warning: unused variable 'stat'
+init/do_mounts.h:33: warning: control reaches end of non-void function
+make[1]: *** [init/do_mounts.o] Error 1
+make: *** [init/do_mounts.o] Error 2
+
 
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
 
- include/asm-x86/ptrace-abi.h |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ include/asm-x86/stat.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff -puN include/asm-x86/ptrace-abi.h~uml-fix-ptrace-abi-header include/asm-x86/ptrace-abi.h
---- 2.6.24-rc1/include/asm-x86/ptrace-abi.h~uml-fix-ptrace-abi-header	2007-10-25 17:01:47.000000000 +0530
-+++ 2.6.24-rc1-balbir/include/asm-x86/ptrace-abi.h	2007-10-25 17:01:47.000000000 +0530
-@@ -1,7 +1,9 @@
- #ifndef _ASM_X86_PTRACE_ABI_H
- #define _ASM_X86_PTRACE_ABI_H
+diff -puN init/do_mounts.h~uml-fix-init-domounts init/do_mounts.h
+diff -puN include/asm-x86/stat.h~uml-fix-init-domounts include/asm-x86/stat.h
+--- 2.6.24-rc1/include/asm-x86/stat.h~uml-fix-init-domounts	2007-10-25 16:23:04.000000000 +0530
++++ 2.6.24-rc1-balbir/include/asm-x86/stat.h	2007-10-25 16:23:04.000000000 +0530
+@@ -1,9 +1,11 @@
+ #ifndef _ASM_X86_STAT_H
+ #define _ASM_X86_STAT_H
  
--#ifdef __i386__
 +#include <asm/types.h>
 +
-+#if BITS_PER_LONG == 32
+ #define STAT_HAVE_NSEC 1
  
- #define EBX 0
- #define ECX 1
-@@ -22,7 +24,7 @@
- #define SS   16
- #define FRAME_SIZE 17
+-#ifdef __i386__
++#if BITS_PER_LONG == 32
+ struct stat {
+ 	unsigned long  st_dev;
+ 	unsigned long  st_ino;
+@@ -63,7 +65,7 @@ struct stat64 {
+ 	unsigned long long	st_ino;
+ };
  
 -#else /* __i386__ */
 +#else /* BITS_PER_LONG == 32 */
  
- #if defined(__ASSEMBLY__) || defined(__FRAME_OFFSETS)
- #define R15 0
-@@ -55,7 +57,7 @@
- /* top of stack page */
- #define FRAME_SIZE 168
- 
--#endif /* !__i386__ */
-+#endif /* !BITS_PER_LONG == 32 */
- 
- /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
- #define PTRACE_GETREGS            12
+ struct stat {
+ 	unsigned long	st_dev;
 _
 
 -- 
