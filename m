@@ -1,217 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbXJYICh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXJYIDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbXJYICh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXJYICY
+	id S1758154AbXJYIDB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXJYICo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:02:24 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58436 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbXJYICX (ORCPT
+	Thu, 25 Oct 2007 04:02:44 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:44704 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757450AbXJYICm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:02:23 -0400
-Message-ID: <47204CFF.50709@ah.jp.nec.com>
-Date: Thu, 25 Oct 2007 16:59:59 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 25 Oct 2007 04:02:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=UAw1UtoZ7lfDQs+j7BFwy8c5y4oPmJ5u1577BOFeRbwnCJggDVgAJ0obiFaCOM5Mz377vtPrWca65ZWcB4v/1xOK5iA2EHSrFvIpSGwg//D38Z25LtjO7Jx1X2/vaXAuMp8vyRsG/aH1i52KMoJCUltgNNm3VphXrZnKV2BQ9YQ=
+Message-ID: <877aabc40710250102l7d4cff9ei5c7c3a40b084b32c@mail.gmail.com>
+Date: Thu, 25 Oct 2007 13:32:33 +0530
+From: "Amit Shah" <amitshah@gmx.net>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: Panic in gart_map_sg
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071025071239.GA5053@kernel.dk>
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
-       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
-       Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
-Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
- ,take2
-References: <4716FFDB.7090502@ah.jp.nec.com>	<47171EEF.7030109@ah.jp.nec.com> <20071024111100.0f5d8b58.rdunlap@xenotime.net>
-In-Reply-To: <20071024111100.0f5d8b58.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <877aabc40710250012se0afe99s819207e72726d333@mail.gmail.com>
+	 <20071025071239.GA5053@kernel.dk>
+X-Google-Sender-Auth: 4b5e589edf41bbff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 18 Oct 2007 17:53:03 +0900 Takenori Nagano wrote:
-> 
->> This patch implements new notifier function to panic_notifier_list. We can
->> change the list of order by debugfs.
-> 
-> Should be sysfs IMO.  debugfs isn't (should not be) required.
+On 25/10/2007, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Oct 25 2007, Amit Shah wrote:
+> > I get a kernel panic at gart_map_sg+0x201/0x470, which is around here:
 
-OK. We try to find an appropriate place.
-http://lkml.org/lkml/2007/10/24/54
+...
 
->> Thanks,
->>
->> ---
->>
->> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
->>
->> ---
->> diff -uprN linux-2.6.23.orig/arch/alpha/kernel/setup.c linux-2.6.23/arch/alpha/kernel/setup.c
->> --- linux-2.6.23.orig/arch/alpha/kernel/setup.c	2007-10-10 05:31:38.000000000 +0900
->> +++ linux-2.6.23/arch/alpha/kernel/setup.c	2007-10-18 08:56:53.928000000 +0900
->> @@ -45,14 +45,22 @@
->>  #include <asm/io.h>
->>  #include <linux/log2.h>
->>  
->> -extern struct atomic_notifier_head panic_notifier_list;
->> +extern struct tunable_atomic_notifier_head panic_notifier_list;
->>  static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
->> -static struct notifier_block alpha_panic_block = {
->> +static struct notifier_block alpha_panic_block_base = {
->>  	alpha_panic_event,
->>          NULL,
->>          INT_MAX /* try to do it first */
->>  };
->>  
->> +static struct tunable_atomic_notifier_block alpha_panic_block = {
->> +	&alpha_panic_block_base,
-> 
-> Use C99-style initializer.  and NULLs aren't needed.
+> Tomo already nailed this one, see below.
+>
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] x86: pci-gart fix
+>
+> map_sg could copy the last sg element to another position (if merging
+> some elements). It breaks sg chaining. This copies only
+> dma_address/length instead of the whole sg element.
 
-OK. I'll fix.
-
-Thanks,
-  Takenori
-
-> 
->> +	NULL,
->> +	NULL,
->> +	NULL,
->> +	NULL
->> +};
->> +
->>  #include <asm/uaccess.h>
->>  #include <asm/pgtable.h>
->>  #include <asm/system.h>
-> 
->> diff -uprN linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c
->> --- linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c	2007-10-10 05:31:38.000000000 +0900
->> +++ linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c	2007-10-18 09:00:35.900000000 +0900
->> @@ -228,14 +228,23 @@ static int panic_event(struct notifier_b
->>  	return NOTIFY_DONE;
->>  }
->>  
->> -static struct notifier_block panic_block = {
->> +static struct notifier_block panic_block_base = {
->>  	.notifier_call	= panic_event,
->>  };
->>  
->> +static struct tunable_atomic_notifier_block panic_block = {
->> +	.nb		= &panic_block_base,
->> +	.head		= NULL,
->> +	.dir		= NULL,
->> +	.pri_dentry	= NULL,
->> +	.desc_dentry	= NULL
-> 
-> Drop the NULLs.
-> 
->> +};
->> +
->>  static int __init voiceblue_setup(void)
->>  {
->>  	/* Setup panic notifier */
->> -	notifier_chain_register(&panic_notifier_list, &panic_block);
->> +	tunable_atomic_notifier_chain_register(&panic_notifier_list,
->> +					       &panic_block, "VoiceBlue", NULL);
->>  
->>  	return 0;
->>  }
->> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c
->> --- linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c	2007-10-10 05:31:38.000000000 +0900
->> +++ linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c	2007-10-18 09:01:33.408000000 +0900
->> @@ -226,10 +226,18 @@ static int panic_event(struct notifier_b
->>  	return NOTIFY_DONE;
->>  }
->>  
->> -static struct notifier_block panic_block = {
->> +static struct notifier_block panic_block_base = {
->>  	.notifier_call	= panic_event,
->>  };
->>  
->> +static struct tunable_atomic_notifier_block panic_block = {
->> +	.nb		= &panic_block_base,
->> +	.head		= NULL,
->> +	.dir		= NULL,
->> +	.pri_dentry	= NULL,
->> +	.desc_dentry	= NULL
-> 
-> Ditto.
-> 
->> +};
->> +
->>  static int __init reboot_setup(void)
->>  {
->>  	_machine_restart = sgi_machine_restart;
-> 
->> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c
->> --- linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c	2007-10-10 05:31:38.000000000 +0900
->> +++ linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c	2007-10-18 09:02:20.496000000 +0900
->> @@ -175,10 +175,18 @@ static int panic_event(struct notifier_b
->>  	return NOTIFY_DONE;
->>  }
->>  
->> -static struct notifier_block panic_block = {
->> +static struct notifier_block panic_block_base = {
->>  	.notifier_call = panic_event,
->>  };
->>  
->> +static struct tunable_atomic_notifier_block panic_block = {
->> +	.nb		= &panic_block_base,
->> +	.head		= NULL,
->> +	.dir		= NULL,
->> +	.pri_dentry	= NULL,
->> +	.desc_dentry	= NULL
-> 
-> Ditto.
-> 
->> +};
->> +
->>  static __init int ip32_reboot_setup(void)
->>  {
->>  	/* turn on the green led only */
-> 
->> diff -uprN linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c linux-2.6.23/arch/parisc/kernel/pdc_chassis.c
->> --- linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c	2007-10-10 05:31:38.000000000 +0900
->> +++ linux-2.6.23/arch/parisc/kernel/pdc_chassis.c	2007-10-18 08:56:54.052000000 +0900
->> @@ -101,11 +101,18 @@ static int pdc_chassis_panic_event(struc
->>  }   
->>  
->>  
->> -static struct notifier_block pdc_chassis_panic_block = {
->> +static struct notifier_block pdc_chassis_panic_block_base = {
->>  	.notifier_call = pdc_chassis_panic_event,
->>  	.priority = INT_MAX,
->>  };
->>  
->> +static struct tunable_atomic_notifier_block pdc_chassis_panic_block = {
->> +	.nb		= &pdc_chassis_panic_block_base,
->> +	.head		= NULL,
->> +	.dir		= NULL,
->> +	.pri_dentry	= NULL,
->> +	.desc_dentry	= NULL
-> 
-> Ditto... (I'll skip mentioning the rest of these.)
-> 
->> +};
->>  
->>  /**
->>   * parisc_reboot_event() - Called by the reboot handler.
-> 
-> 
-> ---
-> ~Randy
-> 
-> 
+Thanks, this fixed it.
 
 -- 
-+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+
-ＮＥＣ コンピュータソフトウェア事業本部
-            ＯＳＳプラットフォーム開発本部
-
-        永野 武則 (Takenori Nagano)
-
-TEL:8-23-57270(MyLine) 042-333-5383(外線)
-e-mail:t-nagano@ah.jp.nec.com
-+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+
+Amit Shah
+http://www.amitshah.net/
