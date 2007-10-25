@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXJYTpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbXJYTqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbXJYTpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXJYTpU
+	id S1757517AbXJYTqx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXJYTqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:45:20 -0400
-Received: from thunk.org ([69.25.196.29]:54894 "EHLO thunker.thunk.org"
+	Thu, 25 Oct 2007 15:46:43 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:48753 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbXJYTpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:45:18 -0400
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.24-rc1-ext4-1 patchset released
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Il8dS-00038s-6m@closure.thunk.org>
-Date: Thu, 25 Oct 2007 15:44:54 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1753303AbXJYTqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 15:46:42 -0400
+Date: Fri, 26 Oct 2007 04:46:18 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: linuxsh <linuxsh-dev@lists.sourceforge.net>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [SUPERH / PATA / SCSI] Unable to do start userland after kernel boot
+Message-ID: <20071025194618.GA26344@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+	linuxsh <linuxsh-dev@lists.sourceforge.net>,
+	linux-main <linux-kernel@vger.kernel.org>
+References: <20071025212240.a50c18b6.Kristoffer.ericson@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071025212240.a50c18b6.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-I've just released 2.6.24-rc1-ext4-1.  It removes patches accepted by
-Linus and adds a number of cleanup patches.  It also adds support for
-storing i_blocks in units of filesystem blocks instead of 512 byte
-sectors to eliminate one stupid (and easy to fix) large file scalability
-limit.
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.24-rc1-ext4-1
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=summary
-
-and
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.24-rc1-ext4-
-1
-
-						- Ted
-
-Pulled into mainline:
--jbd_slab_cleanup.patch
--jbd2_slab_cleanup.patch
--jbd_jbd_kmalloc_cleanup.patch
--jbd2_jbd_kmalloc_cleanup.patch
--jbd2-ext4-cleanups-convert-to-kzalloc.patch
--jbd_to_jbd2_naming_cleanups.patch
--jbd2-fix-commit-code-to-properly-abort-journal.patch
--jbd2-debug-code-cleanup.patch
--remove-obsolete-fragments.patch
--remove-ifdef-config_ext4_index.patch 
--uninitialized-block-groups.patch
--fix-sparse-warnings.patch
--flex_bg-kernel-support-v2.patch
-
-New patches:
-+ext4_large_blocksize_support.patch
-+ext4_rec_len_overflow_with_64kblk_fix-v2.patch
-+large-file-blocktype.patch
-+ext4_grpnum_t.patch
-+ext4_grpnum_t_int_fix.patch
-+ext4-cleanup.patch
-+ext4-cleanup-2.patch
-+ext4-cleanup-3.patch
-+ext4-cleanup-4.patch
-+48-bit-i_blocks.patch
-+large-file.patch
-+ext2_fix_max_size.patch
-+ext3_fix_max_size.patch
-+ext4_sync_group_desciptor_with_e2fsprogs.patch
-+ext4-Return-after-ext4_error-in-case-of-failures.patch
-+ext4_grpnumt-mballoc-fix.patch
-+mballoc-compilebench-fix.patch
+On Thu, Oct 25, 2007 at 09:22:40PM -0700, Kristoffer Ericson wrote:
+> The bottom line seems to be that it fails to attach scsi sg0. It
+> explains why it doesn't work, but not why it stopped working. And this
+> has nothing to do with the current kernel config, I've been over that
+> the last 4 days. It all started when I synced my jlime-current.git
+> repository with linux-2.6.git. As you can see I had 2.6.23-rc6 and then
+> synced up to 2.6.23-rc8/rc9 and thats when the troubles started.
+> 
+At least that suggests it's not fallout from the INTC changes in -rc1, so
+that helps to narrow it down a bit. Since you have a known good and bad,
+it would be nice if you could bisect this to figure out what exactly
+caused the regression. There weren't any SH-specific changes between rc6
+and rc8/rc9 at least.
