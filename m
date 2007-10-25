@@ -1,116 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbXJYLoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbXJYLs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760316AbXJYLoa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 07:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbXJYLoV
+	id S1759670AbXJYLs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 07:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbXJYLsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 07:44:21 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:33075 "EHLO proxima.lp0.eu"
+	Thu, 25 Oct 2007 07:48:18 -0400
+Received: from narury.org ([84.16.240.217]:42809 "EHLO narury.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754368AbXJYLoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 07:44:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
-	b=LyghZCfBlpVN88fADjFPcTLoL3BSZ92TpqwKKm8/hQZz7hsjkZHBKaWwgbJoaKsn/Bcli53xd+GNP7RelDj81m+iqhMDmrLVSyZNrF+i6ao2piwQcqYE4IMD4uMb2oCp;
-Message-ID: <17771.simon.1193312648@5ec7c279.invalid>
-In-Reply-To: <20071024223124.GI30533@stusta.de>
-References: <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org>
-    <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr>
-    <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
-    <20071022210956.31f7bbcf@laptopd505.fenrus.org>
-    <20071023051642.GA3908@sequoia.sous-sol.org>
-    <471E9260.6000704@goop.org>
-    <20071023220649.5a76af82@laptopd505.fenrus.org>
-    <55615.simon.1193226629@5ec7c279.invalid>
-    <20071024125533.GE30533@stusta.de>
-    <471F8AC5.9080300@simon.arlott.org.uk>
-    <20071024223124.GI30533@stusta.de>
-Date: Thu, 25 Oct 2007 12:44:08 +0100
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to 
-     static interface)
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Adrian Bunk" <bunk@kernel.org>
-Cc: "Chris Wright" <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andreas Gruenbacher" <agruen@suse.de>,
-       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "James Morris" <jmorris@namei.org>,
-       "Crispin Cowan" <crispin@crispincowan.com>,
-       "Giacomo Catenazzi" <cate@debian.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-User-Agent: SquirrelMail/1.4.10a
+	id S1756190AbXJYLsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 07:48:17 -0400
+Date: Thu, 25 Oct 2007 14:48:14 +0300
+From: Riku Voipio <riku.voipio@iki.fi>
+To: "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] hwmon/f75375s.c: buggy if()
+Message-ID: <20071025114814.GA2452@kos.to>
+References: <20071017195439.GD3778@stusta.de> <20071017204508.GA32110@kos.to> <20071018133744.GC3526@jupiter.solarsys.private> <20071019143754.0aa4483b@hyperion.delvare> <20071024115034.GA5797@kos.to> <20071025022529.GF30546@jupiter.solarsys.private>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: multipart/mixed; boundary="pWyiEgJYm5f9v55/"
+Content-Disposition: inline
+In-Reply-To: <20071025022529.GF30546@jupiter.solarsys.private>
+X-message-flag: Warning: message not sent with a DRM-Certified client
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, October 24, 2007 23:31, Adrian Bunk wrote:
-> On Wed, Oct 24, 2007 at 07:11:17PM +0100, Simon Arlott wrote:
->> On 24/10/07 13:55, Adrian Bunk wrote:
->> > On Wed, Oct 24, 2007 at 12:50:29PM +0100, Simon Arlott wrote:
->> >> I currently have an LSM that only handles permissions for socket_bind
->> >> and socket_listen, I load it and then "capability" as secondary on
->> >> boot - but now I can't because the LSM framework is now just the LS
->> >> framework.
->> >>
->> >> Why can't this "static LSM" change be a Kconfig option?
->> >> (I don't want to have to maintain my own reverted copy of security/,
->> >> or compile this into the kernel because then I can't ever modify and
->> >> reload it without rebooting.)
->> >
->> > Let's start with the more important questions:
->> >
->> > Did you submit your LSM for inclusion into the kernel?
->>
->> No, because the interface for configuring it would be rejected... I have
->> a /proc file which I write a binary configuration file to. This works
->> fine for me but it would take a lot of work to write a proper interface
->> - which I'm still not sure how to do*.
->>...
->
-> Generally, the goal is to get external modules included into the kernel.
->
-> You want to be able to have this functionality and you do not want to
-> use SELinux for it.
 
-SELinux couldn't do it when I wrote my own module, it may do now but I
-haven't checked - that's also far too much extra configuration overhead
-to do something relatively simple.
+--pWyiEgJYm5f9v55/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> But instead of working on getting your code into the kernel you are
-> requesting that an API making it easier for you to maintain it
-> externally comes back.
+On Wed, Oct 24, 2007 at 10:25:29PM -0400, Mark M. Hoffman wrote:
+> * Riku Voipio <riku.voipio@iki.fi> [2007-10-24 14:50:34 +0300]:
+> > On Fri, Oct 19, 2007 at 02:37:54PM +0200, Jean Delvare wrote:
+> > > Riku, can you please submit a patch fixing this? The attribute should
+> > > be declared read-only, and then you can use sysfs_chmod_file() to
+> > > change it to read-write where supported. 
 
-It's also much harder to maintain it internally too since it can no
-longer be compiled as a module. If it were possible to have to make LSM
-usable as a module but without secondary support, that would make
-development easier - although secondary support is so trivial I doubt
-it makes a difference to the possibility of allowing it to be compiled
-as a module again.
+> > Thanks, this was good suggestion. Patch attached.
 
-> There are other points in this thread that might or might not warrant
-> making LSM modular again, but even though it might sound harsh breaking
-> external modules and thereby making people aware that their code should
-> get into the kernel is IMHO a positive point.
+> No patch?
 
-You're only going to be forcing me to spend *my* time developing it into
-something that could be accepted into the kernel when it works fine for
-me already. Then I'd have to convince the LSM maintainer(s) that it
-should be merged - this isn't like an external hardware driver where
-there's no existing support in the kernel.
-
-
->> Simon Arlott
->
-> cu
-> Adrian
-
+Let's try again..
 
 -- 
-Simon Arlott
+"rm -rf" only sounds scary if you don't have backups
+
+--pWyiEgJYm5f9v55/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="0002-Fix-hwmon-f75375s.c-buggy-if.patch"
+
+>From 90a98836377541819012dfea8bd1bf748cd39723 Mon Sep 17 00:00:00 2001
+From: Riku Voipio <riku.voipio@movial.fi>
+Date: Mon, 22 Oct 2007 17:42:35 +0300
+Subject: [PATCH] Fix hwmon/f75375s.c: buggy if()
+
+Fix value check in set_pwm_mode(). Instead of checking for
+chip variant there, make pwmX_mode sysfs nodes only writable
+on f75375 variant.
+
+Signed-off-by: Riku Voipio <riku.voipio@movial.fi>
+---
+ drivers/hwmon/f75375s.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
+index 13a0413..d3b7932 100644
+--- a/drivers/hwmon/f75375s.c
++++ b/drivers/hwmon/f75375s.c
+@@ -323,7 +323,7 @@ static ssize_t set_pwm_mode(struct device *dev, struct device_attribute *attr,
+ 	int val = simple_strtoul(buf, NULL, 10);
+ 	u8 conf = 0;
+ 
+-	if (val != 0 || val != 1 || data->kind == f75373)
++	if (!(val == 0 || val == 1))
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&data->update_lock);
+@@ -529,13 +529,13 @@ static SENSOR_DEVICE_ATTR(pwm1, S_IRUGO|S_IWUSR,
+ 	show_pwm, set_pwm, 0);
+ static SENSOR_DEVICE_ATTR(pwm1_enable, S_IRUGO|S_IWUSR,
+ 	show_pwm_enable, set_pwm_enable, 0);
+-static SENSOR_DEVICE_ATTR(pwm1_mode, S_IRUGO|S_IWUSR,
++static SENSOR_DEVICE_ATTR(pwm1_mode, S_IRUGO,
+ 	show_pwm_mode, set_pwm_mode, 0);
+ static SENSOR_DEVICE_ATTR(pwm2, S_IRUGO | S_IWUSR,
+ 	show_pwm, set_pwm, 1);
+ static SENSOR_DEVICE_ATTR(pwm2_enable, S_IRUGO|S_IWUSR,
+ 	show_pwm_enable, set_pwm_enable, 1);
+-static SENSOR_DEVICE_ATTR(pwm2_mode, S_IRUGO|S_IWUSR,
++static SENSOR_DEVICE_ATTR(pwm2_mode, S_IRUGO,
+ 	show_pwm_mode, set_pwm_mode, 1);
+ 
+ static struct attribute *f75375_attributes[] = {
+@@ -655,6 +655,19 @@ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind)
+ 	if ((err = sysfs_create_group(&client->dev.kobj, &f75375_group)))
+ 		goto exit_detach;
+ 
++	if (kind == f75375) {
++		err = sysfs_chmod_file(&client->dev.kobj,
++			&sensor_dev_attr_pwm1_mode.dev_attr.attr,
++			S_IRUGO | S_IWUSR);
++		if (err)
++			goto exit_detach;
++		err = sysfs_chmod_file(&client->dev.kobj,
++			&sensor_dev_attr_pwm2_mode.dev_attr.attr,
++			S_IRUGO | S_IWUSR);
++		if (err)
++			goto exit_detach;
++	}
++
+ 	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		err = PTR_ERR(data->hwmon_dev);
+-- 
+1.5.3.1
+
+
+--pWyiEgJYm5f9v55/--
