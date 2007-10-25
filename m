@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbXJYXmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbXJYXmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbXJYXmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJYXmK
+	id S1761303AbXJYXmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXJYXmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:42:10 -0400
-Received: from mail-dub.bigfish.com ([213.199.154.10]:35215 "EHLO
-	mail12-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbXJYXmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:42:08 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <472129C3.6040405@am.sony.com>
-Date: Thu, 25 Oct 2007 16:41:55 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+	Thu, 25 Oct 2007 19:42:44 -0400
+Received: from mx1.suse.de ([195.135.220.2]:37331 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752692AbXJYXmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:42:43 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Is gcc thread-unsafe?
+Date: Fri, 26 Oct 2007 01:42:37 +0200
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260116.10904.ak@suse.de> <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: IRQ off latency of printk is very high
-References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org>
-In-Reply-To: <20071025231237.GT19691@waste.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Oct 2007 23:42:04.0085 (UTC) FILETIME=[A57DE650:01C81760]
+Content-Disposition: inline
+Message-Id: <200710260142.37902.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Thu, Oct 25, 2007 at 03:52:28PM -0700, Tim Bird wrote:
->> Mathieu Desnoyers wrote:
->>> It might help to read this thread I posted on LKML in January 2006
->>> explaining the problem, which led to some discussion about the issue.
->>>
->>> http://lkml.org/lkml/2006/6/3/48
->> This is very helpful.  Jon Smirl's answer seems to give the
->> rationale for supporting printk output in interrupt context.
->> I'm not sure, however, if extending the interrupt off period
->> to cover the console output is required.  It didn't until
->> Ingo changed it in 2.6.17.
+On Friday 26 October 2007 01:32:53 Linus Torvalds wrote:
 > 
-> Hmm, I see this at the beginning of the post-BK era (2.6.12-rc2):
+> On Fri, 26 Oct 2007, Andi Kleen wrote:
+> > 
+> > No it can't (at least not on x86) as I have explained in the rest of the mail 
+> > you conveniently snipped.
 > 
-> 	        spin_lock_irqsave(&logbuf_lock, flags);
-> 		...
-> 		spin_unlock(&logbuf_lock);
-> 		call_console_drivers(_con_start, _log_end);
-> 		local_irq_restore(flags);
+> I "conveniently snipped it" because it was pointless.
 > 
+> "adc" or "cmov" has nothing what-so-ever to do with it. If some routine 
+> returns 0-vs-1 and gcc then turns "if (routine()) x++" into 
+> "x+=routine()", what does that have to do with adc or cmov?
 
-Well, I need to do some more research.  This must be in
-release_console_sem().  I was looking at vprintk, through
-the ages.  At 2.6.16, it looked like this:
+That is not what gcc did in that case. I don't think it tracks sets of values
+over function calls (or even inside functions) at all.
 
-        spin_lock_irqsave(&logbuf_lock, flags);
-        ...
-              spin_unlock_irqrestore(&logbuf_lock, flags);
-              console_may_schedule = 0;
-              release_console_sem();
+The generated code was
 
-but the irq restore has been moving around to different places
-in that function over the last few years.  I suspect that in the
-common case the irqsave in vprintk is the one that disables
-ints.
+          cmpl    $1, %eax                ; test res
+          movl    acquires_count, %edx    ; load
+          adcl    $0, %edx                ; maybe add 1
+          movl    %edx, acquires_count    ; store
 
-It appears that formerly interrupts were enabled in vprintk but
-re-disabled immediately upon entering release_console_sem().
-As it is now, they're held during formatting, buffering,
-and output, which seems excessive.
+So it just added the result of a comparison into a variable
+by (ab)using carry for this.
 
-It seems draconian to drain the entire buffer with ints disabled.
-Is it possible to break this up and send out smaller chunks
-at a time?  Maybe by putting a chunk loop in release_console_sem()?
+In theory such things can be done with CMOV too by redirecting
+a store into a dummy variable to cancel it, but gcc doesn't
+do that on its own.
 
-Just an idea.  I can see that there are a lot of requirements
-for this code, and the concurrency control has gotten
-complex over the years.
- -- Tim
+> The fact is, these kinds of optimizations are *bogus* and they are 
+> dangerous.
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+The conditional add/sub using carry trick is not generally bogus. 
+It's just bogus for memory addresses not pretty much guaranteed in L1
+[aka small stack frame] because there the pipeline benefit is unlikely to 
+offset the memory costs (and of course poor quality of implementation because of the 
+missing thread safety). 
 
+But for registers it's a fine optimization.
+
+-Andi
