@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXJYBld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXJYBm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXJYBld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXJYBlZ
+	id S1756214AbXJYBm2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXJYBmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:41:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52155 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752729AbXJYBlY (ORCPT
+	Wed, 24 Oct 2007 21:42:19 -0400
+Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:23751 "HELO
+	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753009AbXJYBmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:41:24 -0400
-Date: Thu, 25 Oct 2007 02:44:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.24-rc1] resource_len() utility function
-Message-ID: <20071025024405.3e960e9c@the-village.bc.nu>
-In-Reply-To: <200710241820.52376.david-b@pacbell.net>
-References: <200710241820.52376.david-b@pacbell.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
+	Wed, 24 Oct 2007 21:42:17 -0400
+X-YMail-OSG: VYe1MeoVM1ltuhUt3.DgafmwEGJ5n_Q27CYvQWrN5ikm1yOlgBfe9kT6pA6zq.8ufyGCeMR4Kw--
+X-RocketYMMF: rancidfat
+Date: Wed, 24 Oct 2007 18:42:15 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+To: Chris Wright <chrisw@sous-sol.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20071025002356.GB3660@sequoia.sous-sol.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <183239.5113.qm@web36604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 18:20:52 -0700
-David Brownell <david-b@pacbell.net> wrote:
 
-> Add a new resource_len() function, so drivers can start using this
-> instead of driver-private code for a common idiom.  The call can be
-> useful with at least:
+--- Chris Wright <chrisw@sous-sol.org> wrote:
+
+> * Casey Schaufler (casey@schaufler-ca.com) wrote:
+> > And don't give me the old "LKML is a tough crowd" feldercarb.
+> > Security modules have been much worse. Innovation, even in
+> > security, is a good thing and treating people harshly, even
+> > "for their own good", is an impediment to innovation.
 > 
->  - request_region(), release_region()
->  - request_mem_region(), release_mem_region()
->  - ioremap()
-> 
-> Candidate drivers include those using platform or PNP busses, and
-> maybe some others.  PCI already has a similar function.
-> 
-> This patch also updates a representative set of drivers in two
-> subsystems to use this call (SPI, and USB peripheral/gadget).
+> I agree that innovation is critical to the success of Linux, and security
+> is not immune to that.  The trouble is that most of the security modules
+> that have come forward have had some real serious shortcomings.  I do
+> believe it is prudent to keep in-tree security sensitive code under
+> high scrutiny because we do not want to create security holes by adding
+> problematic security code.
 
-PCI also increasingly is using functions that allow the user to choose to
-map a resource as a resource (eg pci_iomap). So is it better to have
-functions request_mem_resource(res)  free_mem_resource(res) and similar
-instead or as well ?
+I agree that security code does need to provide security. What we
+need to get away from is the automatic attacks that are based on 20th
+century computer system assumptions. Things like "name based access
+control is rediculous", and "a module can't be any good if it doesn't
+deal with all objects", or "the granularity isn't fine enough". Look
+at TOMOYO. It's chuck full of good ideas. Why spend so much energy
+badgering them about not dealing with sockets? How about helping the
+AppArmor crew come up with acceptable implementations rather than
+whinging about the evils of hard links? And maybe, just maybe, we can
+get away from the inevitable claim that you could do that with a few
+minutes work in SELinux policy, but only if you're a security
+professional of course.
+
+Sure, some LSM proposals will be lousy, and some really will be
+better done as an SELinux policy module. Some will even have merit
+but require unreasonable interface changes. As people who care
+about security (y'all who are only from the LKML are excused) it
+is our obligation to look beyond the preconceived notions of what
+is and isn't secure. Security is subjective. It's how you feel
+about it.
 
 
+
+Casey Schaufler
+casey@schaufler-ca.com
