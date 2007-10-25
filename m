@@ -1,73 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbXJYUSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbXJYUTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbXJYUSk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXJYUS2
+	id S1762004AbXJYUTu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbXJYUTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:18:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52126 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756902AbXJYUSO (ORCPT
+	Thu, 25 Oct 2007 16:19:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55250 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751001AbXJYUTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:18:14 -0400
-Date: Thu, 25 Oct 2007 22:18:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jie Zhang <jzhang.linux@gmail.com>,
-       bryan.wu@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
-Message-ID: <20071025201842.GT30533@stusta.de>
-References: <20071024162643.GP30533@stusta.de> <40401db90710241947i15e40e78v292e52f5229d9d35@mail.gmail.com> <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com> <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de> <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com> <20071025165344.GL30533@stusta.de> <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 25 Oct 2007 16:19:39 -0400
+Date: Thu, 25 Oct 2007 13:19:06 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dtor@insightbb.com, pavel@ucw.cz, lenb@kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] apanel: space savings.
+Message-ID: <20071025131906.36847ed7@shemminger-laptop>
+In-Reply-To: <20071024160300.85e1cbda.akpm@linux-foundation.org>
+References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
+	<200709140130.59732.dtor@insightbb.com>
+	<20070916215516.2934abad@oldman.hemminger.net>
+	<200709161623.00286.dtor@insightbb.com>
+	<20071023125555.38d63567@shemminger-laptop>
+	<20071024160300.85e1cbda.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 04:07:45PM -0400, Mike Frysinger wrote:
-> On 10/25/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Thu, Oct 25, 2007 at 12:16:40PM -0400, Mike Frysinger wrote:
-> > > On 10/25/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > > > On Wed, Oct 24, 2007 at 08:06:14PM -0700, H. Peter Anvin wrote:
-> > > > > Mike Frysinger wrote:
-> > > > >> we'll have to either use the gcc attributes to force old inline
-> > > > >> behavior or use the gcc flag to force it
-> > > > >
-> > > > > We should probably have an extern_inline define then, assuming this is a
-> > > > > function that does exist in a linkable version already -- otherwise "static
-> > > > > inline" is correct.
-> > > >
-> > > > Since we #define inline to be __attribute__((always_inline))
-> > > > "extern inline" with the old semantics would only behave differently
-> > > > if someone took the address of one of these string functions.
-> > >
-> > > that isnt what we intended ;)
-> > >
-> > > > Does this happen anywhere in the blackfin port?
-> > >
-> > > gcc is also free to ignore the optimized inline in favor of an
-> > > external reference
-> >
-> > It is not since we #define inline to be __attribute__((always_inline)).
-> 
-> as i said, that was not what we intended ... and actually,
-> always_inline does not mean always inline ... it is still possible to
-> get gcc to not inline things when building debug versions.
+Eliminate the device_names they are only used for debug
+messages. Add paren's for one expression.
 
-Do you have any example for your claim "to get gcc to not inline things 
-when building debug versions"?
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-> -mike
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- a/drivers/input/misc/apanel.c	2007-10-25 09:20:23.000000000 -0700
++++ b/drivers/input/misc/apanel.c	2007-10-25 12:07:00.000000000 -0700
+@@ -27,7 +27,7 @@
+ #include <linux/leds.h>
+ 
+ #define APANEL_NAME	"Fujitsu Application Panel"
+-#define APANEL_VERSION	"1.3"
++#define APANEL_VERSION	"1.3.1"
+ #define APANEL		"apanel"
+ 
+ /* How often we poll keys - msecs */
+@@ -40,6 +40,7 @@ enum apanel_devid {
+ 	APANEL_DEV_CDBTN  = 2,
+ 	APANEL_DEV_LCD	  = 3,
+ 	APANEL_DEV_LED	  = 4,
++
+ 	APANEL_DEV_MAX,
+ };
+ 
+@@ -53,14 +54,6 @@ enum apanel_chip {
+ /* Result of BIOS snooping/probing -- what features are supported */
+ static enum apanel_chip device_chip[APANEL_DEV_MAX];
+ 
+-/* names for APANEL_XXX */
+-static const char *device_names[APANEL_DEV_MAX] __initdata = {
+-	[APANEL_DEV_APPBTN] = "Application Buttons",
+-	[APANEL_DEV_LCD]    = "LCD",
+-	[APANEL_DEV_LED]    = "LED",
+-	[APANEL_DEV_CDBTN]  = "CD Buttons",
+-};
+-
+ #define MAX_PANEL_KEYS	12
+ 
+ struct apanel {
+@@ -123,7 +116,7 @@ static void apanel_poll(struct input_pol
+ 
+ 	dev_dbg(&ipdev->input->dev, APANEL ": data %#x\n", data);
+ 	for (i = 0; i < ipdev->input->keycodemax; i++)
+-		if (1ul << i & data)
++		if ((1u << i) & data)
+ 			report_key(idev, ap->keymap[i]);
+ }
+ 
+@@ -366,17 +359,14 @@ static int __init apanel_init(void)
+ 		}
+ 
+ 		if (devno >= APANEL_DEV_MAX)
+-			pr_notice(APANEL ": unknown device %d found\n", devno);
++			pr_notice(APANEL ": unknown device %u found\n", devno);
+ 		else if (device_chip[devno] != CHIP_NONE)
+-			pr_warning(APANEL ": duplicate entry for %s\n",
+-				   device_names[devno]);
++			pr_warning(APANEL ": duplicate entry for devno %u\n", devno);
+ 
+ 		else if (method != 1 && method != 2 && method != 4) {
+-			pr_notice(APANEL ": unknown  method %u for %s\n",
+-				  method, device_names[devno]);
++			pr_notice(APANEL ": unknown method %u for devno %u\n",
++				  method, devno);
+ 		} else {
+-			pr_debug(APANEL ": %s found.\n", device_names[devno]);
+-
+ 			device_chip[devno] = (enum apanel_chip) chip;
+ 			++found;
+ 		}
