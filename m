@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbXJYTHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbXJYTKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbXJYTHs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXJYTHi
+	id S1756289AbXJYTKM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbXJYTJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:07:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55177 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752371AbXJYTHh (ORCPT
+	Thu, 25 Oct 2007 15:09:59 -0400
+Received: from el-out-1112.google.com ([209.85.162.181]:37919 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbXJYTJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:07:37 -0400
-Date: Thu, 25 Oct 2007 21:07:36 +0200
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] fs: restore nobh
-Message-ID: <20071025190736.GB12883@atrey.karlin.mff.cuni.cz>
-References: <20071008065227.GB14949@wotan.suse.de>
+	Thu, 25 Oct 2007 15:09:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=mc3FflqI2gq1oZqQtVhJMByZa3Z/er7nmsK/f0kKzd1Ew1M1GGSYOHmu3wHcqc0oe63qoADjK+Os+TfidIkxzjzQ5KUT1P/Fe5d45IF2qnVuARoq8Q9PRlgAMxWSfJqc/lyOhfbIsekCY8cTPELuWp+pXT9cf6jWDjWPEdrreP8=
+Message-ID: <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
+Date: Thu, 25 Oct 2007 20:09:56 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Possibility of adding -march=native to x86
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071025185022.GP30533@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071008065227.GB14949@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
+	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+	 <20071025185022.GP30533@stusta.de>
+X-Google-Sender-Auth: 78d20495a0d8acc4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Actually I changed the Makefile.cpu and changed the -march to native
+which did slightly change the size of the kernel (slightly larger I
+think)
 
-> This is overdue, sorry. Got a little complicated, and I've been away from
-> my filesystem test setup so I didn't want ot send it (lucky, coz I found
-> a bug after more substantial testing).
-> 
-> Anyway, RFC?
-  Hmm, maybe one comment/question:
+So what else does that option change?
 
-> Index: linux-2.6/fs/buffer.c
-> ===================================================================
-> --- linux-2.6.orig/fs/buffer.c	2007-10-08 14:09:35.000000000 +1000
-> +++ linux-2.6/fs/buffer.c	2007-10-08 16:45:28.000000000 +1000
-...
+Mike
 
-> -/*
-> - * Make sure any changes to nobh_commit_write() are reflected in
-> - * nobh_truncate_page(), since it doesn't call commit_write().
-> - */
-> -int nobh_commit_write(struct file *file, struct page *page,
-> -		unsigned from, unsigned to)
-> +int nobh_write_end(struct file *file, struct address_space *mapping,
-> +			loff_t pos, unsigned len, unsigned copied,
-> +			struct page *page, void *fsdata)
->  {
->  	struct inode *inode = page->mapping->host;
-> -	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
-> +	struct buffer_head *head = NULL;
-> +	struct buffer_head *bh;
->  
-> -	if (page_has_buffers(page))
-> -		return generic_commit_write(file, page, from, to);
-> +	if (!PageMappedToDisk(page)) {
-> +		if (unlikely(copied < len) && !page_has_buffers(page))
-> +			attach_nobh_buffers(page, head);
-> +		if (page_has_buffers(page))
-> +			return generic_write_end(file, mapping, pos, len, copied, page, fsdata);
-> +	}
-  So we can have a page with attached buffers but we decide to not call
-generic_write_end()...
-
->  	SetPageUptodate(page);
->  	set_page_dirty(page);
-  And we just set the page dirty but we leave buffers clean. So cannot
-subsequent try_to_free_buffers() come, mark page as clean (as buffers
-are clean) and discard the data?
-
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+On 25/10/2007, Adrian Bunk <bunk@kernel.org> wrote:
+> On Thu, Oct 25, 2007 at 07:33:35PM +0100, Michael Lothian wrote:
+> > Hi
+> >
+> > I was wondering if it was possible to add -march=native support to the
+> > processor options of the new x86 architecture if gcc 4.2 or greater is being
+> > used.
+> >
+> > I'm not suggesting this should be a default at all, merely an extra option
+> > similar to selecting P4, Athlon or even -Os.
+> >
+> > I've manually tried this flag at home with no ill effects.
+>
+> Selecting your CPU in the kernel configuration has more effects than
+> just setting the gcc flag, so it wouldn't gain you anything since you
+> anyway have to choose the correct CPU.
+>
+> > Mike
+>
+> cu
+> Adrian
+>
+> --
+>
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
