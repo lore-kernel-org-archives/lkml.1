@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbXJYXDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbXJYXEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbXJYXDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXJYXDn
+	id S1759922AbXJYXEf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXJYXE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:03:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35643 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 19:04:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56290 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbXJYXDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:03:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Add an ERR_CAST() function to complement ERR_PTR and co. [try
-	#5.1]
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Fri, 26 Oct 2007 00:03:36 +0100
-Message-ID: <20071025230336.23582.69245.stgit@warthog.procyon.org.uk>
-In-Reply-To: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
-References: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
-User-Agent: StGIT/0.13
+	id S1753858AbXJYXE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:04:27 -0400
+Message-ID: <472120F6.2080703@garzik.org>
+Date: Thu, 25 Oct 2007 19:04:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Jeff Garzik <jeff@garzik.org>
+CC: =?UTF-8?B?SXNtYWlsIETDtm5tZXo=?= <ismail@pardus.org.tr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Kleen, Andi" <ak@suse.de>
+Subject: Re: Is gcc thread-unsafe?
+References: <200710251324.49888.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org> <200710260126.48885.ismail@pardus.org.tr> <47211F19.5080607@garzik.org>
+In-Reply-To: <47211F19.5080607@garzik.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an ERR_CAST() function to complement ERR_PTR and co. for the purposes of
-casting an error entyped as one pointer type to an error of another pointer
-type whilst making it explicit as to what is going on.
+Jeff Garzik wrote:
+> Ismail Dönmez wrote:
+>> Thursday 25 October 2007 Tarihinde 17:55:00 yazmıştı:
+>>> I think the OpenBSD people decided to actually do something about this,
+>>> and I suspect it had *nothing* to do with license issues, and everything
+>>> to do with these kinds of problems. I wish them all the luck, although
+>>> personally I think LLVM is a much more interesting project.
+>>
+>> And on the LLVM side all hopes for clang [0] at least for better C++ 
+>> error reporting ;-)
+>>
+>> [0] http://clang.llvm.org/
+> 
+> Someone should take 'sparse' and use that as a C language front-end to 
+> LLVM...
 
-This provides a replacement for the ERR_PTR(PTR_ERR(p)) construct.
+Among clang's "features":
+	"A single unified parser for C/ObjC/C++"
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+bleh.  I cannot imagine how ugly a C parser gets, after being taught 
+C++.  IMO since you can basically redefine everything in C++, it's not a 
+language but a proto-language.
 
- include/linux/err.h |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+	Jeff
 
-diff --git a/include/linux/err.h b/include/linux/err.h
-index 1ab1d44..08409cd 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -34,6 +34,18 @@ static inline long IS_ERR(const void *ptr)
- 	return IS_ERR_VALUE((unsigned long)ptr);
- }
- 
-+/**
-+ * ERR_CAST - Explicitly cast an error-valued pointer to another pointer type
-+ * @ptr: The pointer to cast.
-+ *
-+ * Explicitly cast an error-valued pointer to another pointer type in such a
-+ * way as to make it clear that's what's going on.
-+ */
-+static inline void *ERR_CAST(const void *ptr)
-+{
-+	return (void *) ptr;
-+}
-+
- #endif
- 
- #endif /* _LINUX_ERR_H */
 
