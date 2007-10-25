@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762744AbXJYUex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbXJYUi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762744AbXJYUex (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbXJYUem
+	id S1758301AbXJYUi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXJYUis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:34:42 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46281 "EHLO pasmtpA.tele.dk"
+	Thu, 25 Oct 2007 16:38:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56778 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbXJYUel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:34:41 -0400
-Date: Thu, 25 Oct 2007 22:36:15 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/6] kill i386 and x86_64 directories
-Message-ID: <20071025203615.GA14819@uranus.ravnborg.org>
-References: <20071025195644.GA14501@uranus.ravnborg.org> <20071025201437.GA14671@uranus.ravnborg.org> <3ae72650710251319y6bc4ad10u1b7ab271ba333072@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752093AbXJYUir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:38:47 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: [2.6 patch] acpi/ec.c: fix use-after-free
+Date: Thu, 25 Oct 2007 16:38:24 -0400
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20071024162600.GD30533@stusta.de> <20071024172604.GD30533@stusta.de> <471F812B.2020005@suse.de>
+In-Reply-To: <471F812B.2020005@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <3ae72650710251319y6bc4ad10u1b7ab271ba333072@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710251638.24282.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 10:19:40PM +0200, Kay Sievers wrote:
-> > Because:
-> > 1) It sort of finishes the initial merge
-> > 2) Any breakage should be easy to trigger (build breakage) and easy to fix.
-> >
-> > It is 1) that make me say this is -rc1 materail,
-> >  and 2) that say that this is an acceptable 'breaking the rules' patch serie.
+Applied.
+
+thanks,
+-Len
+
+
+On Wednesday 24 October 2007 13:30, Alexey Starikovskiy wrote:
+> Adrian Bunk wrote:
+> > On Wed, Oct 24, 2007 at 09:15:18PM +0400, Alexey Starikovskiy wrote:
+> >> Adrian,
+> >>
+> >> commit 30c08574da0ead1a47797ce028218ce5b2de61c7 can not introduce use-after-free.
+> >>
+> >> Please check...
+> > 
+> > 
+> > Commit 30c08574da0ead1a47797ce028218ce5b2de61c7 did:
+> > 
+> > <--  snip  -->
+> > 
+> >  	list_for_each_entry(handler, &ec->list, node) {
+> >                 if (query_bit == handler->query_bit) {
+> >                         list_del(&handler->node);
+> >                         kfree(handler);
+> > -                       break;
+> >                 }
+> > 	}
+> > 
+> > <--  snip  -->
+> > 
+> > 
+> > If you look at the definition of list_for_each_entry() in 
+> > include/linux/list.h:
+> > 
+> > <--  snip  -->
+> > 
+> > #define list_for_each_entry(pos, head, member)                          \
+> >         for (pos = list_entry((head)->next, typeof(*pos), member);      \
+> >              prefetch(pos->member.next), &pos->member != (head);        \
+> >              pos = list_entry(pos->member.next, typeof(*pos), member))
+> >                               ^^^^^^^^^^^^^^^^
+> > 
+> > <--  snip  -->
+> > 
+> > 
+> > Without the "break", "handler" is being dereferenced after it was freed.
+> Yes, found it minute before :( 
+> Acked, thanks.
+> > 
+> > 
+> >> Regards,
+> >> Alex.
+> >> Adrian Bunk wrote:
+> >>> This patch fixes a use-after-free introduced by
+> >>> commit 30c08574da0ead1a47797ce028218ce5b2de61c7.
+> >>>
+> >>> Spotted by the Coverity checker.
+> >>>
+> >>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> >>>
+> >>> ---
+> >>> --- linux-2.6/drivers/acpi/ec.c.old	2007-10-23 19:39:47.000000000 +0200
+> >>> +++ linux-2.6/drivers/acpi/ec.c	2007-10-23 19:34:55.000000000 +0200
+> >>> @@ -434,11 +442,11 @@
+> >>>  EXPORT_SYMBOL_GPL(acpi_ec_add_query_handler);
+> >>>  
+> >>>  void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8 query_bit)
+> >>>  {
+> >>> -	struct acpi_ec_query_handler *handler;
+> >>> +	struct acpi_ec_query_handler *handler, *tmp;
+> >>>  	mutex_lock(&ec->lock);
+> >>> -	list_for_each_entry(handler, &ec->list, node) {
+> >>> +	list_for_each_entry_safe(handler, tmp, &ec->list, node) {
+> >>>  		if (query_bit == handler->query_bit) {
+> >>>  			list_del(&handler->node);
+> >>>  			kfree(handler);
+> >>>  		}
+> >>>
+> > 
+> > 
+> > cu
+> > Adrian
+> > 
 > 
-> Hey Sam,
-> I get this after a simple pull from your tree and a: make clean; make:
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/x86/kernel/head_64.o: In function `early_idt_handler':
-> (.text.head+0x1e5): undefined reference to `early_printk'
-> arch/x86/kernel/head64.o: In function `x86_64_start_kernel':
-> head64.c:(.init.text+0xa8): undefined reference to `early_printk'
-> arch/x86/kernel/built-in.o: In function `early_panic':
-> (.text+0x9c07): undefined reference to `early_printk'
-> arch/x86/mm/built-in.o: In function `init_memory_mapping':
-> (.init.text+0xc0a): undefined reference to `early_printk'
-> make: *** [.tmp_vmlinux1] Error 1
-
-I think this is my changes to the Kconfig.debug path
-I received from Randy.
-
-Checking....
-Yup - reverting my change bring back EARLY_PRINTK wich is
-always required on x86_64.
-
-I will redo the series - and build test a bit more.
-Thanks.
-
-	Sam
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
