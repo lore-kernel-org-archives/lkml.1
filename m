@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbXJYSch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbXJYSdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbXJYSch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbXJYScL
+	id S1757941AbXJYSdr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbXJYSdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:32:11 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55228 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756247AbXJYScI (ORCPT
+	Thu, 25 Oct 2007 14:33:39 -0400
+Received: from el-out-1112.google.com ([209.85.162.182]:12328 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753340AbXJYSdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:32:08 -0400
-Date: Thu, 25 Oct 2007 19:23:46 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org,
-       neilb@suse.de
-Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
-In-Reply-To: <200710251644.l9PGilSK021536@agora.fsl.cs.sunysb.edu>
-Message-ID: <Pine.LNX.4.64.0710251913150.21612@blonde.wat.veritas.com>
-References: <200710251644.l9PGilSK021536@agora.fsl.cs.sunysb.edu>
+	Thu, 25 Oct 2007 14:33:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=spSaUEsgK7Eqf2rG64QryRsk4sRF3NHka2k0Ixnbyh0gngAV+iA4tIT57Q8LepQSJJh1/TRPzWkvctkoqHJv1O0gf8eT9e0cUB53yfthbZuZCV0BUNwRqSuwx+1qG9FZ/QwvHTewqhWcOYmXcf/t8nJTAznpGQyIiLfXjuPSqDY=
+Message-ID: <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+Date: Thu, 25 Oct 2007 19:33:35 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Possibility of adding -march=native to x86
+In-Reply-To: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
+X-Google-Sender-Auth: c71142b8180e2085
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, Erez Zadok wrote:
-> 
-> On a related note, I would just love to get rid of calling the lower
-> ->writepage in unionfs b/c I can't even tell if I have a lower page to use
-> all the time.  I'd prefer to call vfs_write() if I can, but I'll need a
-> struct file, or at least a dentry.
+Hi
 
-Why do you want to do that?  You gave a good reason why it's easier
-for ecryptfs, but I doubt it's robust.  The higher the level you
-choose to use, the harder to guarantee it won't deadlock.
+I was wondering if it was possible to add -march=native support to the
+processor options of the new x86 architecture if gcc 4.2 or greater is being
+used.
 
-Or that's my gut feeling anyway.  It's several years since I've
-thought about such issues: just because I came into this knowing
-about shmem_writepage, is perhaps not a good reason to choose me
-as advisor!
+I'm not suggesting this should be a default at all, merely an extra option
+similar to selecting P4, Athlon or even -Os.
 
-Hugh
+I've manually tried this flag at home with no ill effects.
+
+Mike
