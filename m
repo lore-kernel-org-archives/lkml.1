@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbXJYMr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbXJYMwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbXJYMr0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 08:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbXJYMrR
+	id S1760778AbXJYMwa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 08:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXJYMwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 08:47:17 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:40081 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbXJYMrQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 08:47:16 -0400
-X-Greylist: delayed 1450 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 08:47:16 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=pXjv5lh2XDMSAdqKHmfLbXZ++rTaSINdZk+7ViZdODNTCR96XbRMI8SaaFCAi
-	9j/1ov9IKPXGHNJDxjPXh1KIg==
-Date: Thu, 25 Oct 2007 14:23:03 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <rmk@arm.linux.org.uk>, svs1957@gmail.com
-Subject: Re: [Bugme-new] [Bug 9217] New: CONFIG_CMDLINE doesn't pass to kernel
-Message-ID: <20071025122303.GB7543@xi.wantstofly.org>
-References: <bug-9217-10286@http.bugzilla.kernel.org/> <20071024195717.0de6a248.akpm@linux-foundation.org> <47200F05.2050305@billgatliff.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47200F05.2050305@billgatliff.com>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 25 Oct 2007 08:52:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34634 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbXJYMwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 08:52:21 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Thu, 25 Oct 2007 18:22:10 +0530
+Message-Id: <20071025125210.5417.83795.sendpatchset@balbir-laptop>
+Subject: [x86 patch] Fix UML signal.c build error
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 10:35:33PM -0500, Bill Gatliff wrote:
 
-> >Something broke CONFIG_CMDLINE of ARM (at least) between 2.6.22 and 2.6.23.
-> >
-> >I don't know whether it was an ARM patch one of those kernel-wide changes. 
-> >We have futzed with the command-line parsing a bit recently, but the 2.6.23
-> >changelog doesn't suggest anything obvious.
-> 
-> What does the affected system's bootloader pass in r2?  If it's nonzero, 
-> ARM's 2.6.23 may interpret it as being an ATAGS pointer.  And when that 
-> happens, the system prefers the ATAGS over CONFIG_CMDLINE.
-> 
-> There's sanity checking in __vet_atags, but maybe it isn't enough.  
-> Other than that, I can't see anything yet.
 
-If this is the SHARP Shepherd (which seems to be the Zaurus SL-C750,
-which looks like it's the one the submitter is using), it's not setting
-boot_params at all:
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-	MACHINE_START(SHEPHERD, "SHARP Shepherd")
-		.phys_io        = 0x40000000,
-		.io_pg_offst    = (io_p2v(0x40000000) >> 18) & 0xfffc,
-		.fixup          = fixup_corgi,
-		.map_io         = pxa_map_io,
-		.init_irq       = pxa25x_init_irq,
-		.init_machine   = corgi_init,
-		.timer          = &pxa_timer,
-	MACHINE_END
+ include/asm-x86/sigcontext.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN include/asm-x86/sigcontext.h~uml-fix-sigcontext-build-error include/asm-x86/sigcontext.h
+--- 2.6.24-rc1/include/asm-x86/sigcontext.h~uml-fix-sigcontext-build-error	2007-10-25 17:21:34.000000000 +0530
++++ 2.6.24-rc1-balbir/include/asm-x86/sigcontext.h	2007-10-25 17:22:09.000000000 +0530
+@@ -4,7 +4,7 @@
+ #include <linux/compiler.h>
+ #include <asm/types.h>
+ 
+-#ifdef __i386__
++#if BITS_PER_LONG == 32
+ /*
+  * As documented in the iBCS2 standard..
+  *
+@@ -83,7 +83,7 @@ struct sigcontext {
+ 	unsigned long cr2;
+ };
+ 
+-#else /* __i386__ */
++#else /* BITS_PER_LONG == 32 */
+ 
+ /* FXSAVE frame */
+ /* Note: reserved1/2 may someday contain valuable data. Always save/restore
+@@ -133,6 +133,6 @@ struct sigcontext {
+ 	unsigned long reserved1[8];
+ };
+ 
+-#endif /* !__i386__ */
++#endif /* !BITS_PER_LONG == 32 */
+ 
+ #endif
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
