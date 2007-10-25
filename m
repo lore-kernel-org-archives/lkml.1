@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbXJYWBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbXJYWEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbXJYWBc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXJYWBY
+	id S1756122AbXJYWEw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXJYWEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:01:24 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35074 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752601AbXJYWBX (ORCPT
+	Thu, 25 Oct 2007 18:04:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36456 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbXJYWEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:01:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=m3G0s5uf0FDPU5zeEwGPHWnHQSCO3BBW/T4K1g86UkAUfXIMYs/4WSUrzWsNckZitV12oEYTyewqjEatY9BQTQyl8xNsTpbq77/LRfR5+l7YJ7btTayw6ns0iD/OMRbhpwHq51H3ISRYSo8jiA47+gmrtKgmZjuL9l35WVoDgYM=  ;
-X-YMail-OSG: sYD.Ek0VM1m2FgeJf0QFWcXflAzwiSU.aeKBV2gLWZcOoeGrcph1PvCMcJnlkFdV5bq5hc5nGw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH v2] bitops kernel-doc: inline instead of macro
-Date: Fri, 26 Oct 2007 07:54:39 +1000
-User-Agent: KMail/1.9.5
-Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
-       lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>
-References: <20071023220959.a359d57d.rdunlap@xenotime.net> <alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain> <20071025095540.827d4333.rdunlap@xenotime.net>
-In-Reply-To: <20071025095540.827d4333.rdunlap@xenotime.net>
+	Thu, 25 Oct 2007 18:04:44 -0400
+Message-ID: <472112EA.3020604@zytor.com>
+Date: Thu, 25 Oct 2007 15:04:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Michael Lothian <mike@fireburn.co.uk>,
+       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <4720FF2B.9020802@googlemail.com> <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com> <20071025214647.GX30533@stusta.de>
+In-Reply-To: <20071025214647.GX30533@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710260754.40215.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007 02:55, Randy Dunlap wrote:
-> > Hmm, can we simply do
-> >
-> > static inline int test_and_set_bit_lock(int nr, volatile unsigned long *
-> > addr) {
-> > 	return test_and_set_bit(nr, addr);
-> > }
-> >
-> > please ?
->
-> Certainly.  That does look better.
+Adrian Bunk wrote:
+>>>
+>> Yes for something like a distro kernel it is bad but as I said before
+>> this isn't what this is for.
+>>
+>> Eventually it would be nice to to a make localkernel and for a
+>> customised kernel to be build compiling in all pci / pci express
+>> drivers into the kernel and all usb devices as modules.
+>>
+>> Auto magically detecting the cpu would be part of that
+>>
+>> I hate getting a new piece of kit and then have to figure out from
+>> lspci which options need to be turned on and the the really iritation
+>> part of finding the option in make menuconfig
+> 
+> What exactly is irritating?
+> Please name the problems so that they can be fixed.
+> 
+>> Detecting the cpu and using march=native could be all part of that
+> 
+> You don't need march=native for this.
+> 
+> You have to set the right config option for your CPU and you 
+> automatically get the right compiler options.
+> 
 
-Thanks!
+There was a long discussion years ago -- the infamous "Aunt Tillie" 
+thread -- about automatically configuring customized kernels for 
+specific hardware.
 
->
-> ---
->
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Use duplicated inline functions for test_and_set_bit_lock() on x86
-> instead of #define macros, thus avoiding a bad example.  This allows
-> kernel-doc to run cleanly instead of terminating with an error:
->
-> Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand
-> prototype: 'test_and_set_bit_lock test_and_set_bit '
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  include/asm-x86/bitops_32.h |    7 +++++--
->  include/asm-x86/bitops_64.h |    7 +++++--
->  2 files changed, 10 insertions(+), 4 deletions(-)
->
-> --- linux-2.6.24-rc1.orig/include/asm-x86/bitops_32.h
-> +++ linux-2.6.24-rc1/include/asm-x86/bitops_32.h
-> @@ -183,9 +183,12 @@ static inline int test_and_set_bit(int n
->   * @nr: Bit to set
->   * @addr: Address to count from
->   *
-> - * This is the same as test_and_set_bit on x86
-> + * This is the same as test_and_set_bit on x86.
->   */
-> -#define test_and_set_bit_lock test_and_set_bit
-> +static inline int test_and_set_bit_lock(int nr, volatile unsigned long *
-> addr) +{
-> +	return test_and_set_bit(nr, addr);
-> +}
->
->  /**
->   * __test_and_set_bit - Set a bit and return its old value
-> --- linux-2.6.24-rc1.orig/include/asm-x86/bitops_64.h
-> +++ linux-2.6.24-rc1/include/asm-x86/bitops_64.h
-> @@ -173,9 +173,12 @@ static __inline__ int test_and_set_bit(i
->   * @nr: Bit to set
->   * @addr: Address to count from
->   *
-> - * This is the same as test_and_set_bit on x86
-> + * This is the same as test_and_set_bit on x86.
->   */
-> -#define test_and_set_bit_lock test_and_set_bit
-> +static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
-> +{
-> +	return test_and_set_bit(nr, addr);
-> +}
->
->  /**
->   * __test_and_set_bit - Set a bit and return its old value
+It's somewhat of an unusual thing to bother with these days, except for 
+people who develop and maintain the kernel.
+
+	-hpa
