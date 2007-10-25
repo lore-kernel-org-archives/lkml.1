@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbXJYW0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbXJYW2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbXJYW0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbXJYW0H
+	id S1757764AbXJYW2G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXJYW1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:26:07 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49726 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752997AbXJYW0G convert rfc822-to-8bit (ORCPT
+	Thu, 25 Oct 2007 18:27:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43339
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753380AbXJYW1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:26:06 -0400
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Is gcc thread-unsafe?
-Date: Fri, 26 Oct 2007 01:26:48 +0300
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Kleen, Andi" <ak@suse.de>
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200710260126.48885.ismail@pardus.org.tr>
+	Thu, 25 Oct 2007 18:27:53 -0400
+Date: Thu, 25 Oct 2007 15:27:54 -0700 (PDT)
+Message-Id: <20071025.152754.247948525.davem@davemloft.net>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, chunhao.huang@hotmail.com, gregkh@suse.de,
+       htejun@gmail.com, brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks, V2.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071025183248.GA2176@kroah.com>
+References: <20071025.011445.80152909.davem@davemloft.net>
+	<20071025183248.GA2176@kroah.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thursday 25 October 2007 Tarihinde 17:55:00 yazmıştı:
-> I think the OpenBSD people decided to actually do something about this,
-> and I suspect it had *nothing* to do with license issues, and everything
-> to do with these kinds of problems. I wish them all the luck, although
-> personally I think LLVM is a much more interesting project.
+From: Greg KH <greg@kroah.com>
+Date: Thu, 25 Oct 2007 11:32:48 -0700
 
-And on the LLVM side all hopes for clang [0] at least for better C++ error 
-reporting ;-)
+> These all look great to me, and I've pulled them into my trees.
+> 
+> Thanks a lot for doing this work.
 
-[0] http://clang.llvm.org/
-
--- 
-Faith is believing what you know isn't so -- Mark Twain
+Thanks for integrating.
