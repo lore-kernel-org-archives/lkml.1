@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbXJYUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXJYVF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbXJYUjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXJYUjG
+	id S1754177AbXJYVF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXJYVFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:39:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56788 "EHLO hera.kernel.org"
+	Thu, 25 Oct 2007 17:05:50 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51734 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759536AbXJYUjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:39:03 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.6 patch] acpi/battery.c: remove dead code
-Date: Thu, 25 Oct 2007 16:38:41 -0400
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071024162537.GA30533@stusta.de> <471F7E7D.1080501@gmail.com>
-In-Reply-To: <471F7E7D.1080501@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751293AbXJYVFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:05:49 -0400
+Subject: Re: [PATCH 1/2]  i_version update - vfs part
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: jean-noel.cordenner@bull.net
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1193331870.5487.31.camel@frecb002711.frec.bull.fr>
+References: <1191598088.24615.45.camel@frecb002711.frec.bull.fr>
+	 <1193331870.5487.31.camel@frecb002711.frec.bull.fr>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Thu, 25 Oct 2007 14:05:51 -0700
+Message-Id: <1193346351.4288.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251638.41567.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
+On Thu, 2007-10-25 at 19:04 +0200, Cordenner jean noel wrote:
+> Hi,
+> 
+> This is an update of the previous patches on the ext4 git tree, the 2
+> coming patches applies at the end of the current ext4-patch-queue, and
+> replaces the inode-version related patches:
+> 64-bit-i_version.patch
+> i_version_hi.patch
+> ext4_i_version_hi_2.patch
+> i_version_update_ext4.patch
+> 
+> The first part deals with the vfs part. 
+> The i_version field of the inode is changed to be a 64-bit counter that
+> is set on every inode creation and that is incremented every time the
+> inode data is modified (similarly to the "ctime" time-stamp). 
+> The aim is to fulfill a NFSv4 requirement for rfc3530.
+> This first part concerns the vfs, it converts the 32-bit i_version in
+> the generic inode to a 64-bit, a flag is added in the super block in
+> order to check if the feature is enabled and the i_version is
+> incremented in the vfs.
+> 
+Thanks for reposting it.
 
-thanks,
--len
+> Index: linux-2.6.23-ext4-1/fs/inode.c
+> ===================================================================
+> --- linux-2.6.23-ext4-1.orig/fs/inode.c	2007-10-25 16:15:52.000000000
+> +0200
+> +++ linux-2.6.23-ext4-1/fs/inode.c	2007-10-25 16:25:53.000000000 +0200
+> @@ -1216,6 +1216,24 @@
+>  EXPORT_SYMBOL(touch_atime);
+> 
+>  /**
+> + *     inode_inc_iversion      -       increments i_version
+> + *     @inode: inode that need to be updated
+> + *
+> + *     Every time the inode is modified, the i_version field
+> + *     will be incremented.
+> + *     The filesystem has to be mounted with i_version flag
+> + *
+> + */
+> +
+> +void inode_inc_iversion(struct inode *inode)
+> +{
+> +	spin_lock(&inode->i_lock);
+> +	inode->i_version++;
+> +	spin_unlock(&inode->i_lock);
+> +}
 
-On Wednesday 24 October 2007 13:18, Alexey Starikovskiy wrote:
-> Adrian Bunk wrote:
-> > After commit f1d4661abe05d0a2c014166042d15ed8b69ae8f2 this was dead 
-> > code.
-> > 
-> > Spotted by the Coverity checker.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> Acked. Thanks.
-> > 
-> > ---
-> > --- linux-2.6/drivers/acpi/battery.c.old	2007-10-23 18:44:13.000000000 +0200
-> > +++ linux-2.6/drivers/acpi/battery.c	2007-10-23 18:44:43.000000000 +0200
-> > @@ -550,18 +550,14 @@ static ssize_t acpi_battery_write_alarm(
-> >  	int result = 0;
-> >  	char alarm_string[12] = { '\0' };
-> >  	struct seq_file *m = file->private_data;
-> >  	struct acpi_battery *battery = m->private;
-> >  
-> >  	if (!battery || (count > sizeof(alarm_string) - 1))
-> >  		return -EINVAL;
-> > -	if (result) {
-> > -		result = -ENODEV;
-> > -		goto end;
-> > -	}
-> >  	if (!acpi_battery_present(battery)) {
-> >  		result = -ENODEV;
-> >  		goto end;
-> >  	}
-> >  	if (copy_from_user(alarm_string, buffer, count)) {
-> >  		result = -EFAULT;
-> >  		goto end;
-> > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
+I wonder do we really need i_lock here for inode versioning update?
+
+Understand this is a 64 bit counter, but file_update_time() and
+ext4_mark_inode_dirty() (where the inode version is updated) is called
+on the file write path so i_mutex should be hold all the time. As long
+as the read patch holding i_mutex everything should be fine, isn't it?
+
+Have you get a chance to check the performance impact to ext4?
+
+> +
+> +/**
+>   *	file_update_time	-	update mtime and ctime time
+>   *	@file: file accessed
+>   *
+> @@ -1249,6 +1267,11 @@
+>  		sync_it = 1;
+>  	}
+> 
+> +	if (IS_I_VERSION(inode)) {
+> +		inode_inc_iversion(inode);
+> +		sync_it = 1;
+> +	}
+> +
+>  	if (sync_it)
+>  		mark_inode_dirty_sync(inode);
+>  }
+> 
 > 
 > -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
