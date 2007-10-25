@@ -1,152 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXJYPmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762221AbXJYPm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761631AbXJYPmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757874AbXJYPmi
+	id S1762221AbXJYPm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbXJYPmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:42:38 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:36051 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757834AbXJYPmh (ORCPT
+	Thu, 25 Oct 2007 11:42:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48928 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759025AbXJYPmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:42:37 -0400
-Message-ID: <4720B7C5.1080101@student.ltu.se>
-Date: Thu, 25 Oct 2007 17:35:33 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 25 Oct 2007 11:42:39 -0400
+Date: Thu, 25 Oct 2007 08:40:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Boaz Harrosh <bharrosh@panasas.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <200710251840.02157.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.0.999.0710250834390.30120@woody.linux-foundation.org>
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+ <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org>
+ <200710251840.02157.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH] [libata] fix 'if(' and similar areas that lack whitespace
-References: <09821349085390234lkjasdflkjasflkdj24746@havoc.gtf.org> <20071024234834.76D681F81AC@havoc.gtf.org>
-In-Reply-To: <20071024234834.76D681F81AC@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
->  drivers/ata/pata_acpi.c         |    4 +-
->  drivers/ata/pata_optidma.c      |    2 +-
->  drivers/ata/pata_pdc2027x.c     |    2 +-
->  drivers/ata/pata_pdc202xx_old.c |    4 +-
->  drivers/ata/pata_via.c          |    2 +-
->  drivers/ata/pata_winbond.c      |    2 +-
->  drivers/ata/sata_nv.c           |   46 +++++++++++++++++++-------------------
->  drivers/ata/sata_sx4.c          |    4 +-
->  8 files changed, 33 insertions(+), 33 deletions(-)
->
-> diff --git a/drivers/ata/pata_acpi.c b/drivers/ata/pata_acpi.c
-> index 0f6f7bc..e4542ab 100644
-> --- a/drivers/ata/pata_acpi.c
-> +++ b/drivers/ata/pata_acpi.c
-> @@ -181,7 +181,7 @@ static void pacpi_set_piomode(struct ata_port *ap, struct ata_device *adev)
->  	int unit = adev->devno;
->  	struct pata_acpi *acpi = ap->private_data;
->  
-> -	if(!(acpi->gtm.flags & 0x10))
-> +	if (!(acpi->gtm.flags & 0x10))
->  		unit = 0;
->  
->  	/* Now stuff the nS values into the structure */
-> @@ -202,7 +202,7 @@ static void pacpi_set_dmamode(struct ata_port *ap, struct ata_device *adev)
->  	int unit = adev->devno;
->  	struct pata_acpi *acpi = ap->private_data;
->  
-> -	if(!(acpi->gtm.flags & 0x10))
-> +	if (!(acpi->gtm.flags & 0x10))
->  		unit = 0;
->  
->  	/* Now stuff the nS values into the structure */
-> diff --git a/drivers/ata/pata_optidma.c b/drivers/ata/pata_optidma.c
-> index 6b07b5b..f9b485a 100644
-> --- a/drivers/ata/pata_optidma.c
-> +++ b/drivers/ata/pata_optidma.c
-> @@ -449,7 +449,7 @@ static int optiplus_with_udma(struct pci_dev *pdev)
->  
->  	/* Find function 1 */
->  	dev1 = pci_get_device(0x1045, 0xC701, NULL);
-> -	if(dev1 == NULL)
-> +	if (dev1 == NULL)
->   
-Maybe "if (!dev1)" instead?
->  		return 0;
->  
->  	/* Rev must be >= 0x10 */
->
->   
-<snip>
-> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-> index 2e0279f..9210bb2 100644
-> --- a/drivers/ata/sata_nv.c
-> +++ b/drivers/ata/sata_nv.c
-> @@ -1012,7 +1012,7 @@ static irqreturn_t nv_adma_interrupt(int irq, void *dev_instance)
->  				u32 check_commands;
->  				int pos, error = 0;
->  
-> -				if(ata_tag_valid(ap->link.active_tag))
-> +				if (ata_tag_valid(ap->link.active_tag))
->  					check_commands = 1 << ap->link.active_tag;
->  				else
->  					check_commands = ap->link.sactive;
-> @@ -1028,7 +1028,7 @@ static irqreturn_t nv_adma_interrupt(int irq, void *dev_instance)
->  		}
->  	}
->  
-> -	if(notifier_clears[0] || notifier_clears[1]) {
-> +	if (notifier_clears[0] || notifier_clears[1]) {
->  		/* Note: Both notifier clear registers must be written
->  		   if either is set, even if one is zero, according to NVIDIA. */
->  		struct nv_adma_port_priv *pp = host->ports[0]->private_data;
-> @@ -1119,7 +1119,7 @@ static void nv_adma_post_internal_cmd(struct ata_queued_cmd *qc)
->  {
->  	struct nv_adma_port_priv *pp = qc->ap->private_data;
->  
-> -	if(pp->flags & NV_ADMA_PORT_REGISTER_MODE)
-> +	if (pp->flags & NV_ADMA_PORT_REGISTER_MODE)
->  		ata_bmdma_post_internal_cmd(qc);
->  }
->  
-> @@ -1194,10 +1194,10 @@ static int nv_adma_port_start(struct ata_port *ap)
->  
->  	tmp = readw(mmio + NV_ADMA_CTL);
->  	writew(tmp | NV_ADMA_CTL_CHANNEL_RESET, mmio + NV_ADMA_CTL);
-> -	readw( mmio + NV_ADMA_CTL );	/* flush posted write */
-> +	readw(mmio + NV_ADMA_CTL );	/* flush posted write */
->   
-Missed the space before closing parentheses...
->  	udelay(1);
->  	writew(tmp & ~NV_ADMA_CTL_CHANNEL_RESET, mmio + NV_ADMA_CTL);
-> -	readw( mmio + NV_ADMA_CTL );	/* flush posted write */
-> +	readw(mmio + NV_ADMA_CTL );	/* flush posted write */
->   
-and here
->  
->  	return 0;
->  }
-> @@ -1255,10 +1255,10 @@ static int nv_adma_port_resume(struct ata_port *ap)
->  
->  	tmp = readw(mmio + NV_ADMA_CTL);
->  	writew(tmp | NV_ADMA_CTL_CHANNEL_RESET, mmio + NV_ADMA_CTL);
-> -	readw( mmio + NV_ADMA_CTL );	/* flush posted write */
-> +	readw(mmio + NV_ADMA_CTL );	/* flush posted write */
->   
-and here
->  	udelay(1);
->  	writew(tmp & ~NV_ADMA_CTL_CHANNEL_RESET, mmio + NV_ADMA_CTL);
-> -	readw( mmio + NV_ADMA_CTL );	/* flush posted write */
-> +	readw(mmio + NV_ADMA_CTL );	/* flush posted write */
->   
-and here
->  
->  	return 0;
->  }
->   
-The rest looks good.
-
-cu
-Richard Knutsson
 
 
+On Thu, 25 Oct 2007, Rusty Russell wrote:
+> On Wednesday 24 October 2007 01:22:55 Linus Torvalds wrote:
+> >
+> > Well, I'd personally actually prefer to *not* have the count be passed
+> > down explicitly, because it's just too error prone.
+> 
+> Well, the duplication is bad, but walking lists to find the length is
+> inefficient so you pass around the length as well.
+
+Nobody should *ever* walk the list to find the length. Does anybody really 
+do that? Yes, we pass the thing down, but do people *need* it?
+
+[ Side note: some of the users of that length currently would seem to be 
+  buggy in the presense of continuation entries, and seem to assume that 
+  the "list" is just a contiguous array. In fatc, that's almost the only 
+  valid use for the "count" thing, since any other use _has_ to walk it 
+  entry by entry anyway, no? ]
+
+The thing is, nobody should care. You walk the list to fill things in, or 
+to write it out to some HW-specific DMA table, you should never care about 
+the length. However, you *do* care about the "where does it end" part: to 
+be able to detect overflows (which should never happen, but from a 
+debugging standpoint it needs to be detectable rather than just silently 
+use or corrupt memory).
+
+But if people really want/need the length, then we damn well should have a 
+"header" thing, not two independent "list + length" parameters.
+
+			Linus
