@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbXJYJU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbXJYJ0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbXJYJU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 05:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXJYJUU
+	id S1757206AbXJYJ0o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 05:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbXJYJ0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 05:20:20 -0400
-Received: from ns.firmix.at ([62.141.48.66]:1649 "EHLO ns.firmix.at"
+	Thu, 25 Oct 2007 05:26:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:45631 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbXJYJUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 05:20:19 -0400
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-	static interface)
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
-       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
-References: <20071024223124.GI30533@stusta.de>
-	 <446110.89443.qm@web36608.mail.mud.yahoo.com>
-	 <20071025002356.GB3660@sequoia.sous-sol.org>
-	 <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+	id S1752083AbXJYJ0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 05:26:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,328,1188802800"; 
+   d="scan'208";a="357886156"
+Subject: Re: [PATCH] iwl3945: cleanup namespace
+From: Zhu Yi <yi.zhu@intel.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071012130500.GA22610@lst.de>
+References: <20071012130500.GA22610@lst.de>
 Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 25 Oct 2007 11:19:50 +0200
-Message-Id: <1193303990.18559.28.camel@tara.firmix.at>
+Organization: Intel Corp.
+Date: Thu, 25 Oct 2007 17:19:57 +0800
+Message-Id: <1193303997.3069.389.camel@debian.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.312 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.312 required=5
-X-Spam-Score: -2.312 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mit, 2007-10-24 at 17:35 -0700, Ray Lee wrote:
-[....]
-> Key-based masterlocks are easily broken with freon, and their combo
-> locks are easily brute-forced in about ten minutes. Yet, I'll still
-> use them to lock up my bike and garage.
 
-The question is what the security threat is and the value of the secured
-items.
+On Fri, 2007-10-12 at 15:05 +0200, Christoph Hellwig wrote:
+> prefix all symbols with iwl3945_ and thus allow building the driver
+> into the kernel.  Also remove all the useless default statements in
+> Kconfig while we're at it.
+> 
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-> The idea that poor security is worse than no security is fallacious,
-> and not backed up by common experience.
+Did you do this manually or with a script? If it is the latter, can you
+run it again against my latest updates for the driver (30 patches I just
+sent to linux-wireless) or share the script with me?
 
-The common experience is, that common people just *feel* safer (just
-because they have poor security).
-With no security, they know that there is no security. With poor
-security, they do not know (or can deny) that they have next to no real
-security.
-The prime example here is the usual (so-called) "personal firewall" on
-Windows where people work normally as "administrator".
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+Thanks,
+-yi
