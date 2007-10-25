@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbXJYAe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbXJYAgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbXJYAe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 20:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXJYAeU
+	id S1755829AbXJYAgB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 20:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbXJYAfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 20:34:20 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57863 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbXJYAeT (ORCPT
+	Wed, 24 Oct 2007 20:35:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:33126 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbXJYAfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 20:34:19 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Subject: Re: [PATCH 1/3] x86: add lapic_shutdown for x86_64
-References: <47195763.1090803@ct.jp.nec.com> <47195807.6030809@ct.jp.nec.com>
-	<20071024062933.GA4622@in.ibm.com> <471FB8D2.5060208@ct.jp.nec.com>
-Date: Wed, 24 Oct 2007 18:28:15 -0600
-In-Reply-To: <471FB8D2.5060208@ct.jp.nec.com> (Hiroshi Shimamoto's message of
-	"Wed, 24 Oct 2007 14:27:46 -0700")
-Message-ID: <m1odeo6ns0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 24 Oct 2007 20:35:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=c2H3FB7/l8RFpVszLw4ocxIWnxeVOXMaaLKAODAjOXq8eJWLNcfLsLYi0QL+P2TN+8pSimjSrtTuHVDHWKapFIH3XECS/ZSIoJfpisKhLc0h4D7CSZoUf3NQ+R+mnEDvhyYfF4wVpj4uE0DFQbTyvlOn/uRxdHQm34OrAFObnwQ=
+Message-ID: <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+Date: Wed, 24 Oct 2007 17:35:47 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Chris Wright" <chrisw@sous-sol.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+Cc: "Casey Schaufler" <casey@schaufler-ca.com>,
+       "Adrian Bunk" <bunk@kernel.org>, "Simon Arlott" <simon@fire.lp0.eu>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andreas Gruenbacher" <agruen@suse.de>,
+       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "James Morris" <jmorris@namei.org>,
+       "Crispin Cowan" <crispin@crispincowan.com>,
+       "Giacomo Catenazzi" <cate@debian.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20071025002356.GB3660@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071024223124.GI30533@stusta.de>
+	 <446110.89443.qm@web36608.mail.mud.yahoo.com>
+	 <20071025002356.GB3660@sequoia.sous-sol.org>
+X-Google-Sender-Auth: 9a127b4ff6a693de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> writes:
-
->> Do we really have to introduce this function for 64bit? I remember some
->> issues were faced on i386 w.r.t kernel enabling the LAPIC against the
->> wishes of BIOS hence kernel was disabling it while shutting down. No
->> such problems were reported for x86_64 hence this function existed only
->> for i386.
+On 10/24/07, Chris Wright <chrisw@sous-sol.org> wrote:
+> * Casey Schaufler (casey@schaufler-ca.com) wrote:
+> > And don't give me the old "LKML is a tough crowd" feldercarb.
+> > Security modules have been much worse. Innovation, even in
+> > security, is a good thing and treating people harshly, even
+> > "for their own good", is an impediment to innovation.
 >
-> Thanks for the comment. I didn't know the issues, so I'd simply added
-> this function for unification.
->
->> If that is the case, probably we don't have to introduce lapic_shutdown()
->> for x86_64. Instead call lapic_shutdown() for X86_32, and disble_local_APIC()
->> otherwise?
->
-> I will do that. I was thinking which is good when posting these patches.
+> I agree that innovation is critical to the success of Linux, and security
+> is not immune to that.  The trouble is that most of the security modules
+> that have come forward have had some real serious shortcomings.
 
-I'm a little concerned here.  This sounds like forced unification.
-If we can't clean up the infrastructure so things are obviously better
-and cleanly factored for both architectures we should not unify the files.
+Key-based masterlocks are easily broken with freon, and their combo
+locks are easily brute-forced in about ten minutes. Yet, I'll still
+use them to lock up my bike and garage.
 
-As a general principle I would rather have two crudy files side by
-side the one super crudy file.
+The idea that poor security is worse than no security is fallacious,
+and not backed up by common experience.
 
-So for unification I suggest finally fixing this right and taking the
-apics completely out of the kexec on panic path.
+> I do
+> believe it is prudent to keep in-tree security sensitive code under
+> high scrutiny because we do not want to create security holes by adding
+> problematic security code.
 
-Eric
+If security code actively *adds* holes, then that's obviously a deal breaker.
