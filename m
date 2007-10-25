@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762344AbXJYUIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbXJYUIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762344AbXJYUIE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762182AbXJYUHr
+	id S1762404AbXJYUIe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761940AbXJYUHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:07:47 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:61630 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762149AbXJYUHp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:07:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qoMPGXEdx+M/Pu/BymKETJhxBI322AM9CBWks21rsY0Q4rACfCSG6uHEXO/86tIGsGX/gzveQPx2WLUhW1vtLOxceT4xBW17ZAMAScQfPJyF34pAnAGUEnWtFgZXCwbFOwRLopnulRlc95uxXT7q/45nZfDYZ36rcNiqJ23g7Pk=
-Message-ID: <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com>
-Date: Thu, 25 Oct 2007 16:07:45 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Jie Zhang" <jzhang.linux@gmail.com>,
-       bryan.wu@analog.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071025165344.GL30533@stusta.de>
+	Thu, 25 Oct 2007 16:07:23 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:59240 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759612AbXJYUHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:07:20 -0400
+Message-ID: <4720F775.8030702@hp.com>
+Date: Thu, 25 Oct 2007 16:07:17 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, jens.axboe@oracle.com
+Subject: [PATCH] [CRYPTO]: Fix hmac_digest from the SG breakage.
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071024162643.GP30533@stusta.de>
-	 <40401db90710241947i15e40e78v292e52f5229d9d35@mail.gmail.com>
-	 <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com>
-	 <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de>
-	 <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com>
-	 <20071025165344.GL30533@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/07, Adrian Bunk <bunk@kernel.org> wrote:
-> On Thu, Oct 25, 2007 at 12:16:40PM -0400, Mike Frysinger wrote:
-> > On 10/25/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > > On Wed, Oct 24, 2007 at 08:06:14PM -0700, H. Peter Anvin wrote:
-> > > > Mike Frysinger wrote:
-> > > >> we'll have to either use the gcc attributes to force old inline
-> > > >> behavior or use the gcc flag to force it
-> > > >
-> > > > We should probably have an extern_inline define then, assuming this is a
-> > > > function that does exist in a linkable version already -- otherwise "static
-> > > > inline" is correct.
-> > >
-> > > Since we #define inline to be __attribute__((always_inline))
-> > > "extern inline" with the old semantics would only behave differently
-> > > if someone took the address of one of these string functions.
-> >
-> > that isnt what we intended ;)
-> >
-> > > Does this happen anywhere in the blackfin port?
-> >
-> > gcc is also free to ignore the optimized inline in favor of an
-> > external reference
->
-> It is not since we #define inline to be __attribute__((always_inline)).
+Crypto now uses SG helper functions.  Fix hmac_digest to use those
+functions correctly and fix the oops associated with it.
 
-as i said, that was not what we intended ... and actually,
-always_inline does not mean always inline ... it is still possible to
-get gcc to not inline things when building debug versions.
--mike
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+---
+ crypto/hmac.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/crypto/hmac.c b/crypto/hmac.c
+index e4eb6ac..8b7a832 100644
+--- a/crypto/hmac.c
++++ b/crypto/hmac.c
+@@ -158,10 +158,12 @@ static int hmac_digest(struct hash_desc *pdesc, struct scatterlist *sg,
+ 	desc.tfm = ctx->child;
+ 	desc.flags = pdesc->flags & CRYPTO_TFM_REQ_MAY_SLEEP;
+ 
++	sg_init_table(sg1, 2);
+ 	sg_set_buf(sg1, ipad, bs);
+-
+-	sg_set_page(&sg[1], (void *) sg);
++	sg_set_page(&sg1[1], (void *) sg);
+ 	sg1[1].length = 0;
++
++	sg_init_table(sg2, 1);
+ 	sg_set_buf(sg2, opad, bs + ds);
+ 
+ 	err = crypto_hash_digest(&desc, sg1, nbytes + bs, digest);
+-- 
+1.5.2.4
+
