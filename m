@@ -1,147 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbXJYPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbXJYPRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbXJYPOd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760825AbXJYPO0
+	id S1762043AbXJYPRp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760681AbXJYPRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:14:26 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:54968 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759999AbXJYPOZ (ORCPT
+	Thu, 25 Oct 2007 11:17:38 -0400
+Received: from lnx130.hrz.tu-darmstadt.de ([130.83.174.24]:35634 "EHLO
+	lnx130.hrz.tu-darmstadt.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754298AbXJYPRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:14:25 -0400
-Message-ID: <4720B247.4090909@blueyonder.co.uk>
-Date: Thu, 25 Oct 2007 16:12:07 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Thu, 25 Oct 2007 11:17:37 -0400
+Date: Thu, 25 Oct 2007 17:13:10 +0200
+From: Volker Sauer <vsauer@dvs.tu-darmstadt.de>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: linux-kernel@vger.kernel.org, adi@postpi.com,
+       Jesse Huang <jesse@icplus.com.tw>, netdev@vger.kernel.org
+Subject: Re: D-Link DFE-580TX and snmpd problems, who's maintainer of
+	sundance.c ?
+Message-ID: <20071025151310.GA14155@volker-sauer.de>
+References: <20071024171129.GA14255@volker-sauer.de> <20071024214650.GA6253@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: 2.6.24-rc1 oops
-References: <471FE5E0.9040202@blueyonder.co.uk>	<20071025102202L.fujita.tomonori@lab.ntt.co.jp> <20071025145129C.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071025145129C.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="envbJBWh7q8WU6mo"
+Content-Disposition: inline
+In-Reply-To: <20071024214650.GA6253@electric-eye.fr.zoreil.com>
+X-Mailer: Mutt http://www.mutt.org/
+X-Editor: Vim http://www.vim.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-TUD-HRZ-MailScanner: Found to be clean
+X-TUD-HRZ-MailScanner-SpamCheck: 
+X-MailScanner-From: vsauer@dvs.tu-darmstadt.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> Jens, I should have CC'ed to you.
-> 
-> On Thu, 25 Oct 2007 10:22:02 +0900
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
->> On Thu, 25 Oct 2007 01:40:00 +0100
->> Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
->>
->>> x86_64 dual, gcc version 4.2.2 (SUSE Linux).
->>> ------------[ cut here ]------------
->>> kernel BUG at include/linux/scatterlist.h:50!
->>> invalid opcode: 0000 [1] SMP
->>> CPU 1
->>> Modules linked in: ub crc_itu_t hwmon cdrom soundcore v4l1_compat 
->>> videobuf_core btcx_risc ff_memless floppy sg forcedeth ehci_hcd ohci_hcd 
->>> sd_mod usbcore jfs edd ext3 mbcache jbd fan pata_jmicron ahci sata_nv 
->>> pata_amd libata scsi_mod thermal processor
->>> Pid: 0, comm: swapper Not tainted 2.6.24-rc1-smp #1
->>> RIP: 0010:[<ffffffff881f3d27>]  [<ffffffff881f3d27>] 
->>> :ub:ub_state_sense+0x9a/0x169
->>> RSP: 0018:ffff810100697e60  EFLAGS: 00010093
->>> RAX: 0000000087654321 RBX: ffff810105d55000 RCX: ffff81011f975540
->>> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff81011f975540
->>> RBP: ffff810105d51000 R08: 0000000000000000 R09: ffff810105d55098
->>> R10: ffff810001c319b8 R11: 0000000000000286 R12: ffff810105d55098
->>> R13: ffff810105d55260 R14: ffff810105d55278 R15: ffff810105d55298
->>> FS:  00002afb8597c6f0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
->>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->>> CR2: 00002afb8548200f CR3: 000000010615b000 CR4: 00000000000006e0
->>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>> Process swapper (pid: 0, threadinfo ffff810100690000, task ffff810100689160)
->>> Stack:  0000000000000001 ffff810105d55000 ffff810105d51000 0000000000000000
->>>   ffff810105d55260 ffffffff881f4d43 ffff810105919998 ffff810105d553a0
->>>   ffff810105d553af ffff810105d55348 0000000000000286 ffff810105d55058
->>> Call Trace:
->>>   <IRQ>  [<ffffffff881f4d43>] :ub:ub_scsi_action+0x1e3/0x214
->>>   [<ffffffff8023a34e>] tasklet_action+0x54/0x97
->>>   [<ffffffff8023a261>] __do_softirq+0x65/0xce
->>>   [<ffffffff8020d0bc>] call_softirq+0x1c/0x28
->>>   [<ffffffff8020e634>] do_softirq+0x2c/0x7d
->>>   [<ffffffff8023a1b7>] irq_exit+0x3f/0x84
->>>   [<ffffffff8020e7c3>] do_IRQ+0x13e/0x15f
->>>   [<ffffffff8020afa0>] default_idle+0x0/0x3d
->>>   [<ffffffff8020afa0>] default_idle+0x0/0x3d
->>>   [<ffffffff8020c441>] ret_from_intr+0x0/0xa
->>>   <EOI>  [<ffffffff8020afc9>] default_idle+0x29/0x3d
->>>   [<ffffffff8020b070>] cpu_idle+0x93/0xbb
->> Can you try this?
->>
->> Thanks,
->>
->> diff --git a/drivers/block/ub.c b/drivers/block/ub.c
->> index 14143f2..78f158f 100644
->> --- a/drivers/block/ub.c
->> +++ b/drivers/block/ub.c
->> @@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
->>  	scmd->state = UB_CMDST_INIT;
->>  	scmd->nsg = 1;
->>  	sg = &scmd->sgv[0];
->> +	sg_init_table(sg, UB_MAX_REQ_SG);
->>  	sg_set_page(sg, virt_to_page(sc->top_sense));
->>  	sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
->>  	sg->length = UB_SENSE_SIZE;
->> @@ -1864,6 +1865,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
->>  	cmd->state = UB_CMDST_INIT;
->>  	cmd->nsg = 1;
->>  	sg = &cmd->sgv[0];
->> +	sg_init_table(sg, UB_MAX_REQ_SG);
->>  	sg_set_page(sg, virt_to_page(p));
->>  	sg->offset = (unsigned long)p & (PAGE_SIZE-1);
->>  	sg->length = 8;
-> 
-> Here's a modified version for your sg branch (for sg_set_page API
-> changes).
-> 
-> -
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] ub: add sg_init_table for sense and read capacity commands
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  drivers/block/ub.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-> index 5e740e1..08e909d 100644
-> --- a/drivers/block/ub.c
-> +++ b/drivers/block/ub.c
-> @@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
->  	scmd->state = UB_CMDST_INIT;
->  	scmd->nsg = 1;
->  	sg = &scmd->sgv[0];
-> +	sg_init_table(sg, UB_MAX_REQ_SG);
->  	sg_set_page(sg, virt_to_page(sc->top_sense), UB_SENSE_SIZE,
->  			(unsigned long)sc->top_sense & (PAGE_SIZE-1));
->  	scmd->len = UB_SENSE_SIZE;
-> @@ -1863,6 +1864,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
->  	cmd->state = UB_CMDST_INIT;
->  	cmd->nsg = 1;
->  	sg = &cmd->sgv[0];
-> +	sg_init_table(sg, UB_MAX_REQ_SG);
->  	sg_set_page(sg, virt_to_page(p), 8, (unsigned long)p & (PAGE_SIZE-1));
->  	cmd->len = 8;
->  	cmd->lun = lun;
 
-Boots OK, but oopses with depmod on Virtualbox and other proprietary 
-modules. I assume these modules are out of step with 2.6.24-rc1 and not 
-a kernel problem.
+--envbJBWh7q8WU6mo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mi, 24 Okt 2007, Francois Romieu <romieu@fr.zoreil.com> wrote:
+> > So the questions is: why? What is this good for?
+> > And: can I remove it? I can not abandon snmpd and the messages spam my
+> > syslog.
+> > Or: do I have to patch snmpd?
+>=20
+> Please try the attached patch.
+>=20
+
+Hi Francois,
+
+the patch solves the problem. Thank you.
+
 Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+Volker
 
+--=20
+  Volker Sauer  *  Poststrasse 1/601   *   64293 Darmstadt  *   Germany
+  E-Mail/Jabber: volker(at)volker-sauer.de * http://www.volker-sauer.de
+  PGPKey-Fingerprint: DB26 11C7 B12E 0B27 3999 2E4F 7E35 4E4D 5DD5 D0E0
+  http://wwwkeys.de.pgp.net/pks/lookup?op=3Dget&search=3D0x7E354E4D5DD5D0E0=
+=20
+
+--envbJBWh7q8WU6mo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHILKGfjVOTV3V0OARAqsnAKCzSfhhhuwxVaiSrSYy9OIuYVxhugCg6c70
+ipliGU2zczdI/CFe9uIcsao=
+=6E+Y
+-----END PGP SIGNATURE-----
+
+--envbJBWh7q8WU6mo--
