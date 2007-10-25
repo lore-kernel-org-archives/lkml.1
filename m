@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbXJYXeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762318AbXJYXfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762289AbXJYXeg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760328AbXJYXdu
+	id S1762318AbXJYXfw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXJYXfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:33:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:3209 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758762AbXJYXdo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:33:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=FAY9/gGzkwscKHT/kSKeq0Jgk+rbrL4HmrjtclZvzSC6P2FoBdKesDXTnC+tAAhAtwvpkCI5nwdqILqIjnxc8yJIu+plxAPoJqQnJKdFIbUUj7akucJBugIX4maEv+ZXjy5GZXvTngcmcKpmuTguiGZi5sFDkTg64BWnE5gJmxw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: remove CONFIG_IDEPCI_SHARE_IRQ config option
-Date: Fri, 26 Oct 2007 01:38:06 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 25 Oct 2007 19:35:45 -0400
+Received: from xenotime.net ([66.160.160.81]:41090 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754036AbXJYXfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:35:43 -0400
+Date: Thu, 25 Oct 2007 16:35:41 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: [PATCH 3/6] x86: unification of i386 and x86_64 Kconfig.debug
+Message-Id: <20071025163541.ee081c26.rdunlap@xenotime.net>
+In-Reply-To: <86802c440710251630j71b9f750j2e0fbe4c9b37165e@mail.gmail.com>
+References: <20071025195644.GA14501@uranus.ravnborg.org>
+	<20071025200434.GD14501@uranus.ravnborg.org>
+	<86802c440710251630j71b9f750j2e0fbe4c9b37165e@mail.gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710260138.06815.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Oct 2007 16:30:48 -0700 Yinghai Lu wrote:
 
-Now that drive_is_ready() has been fixed for non-PCI hosts we can safely
-remove CONFIG_IDEPCI_SHARE_IRQ and always support PCI IRQ sharing.
+> On 10/25/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > From 16b853f53463e43bfce341965ac10a78a3755a14 Mon Sep 17 00:00:00 2001
+> > From: Randy Dunlap <rdunlap@xenotime.net>
+> > Date: Wed, 24 Oct 2007 15:50:43 -0700
+> > Subject: [PATCH] x86: unification of i386 and x86_64 Kconfig.debug
+> >
+> > Adding proper dependencies so the two Kconfig.debug files
+> > are now identical.
+> >
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > ---
+> >  arch/i386/Kconfig.debug             |   51 ++++++++++++++++++++++++++++-------
+> >  arch/x86_64/Kconfig                 |    4 ---
+> >  arch/{i386 => x86_64}/Kconfig.debug |   51 ++++++++++++++++++++++++++++-------
+> >  3 files changed, 82 insertions(+), 24 deletions(-)
+> >  copy arch/{i386 => x86_64}/Kconfig.debug (65%)
+> >
+> > diff --git a/arch/i386/Kconfig.debug b/arch/i386/Kconfig.debug
+> > index f03531e..970b2de 100644
+> > --- a/arch/i386/Kconfig.debug
+> > +++ b/arch/i386/Kconfig.debug
+> > @@ -1,14 +1,14 @@
+> >  menu "Kernel hacking"
+> >
+> >  config TRACE_IRQFLAGS_SUPPORT
+> > -       bool
+> > -       default y
+> > +       def_bool y
+> >
+> >  source "lib/Kconfig.debug"
+> >
+> >  config EARLY_PRINTK
+> >         bool "Early printk" if EMBEDDED && DEBUG_KERNEL
+> >         default y
+> > +       depends on X86_32
+> >         help
+> >           Write kernel log output directly into the VGA buffer or to a serial
+> >           port.
+> > @@ -37,10 +37,12 @@ config DEBUG_STACK_USAGE
+> ...
+> > diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+> > index 308970a..1bc0268 100644
+> > --- a/arch/x86_64/Kconfig
+> > +++ b/arch/x86_64/Kconfig
+> > @@ -97,10 +97,6 @@ config X86_CMPXCHG
+> >         bool
+> >         default y
+> >
+> > -config EARLY_PRINTK
+> > -       bool
+> > -       default y
+> > -
+> >  config GENERIC_ISA_DMA
+> >         bool
+> >         default y
+> > diff --git a/arch/i386/Kconfig.debug b/arch/x86_64/Kconfig.debug
+> > similarity index 65%
+> > copy from arch/i386/Kconfig.debug
+> > copy to arch/x86_64/Kconfig.debug
+> > index f03531e..970b2de 100644
+> > --- a/arch/i386/Kconfig.debug
+> > +++ b/arch/x86_64/Kconfig.debug
+> > @@ -1,14 +1,14 @@
+> >  menu "Kernel hacking"
+> >
+> >  config TRACE_IRQFLAGS_SUPPORT
+> > -       bool
+> > -       default y
+> > +       def_bool y
+> >
+> >  source "lib/Kconfig.debug"
+> >
+> >  config EARLY_PRINTK
+> >         bool "Early printk" if EMBEDDED && DEBUG_KERNEL
+> >         default y
+> > +       depends on X86_32
+> >         help
+> >           Write kernel log output directly into the VGA buffer or to a serial
+> >           port.
+> ...
+> 
+> why disabling early_printk for x86_64?
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+It doesn't do that.  EARLY_PRINTK for x86_64 lives in
+arch/x86_64/Kconfig (i.e., a different file).
+
+Patches welcome.
+
 ---
- drivers/ide/Kconfig    |   12 ------------
- drivers/ide/ide-iops.c |    2 --
- 2 files changed, 14 deletions(-)
-
-Index: b/drivers/ide/Kconfig
-===================================================================
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -366,17 +366,6 @@ comment "PCI IDE chipsets support"
- config BLK_DEV_IDEPCI
- 	bool
- 
--config IDEPCI_SHARE_IRQ
--	bool "Sharing PCI IDE interrupts support"
--	depends on BLK_DEV_IDEPCI
--	help
--	  Some ATA/IDE chipsets have hardware support which allows for
--	  sharing a single IRQ with other cards. To enable support for
--	  this in the ATA/IDE driver, say Y here.
--
--	  It is safe to say Y to this question, in most cases.
--	  If unsure, say N.
--
- config IDEPCI_PCIBUS_ORDER
- 	def_bool BLK_DEV_IDE=y && BLK_DEV_IDEPCI
- 
-@@ -693,7 +682,6 @@ config BLK_DEV_SVWKS
- config BLK_DEV_SGIIOC4
- 	tristate "Silicon Graphics IOC4 chipset ATA/ATAPI support"
- 	depends on (IA64_SGI_SN2 || IA64_GENERIC) && SGI_IOC4
--	select IDEPCI_SHARE_IRQ
- 	select BLK_DEV_IDEDMA_PCI
- 	help
- 	  This driver adds PIO & MultiMode DMA-2 support for the SGI IOC4
-Index: b/drivers/ide/ide-iops.c
-===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -448,7 +448,6 @@ int drive_is_ready (ide_drive_t *drive)
- 	udelay(1);
- #endif
- 
--#ifdef CONFIG_IDEPCI_SHARE_IRQ
- 	/*
- 	 * We do a passive status test under shared PCI interrupts on
- 	 * cards that truly share the ATA side interrupt, but may also share
-@@ -458,7 +457,6 @@ int drive_is_ready (ide_drive_t *drive)
- 	if (hwif->pci_dev && IDE_CONTROL_REG)
- 		stat = hwif->INB(IDE_ALTSTATUS_REG);
- 	else
--#endif /* CONFIG_IDEPCI_SHARE_IRQ */
- 		/* Note: this may clear a pending IRQ!! */
- 		stat = hwif->INB(IDE_STATUS_REG);
- 
+~Randy
