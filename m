@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbXJYUVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762990AbXJYUVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762894AbXJYUVd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbXJYUVS
+	id S1762990AbXJYUVw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbXJYUVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:21:18 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:59535 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762666AbXJYUUA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:20:00 -0400
-X-Greylist: delayed 1737 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 16:20:00 EDT
-Date: Thu, 25 Oct 2007 22:19:57 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [2.6 patch] 53c7xx removal fallout
-In-Reply-To: <20071024162622.GI30533@stusta.de>
-Message-ID: <Pine.LNX.4.64.0710252219470.12012@anakin>
-References: <20071024162622.GI30533@stusta.de>
+	Thu, 25 Oct 2007 16:21:39 -0400
+Received: from waste.org ([66.93.16.53]:36315 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759051AbXJYUVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:21:38 -0400
+Date: Thu, 25 Oct 2007 15:19:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: IRQ off latency of printk is very high
+Message-ID: <20071025201948.GO17536@waste.org>
+References: <4720F21F.9090404@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4720F21F.9090404@am.sony.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007, Adrian Bunk wrote:
-> This patch does some additional cleanups after the 53c7xx removal.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Thu, Oct 25, 2007 at 12:44:31PM -0700, Tim Bird wrote:
+> I've been looking at 'IRQ off' latency in the Linux kernel, on
+> version 2.6.22 for target using an ARM processor.
+> I use a serial console, at 115200 bps.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Printk to the serial console uses polled I/O to get deterministic,
+reliable, and -timely- output. If our very next statement (or interrupt)
+may lock up the box, we want to be sure our printk has actually been
+delivered before that happens.
 
-> ---
-> 
->  Documentation/dontdiff                |    2 
->  Documentation/m68k/kernel-options.txt |   60 --------------------------
->  Documentation/scsi/00-INDEX           |    2 
->  Documentation/scsi/ncr53c7xx.txt      |   40 -----------------
->  drivers/scsi/.gitignore               |    2 
->  5 files changed, 106 deletions(-)
+Kindof a bummer for realtime, but also rather hard to get around.
 
-Gr{oetje,eeting}s,
+> I've noticed that calls to printk disable interrupts for
+> excessively long times.  I have a long test printk of
+> over 200 chars, that holds interrupts off for 24 milliseconds.
 
-						Geert
+2000bits @ 115200bps -> 17.4ms
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> Are these are really needed, with all this other locking
+> going on?  Any ideas for fixing this?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Well, we could have a commandline option that made messages with a
+priority below X go out buffered. But it'd be a lousy default from a
+debugging perspective.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
