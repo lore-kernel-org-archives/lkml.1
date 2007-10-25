@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXJYQx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbXJYQz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXJYQx0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXJYQxR
+	id S1756029AbXJYQz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXJYQzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:53:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35404 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752166AbXJYQxQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:53:16 -0400
-Date: Thu, 25 Oct 2007 18:53:44 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jie Zhang <jzhang.linux@gmail.com>,
-       bryan.wu@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
-Message-ID: <20071025165344.GL30533@stusta.de>
-References: <20071024162643.GP30533@stusta.de> <40401db90710241947i15e40e78v292e52f5229d9d35@mail.gmail.com> <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com> <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de> <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 25 Oct 2007 12:55:48 -0400
+Received: from xenotime.net ([66.160.160.81]:50405 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752874AbXJYQzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:55:47 -0400
+Date: Thu, 25 Oct 2007 09:55:40 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, mingo@redhat.com, hpa@zytor.com,
+       lkml <linux-kernel@vger.kernel.org>,
+       torvalds <torvalds@linux-foundation.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] bitops kernel-doc: inline instead of macro
+Message-Id: <20071025095540.827d4333.rdunlap@xenotime.net>
+In-Reply-To: <alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain>
+References: <20071023220959.a359d57d.rdunlap@xenotime.net>
+	<200710241800.19764.nickpiggin@yahoo.com.au>
+	<20071025093159.3ea69d03.rdunlap@xenotime.net>
+	<alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 12:16:40PM -0400, Mike Frysinger wrote:
-> On 10/25/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Wed, Oct 24, 2007 at 08:06:14PM -0700, H. Peter Anvin wrote:
-> > > Mike Frysinger wrote:
-> > >> we'll have to either use the gcc attributes to force old inline
-> > >> behavior or use the gcc flag to force it
-> > >
-> > > We should probably have an extern_inline define then, assuming this is a
-> > > function that does exist in a linkable version already -- otherwise "static
-> > > inline" is correct.
-> >
-> > Since we #define inline to be __attribute__((always_inline))
-> > "extern inline" with the old semantics would only behave differently
-> > if someone took the address of one of these string functions.
+> Hmm, can we simply do
 > 
-> that isnt what we intended ;)
+> static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
+> {
+> 	return test_and_set_bit(nr, addr);
+> }
 > 
-> > Does this happen anywhere in the blackfin port?
-> 
-> gcc is also free to ignore the optimized inline in favor of an
-> external reference
+> please ?
 
-It is not since we #define inline to be __attribute__((always_inline)).
+Certainly.  That does look better.
 
-> -mike
+---
 
-cu
-Adrian
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
--- 
+Use duplicated inline functions for test_and_set_bit_lock() on x86
+instead of #define macros, thus avoiding a bad example.  This allows
+kernel-doc to run cleanly instead of terminating with an error:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand prototype: 'test_and_set_bit_lock test_and_set_bit '
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/asm-x86/bitops_32.h |    7 +++++--
+ include/asm-x86/bitops_64.h |    7 +++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+--- linux-2.6.24-rc1.orig/include/asm-x86/bitops_32.h
++++ linux-2.6.24-rc1/include/asm-x86/bitops_32.h
+@@ -183,9 +183,12 @@ static inline int test_and_set_bit(int n
+  * @nr: Bit to set
+  * @addr: Address to count from
+  *
+- * This is the same as test_and_set_bit on x86
++ * This is the same as test_and_set_bit on x86.
+  */
+-#define test_and_set_bit_lock test_and_set_bit
++static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
++{
++	return test_and_set_bit(nr, addr);
++}
+ 
+ /**
+  * __test_and_set_bit - Set a bit and return its old value
+--- linux-2.6.24-rc1.orig/include/asm-x86/bitops_64.h
++++ linux-2.6.24-rc1/include/asm-x86/bitops_64.h
+@@ -173,9 +173,12 @@ static __inline__ int test_and_set_bit(i
+  * @nr: Bit to set
+  * @addr: Address to count from
+  *
+- * This is the same as test_and_set_bit on x86
++ * This is the same as test_and_set_bit on x86.
+  */
+-#define test_and_set_bit_lock test_and_set_bit
++static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
++{
++	return test_and_set_bit(nr, addr);
++}
+ 
+ /**
+  * __test_and_set_bit - Set a bit and return its old value
