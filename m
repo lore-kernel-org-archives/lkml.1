@@ -1,169 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbXJYXvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbXJYXwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761726AbXJYXvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbXJYXvq
+	id S1762218AbXJYXwl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbXJYXwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:51:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40875 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbXJYXvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:51:45 -0400
-Message-ID: <47212C0C.4080501@ce.jp.nec.com>
-Date: Thu, 25 Oct 2007 19:51:40 -0400
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] [PATCH] dm: noflush resizing (0/3)
-References: <471FB83D.4060307@ce.jp.nec.com>	<20071025012456.GK10006@agk.fab.redhat.com>	<4720A59A.8060001@ce.jp.nec.com>	<20071025144833.GN10006@agk.fab.redhat.com> <4720E479.4020906@ce.jp.nec.com>
-In-Reply-To: <4720E479.4020906@ce.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 19:52:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34505 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753187AbXJYXwb (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:52:31 -0400
+Date: Fri, 26 Oct 2007 09:52:06 +1000
+From: David Chinner <dgc@sgi.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: dgc@sgi.com, staubach@redhat.com, akpm@linux-foundation.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] VFS: new fgetattr() file operation
+Message-ID: <20071025235206.GA995458@sgi.com>
+References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com> <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu> <20071025224235.GZ995458@sgi.com> <E1IlBqA-0006yj-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IlBqA-0006yj-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alasdair,
+On Fri, Oct 26, 2007 at 01:10:14AM +0200, Miklos Szeredi wrote:
+> > On Wed, Oct 24, 2007 at 05:27:04PM +0200, Miklos Szeredi wrote:
+> > > > >> Wouldn't you be better off by attempting to implement an "open
+> > > > >> by ino" operation and an operation to get the generation count
+> > > > >> for the file and then modifying the network protocol of interest
+> > > > >> to use these as identifiers for the file to be manipulated?
+> > > > >>     
+> > > > >
+> > > > > You mean an "open by inode" on the userspace API?  My guess, it
+> > > > > wouldn't get very far.
+> > > > 
+> > > > This isn't a new idea and has been implemented on a variety of
+> > > > different systems.
+> > > 
+> > > Like?
+> > 
+> > XFS.
+> > 
+> > 'man open_by_handle'
+> 
+> Doesn't seem widely used, with 600 something google hits.
 
-Jun'ichi Nomura wrote:
-> So as far as I understand, the point is:
->   1. it's preferable to resize inode after the resume, if possible
+from the man page:
 
-Attached is a modified version of the (2/3) patch.
-  - The logic is basically the same as before.
-  - Moved the set-size function outside of the table swapping.
-  - Moved the uevent to the end of resize from the end of resume.
-  - Lightly tested on LVM2 mirror resizing.
-  - (1/3) and (3/3) are unchanged.
+"They are intended  for  use  by a limited set of system utilities such
+as backup programs."
 
-What do you think about this?
+It also gets used by HSMs and so it is current, tested and is not
+going away....
 
----
- drivers/md/dm-ioctl.c         |    4 ++
- drivers/md/dm.c               |   61 ++++++++++++++++++++++++++----------------
- include/linux/device-mapper.h |    5 +++
- 3 files changed, 46 insertions(+), 24 deletions(-)
+> And in this
+> old thread Linus is not entirely enthusiastic about the concept:
+> 
+>   http://lkml.org/lkml/1999/1/11/244
 
-Index: linux-2.6.23.work/drivers/md/dm.c
-===================================================================
---- linux-2.6.23.work.orig/drivers/md/dm.c
-+++ linux-2.6.23.work/drivers/md/dm.c
-@@ -1099,31 +1099,11 @@ static void event_callback(void *context
- 	wake_up(&md->eventq);
- }
- 
--static void __set_size(struct mapped_device *md, sector_t size)
--{
--	set_capacity(md->disk, size);
--
--	mutex_lock(&md->suspended_bdev->bd_inode->i_mutex);
--	i_size_write(md->suspended_bdev->bd_inode, (loff_t)size << SECTOR_SHIFT);
--	mutex_unlock(&md->suspended_bdev->bd_inode->i_mutex);
--}
--
- static int __bind(struct mapped_device *md, struct dm_table *t)
- {
- 	struct request_queue *q = md->queue;
--	sector_t size;
--
--	size = dm_table_get_size(t);
--
--	/*
--	 * Wipe any geometry if the size of the table changed.
--	 */
--	if (size != get_capacity(md->disk))
--		memset(&md->geometry, 0, sizeof(md->geometry));
- 
--	if (md->suspended_bdev)
--		__set_size(md, size);
--	if (size == 0)
-+	if (!dm_table_get_size(t))
- 		return 0;
- 
- 	dm_table_get(t);
-@@ -1497,8 +1477,6 @@ int dm_resume(struct mapped_device *md)
- 
- 	dm_table_unplug_all(map);
- 
--	kobject_uevent(&md->disk->kobj, KOBJ_CHANGE);
--
- 	r = 0;
- 
- out:
-@@ -1508,6 +1486,43 @@ out:
- 	return r;
- }
- 
-+void dm_set_size(struct mapped_device *md)
-+{
-+	struct dm_table *map;
-+	struct block_device *bdev;
-+	sector_t size;
-+
-+	down(&md->suspend_lock);
-+
-+	map = dm_get_table(md);
-+	if (!map)
-+		goto out;
-+
-+	size = dm_table_get_size(map);
-+
-+	/*
-+	 * Wipe any geometry if the size of the table changed.
-+	 */
-+	if (size != get_capacity(md->disk))
-+		memset(&md->geometry, 0, sizeof(md->geometry));
-+
-+	set_capacity(md->disk, size);
-+
-+	bdev = bdlookup_disk(md->disk, 0);
-+	if (bdev) {
-+		mutex_lock(&bdev->bd_mutex);
-+		i_size_write(bdev->bd_inode, (loff_t)size << SECTOR_SHIFT);
-+		mutex_unlock(&bdev->bd_mutex);
-+		bdput(bdev);
-+	}
-+
-+	kobject_uevent(&md->disk->kobj, KOBJ_CHANGE);
-+
-+out:
-+	dm_table_put(map);
-+	up(&md->suspend_lock);
-+}
-+
- /*-----------------------------------------------------------------
-  * Event notification.
-  *---------------------------------------------------------------*/
-Index: linux-2.6.23.work/drivers/md/dm-ioctl.c
-===================================================================
---- linux-2.6.23.work.orig/drivers/md/dm-ioctl.c
-+++ linux-2.6.23.work/drivers/md/dm-ioctl.c
-@@ -840,8 +840,10 @@ static int do_resume(struct dm_ioctl *pa
- 	if (dm_suspended(md))
- 		r = dm_resume(md);
- 
--	if (!r)
-+	if (!r) {
-+		dm_set_size(md);
- 		r = __dev_status(md, param);
-+	}
- 
- 	dm_put(md);
- 	return r;
-Index: linux-2.6.23.work/include/linux/device-mapper.h
-===================================================================
---- linux-2.6.23.work.orig/include/linux/device-mapper.h
-+++ linux-2.6.23.work/include/linux/device-mapper.h
-@@ -198,6 +198,11 @@ int dm_noflush_suspending(struct dm_targ
- int dm_get_geometry(struct mapped_device *md, struct hd_geometry *geo);
- int dm_set_geometry(struct mapped_device *md, struct hd_geometry *geo);
- 
-+/*
-+ * Update device size
-+ */
-+void dm_set_size(struct mapped_device *md);
-+
- 
- /*-----------------------------------------------------------------
-  * Functions for manipulating device-mapper tables.
+That was "open by inode number", AFAICT. A handle is an opaque
+blob that can be an arbitrary length defined by the filesystem.
+You have to convert a fd or path to a handle first before you can
+use it later, so any filesystem can implement it...
+
+i.e. it is exactly what this (unanswered) post suggested:
+
+http://lkml.org/lkml/1999/1/13/186
+
+Just my 2c worth....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
