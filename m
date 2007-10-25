@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXJYGFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbXJYGGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbXJYGFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 02:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXJYGFi
+	id S1755020AbXJYGGH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 02:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXJYGFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 02:05:38 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:55524 "EHLO mail.bmlv.gv.at"
+	Thu, 25 Oct 2007 02:05:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51519 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbXJYGFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 02:05:37 -0400
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: linux-kernel@vger.kernel.org
-Subject: Exporting a lot of data to other processes?
-Date: Thu, 25 Oct 2007 08:05:33 +0200
-User-Agent: KMail/1.9.7
+	id S1755189AbXJYGFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 02:05:41 -0400
+Message-ID: <4720322F.5070508@garzik.org>
+Date: Thu, 25 Oct 2007 02:05:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk
+Subject: Re: [git patches] IDE updates (part 2)
+References: <200710131825.24768.bzolnier@gmail.com> <20071014001238.GP8181@ftp.linux.org.uk>
+In-Reply-To: <20071014001238.GP8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710250805.33369.philipp.marek@bmlv.gv.at>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+Al Viro wrote:
+> Proposed addition to icside part, provided that ARM folks ACK it - gets
+> icside to build and AFAICS it's correct:
+> 
+> diff --git a/drivers/ata/pata_icside.c b/drivers/ata/pata_icside.c
+> index be30923..842fe08 100644
+> --- a/drivers/ata/pata_icside.c
+> +++ b/drivers/ata/pata_icside.c
+> @@ -332,12 +332,13 @@ static void ata_dummy_noret(struct ata_port *port)
 
-I've already pondered about a question for some time, and would like to ask 
-for a better idea here. It's not entirely about the kernel - although that 
-surely has some impact, too.
-
-
-I've got some process/daemon, that wants to export information to other 
-processes. As model for exporting that data I found the sysfs and procfs 
-nice - an easy "cat" can give you the needed data.
-
-Now, in order to do something like that from userspace, I either have to:
-
--) use FUSE
-   - feels slow (many context switches)
-   - much overhead for such common things (another daemon)
--) use named pipes in some directory structure, and keep them open in
-   the daemon - waiting to be written to
-   - many open filehandles
-   - feels not really useable for bigger (>1000) structures
--) use some ramfs/shmfs or similar, and overwrite the data occasionally
-   - not current data
-   - runtime overhead (processor load)
-
-Now the open/close events wouldn't be interesting; the read() and (possibly) 
-write events would have to be relayed (which is not the case for FUSE, IIUC)
-
-Is there some better way? For small structures the pipes seem to be the best 
-way ... just wait for a reader, give it data, and finished.
+applied
 
 
-Thank you for all ideas.
-
-
-Regards,
-
-Phil
