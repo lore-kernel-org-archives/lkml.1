@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbXJYSpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbXJYSp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759520AbXJYSpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJYSpa
+	id S1756587AbXJYSp5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbXJYSph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:45:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43809 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 14:45:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:55260 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbXJYSp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:45:29 -0400
-Message-ID: <4720E424.7060509@redhat.com>
-Date: Thu, 25 Oct 2007 14:44:52 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Rich Paul <socketpair_bug@rich-paul.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: BUG in sys_socketpair
-References: <20071025141107.GA19437@dragon.rich-paul.net>
-In-Reply-To: <20071025141107.GA19437@dragon.rich-paul.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756855AbXJYSpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:45:35 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Subject: Re: Is gcc thread-unsafe?
+Date: Thu, 25 Oct 2007 19:45:20 +0100
+Message-ID: <yw1xwstbjanz.fsf@thrashbarg.mansr.com>
+References: <200710251358.55185.nickpiggin@yahoo.com.au> <MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com> <20071024213533.12115ba0@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 87-194-163-22.bethere.co.uk
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (Double Solitaire, linux)
+Cancel-Lock: sha1:m8/DVLG5/NJnRMHYx20gK9qWZgs=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/2007 10:11 AM, Rich Paul wrote:
-> In 2.6.23, there seems to be a minor bug in sys_socketpair.  When the
-> calls to sock_alloc_fd fail, it aborts the routine, but it returns the
-> variable err, which is not set in this case.
-> 
-> The result is a silent failure if you have too many files open and call
-> socketpair.
-> 
-> Here is a simple UNTESTED patch (not even compiled) which should resolve the
-> issue.
-> 
-> 
-> --- net/socket.c.orig   2007-10-25 10:03:56.000000000 -0400
-> +++ net/socket.c        2007-10-25 10:04:00.000000000 -0400
-> @@ -1245,11 +1245,14 @@
->                 goto out_release_both;
-> 
->         fd1 = sock_alloc_fd(&newfile1);
-> -       if (unlikely(fd1 < 0))
-> +       if (unlikely(fd1 < 0)) {
-> +               err=fd1;
->                 goto out_release_both;
-> +       }
-> 
->         fd2 = sock_alloc_fd(&newfile2);
->         if (unlikely(fd2 < 0)) {
-> +               err=fd2;
->                 put_filp(newfile1);
->                 put_unused_fd(fd1);
->                 goto out_release_both;
-> 
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Should be "err = fd1" (spaces), otherwise looks good.
+> On Wed, 24 Oct 2007 21:29:56 -0700
+> "David Schwartz" <davids@webmaster.com> wrote:
+>
+>> 
+>> > Well that's exactly right. For threaded programs (and maybe even
+>> > real-world non-threaded ones in general), you don't want to be
+>> > even _reading_ global variables if you don't need to. Cache misses
+>> > and cacheline bouncing could easily cause performance to completely
+>> > tank in some cases while only gaining a cycle or two in
+>> > microbenchmarks for doing these funny x86 predication things.
+>> 
+>> For some CPUs, replacing an conditional branch with a conditional
+>> move is a *huge* win because it cannot be mispredicted.
+>
+> please name one...
+> Hint: It's not one made by either Intel or AMD in the last 4 years...
 
-Original did:
+ARM.  On ARM1136 (used in the Nokia N800) a mispredicted branch takes
+5-7 cycles (a correctly predicted branch takes 0-4 cycles), while a
+conditional load, store or arithmetic instruction always takes one
+cycle.
 
-	err = sock_map_fd(sock1);
-	if (err < 0)
-		goto out_release_both;
-	fd1 = err;
+-- 
+Måns Rullgård
+mans@mansr.com
+
