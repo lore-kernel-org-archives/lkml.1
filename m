@@ -1,102 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762251AbXJYPyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbXJYQAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762251AbXJYPyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760428AbXJYPyG
+	id S1755832AbXJYQAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJYQAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:54:06 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:4109 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760390AbXJYPyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:54:04 -0400
-X-Greylist: delayed 7529 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 11:54:04 EDT
-Date: Thu, 25 Oct 2007 17:54:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>, Andrew Morton <akpm@osdl.org>
-Cc: Thomas Renninger <trenn@suse.de>, linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with
- ACPI Operation Region resources
-Message-ID: <20071025175401.6a5ac8cc@hyperion.delvare>
-In-Reply-To: <20071025120438.GJ30546@jupiter.solarsys.private>
-References: <1193236319.4590.225.camel@queen.suse.de>
-	<20071025120438.GJ30546@jupiter.solarsys.private>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 12:00:01 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55754 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751293AbXJYQAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:00:00 -0400
+In-Reply-To: <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       chuck.lever@oracle.com
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: LTP ustat01 test fails on NFSROOT
+Date: Thu, 25 Oct 2007 10:59:53 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
 
-On Thu, 25 Oct 2007 08:04:38 -0400, Mark M. Hoffman wrote:
-> Hi Thomas:
-> 
-> I recently told someone in private that ACPI vs. hwmon conflicts are the
-> biggest open problems for the hwmon subsystem.  Thank you (and Jean) for
-> doing this.
-> 
-> * Thomas Renninger <trenn@suse.de> [2007-10-24 16:31:59 +0200]:
-> > Hi,
-> > 
-> > it seems Len's test tree and Linus tree diverged a bit, at least with
-> > this patch set things do not apply cleanly.
-> > 
-> > Therefore I post these for discussion whether and in which kernel tree
-> > they should end up before doing work for nothing.
-> > If they are still a candidate for 2.6.24 (rather unintrusive), pls tell
-> > me whether and when I should base them against Len's test/release branch
-> > or whatever other tree.
-> > If not, it would be great if they can be included into the -mm tree and
-> > I can rebase them against this one.
-> 
-> Andrew has already picked this series; I vote for extended time in -mm.  On the
-> hwmon side, there is almost guaranteed to be fallout from this that may take
-> time to resolve.
+On Oct 24, 2007, at 12:05 AM, Kumar Gala wrote:
 
-Of course, otherwise we wouldn't have done it ;)
+>
+> On Oct 23, 2007, at 8:21 PM, Trond Myklebust wrote:
+>
+>>
+>> On Tue, 2007-10-23 at 17:52 -0500, Kumar Gala wrote:
+>>> I'm looking into an issue with LTP's ustat01 & ustat02 tests in  
+>>> which
+>>> they report the following:
+>>>
+>>> ustat01     1  FAIL  :  ustat(2) failed and setthe errno to 116 :
+>>> Stale NFS file handle
+>>> ustat02     2  FAIL  :  ustat(2) failed to produce expected error;
+>>> 14, errno: EFAULT and got 116
+>>>
+>>> It appears sometime between 2.6.21 and 2.6.22-rc1 some changes to  
+>>> NFS
+>>> got introduced that cause this.
+>>>
+>>> was wondering about any ideas while I try to debug what's going on.
+>>>
+>>> thanks
+>>>
+>>> - k
+>>
+>> I'm seeing zero problems with the latest checkouts from Linus' git  
+>> tree.
+>> Mind giving us some more details?
+>
+> I tried 2.6.24-rc1 w/the same result.
+>
+> The system is a 32-bit PPC embedded board that we mounting the  
+> rootfs over nfs on.
+>
+> The defconfig is arch/powerpc/configs/mpc8641_hpcn_defconfig
+>
+>> 'strace' output would be useful, as would the standard NFS list of
+>> client mount options, server export options, details on how your
+>> exported partition is set up on the server, etc...
+>
+> strace:
+>
+> stat64("/", {st_dev=makedev(0, 14), st_ino=58821800,  
+> st_mode=S_IFDIR|0775, st_nlink=18, st_uid=500, st_gid=500,  
+> st_blksize=4096, st_blocks=8, st_size=4096,  
+> st_atime=2007/10/23-22:43:30, st_mtime=2007/10/18-19:51:19,  
+> st_ctime=2007/10/18-19:51:19}) = 0
+> ustat(0xe, 0x1001a008)                  = -1 ESTALE (Stale NFS file  
+> handle)
+> fstat64(1, {st_dev=makedev(0, 14), st_ino=58821964, st_mode=S_IFCHR| 
+> 0600, st_nlink=1, st_uid=0, st_gid=0, st_blksize=4096, st_blocks=0,  
+> st_rdev=makedev(4, 64), st_atime=2007/10/16-18:32:59,  
+> st_mtime=2007/10/16-18:32:59, st_ctime=2007/10/24-05:03:34}) = 0
+>
+>
+> Info on the server:
+>
+> [root@ducky ~]# exportfs -v
+> /               <world> 
+> (rw,async,wdelay,no_root_squash,no_subtree_check)
+> [root@ducky ~]# uname -a
+> Linux ducky.am.freescale.net 2.6.22.5-76.fc7 #1 SMP Thu Aug 30  
+> 13:04:34 EDT 2007 ppc64 ppc64 ppc64 GNU/Linux
+>
+> On the host system:
+>
+> (not sure how to get client mount options, mount reports:
+>
+> %root% on / type unknown (rw)
+>
+> -sh-2.05b# cat /proc/cmdline
+> root=/dev/nfs rw nfsroot=192.168.1.15:/home/galak/ltib-joust-8572/ 
+> rootfs  
+> ip=192.168.1.147:192.168.1.15:192.168.1.1:255.255.254.0:rocky:eth0:off 
+>  console=ttyS0,115200
+>
+> If there is some other info that would be useful please let me know.
 
-> > A boot parameter acpi_enforce_resources=strict/lax/no is provided, which
-> > is default set to lax:
-> >   - strict: let conflicting drivers fail to load with an error message
-> >   - lax:    let conflicting driver work normal with a warning message
-> >   - no:     no functional change at all
-> > Depending on the feedback and the kind of interferences we see, this
-> > should be set to strict at later time.
-> 
-> As long as it's in -mm, you may as well default to =strict right away.  This
-> will force people to report.  Open the floodgates; I hope I don't drown.
+any ideas?  any other debug info needed?
 
-Good point. Here's a patch. Andrew, can you please apply this on top of
-the other patches? Thanks.
-
-Subject: Enforce ACPI resource conflict checks
-
-In -mm, enforce ACPI resource conflict checks, so that users will report
-to us.
-
-This patch is NOT meant to go to Linus at this point.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/acpi/osl.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.24-rc1.orig/drivers/acpi/osl.c	2007-10-24 10:01:16.000000000 +0200
-+++ linux-2.6.24-rc1/drivers/acpi/osl.c	2007-10-25 17:13:58.000000000 +0200
-@@ -1076,7 +1076,7 @@ __setup("acpi_wake_gpes_always_on", acpi
- #define ENFORCE_RESOURCES_LAX    1
- #define ENFORCE_RESOURCES_NO     0
- 
--static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
-+static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
- 
- static int __init acpi_enforce_resources_setup(char *str)
- {
-
-
--- 
-Jean Delvare
+- k
