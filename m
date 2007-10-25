@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbXJYVqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbXJYVqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbXJYVqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXJYVqB
+	id S1759627AbXJYVqc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXJYVqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:46:01 -0400
-Received: from ortiz.unizar.es ([155.210.1.50]:49133 "EHLO ortiz.unizar.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbXJYVqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:46:00 -0400
-X-Greylist: delayed 2212 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 17:46:00 EDT
-Date: Thu, 25 Oct 2007 23:09:04 +0200
-From: "J.A. Magallon" <magallon@unizar.es>
-To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Opteron box and 4Gb memory
-Message-ID: <20071025230904.03d5f46a@werewolf>
-Organization: GIGA
-X-Mailer: Claws Mail 3.0.2cvs98 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
+	Thu, 25 Oct 2007 17:46:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55698 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759003AbXJYVqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:46:19 -0400
+Date: Thu, 25 Oct 2007 23:46:47 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Lothian <mike@fireburn.co.uk>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+Message-ID: <20071025214647.GX30533@stusta.de>
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <4720FF2B.9020802@googlemail.com> <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi...
+On Thu, Oct 25, 2007 at 10:30:09PM +0100, Michael Lothian wrote:
+> On 25/10/2007, Gabriel C <nix.or.die@googlemail.com> wrote:
+> > Michael Lothian wrote:
+> > >> The MPENTIUM4 option does not only set -march=pentium4, it also enables
+> > >> several other options in arch/i386/Kconfig.cpu resulting in better
+> > >> performance.
+> > >
+> > > How about an autodetect to set the right options here too using cpuid?
+> > >
+> > > With a warning of course that the code produced will be specifically
+> > > for the native cpu that it's compiled on.
+> >
+> > And kill off all Distro kernels right ? IMO to set that auto magically is bad.
+> >
+> > Regards,
+> >
+> > Gabriel
+> >
+> Yes for something like a distro kernel it is bad but as I said before
+> this isn't what this is for.
+> 
+> Eventually it would be nice to to a make localkernel and for a
+> customised kernel to be build compiling in all pci / pci express
+> drivers into the kernel and all usb devices as modules.
+> 
+> Auto magically detecting the cpu would be part of that
+> 
+> I hate getting a new piece of kit and then have to figure out from
+> lspci which options need to be turned on and the the really iritation
+> part of finding the option in make menuconfig
 
-I have some Quad-Opteron boxes with 4Gb memory and two of them are
-running two different Linux distros.
+What exactly is irritating?
+Please name the problems so that they can be fixed.
 
-Box one sees 4Gb of memory, but box two just sees 3.
-Their mtrr setups are different:
+> Detecting the cpu and using march=native could be all part of that
 
-one:
-[    0.000000] Linux version 2.6.20...
-...
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000b7fd0000 (usable)
-[    0.000000]  BIOS-e820: 00000000b7fd0000 - 00000000b7fde000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000b7fde000 - 00000000b8000000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-[    0.000000]  BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 0000000145000000 (usable)
-[    0.000000] Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-[    0.000000] Entering add_active_range(0, 256, 753616) 1 entries of 3200 used
-[    0.000000] Entering add_active_range(0, 1048576, 1331200) 2 entries of 3200 
-used
-[    0.000000] end_pfn_map = 1331200
+You don't need march=native for this.
 
-cat /proc/mtrr:
-reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-reg02: base=0x140000000 (5120MB), size=  64MB: write-back, count=1
-reg03: base=0x144000000 (5184MB), size=  16MB: write-back, count=1
-reg04: base=0xb8000000 (2944MB), size= 128MB: uncachable, count=1
-reg05: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+You have to set the right config option for your CPU and you 
+automatically get the right compiler options.
 
-two:
-Linux version 2.6.22.9...
-...
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000b8fd0000 (usable)
- BIOS-e820: 00000000b8fd0000 - 00000000b8fde000 (ACPI data)
- BIOS-e820: 00000000b8fde000 - 00000000b9000000 (ACPI NVS)
- BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
-Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-Entering add_active_range(0, 256, 757712) 1 entries of 3200 used
-end_pfn_map = 1048576
+> Mike
 
-cicely:~# cat /proc/mtrr
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
-reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
-reg03: base=0xb0000000 (2816MB), size= 128MB: write-back, count=1
-reg04: base=0xb8000000 (2944MB), size=  16MB: write-back, count=1
-
-
-Why ? Is it a bios setup problem ? A kernel problem ?
-grep HIGHMEN in configs for both kernels does not give anything, so
-I still understand less this thing...
+cu
+Adrian
 
 -- 
-J.A. Magallon <magallon()unizar!es>     \               Software is like sex:
-                                         \         It's better when it's free
-MacOS X 10.4.8 Tiger - Darwin Kernel Version 8.8.0 PPC
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
