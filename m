@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbXJYOOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXJYORJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760832AbXJYOOA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 10:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXJYONu
+	id S1760681AbXJYORJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 10:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbXJYOQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 10:13:50 -0400
-Received: from ns.suse.de ([195.135.220.2]:42352 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760157AbXJYONt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 10:13:49 -0400
-Subject: Re: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <20071025154833.0240b8a2@hyperion.delvare>
-References: <1193236387.4590.230.camel@queen.suse.de>
-	 <20071024205347.6948c081.akpm@linux-foundation.org>
-	 <20071025154833.0240b8a2@hyperion.delvare>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 25 Oct 2007 16:13:47 +0200
-Message-Id: <1193321627.4590.278.camel@queen.suse.de>
+	Thu, 25 Oct 2007 10:16:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43516 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757193AbXJYOQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 10:16:56 -0400
+Date: Thu, 25 Oct 2007 07:13:24 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Sami Farin <safari-kernel@safari.iki.fi>
+Cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: x86: randomize brk() and RLIMIT_DATA
+Message-ID: <20071025071324.2eac21d6@laptopd505.fenrus.org>
+In-Reply-To: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
+References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 15:48 +0200, Jean Delvare wrote:
-> Hi Andrew,
+On Thu, 25 Oct 2007 16:41:24 +0300
+Sami Farin <safari-kernel@safari.iki.fi> wrote:
+
+> Would be neat if randomized brk and setrlimit(RLIMIT_DATA, ...)
+> worked in a predictable way:
+
+this isn't a valid case afaics; even on "traditional x86" (before we
+changed the address space layout, or even today if you have an
+unlimited stack rlimit) this isn't going to work. applications really
+shouldn't use (s)brk() but malloc(); you have to be able to fall back
+to mmap regardless of what you do.
+
 > 
-> On Wed, 24 Oct 2007 20:53:47 -0700, Andrew Morton wrote:
-> > On Wed, 24 Oct 2007 16:33:07 +0200 Thomas Renninger <trenn@suse.de> wrote:
-> > 
-> > > From: Thomas Renninger <trenn@suse.de>
-> > > To: linux-acpi <linux-acpi@vger.kernel.org>
-> > > Cc: linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jean Delvare <khali@linux-fr.org>
-> > > Reply-To: trenn@suse.de
-> > > Subject: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
-> > > Date: Wed, 24 Oct 2007 16:33:07 +0200
-> > > Organization: Novell/SUSE
-> > > X-Mailer: Evolution 2.8.2 
-> > > 
-> > > Export acpi_check_resource_conflict(), sometimes drivers already have
-> > > a struct resource at hand so no need to use the wrappers to build a new
-> > > one.
-> > > 
-> > > Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> > > ---
-> > 
-> > The attributions on this are all mucked up.
-> > 
-> > I _think_ it was written by Jean, in which case the changlog should
-> > have had From:him right at the start to indicate this.  And as you
-> > were in the delivery path, it should have had your signoff.
-> > 
-> > I'll make those changes - please let me know if I misguessed.
+> $ gcc brk.c -fPIC -pie -m64;./a.out;./a.out;./a.out
+> sbrk=0x7f721b815000 main=0x7f721af04860
+> sbrk succeeded (brk=0x7f721b909240)
+> sbrk=0x7fc3d77e2000 main=0x7fc3d66fa860
+> sbrk failed: Cannot allocate memory (brk=0x7fc3d77e2000)
+> sbrk=0x7f05b0615000 main=0x7f05af76b860
+> sbrk failed: Cannot allocate memory (brk=0x7f05b0615000)
 > 
-> You are correct, patches 3/5, 4/5 and 5/5 of this patchset were written
-> by me (as in: I'm the one to blame if something breaks). I expected
-> Thomas to add a From: header and add his own Signed-off-by line but
-> instead he forwarded my mails directly. Thanks for fixing up the mess,
-> we'll try to make it better next time.
 
-As said, I wasn't sure against what I should base all this.
-I would had cleaned it up, depending on what you told me. I also didn't
-know about the From: tag if you send patches not from your own, the next
-time...
-Anyways, it's nice to see how things can move on right away without much
-delay and discussion.
 
-Thanks,
-
-   Thomas
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
