@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbXJYQDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbXJYQD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbXJYQDA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXJYQCv
+	id S1753469AbXJYQD2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXJYQDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:02:51 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33477 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbXJYQCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:02:50 -0400
-Date: Thu, 25 Oct 2007 12:01:22 -0400
-Message-Id: <200710251601.l9PG1Mue019939@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
-       ryan@finnie.org, mhalcrow@us.ibm.com, cjwatson@ubuntu.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, stable@kernel.org
-Subject: Re: [PATCH+comment] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE 
-In-reply-to: Your message of "Thu, 25 Oct 2007 07:30:08 BST."
-             <Pine.LNX.4.64.0710250705510.9811@blonde.wat.veritas.com> 
-X-MailKey: Erez_Zadok
+	Thu, 25 Oct 2007 12:03:20 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:61752 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751409AbXJYQDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:03:19 -0400
+Date: Fri, 26 Oct 2007 01:05:10 +0900 (JST)
+Message-Id: <20071026.010510.59032545.anemo@mba.ocn.ne.jp>
+To: rmk+lkml@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] serial: do not call ->pm() on initialization for
+ console port
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20071018161827.GB16244@flint.arm.linux.org.uk>
+References: <20071019.011355.39154656.anemo@mba.ocn.ne.jp>
+	<20071018161827.GB16244@flint.arm.linux.org.uk>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0710250705510.9811@blonde.wat.veritas.com>, Hugh Dickins writes:
-> On Thu, 25 Oct 2007, Pekka Enberg wrote:
+On Thu, 18 Oct 2007 17:18:27 +0100, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > Attached patch fixes this problem.  Is this a right way?
+> > If not, I will fix the serial_txx9 driver to skip the initialization in
+> > ->pm() if oldstate was -1.
+> 
+> I'll have to investigate further to refresh myself with what's going
+> on here, but your patch looks wrong.
 
-> With unionfs also fixed, we don't know of an absolute need for this
-> patch (and so, on that basis, the !wbc->for_reclaim case could indeed
-> be removed very soon); but as I see it, the unionfs case has shown
-> that it's time to future-proof this code against whatever stacking
-> filesystems come along.  Hence I didn't mention the names of such
-> filesystems in the source comment.
+Now rc1 is released.  Any chances for this patch?
+If none, I should push other workaround to fix this issue on 2.6.24.
 
-I think "future proof" for other stackable f/s is a good idea, esp. since
-many of the stackable f/s we've developed and distributed over the past 10
-years are in some use in various places: gzipfs, avfs, tracefs, replayfs,
-ncryptfs, versionfs, wrapfs, i3fs, and more (see www.filesystems.org).
-
-Cheers,
-Erez.
+---
+Atsushi Nemoto
