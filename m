@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbXJYOzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXJYPBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbXJYOzU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 10:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXJYOzI
+	id S1761497AbXJYPBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757991AbXJYPBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 10:55:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53608 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757251AbXJYOzG (ORCPT
+	Thu, 25 Oct 2007 11:01:09 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:45103
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754662AbXJYPBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 10:55:06 -0400
-Date: Thu, 25 Oct 2007 07:55:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Kleen, Andi" <ak@suse.de>
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <200710251324.49888.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org>
-References: <200710251324.49888.nickpiggin@yahoo.com.au>
+	Thu, 25 Oct 2007 11:01:08 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/3] RT: balance rt tasks enhancements v6
+To: linux-rt-users@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+Date: Thu, 25 Oct 2007 10:46:18 -0400
+Message-ID: <20071025144456.19876.94333.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a mini-release of my series, rebased on -rt2.  I have more changes
+downstream which are not quite ready for primetime, but I need to work on some
+other unrelated issues right now and I wanted to get what works out there. 
 
+Changes since v5
 
-On Thu, 25 Oct 2007, Nick Piggin wrote:
-> 
-> Andi spotted this exchange on the gcc list. I don't think he's
-> brought it up here yet, but it worries me enough that I'd like
-> to discuss it.
+*) Rebased to rt2 - Many of the functions of the original series are now
+ included in base -rt so they are dropped out
 
-Are you surprised?
-
-The gcc developers seem to have had a total disregard for what people 
-want or need, and every time some code generation issue comes up, there's 
-a lot of people on the list that do language-lawyering, rather than admit 
-that there might be a problem.
-
-It's happened before, it will happen again. I don't think it's true of all 
-gcc developers (or even most, I hope), but it's common enough. For some 
-reason, compiler developers seem to be far enough removed from "real life" 
-that they have a tendency to talk in terms of "this is what the spec says" 
-rather than "this is a problem".
-
-Happily, at least in this kind of situation, threading is a real issue for 
-other projects than just the kernel, so maybe it gets solved properly.
-
-But I have to admit that for the last five years or so, I've really wanted 
-some other compiler team to come up with a good open-source compiler. 
-Exactly due to issues like this (Q: "Gcc creates bogus code that doesn't 
-work!" A: "It's not bogus, it's technically allowed by the language specs 
-that don't talk about xyz, the fact that it doesn't work isn't our 
-problem").
-
-I think the OpenBSD people decided to actually do something about this, 
-and I suspect it had *nothing* to do with license issues, and everything 
-to do with these kinds of problems. I wish them all the luck, although 
-personally I think LLVM is a much more interesting project.
-
-			Linus
