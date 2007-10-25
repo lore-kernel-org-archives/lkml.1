@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbXJZADO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbXJZAET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763239AbXJZADO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760568AbXJZAC5
+	id S1761002AbXJZAET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJZAEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:02:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:48575 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756879AbXJZAC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:02:56 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Date: Fri, 26 Oct 2007 10:03:18 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
-References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <20071025091140.GK5053@kernel.dk> <200710252154.45542.rusty@rustcorp.com.au>
-In-Reply-To: <200710252154.45542.rusty@rustcorp.com.au>
+	Thu, 25 Oct 2007 20:04:11 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:44419 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751293AbXJZAEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 20:04:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BGru2PnkHrfbxRksuvwnkDYj0yTXww4LxlNBYkRjPXi/gK/B3HIvQ0qhJnAcBffFwfR4WpvbwLY5u8Pnac+n+fRiMww2GZlF9WF4KzoyOw6g5TGqirq64qaUOP5G8KnfmsWtM9XmwVO3eun/+/IC98reyiG1Pt2TYVgwiBsY+5o=  ;
+X-YMail-OSG: cAWjt7gVM1kJpU.1.kFe7HNadi14bG8G5esFFaxcmjtNTzn8lAYYbzDY6mBy7BM06bBjGXYD4w--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <ak@suse.de>
+Subject: Re: Is gcc thread-unsafe?
+Date: Fri, 26 Oct 2007 09:57:28 +1000
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260943.44719.nickpiggin@yahoo.com.au> <200710260155.46339.ak@suse.de>
+In-Reply-To: <200710260155.46339.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710261003.19287.rusty@rustcorp.com.au>
+Message-Id: <200710260957.28636.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007 21:54:44 Rusty Russell wrote:
-> On Thursday 25 October 2007 19:11:40 Jens Axboe wrote:
-> > On Thu, Oct 25 2007, Rusty Russell wrote:
-> > > What irritates me more is that scatterlists aren't quite generically
-> > > useful. The virtio code wants to join a scatterlist created by
-> > > blk_rq_map_sg() with two others, yet it won't work because sg_chain()
-> > > doesn't remove the end marker from the first entry.
+On Friday 26 October 2007 09:55, Andi Kleen wrote:
+> > But we don't actually know what it is, and it could change with
+> > different architectures or versions of gcc. I think the sanest thing
+> > is for gcc to help us out here, seeing as there is this very well
+> > defined requirement that we want.
 > >
-> > That's a minor nit for your special purpose, we/you can change that.
+> > If you really still want the optimisation to occur,
 >
-> Well currently sg_chain() only joins "incomplete" (ie. unterminated) sg
-> chains.  That works great for you, but it feels more like a special purpose
-> to me.
+> I don't think it makes sense for memory. It may may make sense for
+> registers.
 >
-> > > If this patch weren't already included, I'd be strongly arguing for the
-> > > bio idea: I find the chained sg code tricksy and ugly (sorry Jens).
-> >
-> > What is the bio idea? A bio works in essentially the same way, the only
-> > difference is having a specific next pointer. It's still just a linked
-> > lists of arbitrarily sized sg tables (the bio_vec arrays).
+> But given that my kernel doesn't seem to contain any instances
+> at all it's probably not too useful for it anyways.
 >
-> It was suggested by analogy earlier in this thread, to use a two-level
-> structure.
->
-> In this case I would have first renamed struct scatterlist to struct
-> scatterelem.  Then struct scatterlist looks like:
->
-> 	struct scatterlist {
-> 		unsigned int num;
-> 		struct scatterelem elems[0];
-> 	};
+> So I wouldn't have a problem disabling it, but it would
+> be better if they fixed their heuristics to only apply it when
+> it makes sense.
 
-To correct my own thoughts, it'd be better to just put a "struct list_head 
-list;" in there for chaining.  That's more along standard kernel lines, and 
-neatly handles the single-scatterlist case.
+That's what I mean -- disabling it for memory. I mean, I am just
+talking about the conditional => unconditional store to a shared
+variable optimisation.
 
-Cheers,
-Rusty.
+So for example, adc, sbb, and cmov are all still fine when they
+are used for the right things. I don't want to turn them off
+because they really are quite useful.
+
+As far as it being theoretical... I hope it is. But we should
+nip this in the "bud" (gcc 3.x does this too, sigh) before it
+causes problems for us (and any and all other threaded programs
+and libraries out there). And by that I mean ask them for a
+compiler option rather than start adding volatile.
+
