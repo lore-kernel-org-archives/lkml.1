@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbXJYBnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbXJYBp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbXJYBnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXJYBnM
+	id S1757274AbXJYBp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbXJYBpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:43:12 -0400
-Received: from excu-mxob-1.symantec.com ([198.6.49.12]:52916 "EHLO
-	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756388AbXJYBnL (ORCPT
+	Wed, 24 Oct 2007 21:45:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47607 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753411AbXJYBpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:43:11 -0400
-X-Greylist: delayed 24080 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Oct 2007 21:43:11 EDT
-Date: Wed, 24 Oct 2007 20:01:16 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
-Message-ID: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Oct 2007 21:45:15 -0400
+Date: Thu, 25 Oct 2007 02:41:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Cc: "Chris Wright" <chrisw@sous-sol.org>,
+       "Casey Schaufler" <casey@schaufler-ca.com>,
+       "Adrian Bunk" <bunk@kernel.org>, "Simon Arlott" <simon@fire.lp0.eu>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andreas Gruenbacher" <agruen@suse.de>,
+       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "James Morris" <jmorris@namei.org>,
+       "Crispin Cowan" <crispin@crispincowan.com>,
+       "Giacomo Catenazzi" <cate@debian.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+ static interface)
+Message-ID: <20071025024131.6082e4a8@the-village.bc.nu>
+In-Reply-To: <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+References: <20071024223124.GI30533@stusta.de>
+	<446110.89443.qm@web36608.mail.mud.yahoo.com>
+	<20071025002356.GB3660@sequoia.sous-sol.org>
+	<2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_32 CONFIG_HIGHMEM64G with 5GB RAM hung when booting, after issuing
-some "request_module: runaway loop modprobe binfmt-0000" messages in
-trying to exec /sbin/init.
+> The idea that poor security is worse than no security is fallacious,
+> and not backed up by common experience.
 
-The binprm buf doesn't see the right ".ELF" header because sg_phys()
-is providing the wrong physical addresses for high pages: a 32-bit
-unsigned long is too small in this case, we need to use dma_addr_t.
+There is a ton of evidence both in computing and outside of it which
+shows that poor security can be very much worse than no security at all.
+In particular stuff which makes users think they are secure but is
+worthless is very dangerous indeed.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Whether this is a complete patch, suitable for all architectures,
-I'm not sure: it builds, boots and runs correctly on the x86_32 box
-in question, but you'll be a lot wiser than me about using dma_addr_t
-for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
-when I think all arches already get to include it one way or another,
-typically via asm/scatterlist.h; but I guess it's safest to repeat it.)
+When you know that security is limited you act appropriately, when you
+believe security is good but it is not you take inappropriate risks and
+get badly burned.
 
- include/linux/scatterlist.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- 2.6.24-rc1/include/linux/scatterlist.h	2007-10-24 12:42:16.000000000 +0100
-+++ linux/include/linux/scatterlist.h	2007-10-24 19:17:13.000000000 +0100
-@@ -1,6 +1,7 @@
- #ifndef _LINUX_SCATTERLIST_H
- #define _LINUX_SCATTERLIST_H
- 
-+#include <asm/types.h>
- #include <asm/scatterlist.h>
- #include <linux/mm.h>
- #include <linux/string.h>
-@@ -237,7 +238,7 @@ static inline void sg_init_table(struct 
-  *   on the sg page.
-  *
-  **/
--static inline unsigned long sg_phys(struct scatterlist *sg)
-+static inline dma_addr_t sg_phys(struct scatterlist *sg)
- {
- 	return page_to_phys(sg_page(sg)) + sg->offset;
- }
+Alan
