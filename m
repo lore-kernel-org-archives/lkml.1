@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXJYTdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXJYTgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbXJYTdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXJYTcy
+	id S1758068AbXJYTgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXJYTfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:32:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:5356 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbXJYTcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:32:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=R9jSDSIPVo4/QxyAF3t/IL0KTlCFWVni9Xx98cZ17T2hX9h0Uw+Kv55UOV3FzzDBnq2Kr9hw0eBeMYsi6kISkKbDEG8HaFX5Bh3AhlhpUxl9ItK8svLjSf4m386wsiDIEeA5ItkTq0W1/ktSylu2zHZM0x4mt4ypJCKLimvoDuk=
-Message-ID: <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com>
-Date: Thu, 25 Oct 2007 20:32:51 +0100
-From: "Michael Lothian" <mike@fireburn.co.uk>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: Possibility of adding -march=native to x86
+	Thu, 25 Oct 2007 15:35:51 -0400
+Received: from ozlabs.org ([203.10.76.45]:51456 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627AbXJYTfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 15:35:51 -0400
+Date: Thu, 25 Oct 2007 14:32:26 -0500
+From: Anton Blanchard <anton@samba.org>
+To: jens.axboe@oracle.com
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071025191723.GQ30533@stusta.de>
+Subject: [PATCH] Initialise scatter/gather list in ata_sg_setup
+Message-ID: <20071025193226.GA20459@kryten>
+References: <20071025192959.GA5827@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
-	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
-	 <20071025185022.GP30533@stusta.de>
-	 <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
-	 <20071025191723.GQ30533@stusta.de>
-X-Google-Sender-Auth: 368d0ff511124706
+In-Reply-To: <20071025192959.GA5827@kryten>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/10/2007, Adrian Bunk <bunk@kernel.org> wrote:
-> On Thu, Oct 25, 2007 at 08:09:56PM +0100, Michael Lothian wrote:
-> > Actually I changed the Makefile.cpu and changed the -march to native
-> > which did slightly change the size of the kernel (slightly larger I
-> > think)
-> >
-> > So what else does that option change?
->
-> Look at arch/i386/Kconfig.cpu
->
 
-Can you be a bit more specific?
+(Sorry the subject was incorrect)...
+
+After turning on DEBUG_SG I hit a fail:
+
+kernel BUG at include/linux/scatterlist.h:50!
+
+	ata_qc_issue
+	ata_scsi_translate
+	ipr_queuecommand
+	scsi_dispatch_cmd
+	scsi_request_fn
+	elv_insert
+	blk_execute_rq_nowait
+	blk_execute_rq
+	sg_io
+	scsi_cmd_ioctl
+	cdrom_ioctl
+	sr_block_ioctl
+	blkdev_driver_ioctl
+	blkdev_ioctl
+	block_ioctl
+	do_ioctl
+	vfs_ioctl
+	sys_ioctl
+	sg_ioctl_trans
+
+It looks like ata_sg_setup is working on an uninitialised sg table. Call
+sg_init_table to initialise it before use.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Jens this is against your sg branch. This fixes the fail but Id
+appreciate a confirmation that it's the right fix :)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index b5f7c59..4de41bb 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4689,6 +4689,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
+ 		 * data in this function or read data in ata_sg_clean.
+ 		 */
+ 		offset = lsg->offset + lsg->length - qc->pad_len;
++		sg_init_table(psg, 1);
+ 		sg_set_page(psg, nth_page(sg_page(lsg), offset >> PAGE_SHIFT),
+ 				qc->pad_len, offset_in_page(offset));
+ 
