@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbXJYXNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXJYXO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760933AbXJYXNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXJYXND
+	id S1760482AbXJYXO0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbXJYXOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:13:03 -0400
-Received: from waste.org ([66.93.16.53]:36082 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbXJYXNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:13:01 -0400
-Date: Thu, 25 Oct 2007 18:12:38 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: IRQ off latency of printk is very high
-Message-ID: <20071025231237.GT19691@waste.org>
-References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47211E2C.90301@am.sony.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 25 Oct 2007 19:14:18 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:18746 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbXJYXOR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:14:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:cc:subject:content-disposition;
+	b=fArgLWjMFTlxZTCmXMpLGSPbE3Tu5NilOv6zcvhPlkQr9Fbn2PCAEPpEhO+UVJYch
+	96bIjhf0iOGDQzAeMgDnA==
+Message-Id: <20071025230758.945535769@crlf.corp.google.com>
+Date: Thu, 25 Oct 2007 16:06:40 -0700
+From: Mike Waychison <mikew@google.com>
+To: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
+Content-Disposition: inline; filename=drop_cap_sys_rawio_for_fibmap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 03:52:28PM -0700, Tim Bird wrote:
-> Mathieu Desnoyers wrote:
-> > It might help to read this thread I posted on LKML in January 2006
-> > explaining the problem, which led to some discussion about the issue.
-> > 
-> > http://lkml.org/lkml/2006/6/3/48
-> 
-> This is very helpful.  Jon Smirl's answer seems to give the
-> rationale for supporting printk output in interrupt context.
-> I'm not sure, however, if extending the interrupt off period
-> to cover the console output is required.  It didn't until
-> Ingo changed it in 2.6.17.
+Remove the need for having CAP_SYS_RAWIO when doing a FIBMAP call on an open file descriptor.
 
-Hmm, I see this at the beginning of the post-BK era (2.6.12-rc2):
+It would be nice to allow users to have permission to see where their data is landing on disk, and there really isn't a good reason to keep them from getting at this information.
 
-	        spin_lock_irqsave(&logbuf_lock, flags);
-		...
-		spin_unlock(&logbuf_lock);
-		call_console_drivers(_con_start, _log_end);
-		local_irq_restore(flags);
+Signed-off-by: Mike Waychison <mikew@google.com>
+ fs/ioctl.c |    2 --
+ 1 file changed, 2 deletions(-)
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Index: linux-2.6.23/fs/ioctl.c
+===================================================================
+--- linux-2.6.23.orig/fs/ioctl.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23/fs/ioctl.c	2007-10-25 15:48:24.000000000 -0700
+@@ -56,8 +56,6 @@ static int file_ioctl(struct file *filp,
+ 			/* do we support this mess? */
+ 			if (!mapping->a_ops->bmap)
+ 				return -EINVAL;
+-			if (!capable(CAP_SYS_RAWIO))
+-				return -EPERM;
+ 			if ((error = get_user(block, p)) != 0)
+ 				return error;
+ 
+
+--
+
