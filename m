@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbXJYIQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbXJYIQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbXJYIQI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbXJYIPZ
+	id S1760005AbXJYIQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758761AbXJYIP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:15:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33903
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758426AbXJYIPW (ORCPT
+	Thu, 25 Oct 2007 04:15:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55709 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758465AbXJYIPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:15:22 -0400
-Date: Thu, 25 Oct 2007 01:15:24 -0700 (PDT)
-Message-Id: <20071025.011524.133219141.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-Cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
-       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
-Subject: [PATCH 1/5]: Revert "PCI: disable MSI by default on systems with
- Serverworks HT1000 chips"
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 25 Oct 2007 04:15:23 -0400
+Date: Thu, 25 Oct 2007 01:15:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Permit silencing of __deprecated warnings.
+Message-Id: <20071025011516.aea17222.akpm@linux-foundation.org>
+In-Reply-To: <41621d56a0a0e4e5f861e1725f18990df5e927ad.1193299380.git.jeff@garzik.org>
+References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org>
+	<41621d56a0a0e4e5f861e1725f18990df5e927ad.1193299380.git.jeff@garzik.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Oct 2007 04:06:13 -0400 (EDT) Jeff Garzik <jeff@garzik.org> wrote:
 
-This reverts commit e3008dedff4bdc96a5f67224cd3d8d12237082a0.
+> The __deprecated marker is quite useful in highlighting the remnants of
+> old APIs that want removing.
+> 
+> However, it is quite normal for one or more years to pass, before the
+> (usually ancient, bitrotten) code in question is either updated or
+> deleted.
+> 
+> Thus, like __must_check, add a Kconfig option that permits the silencing
+> of this compiler warning.
+> 
+> This change mimics the ifdef-ery and Kconfig defaults of MUST_CHECK as
+> closely as possible.
 
-The real bug was an INTX issue in the tg3 ethernet chip, and
-cured by commit c129d962a66c76964954a98b38586ada82cf9381
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/pci/quirks.c    |    1 -
- include/linux/pci_ids.h |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index d0bb5b9..f5999f5 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1621,7 +1621,6 @@ static void __init quirk_disable_all_msi(struct pci_dev *dev)
- 	printk(KERN_WARNING "PCI: MSI quirk detected. MSI deactivated.\n");
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RD580, quirk_disable_all_msi);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 4e10a07..0571d6a 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1433,7 +1433,6 @@
- #define PCI_DEVICE_ID_SERVERWORKS_LE	  0x0009
- #define PCI_DEVICE_ID_SERVERWORKS_GCNB_LE 0x0017
- #define PCI_DEVICE_ID_SERVERWORKS_EPB	  0x0103
--#define PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX	0x0104
- #define PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE	0x0132
- #define PCI_DEVICE_ID_SERVERWORKS_OSB4	  0x0200
- #define PCI_DEVICE_ID_SERVERWORKS_CSB5	  0x0201
--- 
-1.5.2.5
-
+Sigh.  Can't we just fix the dud code?  Or mark it BROKEN and see what
+happens?
