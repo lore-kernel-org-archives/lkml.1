@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXJYRfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXJYRgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbXJYRfo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbXJYRfh
+	id S1758842AbXJYRgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXJYRgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:35:37 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:32871 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752341AbXJYRfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:35:36 -0400
-Date: Thu, 25 Oct 2007 19:36:05 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
+	Thu, 25 Oct 2007 13:36:16 -0400
+Received: from xenotime.net ([66.160.160.81]:47208 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751247AbXJYRgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 13:36:15 -0400
+Date: Thu, 25 Oct 2007 10:36:11 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Matt Mackall <mpm@selenic.com>
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, glommer@gmail.com
-Subject: Re: [PATCH] Wipe out traditional opt from x86_64 Makefile
-Message-ID: <20071025173605.GM30533@stusta.de>
-References: <11933164723812-git-send-email-gcosta@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <11933164723812-git-send-email-gcosta@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+       Johannes Berg <johannes@sipsolutions.net>, sam@ravnborg.org
+Subject: Re: [PATCH 0/6] kernel-doc: add DOC: sections support
+Message-Id: <20071025103611.f2ae216f.rdunlap@xenotime.net>
+In-Reply-To: <20071025172932.GN17536@waste.org>
+References: <11932637282902@xenotime.net>
+	<20071025172932.GN17536@waste.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 09:47:52AM -0300, Glauber de Oliveira Costa wrote:
-> Among other things, using -traditional as a gcc option stops us from
-> using macro token pasting, which is a feature we heavily rely on.
+On Thu, 25 Oct 2007 12:29:32 -0500 Matt Mackall wrote:
+
+> On Wed, Oct 24, 2007 at 03:08:48PM -0700, Randy Dunlap wrote:
+> > 
+> > This patch series from Johannes Berg adds support for DOC: sections
+> > that are embedded in source files.
 > 
-> There was still a use of -traditional in arch/x86/kernel/Makefile_64,
-> which this patch removes.
-> 
-> I don't see any problems building kernels in my x86_64 box without
-> -traditional.
->...
+> What do these look like?
 
-Does it also work with gcc 3.2 ?
+There are currently 2 files in the kernel tree that contain DOC:
+sections.  These are not used in the docbooks, but you can see what
+they look like here:
 
-cu
-Adrian
+./drivers/net/3c501.c: * DOC: 3c501 Card Notes
+./drivers/net/3c501.c: * DOC: Problems
+./drivers/net/3c527.c: * DOC: Traps for the unwary
+./drivers/net/3c527.c: * DOC: Theory Of Operation
+./drivers/net/3c527.c: * DOC: Notes
 
--- 
+Also, Johannes has patches to use DOC: in mac80211 files.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+> Kerneldoc's documentation is sadly lacking..
+
+point taken.
+
+---
+~Randy
