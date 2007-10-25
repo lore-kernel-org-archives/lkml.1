@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbXJYGBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXJYGFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759524AbXJYGBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 02:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXJYGBp
+	id S1757870AbXJYGFr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 02:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXJYGFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 02:01:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55686 "EHLO mail.dvmed.net"
+	Thu, 25 Oct 2007 02:05:38 -0400
+Received: from mail.bmlv.gv.at ([193.171.152.37]:55524 "EHLO mail.bmlv.gv.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753056AbXJYGBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 02:01:44 -0400
-Message-ID: <47203147.7050408@garzik.org>
-Date: Thu, 25 Oct 2007 02:01:43 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752846AbXJYGFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 02:05:37 -0400
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: linux-kernel@vger.kernel.org
+Subject: Exporting a lot of data to other processes?
+Date: Thu, 25 Oct 2007 08:05:33 +0200
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] libata-core.c: make 2 functions static
-References: <20071024162306.GF30533@stusta.de>
-In-Reply-To: <20071024162306.GF30533@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200710250805.33369.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> strn_pattern_cmp() and ata_port_detach() can become static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/ata/libata-core.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Hello everybody,
 
-applied
+I've already pondered about a question for some time, and would like to ask 
+for a better idea here. It's not entirely about the kernel - although that 
+surely has some impact, too.
 
 
+I've got some process/daemon, that wants to export information to other 
+processes. As model for exporting that data I found the sysfs and procfs 
+nice - an easy "cat" can give you the needed data.
+
+Now, in order to do something like that from userspace, I either have to:
+
+-) use FUSE
+   - feels slow (many context switches)
+   - much overhead for such common things (another daemon)
+-) use named pipes in some directory structure, and keep them open in
+   the daemon - waiting to be written to
+   - many open filehandles
+   - feels not really useable for bigger (>1000) structures
+-) use some ramfs/shmfs or similar, and overwrite the data occasionally
+   - not current data
+   - runtime overhead (processor load)
+
+Now the open/close events wouldn't be interesting; the read() and (possibly) 
+write events would have to be relayed (which is not the case for FUSE, IIUC)
+
+Is there some better way? For small structures the pipes seem to be the best 
+way ... just wait for a reader, give it data, and finished.
+
+
+Thank you for all ideas.
+
+
+Regards,
+
+Phil
