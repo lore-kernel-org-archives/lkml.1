@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbXJYL4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXJYL7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760788AbXJYL4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 07:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXJYL43
+	id S1760841AbXJYL7o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 07:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbXJYL7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 07:56:29 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:60925 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756048AbXJYL42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 07:56:28 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: "James Ausmus" <james.ausmus@gmail.com>
-Subject: Re: Possible 2.6.23 regression - Disappearing disk space
-Date: Thu, 25 Oct 2007 13:56:17 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <b79f23070710241105n725e7a9dh78bb3747adc44437@mail.gmail.com>
-In-Reply-To: <b79f23070710241105n725e7a9dh78bb3747adc44437@mail.gmail.com>
+	Thu, 25 Oct 2007 07:59:36 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:4723 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755486AbXJYL7f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 07:59:35 -0400
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1864658.8YRK5pHrji";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710251356.22639.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 25 Oct 2007 11:58:57.0431 (UTC) FILETIME=[6C495A70:01C816FE]
+Content-class: urn:content-classes:message
+Subject: Re: Is gcc thread-unsafe?
+Date: Thu, 25 Oct 2007 07:58:56 -0400
+Message-ID: <Pine.LNX.4.61.0710250753350.22665@chaos.analogic.com>
+In-reply-to: <200710250915.50675.ak@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Is gcc thread-unsafe?
+Thread-Index: AcgW/mxSk2o/pR91TBam4cWt9VUhYw==
+References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710250915.50675.ak@suse.de>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1864658.8YRK5pHrji
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-James Ausmus wrote:
-> Since updating my laptop to 2.6.23, occasionally all of my free disk
-> space on my root partition will just go away, with no files accounting
-> for the space, with no odd messages in dmesg or my syslog. If I
-> reboot, I immediately have the proper amount of free space again. Here
-> is the output of a du -sx * on /, and the output of the df command
-> when the problem is occuring, followed by the same info after a fresh
-> reboot (literally just did the command in the failed state, then
-> immediately rebooted and ran the same commands again) - any thoughts
-> as to what might be happening?
+On Thu, 25 Oct 2007, Andi Kleen wrote:
 
-The file that eats up the memory is still opened by a process, but deleted.
+> On Thursday 25 October 2007 05:24, Nick Piggin wrote:
+>
+>> Basically, what the gcc developers are saying is that gcc is
+>> free to load and store to any memory location, so long as it
+>> behaves as if the instructions were executed in sequence.
+>
+> This case is clearly a bug, a very likely code pessimization.
+> I guess it wasn't intentional, just an optimization that is useful
+> for local register values doing too much.
 
-HTH
 
-Eike
+I don't think it is a BUG, but one should certainly be able
+to turn it off. Gcc is correct in that the 'C' language allows
+a lot of implimentation details that are not covered by the
+language. In other words, 'C' is not assembly-language.
 
---nextPart1864658.8YRK5pHrji
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+>
+>> I guess that dynamically allocated memory and computed pointers
+>> are more difficult for gcc to do anything unsafe with, because
+>> it is harder to tell if a given function has deallocated the
+>> memory.
+>
+> Often accesses happen without function calls inbetween.
+> Also I think newer gcc (not 3.x) can determine if a pointer
+> "escapes" or not so that might not protect against it.
+>
+>> Any thoughts?
+>
+> We don't have much choice: If such a case is found it has to be marked
+> volatile or that particular compiler version be unsupported.
+>
+> It might be useful to come up with some kind of assembler pattern
+> matcher to check if any such code is generated for the kernel
+> and try it with different compiler versions.
+>
+> -Andi
 
-iD8DBQBHIIRmXKSJPmm5/E4RAleoAJ9rSCIblYchGOX3yKhNMdWQOLeBXgCfWbIi
-Vzh3S9AYH+FqSRKNQZEnnCY=
-=Z9R6
------END PGP SIGNATURE-----
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.59 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
---nextPart1864658.8YRK5pHrji--
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
