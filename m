@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbXJYQmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbXJYQnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762389AbXJYQmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbXJYQgA
+	id S1762608AbXJYQnL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbXJYQgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:36:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42560 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 12:36:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42565 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752415AbXJYQf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:35:57 -0400
+	id S1753039AbXJYQgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:36:04 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 21/31] IGET: Stop JFS from using iget() and read_inode() [try
-	#5]
+Subject: [PATCH 22/31] IGET: Stop the MINIX filesystem from using iget() and
+	read_inode() [try #5]
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 25 Oct 2007 17:35:46 +0100
-Message-ID: <20071025163546.5057.38050.stgit@warthog.procyon.org.uk>
+Date: Thu, 25 Oct 2007 17:35:51 +0100
+Message-ID: <20071025163551.5057.160.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,40 +30,145 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the JFS filesystem from using iget() and read_inode().  Replace
-jfs_read_inode() with jfs_iget(), and call that instead of iget().
-jfs_iget() then uses iget_locked() directly and returns a proper error code
+Stop the MINIX filesystem from using iget() and read_inode().  Replace
+minix_read_inode() with minix_iget(), and call that instead of iget().
+minix_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-jfs_fill_super() returns any error incurred when getting the root inode
+minix_fill_super() returns any error incurred when getting the root inode
 instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- fs/jfs/inode.c     |   20 ++++++++++++++++----
- fs/jfs/jfs_inode.h |    2 +-
- fs/jfs/namei.c     |   34 ++++++++++++++--------------------
- fs/jfs/super.c     |   15 +++++++++------
- 4 files changed, 40 insertions(+), 31 deletions(-)
+ fs/minix/inode.c |   43 +++++++++++++++++++++++++++++--------------
+ fs/minix/minix.h |    1 +
+ fs/minix/namei.c |    7 +++----
+ 3 files changed, 33 insertions(+), 18 deletions(-)
 
-diff --git a/fs/jfs/inode.c b/fs/jfs/inode.c
-index 4672013..2103397 100644
---- a/fs/jfs/inode.c
-+++ b/fs/jfs/inode.c
-@@ -31,11 +31,21 @@
- #include "jfs_debug.h"
+diff --git a/fs/minix/inode.c b/fs/minix/inode.c
+index bf4cd31..5523407 100644
+--- a/fs/minix/inode.c
++++ b/fs/minix/inode.c
+@@ -18,7 +18,6 @@
+ #include <linux/highuid.h>
+ #include <linux/vfs.h>
  
+-static void minix_read_inode(struct inode * inode);
+ static int minix_write_inode(struct inode * inode, int wait);
+ static int minix_statfs(struct dentry *dentry, struct kstatfs *buf);
+ static int minix_remount (struct super_block * sb, int * flags, char * data);
+@@ -96,7 +95,6 @@ static void destroy_inodecache(void)
+ static const struct super_operations minix_sops = {
+ 	.alloc_inode	= minix_alloc_inode,
+ 	.destroy_inode	= minix_destroy_inode,
+-	.read_inode	= minix_read_inode,
+ 	.write_inode	= minix_write_inode,
+ 	.delete_inode	= minix_delete_inode,
+ 	.put_super	= minix_put_super,
+@@ -149,6 +147,7 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
+ 	unsigned long i, block;
+ 	struct inode *root_inode;
+ 	struct minix_sb_info *sbi;
++	int ret = -EINVAL;
  
--void jfs_read_inode(struct inode *inode)
-+struct inode *jfs_iget(struct super_block *sb, unsigned long ino)
+ 	sbi = kzalloc(sizeof(struct minix_sb_info), GFP_KERNEL);
+ 	if (!sbi)
+@@ -246,10 +245,13 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
+ 
+ 	/* set up enough so that it can read an inode */
+ 	s->s_op = &minix_sops;
+-	root_inode = iget(s, MINIX_ROOT_INO);
+-	if (!root_inode || is_bad_inode(root_inode))
++	root_inode = minix_iget(s, MINIX_ROOT_INO);
++	if (IS_ERR(root_inode)) {
++		ret = PTR_ERR(root_inode);
+ 		goto out_no_root;
++	}
+ 
++	ret = -ENOMEM;
+ 	s->s_root = d_alloc_root(root_inode);
+ 	if (!s->s_root)
+ 		goto out_iput;
+@@ -290,6 +292,7 @@ out_freemap:
+ 	goto out_release;
+ 
+ out_no_map:
++	ret = -ENOMEM;
+ 	if (!silent)
+ 		printk("MINIX-fs: can't allocate map\n");
+ 	goto out_release;
+@@ -316,7 +319,7 @@ out_bad_sb:
+ out:
+ 	s->s_fs_info = NULL;
+ 	kfree(sbi);
+-	return -EINVAL;
++	return ret;
+ }
+ 
+ static int minix_statfs(struct dentry *dentry, struct kstatfs *buf)
+@@ -409,7 +412,7 @@ void minix_set_inode(struct inode *inode, dev_t rdev)
+ /*
+  * The minix V1 function to read an inode.
+  */
+-static void V1_minix_read_inode(struct inode * inode)
++static struct inode *V1_minix_iget(struct inode * inode)
  {
--	if (diRead(inode)) {
+ 	struct buffer_head * bh;
+ 	struct minix_inode * raw_inode;
+@@ -418,8 +421,8 @@ static void V1_minix_read_inode(struct inode * inode)
+ 
+ 	raw_inode = minix_V1_raw_inode(inode->i_sb, inode->i_ino, &bh);
+ 	if (!raw_inode) {
 -		make_bad_inode(inode);
 -		return;
++		iget_failed(inode);
++		return ERR_PTR(-EIO);
+ 	}
+ 	inode->i_mode = raw_inode->i_mode;
+ 	inode->i_uid = (uid_t)raw_inode->i_uid;
+@@ -435,12 +438,14 @@ static void V1_minix_read_inode(struct inode * inode)
+ 		minix_inode->u.i1_data[i] = raw_inode->i_zone[i];
+ 	minix_set_inode(inode, old_decode_dev(raw_inode->i_zone[0]));
+ 	brelse(bh);
++	unlock_new_inode(inode);
++	return inode;
+ }
+ 
+ /*
+  * The minix V2 function to read an inode.
+  */
+-static void V2_minix_read_inode(struct inode * inode)
++static struct inode *V2_minix_iget(struct inode * inode)
+ {
+ 	struct buffer_head * bh;
+ 	struct minix2_inode * raw_inode;
+@@ -449,8 +454,8 @@ static void V2_minix_read_inode(struct inode * inode)
+ 
+ 	raw_inode = minix_V2_raw_inode(inode->i_sb, inode->i_ino, &bh);
+ 	if (!raw_inode) {
+-		make_bad_inode(inode);
+-		return;
++		iget_failed(inode);
++		return ERR_PTR(-EIO);
+ 	}
+ 	inode->i_mode = raw_inode->i_mode;
+ 	inode->i_uid = (uid_t)raw_inode->i_uid;
+@@ -468,17 +473,27 @@ static void V2_minix_read_inode(struct inode * inode)
+ 		minix_inode->u.i2_data[i] = raw_inode->i_zone[i];
+ 	minix_set_inode(inode, old_decode_dev(raw_inode->i_zone[0]));
+ 	brelse(bh);
++	unlock_new_inode(inode);
++	return inode;
+ }
+ 
+ /*
+  * The global function to read an inode.
+  */
+-static void minix_read_inode(struct inode * inode)
++struct inode *minix_iget(struct super_block *sb, unsigned long ino)
+ {
 +	struct inode *inode;
-+	int ret;
 +
 +	inode = iget_locked(sb, ino);
 +	if (!inode)
@@ -71,151 +176,43 @@ index 4672013..2103397 100644
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
 +
-+	ret = diRead(inode);
-+	if (ret < 0) {
-+		iget_failed(inode);
-+		return ERR_PTR(ret);
- 	}
- 
- 	if (S_ISREG(inode->i_mode)) {
-@@ -55,6 +65,8 @@ void jfs_read_inode(struct inode *inode)
- 		inode->i_op = &jfs_file_inode_operations;
- 		init_special_inode(inode, inode->i_mode, inode->i_rdev);
- 	}
-+	unlock_new_inode(inode);
-+	return inode;
+ 	if (INODE_VERSION(inode) == MINIX_V1)
+-		V1_minix_read_inode(inode);
++		return V1_minix_iget(inode);
+ 	else
+-		V2_minix_read_inode(inode);
++		return V2_minix_iget(inode);
  }
  
  /*
-diff --git a/fs/jfs/jfs_inode.h b/fs/jfs/jfs_inode.h
-index 8e2cf2c..95a6a11 100644
---- a/fs/jfs/jfs_inode.h
-+++ b/fs/jfs/jfs_inode.h
-@@ -24,7 +24,7 @@ extern struct inode *ialloc(struct inode *, umode_t);
- extern int jfs_fsync(struct file *, struct dentry *, int);
- extern int jfs_ioctl(struct inode *, struct file *,
- 			unsigned int, unsigned long);
--extern void jfs_read_inode(struct inode *);
-+extern struct inode *jfs_iget(struct super_block *, unsigned long);
- extern int jfs_commit_inode(struct inode *, int);
- extern int jfs_write_inode(struct inode*, int);
- extern void jfs_delete_inode(struct inode *);
-diff --git a/fs/jfs/namei.c b/fs/jfs/namei.c
-index 4e0a849..4be6939 100644
---- a/fs/jfs/namei.c
-+++ b/fs/jfs/namei.c
-@@ -1462,12 +1462,10 @@ static struct dentry *jfs_lookup(struct inode *dip, struct dentry *dentry, struc
- 		}
+diff --git a/fs/minix/minix.h b/fs/minix/minix.h
+index ac5d3a7..326edfe 100644
+--- a/fs/minix/minix.h
++++ b/fs/minix/minix.h
+@@ -45,6 +45,7 @@ struct minix_sb_info {
+ 	unsigned short s_version;
+ };
+ 
++extern struct inode *minix_iget(struct super_block *, unsigned long);
+ extern struct minix_inode * minix_V1_raw_inode(struct super_block *, ino_t, struct buffer_head **);
+ extern struct minix2_inode * minix_V2_raw_inode(struct super_block *, ino_t, struct buffer_head **);
+ extern struct inode * minix_new_inode(const struct inode * dir, int * error);
+diff --git a/fs/minix/namei.c b/fs/minix/namei.c
+index f4aa7a9..3b1684a 100644
+--- a/fs/minix/namei.c
++++ b/fs/minix/namei.c
+@@ -54,10 +54,9 @@ static struct dentry *minix_lookup(struct inode * dir, struct dentry *dentry, st
+ 
+ 	ino = minix_inode_by_name(dentry);
+ 	if (ino) {
+-		inode = iget(dir->i_sb, ino);
+- 
+-		if (!inode)
+-			return ERR_PTR(-EACCES);
++		inode = minix_iget(dir->i_sb, ino);
++ 		if (IS_ERR(inode))
++			return ERR_CAST(inode);
  	}
- 
--	ip = iget(dip->i_sb, inum);
--	if (ip == NULL || is_bad_inode(ip)) {
-+	ip = jfs_iget(dip->i_sb, inum);
-+	if (IS_ERR(ip)) {
- 		jfs_err("jfs_lookup: iget failed on inum %d", (uint) inum);
--		if (ip)
--			iput(ip);
--		return ERR_PTR(-EACCES);
-+		return ERR_CAST(ip);
- 	}
- 
- 	dentry = d_splice_alias(ip, dentry);
-@@ -1485,12 +1483,11 @@ static struct inode *jfs_nfs_get_inode(struct super_block *sb,
- 
- 	if (ino == 0)
- 		return ERR_PTR(-ESTALE);
--	inode = iget(sb, ino);
--	if (inode == NULL)
--		return ERR_PTR(-ENOMEM);
-+	inode = jfs_iget(sb, ino);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
- 
--	if (is_bad_inode(inode) ||
--	    (generation && inode->i_generation != generation)) {
-+	if (generation && inode->i_generation != generation) {
- 		iput(inode);
- 		return ERR_PTR(-ESTALE);
- 	}
-@@ -1521,17 +1518,14 @@ struct dentry *jfs_get_parent(struct dentry *dentry)
- 
- 	parent_ino =
- 		le32_to_cpu(JFS_IP(dentry->d_inode)->i_dtroot.header.idotdot);
--	inode = iget(sb, parent_ino);
--	if (inode) {
--		if (is_bad_inode(inode)) {
-+	inode = jfs_iget(sb, parent_ino);
-+	if (IS_ERR(inode)) {
-+		parent = ERR_CAST(inode);
-+	} else {
-+		parent = d_alloc_anon(inode);
-+		if (!parent) {
-+			parent = ERR_PTR(-ENOMEM);
- 			iput(inode);
--			parent = ERR_PTR(-EACCES);
--		} else {
--			parent = d_alloc_anon(inode);
--			if (!parent) {
--				parent = ERR_PTR(-ENOMEM);
--				iput(inode);
--			}
- 		}
- 	}
- 
-diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-index 314bb4f..428b1ca 100644
---- a/fs/jfs/super.c
-+++ b/fs/jfs/super.c
-@@ -414,7 +414,7 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	struct inode *inode;
- 	int rc;
- 	s64 newLVSize = 0;
--	int flag;
-+	int flag, ret = -EINVAL;
- 
- 	jfs_info("In jfs_read_super: s_flags=0x%lx", sb->s_flags);
- 
-@@ -461,8 +461,10 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	 * Initialize direct-mapping inode/address-space
- 	 */
- 	inode = new_inode(sb);
--	if (inode == NULL)
-+	if (inode == NULL) {
-+		ret = -ENOMEM;
- 		goto out_kfree;
-+	}
- 	inode->i_ino = 0;
- 	inode->i_nlink = 1;
- 	inode->i_size = sb->s_bdev->bd_inode->i_size;
-@@ -494,9 +496,11 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	sb->s_magic = JFS_SUPER_MAGIC;
- 
--	inode = iget(sb, ROOT_I);
--	if (!inode || is_bad_inode(inode))
-+	inode = jfs_iget(sb, ROOT_I);
-+	if (IS_ERR(inode)) {
-+		ret = PTR_ERR(inode);
- 		goto out_no_root;
-+	}
- 	sb->s_root = d_alloc_root(inode);
- 	if (!sb->s_root)
- 		goto out_no_root;
-@@ -536,7 +540,7 @@ out_kfree:
- 	if (sbi->nls_tab)
- 		unload_nls(sbi->nls_tab);
- 	kfree(sbi);
--	return -EINVAL;
-+	return ret;
- }
- 
- static void jfs_write_super_lockfs(struct super_block *sb)
-@@ -720,7 +724,6 @@ out:
- static const struct super_operations jfs_super_operations = {
- 	.alloc_inode	= jfs_alloc_inode,
- 	.destroy_inode	= jfs_destroy_inode,
--	.read_inode	= jfs_read_inode,
- 	.dirty_inode	= jfs_dirty_inode,
- 	.write_inode	= jfs_write_inode,
- 	.delete_inode	= jfs_delete_inode,
+ 	d_add(dentry, inode);
+ 	return NULL;
 
