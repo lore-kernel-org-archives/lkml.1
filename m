@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbXJYBWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbXJYBZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbXJYBWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXJYBWO
+	id S1755226AbXJYBZP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXJYBZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:22:14 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:40538 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbXJYBWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:22:13 -0400
-To: g3vbv@blueyonder.co.uk
-Cc: linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: 2.6.24-rc1 oops
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <471FE5E0.9040202@blueyonder.co.uk>
-References: <471FE5E0.9040202@blueyonder.co.uk>
+	Wed, 24 Oct 2007 21:25:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46301 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753105AbXJYBZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 21:25:00 -0400
+Date: Thu, 25 Oct 2007 02:24:56 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: device-mapper development <dm-devel@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] [PATCH] dm: noflush resizing (0/3)
+Message-ID: <20071025012456.GK10006@agk.fab.redhat.com>
+Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
+	linux-kernel@vger.kernel.org
+References: <471FB83D.4060307@ce.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071025102202L.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 25 Oct 2007 10:22:02 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <471FB83D.4060307@ce.jp.nec.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 01:40:00 +0100
-Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
+On Wed, Oct 24, 2007 at 05:25:17PM -0400, Jun'ichi Nomura wrote:
+>   - For some device-mapper targets (multipath and mirror),
+>     the mapping table sometimes has to be replaced to cope with device
+>     failure.
+>     OTOH, device-mapper flushes all pending I/Os upon table replacement
+>     and may result in I/O errors, if there are device failures.
+>     'noflush' suspend is used to let dm queue the pending I/Os
+>     instead of flushing them.
+>     Since it's not possible for user space program to tell whether
+>     the suspend could cause I/O error, they always use
+>     'noflush' to suspend mirror/multipath targets.
+> 
+>   - Currently resizing is disabled for 'noflush' suspend.
+>     Resizing occurs in the course of table replacement.
+>     To resize the device under use, device-mapper needs to get its
+>     bdev inode. However, using bdget() in this case could cause deadlock
+>     by waiting for I_LOCK where an I/O process holding I_LOCK is
+>     waiting for completion of table replacement.
+ 
+Before reviewing the details of the proposed workaround, I'd like to see
+a deeper analysis of the problem to see that there isn't a cleaner way
+to resolve this.
 
-> x86_64 dual, gcc version 4.2.2 (SUSE Linux).
-> ------------[ cut here ]------------
-> kernel BUG at include/linux/scatterlist.h:50!
-> invalid opcode: 0000 [1] SMP
-> CPU 1
-> Modules linked in: ub crc_itu_t hwmon cdrom soundcore v4l1_compat 
-> videobuf_core btcx_risc ff_memless floppy sg forcedeth ehci_hcd ohci_hcd 
-> sd_mod usbcore jfs edd ext3 mbcache jbd fan pata_jmicron ahci sata_nv 
-> pata_amd libata scsi_mod thermal processor
-> Pid: 0, comm: swapper Not tainted 2.6.24-rc1-smp #1
-> RIP: 0010:[<ffffffff881f3d27>]  [<ffffffff881f3d27>] 
-> :ub:ub_state_sense+0x9a/0x169
-> RSP: 0018:ffff810100697e60  EFLAGS: 00010093
-> RAX: 0000000087654321 RBX: ffff810105d55000 RCX: ffff81011f975540
-> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff81011f975540
-> RBP: ffff810105d51000 R08: 0000000000000000 R09: ffff810105d55098
-> R10: ffff810001c319b8 R11: 0000000000000286 R12: ffff810105d55098
-> R13: ffff810105d55260 R14: ffff810105d55278 R15: ffff810105d55298
-> FS:  00002afb8597c6f0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 00002afb8548200f CR3: 000000010615b000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 0, threadinfo ffff810100690000, task ffff810100689160)
-> Stack:  0000000000000001 ffff810105d55000 ffff810105d51000 0000000000000000
->   ffff810105d55260 ffffffff881f4d43 ffff810105919998 ffff810105d553a0
->   ffff810105d553af ffff810105d55348 0000000000000286 ffff810105d55058
-> Call Trace:
->   <IRQ>  [<ffffffff881f4d43>] :ub:ub_scsi_action+0x1e3/0x214
->   [<ffffffff8023a34e>] tasklet_action+0x54/0x97
->   [<ffffffff8023a261>] __do_softirq+0x65/0xce
->   [<ffffffff8020d0bc>] call_softirq+0x1c/0x28
->   [<ffffffff8020e634>] do_softirq+0x2c/0x7d
->   [<ffffffff8023a1b7>] irq_exit+0x3f/0x84
->   [<ffffffff8020e7c3>] do_IRQ+0x13e/0x15f
->   [<ffffffff8020afa0>] default_idle+0x0/0x3d
->   [<ffffffff8020afa0>] default_idle+0x0/0x3d
->   [<ffffffff8020c441>] ret_from_intr+0x0/0xa
->   <EOI>  [<ffffffff8020afc9>] default_idle+0x29/0x3d
->   [<ffffffff8020b070>] cpu_idle+0x93/0xbb
+For example:
 
-Can you try this?
+Question) What are the realistic situations we must support that lead to
+a resize during table reload with I/O outstanding?
 
-Thanks,
+- The resize is the purpose of the reload; noflush is only set to avoid losing
+I/O if a path should fail.  So any outstanding I/O may be expected to be
+consistent with both the old and new sizes of the device.  E.g. If it's
+beyond the end of a shrinking device and userspace cared about not
+losing that I/O, it would have waited for that I/O to be flushed
+*before* issuing the resize.  If the I/O is beyond the end of the
+existing device but within the new size, userspace would have waited for
+the resize operation to complete before allowing the new I/O to be
+issued.
 
-diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-index 14143f2..78f158f 100644
---- a/drivers/block/ub.c
-+++ b/drivers/block/ub.c
-@@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
- 	scmd->state = UB_CMDST_INIT;
- 	scmd->nsg = 1;
- 	sg = &scmd->sgv[0];
-+	sg_init_table(sg, UB_MAX_REQ_SG);
- 	sg_set_page(sg, virt_to_page(sc->top_sense));
- 	sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
- 	sg->length = UB_SENSE_SIZE;
-@@ -1864,6 +1865,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
- 	cmd->state = UB_CMDST_INIT;
- 	cmd->nsg = 1;
- 	sg = &cmd->sgv[0];
-+	sg_init_table(sg, UB_MAX_REQ_SG);
- 	sg_set_page(sg, virt_to_page(p));
- 	sg->offset = (unsigned long)p & (PAGE_SIZE-1);
- 	sg->length = 8;
+=> Is it OK for device-mapper to handle the device size check
+internally, rejecting any I/O that falls beyond the end of the table (it
+already must do this lookup anyway), and to update the size recorded in
+the inode later, after I/O is flowing through the device again, but (of
+course) before reporting that the resize operation is complete?
+I.e. does it eliminate deadlocks if the bdget() and i_size_write()
+happen after the 'resume'?
+
+Alasdair
+-- 
+agk@redhat.com
