@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbXJYRco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXJYRfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbXJYRco (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXJYRcg
+	id S1755943AbXJYRfo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbXJYRfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:32:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54015 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbXJYRcg (ORCPT
+	Thu, 25 Oct 2007 13:35:37 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:32871 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752341AbXJYRfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:32:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <ak@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic runtime service support
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	<alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-	<m1r6jj5e27.fsf@ebiederm.dsl.xmission.com>
-	<200710251906.10210.ak@novell.com> <4720CD80.5030106@zytor.com>
-Date: Thu, 25 Oct 2007 11:30:44 -0600
-In-Reply-To: <4720CD80.5030106@zytor.com> (H. Peter Anvin's message of "Thu,
-	25 Oct 2007 10:08:16 -0700")
-Message-ID: <m17ilb5cfv.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 25 Oct 2007 13:35:36 -0400
+Date: Thu, 25 Oct 2007 19:36:05 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, glommer@gmail.com
+Subject: Re: [PATCH] Wipe out traditional opt from x86_64 Makefile
+Message-ID: <20071025173605.GM30533@stusta.de>
+References: <11933164723812-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <11933164723812-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On Thu, Oct 25, 2007 at 09:47:52AM -0300, Glauber de Oliveira Costa wrote:
+> Among other things, using -traditional as a gcc option stops us from
+> using macro token pasting, which is a feature we heavily rely on.
+> 
+> There was still a use of -traditional in arch/x86/kernel/Makefile_64,
+> which this patch removes.
+> 
+> I don't see any problems building kernels in my x86_64 box without
+> -traditional.
+>...
 
-> Andi Kleen wrote:
->>> Especially for accessing the real time clock that has a well
->>> defined hardware interface going through efi an additional
->>> software emulation layer looks like asking for trouble.
->>
->> I agree it's pointless for the hardware clock, but EFI also offers services to
->> write some data to the CMOS RAM
->> which could be very useful to save oops data over reboot.
->> I don't think this can be done safely otherwise without BIOS cooperation.
->>
->
-> The ability to scurry away even a small amount of data without relying on the
-> disk system is highly desirable.  Think next-boot type information.
+Does it also work with gcc 3.2 ?
 
-Yes.  If that were to be the justifying case and if that was what
-the code was implementing I could see the point.
+cu
+Adrian
 
-However this point was made in an earlier review.  This point
-was already been made, and still this patchset doesn't
-include that functionality and it still includes the code
-to disable direct hardware access for no seemingly sane
-reason.
+-- 
 
-Eric
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
