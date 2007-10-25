@@ -1,189 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbXJYSi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbXJYSjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbXJYSi1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbXJYSiS
+	id S1760173AbXJYSjo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXJYSjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:38:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51194 "EHLO gate.crashing.org"
+	Thu, 25 Oct 2007 14:39:35 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:38461 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754353AbXJYSiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:38:17 -0400
-In-Reply-To: <1193335168.7705.39.camel@heimdal.trondhjem.org>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6B3D0315-3441-45A1-A007-A193321B654A@kernel.crashing.org>
+	id S1753246AbXJYSjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:39:35 -0400
+X-IronPort-AV: E=Sophos;i="4.21,329,1188802800"; 
+   d="scan'208";a="116804503"
+Subject: Re: LTP ustat01 test fails on NFSROOT
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
        chuck.lever@oracle.com
+In-Reply-To: <6B3D0315-3441-45A1-A007-A193321B654A@kernel.crashing.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org>
+	 <1193188894.27073.20.camel@heimdal.trondhjem.org>
+	 <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
+	 <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
+	 <1193335168.7705.39.camel@heimdal.trondhjem.org>
+	 <6B3D0315-3441-45A1-A007-A193321B654A@kernel.crashing.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: LTP ustat01 test fails on NFSROOT
-Date: Thu, 25 Oct 2007 13:36:45 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-X-Mailer: Apple Mail (2.752.2)
+Organization: Network Appliance Inc
+Date: Thu, 25 Oct 2007 14:39:49 -0400
+Message-Id: <1193337589.7705.42.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 25 Oct 2007 18:39:19.0084 (UTC) FILETIME=[5A4EB6C0:01C81736]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
+On Thu, 2007-10-25 at 13:36 -0500, Kumar Gala wrote:
+> On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
+> 
+> > Could you please try the following patch?
+> 
+> this fixes my issue.  Any reason this hasn't been accepted?
 
-> Could you please try the following patch?
+Do you mean apart from the fact that I wrote it a couple of hours
+ago? :-)
 
-this fixes my issue.  Any reason this hasn't been accepted?
-
-- k
-
-> --------------------------------- CUT HERE  
-> -----------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date: Thu, 25 Oct 2007 13:56:10 -0400
-> NFS: Fix the ustat() regression
->
-> Since 2.6.18, the superblock sb->s_root has been a dummy dentry with a
-> dummy inode. This breaks ustat(), which actually uses sb->s_root in a
-> vfstat() call.
->
-> Fix this by making the s_root a dummy alias to the directory inode  
-> that was
-> used when creating the superblock.
->
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->
->  fs/nfs/getroot.c |   81 +++++++++++++++++ 
-> +------------------------------------
->  1 files changed, 27 insertions(+), 54 deletions(-)
->
-> diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
-> index 522e5ad..0ee4384 100644
-> --- a/fs/nfs/getroot.c
-> +++ b/fs/nfs/getroot.c
-> @@ -43,6 +43,25 @@
->  #define NFSDBG_FACILITY		NFSDBG_CLIENT
->
->  /*
-> + * Set the superblock root dentry.
-> + * Note that this function frees the inode in case of error.
-> + */
-> +static int nfs_superblock_set_dummy_root(struct super_block *sb,  
-> struct inode *inode)
-> +{
-> +	/* The mntroot acts as the dummy root dentry for this superblock */
-> +	if (sb->s_root == NULL) {
-> +		sb->s_root = d_alloc_root(inode);
-> +		if (sb->s_root == NULL) {
-> +			iput(inode);
-> +			return -ENOMEM;
-> +		}
-> +		/* Circumvent igrab(): we know the inode is not being freed */
-> +		atomic_inc(&inode->i_count);
-> +	}
-> +	return 0;
-> +}
-> +
-> +/*
->   * get an NFS2/NFS3 root dentry from the root filehandle
->   */
->  struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh  
-> *mntfh)
-> @@ -54,33 +73,6 @@ struct dentry *nfs_get_root(struct super_block  
-> *sb, struct nfs_fh *mntfh)
->  	struct inode *inode;
->  	int error;
->
-> -	/* create a dummy root dentry with dummy inode for this  
-> superblock */
-> -	if (!sb->s_root) {
-> -		struct nfs_fh dummyfh;
-> -		struct dentry *root;
-> -		struct inode *iroot;
-> -
-> -		memset(&dummyfh, 0, sizeof(dummyfh));
-> -		memset(&fattr, 0, sizeof(fattr));
-> -		nfs_fattr_init(&fattr);
-> -		fattr.valid = NFS_ATTR_FATTR;
-> -		fattr.type = NFDIR;
-> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
-> -		fattr.nlink = 2;
-> -
-> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
-> -		if (IS_ERR(iroot))
-> -			return ERR_PTR(PTR_ERR(iroot));
-> -
-> -		root = d_alloc_root(iroot);
-> -		if (!root) {
-> -			iput(iroot);
-> -			return ERR_PTR(-ENOMEM);
-> -		}
-> -
-> -		sb->s_root = root;
-> -	}
-> -
->  	/* get the actual root for this mount */
->  	fsinfo.fattr = &fattr;
->
-> @@ -96,6 +88,10 @@ struct dentry *nfs_get_root(struct super_block  
-> *sb, struct nfs_fh *mntfh)
->  		return ERR_PTR(PTR_ERR(inode));
->  	}
->
-> +	error = nfs_superblock_set_dummy_root(sb, inode);
-> +	if (error != 0)
-> +		return ERR_PTR(error);
-> +
->  	/* root dentries normally start off anonymous and get spliced in  
-> later
->  	 * if the dentry tree reaches them; however if the dentry already
->  	 * exists, we'll pick it up at this point and use it as the root
-> @@ -241,33 +237,6 @@ struct dentry *nfs4_get_root(struct  
-> super_block *sb, struct nfs_fh *mntfh)
->
->  	dprintk("--> nfs4_get_root()\n");
->
-> -	/* create a dummy root dentry with dummy inode for this  
-> superblock */
-> -	if (!sb->s_root) {
-> -		struct nfs_fh dummyfh;
-> -		struct dentry *root;
-> -		struct inode *iroot;
-> -
-> -		memset(&dummyfh, 0, sizeof(dummyfh));
-> -		memset(&fattr, 0, sizeof(fattr));
-> -		nfs_fattr_init(&fattr);
-> -		fattr.valid = NFS_ATTR_FATTR;
-> -		fattr.type = NFDIR;
-> -		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
-> -		fattr.nlink = 2;
-> -
-> -		iroot = nfs_fhget(sb, &dummyfh, &fattr);
-> -		if (IS_ERR(iroot))
-> -			return ERR_PTR(PTR_ERR(iroot));
-> -
-> -		root = d_alloc_root(iroot);
-> -		if (!root) {
-> -			iput(iroot);
-> -			return ERR_PTR(-ENOMEM);
-> -		}
-> -
-> -		sb->s_root = root;
-> -	}
-> -
->  	/* get the info about the server and filesystem */
->  	error = nfs4_server_capabilities(server, mntfh);
->  	if (error < 0) {
-> @@ -289,6 +258,10 @@ struct dentry *nfs4_get_root(struct  
-> super_block *sb, struct nfs_fh *mntfh)
->  		return ERR_PTR(PTR_ERR(inode));
->  	}
->
-> +	error = nfs_superblock_set_dummy_root(sb, inode);
-> +	if (error != 0)
-> +		return ERR_PTR(error);
-> +
->  	/* root dentries normally start off anonymous and get spliced in  
-> later
->  	 * if the dentry tree reaches them; however if the dentry already
->  	 * exists, we'll pick it up at this point and use it as the root
-
+Trond
