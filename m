@@ -1,110 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbXJYNAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbXJYNLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbXJYNAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 09:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXJYNAh
+	id S1754804AbXJYNLP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 09:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXJYNK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 09:00:37 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40451 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXJYNAg (ORCPT
+	Thu, 25 Oct 2007 09:10:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:19852 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbXJYNK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 09:00:36 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Thu, 25 Oct 2007 18:30:22 +0530
-Message-Id: <20071025130022.8720.77346.sendpatchset@balbir-laptop>
-Subject: [x86 patch] Fix UML signal.h build errors
+	Thu, 25 Oct 2007 09:10:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qQM1poXypCFbNV0wV4tgxQ7xkS8MN8dBNVeex7BiYy0jhUey3rpo93IN0KjQG0sRhLFMTHb/WCESvXOFrqGndT5S+1OdiieT/1hTh/BHdWMNW1s0B8yKY9NT1gZqfPVZD87i/7tV0mINdHPdKZxhfH653srOAhY0ZmxJtbFBkDI=
+Message-ID: <4720959E.3030805@googlemail.com>
+Date: Thu, 25 Oct 2007 15:09:50 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+Subject: Re: Resume problems
+References: <471CCC98.10101@googlemail.com> <471D3C26.3090602@googlemail.com> <471D47D2.2070707@googlemail.com> <200710240057.10131.rjw@sisk.pl>
+In-Reply-To: <200710240057.10131.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+>>
+>> After all I think all this problems may be some who ACPI related 
+>> but the question is why they get triggered by Suspend/Hibernation.
+> 
+> They certainly are ACPI-related, because the only difference between level 4
+> and level 3 suspend testing is that some global ACPI methods are executed
+> at level 3 (in addition to level 4).
+> 
+> Unfortunately, I have no idea what to do next, for now.
+> 
+> I think you can file a bug report at http://bugzilla.kernel.org and put a link
+> to this thread in there (against ACPI and please add my address to the CC
+> list).
 
+Also I patched 2.6.23 with that patch and Hibernation works out of box , Suspend to Ram seems to work
+fine , just my video card is acting up ( old nvidia card ) I'll play with vbe tool on weekend.
 
-Fix build errors seen in UML. Replaces #ifdef __i386__ with
-#if BITS_PER_LONG == 32
+Also I can reproduce that bug in 2.6.23 when I use standby.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+I've started to bisect but it will take some time. When I'm done I will post an bug report.
 
- include/asm-x86/signal.h |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Thanks for your help so far.
 
-diff -puN include/asm-x86/signal.h~uml-fix-sigaction-build-errors include/asm-x86/signal.h
---- 2.6.24-rc1/include/asm-x86/signal.h~uml-fix-sigaction-build-errors	2007-10-25 18:24:40.000000000 +0530
-+++ 2.6.24-rc1-balbir/include/asm-x86/signal.h	2007-10-25 18:27:53.000000000 +0530
-@@ -17,7 +17,7 @@ struct siginfo;
- 
- #define _NSIG		64
- 
--#ifdef __i386__
-+#if BITS_PER_LONG == 32
- # define _NSIG_BPW	32
- #else
- # define _NSIG_BPW	64
-@@ -121,7 +121,7 @@ typedef unsigned long sigset_t;
- 
- #ifndef __ASSEMBLY__
- 
--#ifdef __i386__
-+#if BITS_PER_LONG == 32
- # ifdef __KERNEL__
- struct old_sigaction {
- 	__sighandler_t sa_handler;
-@@ -157,7 +157,7 @@ struct sigaction {
- #define sa_sigaction	_u._sa_sigaction
- 
- # endif /* ! __KERNEL__ */
--#else /* __i386__ */
-+#else /* BITS_PER_LONG == 32 */
- 
- struct sigaction {
- 	__sighandler_t sa_handler;
-@@ -170,7 +170,7 @@ struct k_sigaction {
- 	struct sigaction sa;
- };
- 
--#endif /* !__i386__ */
-+#endif /* !BITS_PER_LONG == 32 */
- 
- typedef struct sigaltstack {
- 	void __user *ss_sp;
-@@ -181,12 +181,12 @@ typedef struct sigaltstack {
- #ifdef __KERNEL__
- #include <asm/sigcontext.h>
- 
--#ifdef __386__
-+#if BITS_PER_LONG == 32
- 
- #define __HAVE_ARCH_SIG_BITOPS
- 
- #define sigaddset(set,sig)		   \
--	(__builtin_constantp(sig) ?	   \
-+	(__builtin_constant_p(sig) ?	   \
- 	 __const_sigaddset((set),(sig)) :  \
- 	 __gen_sigaddset((set),(sig)))
- 
-@@ -253,13 +253,13 @@ struct pt_regs;
- 		}					\
- 	} while (0)
- 
--#else /* __i386__ */
-+#else /* BITS_PER_LONG == 32 */
- 
- #undef __HAVE_ARCH_SIG_BITOPS
- 
- #define ptrace_signal_deliver(regs, cookie) do { } while (0)
- 
--#endif /* !__i386__ */
-+#endif /* !BITS_PER_LONG == 32 */
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- 
-_
+> 
+> Greetings,
+> Rafael
+> 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Gabriel
