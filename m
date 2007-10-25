@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXJYPWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXJYPZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbXJYPWP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbXJYPWA
+	id S1762071AbXJYPZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbXJYPZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:22:00 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:42841 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759192AbXJYPV7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:21:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TdE5KkT7if/+/ewPq2za7WfKClBRRbm+qETbSbx10pvvSytWbmYc9jB+m2SQP4zg1/Y2PtDbHS7gcax7niHbuRZmxuXy55l3viQNb9myzTp+LOht3iPdEDhhKbVT0n43BBj66Qivie0TkIu7KBWwnWx9jB+BQ88HyLS3hjwkQoQ=
-Message-ID: <5d6222a80710250821x1da3fef1gabf4b776a7b33048@mail.gmail.com>
-Date: Thu, 25 Oct 2007 13:21:50 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: Using -traditional in EXTRA_AFLAGS
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4720B383.40701@goop.org>
+	Thu, 25 Oct 2007 11:25:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:37173 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758197AbXJYPZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 11:25:04 -0400
+Date: Thu, 25 Oct 2007 17:24:54 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Florian Fainelli <florian.fainelli@telecomint.eu>
+cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
+In-Reply-To: <200710251430.03202.florian.fainelli@telecomint.eu>
+Message-ID: <alpine.LFD.0.9999.0710251720420.3186@localhost.localdomain>
+References: <200710181551.24912.florian.fainelli@telecomint.eu> <20071022151845.5874fba3@ephemeral> <alpine.LFD.0.9999.0710251013170.3186@localhost.localdomain> <200710251430.03202.florian.fainelli@telecomint.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5d6222a80710242016p27be8bcdk23421efb5990e14a@mail.gmail.com>
-	 <4720B383.40701@goop.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Glauber de Oliveira Costa wrote:
-> > Guys,
-> >
-> > is there any particular reason we're using -traditional in
-> > EXTRA_AFLAGS in Makefiles?
-> >
->
-> What?  Where?  I thought I removed them all.  Or is this from the x86_64
-> tree?
+On Thu, 25 Oct 2007, Florian Fainelli wrote:
+> > It might be useful for everyone to check, whether the existing GPIO
+> > functionality can be extended, reworked to match the needs of Geode as
+> > well. Extending / reworking an existing interface is definitely
+> > better than adding a new incompatible one.
+> 
+> Of course. Just because Geode is the only x86 potential user of such an API 
+> does not mean it should impose its design. Remember that this patch is part 
+> of a serie to add support for the RDC R-321x SoC, which becomes another 
+> x86-family user.
+> 
+> Looking at what Geode can do, and what RDC can do, I guess there are only few 
+> functions that are generic, all the drain, multiplexing, direction things are 
+> only available on the Geode board.
 
-This is from arch/x86/kernel/Makefile_64
+It does not matter whether Geode has 500 functions and RDC has 5. It
+matters that we do _not_ want two different APIs which deal with the
+same thing, where one can obviously be a subset of the other. So
+either we can extend / rework the stuff that both parties are happy or
+we are not going to merge either of them.
 
-> > I'd suggest just removing it, but obviously, there might well be
-> > people with good reasons for it to stay (The same effect of token
-> > pasting can be achieved in some ways, so if -traditional stays, that's
-> > not the greatest problem in the world... just that token pasting in
-> > asm files will diverge from the way in which we (-)traditionally do
-> > ;-) )
-> >
-> > So, does any one have a word on that?
-> >
->
->
-> Kill -traditional where ever it may be.  You might need to fix up some
-> cruft in the process, but shouldn't be too hard.
->
-I only feel confortable about killing it from x86_64 or any other
-arches I may have access to. Otherwise, there's no way I can fix up
-the crufts ;)
+       tglx
 
-A patch for Makefile_64 will follow in a while.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
