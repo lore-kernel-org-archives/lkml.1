@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXJYM1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbXJYMap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXJYM1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 08:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbXJYM1n
+	id S1760120AbXJYMap (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 08:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbXJYMai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 08:27:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55562 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752738AbXJYM1m (ORCPT
+	Thu, 25 Oct 2007 08:30:38 -0400
+Received: from smtp1.int-evry.fr ([157.159.10.44]:57936 "EHLO
+	smtp1.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbXJYMah convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 08:27:42 -0400
-Date: Thu, 25 Oct 2007 13:29:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-Subject: Re: [patch 2.6.24-rc1] resource_len() utility function
-Message-ID: <20071025132939.3fd010f9@the-village.bc.nu>
-In-Reply-To: <200710242138.23252.david-b@pacbell.net>
-References: <200710241820.52376.david-b@pacbell.net>
-	<200710241947.15129.david-b@pacbell.net>
-	<4720118F.5050906@garzik.org>
-	<200710242138.23252.david-b@pacbell.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 08:30:37 -0400
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
+Date: Thu, 25 Oct 2007 14:30:02 +0200
+User-Agent: KMail/1.9.7
+Cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org
+References: <200710181551.24912.florian.fainelli@telecomint.eu> <20071022151845.5874fba3@ephemeral> <alpine.LFD.0.9999.0710251013170.3186@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710251013170.3186@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710251430.03202.florian.fainelli@telecomint.eu>
+X-int-MailScanner-Information: Please contact the ISP for more information
+X-int-MailScanner: Found to be clean
+X-int-MailScanner-SpamCheck: 
+X-int-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So you'd suggest having search utilities (as with platform_bus)
-> returning resource indices not resources?
+Hi,
 
-That seems a bad idea to me
+Le jeudi 25 octobre 2007, Thomas Gleixner a écrit :
+> It might be useful for everyone to check, whether the existing GPIO
+> functionality can be extended, reworked to match the needs of Geode as
+> well. Extending / reworking an existing interface is definitely
+> better than adding a new incompatible one.
 
-> Thing is, BARs are usually well defined, but when folk glue
-> resources together they use whatever order is convenient on
-> that particular platform.  And different platforms can have
-> different numbers and types of resources, etc.
+Of course. Just because Geode is the only x86 potential user of such an API 
+does not mean it should impose its design. Remember that this patch is part 
+of a serie to add support for the RDC R-321x SoC, which becomes another 
+x86-family user.
 
-Far better I think that pci_ functions that take BAR values end up as
-wrappers of the form
-
-	pci_iomap(pdev, bar)
-		return dev_iomap_resource(&pdev->resource[bar]);
-
+Looking at what Geode can do, and what RDC can do, I guess there are only few 
+functions that are generic, all the drain, multiplexing, direction things are 
+only available on the Geode board.
+------------------------------
