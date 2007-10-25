@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbXJYIPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbXJYIQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbXJYIPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbXJYIPJ
+	id S1755612AbXJYIQI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbXJYIPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:15:09 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14549 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757214AbXJYIPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:15:06 -0400
-Date: Thu, 25 Oct 2007 10:13:22 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Amit Shah <amitshah@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Panic in gart_map_sg
-Message-ID: <20071025081321.GG5053@kernel.dk>
-References: <877aabc40710250012se0afe99s819207e72726d333@mail.gmail.com> <20071025071239.GA5053@kernel.dk> <877aabc40710250102l7d4cff9ei5c7c3a40b084b32c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <877aabc40710250102l7d4cff9ei5c7c3a40b084b32c@mail.gmail.com>
+	Thu, 25 Oct 2007 04:15:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33903
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758426AbXJYIPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:15:22 -0400
+Date: Thu, 25 Oct 2007 01:15:24 -0700 (PDT)
+Message-Id: <20071025.011524.133219141.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+Cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
+       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: [PATCH 1/5]: Revert "PCI: disable MSI by default on systems with
+ Serverworks HT1000 chips"
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25 2007, Amit Shah wrote:
-> On 25/10/2007, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Thu, Oct 25 2007, Amit Shah wrote:
-> > > I get a kernel panic at gart_map_sg+0x201/0x470, which is around here:
-> 
-> ...
-> 
-> > Tomo already nailed this one, see below.
-> >
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] x86: pci-gart fix
-> >
-> > map_sg could copy the last sg element to another position (if merging
-> > some elements). It breaks sg chaining. This copies only
-> > dma_address/length instead of the whole sg element.
-> 
-> Thanks, this fixed it.
 
+This reverts commit e3008dedff4bdc96a5f67224cd3d8d12237082a0.
 
-Goodness, thanks for confirming!
+The real bug was an INTX issue in the tg3 ethernet chip, and
+cured by commit c129d962a66c76964954a98b38586ada82cf9381
 
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/pci/quirks.c    |    1 -
+ include/linux/pci_ids.h |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index d0bb5b9..f5999f5 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1621,7 +1621,6 @@ static void __init quirk_disable_all_msi(struct pci_dev *dev)
+ 	printk(KERN_WARNING "PCI: MSI quirk detected. MSI deactivated.\n");
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
+-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RD580, quirk_disable_all_msi);
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 4e10a07..0571d6a 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1433,7 +1433,6 @@
+ #define PCI_DEVICE_ID_SERVERWORKS_LE	  0x0009
+ #define PCI_DEVICE_ID_SERVERWORKS_GCNB_LE 0x0017
+ #define PCI_DEVICE_ID_SERVERWORKS_EPB	  0x0103
+-#define PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX	0x0104
+ #define PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE	0x0132
+ #define PCI_DEVICE_ID_SERVERWORKS_OSB4	  0x0200
+ #define PCI_DEVICE_ID_SERVERWORKS_CSB5	  0x0201
 -- 
-Jens Axboe
+1.5.2.5
 
