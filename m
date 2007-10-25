@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbXJYTbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXJYTbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbXJYTbH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXJYTa4
+	id S1757350AbXJYTbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXJYTa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 25 Oct 2007 15:30:57 -0400
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:4314 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752074AbXJYTa4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 25 Oct 2007 15:30:56 -0400
-Received: from ozlabs.org ([203.10.76.45]:33453 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344AbXJYTa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:30:56 -0400
-Date: Thu, 25 Oct 2007 14:29:59 -0500
-From: Anton Blanchard <anton@samba.org>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Initialise scatter/gather list in sg driver
-Message-ID: <20071025192959.GA5827@kryten>
-MIME-Version: 1.0
+X-Belgacom-Dynamic: yes
+Date: Thu, 25 Oct 2007 21:37:02 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: handling watchdog in SMP
+Message-ID: <20071025193702.GA6455@infomag.infomag.iguana.be>
+References: <EA6D7331-2E0E-44D5-A286-EFD3505139BB@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <EA6D7331-2E0E-44D5-A286-EFD3505139BB@kernel.crashing.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kumar,
 
-After turning on DEBUG_SG I hit a fail:
+> I was hoping to get some ideas on how to handle the watchdog timers  
+> we have on some embedded PPC (booke_wdt.c) cores when we are in a SMP  
+> system.
+> 
+> The problem is since the watchdog is part of the processor core  
+> depending on which processor a given system call is executed at we  
+> might get different behavior.  It seems like we would want to mirror  
+> the actions to both cores (via smp_call_function).
+> 
+> Looking at the file ops we currently support in booke_wdt.c it seems  
+> like we could mirror the actions for booke_wdt_write()/booke_wdt_ping 
+> () to both cores and ensure when we set something like  
+> WDIOC_SETTIMEOUT we set the registers in both processors.
+> 
+> I was wondering if anyone had any other ideas or if this model seems  
+> to work.
 
-kernel BUG at include/linux/scatterlist.h:50!
+I see 2 ways to go:
+1) short term: make sure that your actions are duplicated to both cores
+(like you said). At least then you are protected if your complete system
+crashes.
+2) I'm working on the uniform/generic watchdog device driver. Phase 1 is
+the "new" api and the /dev/watchdog handling. Phase 2 is a sysfs interface.
+Phase 3 is to allow multiple devices (and there I'm still thinking about
+how the /dev/watchdog interface should work).
+But the general idea is to allow at least the control of each watchdog
+device by the sysfs interface.
 
-	ata_qc_issue
-	ata_scsi_translate
-	ipr_queuecommand
-	scsi_dispatch_cmd
-	scsi_request_fn
-	elv_insert
-	blk_execute_rq_nowait
-	blk_execute_rq
-	sg_io
-	scsi_cmd_ioctl
-	cdrom_ioctl
-	sr_block_ioctl
-	blkdev_driver_ioctl
-	blkdev_ioctl
-	block_ioctl
-	do_ioctl
-	vfs_ioctl
-	sys_ioctl
-	sg_ioctl_trans
+Greetings,
+Wim.
 
-It looks like ata_sg_setup is working on an uninitialised sg table. Call
-sg_init_table to initialise it before use.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Jens this is against your sg branch. This fixes the fail but Id
-appreciate a confirmation that it's the right fix :)
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index b5f7c59..4de41bb 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4689,6 +4689,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
- 		 * data in this function or read data in ata_sg_clean.
- 		 */
- 		offset = lsg->offset + lsg->length - qc->pad_len;
-+		sg_init_table(psg, 1);
- 		sg_set_page(psg, nth_page(sg_page(lsg), offset >> PAGE_SHIFT),
- 				qc->pad_len, offset_in_page(offset));
- 
