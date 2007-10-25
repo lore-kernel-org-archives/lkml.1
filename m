@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbXJYSz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbXJYSz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbXJYSz3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXJYSzS
+	id S1759722AbXJYSz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758452AbXJYSzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:55:18 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:62594 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbXJYSzQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:55:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=BaBiEJcgft9NYk7Q776LCDUSjrcN5aQV4pwQRA8XZtrB67fZdWcApxLHkBd18sgl6756C/aeIMU7Lxyc1PO0HDl5Uhgi79buyjBSJmSgXjn+a9QLyyQ6da2qttN0EPTBdpmRFRTHpsAS+wuMzjl1q3D87voarYGq8GY3pkdqYqk=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Glauber de Oliveira Costa" <glommer@gmail.com>
-Subject: Re: Using -traditional in EXTRA_AFLAGS
-Date: Thu, 25 Oct 2007 19:55:09 +0100
-User-Agent: KMail/1.9.1
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <5d6222a80710242016p27be8bcdk23421efb5990e14a@mail.gmail.com> <4720B383.40701@goop.org> <5d6222a80710250821x1da3fef1gabf4b776a7b33048@mail.gmail.com>
-In-Reply-To: <5d6222a80710250821x1da3fef1gabf4b776a7b33048@mail.gmail.com>
+	Thu, 25 Oct 2007 14:55:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44529 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754701AbXJYSzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:55:44 -0400
+Message-ID: <4720E689.9050509@redhat.com>
+Date: Thu, 25 Oct 2007 14:55:05 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Greg KH <greg@kroah.com>, Gregory Haskins <ghaskins@novell.com>,
+       stable <stable@kernel.org>, mingo@elte.hu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH] lockdep: fix mismatched	lockdep_depth/curr_chain_hash
+References: <20071005034058.20275.21559.stgit@ghaskins-t60p.haskins.net>	 <1191576686.22357.64.camel@twins> <20071008172424.GA6692@kroah.com>	 <1191864970.5797.1.camel@lappy>  <20071008173908.GA26121@kroah.com> <1193334482.6914.23.camel@twins>
+In-Reply-To: <1193334482.6914.23.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251955.09571.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007 16:21, Glauber de Oliveira Costa wrote:
-> > > is there any particular reason we're using -traditional in
-> > > EXTRA_AFLAGS in Makefiles?
-> >
-> > What?  Where?  I thought I removed them all.  Or is this from the x86_64
-> > tree?
+On 10/25/2007 01:48 PM, Peter Zijlstra wrote:
+> On Mon, 2007-10-08 at 10:39 -0700, Greg KH wrote:
+>> On Mon, Oct 08, 2007 at 07:36:10PM +0200, Peter Zijlstra wrote:
+>>> On Mon, 2007-10-08 at 10:24 -0700, Greg KH wrote:
+>>>> On Fri, Oct 05, 2007 at 11:31:26AM +0200, Peter Zijlstra wrote:
+>>>>> Stable team,
+>>>>>
+>>>>> please consider this patch for the next 22-stable.
+>>>> I don't see this patch in Linus's upstream tree.  We need it there to be
+>>>> able to accept it for -stable.  Or is this just a bugfix of other things
+>>>> that are already in his tree?
+>>> I send Linus a similar patch, haven??t seem him pick it up yet.
+>>> I??ll notify you when and if he picks it up.
+>> Great, that would be great for us -stable monkeys...
 > 
-> This is from arch/x86/kernel/Makefile_64
+> 3aa416b07f0adf01c090baab26fb70c35ec17623
+> 
+> 
 
-Indeed. I, too, would like it to be removed, even only on the grounds
-that whoever added it didn't add a small one-line comment explaining why.
---
-vda
+And for both 2.6.22 and 2.6.23...
+
