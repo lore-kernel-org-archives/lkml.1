@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbXJYUt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762793AbXJYUuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbXJYUt0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXJYUtS
+	id S1762793AbXJYUuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbXJYUuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:49:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53445 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755556AbXJYUtR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:49:17 -0400
-Date: Thu, 25 Oct 2007 13:48:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: tglx@linutronix.de, nickpiggin@yahoo.com.au, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH v2] bitops kernel-doc: inline instead of macro
-Message-Id: <20071025134814.caced2e3.akpm@linux-foundation.org>
-In-Reply-To: <20071025095540.827d4333.rdunlap@xenotime.net>
-References: <20071023220959.a359d57d.rdunlap@xenotime.net>
-	<200710241800.19764.nickpiggin@yahoo.com.au>
-	<20071025093159.3ea69d03.rdunlap@xenotime.net>
-	<alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain>
-	<20071025095540.827d4333.rdunlap@xenotime.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 16:50:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58536 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752752AbXJYUun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:50:43 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Subject: Re: [2.6 patch] fujitsu-laptop.c: make 2 functions static
+Date: Thu, 25 Oct 2007 16:50:25 -0400
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+References: <200710250507.l9P57Pwh003203@turbo.physics.adelaide.edu.au>
+In-Reply-To: <200710250507.l9P57Pwh003203@turbo.physics.adelaide.edu.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710251650.25768.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 09:55:40 -0700
-Randy Dunlap <rdunlap@xenotime.net> wrote:
+Applied.
 
-> -#define test_and_set_bit_lock test_and_set_bit
-> +static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
+thanks,
+-Len
 
-mutter.
-
-ERROR: "foo * bar" should be "foo *bar"
-#80: FILE: include/asm-x86/bitops_32.h:188:
-+static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
-
-WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-#80: FILE: include/asm-x86/bitops_32.h:188:
-+static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
-
-ERROR: "foo * bar" should be "foo *bar"
-#97: FILE: include/asm-x86/bitops_64.h:178:
-+static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
-
-WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-#97: FILE: include/asm-x86/bitops_64.h:178:
-+static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
-
-total: 2 errors, 2 warnings, 28 lines checked
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-We might as well clean stuff up as we're churning the code.
-
-
-Andy, I thought we were going to whine about __inline__ and __inline, too?
+On Thursday 25 October 2007 01:07, Jonathan Woithe wrote:
+> > acpi_fujitsu_{add,remove}() can become static.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Looks fine.  Ack.
+> 
+> Signed-off-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+> 
+> jonathan
+> 
+> ---
+>  drivers/misc/fujitsu-laptop.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> 175c8b648a54b625037916a8f6e3851574141532 
+> diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
+> index d366a6c..d686ba7 100644
+> --- a/drivers/misc/fujitsu-laptop.c
+> +++ b/drivers/misc/fujitsu-laptop.c
+> @@ -198,7 +198,7 @@ static struct platform_driver fujitsupf_driver = {
+>  
+>  /* ACPI device */
+>  
+> -int acpi_fujitsu_add(struct acpi_device *device)
+> +static int acpi_fujitsu_add(struct acpi_device *device)
+>  {
+>  	int result = 0;
+>  	int state = 0;
+> @@ -229,7 +229,7 @@ int acpi_fujitsu_add(struct acpi_device *device)
+>  	return result;
+>  }
+>  
+> -int acpi_fujitsu_remove(struct acpi_device *device, int type)
+> +static int acpi_fujitsu_remove(struct acpi_device *device, int type)
+>  {
+>  	ACPI_FUNCTION_TRACE("acpi_fujitsu_remove");
+>  
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
