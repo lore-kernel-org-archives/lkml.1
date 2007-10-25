@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXJYE12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXJYEap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbXJYE12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 00:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXJYE1S
+	id S1757304AbXJYEap (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 00:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXJYEai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 00:27:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37379 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754055AbXJYE1R (ORCPT
+	Thu, 25 Oct 2007 00:30:38 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4174 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbXJYEah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 00:27:17 -0400
-Date: Wed, 24 Oct 2007 21:27:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/4] [SCSI] ips: remove ips_ha members that duplicate
- struct pci_dev members
-Message-Id: <20071024212710.ae6e5120.akpm@linux-foundation.org>
-In-Reply-To: <20071024234827.74AD61F81A1@havoc.gtf.org>
-References: <09821349085390234lkjasdflkjasflkdj24746@havoc.gtf.org>
-	<20071024234827.74AD61F81A1@havoc.gtf.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 00:30:37 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Is gcc thread-unsafe?
+Date: Wed, 24 Oct 2007 21:29:56 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <200710251358.55185.nickpiggin@yahoo.com.au>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 24 Oct 2007 21:30:54 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 24 Oct 2007 21:30:54 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 19:48:26 -0400 (EDT) Jeff Garzik <jeff@garzik.org> wrote:
 
->  drivers/scsi/ips.c |  178 ++++++++++++++++++++++++----------------------------
+> Well that's exactly right. For threaded programs (and maybe even
+> real-world non-threaded ones in general), you don't want to be
+> even _reading_ global variables if you don't need to. Cache misses
+> and cacheline bouncing could easily cause performance to completely
+> tank in some cases while only gaining a cycle or two in
+> microbenchmarks for doing these funny x86 predication things.
 
-this driver seems a bit of a basket case :(
+For some CPUs, replacing an conditional branch with a conditional move is a
+*huge* win because it cannot be mispredicted. In general, compilers should
+optimize for unshared data since that's much more common in typical code.
+Even for shared data, the usual case is that you are going to access the
+data few times, so pulling the cache line to the CPU is essentially free
+since it will happen eventually.
+
+Heuristics may show that the vast majority of such constructs write anyway.
+So the optimization may also be valid based on such heuristics.
+
+A better question is whether it's legal for a compiler that claims to
+support POSIX threads. I'm going to post on comp.programming.threads, where
+the threading experts hang out.
+
+A very interesting case to be sure.
+
+DS
 
 
-What's going on here?
-
-		scb->dcdb.cmd_attribute =
-		    ips_command_direction[scb->scsi_cmd->cmnd[0]];
-
-        /* Allow a WRITE BUFFER Command to Have no Data */
-        /* This is Used by Tape Flash Utilites          */
-        if ((scb->scsi_cmd->cmnd[0] == WRITE_BUFFER) && (scb->data_len == 0)) 
-            scb->dcdb.cmd_attribute = 0;                  
-
-		if (!(scb->dcdb.cmd_attribute & 0x3))
-			scb->dcdb.transfer_length = 0;
-
-		if (scb->data_len >= IPS_MAX_XFER) {
-
-I hope that's just busted indentation and not a missing {} block.
