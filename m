@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXJYV2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXJYVa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbXJYV2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXJYV2R
+	id S1756576AbXJYVa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXJYVaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:28:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:60499 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753233AbXJYV2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:28:17 -0400
-Date: Thu, 25 Oct 2007 23:27:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: Andrew Morton <akpm@linux-foundation.org>, nickpiggin@yahoo.com.au,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH v3] bitops kernel-doc: inline instead of macro
-In-Reply-To: <20071025142149.6610f5ef.rdunlap@xenotime.net>
-Message-ID: <alpine.LFD.0.9999.0710252325450.3186@localhost.localdomain>
-References: <20071023220959.a359d57d.rdunlap@xenotime.net> <200710241800.19764.nickpiggin@yahoo.com.au> <20071025093159.3ea69d03.rdunlap@xenotime.net> <alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain> <20071025095540.827d4333.rdunlap@xenotime.net>
- <20071025134814.caced2e3.akpm@linux-foundation.org> <20071025142149.6610f5ef.rdunlap@xenotime.net>
+	Thu, 25 Oct 2007 17:30:13 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:31773 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753366AbXJYVaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Rn9eYsWxID0N1aVDI8dVvTkS0yvQj0KxJnwRPfwz3TUMbZGwzuPBoSGJQ+0wdSnx2jG4w2o7BHL8EaIYW4hRvMwFA7uxk7WFaAcCavdmA/5I7IpxaI48Ua8+Hvzy7Xfne+MiLPt5hCi1gUXBdMaawexy897fgePo0jQyFXeaspI=
+Message-ID: <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com>
+Date: Thu, 25 Oct 2007 22:30:09 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: Possibility of adding -march=native to x86
+Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <4720FF2B.9020802@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
+	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+	 <20071025185022.GP30533@stusta.de>
+	 <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
+	 <20071025191723.GQ30533@stusta.de>
+	 <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com>
+	 <20071025195020.GS30533@stusta.de>
+	 <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com>
+	 <4720FF2B.9020802@googlemail.com>
+X-Google-Sender-Auth: c96f34e1baf0d175
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy,
+On 25/10/2007, Gabriel C <nix.or.die@googlemail.com> wrote:
+> Michael Lothian wrote:
+> >> The MPENTIUM4 option does not only set -march=pentium4, it also enables
+> >> several other options in arch/i386/Kconfig.cpu resulting in better
+> >> performance.
+> >
+> > How about an autodetect to set the right options here too using cpuid?
+> >
+> > With a warning of course that the code produced will be specifically
+> > for the native cpu that it's compiled on.
+>
+> And kill off all Distro kernels right ? IMO to set that auto magically is bad.
+>
+> Regards,
+>
+> Gabriel
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+Yes for something like a distro kernel it is bad but as I said before
+this isn't what this is for.
 
-On Thu, 25 Oct 2007, Randy Dunlap wrote:
-> > We might as well clean stuff up as we're churning the code.
-> > 
-> > 
-> > Andy, I thought we were going to whine about __inline__ and __inline, too?
-> 
-> Thomas, can you replace the previous patch with this one?
+Eventually it would be nice to to a make localkernel and for a
+customised kernel to be build compiling in all pci / pci express
+drivers into the kernel and all usb devices as modules.
 
-Sure. Darn, I did not run yours through the usual procedure :)
+Auto magically detecting the cpu would be part of that
 
-      tglx
+I hate getting a new piece of kit and then have to figure out from
+lspci which options need to be turned on and the the really iritation
+part of finding the option in make menuconfig
 
-> Usage of __inline__ is fixed in the next patch (after this one).
-> 
- ---
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Use duplicated inline functions for test_and_set_bit_lock() on x86
-> instead of #define macros, thus avoiding a bad example.  This allows
-> kernel-doc to run cleanly instead of terminating with an error:
-> 
-> Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand prototype: 'test_and_set_bit_lock test_and_set_bit '
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  include/asm-x86/bitops_32.h |    7 +++++--
->  include/asm-x86/bitops_64.h |    7 +++++--
->  2 files changed, 10 insertions(+), 4 deletions(-)
-> 
-> --- linux-2.6.24-rc1.orig/include/asm-x86/bitops_32.h
-> +++ linux-2.6.24-rc1/include/asm-x86/bitops_32.h
-> @@ -183,9 +183,12 @@ static inline int test_and_set_bit(int n
->   * @nr: Bit to set
->   * @addr: Address to count from
->   *
-> - * This is the same as test_and_set_bit on x86
-> + * This is the same as test_and_set_bit on x86.
->   */
-> -#define test_and_set_bit_lock test_and_set_bit
-> +static inline int test_and_set_bit_lock(int nr, volatile unsigned long *addr)
-> +{
-> +	return test_and_set_bit(nr, addr);
-> +}
->  
->  /**
->   * __test_and_set_bit - Set a bit and return its old value
-> --- linux-2.6.24-rc1.orig/include/asm-x86/bitops_64.h
-> +++ linux-2.6.24-rc1/include/asm-x86/bitops_64.h
-> @@ -173,9 +173,12 @@ static __inline__ int test_and_set_bit(i
->   * @nr: Bit to set
->   * @addr: Address to count from
->   *
-> - * This is the same as test_and_set_bit on x86
-> + * This is the same as test_and_set_bit on x86.
->   */
-> -#define test_and_set_bit_lock test_and_set_bit
-> +static __inline__ int test_and_set_bit_lock(int nr, volatile void *addr)
-> +{
-> +	return test_and_set_bit(nr, addr);
-> +}
->  
->  /**
->   * __test_and_set_bit - Set a bit and return its old value
-> 
+Detecting the cpu and using march=native could be all part of that
+
+Mike
