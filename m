@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXJYVkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbXJYVnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbXJYVkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXJYVks
+	id S1758000AbXJYVnh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXJYVnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:40:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51280 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbXJYVkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:40:47 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2.6 patch] unexport tick_nohz_get_sleep_length
-Date: Thu, 25 Oct 2007 17:40:22 -0400
-User-Agent: KMail/1.9.5
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Adrian Bunk <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <20071024162422.GH30533@stusta.de> <653FFBB4508B9042B5D43DC9E18836F5018EBEF1@scsmsx415.amr.corp.intel.com> <alpine.LFD.0.9999.0710251855510.3186@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710251855510.3186@localhost.localdomain>
+	Thu, 25 Oct 2007 17:43:31 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4462 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbXJYVna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:43:30 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Is gcc thread-unsafe?
+Date: Thu, 25 Oct 2007 14:42:56 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251740.22999.lenb@kernel.org>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 25 Oct 2007 14:44:01 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 25 Oct 2007 14:44:04 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
 
-thanks,
--Len
+	I asked a collection of knowledgeable people I know about the issue. The
+consensus is that the optimization is not permitted in POSIX code but that
+it is permitted in pure C code. The basic argument goes like this:
 
-On Thursday 25 October 2007 12:56, Thomas Gleixner wrote:
-> On Thu, 25 Oct 2007, Pallipadi, Venkatesh wrote:
-> > >On Wed, 24 Oct 2007, Adrian Bunk wrote:
-> > >
-> > >> This patch removes the unused 
-> > >> EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length).
-> > >> 
-> > >> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > >> 
-> > >> ---
-> > >> f7c83dfe117f4fd072b2506ae090e4145abda362 
-> > >> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > >> index 10a1347..5997456 100644
-> > >> --- a/kernel/time/tick-sched.c
-> > >> +++ b/kernel/time/tick-sched.c
-> > >> @@ -320,8 +320,6 @@ ktime_t tick_nohz_get_sleep_length(void)
-> > >>  	return ts->sleep_length;
-> > >>  }
-> > >>  
-> > >> -EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
-> > >> -
-> > >
-> > >Hmm, this was added to allow the cpuidle governers modular
-> > >build. Seems this was changed to compiled in only.
-> > >
-> > >Len, Venki, is this the final decision ?
-> > >
-> > 
-> > Yes. This was done recently for proper fallback to old ACPI policy in
-> > case CPUIDLE is not selected. With that being module, falling back to
-> > ACPI policy at run time makes things ugly.
-> 
-> Makes sense. I go ahead and nuke the export.
-> 
-> Thanks,
-> 
-> 	tglx
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+	To make POSIX-compliant code even possible, surely optimizations that add
+writes to variables must be prohibited. That is -- if POSIX prohibits
+writing to a variable in certain cases only the programmer can detect, then
+a POSIX-compliant compiler cannot write to a variable except where
+explicitly told to do so. Any optimization that *adds* a write to a variable
+that would not otherwise occur *must* be prohibited.
+
+	Otherwise, it is literally impossible to comply with the POSIX requirement
+that concurrent modifications and reads to shared variables take place while
+holding a mutex.
+
+	The simplest solution is simply to ditch the optimization. If it really
+isn't even an optimization, then that's an easy way out.
+
+	DS
+
+
