@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbXJYUl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbXJYUlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbXJYUl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbXJYUlF
+	id S1762943AbXJYUlw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXJYUlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:41:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32797 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753301AbXJYUlA (ORCPT
+	Thu, 25 Oct 2007 16:41:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:27818 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762502AbXJYUlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:41:00 -0400
-Date: Thu, 25 Oct 2007 13:40:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] serial: do not call ->pm() on initialization for
- console port
-Message-Id: <20071025134044.58ca9d35.akpm@linux-foundation.org>
-In-Reply-To: <20071026.010510.59032545.anemo@mba.ocn.ne.jp>
-References: <20071019.011355.39154656.anemo@mba.ocn.ne.jp>
-	<20071018161827.GB16244@flint.arm.linux.org.uk>
-	<20071026.010510.59032545.anemo@mba.ocn.ne.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 16:41:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=sTOBDydB1Fo9D1azLtdqkrJZPlzCHxqzJa2N0BRmnWYOo+hHLiQdkY4g5Cq4U8cFS/cmhSQx+eBTuobcGI+PFqEUFsidEDs1Nye8GQWUSEkJtCxK47B6HIFc9q0vdBghUII/YUNXqr2aFlSCs0OKRjTD6docVjYxTwIgXU4NNjQ=
+Message-ID: <4720FF2B.9020802@googlemail.com>
+Date: Thu, 25 Oct 2007 22:40:11 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+MIME-Version: 1.0
+To: Michael Lothian <mike@fireburn.co.uk>
+CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>	 <20071025185022.GP30533@stusta.de>	 <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>	 <20071025191723.GQ30533@stusta.de>	 <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com>	 <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com>
+In-Reply-To: <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 01:05:10 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-
-> On Thu, 18 Oct 2007 17:18:27 +0100, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > > Attached patch fixes this problem.  Is this a right way?
-> > > If not, I will fix the serial_txx9 driver to skip the initialization in
-> > > ->pm() if oldstate was -1.
-> > 
-> > I'll have to investigate further to refresh myself with what's going
-> > on here, but your patch looks wrong.
+Michael Lothian wrote:
+>> The MPENTIUM4 option does not only set -march=pentium4, it also enables
+>> several other options in arch/i386/Kconfig.cpu resulting in better
+>> performance.
 > 
-> Now rc1 is released.  Any chances for this patch?
-> If none, I should push other workaround to fix this issue on 2.6.24.
+> How about an autodetect to set the right options here too using cpuid?
+> 
+> With a warning of course that the code produced will be specifically
+> for the native cpu that it's compiled on.
 
-I don't know what patch you're referring to.  I don't appear to have
-whatever-patch-this-is queued up anywhere?
+And kill off all Distro kernels right ? IMO to set that auto magically is bad.
+
+Regards,
+
+Gabriel 
+
