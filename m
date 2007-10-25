@@ -1,141 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761160AbXJYHSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbXJYHTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761160AbXJYHSa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 03:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbXJYHSW
+	id S1761448AbXJYHTA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 03:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbXJYHSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 03:18:22 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:14601 "EHLO kernel.dk"
+	Thu, 25 Oct 2007 03:18:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60733 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756265AbXJYHSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 03:18:21 -0400
-Date: Thu, 25 Oct 2007 09:16:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: g3vbv@blueyonder.co.uk, linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: 2.6.24-rc1 oops
-Message-ID: <20071025071637.GB5053@kernel.dk>
-References: <471FE5E0.9040202@blueyonder.co.uk> <20071025102202L.fujita.tomonori@lab.ntt.co.jp> <20071025145129C.fujita.tomonori@lab.ntt.co.jp>
+	id S1755469AbXJYHSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 03:18:50 -0400
+From: Andi Kleen <ak@suse.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: Is gcc thread-unsafe?
+Date: Thu, 25 Oct 2007 09:15:50 +0200
+User-Agent: KMail/1.9.1
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200710251324.49888.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710251324.49888.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071025145129C.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <200710250915.50675.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25 2007, FUJITA Tomonori wrote:
-> Jens, I should have CC'ed to you.
-> 
-> On Thu, 25 Oct 2007 10:22:02 +0900
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > On Thu, 25 Oct 2007 01:40:00 +0100
-> > Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
-> > 
-> > > x86_64 dual, gcc version 4.2.2 (SUSE Linux).
-> > > ------------[ cut here ]------------
-> > > kernel BUG at include/linux/scatterlist.h:50!
-> > > invalid opcode: 0000 [1] SMP
-> > > CPU 1
-> > > Modules linked in: ub crc_itu_t hwmon cdrom soundcore v4l1_compat 
-> > > videobuf_core btcx_risc ff_memless floppy sg forcedeth ehci_hcd ohci_hcd 
-> > > sd_mod usbcore jfs edd ext3 mbcache jbd fan pata_jmicron ahci sata_nv 
-> > > pata_amd libata scsi_mod thermal processor
-> > > Pid: 0, comm: swapper Not tainted 2.6.24-rc1-smp #1
-> > > RIP: 0010:[<ffffffff881f3d27>]  [<ffffffff881f3d27>] 
-> > > :ub:ub_state_sense+0x9a/0x169
-> > > RSP: 0018:ffff810100697e60  EFLAGS: 00010093
-> > > RAX: 0000000087654321 RBX: ffff810105d55000 RCX: ffff81011f975540
-> > > RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff81011f975540
-> > > RBP: ffff810105d51000 R08: 0000000000000000 R09: ffff810105d55098
-> > > R10: ffff810001c319b8 R11: 0000000000000286 R12: ffff810105d55098
-> > > R13: ffff810105d55260 R14: ffff810105d55278 R15: ffff810105d55298
-> > > FS:  00002afb8597c6f0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
-> > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > > CR2: 00002afb8548200f CR3: 000000010615b000 CR4: 00000000000006e0
-> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > Process swapper (pid: 0, threadinfo ffff810100690000, task ffff810100689160)
-> > > Stack:  0000000000000001 ffff810105d55000 ffff810105d51000 0000000000000000
-> > >   ffff810105d55260 ffffffff881f4d43 ffff810105919998 ffff810105d553a0
-> > >   ffff810105d553af ffff810105d55348 0000000000000286 ffff810105d55058
-> > > Call Trace:
-> > >   <IRQ>  [<ffffffff881f4d43>] :ub:ub_scsi_action+0x1e3/0x214
-> > >   [<ffffffff8023a34e>] tasklet_action+0x54/0x97
-> > >   [<ffffffff8023a261>] __do_softirq+0x65/0xce
-> > >   [<ffffffff8020d0bc>] call_softirq+0x1c/0x28
-> > >   [<ffffffff8020e634>] do_softirq+0x2c/0x7d
-> > >   [<ffffffff8023a1b7>] irq_exit+0x3f/0x84
-> > >   [<ffffffff8020e7c3>] do_IRQ+0x13e/0x15f
-> > >   [<ffffffff8020afa0>] default_idle+0x0/0x3d
-> > >   [<ffffffff8020afa0>] default_idle+0x0/0x3d
-> > >   [<ffffffff8020c441>] ret_from_intr+0x0/0xa
-> > >   <EOI>  [<ffffffff8020afc9>] default_idle+0x29/0x3d
-> > >   [<ffffffff8020b070>] cpu_idle+0x93/0xbb
-> > 
-> > Can you try this?
-> > 
-> > Thanks,
-> > 
-> > diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-> > index 14143f2..78f158f 100644
-> > --- a/drivers/block/ub.c
-> > +++ b/drivers/block/ub.c
-> > @@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
-> >  	scmd->state = UB_CMDST_INIT;
-> >  	scmd->nsg = 1;
-> >  	sg = &scmd->sgv[0];
-> > +	sg_init_table(sg, UB_MAX_REQ_SG);
-> >  	sg_set_page(sg, virt_to_page(sc->top_sense));
-> >  	sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
-> >  	sg->length = UB_SENSE_SIZE;
-> > @@ -1864,6 +1865,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
-> >  	cmd->state = UB_CMDST_INIT;
-> >  	cmd->nsg = 1;
-> >  	sg = &cmd->sgv[0];
-> > +	sg_init_table(sg, UB_MAX_REQ_SG);
-> >  	sg_set_page(sg, virt_to_page(p));
-> >  	sg->offset = (unsigned long)p & (PAGE_SIZE-1);
-> >  	sg->length = 8;
-> 
-> Here's a modified version for your sg branch (for sg_set_page API
-> changes).
-> 
-> -
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] ub: add sg_init_table for sense and read capacity commands
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  drivers/block/ub.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/block/ub.c b/drivers/block/ub.c
-> index 5e740e1..08e909d 100644
-> --- a/drivers/block/ub.c
-> +++ b/drivers/block/ub.c
-> @@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
->  	scmd->state = UB_CMDST_INIT;
->  	scmd->nsg = 1;
->  	sg = &scmd->sgv[0];
-> +	sg_init_table(sg, UB_MAX_REQ_SG);
->  	sg_set_page(sg, virt_to_page(sc->top_sense), UB_SENSE_SIZE,
->  			(unsigned long)sc->top_sense & (PAGE_SIZE-1));
->  	scmd->len = UB_SENSE_SIZE;
-> @@ -1863,6 +1864,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
->  	cmd->state = UB_CMDST_INIT;
->  	cmd->nsg = 1;
->  	sg = &cmd->sgv[0];
-> +	sg_init_table(sg, UB_MAX_REQ_SG);
->  	sg_set_page(sg, virt_to_page(p), 8, (unsigned long)p & (PAGE_SIZE-1));
->  	cmd->len = 8;
->  	cmd->lun = lun;
-> -- 
-> 1.5.2.4
-> 
+On Thursday 25 October 2007 05:24, Nick Piggin wrote:
 
-Yep looks good, thanks Tomo!
+> Basically, what the gcc developers are saying is that gcc is
+> free to load and store to any memory location, so long as it
+> behaves as if the instructions were executed in sequence.
 
--- 
-Jens Axboe
+This case is clearly a bug, a very likely code pessimization.
+I guess it wasn't intentional, just an optimization that is useful
+for local register values doing too much.
 
+> I guess that dynamically allocated memory and computed pointers
+> are more difficult for gcc to do anything unsafe with, because
+> it is harder to tell if a given function has deallocated the
+> memory. 
+
+Often accesses happen without function calls inbetween.
+Also I think newer gcc (not 3.x) can determine if a pointer
+"escapes" or not so that might not protect against it.
+
+> Any thoughts?
+
+We don't have much choice: If such a case is found it has to be marked
+volatile or that particular compiler version be unsupported.
+
+It might be useful to come up with some kind of assembler pattern
+matcher to check if any such code is generated for the kernel
+and try it with different compiler versions.
+
+-Andi
