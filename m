@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXJYIXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbXJYIYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbXJYIXN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXJYIXA
+	id S1757591AbXJYIYx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXJYIYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:23:00 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37256 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbXJYIW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:22:59 -0400
-Message-ID: <472053D9.8020808@bull.net>
-Date: Thu, 25 Oct 2007 10:29:13 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Thu, 25 Oct 2007 04:24:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60498 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbXJYIYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:24:37 -0400
+Message-ID: <472052C1.2050302@garzik.org>
+Date: Thu, 25 Oct 2007 04:24:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make ipc/util.c:sysvipc_find_ipc() static
-References: <20071024162334.GS30533@stusta.de>
-In-Reply-To: <20071024162334.GS30533@stusta.de>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/10/2007 10:29:35,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/10/2007 10:29:36,
-	Serialize complete at 25/10/2007 10:29:36
-Content-Transfer-Encoding: 7bit
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, barkalow@iabervon.org, linas@austin.ibm.com,
+       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 0/5]: Resolve MSI vs. INTX_DISABLE quirks, V2.
+References: <20071025.011445.80152909.davem@davemloft.net>
+In-Reply-To: <20071025.011445.80152909.davem@davemloft.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> sysvipc_find_ipc() can become static.
+David Miller wrote:
+> Ok, I've respun the patches including all of the feedback I've
+> obtained.  Again, it's at:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 	kernel.org:/pub/scm/linux/kernel/git/davem/msiquirk-2.6.git
 > 
-> ---
-> daadf1bd4c81e8b88cfc690cecace9adc8b783f0 
-> diff --git a/ipc/util.c b/ipc/util.c
-> index 1aa0ebf..76c1f34 100644
-> --- a/ipc/util.c
-> +++ b/ipc/util.c
-> @@ -802,8 +802,8 @@ struct ipc_proc_iter {
->  /*
->   * This routine locks the ipc structure found at least at position pos.
->   */
-> -struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
-> -					loff_t *new_pos)
-> +static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
-> +					      loff_t *new_pos)
->  {
->  	struct kern_ipc_perm *ipc;
->  	int total, id;
+> Greg, I think this stuff is ready to go so if you would pull
+> them in I would really appreciate it.
 > 
+> These changes clean up the handling of the common quirk wherein
+> setting INTX_DISABLE will mistakedly disable MSI generation for some
+> devices.
 > 
+> For devices without that problem, we want to keep the pci_intx() calls
+> in drivers/pci/msi.c because those help protect against devices with
+> the opposite problem.  Such devices always generate INTX interrupts
+> even when MSI is enabled, unless INTX_DISABLE is set.
+> 
+> In addition to the Tigon3 cases, I added quirk entries for the
+> SB700/800 SATA chips and the IXP SB400 USB controllers.  And as
+> a result of the latter we can remove several AMD full-chipset
+> MSI disable quirks which are no longer necessary.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Acked-by: Nadia Derbey <Nadia.Derbey@bull.net>
+[corrected subject line s/4/5/.  the actual patches are OK]
 
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
