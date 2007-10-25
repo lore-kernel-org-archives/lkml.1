@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXJYPZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbXJYP2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762071AbXJYPZQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbXJYPZF
+	id S1761634AbXJYP2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXJYP20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:25:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:37173 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758197AbXJYPZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:25:04 -0400
-Date: Thu, 25 Oct 2007 17:24:54 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Florian Fainelli <florian.fainelli@telecomint.eu>
-cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
-In-Reply-To: <200710251430.03202.florian.fainelli@telecomint.eu>
-Message-ID: <alpine.LFD.0.9999.0710251720420.3186@localhost.localdomain>
-References: <200710181551.24912.florian.fainelli@telecomint.eu> <20071022151845.5874fba3@ephemeral> <alpine.LFD.0.9999.0710251013170.3186@localhost.localdomain> <200710251430.03202.florian.fainelli@telecomint.eu>
+	Thu, 25 Oct 2007 11:28:26 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45646 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757747AbXJYP2Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 11:28:25 -0400
+Date: Thu, 25 Oct 2007 11:27:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [PATCH 3/3] RT: CPU priority management
+In-Reply-To: <20071025144633.19876.10342.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0710251124370.5639@gandalf.stny.rr.com>
+References: <20071025144456.19876.94333.stgit@novell1.haskins.net>
+ <20071025144633.19876.10342.stgit@novell1.haskins.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, Florian Fainelli wrote:
-> > It might be useful for everyone to check, whether the existing GPIO
-> > functionality can be extended, reworked to match the needs of Geode as
-> > well. Extending / reworking an existing interface is definitely
-> > better than adding a new incompatible one.
-> 
-> Of course. Just because Geode is the only x86 potential user of such an API 
-> does not mean it should impose its design. Remember that this patch is part 
-> of a serie to add support for the RDC R-321x SoC, which becomes another 
-> x86-family user.
-> 
-> Looking at what Geode can do, and what RDC can do, I guess there are only few 
-> functions that are generic, all the drain, multiplexing, direction things are 
-> only available on the Geode board.
 
-It does not matter whether Geode has 500 functions and RDC has 5. It
-matters that we do _not_ want two different APIs which deal with the
-same thing, where one can obviously be a subset of the other. So
-either we can extend / rework the stuff that both parties are happy or
-we are not going to merge either of them.
+--
 
-       tglx
+> +
+> +struct cpu_priority {
+> +	raw_spinlock_t lock;
+> +	cpumask_t      pri_to_cpu[CPUPRI_NR_PRIORITIES];
+> +	long           pri_active[CPUPRI_NR_PRIORITIES/BITS_PER_LONG];
+> +	int            cpu_to_pri[NR_CPUS];
+> +};
+> +
+> +static __cacheline_aligned_in_smp struct cpu_priority cpu_priority;
+> +
 
+[...]
+
+> +int cpupri_find(int def_cpu, struct task_struct *p)
+> +{
+> +	int                  idx      = 0;
+> +	struct cpu_priority *cp       = &cpu_priority;
+> +	int                  this_cpu = smp_processor_id();
+> +	int                  cpu      = def_cpu;
+> +	int                  task_pri = convert_prio(p->prio);
+> +
+> +	for_each_cpupri_active(cp->pri_active, idx) {
+
+[...]
+
+> +void cpupri_set(int cpu, int newpri)
+> +{
+> +	struct cpu_priority *cp      = &cpu_priority;
+> +	int                 *currpri = &cp->cpu_to_pri[cpu];
+> +	int                  oldpri  = *currpri;
+> +	unsigned long        flags;
+> +
+> +	newpri = convert_prio(newpri);
+> +
+> +	if (newpri == oldpri)
+> +		return;
+> +
+> +	spin_lock_irqsave(&cp->lock, flags);
+
+The cpu_priority and the cp->lock will be aboslutely horrible for
+cacheline bouncing.  Ironically, this will kill performance for the very
+machines this code is to help with.  The larger the number of CPUs you
+have the more cacheline bouncing this code will create.
+
+I still don't see the benefit from the cpupri code.
+
+-- Steve
 
