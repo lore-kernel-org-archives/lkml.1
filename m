@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbXJYW3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXJYWar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758319AbXJYW3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbXJYW3X
+	id S1759037AbXJYWar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXJYWaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:29:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49212 "EHLO ogre.sisk.pl"
+	Thu, 25 Oct 2007 18:30:39 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57792 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753202AbXJYW3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:29:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Opteron box and 4Gb memory
-Date: Fri, 26 Oct 2007 00:45:43 +0200
-User-Agent: KMail/1.9.5
-Cc: "J.A. Magallon" <magallon@unizar.es>,
-       "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-References: <20071025230904.03d5f46a@werewolf> <47211172.9070606@zytor.com>
-In-Reply-To: <47211172.9070606@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710260045.44090.rjw@sisk.pl>
+	id S1753344AbXJYWai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 18:30:38 -0400
+From: Maarten Bressers <mbres@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: axboe@kernel.dk
+Cc: James.Bottomley@SteelEye.com
+Cc: tasio@hierro.tasio.net
+Cc: dsd@gentoo.org
+Subject: [PATCH RESEND] SCSI not showing tray status correctly
+Message-Id: <20071025223037.C077D65309@smtp.gentoo.org>
+Date: Thu, 25 Oct 2007 22:30:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 25 October 2007 23:58, H. Peter Anvin wrote:
-> J.A. Magallon wrote:
-> > Hi...
-> > 
-> > I have some Quad-Opteron boxes with 4Gb memory and two of them are
-> > running two different Linux distros.
-> > 
-> > Box one sees 4Gb of memory, but box two just sees 3.
-> > Their mtrr setups are different:
-> > 
-> > Why ? Is it a bios setup problem ? A kernel problem ?
-> > grep HIGHMEN in configs for both kernels does not give anything, so
-> > I still understand less this thing...
-> > 
-> 
-> It would depend on how the BIOS programmed the memory controllers.  For 
-> 32-bit (and lots of device) compatibility, a memory hole is required 
-> below 4 GB.  Not all memory controllers can remap memory in the 3-4 GB 
-> range above the 4 GB memory; I'm not sure if that varies with the 
-> different Opteron processors.
-
-It shouldn't, AFAICS.
+From: David Martin <tasio@tasio.net>
 
 Greetings,
-Rafael
+
+The following patch was submitted to the lkml in 2004 by David Martin
+(http://lkml.org/lkml/2004/12/27/1). It wasn't accepted, but I was
+unable to find a reason why, so I'm resending it now.
+
+Without this patch the SCSI ioctl CDROM_DRIVE_STATUS always returns
+CDS_TRAY_OPEN even if the tray is closed. This patch fixes that.
+Gentoo bug report: http://bugs.gentoo.org/show_bug.cgi?id=196879
+
+Signed-off by: Maarten Bressers <mbres@gentoo.org>
+
+---
+
+--- a/drivers/scsi/sr_ioctl.c	2007-10-09 22:31:38.000000000 +0200
++++ b/drivers/scsi/sr_ioctl.c	2007-10-25 22:57:21.000000000 +0200
+@@ -310,6 +310,8 @@ int sr_lock_door(struct cdrom_device_inf
+ 
+ int sr_drive_status(struct cdrom_device_info *cdi, int slot)
+ {
++	struct media_event_desc med;
++
+ 	if (CDSL_CURRENT != slot) {
+ 		/* we have no changer support */
+ 		return -EINVAL;
+@@ -317,7 +319,10 @@ int sr_drive_status(struct cdrom_device_
+ 	if (0 == test_unit_ready(cdi->handle))
+ 		return CDS_DISC_OK;
+ 
+-	return CDS_TRAY_OPEN;
++	if (!cdrom_get_media_event(cdi, &med) && med.door_open)
++		return CDS_TRAY_OPEN;
++
++	return CDS_NO_DISC;
+ }
+ 
+ int sr_disk_status(struct cdrom_device_info *cdi)
