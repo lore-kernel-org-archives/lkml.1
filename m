@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbXJYDJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbXJYDNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbXJYDJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 23:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXJYDJl
+	id S1759596AbXJYDNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 23:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXJYDN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 23:09:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58754 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbXJYDJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 23:09:40 -0400
-Date: Wed, 24 Oct 2007 20:06:19 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Zurk Tech" <zurktech@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Quad core CPU detected but shows as single core in 2.6.23.1
-Message-ID: <20071024200619.26130f62@laptopd505.fenrus.org>
-In-Reply-To: <2ed59cbb0710242002r7ff3ab89k2b22582fc1de9d2c@mail.gmail.com>
-References: <2ed59cbb0710242002r7ff3ab89k2b22582fc1de9d2c@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Wed, 24 Oct 2007 23:13:28 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:37345 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753337AbXJYDN1 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 23:13:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=N6AaLov+US0tAWUMoncI96+ST7F+mGx5wvpcUI91JuYZBjwYg4+UszdFaxPdAHj51s+VWCGVNFXvgOE51DXZjYdedSna/mMVMhGYxZXzX2uXM9d/CFf2r1PT5Vv0P77nW7INAntQbFd7wY1RLxo1Dly58f5KPLQQvfWP4aL0R7E=  ;
+X-YMail-OSG: XQA6_NUVM1mn_i7dZ54QT9HEScnGq1UgAi3l25XdqIXpQPOlhGssJKPMH_SjrbvAQXwUCD8PkQ--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: SLUB 0:1 SLAB (OOM during massive parallel kernel builds)
+Date: Thu, 25 Oct 2007 13:06:38 +1000
+User-Agent: KMail/1.9.5
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Mel Gorman <mel@skynet.ie>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+References: <20071023181615.GA10377@martell.zuzino.mipt.ru> <200710251234.01440.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710241941200.30364@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710241941200.30364@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200710251306.39237.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 23:02:14 -0400
-"Zurk Tech" <zurktech@gmail.com> wrote:
+On Thursday 25 October 2007 12:43, Christoph Lameter wrote:
+> On Thu, 25 Oct 2007, Nick Piggin wrote:
+> > > Ummm... all unreclaimable is set! Are you mlocking the pages in memory?
+> > > Or what causes this? All pages under writeback? What is the dirty ratio
+> > > set to?
+> >
+> > Why is SLUB behaving differently, though.
+>
+> Nore sure. Are we really sure that this does not occur using SLAB?
 
-> Hi guys,
-> I have a tyan s3992 h2000 with single barcelona amd quad core cpu (the
-> other cpu socket is empty). cat /proc/cpuinfo shows amd quad core
-> processor
-> but core : 1....ive compiled the kernel from scratch with smp and
-> amd64 + the numa stuff. i also tried debian etchs amd64 smp kernel and
-> same result.
-> is amd barcelona quad core cpu not yet supported or is it something
-> else ? Thanks for any insight. im completely stumped. ive dealt with
-> mutliprocessing machines before and have a couple of dual cores which
-> are fine with the
-> exact same kernel configs. my amd tk-53 x2 turions show 2 cores in
-> cpuinfo.... -Zurk-
+>From the reports it seems pretty consistent. I guess it could well
+be something that may occur with SLAB *if the conditions are a bit
+different*...
 
-Hi,
+> > Memory efficiency wouldn't be the reason, would it? I mean, SLUB
+> > should be more efficient than SLAB, plus have less data lying around
+> > in queues.
+>
+> SLAB may have data around in queues which (if the stars align the right
+> way) may allow it to go longer without having to get a page from the page
+> allocator.
 
-this sort of issue is usually best diagnosed when we can get to see the
-dmesg output... since quite often the kernel will note errors and
-warnings there that will give a clue of what is going on. Would you
-mind attaching your dmesg on the broken machine to a mail ?
+But page allocs from slab isn't where the OOMs are occurring, so this
+seems unlikely (also, the all_unreclaimable logic now should be pretty
+strict, so you have to really run the machine out of memory (1GB of
+swap gets fully used, then his DMA32 zone is scanned 8 times without
+reclaiming a single page).
 
-Greetings,
-   Arjan van de Ven
+That said, parallel kernel compiling can really change a lot in memory
+footprint depending on small variations in timing. So it might not be
+anything to worry about.
