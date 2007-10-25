@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbXJYUxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762961AbXJYUyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762851AbXJYUxg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXJYUx1
+	id S1762961AbXJYUyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbXJYUyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:53:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50380 "EHLO
+	Thu, 25 Oct 2007 16:54:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50426 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbXJYUx0 (ORCPT
+	with ESMTP id S1755134AbXJYUyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:53:26 -0400
-Message-ID: <472101D8.1020104@zytor.com>
-Date: Thu, 25 Oct 2007 13:51:36 -0700
+	Thu, 25 Oct 2007 16:54:45 -0400
+Message-ID: <47210263.5000405@zytor.com>
+Date: Thu, 25 Oct 2007 13:53:55 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Erez Zadok <ezk@cs.sunysb.edu>
-CC: Hugh Dickins <hugh@veritas.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, ryan@finnie.org,
-       mhalcrow@us.ibm.com, cjwatson@ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org
-Subject: Re: [PATCH+comment] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
-References: <200710251601.l9PG1Mue019939@agora.fsl.cs.sunysb.edu>
-In-Reply-To: <200710251601.l9PG1Mue019939@agora.fsl.cs.sunysb.edu>
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, Jie Zhang <jzhang.linux@gmail.com>,
+       bryan.wu@analog.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
+References: <20071024162643.GP30533@stusta.de>	 <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com>	 <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de>	 <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com>	 <20071025165344.GL30533@stusta.de>	 <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com>	 <20071025201842.GT30533@stusta.de>	 <8bd0f97a0710251320m3490c53dpe85656a939e8536e@mail.gmail.com>	 <4720FC54.1020705@zytor.com> <8bd0f97a0710251345t6e50bcd3u11be001ee900d9cf@mail.gmail.com>
+In-Reply-To: <8bd0f97a0710251345t6e50bcd3u11be001ee900d9cf@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Erez Zadok wrote:
-> In message <Pine.LNX.4.64.0710250705510.9811@blonde.wat.veritas.com>, Hugh Dickins writes:
->> On Thu, 25 Oct 2007, Pekka Enberg wrote:
+Mike Frysinger wrote:
+> On 10/25/07, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Mike Frysinger wrote:
+>>>> Do you have any example for your claim "to get gcc to not inline things
+>>>> when building debug versions"?
+>>> $ cat test.c
+>>> __attribute__((always_inline)) int foo(void) { return 0; }
+>>> int main(void){ return foo(); }
+>>> $ gcc -g test.c -o test
+>>> $ readelf -s test | grep FUNC | grep -v _
+>>>     61: 00000000004004b8    11 FUNC    GLOBAL DEFAULT   13 foo
+>>>     68: 00000000004004c3    11 FUNC    GLOBAL DEFAULT   13 main
+>>>
+>>> looks pretty straightforward to me
+>> For "debug version" meaning -O0, this is true.
 > 
->> With unionfs also fixed, we don't know of an absolute need for this
->> patch (and so, on that basis, the !wbc->for_reclaim case could indeed
->> be removed very soon); but as I see it, the unionfs case has shown
->> that it's time to future-proof this code against whatever stacking
->> filesystems come along.  Hence I didn't mention the names of such
->> filesystems in the source comment.
+> which is what i meant, sorry for not being more clear
 > 
-> I think "future proof" for other stackable f/s is a good idea, esp. since
-> many of the stackable f/s we've developed and distributed over the past 10
-> years are in some use in various places: gzipfs, avfs, tracefs, replayfs,
-> ncryptfs, versionfs, wrapfs, i3fs, and more (see www.filesystems.org).
+> anyways, this is all moot ... we dont want "always inline" nor do we
+> want "static inline" for our string functions.  we want the classical
+> GNU meaning of "extern inline" which means we're going to either have
+> a Blackfin specific "extern_inline" define or we get one added to the
+> common compiler headers and use that.
 > 
+> Peter (or is it "H. Peter" ?): you going to post a patch or should i ?
+> -mike
 
-A number of filesystems want partial or full stackability, so getting 
-rid of lack-of-stackability whereever it may be is highly valuable.
+Just "Peter" is fine :)
+
+Go right ahead.
 
 	-hpa
-
