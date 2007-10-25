@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbXJYUlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbXJYUpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbXJYUlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXJYUlm
+	id S1760201AbXJYUpS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbXJYUpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:41:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:27818 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762502AbXJYUlW (ORCPT
+	Thu, 25 Oct 2007 16:45:05 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:57688 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbXJYUpC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:41:22 -0400
+	Thu, 25 Oct 2007 16:45:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=sTOBDydB1Fo9D1azLtdqkrJZPlzCHxqzJa2N0BRmnWYOo+hHLiQdkY4g5Cq4U8cFS/cmhSQx+eBTuobcGI+PFqEUFsidEDs1Nye8GQWUSEkJtCxK47B6HIFc9q0vdBghUII/YUNXqr2aFlSCs0OKRjTD6docVjYxTwIgXU4NNjQ=
-Message-ID: <4720FF2B.9020802@googlemail.com>
-Date: Thu, 25 Oct 2007 22:40:11 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XUnHunhP9inKhCu4slXMLyzP3luJe7MuV5Gr/JH6d8DNRtOAXSmU0XWhShtk9ygzdz5k4vfmXH4WvWCH2FtDmljfPajWigBmKAZfvYXdTuSueQaogntlkQKqVOgpHLp6s6pR65Ct1dUjWfq+F4/wZ9nz0keT7uyTKVkCaBBMeRU=
+Message-ID: <8bd0f97a0710251345t6e50bcd3u11be001ee900d9cf@mail.gmail.com>
+Date: Thu, 25 Oct 2007 16:45:01 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Jie Zhang" <jzhang.linux@gmail.com>,
+       bryan.wu@analog.com, linux-kernel@vger.kernel.org
+In-Reply-To: <4720FC54.1020705@zytor.com>
 MIME-Version: 1.0
-To: Michael Lothian <mike@fireburn.co.uk>
-CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: Possibility of adding -march=native to x86
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>	 <20071025185022.GP30533@stusta.de>	 <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>	 <20071025191723.GQ30533@stusta.de>	 <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com>	 <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com>
-In-Reply-To: <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071024162643.GP30533@stusta.de>
+	 <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com>
+	 <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de>
+	 <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com>
+	 <20071025165344.GL30533@stusta.de>
+	 <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com>
+	 <20071025201842.GT30533@stusta.de>
+	 <8bd0f97a0710251320m3490c53dpe85656a939e8536e@mail.gmail.com>
+	 <4720FC54.1020705@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Lothian wrote:
->> The MPENTIUM4 option does not only set -march=pentium4, it also enables
->> several other options in arch/i386/Kconfig.cpu resulting in better
->> performance.
-> 
-> How about an autodetect to set the right options here too using cpuid?
-> 
-> With a warning of course that the code produced will be specifically
-> for the native cpu that it's compiled on.
+On 10/25/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Mike Frysinger wrote:
+> >> Do you have any example for your claim "to get gcc to not inline things
+> >> when building debug versions"?
+> >
+> > $ cat test.c
+> > __attribute__((always_inline)) int foo(void) { return 0; }
+> > int main(void){ return foo(); }
+> > $ gcc -g test.c -o test
+> > $ readelf -s test | grep FUNC | grep -v _
+> >     61: 00000000004004b8    11 FUNC    GLOBAL DEFAULT   13 foo
+> >     68: 00000000004004c3    11 FUNC    GLOBAL DEFAULT   13 main
+> >
+> > looks pretty straightforward to me
+>
+> For "debug version" meaning -O0, this is true.
 
-And kill off all Distro kernels right ? IMO to set that auto magically is bad.
+which is what i meant, sorry for not being more clear
 
-Regards,
+anyways, this is all moot ... we dont want "always inline" nor do we
+want "static inline" for our string functions.  we want the classical
+GNU meaning of "extern inline" which means we're going to either have
+a Blackfin specific "extern_inline" define or we get one added to the
+common compiler headers and use that.
 
-Gabriel 
-
+Peter (or is it "H. Peter" ?): you going to post a patch or should i ?
+-mike
