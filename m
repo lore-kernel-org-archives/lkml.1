@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbXJYTKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXJYTRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbXJYTKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXJYTK2
+	id S1755593AbXJYTRG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750702AbXJYTQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:10:28 -0400
-Received: from server009.webpack.hosteurope.de ([80.237.130.17]:56909 "EHLO
-	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754140AbXJYTKF (ORCPT
+	Thu, 25 Oct 2007 15:16:55 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60662 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750893AbXJYTQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:10:05 -0400
-X-Greylist: delayed 1680 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 15:10:04 EDT
-From: Daniel Exner <dex@dragonslave.de>
-Reply-To: webmaster@dragonslave.de
-To: linux-kernel@vger.kernel.org
-Subject: Uvesafb and token-ring in 2.6.24-rc1 broken
-Date: Thu, 25 Oct 2007 20:37:09 +0200
-User-Agent: KMail/1.9.7
-Cc: Jeff Garzik <jeff@garzik.org>, Michal Januszewski <spock@gentoo.org>
+	Thu, 25 Oct 2007 15:16:54 -0400
+Date: Thu, 25 Oct 2007 21:17:23 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Lothian <mike@fireburn.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+Message-ID: <20071025191723.GQ30533@stusta.de>
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200710252037.09667.dex@dragonslave.de>
-X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1193339404;519d583a;
+In-Reply-To: <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Oct 25, 2007 at 08:09:56PM +0100, Michael Lothian wrote:
+> Actually I changed the Makefile.cpu and changed the -march to native
+> which did slightly change the size of the kernel (slightly larger I
+> think)
+> 
+> So what else does that option change?
 
-Like always, pleas CC me as I'm currently not suscribed, I hope I got the 
-right persons already in list.
+Look at arch/i386/Kconfig.cpu
 
-When booting my new shiny 2.6.24-rc1 I get a crash if uvesafb is compiled in. 
-The trace mentiones something about "platform_match", so I guess this is due 
-x86 unification.
-If helpfull I could try getting something over netconsole, but I think this is 
-a minor glitch, as vesafb boots fine. :)
+> Mike
 
-Ah, and token ring tells me something like
-"/net/token-ring ,3.14 sysctl failed check procname does not match binary path 
-procname"
-But kernel boots otherwise and I got no chance to test tr itself is working.
+cu
+Adrian
 
 -- 
-Greetings
-Daniel Exner
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
