@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbXJYXEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbXJYXIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbXJYXEf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXJYXE2
+	id S1758850AbXJYXIk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbXJYXId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:04:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56290 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753858AbXJYXE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:04:27 -0400
-Message-ID: <472120F6.2080703@garzik.org>
-Date: Thu, 25 Oct 2007 19:04:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: =?UTF-8?B?SXNtYWlsIETDtm5tZXo=?= <ismail@pardus.org.tr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Kleen, Andi" <ak@suse.de>
-Subject: Re: Is gcc thread-unsafe?
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org> <200710260126.48885.ismail@pardus.org.tr> <47211F19.5080607@garzik.org>
-In-Reply-To: <47211F19.5080607@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Thu, 25 Oct 2007 19:08:33 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:43363 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbXJYXIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 19:08:32 -0400
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: [PATCH] x86: fix pci-gart failure handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071026080814Z.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 26 Oct 2007 08:08:14 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Ismail Dönmez wrote:
->> Thursday 25 October 2007 Tarihinde 17:55:00 yazmıştı:
->>> I think the OpenBSD people decided to actually do something about this,
->>> and I suspect it had *nothing* to do with license issues, and everything
->>> to do with these kinds of problems. I wish them all the luck, although
->>> personally I think LLVM is a much more interesting project.
->>
->> And on the LLVM side all hopes for clang [0] at least for better C++ 
->> error reporting ;-)
->>
->> [0] http://clang.llvm.org/
-> 
-> Someone should take 'sparse' and use that as a C language front-end to 
-> LLVM...
+blk_rq_map_sg doesn't initialize sg->dma_address/length to zero
+anymore. Some low level drivers reuse sg lists without initializing so
+IOMMUs might get non-zero dma_address/length. If map_sg fails, we need
+pass the number of the mapped entries to gart_unmap_sg.
 
-Among clang's "features":
-	"A single unified parser for C/ObjC/C++"
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-gart_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-bleh.  I cannot imagine how ugly a C parser gets, after being taught 
-C++.  IMO since you can basically redefine everything in C++, it's not a 
-language but a proto-language.
-
-	Jeff
-
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index c56e9ee..6e7f826 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -436,7 +436,7 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 
+ error:
+ 	flush_gart();
+-	gart_unmap_sg(dev, sg, nents, dir);
++	gart_unmap_sg(dev, sg, out, dir);
+ 	/* When it was forced or merged try again in a dumb way */
+ 	if (force_iommu || iommu_merge) {
+ 		out = dma_map_sg_nonforce(dev, sg, nents, dir);
+-- 
+1.5.2.4
 
