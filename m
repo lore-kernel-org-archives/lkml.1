@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbXJYLeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbXJYLe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759918AbXJYLeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 07:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbXJYLeD
+	id S1760497AbXJYLe6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 07:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbXJYLeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 07:34:03 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40460 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674AbXJYLeB (ORCPT
+	Thu, 25 Oct 2007 07:34:50 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57413 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbXJYLeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 07:34:01 -0400
-Date: Thu, 25 Oct 2007 13:33:58 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Bernd Petrovitsch <bernd@firmix.at>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>, James Morris <jmorris@namei.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, Ray Lee <ray-lk@madrabbit.org>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>
-Subject: Re: LSM conversion to static interface
-Message-ID: <Pine.LNX.4.64.0710251328150.17781@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Oct 2007 07:34:50 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Thu, 25 Oct 2007 17:04:40 +0530
+Message-Id: <20071025113440.27531.47204.sendpatchset@balbir-laptop>
+Subject: [x86 patch] Fix UML ptrace-abi.h build error
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-As I read through LWN today, I noted the following comment, 
-http://lwn.net/Articles/255832/ :
+Fix the compilation error
 
-	Personally, I think it's absolutely essential to be able to 
-	build a kernel with dynamic LSM. Whether we like it or not, 
-	people do want to add in runtime loadable security modules for 
-	things like virus scanners, and until upstream offers these 
-	folks a viable alternative to LSM...well, they'll use it.
+arch/um/kernel/sysrq.c: In function 'show_stack':
+arch/um/kernel/sysrq.c:63: error: 'UESP' undeclared (first use in this function)
+arch/um/kernel/sysrq.c:63: error: (Each undeclared identifier is reported only once
+arch/um/kernel/sysrq.c:63: error: for each function it appears in.)
+make[1]: *** [arch/um/kernel/sysrq.o] Error 1
+make: *** [arch/um/kernel] Error 2
 
-Which reminded me of the TuxGuardian LSM[1] - another of the real-world 
-uses to meet Linus's criteria? ("had examples of their real-world use to 
-step forward and explain their use")
+Use BITS_PER_LONG == 32 instead of the hardcode __i386__ as UML depends on
+this header.
 
-In this specific project, LSM is used to collect up calls to bind() and 
-connect() and pass them to userspace, e.g. do it ZoneAlarm-style and 
-display a dialog window. Its codebase is probably not too up-to-date 
-(website says last change last April - but I guess that's a no-brainer 
-to update it).
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-[1] http://tuxguardian.sf.net/
+ include/asm-x86/ptrace-abi.h |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff -puN include/asm-x86/ptrace-abi.h~uml-fix-ptrace-abi-header include/asm-x86/ptrace-abi.h
+--- 2.6.24-rc1/include/asm-x86/ptrace-abi.h~uml-fix-ptrace-abi-header	2007-10-25 17:01:47.000000000 +0530
++++ 2.6.24-rc1-balbir/include/asm-x86/ptrace-abi.h	2007-10-25 17:01:47.000000000 +0530
+@@ -1,7 +1,9 @@
+ #ifndef _ASM_X86_PTRACE_ABI_H
+ #define _ASM_X86_PTRACE_ABI_H
+ 
+-#ifdef __i386__
++#include <asm/types.h>
++
++#if BITS_PER_LONG == 32
+ 
+ #define EBX 0
+ #define ECX 1
+@@ -22,7 +24,7 @@
+ #define SS   16
+ #define FRAME_SIZE 17
+ 
+-#else /* __i386__ */
++#else /* BITS_PER_LONG == 32 */
+ 
+ #if defined(__ASSEMBLY__) || defined(__FRAME_OFFSETS)
+ #define R15 0
+@@ -55,7 +57,7 @@
+ /* top of stack page */
+ #define FRAME_SIZE 168
+ 
+-#endif /* !__i386__ */
++#endif /* !BITS_PER_LONG == 32 */
+ 
+ /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
+ #define PTRACE_GETREGS            12
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
