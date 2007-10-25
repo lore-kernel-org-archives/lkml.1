@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbXJYEIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761212AbXJYELw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761700AbXJYEIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 00:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXJYEIf
+	id S1761212AbXJYELw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 00:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXJYELo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 00:08:35 -0400
-Received: from venus.billgatliff.com ([209.251.101.201]:52955 "EHLO
-	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbXJYEIf (ORCPT
+	Thu, 25 Oct 2007 00:11:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33637 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751192AbXJYELn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 00:08:35 -0400
-X-Greylist: delayed 1975 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 00:08:35 EDT
-Message-ID: <47200F05.2050305@billgatliff.com>
-Date: Wed, 24 Oct 2007 22:35:33 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <rmk@arm.linux.org.uk>, bugme-daemon@bugzilla.kernel.org,
-       svs1957@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 9217] New: CONFIG_CMDLINE doesn't pass to kernel
-References: <bug-9217-10286@http.bugzilla.kernel.org/> <20071024195717.0de6a248.akpm@linux-foundation.org>
-In-Reply-To: <20071024195717.0de6a248.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Oct 2007 00:11:43 -0400
+Date: Wed, 24 Oct 2007 21:11:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 4/5] Add lock_page_killable
+Message-Id: <20071024211140.329fdd90.akpm@linux-foundation.org>
+In-Reply-To: <11932286982653-git-send-email-matthew@wil.cx>
+References: <11932286982175-git-send-email-matthew@wil.cx>
+	<11932286982653-git-send-email-matthew@wil.cx>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Something broke CONFIG_CMDLINE of ARM (at least) between 2.6.22 and 2.6.23.
->
-> I don't know whether it was an ARM patch one of those kernel-wide changes. 
-> We have futzed with the command-line parsing a bit recently, but the 2.6.23
-> changelog doesn't suggest anything obvious.
->   
+On Wed, 24 Oct 2007 08:24:57 -0400 Matthew Wilcox <matthew@wil.cx> wrote:
 
-What does the affected system's bootloader pass in r2?  If it's nonzero, 
-ARM's 2.6.23 may interpret it as being an ATAGS pointer.  And when that 
-happens, the system prefers the ATAGS over CONFIG_CMDLINE.
+> and associated infrastructure such as sync_page_killable and
+> fatal_signal_pending.  Use lock_page_killable in do_generic_mapping_read()
+> to allow us to kill `cat' of a file on an NFS-mounted filesystem.
 
-There's sanity checking in __vet_atags, but maybe it isn't enough.  
-Other than that, I can't see anything yet.
+whoa, big change.
 
+What exactly are the semantics here?  If the process has actually been
+killed (ie: we know that userspace won't be running again) then we break
+out of a lock_page() and allow the process to exit?  ie: it's basically
+invisible to userspace?
 
-b.g.
+If so, it sounds OK.  I guess.  We're still screwed if the process is doing
+a synchronous write and lots of other scenarios.
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+How well has this been tested?
 
+Have the NFS guys had a think about it?
+
+Why does it return -EIO from read() and not -EINTR?
