@@ -1,81 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXJYQbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXJYQcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbXJYQbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXJYQbP
+	id S1753364AbXJYQcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbXJYQcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:31:15 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:26105 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750710AbXJYQbO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:31:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=3caOG64C9xvwfXo3hCznbn62ti7q0YP7eliz+WIfHtNsjQWkUjsqP2Rigl2cKykRNiSwofSvUthy9GJp8o5U6JXWWfcYc/7T13YpR5eV5XlXbMaQQ5Hsy0/4t3q1Oy/MuhSPhunRQh6WICVjWYL6xsxlGKf5QqM5ejELXW+eZfk=  ;
-X-YMail-OSG: pZY.5sYVM1mR1XzUr7DDDORTsGjiFuIOl.5rXHErMAl1DZPaaZkUgKnELrVeQwkXAQPfnGiI0Q--
-From: David Brownell <david-b@pacbell.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 2.6.24-rc1] resource_len() utility function
-Date: Thu, 25 Oct 2007 09:31:11 -0700
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-References: <200710241820.52376.david-b@pacbell.net> <200710242138.23252.david-b@pacbell.net> <20071025132939.3fd010f9@the-village.bc.nu>
-In-Reply-To: <20071025132939.3fd010f9@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 25 Oct 2007 12:32:06 -0400
+Received: from xenotime.net ([66.160.160.81]:43401 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751917AbXJYQcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:32:05 -0400
+Date: Thu, 25 Oct 2007 09:31:59 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       torvalds <torvalds@linux-foundation.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH v2] bitops kernel-doc: inline instead of macro
+Message-Id: <20071025093159.3ea69d03.rdunlap@xenotime.net>
+In-Reply-To: <200710241800.19764.nickpiggin@yahoo.com.au>
+References: <20071023220959.a359d57d.rdunlap@xenotime.net>
+	<200710241800.19764.nickpiggin@yahoo.com.au>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710250931.11636.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007, Alan Cox wrote:
-> > So you'd suggest having search utilities (as with platform_bus)
-> > returning resource indices not resources?
+On Wed, 24 Oct 2007 18:00:19 +1000 Nick Piggin wrote:
+
+> On Wednesday 24 October 2007 15:09, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> >
+> > Can we expand this macro definition, or should I look for a way to
+> > fool^W teach kernel-doc about this?
+> >
+> > scripts/kernel-doc says:
+> > Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand
+> > prototype: 'test_and_set_bit_lock test_and_set_bit '
 > 
-> That seems a bad idea to me
-
-I'm assuming you mean they should continue to work like they
-do today:  return the resource.  Your pseudocode below shows
-an iomap utility taking a resource.
-
-
-> > Thing is, BARs are usually well defined, but when folk glue
-> > resources together they use whatever order is convenient on
-> > that particular platform.  And different platforms can have
-> > different numbers and types of resources, etc.
+> Actually, it probably looks a bit nicer like this anyway. If you grep
+> for it, then you can actually see the parameters...
 > 
-> Far better I think that pci_ functions that take BAR values end up as
-> wrappers of the form
-> 
-> 	pci_iomap(pdev, bar)
-> 		return dev_iomap_resource(&pdev->resource[bar]);
+> On third thoughts, an inline function might be the best thing to do,
+> and also avoid setting a bad example. What do you think?
 
-Sure, for PCI ... where the meaning of BARs is a fixed part of the
-hardware spec, and it's not uncommon to skip a few.
+---
 
-But as I noted, that notion doesn't apply cleanly outside PCI;
-indexes aren't necessarily portable between systems.  So any
-such interface should discourage their use.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Use duplicated inline functions for test_and_set_bit_lock() on x86
+instead of #define macros, thus avoiding a bad example.  This allows
+kernel-doc to run cleanly instead of terminating with an error:
 
-One issue with a dev_iomap() is that only memory resources
-really need mapping ... but *all* of them need claiming.
-(Modulo the detail that the iomap morphs i/o addresses too.)
+Error(linux-2.6.24-rc1//include/asm-x86/bitops_32.h:188): cannot understand prototype: 'test_and_set_bit_lock test_and_set_bit '
 
-The $SUBJECT function is a (minor) simplification for both
-the mapping and claiming steps.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/asm-x86/bitops_32.h |   13 +++++++++++--
+ include/asm-x86/bitops_64.h |   13 +++++++++++--
+ 2 files changed, 22 insertions(+), 4 deletions(-)
 
-I think I'd rather see a dev_resource_claim() which combines
-the request_{,mem_}region() semantics with mapping ... that
-way drivers could save code, not just unify the two types
-of register addressing.
-
-- Dave
-
-
+--- linux-2.6.24-rc1.orig/include/asm-x86/bitops_32.h
++++ linux-2.6.24-rc1/include/asm-x86/bitops_32.h
+@@ -183,9 +183,18 @@ static inline int test_and_set_bit(int n
+  * @nr: Bit to set
+  * @addr: Address to count from
+  *
+- * This is the same as test_and_set_bit on x86
++ * This is the same as test_and_set_bit on x86.
+  */
+-#define test_and_set_bit_lock test_and_set_bit
++static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
++{
++	int oldbit;
++
++	__asm__ __volatile__( LOCK_PREFIX
++		"btsl %2,%1\n\tsbbl %0,%0"
++		:"=r" (oldbit),"+m" (ADDR)
++		:"Ir" (nr) : "memory");
++	return oldbit;
++}
+ 
+ /**
+  * __test_and_set_bit - Set a bit and return its old value
+--- linux-2.6.24-rc1.orig/include/asm-x86/bitops_64.h
++++ linux-2.6.24-rc1/include/asm-x86/bitops_64.h
+@@ -173,9 +173,18 @@ static __inline__ int test_and_set_bit(i
+  * @nr: Bit to set
+  * @addr: Address to count from
+  *
+- * This is the same as test_and_set_bit on x86
++ * This is the same as test_and_set_bit on x86.
+  */
+-#define test_and_set_bit_lock test_and_set_bit
++static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
++{
++	int oldbit;
++
++	__asm__ __volatile__( LOCK_PREFIX
++		"btsl %2,%1\n\tsbbl %0,%0"
++		:"=r" (oldbit),ADDR
++		:"dIr" (nr) : "memory");
++	return oldbit;
++}
+ 
+ /**
+  * __test_and_set_bit - Set a bit and return its old value
