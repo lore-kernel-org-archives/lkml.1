@@ -1,88 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXJYVoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbXJYVqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbXJYVoi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbXJYVo2
+	id S1758831AbXJYVqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXJYVqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:44:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34258 "EHLO hera.kernel.org"
+	Thu, 25 Oct 2007 17:46:01 -0400
+Received: from ortiz.unizar.es ([155.210.1.50]:49133 "EHLO ortiz.unizar.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755592AbXJYVo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:44:27 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Subject: Re: [2.6 patch] fujitsu-laptop.c: remove dead code
-Date: Thu, 25 Oct 2007 17:44:09 -0400
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-References: <200710250508.l9P58exp003251@turbo.physics.adelaide.edu.au>
-In-Reply-To: <200710250508.l9P58exp003251@turbo.physics.adelaide.edu.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751564AbXJYVqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:46:00 -0400
+X-Greylist: delayed 2212 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 17:46:00 EDT
+Date: Thu, 25 Oct 2007 23:09:04 +0200
+From: "J.A. Magallon" <magallon@unizar.es>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Opteron box and 4Gb memory
+Message-ID: <20071025230904.03d5f46a@werewolf>
+Organization: GIGA
+X-Mailer: Claws Mail 3.0.2cvs98 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251744.10035.lenb@kernel.org>
+X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
+Hi...
 
-thanks,
--len
+I have some Quad-Opteron boxes with 4Gb memory and two of them are
+running two different Linux distros.
 
-On Thursday 25 October 2007 01:08, Jonathan Woithe wrote:
-> > This patch removes dead code spotted by the Coverity checker.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Ack.
-> 
-> Signed-off-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-> 
-> jonathan
-> 
-> ---
-> --- linux-2.6/drivers/misc/fujitsu-laptop.c.old	2007-10-23 18:51:10.000000000 +0200
-> +++ linux-2.6/drivers/misc/fujitsu-laptop.c	2007-10-23 18:51:50.000000000 +0200
-> @@ -110,33 +110,30 @@ static int get_lcd_level(void)
->  
->  	// Get the Brightness
->  	status =
->  	    acpi_evaluate_integer(fujitsu->acpi_handle, "GBLL", NULL, &state);
->  	if (status < 0)
->  		return status;
->  
->  	fujitsu->fuj02b1_state = state;
->  	fujitsu->brightness_level = state & 0x0fffffff;
->  
->  	if (state & 0x80000000)
->  		fujitsu->brightness_changed = 1;
->  	else
->  		fujitsu->brightness_changed = 0;
->  
-> -	if (status < 0)
-> -		return status;
-> -
->  	return fujitsu->brightness_level;
->  }
->  
->  /* Backlight device stuff */
->  
->  static int bl_get_brightness(struct backlight_device *b)
->  {
->  	return get_lcd_level();
->  }
->  
->  static int bl_update_status(struct backlight_device *b)
->  {
->  	return set_lcd_level(b->props.brightness);
->  }
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Box one sees 4Gb of memory, but box two just sees 3.
+Their mtrr setups are different:
+
+one:
+[    0.000000] Linux version 2.6.20...
+...
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000b7fd0000 (usable)
+[    0.000000]  BIOS-e820: 00000000b7fd0000 - 00000000b7fde000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000b7fde000 - 00000000b8000000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 0000000145000000 (usable)
+[    0.000000] Entering add_active_range(0, 0, 159) 0 entries of 3200 used
+[    0.000000] Entering add_active_range(0, 256, 753616) 1 entries of 3200 used
+[    0.000000] Entering add_active_range(0, 1048576, 1331200) 2 entries of 3200 
+used
+[    0.000000] end_pfn_map = 1331200
+
+cat /proc/mtrr:
+reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+reg02: base=0x140000000 (5120MB), size=  64MB: write-back, count=1
+reg03: base=0x144000000 (5184MB), size=  16MB: write-back, count=1
+reg04: base=0xb8000000 (2944MB), size= 128MB: uncachable, count=1
+reg05: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+
+two:
+Linux version 2.6.22.9...
+...
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000b8fd0000 (usable)
+ BIOS-e820: 00000000b8fd0000 - 00000000b8fde000 (ACPI data)
+ BIOS-e820: 00000000b8fde000 - 00000000b9000000 (ACPI NVS)
+ BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
+Entering add_active_range(0, 0, 159) 0 entries of 3200 used
+Entering add_active_range(0, 256, 757712) 1 entries of 3200 used
+end_pfn_map = 1048576
+
+cicely:~# cat /proc/mtrr
+reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
+reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
+reg03: base=0xb0000000 (2816MB), size= 128MB: write-back, count=1
+reg04: base=0xb8000000 (2944MB), size=  16MB: write-back, count=1
+
+
+Why ? Is it a bios setup problem ? A kernel problem ?
+grep HIGHMEN in configs for both kernels does not give anything, so
+I still understand less this thing...
+
+-- 
+J.A. Magallon <magallon()unizar!es>     \               Software is like sex:
+                                         \         It's better when it's free
+MacOS X 10.4.8 Tiger - Darwin Kernel Version 8.8.0 PPC
+
