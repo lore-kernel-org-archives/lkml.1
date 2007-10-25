@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760891AbXJYHBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbXJYHMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760891AbXJYHBZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 03:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbXJYHBS
+	id S1760436AbXJYHMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 03:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXJYHMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 03:01:18 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34422 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754421AbXJYHBR (ORCPT
+	Thu, 25 Oct 2007 03:12:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:15689 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbXJYHMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 03:01:17 -0400
-Date: Wed, 24 Oct 2007 23:30:34 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Paul E McKenney <paulmck@us.ibm.com>,
-       Richard Gooch <rgooch@atnf.csiro.au>,
-       Tigran Aivazian <tigran@aivazian.fs.co.uk>,
-       Shoahua Li <shaohua.li@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nathan Lynch <ntl@pobox.com>, David Miller <davem@davemloft.net>,
-       Paul Jackson <pj@sgi.com>, Josh Triplett <josh@freedesktop.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [RFC PATCH 0/5] Refcount based Cpu Hotplug. V2
-Message-ID: <20071024180034.GB8663@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071024052931.GA22722@in.ibm.com> <Pine.LNX.4.64.0710241001160.26202@schroedinger.engr.sgi.com>
+	Thu, 25 Oct 2007 03:12:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=h1eRLwIz4VbKEWQ6YTT3ttzCEIsuqJCJkzk1rfePe0Gc7L7CsRlsJYBI3LlydYvFNKLgGDTx2gVLDYCHi4ICixBioGqEA1WrhRM+5obm8FvB0jR3k9zUuTVTPu0BJ4xwS4YUBlN3MQVROHSk1X0/ImlmCmJ65W3Fc24GIO6QjDg=
+Message-ID: <877aabc40710250012se0afe99s819207e72726d333@mail.gmail.com>
+Date: Thu, 25 Oct 2007 12:42:04 +0530
+From: "Amit Shah" <amitshah@gmx.net>
+To: "Jens Axboe" <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Panic in gart_map_sg
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710241001160.26202@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Google-Sender-Auth: bc84281dd2d00bb2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 10:04:41AM -0700, Christoph Lameter wrote:
-> On Wed, 24 Oct 2007, Gautham R Shenoy wrote:
-> 
-> > This is the version 2 of the refcount based cpu-hotplug "locking" 
-> > implementation. 
-> 
-> Uggh. This introduces a global lock that has to be taken always when 
-> scanning over cpus? 
+I get a kernel panic at gart_map_sg+0x201/0x470, which is around here:
 
-Well, no! we take the global lock only while bumping up the refcount. 
-We don't hold the lock while scanning over the cpus. And this is
-definitely an improvement over the lock_cpu_hotplug() global mutex
-we have now.
+	out++;
+	flush_gart();
+	if (out < nents) {
+		sgmap = sg_next(sgmap);
+		sgmap->dma_length = 0;
+	}
+	return out;
 
->Is multipe cpus are scanning over processor lists then 
-> we will get into scaling problems. Wasnt there an RCU based implementation 
-> that avoided cacheline bouncing and refcounting?
+8e5:   e8 d6 fc ff ff          callq  5c0 <flush_gart>
+ 8ea:   ff c3                   inc    %ebx
+ 8ec:   41 39 df                cmp    %ebx,%r15d
+ 8ef:   0f 8e 9d 00 00 00       jle    992 <gart_map_sg+0x292>
+ 8f5:   31 c9                   xor    %ecx,%ecx
+ 8f7:   f6 45 00 02             testb  $0x2,0x0(%rbp)
+ 8fb:   0f 84 1f 02 00 00       je     b20 <gart_map_sg+0x420>
+ 901:   c7 41 18 00 00 00 00    movl   $0x0,0x18(%rcx)
+ 908:   e9 85 00 00 00          jmpq   992 <gart_map_sg+0x292>
+ 90d:   0f 1f 00                nopl   (%rax)
+ 910:   44 89 e0                mov    %r12d,%eax
+ 913:   29 f0                   sub    %esi,%eax
+ 915:   45 85 d2                test   %r10d,%r10d
+ 918:   89 c6                   mov    %eax,%esi
+ 91a:   0f 85 02 ff ff ff       jne    822 <gart_map_sg+0x122>
+ 920:   ff ce                   dec    %esi
+ 922:   75 65                   jne    989 <gart_map_sg+0x289>
 
-Oh yes! You are probably refering to 
-http://lkml.org/lkml/2006/10/26/73
-which was posted a year ago. Unfortunately it didn't get much review, 
-and we moved on towards a bunch of other implementations.
 
-Anyway, the first step would be to move away from locks towards
-a refcount model. Later on we can use rcu + per-cpu refcounts thereby
-making it scalable on the read side.
+My system is an AMD Opteron 1216. I'm not sure if only adding a check
+for sgmap != NULL after sg_next is the right fix.
 
-> 
-> > The patchstack which is based against 2.6.23-mm1 has behaved well
-> > when it was stress tested with kernbench running while continuously
-> > performing cpu-hotplug operations on i386, x86_64 and ppc64.
-> 
-> What was the highest cpu count in testing?
-
-8 cpus on i386 and x86_64.
-16 cpus on ppc64.
-
-Thanks and Regards
-gautham.
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Amit Shah
+http://www.amitshah.net/
