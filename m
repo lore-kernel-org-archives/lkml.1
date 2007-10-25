@@ -1,80 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXJZO2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXJZO3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXJZO2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 10:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXJZO2g
+	id S1754701AbXJZO3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 10:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbXJZO3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 10:28:36 -0400
-Received: from queueout04-winn.ispmail.ntl.com ([81.103.221.58]:35038 "EHLO
-	queueout04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751414AbXJZO2f (ORCPT
+	Fri, 26 Oct 2007 10:29:42 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41855 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbXJZO3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 10:28:35 -0400
-X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 10:28:35 EDT
-Message-Id: <200710261413.l9QEDEQn025585@littlepinkcloud.COM>
-X-Sieve: CMU Sieve 2.2
+	Fri, 26 Oct 2007 10:29:41 -0400
+Message-ID: <47207E5E.80305@linux.vnet.ibm.com>
+Date: Thu, 25 Oct 2007 17:00:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] kernel/taskstats.c: fix bogus nlmsg_free()
+References: <20071024162554.GC30533@stusta.de> <471F822A.2030904@linux.vnet.ibm.com> <20071024183457.GE30533@stusta.de>
+In-Reply-To: <20071024183457.GE30533@stusta.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <200710260922.54428.nickpiggin@yahoo.com.au>
-References: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com>
-	<200710260922.54428.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 22.0.93.1
-From: Andrew Haley <aph@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: davids@webmaster.com, "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       "Kleen, Andi" <ak@suse.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-Date: Fri, 26 Oct 2007 12:59:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ I had to resend this message.  Sorry if you received two copies. ]
+Adrian Bunk wrote:
+> I considered it more odd to read
+> 
+> 
+>                 rc = cgroupstats_build(stats, file->f_dentry);
+>                 if (rc < 0)
+>                         goto err;
+> 
+>                 fput_light(file, fput_needed);
+>                 return send_reply(rep_skb, info->snd_pid);
+> err:
+>                 fput_light(file, fput_needed);
+> 		nlmsg_free(rep_skb);
+> 
 
-Nick Piggin writes:
- > Can you retain cc list, please?
- > 
- > On Friday 26 October 2007 07:42, David Schwartz wrote:
+I agree, but sometimes the alternative can be worse to read and
+understand
 
- > > 	I asked a collection of knowledgeable people I know about the
- > > issue. The consensus is that the optimization is not permitted in
- > > POSIX code but that it is permitted in pure C code. The basic
- > > argument goes like this:
- > >
- > > 	To make POSIX-compliant code even possible, surely
- > > optimizations that add writes to variables must be
- > > prohibited. That is -- if POSIX prohibits writing to a variable
- > > in certain cases only the programmer can detect, then a
- > > POSIX-compliant compiler cannot write to a variable except where
- > > explicitly told to do so. Any optimization that *adds* a write to
- > > a variable that would not otherwise occur *must* be prohibited.
+> 
+> But that's just personal taste.
+> 
+> Anyway, duplicating the same fput_light() call two or three times isn't 
+> nice.
+> 
+> Originally I had the bigger patch below and considered it too big for 
+> only this fix, but now I think it might be appropriate.
+> 
+> If you ignore whitespace when diff'ing, then all it does is:
+> 
+> <--  snip  -->
+> 
+> @@ -398,7 +398,9 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
+> 
+>  	fd = nla_get_u32(info->attrs[CGROUPSTATS_CMD_ATTR_FD]);
+>  	file = fget_light(fd, &fput_needed);
+> -	if (file) {
+> +	if (!file)
+> +		return 0;
+> +
+>  		size = nla_total_size(sizeof(struct cgroupstats));
+> 
+>  		rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
+> @@ -412,17 +414,15 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
+>  		memset(stats, 0, sizeof(*stats));
+> 
+>  		rc = cgroupstats_build(stats, file->f_dentry);
+> -		if (rc < 0)
+> +	if (rc < 0) {
+> +		nlmsg_free(rep_skb);
+>  			goto err;
+> -
+> -		fput_light(file, fput_needed);
+> -		return send_reply(rep_skb, info->snd_pid);
+>  	}
+> 
+> +	rc = send_reply(rep_skb, info->snd_pid);
+> +
+>  err:
+> -	if (file)
+>  		fput_light(file, fput_needed);
+> -	nlmsg_free(rep_skb);
+>  	return rc;
+>  }
+> 
+> <--  snip  -->
+> 
+> 
+> Is this patch OK for you?
+> 
+> 
+> cu
+> Adrian
+> 
+> 
+> <--  snip  -->
+> 
+> 
+> We'd better not nlmsg_free on a pointer containing an undefined value
+> (and without having anything allocated).
+> 
+> Spotted by the Coverity checker.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  kernel/taskstats.c |   36 ++++++++++++++++++------------------
+>  1 file changed, 18 insertions(+), 18 deletions(-)
+> 
+> eedd297ac36b5d92fc38b937677ba40dc6df1cd0 
+> diff --git a/kernel/taskstats.c b/kernel/taskstats.c
+> index 354e74b..07e86a8 100644
+> --- a/kernel/taskstats.c
+> +++ b/kernel/taskstats.c
+> @@ -398,31 +398,31 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
+> 
+>  	fd = nla_get_u32(info->attrs[CGROUPSTATS_CMD_ATTR_FD]);
+>  	file = fget_light(fd, &fput_needed);
+> -	if (file) {
+> -		size = nla_total_size(sizeof(struct cgroupstats));
+> +	if (!file)
+> +		return 0;
+> 
+> -		rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
+> -					size);
+> -		if (rc < 0)
+> -			goto err;
+> +	size = nla_total_size(sizeof(struct cgroupstats));
+> 
+> -		na = nla_reserve(rep_skb, CGROUPSTATS_TYPE_CGROUP_STATS,
+> -					sizeof(struct cgroupstats));
+> -		stats = nla_data(na);
+> -		memset(stats, 0, sizeof(*stats));
+> +	rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
+> +				size);
+> +	if (rc < 0)
+> +		goto err;
+> 
+> -		rc = cgroupstats_build(stats, file->f_dentry);
+> -		if (rc < 0)
+> -			goto err;
+> +	na = nla_reserve(rep_skb, CGROUPSTATS_TYPE_CGROUP_STATS,
+> +				sizeof(struct cgroupstats));
+> +	stats = nla_data(na);
+> +	memset(stats, 0, sizeof(*stats));
+> 
+> -		fput_light(file, fput_needed);
+> -		return send_reply(rep_skb, info->snd_pid);
+> +	rc = cgroupstats_build(stats, file->f_dentry);
+> +	if (rc < 0) {
+> +		nlmsg_free(rep_skb);
+> +		goto err;
+>  	}
+> 
+> +	rc = send_reply(rep_skb, info->snd_pid);
+> +
+>  err:
+> -	if (file)
+> -		fput_light(file, fput_needed);
+> -	nlmsg_free(rep_skb);
+> +	fput_light(file, fput_needed);
+>  	return rc;
+>  }
+> 
+> 
 
-I don't think that POSIX is quite as explicit as that.  See
-http://www.hpl.hp.com/techreports/2004/HPL-2004-209.pdf
+Looks good to me!
 
- > > 	Otherwise, it is literally impossible to comply with the POSIX
- > > requirement that concurrent modifications and reads to shared
- > > variables take place while holding a mutex.
- > 
- > Now all you have to do is tell this to the gcc developers ;)
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm>
 
-We're listening, really.  It's unacceptable that gcc should break
-code.
+Yet to be tested, I'll try and test it soon.
 
-However, fixing it is hard.  The best plan is probably to implement
-(part of) the proposed standard memory model, and that requires
-careful consideration.  We could in theory simply disable this
-particular optimization, but that probably isn't a good idea on its
-own because other optimizations might well break other code in a
-similar way.  We need to have a very close look at the thread-safe
-memory model in order to determine where we do things that might
-break.
-
-An official standard containing this is still at least two years out.
-
-Andrew.
 
 -- 
-Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
-Registered in England and Wales No. 3798903
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
