@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbXJYJwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbXJYJz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759780AbXJYJwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 05:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758305AbXJYJwJ
+	id S1756600AbXJYJz3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 05:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXJYJzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 05:52:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38537 "EHLO mx2.suse.de"
+	Thu, 25 Oct 2007 05:55:11 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48365 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758206AbXJYJwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 05:52:07 -0400
-Date: Thu, 25 Oct 2007 11:52:05 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, willy@linux.intel.com
-Subject: Re: [PATCH] Remove #warnings for longstanding conditions.
-Message-ID: <20071025095205.GB22353@pingi.kke.suse.de>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-	akpm@linux-foundation.org, willy@linux.intel.com
-References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org> <03231528cf69b4194111178db23a7a387a573cb7.1193299380.git.jeff@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754258AbXJYJzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 05:55:09 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Samuel Tardieu <sam@rfc1149.net>
+Subject: Re: Is gcc thread-unsafe?
+Date: Thu, 25 Oct 2007 11:55:03 +0200
+User-Agent: KMail/1.9.6
+Cc: davids@webmaster.com, "Torvalds, Linus" <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com> <200710251447.51370.nickpiggin@yahoo.com.au> <2007-10-25-11-44-28+trackit+sam@rfc1149.net>
+In-Reply-To: <2007-10-25-11-44-28+trackit+sam@rfc1149.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <03231528cf69b4194111178db23a7a387a573cb7.1193299380.git.jeff@garzik.org>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
-User-Agent: Mutt/1.5.9i
+Message-Id: <200710251155.03521.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 04:06:15AM -0400, Jeff Garzik wrote:
-> These two warnings...
+On Thursday 25 October 2007 11:44:28 Samuel Tardieu wrote:
+> >>>>> "Nick" == Nick Piggin <nickpiggin@yahoo.com.au> writes:
 > 
-> drivers/isdn/capi/capidrv.c:2126:3: warning: #warning FIXME: maybe a
-> race condition the card should be removed here from global list /kkeil
+> Nick> Either way, I think we really need a way to turn it off for
+> Nick> Linux.
 > 
-> drivers/scsi/advansys.c:71:2: warning: #warning this driver is still
-> not properly converted to the DMA API
-> 
-> ...represent conditions that have existed for years, and are duly noted
-> in FIXMEs.  There does not seem to be much need to warn on every kernel
-> build for a driver bug or handicap that has existed for years.
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
->  drivers/isdn/capi/capidrv.c |    3 ++-
+> Someone would need to add an option to disable the "cselim" pass in
+> GCC tree-ssa-phiopt.c as far as I can tell from reading GCC source.
 
-Acked.
+Note the test case was for 3.4.x which doesn't have tree-ssa at all.
+It does if-conversion on the RTL level 
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+-Andi
+
+
