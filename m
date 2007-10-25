@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXJYORJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXJYOSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbXJYORJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 10:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbXJYOQ5
+	id S1761011AbXJYOSS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 10:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbXJYOSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 10:16:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43516 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757193AbXJYOQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 10:16:56 -0400
-Date: Thu, 25 Oct 2007 07:13:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Sami Farin <safari-kernel@safari.iki.fi>
-Cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: x86: randomize brk() and RLIMIT_DATA
-Message-ID: <20071025071324.2eac21d6@laptopd505.fenrus.org>
-In-Reply-To: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
-References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 10:18:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37552 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757214AbXJYOSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 10:18:06 -0400
+Message-ID: <4720A59A.8060001@ce.jp.nec.com>
+Date: Thu, 25 Oct 2007 10:18:02 -0400
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] [PATCH] dm: noflush resizing (0/3)
+References: <471FB83D.4060307@ce.jp.nec.com> <20071025012456.GK10006@agk.fab.redhat.com>
+In-Reply-To: <20071025012456.GK10006@agk.fab.redhat.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 16:41:24 +0300
-Sami Farin <safari-kernel@safari.iki.fi> wrote:
+Hi Alasdair,
 
-> Would be neat if randomized brk and setrlimit(RLIMIT_DATA, ...)
-> worked in a predictable way:
+Alasdair G Kergon wrote:
+> Before reviewing the details of the proposed workaround, I'd like to see
+> a deeper analysis of the problem to see that there isn't a cleaner way
+> to resolve this.
 
-this isn't a valid case afaics; even on "traditional x86" (before we
-changed the address space layout, or even today if you have an
-unlimited stack rlimit) this isn't going to work. applications really
-shouldn't use (s)brk() but malloc(); you have to be able to fall back
-to mmap regardless of what you do.
+OK. Let me try.
 
+> For example:
 > 
-> $ gcc brk.c -fPIC -pie -m64;./a.out;./a.out;./a.out
-> sbrk=0x7f721b815000 main=0x7f721af04860
-> sbrk succeeded (brk=0x7f721b909240)
-> sbrk=0x7fc3d77e2000 main=0x7fc3d66fa860
-> sbrk failed: Cannot allocate memory (brk=0x7fc3d77e2000)
-> sbrk=0x7f05b0615000 main=0x7f05af76b860
-> sbrk failed: Cannot allocate memory (brk=0x7f05b0615000)
-> 
+> Question) What are the realistic situations we must support that lead to
+> a resize during table reload with I/O outstanding?
+
+'noflush' is currently the only option for userspace to suspend without
+risking otherwise-avoidable I/O lost, because failure of underlying
+device might occur *after* the userspace started normal suspend
+but *before* the flushing completes. (normal suspend = flushing suspend)
+
+E.g. if userspace wants to resize dm-mpath device with queue_if_no_path,
+it has to use 'noflush' suspend on table swapping.
+Otherwise, path failures during the suspend will cause I/O error,
+though queue_if_no_path is specified.
+
+Other possible solution would be allowing the suspend to fail if it
+can't flush all I/O and letting userspace to retry after fixing
+the device failure.
+
+> - The resize is the purpose of the reload; noflush is only set to avoid losing
+> I/O if a path should fail.  So any outstanding I/O may be expected to be
+> consistent with both the old and new sizes of the device. E.g. If it's
+> beyond the end of a shrinking device and userspace cared about not
+> losing that I/O, it would have waited for that I/O to be flushed
+> *before* issuing the resize.  If the I/O is beyond the end of the
+> existing device but within the new size, userspace would have waited for
+> the resize operation to complete before allowing the new I/O to be
+> issued.
+
+If userspace cares about not losing I/O, it should wait for the I/O
+before trying to shrink the device size.
+After the shrinking started, any I/O beyond the new end of the device
+would have a possibility of lost.
+
+Reducing the size of the device while actively running I/O on it
+would anyway have a possibility of losing some of the I/O.
+
+> If the I/O is beyond the end of the
+> existing device but within the new size, userspace would have waited for
+> the resize operation to complete before allowing the new I/O to be
+> issued.
+
+Issuing the I/O beyond the end of the existing device would get error.
+If the issuer knows the device will be extended, it should wait for
+the completion of the extention.
+If it doesn't know, such I/O won't be issued.
 
 
+> => Is it OK for device-mapper to handle the device size check
+> internally, rejecting any I/O that falls beyond the end of the table (it
+
+I think this check is needed in current dm, regardless of noflush.
+
+> already must do this lookup anyway), and to update the size recorded in
+> the inode later, after I/O is flowing through the device again, but (of
+> course) before reporting that the resize operation is complete?
+> I.e. does it eliminate deadlocks if the bdget() and i_size_write()
+> happen after the 'resume'?
+
+There is no guarantee that the I/O flowing through the device again.
+The table might need be replaced again, but to do that, the resume
+should have been completed to let the userspace know it.
+
+bdget() in noflush suspend has a possibility of stall.
+Once it stalls, the remedy is userspace to replace the table with
+working one. However, since bdget() occurs inside of suspend_lock,
+it's not possible to run other instance of suspend/resume.
+OTOH, calling bdget() and i_size_write() outside of the lock
+can cause race with other table swapping and may result in setting
+wrong device size.
+
+Also, bdget() allocates new bdev inode if there isn't.
+But dm wants to access bdev inode only when it exists in memory.
+So something like bdlookup() will fit for the purpose, IMO.
+
+Thanks,
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jun'ichi Nomura, NEC Corporation of America
+
+
