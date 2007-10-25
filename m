@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbXJYISd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbXJYITV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbXJYISd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760173AbXJYIRS
+	id S1760843AbXJYITV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXJYIS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:17:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57878
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760409AbXJYIRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:17:15 -0400
-Date: Thu, 25 Oct 2007 01:17:16 -0700 (PDT)
-Message-Id: <20071025.011716.123998434.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-Cc: jeff@garzik.org, barkalow@iabervon.org, linas@austin.ibm.com,
-       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
-       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
-Subject: [PATCH 5/5]: [PCI]: Remove 3 incorrect MSI quirks.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 04:18:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:37482 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755848AbXJYISy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:18:54 -0400
+Date: Thu, 25 Oct 2007 10:18:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andres Salomon <dilinger@queued.net>
+cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
+In-Reply-To: <20071022151845.5874fba3@ephemeral>
+Message-ID: <alpine.LFD.0.9999.0710251013170.3186@localhost.localdomain>
+References: <200710181551.24912.florian.fainelli@telecomint.eu> <20071018173828.159b15dd@ephemeral> <200710191401.56916.florian.fainelli@telecomint.eu> <20071022151845.5874fba3@ephemeral>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1731074905-1193300326=:3186"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Now that we have dealt with the real issue, in that some ATI SATA and
-USB controllers needed the INTX_DISABLE quirk, we can remove these AMD
-chipset global MSI disabling quirks.
+--8323328-1731074905-1193300326=:3186
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-This reverts three changesets:
+On Mon, 22 Oct 2007, Andres Salomon wrote:
+> On Fri, 19 Oct 2007 14:01:56 +0200
+> Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
+> 
+> > Hi Andres,
+> > 
+> > Le jeudi 18 octobre 2007, Andres Salomon a écrit :
+> > > While I certainly would like to see a generic GPIO API, this one
+> > > isn't really useful for geode GPIOs.  It would be nice to have one
+> > > that did work for us as well.  Unfortunately, I haven't had the
+> > > chance to give much thought to this problem yet.
+> > 
+> > This one was discussed mostly on the ARM mailing-list and finally
+> > made his way to the mainline kernel. Though it lacks some functions
+> > to change for instance a entire GPIO line and not a single bit, it is
+> > used on ARM and MIPS systems so I would conform with this one for now
+> > because it is used by at least two or more architectures.
+> 
+> How does being used on MIPS and ARM make it suitable for x86?  If
+> you're arguing that other x86 platforms conform to it, and it might be
+> useful for them; sure, I'll buy that.  That doesn't seem to currently be
+> the case, though.
 
-4be8f906435a6af241821ab5b94b2b12cb7d57d8 (PCI: disable MSI on RS690)
-aea6a433f50cd89b9cbd10850fd0b32f961f9883 (PCI: disable MSI on RD580)
-f122392f679ebed39db08074f935d770504623eb (PCI: disable MSI on RX790)
+It might be useful for everyone to check, whether the existing GPIO
+functionality can be extended, reworked to match the needs of Geode as
+well. Extending / reworking an existing interface is definitely
+better than adding a new incompatible one.
 
-This is based upon testing and feedback from
-Shane Huang <Shane.Huang@amd.com>.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/pci/quirks.c    |    3 ---
- include/linux/pci_ids.h |    3 ---
- 2 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index d8f2d89..26cc4dc 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1623,9 +1623,6 @@ static void __init quirk_disable_all_msi(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RD580, quirk_disable_all_msi);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RX790, quirk_disable_all_msi);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS690, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
- 
- /* Disable MSI on chipsets that are known to not support it */
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index c64bb89..e66af5d 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -360,9 +360,6 @@
- #define PCI_DEVICE_ID_ATI_RS400_166     0x5a32
- #define PCI_DEVICE_ID_ATI_RS400_200     0x5a33
- #define PCI_DEVICE_ID_ATI_RS480         0x5950
--#define PCI_DEVICE_ID_ATI_RD580		0x5952
--#define PCI_DEVICE_ID_ATI_RX790		0x5957
--#define PCI_DEVICE_ID_ATI_RS690		0x7910
- /* ATI IXP Chipset */
- #define PCI_DEVICE_ID_ATI_IXP200_IDE	0x4349
- #define PCI_DEVICE_ID_ATI_IXP200_SMBUS	0x4353
--- 
-1.5.2.5
-
+       tglx
+--8323328-1731074905-1193300326=:3186--
