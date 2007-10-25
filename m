@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbXJYS7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbXJYTFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751981AbXJYS7P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXJYS7A
+	id S1754901AbXJYTFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXJYTFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:59:00 -0400
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:42139 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753183AbXJYS67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:58:59 -0400
-X-YMail-OSG: tQHxTkoVM1kNJkZ3gXpVQNpciYrMWbNiYs5UCdu6EMZUlxNDnAPCWx0wQWxBlQp8j5ewbJc47w--
-X-RocketYMMF: rancidfat
-Date: Thu, 25 Oct 2007 11:58:58 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
-To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1193324834.2683.113.camel@moss-spartans.epoch.ncsc.mil>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <551347.37651.qm@web36604.mail.mud.yahoo.com>
+	Thu, 25 Oct 2007 15:05:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49851 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752810AbXJYTFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 15:05:07 -0400
+In-Reply-To: <1193337589.7705.42.camel@heimdal.trondhjem.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org> <6B3D0315-3441-45A1-A007-A193321B654A@kernel.crashing.org> <1193337589.7705.42.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7E4866FF-74EE-410E-A5C4-334C7D5461DE@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       chuck.lever@oracle.com
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: LTP ustat01 test fails on NFSROOT
+Date: Thu, 25 Oct 2007 14:05:05 -0500
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+On Oct 25, 2007, at 1:39 PM, Trond Myklebust wrote:
 
-> On Wed, 2007-10-24 at 20:46 -0700, Casey Schaufler wrote:
-> ...
-> > +Smack does not implement Domain Type Enforcement (DTE). If
-> > +you want DTE Linux has an implementation called SELinux.
-> > +Those who really want DTE are encouraged to use SELinux.
-> > +Those who don't know what DTE is are encouraged to compare
-> > +SELinux with Smack to determine which mechanisms are best
-> > +suited to the problem at hand.
-> 
-> Nit: SELinux does not implement DTE.  DTE was a scheme introduced by Lee
-> Badger et al to apply implicit typing based on pathname as a variant of
-> the original type enforcement model.  SELinux is an implementation of
-> the Flask security architecture for flexible MAC, along with an example
-> security server that implements RBAC, TE, and MLS models, but not
-> limited to them.
+>
+> On Thu, 2007-10-25 at 13:36 -0500, Kumar Gala wrote:
+>> On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
+>>
+>>> Could you please try the following patch?
+>>
+>> this fixes my issue.  Any reason this hasn't been accepted?
+>
+> Do you mean apart from the fact that I wrote it a couple of hours
+> ago? :-)
 
-Okey Dokey. I'll fix that up.
+Oh, sorry.  I glanced at the commit message and the 2.6.18 made me  
+think its been around for a while.
 
-Thank you for the review. I will have a look at all of the
-individual comments.
-
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+- k
