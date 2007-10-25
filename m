@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbXJYIr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbXJYIvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbXJYIr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXJYIru
+	id S1754621AbXJYIvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXJYIvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:47:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45045 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750736AbXJYIrt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:47:49 -0400
-Date: Thu, 25 Oct 2007 01:47:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joseph Parmelee <jparmele@wildbear.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Old version of lilo fails to boot 2.6.23
-Message-Id: <20071025014746.96e5e776.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710151600090.15578@bruno>
-References: <Pine.LNX.4.64.0710151600090.15578@bruno>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 04:51:45 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:45230 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752003AbXJYIvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:51:44 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
+Date: Thu, 25 Oct 2007 10:51:24 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com> <20071024192949.346687ed@laptopd505.fenrus.org>
+In-Reply-To: <20071024192949.346687ed@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1367313.G41zDuGPub";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200710251051.30429.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Oct 2007 01:07:31 -0600 (CST) Joseph Parmelee <jparmele@wildbear.com> wrote:
+--nextPart1367313.G41zDuGPub
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> 
-> Greetings:
-> 
-> I upgraded to version 2.6.23 and had a fun time figuring out the source of
-> this boot failure message on my x86 system:
-> 
->    This kernel requires an i<random integer>86 CPU, but only detected an
->    i<smaller random integer>86 CPU.
-> 
-> It turns out that my version of lilo (lilo -V gives version 21) doesn't set
-> up the stack and data segment registers in a compatible manner before
-> entering the new 16-bit real mode kernel loader code.  This problem is new
-> to the 2.6.23 series.
+Am Donnerstag, 25. Oktober 2007 schrieb Arjan van de Ven:
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > ---
+> > Whether this is a complete patch, suitable for all architectures,
+> > I'm not sure: it builds, boots and runs correctly on the x86_32 box
+> > in question, but you'll be a lot wiser than me about using dma_addr_t
+> > for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
+> > when I think all arches already get to include it one way or another,
+> > typically via asm/scatterlist.h; but I guess it's safest to repeat
+> > it.)
+>
+> there is a problem with this... sg_phys doesn't return an actual *dma*
+> address.... at least not an address you can give to the device.
+> Using dma_addr_t is thus a bit misleading.....
 
-hm, one of my test boxes runs
+Ok, then: how do I actually get such an address?
 
-vmm:/home/akpm> lilo -V       
-LILO version 21.4-4
+Eike
 
-and I haven't had any such problems.
+--nextPart1367313.G41zDuGPub
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> Parts of the 16-bit real mode loader code are now being compiled as C code
-> with gcc in 32 bit mode passing the .code16gcc directive to the assembler to
-> correct the stack frames to 16 bit.  This kludge won't work unless all the
-> 16-bit segment registers are set to the same value.  Gcc only manipulates
-> the offset of the address and doesn't know anything about segment registers
-> or segment override prefixes.  My lilo was setting SS=0x8000, DS=0x9000, and
-> SP=0xB000 before entering the kernel loader.  This makes stack automatics
-> unreachable from the data segment without segment override prefixes.
-> 
-> I was tempted to patch the kernel code, but instead decided to try
-> "upgrading" lilo to grub-0.97 and found that grub works just fine.  This
-> also has the significant advantage that we won't need those nasty as86 and
-> ld86 things any more since lilo was the last package on our systems that
-> used them.
-> 
-> However, it would probably be a good idea to modify the kernel loader to
-> lock out interrupts and explicitly set up the stack in its assembly startup
-> code to insure that the stack is located correctly above the code in the
-> same segment, rather than relying on the boot loader to do the right thing. 
-> The existing setup code already insures that the other segment registers are
-> equal but omits the stack segment register.  Also, because lilo (and
-> others?) loads the data/code segment at 0X90000, the stack pointer would
-> have to be set no higher than 0XA000 to avoid potential overwrites of the
-> EBDA.  But I believe from my look at the code that the data/code sits below
-> 0X8000 in the segment, so this should be fine.
-> 
-> If others think this is a good thing, I will test and submit a patch.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
 
-I think this is a good thing ;)
+iD8DBQBHIFkSXKSJPmm5/E4RAqZBAJ9kFhZuiVgTrEmS+qLJZNPOMNaCeACgk2e9
+gInr9ENqUxCa9dBm6Agb5sY=
+=hxdD
+-----END PGP SIGNATURE-----
 
+--nextPart1367313.G41zDuGPub--
