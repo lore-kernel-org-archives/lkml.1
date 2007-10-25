@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbXJYLcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbXJYLeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758481AbXJYLcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 07:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbXJYLb4
+	id S1759918AbXJYLeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 07:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbXJYLeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 07:31:56 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7919 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753662AbXJYLbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 07:31:55 -0400
-Date: Thu, 25 Oct 2007 13:30:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
-Message-ID: <20071025113010.GX5053@kernel.dk>
-References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com> <200710251100.29739.eike-kernel@sf-tec.de> <20071025090646.GI5053@kernel.dk> <200710251324.45776.eike-kernel@sf-tec.de>
+	Thu, 25 Oct 2007 07:34:03 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:40460 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbXJYLeB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 07:34:01 -0400
+Date: Thu, 25 Oct 2007 13:33:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Bernd Petrovitsch <bernd@firmix.at>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>, James Morris <jmorris@namei.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, Ray Lee <ray-lk@madrabbit.org>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>
+Subject: Re: LSM conversion to static interface
+Message-ID: <Pine.LNX.4.64.0710251328150.17781@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710251324.45776.eike-kernel@sf-tec.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25 2007, Rolf Eike Beer wrote:
-> Jens Axboe wrote:
-> > On Thu, Oct 25 2007, Rolf Eike Beer wrote:
-> > > Jens Axboe wrote:
-> > > > On Thu, Oct 25 2007, Rolf Eike Beer wrote:
-> > > > > Am Donnerstag, 25. Oktober 2007 schrieb Arjan van de Ven:
-> > > > > > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> > > > > > > ---
-> > > > > > > Whether this is a complete patch, suitable for all architectures,
-> > > > > > > I'm not sure: it builds, boots and runs correctly on the x86_32
-> > > > > > > box in question, but you'll be a lot wiser than me about using
-> > > > > > > dma_addr_t for everyone.  (Seems a bit of a shame to include
-> > > > > > > <asm/types.h> here, when I think all arches already get to
-> > > > > > > include it one way or another, typically via asm/scatterlist.h;
-> > > > > > > but I guess it's safest to repeat it.)
-> > > > > >
-> > > > > > there is a problem with this... sg_phys doesn't return an actual
-> > > > > > *dma* address.... at least not an address you can give to the
-> > > > > > device. Using dma_addr_t is thus a bit misleading.....
-> > > > >
-> > > > > Ok, then: how do I actually get such an address?
-> > > >
-> > > > You use the dma mapping api, Documentation/DMA-mapping.txt
-> > >
-> > > Which comes back always to the same point: if I get a buffer from
-> > > userspace to use for DMA: what can I do then? I need to convert a
-> > > given list of (physical, pinned) pages to DMA addresses.
-> >
-> > get_user_pages() -> fill in sg table -> pci/dma_map_sg()
-> 
-> So the answer to the first question should have been sg_dma_address() ;)
 
-Yes, provided it's mapped you use sg_dma_address() and sg_dma_len() :-)
 
--- 
-Jens Axboe
+As I read through LWN today, I noted the following comment, 
+http://lwn.net/Articles/255832/ :
 
+	Personally, I think it's absolutely essential to be able to 
+	build a kernel with dynamic LSM. Whether we like it or not, 
+	people do want to add in runtime loadable security modules for 
+	things like virus scanners, and until upstream offers these 
+	folks a viable alternative to LSM...well, they'll use it.
+
+Which reminded me of the TuxGuardian LSM[1] - another of the real-world 
+uses to meet Linus's criteria? ("had examples of their real-world use to 
+step forward and explain their use")
+
+In this specific project, LSM is used to collect up calls to bind() and 
+connect() and pass them to userspace, e.g. do it ZoneAlarm-style and 
+display a dialog window. Its codebase is probably not too up-to-date 
+(website says last change last April - but I guess that's a no-brainer 
+to update it).
+
+[1] http://tuxguardian.sf.net/
