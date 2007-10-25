@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbXJYOj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbXJYOpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761038AbXJYOj5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 10:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbXJYOjs
+	id S1759737AbXJYOpv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 10:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbXJYOpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 10:39:48 -0400
-Received: from ts.adaptec.com ([162.62.93.58]:58644 "EHLO mail-gw3.adaptec.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753656AbXJYOjr convert rfc822-to-8bit (ORCPT
+	Thu, 25 Oct 2007 10:45:43 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41532 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753684AbXJYOpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 10:39:47 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 4/4] [SCSI] ips: handle scsi_add_host() failure, and other err cleanups
-Date: Thu, 25 Oct 2007 10:39:45 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F3DD0A@otce2k301.adaptec.com>
-In-Reply-To: <20071024234832.58C3B1F81AB@havoc.gtf.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/4] [SCSI] ips: handle scsi_add_host() failure, and other err cleanups
-Thread-Index: AcgWmTZ5Sz6b7e8oTp2DPCx1Sb+1PQAe4M5g
-References: <09821349085390234lkjasdflkjasflkdj24746@havoc.gtf.org> <20071024234832.58C3B1F81AB@havoc.gtf.org>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Jeff Garzik" <jeff@garzik.org>, "LKML" <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>
-Cc: <akpm@linux-foundation.org>
+	Thu, 25 Oct 2007 10:45:42 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Thu, 25 Oct 2007 16:23:32 +0530
+Message-Id: <20071025105332.18472.58436.sendpatchset@balbir-laptop>
+Subject: [x86 patch] Fix UML init/do_mounts.h build failure
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK. Inspected. cleanup with zero risk.
 
-Sincerely -- Mark Salyzyn
 
-> -----Original Message-----
-> From: linux-scsi-owner@vger.kernel.org 
-> [mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Jeff Garzik
-> Sent: Wednesday, October 24, 2007 7:49 PM
-> To: LKML; linux-scsi@vger.kernel.org
-> Cc: akpm@linux-foundation.org
-> Subject: [PATCH 4/4] [SCSI] ips: handle scsi_add_host() 
-> failure, and other err cleanups
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
->  drivers/scsi/ips.c |   18 +++++++++++++-----
->  1 files changed, 13 insertions(+), 5 deletions(-)
+Fix stat.h to not use __i386__, but use BITS_PER_LONG. The UML architecture
+in turn includes this file. This helps resolve one build failure in the
+current UML code
+
+Before the fix, the failure was
+
+In file included from init/do_mounts.c:19:
+init/do_mounts.h: In function 'bstat':
+init/do_mounts.h:25: error: storage size of 'stat' isn't known
+init/do_mounts.h:25: warning: unused variable 'stat'
+init/do_mounts.h:33: warning: control reaches end of non-void function
+make[1]: *** [init/do_mounts.o] Error 1
+make: *** [init/do_mounts.o] Error 2
+
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ include/asm-x86/stat.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff -puN init/do_mounts.h~uml-fix-init-domounts init/do_mounts.h
+diff -puN include/asm-x86/stat.h~uml-fix-init-domounts include/asm-x86/stat.h
+--- 2.6.24-rc1/include/asm-x86/stat.h~uml-fix-init-domounts	2007-10-25 16:23:04.000000000 +0530
++++ 2.6.24-rc1-balbir/include/asm-x86/stat.h	2007-10-25 16:23:04.000000000 +0530
+@@ -1,9 +1,11 @@
+ #ifndef _ASM_X86_STAT_H
+ #define _ASM_X86_STAT_H
+ 
++#include <asm/types.h>
++
+ #define STAT_HAVE_NSEC 1
+ 
+-#ifdef __i386__
++#if BITS_PER_LONG == 32
+ struct stat {
+ 	unsigned long  st_dev;
+ 	unsigned long  st_ino;
+@@ -63,7 +65,7 @@ struct stat64 {
+ 	unsigned long long	st_ino;
+ };
+ 
+-#else /* __i386__ */
++#else /* BITS_PER_LONG == 32 */
+ 
+ struct stat {
+ 	unsigned long	st_dev;
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
