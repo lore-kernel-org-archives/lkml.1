@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXJYRTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbXJYRXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbXJYRTz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXJYRTr
+	id S1758890AbXJYRXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbXJYRX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:19:47 -0400
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:59059 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752081AbXJYRTr (ORCPT
+	Thu, 25 Oct 2007 13:23:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40380 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbXJYRXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:19:47 -0400
-Date: Thu, 25 Oct 2007 20:19:42 +0300
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: x86: randomize brk() and RLIMIT_DATA
-Message-ID: <20071025171942.pjff7jbpempfcuri@m.safari.iki.fi>
-Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Jiri Kosina <jkosina@suse.cz>,
-	Arjan van de Ven <arjan@infradead.org>
-References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi> <20071025071324.2eac21d6@laptopd505.fenrus.org> <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
+	Thu, 25 Oct 2007 13:23:25 -0400
+Message-ID: <4720D0F5.4040407@zytor.com>
+Date: Thu, 25 Oct 2007 10:23:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-10-15)
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, glommer@gmail.com
+Subject: Re: [PATCH] Wipe out traditional opt from x86_64 Makefile
+References: <11933164723812-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11933164723812-git-send-email-gcosta@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 16:46:26 +0200, Jiri Kosina wrote:
-> On Thu, 25 Oct 2007, Arjan van de Ven wrote:
+Glauber de Oliveira Costa wrote:
+> Among other things, using -traditional as a gcc option stops us from
+> using macro token pasting, which is a feature we heavily rely on.
 > 
-> > > Would be neat if randomized brk and setrlimit(RLIMIT_DATA, ...)
-> > > worked in a predictable way:
-> > this isn't a valid case afaics; even on "traditional x86" (before we 
-> > changed the address space layout, or even today if you have an unlimited 
-> > stack rlimit) this isn't going to work. applications really shouldn't 
-> > use (s)brk() but malloc(); you have to be able to fall back to mmap 
-> > regardless of what you do.
+> There was still a use of -traditional in arch/x86/kernel/Makefile_64,
+> which this patch removes.
 > 
-> I tend to agree here with Arjan. However it probably would make no harm to 
-> make at least a little bit consisten behavior of setrlimit(), though it 
-> has a little use in such cases.
+> I don't see any problems building kernels in my x86_64 box without
+> -traditional.
 > 
-> Sami, does the patch below work for you?
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+> ---
+>  arch/x86/kernel/Makefile_64 |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+> index 82da906..03a01f6 100644
+> --- a/arch/x86/kernel/Makefile_64
+> +++ b/arch/x86/kernel/Makefile_64
+> @@ -3,7 +3,6 @@
+>  #
+>  
+>  extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
+> -#EXTRA_AFLAGS	:= -traditional
+>  obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
+>  		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
+>  		x8664_ksyms_64.o i387_64.o syscall_64.o vsyscall_64.o \
 
-Thanks, Jiri, now RLIMIT_DATA works as expected.
+At least *at one point*, ld scripts were whitespace-sensitive in a way 
+that called for using -traditional.  Doesn't mean that anything else 
+needs it, though.
 
-Using only RLIMIT_AS to limit processes' memory usage is not
-very easy.  It includes also libraries mapped read-only,
-I have to check/modify the limits when I update/add
-libraries,...
-
-Amazingly, I found a patch which seems to be just what I need:
-http://marc.info/?l=linux-mm&m=118402827803338&w=4
-Seems like that is not going to -mm or mainstream...
-
--- 
-Do what you love because life is too short for anything else.
-
+	-hpa
