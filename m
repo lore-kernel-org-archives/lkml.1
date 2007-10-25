@@ -1,185 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXJYRKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXJYRMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbXJYRKA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXJYRJU
+	id S1757277AbXJYRMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbXJYRMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:09:20 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50209 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467AbXJYRJP (ORCPT
+	Thu, 25 Oct 2007 13:12:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59418 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752846AbXJYRMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:09:15 -0400
-Subject: Re: [PATCH 2/2]  i_version update - ext4 part
-From: Cordenner jean noel <jean-noel.cordenner@bull.net>
-Reply-To: jean-noel.cordenner@bull.net
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1191598093.24615.46.camel@frecb002711.frec.bull.fr>
-References: <1191598093.24615.46.camel@frecb002711.frec.bull.fr>
-Organization: BULL S.A.
-Date: Thu, 25 Oct 2007 19:04:35 +0200
-Message-Id: <1193331875.5487.33.camel@frecb002711.frec.bull.fr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/10/2007 19:15:53,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 25/10/2007 19:15:54,
-	Serialize complete at 25/10/2007 19:15:54
+	Thu, 25 Oct 2007 13:12:07 -0400
+Message-ID: <4720CD80.5030106@zytor.com>
+Date: Thu, 25 Oct 2007 10:08:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andi Kleen <ak@novell.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+ runtime service support
+References: <1193295473.23935.202.camel@caritas-dev.intel.com> <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain> <m1r6jj5e27.fsf@ebiederm.dsl.xmission.com> <200710251906.10210.ak@novell.com>
+In-Reply-To: <200710251906.10210.ak@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds 64-bit inode version support to ext4. The lower 32 bits
-are stored in the osd1.linux1.l_i_version field while the high 32 bits
-are stored in the i_version_hi field newly created in the ext4_inode.
-This field is incremented in case the ext4_inode is large enough. A
-i_version mount option has been added to enable the feature.
+Andi Kleen wrote:
+>> Especially for accessing the real time clock that has a well
+>> defined hardware interface going through efi an additional
+>> software emulation layer looks like asking for trouble.
+> 
+> I agree it's pointless for the hardware clock, but EFI 
+> also offers services to write some data to the CMOS RAM
+> which could be very useful to save oops data over reboot.
+> I don't think this can be done safely otherwise 
+> without BIOS cooperation.
+> 
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-Signed-off-by: Kalpak Shah <kalpak@clusterfs.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Jean Noel Cordenner <jean-noel.cordenner@bull.net>
----
- fs/ext4/inode.c         |   18 +++++++++++++++++-
- fs/ext4/super.c         |    8 ++++++--
- include/linux/ext4_fs.h |    6 +++++-
- 3 files changed, 28 insertions(+), 4 deletions(-)
+The ability to scurry away even a small amount of data without relying 
+on the disk system is highly desirable.  Think next-boot type information.
 
-Index: linux-2.6.23-ext4-1/fs/ext4/inode.c
-===================================================================
---- linux-2.6.23-ext4-1.orig/fs/ext4/inode.c	2007-10-25
-18:49:24.000000000 +0200
-+++ linux-2.6.23-ext4-1/fs/ext4/inode.c	2007-10-25 18:57:35.000000000
-+0200
-@@ -2806,6 +2806,13 @@
- 	EXT4_INODE_GET_XTIME(i_atime, inode, raw_inode);
- 	EXT4_EINODE_GET_XTIME(i_crtime, ei, raw_inode);
- 
-+	inode->i_version = le32_to_cpu(raw_inode->i_disk_version);
-+	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
-+		if (EXT4_FITS_IN_INODE(raw_inode, ei, i_version_hi))
-+			inode->i_version |=
-+			(__u64)(le32_to_cpu(raw_inode->i_version_hi)) << 32;
-+	}
-+
- 	if (S_ISREG(inode->i_mode)) {
- 		inode->i_op = &ext4_file_inode_operations;
- 		inode->i_fop = &ext4_file_operations;
-@@ -2944,8 +2951,14 @@
- 	} else for (block = 0; block < EXT4_N_BLOCKS; block++)
- 		raw_inode->i_block[block] = ei->i_data[block];
- 
--	if (ei->i_extra_isize)
-+	raw_inode->i_disk_version = cpu_to_le32(inode->i_version);
-+	if (ei->i_extra_isize) {
-+		if (EXT4_FITS_IN_INODE(raw_inode, ei, i_version_hi))
-+			raw_inode->i_version_hi =
-+			cpu_to_le32(inode->i_version >> 32);
- 		raw_inode->i_extra_isize = cpu_to_le16(ei->i_extra_isize);
-+	}
-+
- 
- 	BUFFER_TRACE(bh, "call ext4_journal_dirty_metadata");
- 	rc = ext4_journal_dirty_metadata(handle, bh);
-@@ -3161,6 +3174,9 @@
- {
- 	int err = 0;
- 
-+	if (test_opt(inode->i_sb, I_VERSION))
-+		inode_inc_iversion(inode);
-+
- 	/* the do_update_inode consumes one bh->b_count */
- 	get_bh(iloc->bh);
- 
-Index: linux-2.6.23-ext4-1/fs/ext4/super.c
-===================================================================
---- linux-2.6.23-ext4-1.orig/fs/ext4/super.c	2007-10-25
-18:49:24.000000000 +0200
-+++ linux-2.6.23-ext4-1/fs/ext4/super.c	2007-10-25 18:57:35.000000000
-+0200
-@@ -742,7 +742,7 @@
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
- 	Opt_grpquota, Opt_extents, Opt_noextents, Opt_delalloc,
--	Opt_mballoc, Opt_nomballoc, Opt_stripe,
-+	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_i_version,
- };
- 
- static match_table_t tokens = {
-@@ -800,6 +800,7 @@
- 	{Opt_mballoc, "mballoc"},
- 	{Opt_nomballoc, "nomballoc"},
- 	{Opt_stripe, "stripe=%u"},
-+	{Opt_i_version, "i_version"},
- 	{Opt_err, NULL},
- 	{Opt_resize, "resize"},
- };
-@@ -1161,6 +1162,10 @@
- 				return 0;
- 			sbi->s_stripe = option;
- 			break;
-+		case Opt_i_version:
-+			set_opt (sbi->s_mount_opt, I_VERSION);
-+			sb->s_flags |= MS_I_VERSION;
-+			break;
- 		default:
- 			printk (KERN_ERR
- 				"EXT4-fs: Unrecognized mount option \"%s\" "
-@@ -2968,7 +2973,6 @@
- 		i_size_write(inode, off+len-towrite);
- 		EXT4_I(inode)->i_disksize = inode->i_size;
- 	}
--	inode->i_version++;
- 	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
- 	ext4_mark_inode_dirty(handle, inode);
- 	mutex_unlock(&inode->i_mutex);
-Index: linux-2.6.23-ext4-1/include/linux/ext4_fs.h
-===================================================================
---- linux-2.6.23-ext4-1.orig/include/linux/ext4_fs.h	2007-10-25
-18:49:24.000000000 +0200
-+++ linux-2.6.23-ext4-1/include/linux/ext4_fs.h	2007-10-25
-18:57:55.000000000 +0200
-@@ -314,7 +314,7 @@
- 	__le32	i_flags;	/* File flags */
- 	union {
- 		struct {
--			__u32  l_i_reserved1;
-+			__le32  l_i_version;
- 		} linux1;
- 		struct {
- 			__u32  h_i_translator;
-@@ -356,6 +356,7 @@
- 	__le32  i_atime_extra;  /* extra Access time      (nsec << 2 | epoch)
-*/
- 	__le32  i_crtime;       /* File Creation time */
- 	__le32  i_crtime_extra; /* extra FileCreationtime (nsec << 2 | epoch)
-*/
-+	__le32  i_version_hi;	/* high 32 bits for 64-bit version */
- };
- 
- #define i_size_high	i_dir_acl
-@@ -430,6 +431,8 @@
- 				       raw_inode->xtime ## _extra);	       \
- } while (0)
- 
-+#define i_disk_version osd1.linux1.l_i_version
-+
- #if defined(__KERNEL__) || defined(__linux__)
- #define i_reserved1	osd1.linux1.l_i_reserved1
- #define i_file_acl_high	osd2.linux2.l_i_file_acl_high
-@@ -493,6 +496,7 @@
- #define EXT4_MOUNT_JOURNAL_ASYNC_COMMIT	0x1000000 /* Journal Async
-Commit */
- #define EXT4_MOUNT_DELALLOC		0x2000000 /* Delalloc support */
- #define EXT4_MOUNT_MBALLOC		0x4000000 /* Buddy allocation support */
-+#define EXT4_MOUNT_I_VERSION		0x8000000 /* i_version support */
- /* Compatibility, for having both ext2_fs.h and ext4_fs.h included at
-once */
- #ifndef _LINUX_EXT2_FS_H
- #define clear_opt(o, opt)		o &= ~EXT4_MOUNT_##opt
-
-
+	-hpa
