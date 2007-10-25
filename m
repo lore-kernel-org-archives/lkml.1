@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbXJYIxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbXJYIyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbXJYIxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXJYIxR
+	id S1757679AbXJYIyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbXJYIyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:53:17 -0400
-Received: from sa14.bezeqint.net ([192.115.104.29]:43800 "EHLO
-	sa14.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbXJYIxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:53:15 -0400
-Message-ID: <47205972.7020102@panasas.com>
-Date: Thu, 25 Oct 2007 10:53:06 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 25 Oct 2007 04:54:24 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:19828 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711AbXJYIyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:54:23 -0400
+Date: Thu, 25 Oct 2007 10:52:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
+Message-ID: <20071025085239.GH5053@kernel.dk>
+References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com> <20071024192949.346687ed@laptopd505.fenrus.org> <200710251051.30429.eike-kernel@sf-tec.de>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: Jens Axboe <jens.axboe@oracle.com>, kamalesh@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, apw@shadowen.org, tomof@acm.org
-Subject: Re: [BUG] 2.6.23-git18 Kernel oops in sg helpers
-References: <471E110C.20404@linux.vnet.ibm.com> <20071024074200K.fujita.tomonori@lab.ntt.co.jp> <20071024083233.GG14671@kernel.dk> <471F076E.4080609@panasas.com>
-In-Reply-To: <471F076E.4080609@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710251051.30429.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct. 24, 2007, 10:50 +0200, Benny Halevy <bhalevy@panasas.com> wrote:
-> On Oct. 24, 2007, 10:32 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
->> On Wed, Oct 24 2007, FUJITA Tomonori wrote:
->>> On Tue, 23 Oct 2007 20:49:40 +0530
->>> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>>
->>>> Hi,
->>>>
->>>> Kernel oops is triggered while running fsx-linux test, followed by cpu softlock
->>>> over the AMD box
->>>>
->>>> Unable to handle kernel NULL pointer dereference at 0000000000000018 RIP: 
->>>>  [<ffffffff8021f2f6>] gart_map_sg+0x26c/0x406
->>>> PGD 10185b067 PUD 10075b067 PMD 0 
->>> Does this work?
->>>
->>>
->>> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
->>> index c56e9ee..ae7e016 100644
->>> --- a/arch/x86/kernel/pci-gart_64.c
->>> +++ b/arch/x86/kernel/pci-gart_64.c
->>> @@ -338,7 +338,6 @@ static int __dma_map_cont(struct scatterlist *start, int nelems,
->>>  		
->>>  		BUG_ON(s != start && s->offset);
->>>  		if (s == start) {
->>> -			*sout = *s; 
->>>  			sout->dma_address = iommu_bus_base;
->>>  			sout->dma_address += iommu_page*PAGE_SIZE + s->offset;
->>>  			sout->dma_length = s->length;
->>> @@ -365,7 +364,7 @@ static inline int dma_map_cont(struct scatterlist *start, int nelems,
->>>  {
->>>  	if (!need) {
->>>  		BUG_ON(nelems != 1);
->>> -		*sout = *start;
->>> +		sout->dma_address = start->dma_address;
+On Thu, Oct 25 2007, Rolf Eike Beer wrote:
+> Am Donnerstag, 25. Oktober 2007 schrieb Arjan van de Ven:
+> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > > ---
+> > > Whether this is a complete patch, suitable for all architectures,
+> > > I'm not sure: it builds, boots and runs correctly on the x86_32 box
+> > > in question, but you'll be a lot wiser than me about using dma_addr_t
+> > > for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
+> > > when I think all arches already get to include it one way or another,
+> > > typically via asm/scatterlist.h; but I guess it's safest to repeat
+> > > it.)
+> >
+> > there is a problem with this... sg_phys doesn't return an actual *dma*
+> > address.... at least not an address you can give to the device.
+> > Using dma_addr_t is thus a bit misleading.....
 > 
-> I don't see this could fix anything since "s" above and "start" here are still
-> dereferenced.  Also, this makes sout->dma_address inconsistent with sout->page_link
-> and with the end marker.
+> Ok, then: how do I actually get such an address?
 
-OK, it took me a day to figure out why the fix is working :)
-The end of list marker was copied into sout and later, in line 432
-sg_next(sgmap) returned NULL since sgmap became the last entry in the list
-(which is strangely correct in the dma mapped vector).
+You use the dma mapping api, Documentation/DMA-mapping.txt
 
-431:	if (out < nents) {
-432:		sgmap = sg_next(sgmap);
-433:		sgmap->dma_length = 0;
-434:	}
-
-Alas, the dma mapping convention apparently requires dma_length == 0
-as a terminator if the "compressed" list for dma mapping is shorter than
-the sg list.
-
-Although this change does not keep each sg->dma_address in sync with each
-sg->page_link, previously there was nothing to keep sg->length in sync with
-sg->dma_length so I actually think that keeping the dma mapping and the
-page mappings orthogonal and independent may be even better since the
-original sg list can still be reused safely even after dma mapping.
-
-> 
-> Benny
-> 
->>>  		sout->dma_length = start->length;
->>>  		return 0;
->>>  	}
->>> -- 
->>> 1.5.2.4
->> Care to write up a proper changelog?
->>
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Jens Axboe
 
