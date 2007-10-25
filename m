@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbXJYIVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXJYIXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760429AbXJYIVN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXJYIVA
+	id S1760876AbXJYIXN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXJYIXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:21:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60474 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbXJYIU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:20:59 -0400
-Message-ID: <472051E8.2070005@garzik.org>
-Date: Thu, 25 Oct 2007 04:20:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 25 Oct 2007 04:23:00 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37256 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbXJYIW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:22:59 -0400
+Message-ID: <472053D9.8020808@bull.net>
+Date: Thu, 25 Oct 2007 10:29:13 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org
-Subject: Re: [PATCH] Permit silencing of __deprecated warnings.
-References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org>	<41621d56a0a0e4e5f861e1725f18990df5e927ad.1193299380.git.jeff@garzik.org> <20071025011516.aea17222.akpm@linux-foundation.org>
-In-Reply-To: <20071025011516.aea17222.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make ipc/util.c:sysvipc_find_ipc() static
+References: <20071024162334.GS30533@stusta.de>
+In-Reply-To: <20071024162334.GS30533@stusta.de>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 25/10/2007 10:29:35,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 25/10/2007 10:29:36,
+	Serialize complete at 25/10/2007 10:29:36
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 25 Oct 2007 04:06:13 -0400 (EDT) Jeff Garzik <jeff@garzik.org> wrote:
+Adrian Bunk wrote:
+> sysvipc_find_ipc() can become static.
 > 
->> The __deprecated marker is quite useful in highlighting the remnants of
->> old APIs that want removing.
->>
->> However, it is quite normal for one or more years to pass, before the
->> (usually ancient, bitrotten) code in question is either updated or
->> deleted.
->>
->> Thus, like __must_check, add a Kconfig option that permits the silencing
->> of this compiler warning.
->>
->> This change mimics the ifdef-ery and Kconfig defaults of MUST_CHECK as
->> closely as possible.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> Sigh.  Can't we just fix the dud code?  Or mark it BROKEN and see what
-> happens?
+> ---
+> daadf1bd4c81e8b88cfc690cecace9adc8b783f0 
+> diff --git a/ipc/util.c b/ipc/util.c
+> index 1aa0ebf..76c1f34 100644
+> --- a/ipc/util.c
+> +++ b/ipc/util.c
+> @@ -802,8 +802,8 @@ struct ipc_proc_iter {
+>  /*
+>   * This routine locks the ipc structure found at least at position pos.
+>   */
+> -struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
+> -					loff_t *new_pos)
+> +static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
+> +					      loff_t *new_pos)
+>  {
+>  	struct kern_ipc_perm *ipc;
+>  	int total, id;
+> 
+> 
 
-__deprecated has spread to just about every API that people don't 
-consider fresh and up-to-date.
-
-Like I noted in the patch description, rewriting grotty ISA/MCA/etc. 
-probe code is a thankless, boring task that few are crazy enough to 
-attempt :)
-
-As you can see from the patch flood recently I /have/ been working 
-through the dud code, but it will still take years.  The changes 
-required for each are on average ~200 LOC changed, if not more.
-
-But regardless...  I don't see any reason to force every kernel build to 
-remind us of grotty drivers.  Where's the benefit?  Everybody knows they 
-are grotty.
-
-Like __must_check this option defaults to the current state of things -- 
-warnings -- so you have to take an extra step to turn them off.
-
-	Jeff
-
+Acked-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 
