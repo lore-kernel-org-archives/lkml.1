@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXJYXoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbXJYXrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbXJYXoj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbXJYXob
+	id S1760898AbXJYXrc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXJYXrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:44:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59551 "EHLO
+	Thu, 25 Oct 2007 19:47:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36642 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752716AbXJYXoa (ORCPT
+	by vger.kernel.org with ESMTP id S1751684AbXJYXrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:44:30 -0400
-Date: Thu, 25 Oct 2007 16:44:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: tytso@mit.edu, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 update
-In-Reply-To: <20071025163113.491a4461.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0710251643120.30120@woody.linux-foundation.org>
-References: <E1Ii0UI-0007TW-IM@closure.thunk.org>
- <alpine.LFD.0.999.0710170857490.26902@woody.linux-foundation.org>
- <20071025163113.491a4461.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 25 Oct 2007 19:47:22 -0400
+Date: Thu, 25 Oct 2007 16:46:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/31] Add an ERR_CAST() macro to complement ERR_PTR and
+ co. [try #5]
+Message-Id: <20071025164658.8fdc04cc.akpm@linux-foundation.org>
+In-Reply-To: <47212215.8080003@oracle.com>
+References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
+	<20071025163357.5057.35399.stgit@warthog.procyon.org.uk>
+	<47212215.8080003@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Oct 2007 16:09:09 -0700
+Zach Brown <zach.brown@oracle.com> wrote:
 
-
-On Thu, 25 Oct 2007, Andrew Morton wrote:
 > 
-> There shouldn't have been conflicts here - if there were I wouldn't have
-> sent those patches.  Unless there were things in the ext4 pull which
-> weren't present in the ext4 quilt tree which I included in 2.6.23-mm1?
+> > + * ERR_CAST - Explicitly cast an error-valued pointer to another pointer type
+> > + * @ptr: The pointer to cast.
+> > + *
+> > + * Explicitly cast an error-valued pointer to another pointer type in such a
+> > + * way as to make it clear that's what's going on.
+> > + */
+> > +static inline void *ERR_CAST(const void *ptr)
+> > +{
+> > +	return (void *) ptr;
+> > +}
+> 
+> Just to nit, surely you don't need the cast inside the function.  The
+> casting happens at the call site between the argument and returned pointer.
+> 
 
-Well, you merge your patch-series by patching.
+It'll warn without the cast.
 
-You should have noticed by now that GNU patch in particular will happily 
-apply a patch whether it conflicts or not. So it's entirely possible that 
-it didn't conflict for you, but applied cleanly and sanely.
+btw, nit time.  This style:
 
-		Linus
+	return (void *)ptr;
+
+outnumbers this style
+
+	return (void *) ptr;
+
+by 4 to 1.  And I don't find the space attractive, useful or logical,
+personally.
+
