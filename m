@@ -1,117 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXJYJNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbXJYJU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXJYJNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 05:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbXJYJN0
+	id S1755960AbXJYJU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 05:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXJYJUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 05:13:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:4230 "EHLO kernel.dk"
+	Thu, 25 Oct 2007 05:20:20 -0400
+Received: from ns.firmix.at ([62.141.48.66]:1649 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbXJYJNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 05:13:25 -0400
-Date: Thu, 25 Oct 2007 11:11:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071025091140.GK5053@kernel.dk>
-References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org> <200710251840.02157.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752876AbXJYJUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 05:20:19 -0400
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface)
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+References: <20071024223124.GI30533@stusta.de>
+	 <446110.89443.qm@web36608.mail.mud.yahoo.com>
+	 <20071025002356.GB3660@sequoia.sous-sol.org>
+	 <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Thu, 25 Oct 2007 11:19:50 +0200
+Message-Id: <1193303990.18559.28.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.312 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.312 required=5
+X-Spam-Score: -2.312 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200710251840.02157.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25 2007, Rusty Russell wrote:
-> On Wednesday 24 October 2007 01:22:55 Linus Torvalds wrote:
-> > On Tue, 23 Oct 2007, Boaz Harrosh wrote:
-> > > But since we do not do that, and every single API in the kernel that
-> > > receives a scatterlist pointer also receives an sg_count parameter,
-> > > than I do not see what is so hacky about giving that sg_count parameter
-> > > to the one that needs it the most. sg_next();
-> >
-> > Well, I'd personally actually prefer to *not* have the count be passed
-> > down explicitly, because it's just too error prone.
-> 
-> Well, the duplication is bad, but walking lists to find the length is
-> inefficient so you pass around the length as well.
-> 
-> What irritates me more is that scatterlists aren't quite generically useful.
-> The virtio code wants to join a scatterlist created by blk_rq_map_sg() with
-> two others, yet it won't work because sg_chain() doesn't remove the end
-> marker from the first entry.
+On Mit, 2007-10-24 at 17:35 -0700, Ray Lee wrote:
+[....]
+> Key-based masterlocks are easily broken with freon, and their combo
+> locks are easily brute-forced in about ten minutes. Yet, I'll still
+> use them to lock up my bike and garage.
 
-That's a minor nit for your special purpose, we/you can change that.
+The question is what the security threat is and the value of the secured
+items.
 
-> If this patch weren't already included, I'd be strongly arguing for the bio
-> idea: I find the chained sg code tricksy and ugly (sorry Jens).
+> The idea that poor security is worse than no security is fallacious,
+> and not backed up by common experience.
 
-What is the bio idea? A bio works in essentially the same way, the only
-difference is having a specific next pointer. It's still just a linked
-lists of arbitrarily sized sg tables (the bio_vec arrays).
+The common experience is, that common people just *feel* safer (just
+because they have poor security).
+With no security, they know that there is no security. With poor
+security, they do not know (or can deny) that they have next to no real
+security.
+The prime example here is the usual (so-called) "personal firewall" on
+Windows where people work normally as "administrator".
 
-> 
-> To be constructive, how's this (BTW, why @arg@, I thought it was simply
-> "@arg"?)
-> 
-> ===
-> Make sg_chain() a little more generic
-> 
-> Allow chaining when the first chain already has an end marker, and
-> change it to a slightly clearer semantic (the number of used entries
-> in the array, not that number plus one).
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 61fdaf0..24bbc92 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -778,7 +778,7 @@ struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
->  		 * ended up doing another loop.
->  		 */
->  		if (prev)
-> -			sg_chain(prev, SCSI_MAX_SG_SEGMENTS, sgl);
-> +			sg_chain(prev, SCSI_MAX_SG_SEGMENTS-1, sgl);
-
-What's this bit for?
-
-> diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-> index df7ddce..c1ef145 100644
-> --- a/include/linux/scatterlist.h
-> +++ b/include/linux/scatterlist.h
-> @@ -147,12 +147,11 @@ static inline struct scatterlist *sg_last(struct scatterlist *sgl,
->  /**
->   * sg_chain - Chain two sglists together
->   * @prv:	First scatterlist
-> - * @prv_nents:	Number of entries in prv
-> + * @prv_nents:	Number of entries used in prv
->   * @sgl:	Second scatterlist
->   *
->   * Description:
-> - *   Links @prv@ and @sgl@ together, to form a longer scatterlist.
-> - *
-> + *   @prv[@prv_nents] is used as a link to join @prv to @sgl.
->   **/
->  static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
->  			    struct scatterlist *sgl)
-> @@ -160,7 +159,9 @@ static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
->  #ifndef ARCH_HAS_SG_CHAIN
->  	BUG();
->  #endif
-> -	prv[prv_nents - 1].page_link = (unsigned long) sgl | 0x01;
-> +	if (prv_nents > 0)
-> +		prv[prv_nents - 1].page_link &= ~0x02UL;
-> +	prv[prv_nents].page_link = (unsigned long) sgl | 0x01;
->  }
-
-We definitely should clear any other markers, that makes sense.
-
+	Bernd
 -- 
-Jens Axboe
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
 
