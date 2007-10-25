@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbXJYKS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXJYKUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbXJYKS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 06:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXJYKSv
+	id S1759284AbXJYKUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 06:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXJYKTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 06:18:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34865 "EHLO mx2.mail.elte.hu"
+	Thu, 25 Oct 2007 06:19:54 -0400
+Received: from verein.lst.de ([213.95.11.210]:57947 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753384AbXJYKSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 06:18:50 -0400
-Date: Thu, 25 Oct 2007 12:18:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC - GIT pull] first step to get rid of x86_64 and i386 dirs
-Message-ID: <20071025101831.GA28174@elte.hu>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <20071024080451.GA32690@infradead.org> <20071024110733.GA1374@uranus.ravnborg.org> <20071024121218.GA23548@elte.hu> <20071024213052.GA5469@uranus.ravnborg.org>
-MIME-Version: 1.0
+	id S1754427AbXJYKTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 06:19:54 -0400
+Date: Thu, 25 Oct 2007 12:19:48 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] iwl3945: cleanup namespace
+Message-ID: <20071025101948.GA21698@lst.de>
+References: <20071012130500.GA22610@lst.de> <1193303997.3069.389.camel@debian.sh.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024213052.GA5469@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1193303997.3069.389.camel@debian.sh.intel.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> Hi Ingo.
+On Thu, Oct 25, 2007 at 05:19:57PM +0800, Zhu Yi wrote:
 > 
-> This is first step in getting rid of the two directories. I had to do 
-> some very minor modifications in common files to let it work out - but 
-> nothing really hackish.
+> On Fri, 2007-10-12 at 15:05 +0200, Christoph Hellwig wrote:
+> > prefix all symbols with iwl3945_ and thus allow building the driver
+> > into the kernel.  Also remove all the useless default statements in
+> > Kconfig while we're at it.
+> > 
+> > 
+> > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> If you & Thomas + hpa are OK with the changes they can be pulled from:
-> 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
-> 
-> As this is mostly renames I have attached a git -M diff only.
+> Did you do this manually or with a script? If it is the latter, can you
+> run it again against my latest updates for the driver (30 patches I just
+> sent to linux-wireless) or share the script with me?
 
-wow, cool stuff!
-
-> The remaining stuff is Kconfig files.
-> 
-> Before looking into these I am hoping someone could step in and make 
-> the two Kconfig.debug files 100% equal - because then I can fix the 
-> kconfig stuff and finally kill the two directories.
-
-How about mechanically unifying them by adding:
-
-	depends on X86_32
-
-and:
-
-	depends on X86_64
-
-lines? Can you see any problem with such an approach?
-
-	Ingo
+Basically just %s/iwl_/iwl<whatever>_/ in vi, with a tiny bit of
+manual fixup. (one iwl_ function is actually coming from a still shared
+beader and the BROADCAST_ADDR IIRC)
