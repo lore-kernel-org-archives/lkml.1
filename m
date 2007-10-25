@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbXJYQEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761778AbXJYQF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754126AbXJYQEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXJYQEq
+	id S1761778AbXJYQF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXJYQFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:04:46 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:62743 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXJYQEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:04:45 -0400
-X-Greylist: delayed 1942 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 12:04:45 EDT
-Date: Thu, 25 Oct 2007 17:37:49 +0200
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] MNT_UNBINDABLE
-Message-ID: <20071025153744.GA17681@mette>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 25 Oct 2007 12:05:45 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:43103 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbXJYQFo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:05:44 -0400
+Date: Thu, 25 Oct 2007 17:05:29 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [IDE] Fix build bug
+Message-ID: <20071025160529.GB24621@linux-mips.org>
+References: <20071025135334.GA23272@linux-mips.org> <20071025141305.GA11698@uranus.ravnborg.org> <Pine.LNX.4.64N.0710251545300.24086@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.64N.0710251545300.24086@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some time ago ( http://lkml.org/lkml/2007/6/19/128 )
-I wrote about MNT_UNBINDABLE that it felt like a bug
-that it is not reset by "mount --make-private".
+On Thu, Oct 25, 2007 at 03:47:16PM +0100, Maciej W. Rozycki wrote:
 
-Today I happened to see mount(8) and Documentation/sharedsubtree.txt
-and both document the version obtained by applying the little
-patch given in the above (and again below).
+> > So we can avoid this if we invent a __constinitdata tag that uses
+> > a new section?
+> 
+>  That would do.
+> 
+> > I ask mainly to understand this error - not that I am that found
+> > of the idea.
+> 
+>  Somebody wants to mix up read-only and read/write data in the same 
+> section and GCC quite legitimately complains about it.  You cannot have 
+> both at a time.
 
-So, the present kernel code is not according to specs and must be
-regarded as buggy. The patch below, or something similar,
-should be applied.
+My interpretation is that it would be perfectly ok for a C compiler to
+do minimal handling of const by only throwing errors for attempted
+assignments to const objects but otherwise treating them as if they
+were non-const, that is for example putting them into an r/w section.
 
-Andries
-
----
-Specification in Documentation/sharedsubtree.txt:
-See state diagram: unbindable should become private upon make-private.
-
-Specification in mount(8):
-    ...  It's
-    also possible to  set  up  uni-directional  propagation  (with  --make-
-    slave),  to  make  a  mount  point unavailable for --bind/--rbind (with
-    --make-unbindable), and to undo any  of  these  (with  --make-private).
-
-Repeat of old fix-shared-subtrees-make-private.patch
-(due to Dirk Gerrits, René Gabriëls, Peter Kooijmans):
-
---- pnode.old	2007-04-17 12:53:11.000000000 +0200
-+++ pnode.c	2007-04-17 13:22:03.000000000 +0200
-@@ -83,6 +83,8 @@
- 		mnt->mnt_master = NULL;
- 		if (type == MS_UNBINDABLE)
- 			mnt->mnt_flags |= MNT_UNBINDABLE;
-+		else
-+			mnt->mnt_flags &= ~MNT_UNBINDABLE;
- 	}
- }
- 
-
-
+  Ralf
