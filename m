@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbXJYEHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbXJYEIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761646AbXJYEHF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 00:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXJYEGx
+	id S1761700AbXJYEIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 00:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXJYEIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 00:06:53 -0400
-Received: from colo.lackof.org ([198.49.126.79]:36431 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbXJYEGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 00:06:53 -0400
-Date: Wed, 24 Oct 2007 22:06:36 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: How to debug complete kernel lock-ups
-Message-ID: <20071025040636.GA3608@colo.lackof.org>
-References: <471E1D3A.8000705@free.fr> <471F0DB4.1080709@free.fr>
+	Thu, 25 Oct 2007 00:08:35 -0400
+Received: from venus.billgatliff.com ([209.251.101.201]:52955 "EHLO
+	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbXJYEIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 00:08:35 -0400
+X-Greylist: delayed 1975 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 00:08:35 EDT
+Message-ID: <47200F05.2050305@billgatliff.com>
+Date: Wed, 24 Oct 2007 22:35:33 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <471F0DB4.1080709@free.fr>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King <rmk@arm.linux.org.uk>, bugme-daemon@bugzilla.kernel.org,
+       svs1957@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 9217] New: CONFIG_CMDLINE doesn't pass to kernel
+References: <bug-9217-10286@http.bugzilla.kernel.org/> <20071024195717.0de6a248.akpm@linux-foundation.org>
+In-Reply-To: <20071024195717.0de6a248.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 11:17:40AM +0200, John Sigler wrote:
-...
-> I've tested with a vanilla 2.6.22.10 kernel (no PREEMPT_RT patch).
-> That system also locks up and remains completely unresponsive (I can't open 
-> new ssh sessions, the system won't answer ICMP echo requests).
+Andrew Morton wrote:
+> Something broke CONFIG_CMDLINE of ARM (at least) between 2.6.22 and 2.6.23.
 >
-> How do driver writers deal with complete kernel hangs?
+> I don't know whether it was an ARM patch one of those kernel-wide changes. 
+> We have futzed with the command-line parsing a bit recently, but the 2.6.23
+> changelog doesn't suggest anything obvious.
+>   
 
-Use different HW. Both IA64 and PARISC gives useful diagnostics
-when the machine has a hard crash (MCA or HPMC respectively). I'll bet
-PPC does too on the POWER machines.
+What does the affected system's bootloader pass in r2?  If it's nonzero, 
+ARM's 2.6.23 may interpret it as being an ATAGS pointer.  And when that 
+happens, the system prefers the ATAGS over CONFIG_CMDLINE.
 
-Maybe a newer x86 machine can provide some MCE data as well?
+There's sanity checking in __vet_atags, but maybe it isn't enough.  
+Other than that, I can't see anything yet.
 
-Otherwise it's what gregkh said...not the "we slowly go crazy"
-part. :) Well, sometimes. :)
 
-BTW, getting PCI bus traces would be quite helpful in this case.
-It'll give you clear data as to whether the devices are being programmed
-as expected (also to rule out chipset/Host bus controller issues) and
-whether they are responding as expected (maybe something else dies
-when they do).
+b.g.
 
-hth,
-grant
+-- 
+Bill Gatliff
+bgat@billgatliff.com
 
-hth,
-grant
