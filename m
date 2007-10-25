@@ -1,96 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761882AbXJYUFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXJYUHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761882AbXJYUFl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbXJYUFW
+	id S1761417AbXJYUHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXJYUGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:05:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35466 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760162AbXJYUFS (ORCPT
+	Thu, 25 Oct 2007 16:06:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:46806 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753619AbXJYUGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:05:18 -0400
-Date: Thu, 25 Oct 2007 13:02:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: buytenh@wantstofly.org, svs1957@gmail.com, bgat@billgatliff.com,
-       linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, rmk@arm.linux.org.uk
-Subject: Re: [Bugme-new] [Bug 9217] New: CONFIG_CMDLINE doesn't pass to
- kernel
-Message-Id: <20071025130250.cd759e90.akpm@linux-foundation.org>
-In-Reply-To: <1193319816.6167.45.camel@localhost.localdomain>
-References: <bug-9217-10286@http.bugzilla.kernel.org/>
-	<20071024195717.0de6a248.akpm@linux-foundation.org>
-	<47200F05.2050305@billgatliff.com>
-	<20071025122303.GB7543@xi.wantstofly.org>
-	<1193319816.6167.45.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 16:06:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=gEqHuHT0y8QwkIUnEV8FF4TgcPCC7lFy/o50DE+3NmxWbU9tt8CMp7IVVUX0m8nnDgnIWuxLzlc6Yw+KTAmEQo/9aOKLbcWwwI0KNjLtf1rf8IW50N3XZWruCThj5qr8ZMxtRDujGCSsWv7XMc5ONC+poqqKJPmiHShkPRBBiT4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 1/3] [IDE] Add helper __ide_setup_pci_device()
+Date: Thu, 25 Oct 2007 21:33:20 +0200
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <09821349085390234lkjasdflkjasflkdj24746@havoc.gtf.org> <20071024234820.D91351F81A1@havoc.gtf.org>
+In-Reply-To: <20071024234820.D91351F81A1@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710252133.20992.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 14:43:36 +0100
-Richard Purdie <rpurdie@rpsys.net> wrote:
 
-> On Thu, 2007-10-25 at 14:23 +0200, Lennert Buytenhek wrote:
-> > On Wed, Oct 24, 2007 at 10:35:33PM -0500, Bill Gatliff wrote:
-> > 
-> > > >Something broke CONFIG_CMDLINE of ARM (at least) between 2.6.22 and 2.6.23.
-> > > >
-> > > >I don't know whether it was an ARM patch one of those kernel-wide changes. 
-> > > >We have futzed with the command-line parsing a bit recently, but the 2.6.23
-> > > >changelog doesn't suggest anything obvious.
-> > > 
-> > > What does the affected system's bootloader pass in r2?  If it's nonzero, 
-> > > ARM's 2.6.23 may interpret it as being an ATAGS pointer.  And when that 
-> > > happens, the system prefers the ATAGS over CONFIG_CMDLINE.
-> > > 
-> > > There's sanity checking in __vet_atags, but maybe it isn't enough.  
-> > > Other than that, I can't see anything yet.
-> > 
-> > If this is the SHARP Shepherd (which seems to be the Zaurus SL-C750,
-> > which looks like it's the one the submitter is using), it's not setting
-> > boot_params at all:
-> > 
-> > 	MACHINE_START(SHEPHERD, "SHARP Shepherd")
-> > 		.phys_io        = 0x40000000,
-> > 		.io_pg_offst    = (io_p2v(0x40000000) >> 18) & 0xfffc,
-> > 		.fixup          = fixup_corgi,
-> > 		.map_io         = pxa_map_io,
-> > 		.init_irq       = pxa25x_init_irq,
-> > 		.init_machine   = corgi_init,
-> > 		.timer          = &pxa_timer,
-> > 	MACHINE_END
-> 
-> The Zaurus has an insane bootloader which doesn't pass any sane values,
-> it doesn't support the right (well, any) machine number and the
-> commandline it passes is unchangeable and bogus too. The approach has
-> always therefore been to pretend it doesn't exist and used a commandline
-> compiled into the kernel.
-> 
-> Could the original bug reporter please report what commandline the
-> kernel actually uses please? In theory it can only be either:
-> 
-> * the one being compiled in with CONFIG_CMDLINE
-> * the one hardcoded into the bootloader
-> 
-> but I'd be surprised it boots at all with the latter!
-> 
+[ The last few days were extra busy with pushing previously queued
+  IDE bits upstream but I'm back to reviewing the new stuff. ]
 
-It was in the inital report, at
-http://bugzilla.kernel.org/show_bug.cgi?id=9217 :
+Thanks for splitting your patch on smaller chunks.
 
+On Thursday 25 October 2007, Jeff Garzik wrote:
+> Like ide_setup_pci_device(), except with additional array argument
+> 'u8 *idx' that permits low-level driver to become aware of its assigned
+> hwifs.
 
-: I try to upgrade kernel from 2.6.22.9 to 2.6.23.
-: 2.6.22.9 works correct. Kernel 2.6.23 doesn't use  CONFIG_CMDLINE and doesn't
-: pass bootparams:
-: CONFIG_CMDLINE="console=ttyS0,115200n8 console=tty1 noinitrd
-: root=/dev/mmcblk0p1 rootfstype=ext3 rw rootdelay=5"
-: But kernel still try to mount /dev/mtdblock2 using jffs2.
-: Steps to reproduce:
-: Compile kernel with CONFIG_CMDLINE and try to boot.
+I would prefer to avoid exporting this information to host drivers
+if possible (they shouldn't need to know about higher-layer decisions,
+plus this change opens the door for various "creative" abuses).
 
+In case of sc1200 host driver fixes (patches #2-3/3) it should be
+possible to remove the need for the below patch and at the same time
+simplify sc1200 code further (more details in review of patch #2/2).
+
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+>  drivers/ide/setup-pci.c |   17 ++++++++++++-----
+>  include/linux/ide.h     |    1 +
+>  2 files changed, 13 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/ide/setup-pci.c b/drivers/ide/setup-pci.c
+> index 02d14bf..4960b9f 100644
+> --- a/drivers/ide/setup-pci.c
+> +++ b/drivers/ide/setup-pci.c
+> @@ -666,12 +666,10 @@ out:
+>  	return ret;
+>  }
+>  
+> -int ide_setup_pci_device(struct pci_dev *dev, const struct ide_port_info *d)
+> +int __ide_setup_pci_device(struct pci_dev *dev, const struct ide_port_info *d,
+> +			   u8 *idx)
+>  {
+> -	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+> -	int ret;
+> -
+> -	ret = do_ide_setup_pci_device(dev, d, &idx[0], 1);
+> +	int ret = do_ide_setup_pci_device(dev, d, idx, 1);
+>  
+>  	if (ret >= 0)
+>  		ide_device_add(idx);
+> @@ -679,6 +677,15 @@ int ide_setup_pci_device(struct pci_dev *dev, const struct ide_port_info *d)
+>  	return ret;
+>  }
+>  
+> +EXPORT_SYMBOL_GPL(__ide_setup_pci_device);
+> +
+> +int ide_setup_pci_device(struct pci_dev *dev, const struct ide_port_info *d)
+> +{
+> +	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+> +
+> +	return __ide_setup_pci_device(dev, d, &idx[0]);
+> +}
+> +
+>  EXPORT_SYMBOL_GPL(ide_setup_pci_device);
+>  
+>  int ide_setup_pci_devices(struct pci_dev *dev1, struct pci_dev *dev2,
+> diff --git a/include/linux/ide.h b/include/linux/ide.h
+> index 4ed4777..3404fb9 100644
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -1244,6 +1244,7 @@ struct ide_port_info {
+>  	u8			udma_mask;
+>  };
+>  
+> +int __ide_setup_pci_device(struct pci_dev *, const struct ide_port_info *, u8 *);
+>  int ide_setup_pci_device(struct pci_dev *, const struct ide_port_info *);
+>  int ide_setup_pci_devices(struct pci_dev *, struct pci_dev *, const struct ide_port_info *);
 
