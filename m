@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763049AbXJYUzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbXJYU4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763049AbXJYUzV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbXJYUzF
+	id S1759419AbXJYU4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXJYU4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:55:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42723 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756392AbXJYUzD (ORCPT
+	Thu, 25 Oct 2007 16:56:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:52243 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbXJYU4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:55:03 -0400
-Message-ID: <47210281.7020502@zytor.com>
-Date: Thu, 25 Oct 2007 13:54:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 25 Oct 2007 16:56:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=G7dilcxblCEsGD0GpHd2+8UORmUIW/GGczlCVpqNUhBNk54PSuOgKstcoowATZyKkCjjgwCj11pXX9d8xPQujfZo4yaTQqvVWIlZ8ls08Up3IEjRVa+8vC93laa7MG8RcIw0hcQezsVeR9RxLmy3XkKXhJtE+GRvzpjoQiJ8Dds=
+To: rt2400-devel@lists.sourceforge.net
+Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
+Date: Thu, 25 Oct 2007 23:15:49 +0200
+User-Agent: KMail/1.9.7
+Cc: Parag Warudkar <kernel-stuff@comcast.net>, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
+In-Reply-To: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Mike Frysinger <vapier.adi@gmail.com>, Jie Zhang <jzhang.linux@gmail.com>,
-       bryan.wu@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
-References: <40401db90710241947i15e40e78v292e52f5229d9d35@mail.gmail.com> <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com> <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de> <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com> <20071025165344.GL30533@stusta.de> <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com> <20071025201842.GT30533@stusta.de> <8bd0f97a0710251320m3490c53dpe85656a939e8536e@mail.gmail.com> <4720FC54.1020705@zytor.com> <20071025204748.GW30533@stusta.de>
-In-Reply-To: <20071025204748.GW30533@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710252315.49427.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Oct 25, 2007 at 01:28:04PM -0700, H. Peter Anvin wrote:
->> Mike Frysinger wrote:
->>>> Do you have any example for your claim "to get gcc to not inline things
->>>> when building debug versions"?
->>> $ cat test.c
->>> __attribute__((always_inline)) int foo(void) { return 0; }
->>> int main(void){ return foo(); }
->>> $ gcc -g test.c -o test
->>> $ readelf -s test | grep FUNC | grep -v _
->>>     61: 00000000004004b8    11 FUNC    GLOBAL DEFAULT   13 foo
->>>     68: 00000000004004c3    11 FUNC    GLOBAL DEFAULT   13 main
->>> looks pretty straightforward to me
->>> -mike
->> For "debug version" meaning -O0, this is true.
-> 
-> No, "inline __attribute__((always_inline))" works with -O0.
-> 
-> He gets a function emitted since his "foo" is not static.
-> 
+Hi,
 
-Oh, right.
+> I have a Belkin USB Wireless adapter with ID 050d:705a.
+> Both rt2500usb.c and rt73usb.c claim that they can drive the device with 
+> this ID.
+> 
+> When using the distro kernel as well as custom 2.4.24-rc1 both rt73usb and 
+> rt2500usb get loaded and fight for the register writes and fail. rt2500usb 
+> is not able to drive my device. So I have to manually rmmod/modprobe or 
+> delete rt2500usb.ko and depmod every time I get a new kernel.
+> 
+> If only rt73usb is loaded everything works well. To me it 
+> sounds like rt2500usb should not be driving 050d:705a.
+> 
+> There is another ID 050d:7050 which is also claimed to be handled by both 
+> rt3500usb and rt73usb. Assuming rt73usb can drive this as well (I have no 
+> way to be sure as I don't have device with this ID) the following patch 
+> makes sure only rt73usb claims the 2 devices.
 
-	-hpa
+I awknowledge the problem, but the solution cannot be found in the USB ID's
+listed in the driver. The bug is the manufacturer who changed chipset while
+keeping the USB ID the same.
+There are 2 possible ways around this: hacking the module loader so
+it continues searching for a different driver when the first driver indicates
+that it cannot control the device.
+Or the easiest way, just blacklist rt2500usb if you are sure you need the rt73 driver.
+
+Ivo
