@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbXJYQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762237AbXJYQ5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbXJYQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXJYQ5M
+	id S1762237AbXJYQ5n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXJYQ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:57:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:38036 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXJYQ5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:57:12 -0400
-Date: Thu, 25 Oct 2007 18:56:52 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: Adrian Bunk <bunk@kernel.org>, "Brown, Len" <len.brown@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: RE: [2.6 patch] unexport tick_nohz_get_sleep_length
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5018EBEF1@scsmsx415.amr.corp.intel.com>
-Message-ID: <alpine.LFD.0.9999.0710251855510.3186@localhost.localdomain>
-References: <20071024162422.GH30533@stusta.de> <alpine.LFD.0.9999.0710251126430.3186@localhost.localdomain> <653FFBB4508B9042B5D43DC9E18836F5018EBEF1@scsmsx415.amr.corp.intel.com>
+	Thu, 25 Oct 2007 12:57:32 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53564 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbXJYQ5b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:57:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic runtime service support
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	<alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+Date: Thu, 25 Oct 2007 10:55:44 -0600
+In-Reply-To: <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+	(Thomas Gleixner's message of "Thu, 25 Oct 2007 18:09:49 +0200
+	(CEST)")
+Message-ID: <m1r6jj5e27.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, Pallipadi, Venkatesh wrote:
-> >On Wed, 24 Oct 2007, Adrian Bunk wrote:
-> >
-> >> This patch removes the unused 
-> >> EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length).
-> >> 
-> >> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> >> 
-> >> ---
-> >> f7c83dfe117f4fd072b2506ae090e4145abda362 
-> >> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> >> index 10a1347..5997456 100644
-> >> --- a/kernel/time/tick-sched.c
-> >> +++ b/kernel/time/tick-sched.c
-> >> @@ -320,8 +320,6 @@ ktime_t tick_nohz_get_sleep_length(void)
-> >>  	return ts->sleep_length;
-> >>  }
-> >>  
-> >> -EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
-> >> -
-> >
-> >Hmm, this was added to allow the cpuidle governers modular
-> >build. Seems this was changed to compiled in only.
-> >
-> >Len, Venki, is this the final decision ?
-> >
-> 
-> Yes. This was done recently for proper fallback to old ACPI policy in
-> case CPUIDLE is not selected. With that being module, falling back to
-> ACPI policy at run time makes things ugly.
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-Makes sense. I go ahead and nuke the export.
+> On Thu, 25 Oct 2007, Huang, Ying wrote:
+>
+>> This patch adds basic runtime services support for EFI x86_64
+>> system. The main file of the patch is the addition of efi.c for
+>> x86_64. This file is modeled after the EFI IA32 avatar.
+>
+> modeled means copied and modified, right?
+>
+> This is wrong. I compared efi_32.c and efi_64.c and a large amount of
+> the code is simply the same. The small details can be sorted out by
+> two sets of macros/inline functions easily.
+>
+> Please fix this up.
 
-Thanks,
+I don't think there is a compelling case for us to use any efi
+services at this time so unification should be easy:
+rm arch/x86/kernel/efi_32.c arch/x86/kernel/efi_stub_32.c
 
-	tglx
+Especially for accessing the real time clock that has a well
+defined hardware interface going through efi an additional
+software emulation layer looks like asking for trouble.
+
+Eric
+
+
+
