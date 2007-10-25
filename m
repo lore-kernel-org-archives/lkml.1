@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762578AbXJYXhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXJYXiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762578AbXJYXhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXJYXhc
+	id S1762750AbXJYXiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 19:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbXJYXht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:37:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34042 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754036AbXJYXhb (ORCPT
+	Thu, 25 Oct 2007 19:37:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46223 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761297AbXJYXhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:37:31 -0400
-Date: Thu, 25 Oct 2007 16:37:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
- <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Oct 2007 19:37:48 -0400
+Date: Thu, 25 Oct 2007 16:37:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Russ Dill" <russ.dill@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Better document profile=
+Message-Id: <20071025163743.7a3d8231.akpm@linux-foundation.org>
+In-Reply-To: <f9d2a5e10710162216s149c16a3j9bb63d60fdf1e782@mail.gmail.com>
+References: <f9d2a5e10710162216s149c16a3j9bb63d60fdf1e782@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, David Rientjes wrote:
+On Tue, 16 Oct 2007 22:16:47 -0700
+"Russ Dill" <russ.dill@gmail.com> wrote:
 
-> Adds a new 'interleave_over_allowed' option to cpusets.
+> Be more explicit on what the step/bucket size accomplishes.
 > 
-> When a task with an MPOL_INTERLEAVE memory policy is attached to a cpuset
-> with this option set, the interleaved nodemask becomes the cpuset's
-> mems_allowed.  When the cpuset's mems_allowed changes, the interleaved
-> nodemask for all tasks with MPOL_INTERLEAVE memory policies is also
-> updated to be the new mems_allowed nodemask.
+> Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
+> ---
+>  Documentation/kernel-parameters.txt |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
 > 
-> This allows applications to specify that they want to interleave over all
-> nodes that they are allowed to access.  This set of nodes can be changed
-> at any time via the cpuset interface and each individual memory policy is
-> updated to reflect the changes for all attached tasks when this option is
-> set.
+> diff --git a/Documentation/kernel-parameters.txt
+> b/Documentation/kernel-parameters.txt
+> index eb24799..3c6fd27 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1427,7 +1427,10 @@ and is between 256 and 4096 characters. It is
+> defined in the file
 
-More interactions between cpusets and memory policies. We have to be 
-careful here to keep clean semantics.
+Your email client is wordwrapping the patches.
 
-Isnt it a bit surprising for an application that has set up a custom 
-MPOL_INTERLEAVE policy if the nodes suddenly change because of a cpuset or 
-mems_allowed change?
+>  			Format: [schedule,]<number>
+>  			Param: "schedule" - profile schedule points.
+>  			Param: <number> - step/bucket size as a power of 2 for
+> -				statistical time based profiling.
+> +				statistical time based profiling. A value of
+> +				2 will provide a granularity of 4 bytes, a
+> +				value of 3 will provide a granularity of 8
+> +				bytes and so on.
+>  			Param: "sleep" - profile D-state sleeping (millisecs)
 
+Actually the prof_shift isn't in units of bytes: it is in units of
+sizeof(unsigned long).
 
+So on a 64-bit kernel, prof_shift=2 will give a granularity of 8<<2 bytes
+and on a 32-bit kernel, prof_shift=3 will give a granularity of 4<<3 bytes.
