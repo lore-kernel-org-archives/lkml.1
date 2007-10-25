@@ -1,102 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXJXX4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbXJYAHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbXJXX4a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 19:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbXJXX4V
+	id S1757433AbXJYAHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 20:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbXJYAHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 19:56:21 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37931 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755451AbXJXX4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 19:56:20 -0400
-Date: Wed, 24 Oct 2007 16:52:31 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Miller <davem@davemloft.net>, jens.axboe@oracle.com, rjw@sisk.pl,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       htejun@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-Message-ID: <20071024235231.GA6160@kroah.com>
-References: <20071016204238.GA1093@kroah.com> <20071016205053.GI9942@kernel.dk> <20071016213730.GB21815@kroah.com> <20071016.153248.95506316.davem@davemloft.net> <20071016232350.GB24827@kroah.com> <1192616214.4300.16.camel@lov.site> <20071024234348.GA4909@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071024234348.GA4909@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 24 Oct 2007 20:07:36 -0400
+Received: from smtpoutm.mac.com ([17.148.16.71]:53676 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754183AbXJYAHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 20:07:35 -0400
+In-Reply-To: <20071024212110.GG27248@parisc-linux.org>
+References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx> <0533759C-81D0-45CB-A663-088A6D4E56A9@mac.com> <20071024212110.GG27248@parisc-linux.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <314B5322-3575-4449-90D2-3068BDC3F64D@mac.com>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Date: Wed, 24 Oct 2007 20:07:23 -0400
+To: Matthew Wilcox <matthew@wil.cx>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 04:43:48PM -0700, Greg KH wrote:
-> On Wed, Oct 17, 2007 at 12:16:54PM +0200, Kay Sievers wrote:
-> > On Tue, 2007-10-16 at 16:23 -0700, Greg KH wrote:
-> > > On Tue, Oct 16, 2007 at 03:32:48PM -0700, David Miller wrote:
-> > > > From: Greg KH <greg@kroah.com>
-> > > > Date: Tue, 16 Oct 2007 14:37:30 -0700
-> > > > 
-> > > > > Kay, are we doing something wrong in userspace when renaming wireless
-> > > > > devices such that we can overlap names?
-> > 
-> > Not udev, but SUSE 10.2's network renaming. It uses udev and calls
-> > ifrename in the same code path. 10.3 uses the unified version from the
-> > udev tree.
-> > 
-> > > > It does it for all network devices, I see this ugly message on every
-> > > > single system I have from Fedora foo to RHEL foo to ubuntu foo to
-> > > > debian foo.
-> > > >
-> > > > udev simply applies the MAC address to device name rules blindly, it
-> > > > doesn't check if the device already has the desired name already
-> > 
-> > There is a check for the same name in udev for long.
-> > 
-> > > Ugh :(
-> > > 
-> > > > It's been like this forever, and since userland has been doing it for
-> > > > so long, you can't warn on this there is too much established
-> > > > practice.  Expecting people to install "fixed" udev is not an
-> > > > acceptable answer, the warning is a regression and therefore you'll
-> > > > have to remove the kernel warning for this case and live with this
-> > > > issue essentially forever.
-> > 
-> > We should probably just add the check to kobject_rename() and print a
-> > simple warning and then do nothing. Or just do the check in the network
-> > ioctl, if we really don't want to see this.
-> 
-> I agree that perhaps kobject_rename() should check for this.  Let me go
-> see if I can get that to work...
+On Oct 24, 2007, at 17:21:10, Matthew Wilcox wrote:
+> On Wed, Oct 24, 2007 at 04:59:48PM -0400, Kyle Moffett wrote:
+>> This seems unlikely to work reliably as the various "v*printf"  
+>> functions modify the va_list argument they are passed.  It may  
+>> happen to work on your particular architecture depending on how  
+>> that argument data is passed and stored, but you probably actually  
+>> want to make a copy of the varargs list for the first vsnprintf call.
+>
+> I based what I did on how printk works:
+>
+>         va_start(args, fmt);
+>         r = vprintk(fmt, args);
+>         va_end(args);
+>
+> It doesn't call va_* anywhere else.  I don't claim to be a varargs  
+> expert, but if I'm wrong, I'm at least wrong the same way that  
+> printk is, so not in any way that's significant for any other  
+> architecture Linux runs on.
 
-Can someone try this patch, and see what happens when they try to rename
-an object to something that is already existing?
+No, the problem is what happens when you don't have enough space  
+allocated:  you call "vsnprintf(s, len, format, args);" and then  
+later call "vsprintf(s, format, args);" with the *SAME* "args".   
+That's what's broken.
 
-thanks,
+So this is wrong:
+> va_list args;
+> va_start(args, fmt);
+> r1 = vprintk(fmt, args);
+> r2 = vprintk(fmt, args);
+> va_end(args);
 
-greg k-h
+To fix it, you have 2 options.
 
+Option 1:
+> va_list args;
+> va_start(args, fmt);
+> r1 = vprintk(fmt, args);
+> va_end(args);
+> va_start(args, fmt);
+> r2 = vprintk(fmt, args);
+> va_end(args);
 
----
- lib/kobject.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Option 2:
+> va_list args, argscopy;
+> va_start(args, fmt);
+> va_copy(argscopy, args);
+> r1 = vprintk(fmt, argscopy);
+> va_end(argscopy);
+> r2 = vprintk(fmt, args);
+> va_end(args);
 
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -366,6 +366,19 @@ int kobject_rename(struct kobject * kobj
- 	if (!kobj->parent)
- 		return -EINVAL;
- 
-+	/* see if this name is already in use */
-+	if (kobj->kset) {
-+		struct kobject *temp_kobj;
-+		temp_kobj = kset_find_obj(kobj->kset, new_name);
-+		if (temp_kobj) {
-+			printk(KERN_WARNING "kobject '%s' can not be renamed "
-+			       "to '%s' as '%s' is already in existance.\n",
-+			       kobject_name(kobj), new_name, new_name);
-+			kobject_put(temp_kobj);
-+			return -EINVAL;
-+		}
-+	}
-+
- 	devpath = kobject_get_path(kobj, GFP_KERNEL);
- 	if (!devpath) {
- 		error = -ENOMEM;
+Now in a function which *receives* a va_list from one of its callers,  
+"Option 1" isn't an option because you don't have the original stack  
+frame, so the result looks like this:
+
+> void func1(const char *fmt, ...)
+> {
+> 	va_list ap;
+> 	va_start(ap, fmt);
+> 	func2(fmt, ap);
+> 	va_end(ap);
+> }
+>
+> void func2(const char *fmt, va_list ap)
+> {
+> 	va_list ap2;
+> 	va_copy(ap2, ap);
+> 	vprintk(fmt, ap2);
+> 	va_end(ap2);
+> 	vprintk(fmt, ap);
+> }
+
+Cheers,
+Kyle Moffett
+
