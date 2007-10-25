@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXJYPcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXJYPek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761489AbXJYPcp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXJYPce
+	id S1761390AbXJYPek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXJYPed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:32:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41062 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752706AbXJYPcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:32:33 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-       glommer@gmail.com, Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH] Wipe out traditional opt from x86_64 Makefile
-Date: Thu, 25 Oct 2007 09:47:52 -0300
-Message-Id: <11933164723812-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
+	Thu, 25 Oct 2007 11:34:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36609 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752661AbXJYPec (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 11:34:32 -0400
+Date: Thu, 25 Oct 2007 08:34:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Permit silencing of __deprecated warnings.
+In-Reply-To: <20071025011516.aea17222.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0710250833450.30120@woody.linux-foundation.org>
+References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org>
+ <41621d56a0a0e4e5f861e1725f18990df5e927ad.1193299380.git.jeff@garzik.org>
+ <20071025011516.aea17222.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Among other things, using -traditional as a gcc option stops us from
-using macro token pasting, which is a feature we heavily rely on.
 
-There was still a use of -traditional in arch/x86/kernel/Makefile_64,
-which this patch removes.
 
-I don't see any problems building kernels in my x86_64 box without
--traditional.
+On Thu, 25 Oct 2007, Andrew Morton wrote:
+> 
+> Sigh.  Can't we just fix the dud code?  Or mark it BROKEN and see what
+> happens?
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
----
- arch/x86/kernel/Makefile_64 |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+I think removing __deprecated is the better option.
 
-diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
-index 82da906..03a01f6 100644
---- a/arch/x86/kernel/Makefile_64
-+++ b/arch/x86/kernel/Makefile_64
-@@ -3,7 +3,6 @@
- #
- 
- extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
--#EXTRA_AFLAGS	:= -traditional
- obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
- 		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
- 		x8664_ksyms_64.o i387_64.o syscall_64.o vsyscall_64.o \
--- 
-1.4.4.2
+Quite frankly, some people add "__deprecated" *way* too eagerly. 
 
+			Linus
