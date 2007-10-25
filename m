@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbXJYJde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbXJYJdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbXJYJde (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 05:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXJYJd1
+	id S1755334AbXJYJdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 05:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbXJYJdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 05:33:27 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:54098 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754030AbXJYJd0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 05:33:26 -0400
-Date: Thu, 25 Oct 2007 11:32:40 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: "Dan Williams" <dan.j.williams@intel.com>,
-       "Shannon Nelson" <shannon.nelson@intel.com>,
-       linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       kernel@avr32linux.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
-Message-ID: <20071025113240.466b69ba@siona>
-In-Reply-To: <20071024201616.02f87b20@siona>
-References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
-	<e9c3a7c20710240855j7bf1f0a6qa1d11af3a12910e5@mail.gmail.com>
-	<20071024201616.02f87b20@siona>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Oct 2007 05:33:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41137 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757970AbXJYJdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 05:33:40 -0400
+Message-ID: <472062E7.2030603@redhat.com>
+Date: Thu, 25 Oct 2007 11:33:27 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Anas Nashif <nashif@linux.intel.com>, linux-kernel@vger.kernel.org,
+       Marek Dabek <marek.dabek@intel.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Intel Manageability Engine Interface driver
+References: <471CDC5E.4010300@linux.intel.com> <200710230030.03705.maximlevitsky@gmail.com>
+In-Reply-To: <200710230030.03705.maximlevitsky@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 20:16:16 +0200
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+Maxim Levitsky wrote:
+> Will integrated sensors on DG965 motherboard be supported?
+> They can be accessed only through the
+> HECI interface, but the board has no AMT, and even if it had one, I don't 
+> think AMT includes HW sensors.
 
-> [handwaving about API extensions]
+While talking about AMT ...
 
-Oh, and we definitely need a way to report errors. Looks like the
-existing drivers want this as well -- I couldn't help but notice this
-in the iop-adma driver:
+<ad>
 
-static irqreturn_t iop_adma_err_handler(int irq, void *data)
-{
-	(...)
+While talking about AMT:  One quite useful thing is AMT provides is
+*remote* management (most useful for kernel hackers: serial-over-lan
+console, remote reset).  I've hacked up some tools to use this stuff.
+Package is is called amtterm.
 
-	BUG();
-}
+Source code: http://dl.bytesex.org/releases/amtterm/
 
-That's a panic waiting to happen, isn't it?
+Fedora 7+8 have ready-to-go packages in the repositories, so you can
+just "yum install amtterm".
 
-Håvard
+SuSE packages are in the buildservice:
+http://download.opensuse.org/repositories/home:/kraxel/
+
+</ad>
+
+HTH,
+  Gerd
