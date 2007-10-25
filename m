@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXJYVvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbXJYVyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbXJYVvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXJYVvJ
+	id S1757222AbXJYVyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXJYVyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:51:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:61216 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650AbXJYVvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:51:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
-   d="scan'208";a="305592072"
-Date: Thu, 25 Oct 2007 14:50:47 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: akpm@linux-foundation.org, jeff@garzik.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@openedhand.com>
-Subject: Re: [PATCH] ata: ahci: Enable enclosure management via LED (resend)
-Message-Id: <20071025145047.1c5e96f3.kristen.c.accardi@intel.com>
-In-Reply-To: <200710252335.12975.ioe-lkml@rameria.de>
-References: <20071024155845.5129d6a4.kristen.c.accardi@intel.com>
-	<200710252335.12975.ioe-lkml@rameria.de>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 17:54:07 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50809 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbXJYVyG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:54:06 -0400
+Message-ID: <47211070.4090502@zytor.com>
+Date: Thu, 25 Oct 2007 14:53:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Joseph Parmelee <jparmele@wildbear.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Old version of lilo fails to boot 2.6.23
+References: <Pine.LNX.4.64.0710151600090.15578@bruno> <20071025014746.96e5e776.akpm@linux-foundation.org>
+In-Reply-To: <20071025014746.96e5e776.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------020607040809020801000602"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 23:35:11 +0200
-Ingo Oeser <ioe-lkml@rameria.de> wrote:
+This is a multi-part message in MIME format.
+--------------020607040809020801000602
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Hi Kristen,
-> 
-> On Thursday 25 October 2007, Kristen Carlson Accardi wrote:
-> > Enable enclosure management via LED
-> > 
-> > As described in the AHCI spec, some AHCI controllers may support 
-> > Enclosure management via a variety of protocols.  This patch
-> > adds support for the LED message type that is specified in 
-> > AHCI 1.1 and higher.
-> 
-> Linux has a LED subsystem for that. May I suggest, that you just register
-> these leds and let userspace handle them via that via the LED API?
-> 
-> The LED userspace API is described in Documentation/leds-class.txt
-> and the headers for registering LEDs is linux/leds.h under include/
-> 
-> Since you explicitly WANT user space to control these, that should
-> be the right API. 
-> 
-> Richard, what do YOU think?
-> 
-> 
-> Best Regards
-> 
-> Ingo Oeser
-> 
+[Ancient LILO boot problem]
 
-I did look into using the LED class for this, but it didn't appropriate
-as I wanted the leds to be associated with a particular disk, and not
-with the platform as a whole.  It seemed to me that the led_class was 
-a bit of overkill for what we needed to do here, since we just need 
-on/off and nothing else.
+Joseph, could you try this patch on your ancient-LILO setup?
+
+	-hpa
+
+--------------020607040809020801000602
+Content-Type: text/x-patch;
+ name="newsetup-ancient-lilo.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="newsetup-ancient-lilo.patch"
+
+diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
+index 8353c81..295f9b9 100644
+--- a/arch/x86/boot/header.S
++++ b/arch/x86/boot/header.S
+@@ -242,11 +242,31 @@ setup2:
+ 	movw	%ax, %es
+ 	cld
+ 
++# Apparently some ancient versions of LILO invoked the kernel
++# with %ss != %ds, which happened to work by accident for the
++# old code.  If the CAN_USE_HEAP flag is set in loadflags, or
++# %ss != %ds, then adjust the stack pointer.
++	testb	$CAN_USE_HEAP, loadflags
++	jnz 2f
++
++	# No CAN_USE_HEAP
++	movw	%ss, %dx
++	cmpw	%ax, %dx	# %ds == %ss?
++	je	3f		# If so, assume %sp is valid
++
++	# If not, use the default value from heap_end_ptr
++	# as the %sp value -- it's the best we can do with an
++	# impossible situation.
++2:
++	movw	%ax, %ss
++	movw	heap_end_ptr, %sp
++	
+ # Stack paranoia: align the stack and make sure it is good
+ # for both 16- and 32-bit references.  In particular, if we
+ # were meant to have been using the full 16-bit segment, the
+ # caller might have set %sp to zero, which breaks %esp-based
+ # references.
++3:	
+ 	andw	$~3, %sp	# dword align (might as well...)
+ 	jnz	1f
+ 	movw	$0xfffc, %sp	# Make sure we're not zero
+
+--------------020607040809020801000602--
