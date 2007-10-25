@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbXJYD57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761528AbXJYD7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761515AbXJYD57 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 23:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXJYD5t
+	id S1761528AbXJYD7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 23:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758883AbXJYD7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 23:57:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36932 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758638AbXJYD5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 23:57:47 -0400
-Date: Wed, 24 Oct 2007 20:57:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: trenn@suse.de
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with
- ACPI Operation Region resources
-Message-Id: <20071024205723.458fab97.akpm@linux-foundation.org>
-In-Reply-To: <1193236319.4590.225.camel@queen.suse.de>
-References: <1193236319.4590.225.camel@queen.suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 23:59:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:52931 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758575AbXJYD7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 23:59:21 -0400
+To: <netdev@vger.kernel.org>
+CC: <linux-kernel@vger.kernel.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 25 Oct 2007 13:59:08 +1000
+Subject: [PATCH] napi: use non-interruptible sleep in napi_disable
+Message-Id: <20071025035920.C2D39DDECE@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 16:31:59 +0200 Thomas Renninger <trenn@suse.de> wrote:
+The current napi_disable() uses msleep_interruptible() but doesn't
+(and can't) exit in case there's a signal, thus ending up doing a
+hot spin without a cpu_relax. Use uninterruptible sleep instead.
 
-> it seems Len's test tree and Linus tree diverged a bit, at least with
-> this patch set things do not apply cleanly.
-> 
-> Therefore I post these for discussion whether and in which kernel tree
-> they should end up before doing work for nothing.
-> If they are still a candidate for 2.6.24 (rather unintrusive), pls tell
-> me whether and when I should base them against Len's test/release branch
-> or whatever other tree.
-> If not, it would be great if they can be included into the -mm tree and
-> I can rebase them against this one.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I staged the three acpi patches against Len's tree and I staged the hwmon
-patch against Mark's tree and I staged the I2C patch against Jean's tree.
+ include/linux/netdevice.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This means that if/when the ACPI patches have gone me->Len->Linus, I can
-send the I2C patch to Jean and the hwmon patch to Mark and we're all good.
-
+Index: linux-work/include/linux/netdevice.h
+===================================================================
+--- linux-work.orig/include/linux/netdevice.h	2007-10-17 12:39:16.000000000 +1000
++++ linux-work/include/linux/netdevice.h	2007-10-17 12:45:00.000000000 +1000
+@@ -390,7 +390,7 @@ static inline void napi_complete(struct 
+ static inline void napi_disable(struct napi_struct *n)
+ {
+ 	while (test_and_set_bit(NAPI_STATE_SCHED, &n->state))
+-		msleep_interruptible(1);
++		msleep(1);
+ }
+ 
+ /**
