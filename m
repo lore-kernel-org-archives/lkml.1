@@ -1,64 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbXJYR6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbXJYR7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbXJYR6f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbXJYR6K
+	id S1756563AbXJYR7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXJYR7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:58:10 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55456 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755362AbXJYR6J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:58:09 -0400
-Message-ID: <4720D933.3080703@ct.jp.nec.com>
-Date: Thu, 25 Oct 2007 10:58:11 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-Cc: hbabu@us.ibm.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
-References: <47195763.1090803@ct.jp.nec.com> <20071024063434.GC4622@in.ibm.com> <471F72AD.8030902@ct.jp.nec.com>
-In-Reply-To: <471F72AD.8030902@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Oct 2007 13:59:17 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:10815 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751574AbXJYR7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 13:59:16 -0400
+X-IronPort-AV: E=Sophos;i="4.21,329,1188802800"; 
+   d="scan'208";a="116791795"
+Subject: Re: LTP ustat01 test fails on NFSROOT
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       chuck.lever@oracle.com
+In-Reply-To: <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org>
+	 <1193188894.27073.20.camel@heimdal.trondhjem.org>
+	 <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
+	 <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 25 Oct 2007 13:59:28 -0400
+Message-Id: <1193335168.7705.39.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 25 Oct 2007 17:58:59.0521 (UTC) FILETIME=[B822B310:01C81730]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto wrote:
-> Vivek Goyal wrote:
->> On Fri, Oct 19, 2007 at 06:18:27PM -0700, Hiroshi Shimamoto wrote:
->>> Hi,
->>>
->>> I made patches to unify crash_32/64.c.
->>> There are three patches;
->>> 1. add lapic_shutdown for x86_64
->>> 2. add safe_smp_processor_id for x86_64
->>> 3. unify crash_32/64.c
->>>
->>> I'm not sure that it's good to split to these patches.
->>>
->>> I've compiled on both of 32bit and 64bit, and tested
->>> kdump on 64bit.
->>>
->> Hi Hiroshi,
->>
->> Thanks for the patches. Can you please also test it on 32bit to make
->> sure nothing is broken.
-> 
-> Okay, I'll test it on 32bit.
-> A build problem already has been found on 32bit.
-> 
-I'm now testing crash on 32bit, but there is an issue before
-applying the patches. My machine stopped at checking 'hlt'
-after kexec, showing below message.
+Could you please try the following patch?
 
-CPU: Intel(R) Xeon(TM) CPU 3.80GHz stepping 0a
-Checking 'hlt' instruction...
+Cheers
+  Trond
+--------------------------------- CUT HERE -----------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Thu, 25 Oct 2007 13:56:10 -0400
+NFS: Fix the ustat() regression
 
-v2.6.23.1 works fine for 1st kernel.
-I'm investigating it..
+Since 2.6.18, the superblock sb->s_root has been a dummy dentry with a
+dummy inode. This breaks ustat(), which actually uses sb->s_root in a
+vfstat() call.
 
-Thanks
-Hiroshi Shimamoto
+Fix this by making the s_root a dummy alias to the directory inode that was
+used when creating the superblock.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/getroot.c |   81 ++++++++++++++++++------------------------------------
+ 1 files changed, 27 insertions(+), 54 deletions(-)
+
+diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
+index 522e5ad..0ee4384 100644
+--- a/fs/nfs/getroot.c
++++ b/fs/nfs/getroot.c
+@@ -43,6 +43,25 @@
+ #define NFSDBG_FACILITY		NFSDBG_CLIENT
+ 
+ /*
++ * Set the superblock root dentry.
++ * Note that this function frees the inode in case of error.
++ */
++static int nfs_superblock_set_dummy_root(struct super_block *sb, struct inode *inode)
++{
++	/* The mntroot acts as the dummy root dentry for this superblock */
++	if (sb->s_root == NULL) {
++		sb->s_root = d_alloc_root(inode);
++		if (sb->s_root == NULL) {
++			iput(inode);
++			return -ENOMEM;
++		}
++		/* Circumvent igrab(): we know the inode is not being freed */
++		atomic_inc(&inode->i_count);
++	}
++	return 0;
++}
++
++/*
+  * get an NFS2/NFS3 root dentry from the root filehandle
+  */
+ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
+@@ -54,33 +73,6 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
+ 	struct inode *inode;
+ 	int error;
+ 
+-	/* create a dummy root dentry with dummy inode for this superblock */
+-	if (!sb->s_root) {
+-		struct nfs_fh dummyfh;
+-		struct dentry *root;
+-		struct inode *iroot;
+-
+-		memset(&dummyfh, 0, sizeof(dummyfh));
+-		memset(&fattr, 0, sizeof(fattr));
+-		nfs_fattr_init(&fattr);
+-		fattr.valid = NFS_ATTR_FATTR;
+-		fattr.type = NFDIR;
+-		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
+-		fattr.nlink = 2;
+-
+-		iroot = nfs_fhget(sb, &dummyfh, &fattr);
+-		if (IS_ERR(iroot))
+-			return ERR_PTR(PTR_ERR(iroot));
+-
+-		root = d_alloc_root(iroot);
+-		if (!root) {
+-			iput(iroot);
+-			return ERR_PTR(-ENOMEM);
+-		}
+-
+-		sb->s_root = root;
+-	}
+-
+ 	/* get the actual root for this mount */
+ 	fsinfo.fattr = &fattr;
+ 
+@@ -96,6 +88,10 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
+ 		return ERR_PTR(PTR_ERR(inode));
+ 	}
+ 
++	error = nfs_superblock_set_dummy_root(sb, inode);
++	if (error != 0)
++		return ERR_PTR(error);
++
+ 	/* root dentries normally start off anonymous and get spliced in later
+ 	 * if the dentry tree reaches them; however if the dentry already
+ 	 * exists, we'll pick it up at this point and use it as the root
+@@ -241,33 +237,6 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
+ 
+ 	dprintk("--> nfs4_get_root()\n");
+ 
+-	/* create a dummy root dentry with dummy inode for this superblock */
+-	if (!sb->s_root) {
+-		struct nfs_fh dummyfh;
+-		struct dentry *root;
+-		struct inode *iroot;
+-
+-		memset(&dummyfh, 0, sizeof(dummyfh));
+-		memset(&fattr, 0, sizeof(fattr));
+-		nfs_fattr_init(&fattr);
+-		fattr.valid = NFS_ATTR_FATTR;
+-		fattr.type = NFDIR;
+-		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
+-		fattr.nlink = 2;
+-
+-		iroot = nfs_fhget(sb, &dummyfh, &fattr);
+-		if (IS_ERR(iroot))
+-			return ERR_PTR(PTR_ERR(iroot));
+-
+-		root = d_alloc_root(iroot);
+-		if (!root) {
+-			iput(iroot);
+-			return ERR_PTR(-ENOMEM);
+-		}
+-
+-		sb->s_root = root;
+-	}
+-
+ 	/* get the info about the server and filesystem */
+ 	error = nfs4_server_capabilities(server, mntfh);
+ 	if (error < 0) {
+@@ -289,6 +258,10 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
+ 		return ERR_PTR(PTR_ERR(inode));
+ 	}
+ 
++	error = nfs_superblock_set_dummy_root(sb, inode);
++	if (error != 0)
++		return ERR_PTR(error);
++
+ 	/* root dentries normally start off anonymous and get spliced in later
+ 	 * if the dentry tree reaches them; however if the dentry already
+ 	 * exists, we'll pick it up at this point and use it as the root
