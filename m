@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbXJYAHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXJYAaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbXJYAHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 20:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbXJYAHg
+	id S1756242AbXJYAaR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 20:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXJYAaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 20:07:36 -0400
-Received: from smtpoutm.mac.com ([17.148.16.71]:53676 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754183AbXJYAHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 20:07:35 -0400
-In-Reply-To: <20071024212110.GG27248@parisc-linux.org>
-References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx> <0533759C-81D0-45CB-A663-088A6D4E56A9@mac.com> <20071024212110.GG27248@parisc-linux.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <314B5322-3575-4449-90D2-3068BDC3F64D@mac.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Date: Wed, 24 Oct 2007 20:07:23 -0400
-To: Matthew Wilcox <matthew@wil.cx>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 24 Oct 2007 20:30:03 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35856 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711AbXJYAaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 20:30:01 -0400
+Date: Wed, 24 Oct 2007 17:23:56 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface)
+Message-ID: <20071025002356.GB3660@sequoia.sous-sol.org>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <446110.89443.qm@web36608.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 24, 2007, at 17:21:10, Matthew Wilcox wrote:
-> On Wed, Oct 24, 2007 at 04:59:48PM -0400, Kyle Moffett wrote:
->> This seems unlikely to work reliably as the various "v*printf"  
->> functions modify the va_list argument they are passed.  It may  
->> happen to work on your particular architecture depending on how  
->> that argument data is passed and stored, but you probably actually  
->> want to make a copy of the varargs list for the first vsnprintf call.
->
-> I based what I did on how printk works:
->
->         va_start(args, fmt);
->         r = vprintk(fmt, args);
->         va_end(args);
->
-> It doesn't call va_* anywhere else.  I don't claim to be a varargs  
-> expert, but if I'm wrong, I'm at least wrong the same way that  
-> printk is, so not in any way that's significant for any other  
-> architecture Linux runs on.
+* Casey Schaufler (casey@schaufler-ca.com) wrote:
+> And don't give me the old "LKML is a tough crowd" feldercarb.
+> Security modules have been much worse. Innovation, even in
+> security, is a good thing and treating people harshly, even
+> "for their own good", is an impediment to innovation.
 
-No, the problem is what happens when you don't have enough space  
-allocated:  you call "vsnprintf(s, len, format, args);" and then  
-later call "vsprintf(s, format, args);" with the *SAME* "args".   
-That's what's broken.
+I agree that innovation is critical to the success of Linux, and security
+is not immune to that.  The trouble is that most of the security modules
+that have come forward have had some real serious shortcomings.  I do
+believe it is prudent to keep in-tree security sensitive code under
+high scrutiny because we do not want to create security holes by adding
+problematic security code.
 
-So this is wrong:
-> va_list args;
-> va_start(args, fmt);
-> r1 = vprintk(fmt, args);
-> r2 = vprintk(fmt, args);
-> va_end(args);
-
-To fix it, you have 2 options.
-
-Option 1:
-> va_list args;
-> va_start(args, fmt);
-> r1 = vprintk(fmt, args);
-> va_end(args);
-> va_start(args, fmt);
-> r2 = vprintk(fmt, args);
-> va_end(args);
-
-Option 2:
-> va_list args, argscopy;
-> va_start(args, fmt);
-> va_copy(argscopy, args);
-> r1 = vprintk(fmt, argscopy);
-> va_end(argscopy);
-> r2 = vprintk(fmt, args);
-> va_end(args);
-
-Now in a function which *receives* a va_list from one of its callers,  
-"Option 1" isn't an option because you don't have the original stack  
-frame, so the result looks like this:
-
-> void func1(const char *fmt, ...)
-> {
-> 	va_list ap;
-> 	va_start(ap, fmt);
-> 	func2(fmt, ap);
-> 	va_end(ap);
-> }
->
-> void func2(const char *fmt, va_list ap)
-> {
-> 	va_list ap2;
-> 	va_copy(ap2, ap);
-> 	vprintk(fmt, ap2);
-> 	va_end(ap2);
-> 	vprintk(fmt, ap);
-> }
-
-Cheers,
-Kyle Moffett
-
+thanks,
+-chris
