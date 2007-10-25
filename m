@@ -1,177 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbXJYR7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbXJYSER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbXJYR7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXJYR7R
+	id S1754256AbXJYSER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXJYSD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:59:17 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:10815 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751574AbXJYR7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:59:16 -0400
-X-IronPort-AV: E=Sophos;i="4.21,329,1188802800"; 
-   d="scan'208";a="116791795"
-Subject: Re: LTP ustat01 test fails on NFSROOT
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
-       chuck.lever@oracle.com
-In-Reply-To: <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org>
-	 <1193188894.27073.20.camel@heimdal.trondhjem.org>
-	 <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org>
-	 <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Thu, 25 Oct 2007 13:59:28 -0400
-Message-Id: <1193335168.7705.39.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 25 Oct 2007 17:58:59.0521 (UTC) FILETIME=[B822B310:01C81730]
+	Thu, 25 Oct 2007 14:03:58 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52073 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbXJYSD5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:03:57 -0400
+Date: Thu, 25 Oct 2007 19:03:14 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-Reply-To: <200710222138.l9MLcChn003084@agora.fsl.cs.sunysb.edu>
+Message-ID: <Pine.LNX.4.64.0710251743190.9834@blonde.wat.veritas.com>
+References: <200710222138.l9MLcChn003084@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you please try the following patch?
+On Mon, 22 Oct 2007, Erez Zadok wrote:
+> 
+> What's the precise semantics of AOP_WRITEPAGE_ACTIVATE?
 
-Cheers
-  Trond
---------------------------------- CUT HERE -----------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Thu, 25 Oct 2007 13:56:10 -0400
-NFS: Fix the ustat() regression
+Sigh - not at you, at it!  It's a secret that couldn't be kept secret,
+a hack for tmpfs reclaim, let's just look forward to it going away.
 
-Since 2.6.18, the superblock sb->s_root has been a dummy dentry with a
-dummy inode. This breaks ustat(), which actually uses sb->s_root in a
-vfstat() call.
+> Is it considered an error or not?
 
-Fix this by making the s_root a dummy alias to the directory inode that was
-used when creating the superblock.
+No, it's definitely not an error.  It'a a private note from tmpfs
+(or ramdisk) to vmscan, saying "don't waste your time coming back
+to me with this page until you have to, please move on to another
+more likely to be freeable".
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+> If it's an error, then I usually feel that it's important for
+> a stacked f/s to return that error indication upwards.
 
- fs/nfs/getroot.c |   81 ++++++++++++++++++------------------------------------
- 1 files changed, 27 insertions(+), 54 deletions(-)
+Indeed, but this is not an error.  Remember, neither ramdisk nor
+tmpfs is stable storage: okay, tmpfs can go out to disk by using
+swap, but that's not stable storage - it's not reconstituted after
+reboot.  (If there's an error in writing to swap, well, that's a
+different issue; and there's few filesystems where such an I/O
+error would be reported from ->writepage.)
 
-diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
-index 522e5ad..0ee4384 100644
---- a/fs/nfs/getroot.c
-+++ b/fs/nfs/getroot.c
-@@ -43,6 +43,25 @@
- #define NFSDBG_FACILITY		NFSDBG_CLIENT
- 
- /*
-+ * Set the superblock root dentry.
-+ * Note that this function frees the inode in case of error.
-+ */
-+static int nfs_superblock_set_dummy_root(struct super_block *sb, struct inode *inode)
-+{
-+	/* The mntroot acts as the dummy root dentry for this superblock */
-+	if (sb->s_root == NULL) {
-+		sb->s_root = d_alloc_root(inode);
-+		if (sb->s_root == NULL) {
-+			iput(inode);
-+			return -ENOMEM;
-+		}
-+		/* Circumvent igrab(): we know the inode is not being freed */
-+		atomic_inc(&inode->i_count);
-+	}
-+	return 0;
-+}
-+
-+/*
-  * get an NFS2/NFS3 root dentry from the root filehandle
-  */
- struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
-@@ -54,33 +73,6 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
- 	struct inode *inode;
- 	int error;
- 
--	/* create a dummy root dentry with dummy inode for this superblock */
--	if (!sb->s_root) {
--		struct nfs_fh dummyfh;
--		struct dentry *root;
--		struct inode *iroot;
--
--		memset(&dummyfh, 0, sizeof(dummyfh));
--		memset(&fattr, 0, sizeof(fattr));
--		nfs_fattr_init(&fattr);
--		fattr.valid = NFS_ATTR_FATTR;
--		fattr.type = NFDIR;
--		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
--		fattr.nlink = 2;
--
--		iroot = nfs_fhget(sb, &dummyfh, &fattr);
--		if (IS_ERR(iroot))
--			return ERR_PTR(PTR_ERR(iroot));
--
--		root = d_alloc_root(iroot);
--		if (!root) {
--			iput(iroot);
--			return ERR_PTR(-ENOMEM);
--		}
--
--		sb->s_root = root;
--	}
--
- 	/* get the actual root for this mount */
- 	fsinfo.fattr = &fattr;
- 
-@@ -96,6 +88,10 @@ struct dentry *nfs_get_root(struct super_block *sb, struct nfs_fh *mntfh)
- 		return ERR_PTR(PTR_ERR(inode));
- 	}
- 
-+	error = nfs_superblock_set_dummy_root(sb, inode);
-+	if (error != 0)
-+		return ERR_PTR(error);
-+
- 	/* root dentries normally start off anonymous and get spliced in later
- 	 * if the dentry tree reaches them; however if the dentry already
- 	 * exists, we'll pick it up at this point and use it as the root
-@@ -241,33 +237,6 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
- 
- 	dprintk("--> nfs4_get_root()\n");
- 
--	/* create a dummy root dentry with dummy inode for this superblock */
--	if (!sb->s_root) {
--		struct nfs_fh dummyfh;
--		struct dentry *root;
--		struct inode *iroot;
--
--		memset(&dummyfh, 0, sizeof(dummyfh));
--		memset(&fattr, 0, sizeof(fattr));
--		nfs_fattr_init(&fattr);
--		fattr.valid = NFS_ATTR_FATTR;
--		fattr.type = NFDIR;
--		fattr.mode = S_IFDIR | S_IRUSR | S_IWUSR;
--		fattr.nlink = 2;
--
--		iroot = nfs_fhget(sb, &dummyfh, &fattr);
--		if (IS_ERR(iroot))
--			return ERR_PTR(PTR_ERR(iroot));
--
--		root = d_alloc_root(iroot);
--		if (!root) {
--			iput(iroot);
--			return ERR_PTR(-ENOMEM);
--		}
--
--		sb->s_root = root;
--	}
--
- 	/* get the info about the server and filesystem */
- 	error = nfs4_server_capabilities(server, mntfh);
- 	if (error < 0) {
-@@ -289,6 +258,10 @@ struct dentry *nfs4_get_root(struct super_block *sb, struct nfs_fh *mntfh)
- 		return ERR_PTR(PTR_ERR(inode));
- 	}
- 
-+	error = nfs_superblock_set_dummy_root(sb, inode);
-+	if (error != 0)
-+		return ERR_PTR(error);
-+
- 	/* root dentries normally start off anonymous and get spliced in later
- 	 * if the dentry tree reaches them; however if the dentry already
- 	 * exists, we'll pick it up at this point and use it as the root
+> 
+> The unionfs page and the lower page are somewhat tied together, at least
+> logically.  For unionfs's page to be considered to have been written
+> successfully, the lower page has to be written successfully.  So again, if
+> the lower f/s returns AOP_WRITEPAGE_ACTIVATE, should I consider my unionfs
+> page to have been written successfully or not?
+
+Consider it written successfully.  (What does written mean with tmpfs?
+it means a page can be freed, it doesn't mean the data is forever safe.)
+
+> If I don't return
+> AOP_WRITEPAGE_ACTIVATE up, can there be any chance that some vital data may
+> never get flushed out?
+
+Things should work better if you don't return AOP_WRITEPAGE_ACTIVATE.
+If you mark your page as clean and successfully written, vmscan will
+be able to free it.  If needed, we can get the data back from the
+lower page on demand, but meanwhile a page has been freed, which
+is what vmscan reclaim is all about.  (But of course, in the case
+where you couldn't get hold of a page for the lower, you must redirty
+yours before returning.)
+
+> > unionfs_writepage also sets AOP_WRITEPAGE_ACTIVATE when it cannot
+> > find_lock_page: that case may be appropriate.  Though I don't really
+> > understand it: seems dangerous to be relying upon the lower level page
+> > just happening to be there already.  Isn't memory pressure then likely
+> > to clog up with lots of upper level dirty pages which cannot get
+> > written out to the lower level?
+> 
+> Based on vfs.txt (which perhaps should be revised :-), I was trying to do
+> the best I can to ensure that no data is lost if the current page cannot be
+> written out to the lower f/s.
+> 
+> I used to do grab_cache_page() before, but that caused problems: writepage
+> is not the right place to _increase_ memory pressure by allocating a new
+> page...
+
+Yes, but just hoping the lower page will be there, and doing nothing
+to encourage it to become there, sounds an even poorer strategy to me.
+
+It's not easy, I know.  Your position reminds me of the loop driver
+(drivers/block/loop.c), which has long handled this situation (with
+great success, though I doubt an absolute guarantee) by taking
+__GFP_IO|__GFP_FS off the mapping_gfp_mask of the underlying file:
+look for gfp_mask in loop_set_fd() (and I think ignore do_loop_switch(),
+that's new to me and seems to be for a very special case).
+
+I grepped for gfp in unionfs, and there seems to be nothing: I doubt
+you can be robust under memory pressure without doing something about
+that.  If you can take __GFP_IO|__GFP_FS off the lower mapping (just
+while in unionfs_writepage, or longer term? what locking needed?),
+then you should be able to go back to using grab_cache_page().
+
+> 
+> One solution I thought of is do what ecryptfs does: keep an open struct file
+> in my inode and call vfs_write(), but I don't see that as a significantly
+> cleaner/better solution.
+
+I agree with you.
+
+> (BTW, ecrypfts kinda had to go for vfs_write b/c
+> it changes the data size and content of what it writes below; unionfs is
+> simpler in that manner b/c it needs to write the same data to the lower file
+> at the same offset.)
+
+Ah, yes.
+
+> 
+> Another idea we've experimented with before is "page pointer flipping."  In
+> writepage, we temporarily set the page->mapping->host to the lower_inode;
+> then we call the lower writepage with OUR page; then fix back the
+> page->mapping->host to the upper inode.  This had two benefits: first we can
+> guarantee that we always have a page to write below, and second we don't
+> need to keep both upper and lower pages (reduces memory pressure).  Before
+> we did this page pointer flipping, we verified that the page is locked so no
+> other user could be written the page->mapping->host in this transient state,
+> and we ensured that no lower f/s was somehow caching the temporarily changed
+> value of page->mapping->host for later use.  But, mucking with the pointers
+> in this manner is kinda ugly, to say the least.  Still, I'd love to find a
+> clean and simple way that two layers can share the same struct page and
+> cleanly pass the upper page to a lower f/s.
+
+I wouldn't call it ugly, but it is exceptional and dangerous and cannot
+be sanctioned without a great deal of thought; would very probably need
+subtle or wide changes in core vfs/mm.  shmem/tmpfs has given enough
+trouble in the past with the way it switches page between filecache
+and swapcache, and that imposes interesting limitations.  We'd need
+strong reasons (not for unionfs alone) to go down your page pointer
+flipping route, but I wouldn't say it's forever out of the question.
+
+My guess is it shouldn't flip, but page->mapping indicate a list of
+of different struct address_spaces.
+
+The coherency benefit seems very appealing.
+
+But more thought might prove it a nonsense.
+
+> 
+> If you've got suggestions how I can handle unionfs_write more cleanly, or
+> comments on the above possibilities, I'd love to hear them.
+
+For now I think you should pursue the ~(__GFP_FS|__GFP_IO) idea somehow.
+
+Hugh
