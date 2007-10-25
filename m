@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXJYCdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbXJYCh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbXJYCdY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 22:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXJYCdR
+	id S1754669AbXJYCh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 22:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbXJYChP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 22:33:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49775 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbXJYCdR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 22:33:17 -0400
-Date: Wed, 24 Oct 2007 19:29:49 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
-Message-ID: <20071024192949.346687ed@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 24 Oct 2007 22:37:15 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:58101 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753123AbXJYChM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Oct 2007 22:37:12 -0400
+Message-ID: <393279833.15570@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 25 Oct 2007 10:37:08 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org, chris.mason@oracle.com, jeffm@suse.com,
+       maximlevitsky@gmail.com, peterz@infradead.org, stable@kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Subject: Re: +
+	reiserfs-dont-drop-pg_dirty-when-releasing-sub-page-sized-dirty-file
+	.patch added to -mm tree
+References: <200710242307.l9ON7btk017173@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710242307.l9ON7btk017173@imap1.linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <E1Iksaq-0006pr-Hv@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 24, 2007 at 04:07:37PM -0700, akpm@linux-foundation.org wrote:
+> 
+> The patch titled
+>      reiserfs: don't drop PG_dirty when releasing sub-page-sized dirty file
+> has been added to the -mm tree.  Its filename is
+>      reiserfs-dont-drop-pg_dirty-when-releasing-sub-page-sized-dirty-file.patch
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> ------------------------------------------------------
+> Subject: reiserfs: don't drop PG_dirty when releasing sub-page-sized dirty file
+> From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> 
+> This is not a new problem in 2.6.23-git17.  2.6.22/2.6.23 is buggy in the
+> same way.
+> 
+> Reiserfs could accumulate dirty sub-page-size files until umount time. 
+> They cannot be synced to disk by pdflush routines or explicit `sync'
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sorry it's not that horrible. The *data* will still be written to disk.
+Only the inodes will be stuck in I_DIRTY_PAGES state, and the pages
+stuck in PAGECACHE_TAG_DIRTY state.
 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> Whether this is a complete patch, suitable for all architectures,
-> I'm not sure: it builds, boots and runs correctly on the x86_32 box
-> in question, but you'll be a lot wiser than me about using dma_addr_t
-> for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
-> when I think all arches already get to include it one way or another,
-> typically via asm/scatterlist.h; but I guess it's safest to repeat
-> it.)
+> commands.  Only `umount' can do the trick.
+> 
+> The direct cause is: the dirty page's PG_dirty is wrongly _cleared_.
+> Call trace:
+> 	 [<ffffffff8027e920>] cancel_dirty_page+0xd0/0xf0
+> 	 [<ffffffff8816d470>] :reiserfs:reiserfs_cut_from_item+0x660/0x710
+> 	 [<ffffffff8816d791>] :reiserfs:reiserfs_do_truncate+0x271/0x530
+> 	 [<ffffffff8815872d>] :reiserfs:reiserfs_truncate_file+0xfd/0x3b0
+> 	 [<ffffffff8815d3d0>] :reiserfs:reiserfs_file_release+0x1e0/0x340
+> 	 [<ffffffff802a187c>] __fput+0xcc/0x1b0
+> 	 [<ffffffff802a1ba6>] fput+0x16/0x20
+> 	 [<ffffffff8029e676>] filp_close+0x56/0x90
+> 	 [<ffffffff8029fe0d>] sys_close+0xad/0x110
+> 	 [<ffffffff8020c41e>] system_call+0x7e/0x83
+> 
+> Fix the bug by removing the cancel_dirty_page() call. Tests show that
+> it causes no bad behaviors on various write sizes.
 
-there is a problem with this... sg_phys doesn't return an actual *dma*
-address.... at least not an address you can give to the device.
-Using dma_addr_t is thus a bit misleading.....
