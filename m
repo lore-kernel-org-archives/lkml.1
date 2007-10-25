@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbXJYSkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXJYSj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761043AbXJYSkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbXJYSkc
+	id S1760925AbXJYSj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXJYSjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:40:32 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:56739 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbXJYSkb (ORCPT
+	Thu, 25 Oct 2007 14:39:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33588 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756718AbXJYSjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:40:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:subject:message-id:mime-version:content-type:con
-	tent-disposition:user-agent;
-	b=HMDOd5ynWwBGm923WPnUIsMYzJTF/W2O5IyUIBWJuhUAIRavTwk16YqglxW2e
-	mm+OFxV0+6h/wq9zgabKeHzeg==
-Date: Thu, 25 Oct 2007 20:40:29 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci: get rid of pci_dev::{vendor,device}_compatible fields
-Message-ID: <20071025184029.GO7543@xi.wantstofly.org>
-Mime-Version: 1.0
+	Thu, 25 Oct 2007 14:39:45 -0400
+Date: Thu, 25 Oct 2007 11:32:48 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, chunhao.huang@hotmail.com, gregkh@suse.de,
+       htejun@gmail.com, brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks, V2.
+Message-ID: <20071025183248.GA2176@kroah.com>
+References: <20071025.011445.80152909.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20071025.011445.80152909.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vendor_compatible and device_compatible fields in struct
-pci_dev aren't used anywhere, and are somewhat pointless.  Assuming
-that these are historical artifacts, remove them.
+On Thu, Oct 25, 2007 at 01:14:45AM -0700, David Miller wrote:
+> 
+> Ok, I've respun the patches including all of the feedback I've
+> obtained.  Again, it's at:
+> 
+> 	kernel.org:/pub/scm/linux/kernel/git/davem/msiquirk-2.6.git
+> 
+> Greg, I think this stuff is ready to go so if you would pull
+> them in I would really appreciate it.
 
-Signed-off-by: Lennert Buytenhek <buytenh@wantstofly.org>
+These all look great to me, and I've pulled them into my trees.
 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 5d2281f..d503ef1 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -66,7 +66,6 @@ enum pci_mmap_state {
- #define PCI_DMA_FROMDEVICE	2
- #define PCI_DMA_NONE		3
- 
--#define DEVICE_COUNT_COMPATIBLE	4
- #define DEVICE_COUNT_RESOURCE	12
- 
- typedef int __bitwise pci_power_t;
-@@ -159,10 +158,6 @@ struct pci_dev {
- 	pci_channel_state_t error_state;	/* current connectivity state */
- 	struct	device	dev;		/* Generic device interface */
- 
--	/* device is compatible with these IDs */
--	unsigned short vendor_compatible[DEVICE_COUNT_COMPATIBLE];
--	unsigned short device_compatible[DEVICE_COUNT_COMPATIBLE];
--
- 	int		cfg_size;	/* Size of configuration space */
- 
- 	/*
+Thanks a lot for doing this work.
+
+I think they should go to Linus before 2.6.24 is out, any objection from
+anyone else with this?
+
+thanks,
+
+greg k-h
