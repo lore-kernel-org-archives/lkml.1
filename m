@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbXJYIvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXJYIwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbXJYIvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 04:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXJYIvp
+	id S1757242AbXJYIwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbXJYIwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 04:51:45 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:45230 "EHLO mail.sf-mail.de"
+	Thu, 25 Oct 2007 04:52:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47404 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbXJYIvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 04:51:44 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
-Date: Thu, 25 Oct 2007 10:51:24 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com> <20071024192949.346687ed@laptopd505.fenrus.org>
-In-Reply-To: <20071024192949.346687ed@laptopd505.fenrus.org>
+	id S1750736AbXJYIwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 04:52:01 -0400
+Message-ID: <4720592D.4030604@garzik.org>
+Date: Thu, 25 Oct 2007 04:51:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1367313.G41zDuGPub";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: eranian@hpl.hp.com
+CC: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, joshua.i.stone@intel.com,
+       juan.villacis@intel.com
+Subject: Re: [PATCH] IA64/perfmon: kill dead code, clean irq handling
+References: <20071023230908.GA12417@havoc.gtf.org> <20071025084615.GA32656@frankl.hpl.hp.com>
+In-Reply-To: <20071025084615.GA32656@frankl.hpl.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200710251051.30429.eike-kernel@sf-tec.de>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1367313.G41zDuGPub
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Stephane Eranian wrote:
+> Jeff,
+> 
+> On Tue, Oct 23, 2007 at 07:09:08PM -0400, Jeff Garzik wrote:
+>> By deleting unused code, this makes perfmon irq handling more efficient,
+>> as well as reducing code size.
+>>
+>> * remove unused pfm_install_alt_pmu_interrupt()
+>> * remove unused pfm_remove_alt_pmu_interrupt()
+>>
+> I have not problem with the patch except maybe for those two functions.
+> How do you know they are not used?
+> Have you checked the VTUNE open-source driver?
+> I thought at some point they were using this hook.
 
-Am Donnerstag, 25. Oktober 2007 schrieb Arjan van de Ven:
-> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> > ---
-> > Whether this is a complete patch, suitable for all architectures,
-> > I'm not sure: it builds, boots and runs correctly on the x86_32 box
-> > in question, but you'll be a lot wiser than me about using dma_addr_t
-> > for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
-> > when I think all arches already get to include it one way or another,
-> > typically via asm/scatterlist.h; but I guess it's safest to repeat
-> > it.)
->
-> there is a problem with this... sg_phys doesn't return an actual *dma*
-> address.... at least not an address you can give to the device.
-> Using dma_addr_t is thus a bit misleading.....
+I was hoping some IA-64 person could speak authoritatively on the subject :)
 
-Ok, then: how do I actually get such an address?
+	Jeff
 
-Eike
 
---nextPart1367313.G41zDuGPub
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHIFkSXKSJPmm5/E4RAqZBAJ9kFhZuiVgTrEmS+qLJZNPOMNaCeACgk2e9
-gInr9ENqUxCa9dBm6Agb5sY=
-=hxdD
------END PGP SIGNATURE-----
-
---nextPart1367313.G41zDuGPub--
