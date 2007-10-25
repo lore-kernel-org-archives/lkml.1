@@ -1,80 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbXJYVqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbXJYVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbXJYVqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXJYVqU
+	id S1759481AbXJYVqz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759728AbXJYVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:46:20 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55698 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759003AbXJYVqT (ORCPT
+	Thu, 25 Oct 2007 17:46:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:54096 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757834AbXJYVql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:46:19 -0400
-Date: Thu, 25 Oct 2007 23:46:47 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Lothian <mike@fireburn.co.uk>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Possibility of adding -march=native to x86
-Message-ID: <20071025214647.GX30533@stusta.de>
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <4720FF2B.9020802@googlemail.com> <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com>
+	Thu, 25 Oct 2007 17:46:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=BAWX9FXrl84JfN44g8yscyzn7scJhsoIzBZ2ovbPO2c/53mEyX+TNDJ7IDbjO2JXz+UdbX6kwg3KrcVjvEHn88VHlQMuyqtvL7eb6QMfp/Sen2p4Z0mYgaAS+isNlO7aWylKXj7msRFbxEC5L3+2KJ/qSlXgZ2l0kgP4GlFdqyY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [IDE] Fix build bug
+Date: Thu, 25 Oct 2007 23:41:38 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-mips@linux-mips.org,
+       Martijn Uffing <mp3project@sarijopen.student.utwente.nl>
+References: <20071025135334.GA23272@linux-mips.org>
+In-Reply-To: <20071025135334.GA23272@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710252341.38902.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 10:30:09PM +0100, Michael Lothian wrote:
-> On 25/10/2007, Gabriel C <nix.or.die@googlemail.com> wrote:
-> > Michael Lothian wrote:
-> > >> The MPENTIUM4 option does not only set -march=pentium4, it also enables
-> > >> several other options in arch/i386/Kconfig.cpu resulting in better
-> > >> performance.
-> > >
-> > > How about an autodetect to set the right options here too using cpuid?
-> > >
-> > > With a warning of course that the code produced will be specifically
-> > > for the native cpu that it's compiled on.
-> >
-> > And kill off all Distro kernels right ? IMO to set that auto magically is bad.
-> >
-> > Regards,
-> >
-> > Gabriel
-> >
-> Yes for something like a distro kernel it is bad but as I said before
-> this isn't what this is for.
+
+Hi,
+
+On Thursday 25 October 2007, Ralf Baechle wrote:
+>   CC      drivers/ide/pci/generic.o
+> drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
+> +section type conflict
 > 
-> Eventually it would be nice to to a make localkernel and for a
-> customised kernel to be build compiling in all pci / pci express
-> drivers into the kernel and all usb devices as modules.
+> This sort of build error is becoming a regular issue.  Either all or non
+> of the elements that go into a particular section of a compilation unit
+> need to be const.  Or an error may result such as in this case if
+> CONFIG_HOTPLUG is unset.
 > 
-> Auto magically detecting the cpu would be part of that
+> Maybe worth a check in checkpatch.pl - but certainly gcc's interolerance
+> is also being less than helpful here.
 > 
-> I hate getting a new piece of kit and then have to figure out from
-> lspci which options need to be turned on and the the really iritation
-> part of finding the option in make menuconfig
+> ---
+>  drivers/ide/pci/generic.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/ide/pci/generic.c b/drivers/ide/pci/generic.c
+> index f44d708..0047684 100644
+> --- a/drivers/ide/pci/generic.c
+> +++ b/drivers/ide/pci/generic.c
+> @@ -67,7 +67,7 @@ MODULE_PARM_DESC(all_generic_ide, "IDE generic will claim all unknown PCI IDE st
+>  		.udma_mask	= ATA_UDMA6, \
+>  	}
+>  
+> -static const struct ide_port_info generic_chipsets[] __devinitdata = {
+> +static struct ide_port_info generic_chipsets[] __devinitdata = {
+>  	/*  0 */ DECLARE_GENERIC_PCI_DEV("Unknown",	0),
+>  
+>  	{	/* 1 */
 
-What exactly is irritating?
-Please name the problems so that they can be fixed.
+I would prefer to not remove const from generic_chipsets[] so:
 
-> Detecting the cpu and using march=native could be all part of that
+[PATCH] drivers/ide/pci/generic: fix build for CONFIG_HOTPLUG=n
 
-You don't need march=native for this.
+It turns out that const and __{dev}initdata cannot be mixed currently
+and that generic IDE PCI host driver is also affected by the same issue:
 
-You have to set the right config option for your CPU and you 
-automatically get the right compiler options.
+On Thursday 25 October 2007, Ralf Baechle wrote:
+>   CC      drivers/ide/pci/generic.o
+> drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
+> +section type conflict
 
-> Mike
+[ Also reported by Martijn Uffing <mp3project@sarijopen.student.utwente.nl>. ]
 
-cu
-Adrian
+This patch workarounds the problem in a bit hackish way but without
+removing const from generic_chipsets[] (it adds const to __setup() so
+__setup_str_ide_generic_all becomes const).
 
--- 
+Now all __{dev}initdata data in generic IDE PCI host driver are read-only
+so it builds again (driver's .init.data section gets marked as READONLY).
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Cc: Martijn Uffing <mp3project@sarijopen.student.utwente.nl>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/generic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: b/drivers/ide/pci/generic.c
+===================================================================
+--- a/drivers/ide/pci/generic.c
++++ b/drivers/ide/pci/generic.c
+@@ -49,7 +49,7 @@ static int __init ide_generic_all_on(cha
+ 	printk(KERN_INFO "IDE generic will claim all unknown PCI IDE storage controllers.\n");
+ 	return 1;
+ }
+-__setup("all-generic-ide", ide_generic_all_on);
++const __setup("all-generic-ide", ide_generic_all_on);
+ #endif
+ module_param_named(all_generic_ide, ide_generic_all, bool, 0444);
+ MODULE_PARM_DESC(all_generic_ide, "IDE generic will claim all unknown PCI IDE storage controllers.");
