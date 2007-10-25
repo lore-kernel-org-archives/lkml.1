@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXJYRP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXJYRTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbXJYRP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 13:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXJYRPN
+	id S1756801AbXJYRTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 13:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXJYRTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 13:15:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35123 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbXJYRPK (ORCPT
+	Thu, 25 Oct 2007 13:19:47 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:59059 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752081AbXJYRTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 13:15:10 -0400
-Date: Thu, 25 Oct 2007 10:10:51 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Cc: "Bernd Petrovitsch" <bernd@firmix.at>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Casey Schaufler" <casey@schaufler-ca.com>,
-       "Adrian Bunk" <bunk@kernel.org>, "Simon Arlott" <simon@fire.lp0.eu>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andreas Gruenbacher" <agruen@suse.de>,
-       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "James Morris" <jmorris@namei.org>,
-       "Crispin Cowan" <crispin@crispincowan.com>,
-       "Giacomo Catenazzi" <cate@debian.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
- static interface)
-Message-ID: <20071025101051.271072a1@laptopd505.fenrus.org>
-In-Reply-To: <2c0942db0710250904n71a6c3dfk5dbc2a91f457ab05@mail.gmail.com>
-References: <20071024223124.GI30533@stusta.de>
-	<446110.89443.qm@web36608.mail.mud.yahoo.com>
-	<20071025002356.GB3660@sequoia.sous-sol.org>
-	<2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
-	<1193303990.18559.28.camel@tara.firmix.at>
-	<2c0942db0710250904n71a6c3dfk5dbc2a91f457ab05@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 25 Oct 2007 13:19:47 -0400
+Date: Thu, 25 Oct 2007 20:19:42 +0300
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: x86: randomize brk() and RLIMIT_DATA
+Message-ID: <20071025171942.pjff7jbpempfcuri@m.safari.iki.fi>
+Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Jiri Kosina <jkosina@suse.cz>,
+	Arjan van de Ven <arjan@infradead.org>
+References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi> <20071025071324.2eac21d6@laptopd505.fenrus.org> <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-10-15)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 09:04:57 -0700
-"Ray Lee" <ray-lk@madrabbit.org> wrote:
+On Thu, Oct 25, 2007 at 16:46:26 +0200, Jiri Kosina wrote:
+> On Thu, 25 Oct 2007, Arjan van de Ven wrote:
+> 
+> > > Would be neat if randomized brk and setrlimit(RLIMIT_DATA, ...)
+> > > worked in a predictable way:
+> > this isn't a valid case afaics; even on "traditional x86" (before we 
+> > changed the address space layout, or even today if you have an unlimited 
+> > stack rlimit) this isn't going to work. applications really shouldn't 
+> > use (s)brk() but malloc(); you have to be able to fall back to mmap 
+> > regardless of what you do.
+> 
+> I tend to agree here with Arjan. However it probably would make no harm to 
+> make at least a little bit consisten behavior of setrlimit(), though it 
+> has a little use in such cases.
+> 
+> Sami, does the patch below work for you?
 
+Thanks, Jiri, now RLIMIT_DATA works as expected.
 
-> Security is not an all or nothing game, it's layers. And we have to
-> make sure that the layers are usable without taking a course from the
-> NSA. I'd love to see a poll of the kernel development community to
-> find out how many use SELinux on their machines, for example.
+Using only RLIMIT_AS to limit processes' memory usage is not
+very easy.  It includes also libraries mapped read-only,
+I have to check/modify the limits when I update/add
+libraries,...
 
-I absolutely agree it's a layer game.
-HOWEVER, even in a layer game we need to have each layer to be
-reasonably solid and not just fake security ("snakeoil").
+Amazingly, I found a patch which seems to be just what I need:
+http://marc.info/?l=linux-mm&m=118402827803338&w=4
+Seems like that is not going to -mm or mainstream...
 
-So while I think it is entirely fair to judge a piece of software
-against what it intends/claims to do, because other pieces in the layer
-game will depend on it to function reasonably well. 
+-- 
+Do what you love because life is too short for anything else.
 
-So most of the LSM fist-fights have been about disagreement of the
-intent; and some about code not living up to its own intend, all mixed
-up. Arguing about the intent is less productive imo (as long as it's at
-least somewhat reasonable, intend like "I want to add rootkits" doesn't
-count obviously), paying attention to check if the code lives up to its
-stated intent/purpose on the other hand is immensely useful and needed;
-for a given implementation it may mean reducing the scope of the intent
-if the implementation just doesn't go as wide as originally thought, or
-fixing some issues in the implementation to live up to the intent.
