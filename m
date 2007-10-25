@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbXJYSst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbXJYSuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761387AbXJYSst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXJYSsl
+	id S1761627AbXJYSuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXJYSty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:48:41 -0400
-Received: from mail.tnnet.fi ([217.112.240.26]:32884 "EHLO mail.tnnet.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753163AbXJYSsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:48:40 -0400
-X-Greylist: delayed 720 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 14:48:40 EDT
-Message-ID: <4720E230.C05B9252@users.sourceforge.net>
-Date: Thu, 25 Oct 2007 21:36:32 +0300
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: linux-crypto@nl.linux.org
+	Thu, 25 Oct 2007 14:49:54 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45063 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752481AbXJYSty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:49:54 -0400
+Date: Thu, 25 Oct 2007 20:50:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Lothian <mike@fireburn.co.uk>
 Cc: linux-kernel@vger.kernel.org
-Subject: Announce loop-AES-v3.2b file/swap crypto package
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: Re: Possibility of adding -march=native to x86
+Message-ID: <20071025185022.GP30533@stusta.de>
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-loop-AES changes since previous release:
-- Fixed compatibility detection problem involving separate obj/source trees.
-- Fixed request size problem on unencrypted device backed USB device.
-- Added initramfs type initrd build option to build-initrd.sh script. Patch
-  from Fix pr0gress0r AT ngs.ru
-- Added gcc version override option to build-initrd.sh script.
-- Fixed losetup -P cleartext key option which always failed to work and
-  printed error message saying so.
-- Added util-linux-ng patch.
-- Worked around block layer interface breakage on linux-2.6.24-rc1 kernel.
+On Thu, Oct 25, 2007 at 07:33:35PM +0100, Michael Lothian wrote:
+> Hi
+> 
+> I was wondering if it was possible to add -march=native support to the
+> processor options of the new x86 architecture if gcc 4.2 or greater is being
+> used.
+> 
+> I'm not suggesting this should be a default at all, merely an extra option
+> similar to selecting P4, Athlon or even -Os.
+> 
+> I've manually tried this flag at home with no ill effects.
 
-bzip2 compressed tarball is here:
+Selecting your CPU in the kernel configuration has more effects than 
+just setting the gcc flag, so it wouldn't gain you anything since you 
+anyway have to choose the correct CPU.
 
-    http://dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.2b.tar.bz2
-    md5sum 2c5642ccfa1a780ef4bd76eb873076aa
+> Mike
 
-    http://dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.2b.tar.bz2.sign
+cu
+Adrian
 
 -- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
