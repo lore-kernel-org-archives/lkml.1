@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbXJYNvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbXJYNyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbXJYNvr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 09:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXJYNvi
+	id S1759485AbXJYNyE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 09:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXJYNxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 09:51:38 -0400
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:52853 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754621AbXJYNvh (ORCPT
+	Thu, 25 Oct 2007 09:53:53 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:57176 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754977AbXJYNxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 09:51:37 -0400
-Date: Thu, 25 Oct 2007 15:51:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with 
- ACPI Operation Region resources
-Message-ID: <20071025155135.019baca3@hyperion.delvare>
-In-Reply-To: <20071024205723.458fab97.akpm@linux-foundation.org>
-References: <1193236319.4590.225.camel@queen.suse.de>
-	<20071024205723.458fab97.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 09:53:52 -0400
+Date: Thu, 25 Oct 2007 14:53:34 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-mips@linux-mips.org
+Subject: [IDE] Fix build bug
+Message-ID: <20071025135334.GA23272@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 20:57:23 -0700, Andrew Morton wrote:
-> On Wed, 24 Oct 2007 16:31:59 +0200 Thomas Renninger <trenn@suse.de> wrote:
-> 
-> > it seems Len's test tree and Linus tree diverged a bit, at least with
-> > this patch set things do not apply cleanly.
-> > 
-> > Therefore I post these for discussion whether and in which kernel tree
-> > they should end up before doing work for nothing.
-> > If they are still a candidate for 2.6.24 (rather unintrusive), pls tell
-> > me whether and when I should base them against Len's test/release branch
-> > or whatever other tree.
-> > If not, it would be great if they can be included into the -mm tree and
-> > I can rebase them against this one.
-> 
-> I staged the three acpi patches against Len's tree and I staged the hwmon
-> patch against Mark's tree and I staged the I2C patch against Jean's tree.
-> 
-> This means that if/when the ACPI patches have gone me->Len->Linus, I can
-> send the I2C patch to Jean and the hwmon patch to Mark and we're all good.
+  CC      drivers/ide/pci/generic.o
+drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
++section type conflict
 
-Thanks for picking these patches, having them in -mm for some time is
-exactly what we need. Let's see how many systems are affected by the
-resource conflicts and how we can fix them
+This sort of build error is becoming a regular issue.  Either all or non
+of the elements that go into a particular section of a compilation unit
+need to be const.  Or an error may result such as in this case if
+CONFIG_HOTPLUG is unset.
 
--- 
-Jean Delvare
+Maybe worth a check in checkpatch.pl - but certainly gcc's interolerance
+is also being less than helpful here.
+
+---
+ drivers/ide/pci/generic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/ide/pci/generic.c b/drivers/ide/pci/generic.c
+index f44d708..0047684 100644
+--- a/drivers/ide/pci/generic.c
++++ b/drivers/ide/pci/generic.c
+@@ -67,7 +67,7 @@ MODULE_PARM_DESC(all_generic_ide, "IDE generic will claim all unknown PCI IDE st
+ 		.udma_mask	= ATA_UDMA6, \
+ 	}
+ 
+-static const struct ide_port_info generic_chipsets[] __devinitdata = {
++static struct ide_port_info generic_chipsets[] __devinitdata = {
+ 	/*  0 */ DECLARE_GENERIC_PCI_DEV("Unknown",	0),
+ 
+ 	{	/* 1 */
