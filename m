@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbXJYEjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbXJYEmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758651AbXJYEjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 00:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbXJYEi5
+	id S1755907AbXJYEmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 00:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbXJYEmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 00:38:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44094 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757392AbXJYEi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 00:38:56 -0400
-Date: Wed, 24 Oct 2007 21:35:33 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: davids@webmaster.com
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-Message-ID: <20071024213533.12115ba0@laptopd505.fenrus.org>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com>
-References: <200710251358.55185.nickpiggin@yahoo.com.au>
-	<MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Thu, 25 Oct 2007 00:42:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:39459 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbXJYEmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 00:42:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Sky2 Driver Issue
+Date: Wed, 24 Oct 2007 21:41:31 -0700
+Organization: Linux Foundation
+Message-ID: <20071024214131.50f36fee@freepuppy.rosehill>
+References: <7b9198260710241058o49a5eb93sf4fa8c22cc037a0e@mail.gmail.com>
+	<7b9198260710241106l1c24ef8cgbd56da60ba28122@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <7b9198260710241106l1c24ef8cgbd56da60ba28122@mail.gmail.com>
+X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Oct 2007 21:29:56 -0700
-"David Schwartz" <davids@webmaster.com> wrote:
+On Wed, 24 Oct 2007 19:06:37 +0100
+"Tom Spink" <tspink@gmail.com> wrote:
 
+> On 24/10/2007, Tom Spink <tspink@gmail.com> wrote:
+> > Hi,
+> >
+> > A couple of kernels ago, I ran into an issue with the sky2 driver.
+> > Basically, I began getting repeated errors on my console of the
+> > following:
+> >
+> > Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000000
+> > Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0xc0000000
+> >
+> > Which eventually led to:
+> > Oct 21 16:33:49 holly kernel: printk: 92 messages suppressed.
+> >
+> > Here is a section of the log that may be useful:
+> > Oct 21 16:33:37 holly kernel: sky2 eth1: enabling interface
+> > Oct 21 16:33:38 holly dhclient: DHCPDISCOVER on eth1 to
+> > 255.255.255.255 port 67 interval 8
+> > Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000010
+> > Oct 21 16:33:39 holly kernel: sky2 eth1: Link is up at 1000 Mbps, full
+> > duplex, flow control both
+> > Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000000
+> > Oct 21 16:33:39 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0xc0000000
+> > Oct 21 16:33:40 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000000
+> > Oct 21 16:33:40 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0xc0000000
+> > Oct 21 16:33:41 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000000
+> > Oct 21 16:33:41 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0xc0000000
+> > Oct 21 16:33:42 holly kernel: sky2 0000:04:00.0: error interrupt
+> > status=0x80000000
+> >
+> > These messages are appearing on all the VTs, and because they keep
+> > popping up, I can't reasonably use the consoles to test if the network
+> > driver is working.
+> >
+> > The kernel I've got going at the moment is 2.6.23-rc9 with git
+> > revision g804b3f9a, and it's fine.  The error surfaced _sometime_
+> > after this.  Attached is my .config.
+> >
+> > I'll try rebooting and pinging the machine to see if the network
+> > driver is working, and this is just (unnecessary?) spew from the
+> > kernel.
+> >
+> > --
+> > Regards,
+> > Tom Spink
+> > University of Edinburgh
+> >
+> >
 > 
-> > Well that's exactly right. For threaded programs (and maybe even
-> > real-world non-threaded ones in general), you don't want to be
-> > even _reading_ global variables if you don't need to. Cache misses
-> > and cacheline bouncing could easily cause performance to completely
-> > tank in some cases while only gaining a cycle or two in
-> > microbenchmarks for doing these funny x86 predication things.
+> Hi again,
 > 
-> For some CPUs, replacing an conditional branch with a conditional
-> move is a *huge* win because it cannot be mispredicted.
+> So it seems the driver and the network card is functioning, but I'm
+> getting the 'error interrupt' message plastered over every console.
+> 
+> I can ping and ssh into the computer, but the message is still
+> scrolling everything off my screens.
+> 
 
-please name one...
-Hint: It's not one made by either Intel or AMD in the last 4 years...
+Your system is not supporting MMCONFIG access to allow driver to turn off
+PCI express error value.  It looks like the hw error irq mask doesn't work
+as expected either.
 
-
-> In general,
-> compilers should optimize for unshared data since that's much more
-> common in typical code. Even for shared data, the usual case is that
-> you are going to access the data few times, so pulling the cache line
-> to the CPU is essentially free since it will happen eventually.
-
-it's not about pulling it to the CPU, it's pulling it *out* of all the
-other cpus AS WELL. (and writing it back to memory, taking away memory
-bandwidth)
+What is your kernel config?
 
 
---
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
+
