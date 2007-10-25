@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbXJYBus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbXJYCG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757056AbXJYBus (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJYBuk
+	id S1756091AbXJYCG0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 22:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbXJYCGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:50:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:61062 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752728AbXJYBuj (ORCPT
+	Wed, 24 Oct 2007 22:06:17 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56824
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbXJYCGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:50:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Nlyu90CtwslXBg/llQk4UKT/EO//bAEbaNjy5TRvAYiAM+orY3rHKWHyAHJxM9uyr2Ge5QNuxWkJp5ayEh6swJzFwVHiwcER9IX9o0q18U4qJkGL3AIItwkM54I42OlUs136DyfZa++bAvEercc61+dv9AwtdGG9c4mG76aZq9A=
-Subject: SPI doesn't detect first dataflash (CS0) on a AT91rm9200ek with
-	kernel 2.6.23.1
-From: Bruno =?ISO-8859-1?Q?V=E9tel?= <bvetel@gmail.com>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 03:49:49 +0200
-Message-Id: <1193276989.7052.32.camel@rigel.esas.fr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Oct 2007 22:06:16 -0400
+Date: Wed, 24 Oct 2007 19:11:45 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ray Lee <ray-lk@madrabbit.org>, Chris Wright <chrisw@sous-sol.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <20071025024131.6082e4a8@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0710241905160.21140@asgard.lang.hm>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
+ <20071025002356.GB3660@sequoia.sous-sol.org>
+ <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+ <20071025024131.6082e4a8@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Thu, 25 Oct 2007, Alan Cox wrote:
 
-I want to use SPI on a at91rm9200ek. The SPI starts and the dataflash is
-probed but fails with error 255. I tried on another board very similar
-to at91rm9200ek but with 4 dataflashs (chip select 0 to 3). The flashs
-1 2 3 are well detected but the 0 fails also with the same error code.
-Debug traces tells all transfers seems to be OK. The board with 4
-dataflashs works well with a 2.6.17 + patch at91. I don't find any
-answers to my problem.
+>> The idea that poor security is worse than no security is fallacious,
+>> and not backed up by common experience.
+>
+> There is a ton of evidence both in computing and outside of it which
+> shows that poor security can be very much worse than no security at all.
+> In particular stuff which makes users think they are secure but is
+> worthless is very dangerous indeed.
 
+there is also pleanty of evidence that you don't have to be perfect to be 
+good enough.
 
-Could you help me ?
+in addition security is useually traded off for something else 
+(useability, administrative effort, money, etc) and depending on what's 
+being protected the cost that's appropriate is going to be different.
 
-Thanks
+> When you know that security is limited you act appropriately, when you
+> believe security is good but it is not you take inappropriate risks and
+> get badly burned.
 
-Bruno
+This is very true, but the solution isn't to try and eliminate everything 
+other then perfect security, it's to properly document the limitations of 
+various options and educate people about them.
 
-
+David Lang
