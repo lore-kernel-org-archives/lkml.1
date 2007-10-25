@@ -1,44 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbXJYVoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXJYVoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758621AbXJYVoQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXJYVoA
+	id S1759212AbXJYVoi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbXJYVo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:44:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27990 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXJYVn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:43:59 -0400
-Date: Thu, 25 Oct 2007 14:43:41 -0700
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Joel Becker <joel.becker@oracle.com>, kurt.hackel@oracle.com,
-       ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make ocfs2_find_entry_el() static
-Message-ID: <20071025214341.GU28607@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20071024162327.GP30533@stusta.de>
+	Thu, 25 Oct 2007 17:44:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34258 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755592AbXJYVo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:44:27 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Subject: Re: [2.6 patch] fujitsu-laptop.c: remove dead code
+Date: Thu, 25 Oct 2007 17:44:09 -0400
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+References: <200710250508.l9P58exp003251@turbo.physics.adelaide.edu.au>
+In-Reply-To: <200710250508.l9P58exp003251@turbo.physics.adelaide.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071024162327.GP30533@stusta.de>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200710251744.10035.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 06:23:27PM +0200, Adrian Bunk wrote:
-> ocfs2_find_entry_el() can become static.
+Applied.
 
-Looks good, thanks Adrian.
-	--Mark
+thanks,
+-len
 
---
-Mark Fasheh
-Senior Software Developer, Oracle
-mark.fasheh@oracle.com
+On Thursday 25 October 2007 01:08, Jonathan Woithe wrote:
+> > This patch removes dead code spotted by the Coverity checker.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Ack.
+> 
+> Signed-off-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+> 
+> jonathan
+> 
+> ---
+> --- linux-2.6/drivers/misc/fujitsu-laptop.c.old	2007-10-23 18:51:10.000000000 +0200
+> +++ linux-2.6/drivers/misc/fujitsu-laptop.c	2007-10-23 18:51:50.000000000 +0200
+> @@ -110,33 +110,30 @@ static int get_lcd_level(void)
+>  
+>  	// Get the Brightness
+>  	status =
+>  	    acpi_evaluate_integer(fujitsu->acpi_handle, "GBLL", NULL, &state);
+>  	if (status < 0)
+>  		return status;
+>  
+>  	fujitsu->fuj02b1_state = state;
+>  	fujitsu->brightness_level = state & 0x0fffffff;
+>  
+>  	if (state & 0x80000000)
+>  		fujitsu->brightness_changed = 1;
+>  	else
+>  		fujitsu->brightness_changed = 0;
+>  
+> -	if (status < 0)
+> -		return status;
+> -
+>  	return fujitsu->brightness_level;
+>  }
+>  
+>  /* Backlight device stuff */
+>  
+>  static int bl_get_brightness(struct backlight_device *b)
+>  {
+>  	return get_lcd_level();
+>  }
+>  
+>  static int bl_update_status(struct backlight_device *b)
+>  {
+>  	return set_lcd_level(b->props.brightness);
+>  }
+>  
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
