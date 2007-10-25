@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXJYBDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXJYBOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbXJYBDq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXJYBDi
+	id S1754148AbXJYBOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXJYBOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:03:38 -0400
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:34705 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751942AbXJYBDh (ORCPT
+	Wed, 24 Oct 2007 21:14:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60634 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751631AbXJYBOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:03:37 -0400
-X-YMail-OSG: 6mtJxEEVM1n.noVOvxaFDXUzIVl9Hkrtgifmp_UiQRwa7i7ozuuwqio3TcwEyluINx3KYLQmQuHHsXNY1xZnaBwp2OdQYGArvWq6kRDzbcWKkdGPuUI-
-X-RocketYMMF: rancidfat
-Date: Wed, 24 Oct 2007 18:03:37 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.0.999.0710241636010.30120@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 24 Oct 2007 21:14:31 -0400
+Date: Wed, 24 Oct 2007 18:14:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/5] wait: use lock bitops for __wait_on_bit_lock
+Message-Id: <20071024181428.1d25299a.akpm@linux-foundation.org>
+In-Reply-To: <20071024081405.094887000@nick.local0.net>
+References: <20071024081305.906617000@nick.local0.net>
+	<20071024081405.094887000@nick.local0.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <64482.42947.qm@web36608.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 24 Oct 2007 18:13:06 +1000 npiggin@nick.local0.net wrote:
 
---- Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 > 
+> ---
+>  kernel/wait.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> On Thu, 25 Oct 2007, Adrian Bunk wrote:
-> > 
-> > What I'm giving you is "Linus has decreed there can be LSMs other than 
-> > SELinux."
-> > 
-> > Getting LSMs included should no longer be harder than for other 
-> > parts of the kernel.
-> 
-> Well, despite my heart-felt feelings that we should support different 
-> people in trying out different things, one of the issues is also that I'm 
-> obviously not myself a security person. I can "decree" all I want, but in 
-> the end, I really want the people *involved* to merge security stuff. 
-> 
-> Right now Chris Wrigt is the documented maintainer for LSM, and quite 
-> frankly, I do not want to take it over. I really really really hope that
-> people that are interested in security can work this thing out, and my 
-> only requirement is that it doesn't end up being any kind of force-feeding 
-> of opinions and ideas, since clearly there is tons of room for 
-> disagreement in the area..
-> 
-> Do other people want to stand up and be "LSM maintainers" in the sense 
-> that they also end up being informed members who can also stand up for new 
-> modules and help merge them, rather than just push the existing one(s)? 
-> Chris? Casey? Crispin?
-
-Count me in.
-
-> [ Ie there's the "core LSM hooks" on one side, but there's also the "what 
->   modules make any sense at all to merge?" on the other, and I really 
->   don't have the expertise to make any sensible judgements except for the 
->   pure "process" judgement that we should not hardcode things to just one 
->   module! ]
-> 
-> 		Linus
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> Index: linux-2.6/kernel/wait.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/wait.c
+> +++ linux-2.6/kernel/wait.c
+> @@ -195,7 +195,7 @@ __wait_on_bit_lock(wait_queue_head_t *wq
+>  			if ((ret = (*action)(q->key.flags)))
+>  				break;
+>  		}
+> -	} while (test_and_set_bit(q->key.bit_nr, q->key.flags));
+> +	} while (test_and_set_bit_lock(q->key.bit_nr, q->key.flags));
+>  	finish_wait(wq, &q->wait);
+>  	return ret;
+>  }
 > 
 
+Sorry, I'm just not going to apply a patch like that.
 
-Casey Schaufler
-casey@schaufler-ca.com
+I mean, how the heck is anyone else supposed to understand what you're up
+to?  There's a bit of documentation in Documentation/atomic_ops.txt
+(probably enough, I guess) but it is totally unobvious to 98.3% of kernel
+developers when they should use test_and_set_bit() versus
+test_and_set_bit_lock() and it is far too much work to work out why it was
+used in __wait_on_bit_lock(), whether it is correct, what advantages it
+brings and whether and where others should emulate it.
+
+So in my opinion this submission isn't of sufficient quality to be
+included in Linux.
+
+IOW: please write changelogs.  Preferably good ones.
+
