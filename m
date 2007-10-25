@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbXJYTFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbXJYTHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbXJYTFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXJYTFI
+	id S1754885AbXJYTHs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXJYTHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:05:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49851 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752810AbXJYTFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:05:07 -0400
-In-Reply-To: <1193337589.7705.42.camel@heimdal.trondhjem.org>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org> <6B3D0315-3441-45A1-A007-A193321B654A@kernel.crashing.org> <1193337589.7705.42.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7E4866FF-74EE-410E-A5C4-334C7D5461DE@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
-       chuck.lever@oracle.com
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: LTP ustat01 test fails on NFSROOT
-Date: Thu, 25 Oct 2007 14:05:05 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 25 Oct 2007 15:07:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55177 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbXJYTHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 15:07:37 -0400
+Date: Thu, 25 Oct 2007 21:07:36 +0200
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] fs: restore nobh
+Message-ID: <20071025190736.GB12883@atrey.karlin.mff.cuni.cz>
+References: <20071008065227.GB14949@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071008065227.GB14949@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hi,
 
-On Oct 25, 2007, at 1:39 PM, Trond Myklebust wrote:
+> This is overdue, sorry. Got a little complicated, and I've been away from
+> my filesystem test setup so I didn't want ot send it (lucky, coz I found
+> a bug after more substantial testing).
+> 
+> Anyway, RFC?
+  Hmm, maybe one comment/question:
 
->
-> On Thu, 2007-10-25 at 13:36 -0500, Kumar Gala wrote:
->> On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
->>
->>> Could you please try the following patch?
->>
->> this fixes my issue.  Any reason this hasn't been accepted?
->
-> Do you mean apart from the fact that I wrote it a couple of hours
-> ago? :-)
+> Index: linux-2.6/fs/buffer.c
+> ===================================================================
+> --- linux-2.6.orig/fs/buffer.c	2007-10-08 14:09:35.000000000 +1000
+> +++ linux-2.6/fs/buffer.c	2007-10-08 16:45:28.000000000 +1000
+...
 
-Oh, sorry.  I glanced at the commit message and the 2.6.18 made me  
-think its been around for a while.
+> -/*
+> - * Make sure any changes to nobh_commit_write() are reflected in
+> - * nobh_truncate_page(), since it doesn't call commit_write().
+> - */
+> -int nobh_commit_write(struct file *file, struct page *page,
+> -		unsigned from, unsigned to)
+> +int nobh_write_end(struct file *file, struct address_space *mapping,
+> +			loff_t pos, unsigned len, unsigned copied,
+> +			struct page *page, void *fsdata)
+>  {
+>  	struct inode *inode = page->mapping->host;
+> -	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
+> +	struct buffer_head *head = NULL;
+> +	struct buffer_head *bh;
+>  
+> -	if (page_has_buffers(page))
+> -		return generic_commit_write(file, page, from, to);
+> +	if (!PageMappedToDisk(page)) {
+> +		if (unlikely(copied < len) && !page_has_buffers(page))
+> +			attach_nobh_buffers(page, head);
+> +		if (page_has_buffers(page))
+> +			return generic_write_end(file, mapping, pos, len, copied, page, fsdata);
+> +	}
+  So we can have a page with attached buffers but we decide to not call
+generic_write_end()...
 
-- k
+>  	SetPageUptodate(page);
+>  	set_page_dirty(page);
+  And we just set the page dirty but we leave buffers clean. So cannot
+subsequent try_to_free_buffers() come, mark page as clean (as buffers
+are clean) and discard the data?
+
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
