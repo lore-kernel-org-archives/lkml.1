@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbXJYMQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbXJYMRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbXJYMQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 08:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbXJYMQY
+	id S1760510AbXJYMRd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 08:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbXJYMRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 08:16:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33410 "EHLO mx1.suse.de"
+	Thu, 25 Oct 2007 08:17:23 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:52128 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbXJYMQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 08:16:23 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Subject: Re: Is gcc thread-unsafe?
-Date: Thu, 25 Oct 2007 14:16:19 +0200
-User-Agent: KMail/1.9.6
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710250915.50675.ak@suse.de> <Pine.LNX.4.61.0710250753350.22665@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.61.0710250753350.22665@chaos.analogic.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710251416.19606.ak@novell.com>
+	id S1752478AbXJYMRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 08:17:21 -0400
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc1]EXPORT_SYMBOL(__set_page_dirty_no_writeback);
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200710250015.FFG17175.LSHOMOFVJFOFtQ@I-love.SAKURA.ne.jp>
+	<20071024091027.541d2e98@laptopd505.fenrus.org>
+	<200710250636.JHG87098.VtOSQMFJOHLOFF@I-love.SAKURA.ne.jp>
+	<20071024144147.7313d4c1@laptopd505.fenrus.org>
+In-Reply-To: <20071024144147.7313d4c1@laptopd505.fenrus.org>
+Message-Id: <200710252117.BCE17673.LFFMVQOOOHJFSt@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 25 Oct 2007 21:17:15 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007 13:58:56 linux-os (Dick Johnson) wrote:
-> 
-> On Thu, 25 Oct 2007, Andi Kleen wrote:
-> 
-> > On Thursday 25 October 2007 05:24, Nick Piggin wrote:
-> >
-> >> Basically, what the gcc developers are saying is that gcc is
-> >> free to load and store to any memory location, so long as it
-> >> behaves as if the instructions were executed in sequence.
-> >
-> > This case is clearly a bug, a very likely code pessimization.
-> > I guess it wasn't intentional, just an optimization that is useful
-> > for local register values doing too much.
-> 
-> 
-> I don't think it is a BUG,
+Hello.
 
-Bug as in an optimization that makes the code slower than it was
-before. That is clearly a bug in a compiler.
+Arjan van de Ven wrote:
+> when will you post this filesystem for inclusion into kernel.org kernel?
+> (and please really consider posting the patch together with that patch)
+> (also, if you can give a pointer to the source code of this filesystem
+> you might even get early code review)
 
--Andi
+I have proposed this filesystem at http://lkml.org/lkml/2004/11/1/48 .
+
+In short, the filesystem I'm developing is a trivial device filesystem
+that provides protection mechanism against tampering.
+
+Reasons I don't use devfs/udev or fuse or LSM for /dev are:
+
+  The devfs/udev don't provide protection mechanism against tampering.
+  I don't know implementation that can enforce filename and it's attributes.
+  Label based access control like SELinux doesn't distinguish
+  /dev/sda1 and /dev/sda2, do they?
+  If a process who is permitted to unlink and create /dev/sda1 and /dev/sda2 is cracked,
+  who can ensure that /dev/sda1 is block-8-1 and /dev/sda2 is block-8-2?
+  A situation /dev/sda1 is block-8-2 and /dev/sda2 is block-8-1 can happen.
+
+  /dev has to be valid throughout the lifetime of system
+  (i.e. from /sbin/init till power failure).
+  Filesystems using fuse will freeze when a system starts /usr/bin/killall at shutdown script,
+  where it is too early to stop working of /dev partition.
+
+  LSM is used by SELinux, thus there is unlikely chance to call my module
+  to validate a device file's filename and it's attributes.
+
+The latest snapshot (which is not following codingstyle) is at
+http://svn.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/trunk/1.5.x/ccs-patch/include/linux/syaoran.h?content-type=text%2Fplain&rev=588&root=tomoyo
+http://svn.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/trunk/1.5.x/ccs-patch/fs/syaoran_2.6.c?content-type=text%2Fplain&rev=614&root=tomoyo
+
+If there is a chance for inclusion into kernel.org kernel, I'm willing to fix codingstyle and submit immediately.
+
+Thank you.
+
