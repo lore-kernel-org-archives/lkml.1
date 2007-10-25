@@ -1,114 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbXJYWoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbXJYWqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbXJYWoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbXJYWor
+	id S1760497AbXJYWqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbXJYWqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:44:47 -0400
-Received: from smtp.ono.com ([62.42.230.12]:47301 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755700AbXJYWoq convert rfc822-to-8bit (ORCPT
+	Thu, 25 Oct 2007 18:46:15 -0400
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:46635 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbXJYWqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:44:46 -0400
-Date: Fri, 26 Oct 2007 00:44:34 +0200
-From: "J.A. =?ISO-8859-1?Q?Magall=F3n?=" <jamagallon@ono.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Opteron box and 4Gb memory
-Message-ID: <20071026004434.50c73dd3@werewolf>
-In-Reply-To: <47211172.9070606@zytor.com>
-References: <20071025230904.03d5f46a@werewolf>
-	<47211172.9070606@zytor.com>
-X-Mailer: Claws Mail 3.0.2cvs101 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Oct 2007 18:46:14 -0400
+Date: Thu, 25 Oct 2007 18:41:16 -0400 (EDT)
+From: Parag Warudkar <kernel-stuff@comcast.net>
+X-X-Sender: parag@parag-desktop
+Reply-To: kernel-stuff@comcast.net
+To: Ivo van Doorn <ivdoorn@gmail.com>
+cc: rt2400-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
+In-Reply-To: <200710252315.49427.IvDoorn@gmail.com>
+Message-ID: <alpine.DEB.0.99.0710251837040.9840@parag-desktop>
+References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
+ <200710252315.49427.IvDoorn@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 14:58:10 -0700, "H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> J.A. Magallon wrote:
-> > Hi...
-> > 
-> > I have some Quad-Opteron boxes with 4Gb memory and two of them are
-> > running two different Linux distros.
-> > 
-> > Box one sees 4Gb of memory, but box two just sees 3.
-> > Their mtrr setups are different:
-> > 
-> > Why ? Is it a bios setup problem ? A kernel problem ?
-> > grep HIGHMEN in configs for both kernels does not give anything, so
-> > I still understand less this thing...
-> > 
-> 
-> It would depend on how the BIOS programmed the memory controllers.  For 
-> 32-bit (and lots of device) compatibility, a memory hole is required 
-> below 4 GB.  Not all memory controllers can remap memory in the 3-4 GB 
-> range above the 4 GB memory; I'm not sure if that varies with the 
-> different Opteron processors.
+Hi Ivo
 
-I have collected several pieces of info around the internet...
+On Thu, 25 Oct 2007, Ivo van Doorn wrote:
 
-- Some people uses this options in the BIOS:
-	Node interleave: off
-	Bank interleave: auto
-	SW memory hole: disable
-	HW memory hole: enable
-	MTRR: Continuous
+> I awknowledge the problem, but the solution cannot be found in the USB ID's
+> listed in the driver. The bug is the manufacturer who changed chipset while
+> keeping the USB ID the same.
+> There are 2 possible ways around this: hacking the module loader so
+> it continues searching for a different driver when the first driver indicates
+> that it cannot control the device.
+> Or the easiest way, just blacklist rt2500usb if you are sure you need the rt73 driver.
 
-- Node Memory Interleaving DISABLES NUMA and generally is a bad thing
+Thanks for the heads up - I think you have a good idea - there should be 
+an interface between the loader and module to specify conditions like this.
 
-- MTRR setting -should be set to "discrete" for Linux, and probably for Windows too.
+I will see if I can generate interest in that idea and hack up something 
+along the lines of your suggestion.
 
-- This is what SuperMicro's tech support said about 2.96GB vs. 4GB.
-
-"This is as expected, as soon as you set "software memory hole" to disabled,
-you also disable option ROM remapping functionality, this option normally
-remaps used option rom (option rom= raid bios, lan pxe ; usb legacy, bioses
-on add-on cards, etc) in the 4GB region, so no basis memory is lost, while
-this feature is now disabled the option rom space occupies the space between
-3 and 4 GB which results in lower main memory availability.
-There is no solution or work around for this phenomenon"
-
-so software memory hole enabled might be needed to get all 4GB to show up
-
->From mobo manual:
-
-Software Memory Hole
-When "Enabled", allows software memory remapping around the memory
-hole. Options are Enabled and Disabled.
-
-Hardware Memory Hole
-When "Enabled", allows software memory remapping around the memory
-hole. Options are Enabled and Disabled. Note: this is only supported by
-Rev E0 processors and above.
-( I have two Opteron 275 processors, no idea about revision)
-
-So _my_ conclussion is:
-
-	Node interleave: off    (numa mode)
-	Bank interleave: auto
-	SW memory hole: disable |
-	HW memory hole: enable  | allow remapping
-	MTRR: Discrete          |
-
-But then, do I need to enable NUMA options in the kernel ?
-
-> 
-> Also, if you run a 32-bit distribution, you need to have HIGHMEM_64G 
-> enabled in the kernel.
-> 
-
-I run a 64 bit one, then I don't need anything, isn't it ? That's why I
-don't see any _HIGHMEM in the kernel configs...
-
-Some day I will understand this crappy BIOS thing (or burn a photo of its
-inventor...).
-Why can't we have OpenFirmware PC's, like my MacPro  and Sparcs ?
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam01 (gcc 4.2.2 20070909 (4.2.2-0.RC.1mdv2008.0)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+Parag
