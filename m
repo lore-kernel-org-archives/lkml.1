@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXJYVF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbXJYVLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbXJYVF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXJYVFu
+	id S1754169AbXJYVLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbXJYVLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:05:50 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51734 "EHLO e5.ny.us.ibm.com"
+	Thu, 25 Oct 2007 17:11:15 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45148 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbXJYVFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:05:49 -0400
-Subject: Re: [PATCH 1/2]  i_version update - vfs part
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: jean-noel.cordenner@bull.net
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1193331870.5487.31.camel@frecb002711.frec.bull.fr>
-References: <1191598088.24615.45.camel@frecb002711.frec.bull.fr>
-	 <1193331870.5487.31.camel@frecb002711.frec.bull.fr>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 25 Oct 2007 14:05:51 -0700
-Message-Id: <1193346351.4288.16.camel@localhost.localdomain>
+	id S1751983AbXJYVLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 17:11:14 -0400
+Date: Thu, 25 Oct 2007 23:12:49 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [GIT PULL] kill i386 and x86_64 directories
+Message-ID: <20071025211249.GA15078@uranus.ravnborg.org>
+References: <20071025195644.GA14501@uranus.ravnborg.org> <alpine.LFD.0.9999.0710252212420.3186@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0710252212420.3186@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 19:04 +0200, Cordenner jean noel wrote:
-> Hi,
-> 
-> This is an update of the previous patches on the ext4 git tree, the 2
-> coming patches applies at the end of the current ext4-patch-queue, and
-> replaces the inode-version related patches:
-> 64-bit-i_version.patch
-> i_version_hi.patch
-> ext4_i_version_hi_2.patch
-> i_version_update_ext4.patch
-> 
-> The first part deals with the vfs part. 
-> The i_version field of the inode is changed to be a 64-bit counter that
-> is set on every inode creation and that is incremented every time the
-> inode data is modified (similarly to the "ctime" time-stamp). 
-> The aim is to fulfill a NFSv4 requirement for rfc3530.
-> This first part concerns the vfs, it converts the 32-bit i_version in
-> the generic inode to a 64-bit, a flag is added in the super block in
-> order to check if the feature is enabled and the i_version is
-> incremented in the vfs.
-> 
-Thanks for reposting it.
+Hi Linus.
 
-> Index: linux-2.6.23-ext4-1/fs/inode.c
-> ===================================================================
-> --- linux-2.6.23-ext4-1.orig/fs/inode.c	2007-10-25 16:15:52.000000000
-> +0200
-> +++ linux-2.6.23-ext4-1/fs/inode.c	2007-10-25 16:25:53.000000000 +0200
-> @@ -1216,6 +1216,24 @@
->  EXPORT_SYMBOL(touch_atime);
+This patch serie kill the old i386 and x86_64 directories.
+Introducing a few trivial changes in top-level Makefile
+and kconfig Makefile allows us to move all files to
+arch/x86/ where they belong.
+
+Kay Sievers hit a bug in the first patch-set - this is now fixed and
+the updated patch set is uploaded to my x86.git tree.
+Build tested on both i386 and x86_64.
+I test builded a few other archs just to check that I did not break them.
+
+Shortlog:
+
+Randy Dunlap (1):
+      x86: unification of i386 and x86_64 Kconfig.debug
+
+Sam Ravnborg (5):
+      x86: move i386 and x86_64 Makefiles to arch/x86
+      x86: move defconfig files for i386 and x86_64 to x86
+      kconfig: small code refactoring in kconfig Makefile
+      x86: move i386 and x86_64 Kconfig files to x86 directory
+      x86: kill the old i386 and x86_64 directories
+
+diffstat:
+
+ Makefile                                           |    7 ++-
+ arch/i386/.gitignore                               |    1 -
+ arch/{i386 => x86}/Kconfig.cpu                     |    0 
+ arch/{i386 => x86}/Kconfig.debug                   |   51 +++++++++++++---
+ arch/{i386/Kconfig => x86/Kconfig.i386}            |    4 +-
+ arch/{x86_64/Kconfig => x86/Kconfig.x86_64}        |    2 +-
+ arch/x86/Makefile                                  |   16 +++++
+ arch/{i386/Makefile => x86/Makefile_32}            |    7 +--
+ arch/{i386/Makefile.cpu => x86/Makefile_32.cpu}    |    0 
+ arch/{x86_64/Makefile => x86/Makefile_64}          |    5 +-
+ .../{i386/defconfig => x86/configs/i386_defconfig} |    0 
+ .../defconfig => x86/configs/x86_64_defconfig}     |    0 
+ arch/x86_64/.gitignore                             |    1 -
+ arch/x86_64/Kconfig.debug                          |   61 --------------------
+ scripts/kconfig/Makefile                           |   35 +++++++-----
+ 15 files changed, 89 insertions(+), 101 deletions(-)
+
+A nice patch serie that deletes more lines than it adds.
+
+Under normal circumstances I would not send this to you after the
+merge window but this serie give a good hint to the casual
+reader that something changed now the directories are gone.
+So they do not ask - why are so many files missing. Now they
+will hunt for the new location.
+
+
+Thomas wrote:
+On Thu, Oct 25, 2007 at 10:17:53PM +0200, Thomas Gleixner wrote:
 > 
->  /**
-> + *     inode_inc_iversion      -       increments i_version
-> + *     @inode: inode that need to be updated
-> + *
-> + *     Every time the inode is modified, the i_version field
-> + *     will be incremented.
-> + *     The filesystem has to be mounted with i_version flag
-> + *
-> + */
-> +
-> +void inode_inc_iversion(struct inode *inode)
-> +{
-> +	spin_lock(&inode->i_lock);
-> +	inode->i_version++;
-> +	spin_unlock(&inode->i_lock);
-> +}
-
-I wonder do we really need i_lock here for inode versioning update?
-
-Understand this is a 64 bit counter, but file_update_time() and
-ext4_mark_inode_dirty() (where the inode version is updated) is called
-on the file write path so i_mutex should be hold all the time. As long
-as the read patch holding i_mutex everything should be fine, isn't it?
-
-Have you get a chance to check the performance impact to ext4?
-
-> +
-> +/**
->   *	file_update_time	-	update mtime and ctime time
->   *	@file: file accessed
->   *
-> @@ -1249,6 +1267,11 @@
->  		sync_it = 1;
->  	}
+> Thanks for doing this.
 > 
-> +	if (IS_I_VERSION(inode)) {
-> +		inode_inc_iversion(inode);
-> +		sync_it = 1;
-> +	}
-> +
->  	if (sync_it)
->  		mark_inode_dirty_sync(inode);
->  }
+> I think the last remaining bit to cleanup is the symlink from
+> arch/x86/boot/bzImage. Now that the old directories are gone it does
+> not make much sense to keep them alive. Andrew will survive it :)
 > 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please send it Linus wards and feel free to add my Acked-by to all of
+> them.
 
+I did not amend the serie to add his acked-by - but just kept it in this mail.
+
+Please pull from:
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
+
+
+	Sam
