@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbXJYPVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXJYPWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762093AbXJYPVB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759192AbXJYPUx
+	id S1762130AbXJYPWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbXJYPWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:20:53 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:48445 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758180AbXJYPUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:20:53 -0400
-Subject: Linux machines dieing in swap storms
-From: Richard Purdie <rpurdie@rpsys.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 16:20:41 +0100
-Message-Id: <1193325641.5776.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 25 Oct 2007 11:22:00 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:42841 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759192AbXJYPV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 11:21:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TdE5KkT7if/+/ewPq2za7WfKClBRRbm+qETbSbx10pvvSytWbmYc9jB+m2SQP4zg1/Y2PtDbHS7gcax7niHbuRZmxuXy55l3viQNb9myzTp+LOht3iPdEDhhKbVT0n43BBj66Qivie0TkIu7KBWwnWx9jB+BQ88HyLS3hjwkQoQ=
+Message-ID: <5d6222a80710250821x1da3fef1gabf4b776a7b33048@mail.gmail.com>
+Date: Thu, 25 Oct 2007 13:21:50 -0200
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: Using -traditional in EXTRA_AFLAGS
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4720B383.40701@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5d6222a80710242016p27be8bcdk23421efb5990e14a@mail.gmail.com>
+	 <4720B383.40701@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've got a problem I keep running into. My computers have buggy software
-which can sometimes run out of control. Two specific examples:
+On 10/25/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Glauber de Oliveira Costa wrote:
+> > Guys,
+> >
+> > is there any particular reason we're using -traditional in
+> > EXTRA_AFLAGS in Makefiles?
+> >
+>
+> What?  Where?  I thought I removed them all.  Or is this from the x86_64
+> tree?
 
-Evolution: Sometimes its memory usage decides to suddenly grow out of
-control. It usually idles at around 300MB, you can watch it in top,
-doubling, trebling and ending up going past the 1200MB mark. My system
-has 1.5GB ram and you notice it swapping heavily past say 800MB.
+This is from arch/x86/kernel/Makefile_64
 
-Spamassassin: If my mail server log files hit the 2GB file size limit of
-the filesystem something strange happens and for whatever reason spamd
-suddenly starts growing in memory usage until it uses up all available
-system memory.
+> > I'd suggest just removing it, but obviously, there might well be
+> > people with good reasons for it to stay (The same effect of token
+> > pasting can be achieved in some ways, so if -traditional stays, that's
+> > not the greatest problem in the world... just that token pasting in
+> > asm files will diverge from the way in which we (-)traditionally do
+> > ;-) )
+> >
+> > So, does any one have a word on that?
+> >
+>
+>
+> Kill -traditional where ever it may be.  You might need to fix up some
+> cruft in the process, but shouldn't be too hard.
+>
+I only feel confortable about killing it from x86_64 or any other
+arches I may have access to. Otherwise, there's no way I can fix up
+the crufts ;)
 
-Arguably both pieces of software are buggy, I accept that, fine. 
+A patch for Makefile_64 will follow in a while.
 
-In both machines in totally different circumstances what happens next is
-bad. The systems swap more and more heavily trying to cope with these
-out of control processes. Network interactivity stops. The swap storm
-gets so bad you can't log onto the console any more. I've left machines
-in this state for 1-2 hours and they don't come back. Watching the
-console, the OOM killer does kick in but it never kills the problem
-process (both spamd and evolution are long running processes that have
-suddenly gone out of control). In then end, you have to hit the reset
-switch :(. This happened to my desktop once again about 10 minutes ago
-and its *extremely* frustrating. Sometimes I can catch and kill the
-offending process but I shouldn't have to.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-This isn't a new problem. My mail server used to be running an ancient
-2.6.12 kernel and I upgraded it to 2.6.22.X in an effort to solve this
-problem which no change. My desktop shows exactly the same kind of OOM
-swap storm behaviour (2.6.20 based).
-
-I realise that tuning the OOM killer is a really tricky problem but
-something needs improving as the current user experience is broken.
-
-I'm seriously tempted to add a "kill the process using the most memory"
-key combination into SysRq which might let me save the desktop but won't
-help with my remote server. I could also just disable swap I guess.
-
-Advice on solving this welcome preferably in mainline but I'll happily
-hack my kernels with a workaround if need be.
-
-Cheers,
-
-Richard
-
-
+"The less confident you are, the more serious you have to act."
