@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXJYNsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbXJYNvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbXJYNsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 09:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXJYNsg
+	id S1758654AbXJYNvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 09:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXJYNvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 09:48:36 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1435 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754382AbXJYNsf (ORCPT
+	Thu, 25 Oct 2007 09:51:38 -0400
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:52853 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754621AbXJYNvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 09:48:35 -0400
-Date: Thu, 25 Oct 2007 15:48:33 +0200
+	Thu, 25 Oct 2007 09:51:37 -0400
+Date: Thu, 25 Oct 2007 15:51:35 +0200
 From: Jean Delvare <khali@linux-fr.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Len Brown <lenb@kernel.org>
-Subject: Re: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
-Message-ID: <20071025154833.0240b8a2@hyperion.delvare>
-In-Reply-To: <20071024205347.6948c081.akpm@linux-foundation.org>
-References: <1193236387.4590.230.camel@queen.suse.de>
-	<20071024205347.6948c081.akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with 
+ ACPI Operation Region resources
+Message-ID: <20071025155135.019baca3@hyperion.delvare>
+In-Reply-To: <20071024205723.458fab97.akpm@linux-foundation.org>
+References: <1193236319.4590.225.camel@queen.suse.de>
+	<20071024205723.458fab97.akpm@linux-foundation.org>
 X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,40 +29,29 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-On Wed, 24 Oct 2007 20:53:47 -0700, Andrew Morton wrote:
-> On Wed, 24 Oct 2007 16:33:07 +0200 Thomas Renninger <trenn@suse.de> wrote:
+On Wed, 24 Oct 2007 20:57:23 -0700, Andrew Morton wrote:
+> On Wed, 24 Oct 2007 16:31:59 +0200 Thomas Renninger <trenn@suse.de> wrote:
 > 
-> > From: Thomas Renninger <trenn@suse.de>
-> > To: linux-acpi <linux-acpi@vger.kernel.org>
-> > Cc: linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jean Delvare <khali@linux-fr.org>
-> > Reply-To: trenn@suse.de
-> > Subject: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
-> > Date: Wed, 24 Oct 2007 16:33:07 +0200
-> > Organization: Novell/SUSE
-> > X-Mailer: Evolution 2.8.2 
+> > it seems Len's test tree and Linus tree diverged a bit, at least with
+> > this patch set things do not apply cleanly.
 > > 
-> > Export acpi_check_resource_conflict(), sometimes drivers already have
-> > a struct resource at hand so no need to use the wrappers to build a new
-> > one.
-> > 
-> > Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> > ---
+> > Therefore I post these for discussion whether and in which kernel tree
+> > they should end up before doing work for nothing.
+> > If they are still a candidate for 2.6.24 (rather unintrusive), pls tell
+> > me whether and when I should base them against Len's test/release branch
+> > or whatever other tree.
+> > If not, it would be great if they can be included into the -mm tree and
+> > I can rebase them against this one.
 > 
-> The attributions on this are all mucked up.
+> I staged the three acpi patches against Len's tree and I staged the hwmon
+> patch against Mark's tree and I staged the I2C patch against Jean's tree.
 > 
-> I _think_ it was written by Jean, in which case the changlog should
-> have had From:him right at the start to indicate this.  And as you
-> were in the delivery path, it should have had your signoff.
-> 
-> I'll make those changes - please let me know if I misguessed.
+> This means that if/when the ACPI patches have gone me->Len->Linus, I can
+> send the I2C patch to Jean and the hwmon patch to Mark and we're all good.
 
-You are correct, patches 3/5, 4/5 and 5/5 of this patchset were written
-by me (as in: I'm the one to blame if something breaks). I expected
-Thomas to add a From: header and add his own Signed-off-by line but
-instead he forwarded my mails directly. Thanks for fixing up the mess,
-we'll try to make it better next time.
+Thanks for picking these patches, having them in -mm for some time is
+exactly what we need. Let's see how many systems are affected by the
+resource conflicts and how we can fix them
 
 -- 
 Jean Delvare
