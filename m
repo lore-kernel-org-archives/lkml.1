@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXJYEap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXJYEie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbXJYEap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 00:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXJYEai
+	id S1756242AbXJYEie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 00:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbXJYEi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 00:30:38 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4174 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754300AbXJYEah (ORCPT
+	Thu, 25 Oct 2007 00:38:26 -0400
+Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:44643 "HELO
+	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753391AbXJYEiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 00:30:37 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Is gcc thread-unsafe?
-Date: Wed, 24 Oct 2007 21:29:56 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKAEOKHLAC.davids@webmaster.com>
+	Thu, 25 Oct 2007 00:38:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=3uYa7DWu3+c6ai0ePWrW+jGF6ucRWel08zzgw6Icbcy7KSoDqM7rPsCmRhsL7r6KSRRvwvsoXCVTi68KpqpbkG8o3BJiHqdFzriR+JDfk+Ds5u9p+GEp2WEnBVh9OqB0ywR0ODPODn/9gyYnvTB3RNAAA9V34PuqDtLU/2z3caM=  ;
+X-YMail-OSG: KT2cGE4VM1lH915xnVHEXagS2iq5USPEln0sIgEbpwWg9wesJGkgPcKv6rFtj1qz5.mo6gyp5g--
+From: David Brownell <david-b@pacbell.net>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch 2.6.24-rc1] resource_len() utility function
+Date: Wed, 24 Oct 2007 21:38:22 -0700
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+References: <200710241820.52376.david-b@pacbell.net> <200710241947.15129.david-b@pacbell.net> <4720118F.5050906@garzik.org>
+In-Reply-To: <4720118F.5050906@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <200710251358.55185.nickpiggin@yahoo.com.au>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 24 Oct 2007 21:30:54 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 24 Oct 2007 21:30:54 -0700
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200710242138.23252.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 24 October 2007, Jeff Garzik wrote:
+> >> Then a dev_iomap() analogue to pci_iomap() should be pretty 
+> >> straightforward to create.
+> > 
+> > Another minor nit:  addressing the various resource types.
+> > The platform bus code has multiple lookup schemes. 
+> > 
+> > Calls like resource_iomap() might be more flexible, so that
+> > lookup schemes can stay flexible.
+> 
+> I figured that, in the absence of a true, defined BAR concept, the 
+> struct device version would simply index into the discussed array of 
+> struct resource.  That means any ordering or layout of resources should 
+> work, presuming (the usual case) that both driver and platform agree on 
+> the resource layout.
 
-> Well that's exactly right. For threaded programs (and maybe even
-> real-world non-threaded ones in general), you don't want to be
-> even _reading_ global variables if you don't need to. Cache misses
-> and cacheline bouncing could easily cause performance to completely
-> tank in some cases while only gaining a cycle or two in
-> microbenchmarks for doing these funny x86 predication things.
+So you'd suggest having search utilities (as with platform_bus)
+returning resource indices not resources?
 
-For some CPUs, replacing an conditional branch with a conditional move is a
-*huge* win because it cannot be mispredicted. In general, compilers should
-optimize for unshared data since that's much more common in typical code.
-Even for shared data, the usual case is that you are going to access the
-data few times, so pulling the cache line to the CPU is essentially free
-since it will happen eventually.
+Thing is, BARs are usually well defined, but when folk glue
+resources together they use whatever order is convenient on
+that particular platform.  And different platforms can have
+different numbers and types of resources, etc.
 
-Heuristics may show that the vast majority of such constructs write anyway.
-So the optimization may also be valid based on such heuristics.
-
-A better question is whether it's legal for a compiler that claims to
-support POSIX threads. I'm going to post on comp.programming.threads, where
-the threading experts hang out.
-
-A very interesting case to be sure.
-
-DS
-
+- Dave
 
