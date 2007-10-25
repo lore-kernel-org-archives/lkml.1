@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbXJYWnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbXJYWn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760649AbXJYWnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760268AbXJYWnI
+	id S1760877AbXJYWn5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760662AbXJYWnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:43:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59731 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760224AbXJYWnF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:43:05 -0400
-Date: Fri, 26 Oct 2007 08:42:35 +1000
-From: David Chinner <dgc@sgi.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: staubach@redhat.com, akpm@linux-foundation.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] VFS: new fgetattr() file operation
-Message-ID: <20071025224235.GZ995458@sgi.com>
-References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com> <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 25 Oct 2007 18:43:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32863 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760637AbXJYWnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 18:43:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
+   d="scan'208";a="186367034"
+Message-ID: <47211C08.2040601@intel.com>
+Date: Thu, 25 Oct 2007 15:43:20 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@pobox.com>, David Acker <dacker@roinet.com>
+CC: Bill Davidsen <davidsen@tmr.com>, Adrian Bunk <bunk@kernel.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg
+Subject: Re: [2.6.25 patch] the planned eepro100 removal
+References: <20071024162440.GN30533@stusta.de> <4720FFAA.9080709@tmr.com> <47211A67.2090201@pobox.com>
+In-Reply-To: <47211A67.2090201@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Oct 2007 22:43:33.0852 (UTC) FILETIME=[793AD9C0:01C81758]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 05:27:04PM +0200, Miklos Szeredi wrote:
-> > >> Wouldn't you be better off by attempting to implement an "open
-> > >> by ino" operation and an operation to get the generation count
-> > >> for the file and then modifying the network protocol of interest
-> > >> to use these as identifiers for the file to be manipulated?
-> > >>     
-> > >
-> > > You mean an "open by inode" on the userspace API?  My guess, it
-> > > wouldn't get very far.
-> > 
-> > This isn't a new idea and has been implemented on a variety of
-> > different systems.
+Jeff Garzik wrote:
+> Bill Davidsen wrote:
+>> Adrian Bunk wrote:
+>>> This patch contains the planned removal of the eepro100 driver.
+>>>
+>> Are the e100 people satisfied that e100 now handles all known cases? I 
 > 
-> Like?
+> Nope.  There are still e100 work outstanding that means we cannot kill
+> eepro100.
 
-XFS.
+Agreed, there is still a receive unit hang in the last version that I got from
+David Acker.
 
-'man open_by_handle'
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Auke
