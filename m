@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXJYTbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXJYTdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbXJYTbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 15:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXJYTa5
+	id S1756823AbXJYTdE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 15:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXJYTcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 15:30:57 -0400
-Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:4314 "EHLO
-	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752074AbXJYTa4 (ORCPT
+	Thu, 25 Oct 2007 15:32:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:5356 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbXJYTcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 15:30:56 -0400
-X-Belgacom-Dynamic: yes
-Date: Thu, 25 Oct 2007 21:37:02 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: handling watchdog in SMP
-Message-ID: <20071025193702.GA6455@infomag.infomag.iguana.be>
-References: <EA6D7331-2E0E-44D5-A286-EFD3505139BB@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Oct 2007 15:32:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=R9jSDSIPVo4/QxyAF3t/IL0KTlCFWVni9Xx98cZ17T2hX9h0Uw+Kv55UOV3FzzDBnq2Kr9hw0eBeMYsi6kISkKbDEG8HaFX5Bh3AhlhpUxl9ItK8svLjSf4m386wsiDIEeA5ItkTq0W1/ktSylu2zHZM0x4mt4ypJCKLimvoDuk=
+Message-ID: <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com>
+Date: Thu, 25 Oct 2007 20:32:51 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Possibility of adding -march=native to x86
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071025191723.GQ30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <EA6D7331-2E0E-44D5-A286-EFD3505139BB@kernel.crashing.org>
-User-Agent: Mutt/1.4.2.1i
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net>
+	 <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+	 <20071025185022.GP30533@stusta.de>
+	 <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com>
+	 <20071025191723.GQ30533@stusta.de>
+X-Google-Sender-Auth: 368d0ff511124706
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kumar,
+On 25/10/2007, Adrian Bunk <bunk@kernel.org> wrote:
+> On Thu, Oct 25, 2007 at 08:09:56PM +0100, Michael Lothian wrote:
+> > Actually I changed the Makefile.cpu and changed the -march to native
+> > which did slightly change the size of the kernel (slightly larger I
+> > think)
+> >
+> > So what else does that option change?
+>
+> Look at arch/i386/Kconfig.cpu
+>
 
-> I was hoping to get some ideas on how to handle the watchdog timers  
-> we have on some embedded PPC (booke_wdt.c) cores when we are in a SMP  
-> system.
-> 
-> The problem is since the watchdog is part of the processor core  
-> depending on which processor a given system call is executed at we  
-> might get different behavior.  It seems like we would want to mirror  
-> the actions to both cores (via smp_call_function).
-> 
-> Looking at the file ops we currently support in booke_wdt.c it seems  
-> like we could mirror the actions for booke_wdt_write()/booke_wdt_ping 
-> () to both cores and ensure when we set something like  
-> WDIOC_SETTIMEOUT we set the registers in both processors.
-> 
-> I was wondering if anyone had any other ideas or if this model seems  
-> to work.
-
-I see 2 ways to go:
-1) short term: make sure that your actions are duplicated to both cores
-(like you said). At least then you are protected if your complete system
-crashes.
-2) I'm working on the uniform/generic watchdog device driver. Phase 1 is
-the "new" api and the /dev/watchdog handling. Phase 2 is a sysfs interface.
-Phase 3 is to allow multiple devices (and there I'm still thinking about
-how the /dev/watchdog interface should work).
-But the general idea is to allow at least the control of each watchdog
-device by the sysfs interface.
-
-Greetings,
-Wim.
-
+Can you be a bit more specific?
