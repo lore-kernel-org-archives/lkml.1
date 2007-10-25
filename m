@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbXJYUr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbXJYUt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762632AbXJYUr3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXJYUrU
+	id S1762637AbXJYUt0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXJYUtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:47:20 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55705 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751251AbXJYUrS (ORCPT
+	Thu, 25 Oct 2007 16:49:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53445 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755556AbXJYUtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:47:18 -0400
-Date: Thu, 25 Oct 2007 22:47:48 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Jie Zhang <jzhang.linux@gmail.com>,
-       bryan.wu@analog.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] blackfin: "extern inline" -> "static inline"
-Message-ID: <20071025204748.GW30533@stusta.de>
-References: <40401db90710241947i15e40e78v292e52f5229d9d35@mail.gmail.com> <8bd0f97a0710242000h7b6c97e7ia3f461c69b7d5de5@mail.gmail.com> <47200826.1060801@zytor.com> <20071025150545.GK30533@stusta.de> <8bd0f97a0710250916v5d3f0166qbfacf4abb0fc3d45@mail.gmail.com> <20071025165344.GL30533@stusta.de> <8bd0f97a0710251307m9f45f4dmf6d8cfa93af9fdf5@mail.gmail.com> <20071025201842.GT30533@stusta.de> <8bd0f97a0710251320m3490c53dpe85656a939e8536e@mail.gmail.com> <4720FC54.1020705@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4720FC54.1020705@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 25 Oct 2007 16:49:17 -0400
+Date: Thu, 25 Oct 2007 13:48:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: tglx@linutronix.de, nickpiggin@yahoo.com.au, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH v2] bitops kernel-doc: inline instead of macro
+Message-Id: <20071025134814.caced2e3.akpm@linux-foundation.org>
+In-Reply-To: <20071025095540.827d4333.rdunlap@xenotime.net>
+References: <20071023220959.a359d57d.rdunlap@xenotime.net>
+	<200710241800.19764.nickpiggin@yahoo.com.au>
+	<20071025093159.3ea69d03.rdunlap@xenotime.net>
+	<alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain>
+	<20071025095540.827d4333.rdunlap@xenotime.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 01:28:04PM -0700, H. Peter Anvin wrote:
-> Mike Frysinger wrote:
->>> Do you have any example for your claim "to get gcc to not inline things
->>> when building debug versions"?
->> $ cat test.c
->> __attribute__((always_inline)) int foo(void) { return 0; }
->> int main(void){ return foo(); }
->> $ gcc -g test.c -o test
->> $ readelf -s test | grep FUNC | grep -v _
->>     61: 00000000004004b8    11 FUNC    GLOBAL DEFAULT   13 foo
->>     68: 00000000004004c3    11 FUNC    GLOBAL DEFAULT   13 main
->> looks pretty straightforward to me
->> -mike
->
-> For "debug version" meaning -O0, this is true.
+On Thu, 25 Oct 2007 09:55:40 -0700
+Randy Dunlap <rdunlap@xenotime.net> wrote:
 
-No, "inline __attribute__((always_inline))" works with -O0.
+> -#define test_and_set_bit_lock test_and_set_bit
+> +static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
 
-He gets a function emitted since his "foo" is not static.
+mutter.
 
-> 	-hpa
+ERROR: "foo * bar" should be "foo *bar"
+#80: FILE: include/asm-x86/bitops_32.h:188:
++static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
 
-cu
-Adrian
+WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
+#80: FILE: include/asm-x86/bitops_32.h:188:
++static inline int test_and_set_bit_lock(int nr, volatile unsigned long * addr)
 
--- 
+ERROR: "foo * bar" should be "foo *bar"
+#97: FILE: include/asm-x86/bitops_64.h:178:
++static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
+#97: FILE: include/asm-x86/bitops_64.h:178:
++static __inline__ int test_and_set_bit_lock(int nr, volatile void * addr)
 
+total: 2 errors, 2 warnings, 28 lines checked
+Your patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+
+We might as well clean stuff up as we're churning the code.
+
+
+Andy, I thought we were going to whine about __inline__ and __inline, too?
