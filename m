@@ -1,309 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbXJYBVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbXJYBWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbXJYBVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Oct 2007 21:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbXJYBU4
+	id S1754834AbXJYBWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Oct 2007 21:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbXJYBWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Oct 2007 21:20:56 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:29665 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752552AbXJYBUz (ORCPT
+	Wed, 24 Oct 2007 21:22:14 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:40538 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbXJYBWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Oct 2007 21:20:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QaF/u/oHuneBaFdo3nyx9jJ/7GApG9ZTDbBSL3CvElArTJoLmqVjw0ylZA8DbfzQlEUCXHfa6iXtWQ9fEd/6mNdvh+82a3J3zknZye7kEfL0XRhONwXt/3GLv5dopnTylqU+X7GBMonxsXIaR8LhDE4YpmiltYge4rF2byadD1A=  ;
-X-YMail-OSG: jIiQeGwVM1msNHhkyvoGS4z6L76u6ACws5FPBE.n7zWwF5Eg5vBFhh4xV7TlPEucXlE1F.gvvg--
-From: David Brownell <david-b@pacbell.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.24-rc1] resource_len() utility function
-Date: Wed, 24 Oct 2007 18:20:52 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 24 Oct 2007 21:22:13 -0400
+To: g3vbv@blueyonder.co.uk
+Cc: linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: Re: 2.6.24-rc1 oops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <471FE5E0.9040202@blueyonder.co.uk>
+References: <471FE5E0.9040202@blueyonder.co.uk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710241820.52376.david-b@pacbell.net>
+Message-Id: <20071025102202L.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 25 Oct 2007 10:22:02 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new resource_len() function, so drivers can start using this
-instead of driver-private code for a common idiom.  The call can be
-useful with at least:
+On Thu, 25 Oct 2007 01:40:00 +0100
+Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
 
- - request_region(), release_region()
- - request_mem_region(), release_mem_region()
- - ioremap()
+> x86_64 dual, gcc version 4.2.2 (SUSE Linux).
+> ------------[ cut here ]------------
+> kernel BUG at include/linux/scatterlist.h:50!
+> invalid opcode: 0000 [1] SMP
+> CPU 1
+> Modules linked in: ub crc_itu_t hwmon cdrom soundcore v4l1_compat 
+> videobuf_core btcx_risc ff_memless floppy sg forcedeth ehci_hcd ohci_hcd 
+> sd_mod usbcore jfs edd ext3 mbcache jbd fan pata_jmicron ahci sata_nv 
+> pata_amd libata scsi_mod thermal processor
+> Pid: 0, comm: swapper Not tainted 2.6.24-rc1-smp #1
+> RIP: 0010:[<ffffffff881f3d27>]  [<ffffffff881f3d27>] 
+> :ub:ub_state_sense+0x9a/0x169
+> RSP: 0018:ffff810100697e60  EFLAGS: 00010093
+> RAX: 0000000087654321 RBX: ffff810105d55000 RCX: ffff81011f975540
+> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff81011f975540
+> RBP: ffff810105d51000 R08: 0000000000000000 R09: ffff810105d55098
+> R10: ffff810001c319b8 R11: 0000000000000286 R12: ffff810105d55098
+> R13: ffff810105d55260 R14: ffff810105d55278 R15: ffff810105d55298
+> FS:  00002afb8597c6f0(0000) GS:ffff810100001800(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00002afb8548200f CR3: 000000010615b000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 0, threadinfo ffff810100690000, task ffff810100689160)
+> Stack:  0000000000000001 ffff810105d55000 ffff810105d51000 0000000000000000
+>   ffff810105d55260 ffffffff881f4d43 ffff810105919998 ffff810105d553a0
+>   ffff810105d553af ffff810105d55348 0000000000000286 ffff810105d55058
+> Call Trace:
+>   <IRQ>  [<ffffffff881f4d43>] :ub:ub_scsi_action+0x1e3/0x214
+>   [<ffffffff8023a34e>] tasklet_action+0x54/0x97
+>   [<ffffffff8023a261>] __do_softirq+0x65/0xce
+>   [<ffffffff8020d0bc>] call_softirq+0x1c/0x28
+>   [<ffffffff8020e634>] do_softirq+0x2c/0x7d
+>   [<ffffffff8023a1b7>] irq_exit+0x3f/0x84
+>   [<ffffffff8020e7c3>] do_IRQ+0x13e/0x15f
+>   [<ffffffff8020afa0>] default_idle+0x0/0x3d
+>   [<ffffffff8020afa0>] default_idle+0x0/0x3d
+>   [<ffffffff8020c441>] ret_from_intr+0x0/0xa
+>   <EOI>  [<ffffffff8020afc9>] default_idle+0x29/0x3d
+>   [<ffffffff8020b070>] cpu_idle+0x93/0xbb
 
-Candidate drivers include those using platform or PNP busses, and
-maybe some others.  PCI already has a similar function.
+Can you try this?
 
-This patch also updates a representative set of drivers in two
-subsystems to use this call (SPI, and USB peripheral/gadget).
+Thanks,
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Despite comments that we have "needed" this for at least five years,
-this is pure cleanup.  IMO it's appropriate for 2.6.25 and to simmer
-with the rest of the MM soup for a while.
-
- drivers/spi/atmel_spi.c           |    2 +-
- drivers/spi/omap2_mcspi.c         |    7 +++----
- drivers/spi/spi_imx.c             |    5 ++---
- drivers/spi/spi_mpc83xx.c         |    2 +-
- drivers/spi/spi_s3c24xx.c         |    4 ++--
- drivers/spi/spi_txx9.c            |    2 +-
- drivers/spi/xilinx_spi.c          |    5 ++---
- drivers/usb/gadget/at91_udc.c     |   12 +++++-------
- drivers/usb/gadget/fsl_usb2_udc.c |    9 ++++-----
- drivers/usb/gadget/omap_udc.c     |    6 +++---
- include/linux/ioport.h            |    5 +++++
- 11 files changed, 29 insertions(+), 30 deletions(-)
-
---- at91.orig/include/linux/ioport.h	2007-10-19 11:38:39.000000000 -0700
-+++ at91/include/linux/ioport.h	2007-10-19 14:26:50.000000000 -0700
-@@ -22,6 +22,11 @@ struct resource {
- 	struct resource *parent, *sibling, *child;
- };
- 
-+static inline resource_size_t __pure resource_len(const struct resource *r)
-+{
-+	return r->end + 1 - r->start;
-+}
-+
- struct resource_list {
- 	struct resource_list *next;
- 	struct resource *res;
---- at91.orig/drivers/usb/gadget/at91_udc.c	2007-10-13 15:16:13.000000000 -0700
-+++ at91/drivers/usb/gadget/at91_udc.c	2007-10-19 14:26:33.000000000 -0700
-@@ -1656,9 +1656,7 @@ static int __init at91udc_probe(struct p
- 	if (!res)
- 		return -ENXIO;
- 
--	if (!request_mem_region(res->start,
--			res->end - res->start + 1,
--			driver_name)) {
-+	if (!request_mem_region(res->start, resource_len(res), driver_name)) {
- 		DBG("someone's using UDC memory\n");
- 		return -EBUSY;
- 	}
-@@ -1670,9 +1668,9 @@ static int __init at91udc_probe(struct p
- 	udc->pdev = pdev;
- 	udc->enabled = 0;
- 
--	udc->udp_baseaddr = ioremap(res->start, res->end - res->start + 1);
-+	udc->udp_baseaddr = ioremap(res->start, resource_len(res));
- 	if (!udc->udp_baseaddr) {
--		release_mem_region(res->start, res->end - res->start + 1);
-+		release_mem_region(res->start, resource_len(res));
- 		return -ENOMEM;
- 	}
- 
-@@ -1735,7 +1733,7 @@ static int __init at91udc_probe(struct p
- fail1:
- 	device_unregister(&udc->gadget.dev);
- fail0:
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_len(res));
- 	DBG("%s probe failed, %d\n", driver_name, retval);
- 	return retval;
- }
-@@ -1761,7 +1759,7 @@ static int __exit at91udc_remove(struct 
- 
- 	iounmap(udc->udp_baseaddr);
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_len(res));
- 
- 	clk_put(udc->iclk);
- 	clk_put(udc->fclk);
---- at91.orig/drivers/usb/gadget/fsl_usb2_udc.c	2007-10-13 15:16:13.000000000 -0700
-+++ at91/drivers/usb/gadget/fsl_usb2_udc.c	2007-10-19 11:43:12.000000000 -0700
-@@ -2268,14 +2268,13 @@ static int __init fsl_udc_probe(struct p
- 		return -ENXIO;
- 	}
- 
--	if (!request_mem_region(res->start, res->end - res->start + 1,
--				driver_name)) {
-+	if (!request_mem_region(res->start, resource_len(res), driver_name)) {
- 		ERR("request mem region for %s failed \n", pdev->name);
- 		kfree(udc_controller);
- 		return -EBUSY;
- 	}
- 
--	dr_regs = ioremap(res->start, res->end - res->start + 1);
-+	dr_regs = ioremap(res->start, resource_len(res));
- 	if (!dr_regs) {
- 		ret = -ENOMEM;
- 		goto err1;
-@@ -2376,7 +2375,7 @@ err3:
- err2:
- 	iounmap(dr_regs);
- err1:
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_len(res));
- 	kfree(udc_controller);
- 	return ret;
- }
-@@ -2405,7 +2404,7 @@ static int __exit fsl_udc_remove(struct 
- 	dma_pool_destroy(udc_controller->td_pool);
- 	free_irq(udc_controller->irq, udc_controller);
- 	iounmap(dr_regs);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_len(res));
- 
- 	device_unregister(&udc_controller->gadget.dev);
- 	/* free udc --wait for the release() finished */
---- at91.orig/drivers/usb/gadget/omap_udc.c	2007-10-13 15:16:13.000000000 -0700
-+++ at91/drivers/usb/gadget/omap_udc.c	2007-10-19 11:43:12.000000000 -0700
-@@ -2758,7 +2758,7 @@ static int __init omap_udc_probe(struct 
- 
- 	/* NOTE:  "knows" the order of the resources! */
- 	if (!request_mem_region(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start + 1,
-+			resource_len(&pdev->resource[0]),
- 			driver_name)) {
- 		DBG("request_mem_region failed\n");
- 		return -EBUSY;
-@@ -2962,7 +2962,7 @@ cleanup0:
- 	}
- 
- 	release_mem_region(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start + 1);
-+			resource_len(&pdev->resource[0]));
- 
- 	return status;
- }
-@@ -3001,7 +3001,7 @@ static int __exit omap_udc_remove(struct
- 	}
- 
- 	release_mem_region(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start + 1);
-+			resource_len(&pdev->resource[0]));
- 
- 	device_unregister(&udc->gadget.dev);
- 	wait_for_completion(&done);
---- at91.orig/drivers/spi/atmel_spi.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/atmel_spi.c	2007-10-19 11:43:12.000000000 -0700
-@@ -657,7 +657,7 @@ static int __init atmel_spi_probe(struct
- 	spin_lock_init(&as->lock);
- 	INIT_LIST_HEAD(&as->queue);
- 	as->pdev = pdev;
--	as->regs = ioremap(regs->start, (regs->end - regs->start) + 1);
-+	as->regs = ioremap(regs->start, resource_len(regs));
- 	if (!as->regs)
- 		goto out_free_buffer;
- 	as->irq = irq;
---- at91.orig/drivers/spi/omap2_mcspi.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/omap2_mcspi.c	2007-10-19 11:43:12.000000000 -0700
-@@ -964,8 +964,7 @@ static int __init omap2_mcspi_probe(stru
- 		status = -ENODEV;
- 		goto err1;
- 	}
--	if (!request_mem_region(r->start, (r->end - r->start) + 1,
--			pdev->dev.bus_id)) {
-+	if (!request_mem_region(r->start, resource_len(r), pdev->dev.bus_id)) {
- 		status = -EBUSY;
- 		goto err1;
- 	}
-@@ -1020,7 +1019,7 @@ err3:
- err2:
- 	clk_put(mcspi->ick);
- err1a:
--	release_mem_region(r->start, (r->end - r->start) + 1);
-+	release_mem_region(r->start, resource_len(r));
- err1:
- 	spi_master_put(master);
- 	return status;
-@@ -1041,7 +1040,7 @@ static int __exit omap2_mcspi_remove(str
- 	clk_put(mcspi->ick);
- 
- 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(r->start, (r->end - r->start) + 1);
-+	release_mem_region(r->start, resource_len(r));
- 
- 	spi_unregister_master(master);
- 	kfree(dma_channels);
---- at91.orig/drivers/spi/spi_imx.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/spi_imx.c	2007-10-19 11:43:12.000000000 -0700
-@@ -1487,15 +1487,14 @@ static int __init spi_imx_probe(struct p
- 		status = -ENODEV;
- 		goto err_no_iores;
- 	}
--	drv_data->ioarea = request_mem_region(res->start,
--						res->end - res->start + 1,
-+	drv_data->ioarea = request_mem_region(res->start, resource_len(res),
- 						pdev->name);
- 	if (drv_data->ioarea == NULL) {
- 		dev_err(&pdev->dev, "probe - cannot reserve region\n");
- 		status = -ENXIO;
- 		goto err_no_iores;
- 	}
--	drv_data->regs = ioremap(res->start, res->end - res->start + 1);
-+	drv_data->regs = ioremap(res->start, resource_len(res));
- 	if (drv_data->regs == NULL) {
- 		dev_err(&pdev->dev, "probe - cannot map IO\n");
- 		status = -ENXIO;
---- at91.orig/drivers/spi/spi_mpc83xx.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/spi_mpc83xx.c	2007-10-19 11:43:12.000000000 -0700
-@@ -452,7 +452,7 @@ static int __init mpc83xx_spi_probe(stru
- 	mpc83xx_spi->bitbang.master->setup = mpc83xx_spi_setup;
- 	init_completion(&mpc83xx_spi->done);
- 
--	mpc83xx_spi->base = ioremap(r->start, r->end - r->start + 1);
-+	mpc83xx_spi->base = ioremap(r->start, resource_len(r));
- 	if (mpc83xx_spi->base == NULL) {
- 		ret = -ENOMEM;
- 		goto put_master;
---- at91.orig/drivers/spi/spi_s3c24xx.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/spi_s3c24xx.c	2007-10-19 11:43:12.000000000 -0700
-@@ -284,7 +284,7 @@ static int __init s3c24xx_spi_probe(stru
- 		goto err_no_iores;
- 	}
- 
--	hw->ioarea = request_mem_region(res->start, (res->end - res->start)+1,
-+	hw->ioarea = request_mem_region(res->start, resource_len(res),
- 					pdev->name);
- 
- 	if (hw->ioarea == NULL) {
-@@ -293,7 +293,7 @@ static int __init s3c24xx_spi_probe(stru
- 		goto err_no_iores;
- 	}
- 
--	hw->regs = ioremap(res->start, (res->end - res->start)+1);
-+	hw->regs = ioremap(res->start, resource_len(res));
- 	if (hw->regs == NULL) {
- 		dev_err(&pdev->dev, "Cannot map IO\n");
- 		err = -ENXIO;
---- at91.orig/drivers/spi/spi_txx9.c	2007-10-19 11:38:28.000000000 -0700
-+++ at91/drivers/spi/spi_txx9.c	2007-10-19 11:43:12.000000000 -0700
-@@ -382,7 +382,7 @@ static int __init txx9spi_probe(struct p
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	if (!res)
- 		goto exit;
--	c->membase = ioremap(res->start, res->end - res->start + 1);
-+	c->membase = ioremap(res->start, resource_len(res));
- 	if (!c->membase)
- 		goto exit;
- 
---- at91.orig/drivers/spi/xilinx_spi.c	2007-10-13 14:35:41.000000000 -0700
-+++ at91/drivers/spi/xilinx_spi.c	2007-10-19 11:43:12.000000000 -0700
-@@ -341,13 +341,12 @@ static int __init xilinx_spi_probe(struc
- 	xspi->bitbang.master->setup = xilinx_spi_setup;
- 	init_completion(&xspi->done);
- 
--	if (!request_mem_region(r->start,
--			r->end - r->start + 1, XILINX_SPI_NAME)) {
-+	if (!request_mem_region(r->start, resource_len(r), XILINX_SPI_NAME)) {
- 		ret = -ENXIO;
- 		goto put_master;
- 	}
- 
--	xspi->regs = ioremap(r->start, r->end - r->start + 1);
-+	xspi->regs = ioremap(r->start, resource_len(r));
- 	if (xspi->regs == NULL) {
- 		ret = -ENOMEM;
- 		goto put_master;
+diff --git a/drivers/block/ub.c b/drivers/block/ub.c
+index 14143f2..78f158f 100644
+--- a/drivers/block/ub.c
++++ b/drivers/block/ub.c
+@@ -1428,6 +1428,7 @@ static void ub_state_sense(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
+ 	scmd->state = UB_CMDST_INIT;
+ 	scmd->nsg = 1;
+ 	sg = &scmd->sgv[0];
++	sg_init_table(sg, UB_MAX_REQ_SG);
+ 	sg_set_page(sg, virt_to_page(sc->top_sense));
+ 	sg->offset = (unsigned long)sc->top_sense & (PAGE_SIZE-1);
+ 	sg->length = UB_SENSE_SIZE;
+@@ -1864,6 +1865,7 @@ static int ub_sync_read_cap(struct ub_dev *sc, struct ub_lun *lun,
+ 	cmd->state = UB_CMDST_INIT;
+ 	cmd->nsg = 1;
+ 	sg = &cmd->sgv[0];
++	sg_init_table(sg, UB_MAX_REQ_SG);
+ 	sg_set_page(sg, virt_to_page(p));
+ 	sg->offset = (unsigned long)p & (PAGE_SIZE-1);
+ 	sg->length = 8;
