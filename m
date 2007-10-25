@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXJYSfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXJYSgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbXJYSfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 14:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXJYSfW
+	id S1758991AbXJYSgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 14:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbXJYSgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 14:35:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37901 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 14:36:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:44068 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752902AbXJYSfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 14:35:22 -0400
-Date: Thu, 25 Oct 2007 14:34:59 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux machines dieing in swap storms
-Message-ID: <20071025143459.64794cc3@bree.surriel.com>
-In-Reply-To: <1193325641.5776.21.camel@localhost.localdomain>
-References: <1193325641.5776.21.camel@localhost.localdomain>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753397AbXJYSgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 14:36:16 -0400
+Message-ID: <4720E1F9.4020700@goop.org>
+Date: Thu, 25 Oct 2007 11:35:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com
+Subject: Re: [PATCH] Wipe out traditional opt from x86_64 Makefile
+References: <11933164723812-git-send-email-gcosta@redhat.com> <20071025173605.GM30533@stusta.de> <4720D8EA.1090501@zytor.com> <20071025183055.GN30533@stusta.de>
+In-Reply-To: <20071025183055.GN30533@stusta.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 16:20:41 +0100
-Richard Purdie <rpurdie@rpsys.net> wrote:
+Adrian Bunk wrote:
+> Sorry for the dumb question, but how does or did the gcc -traditional 
+> option affect ld?
+>   
 
-> Advice on solving this welcome preferably in mainline but I'll happily
-> hack my kernels with a workaround if need be.
+vmlinux.lds is run through cpp (as a .S file).
 
-I can't see any easy hacks or workarounds to fix the issue in the
-current MM, except maybe activate the OOM killer if the amount of
-page cache and buffer cache is really low and swap is full...
-
-In the longer run, I'm working on:
-
-http://linux-mm.org/PageReplacementDesign
-
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+    J
