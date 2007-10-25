@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXJYPek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbXJYPkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761390AbXJYPek (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXJYPed
+	id S1761412AbXJYPkU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXJYPkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:34:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36609 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752661AbXJYPec (ORCPT
+	Thu, 25 Oct 2007 11:40:05 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:51787 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755151AbXJYPkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:34:32 -0400
-Date: Thu, 25 Oct 2007 08:34:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Permit silencing of __deprecated warnings.
-In-Reply-To: <20071025011516.aea17222.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0710250833450.30120@woody.linux-foundation.org>
-References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org>
- <41621d56a0a0e4e5f861e1725f18990df5e927ad.1193299380.git.jeff@garzik.org>
- <20071025011516.aea17222.akpm@linux-foundation.org>
+	Thu, 25 Oct 2007 11:40:04 -0400
+Date: Thu, 25 Oct 2007 17:40:03 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+In-Reply-To: <20071020235546.GB1825@martell.zuzino.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0710251734190.17781@fbirervta.pbzchgretzou.qr>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Oct 21 2007, Alexey Dobriyan wrote:
+>
+>One of type of bugs steadily being fought is the following one:
+>
+>	unsigned int flags;
+>	spin_lock_irqsave(&lock, flags);
+>
+>where "flags" should be "unsigned long". Here is far from complete list 
+>of commits fixing such bugs:
+>
 
-On Thu, 25 Oct 2007, Andrew Morton wrote:
-> 
-> Sigh.  Can't we just fix the dud code?  Or mark it BROKEN and see what
-> happens?
+How about making spin_lock_irqsave actually take a pointer to flags? 
+(Which would be the logical choice if it were a function and not a 
+macro...) That would flag up all violations ("without cast to different 
+pointer" or so) while usually not breaking compilation.
 
-I think removing __deprecated is the better option.
-
-Quite frankly, some people add "__deprecated" *way* too eagerly. 
-
-			Linus
+Of course, irq_flags_t is probably the best long-term solution if one 
+wants to hide a struct. (Even then perhaps, use a pointer instead?)
