@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbXJYQIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXJYQJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbXJYQIb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXJYQIW
+	id S1756025AbXJYQJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXJYQJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:08:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39984 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 12:09:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40010 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbXJYQIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:08:21 -0400
-Subject: Re: [PATCH] ia64 vDSO vs --build-id
-From: Doug Chapman <dchapman@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com
-In-Reply-To: <20071018221108.638644D04E2@magilla.localdomain>
-References: <20071018221108.638644D04E2@magilla.localdomain>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 12:08:12 -0400
-Message-Id: <1193328492.7591.6.camel@deimos.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	id S1752021AbXJYQJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:09:03 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       glommer@gmail.com, Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH -v2] Wipe out traditional opt from x86_64 Makefile 
+Date: Thu, 25 Oct 2007 10:24:24 -0300
+Message-Id: <11933186641396-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-18 at 15:11 -0700, Roland McGrath wrote:
-> When gcc uses --build-id by default, the gate.lds.S linker script runs afoul
-> of the new note section and produces a bad DSO image.  This fixes it.
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> 
-> --- a/arch/ia64/kernel/gate.lds.S
-> +++ b/arch/ia64/kernel/gate.lds.S
-> @@ -20,6 +20,8 @@ SECTIONS
->  	.gnu.version_d		: { *(.gnu.version_d) }
->  	.gnu.version_r		: { *(.gnu.version_r) }
->  
-> +	.note			: { *(.note*) }		:readable	:note
-> +
->  	.dynamic		: { *(.dynamic) }	:readable	:dynamic
->  
->  	/*
-> @@ -83,6 +85,7 @@ PHDRS
->  	epc		PT_LOAD	FILEHDR PHDRS	FLAGS(1);	/* PF_X */
->  #endif
->  	dynamic		PT_DYNAMIC		FLAGS(4);	/* PF_R */
-> +	note		PT_NOTE			FLAGS(4);	/* PF_R */
->  	unwind		PT_IA_64_UNWIND;
->  }
->  
-> -
+Among other things, using -traditional as a gcc option stops us from
+using macro token pasting, which is a feature we heavily rely on.
 
-Any news on this?  It does not appear to have been commited to git.
-This issue is blocking our bringup of Fedora on ia64.  The Fedora gcc
-uses the --build-id option by default leading to a hang during bootup
-without this patch.
+There was still a use of -traditional in arch/x86/kernel/Makefile_64,
+which this patch removes.
 
-thanks,
+I don't see any problems building kernels in my x86_64 box without
+-traditional.
 
-- Doug
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/Makefile_64 |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
+diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+index 82da906..03a01f6 100644
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -3,7 +3,6 @@
+ #
+ 
+ extra-y 	:= head_64.o head64.o init_task.o vmlinux.lds
+-EXTRA_AFLAGS	:= -traditional
+ obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
+ 		ptrace_64.o time_64.o ioport_64.o ldt_64.o setup_64.o i8259_64.o sys_x86_64.o \
+ 		x8664_ksyms_64.o i387_64.o syscall_64.o vsyscall_64.o \
+-- 
+1.4.4.2
 
