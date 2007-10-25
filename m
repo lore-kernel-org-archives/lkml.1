@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXJYFhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbXJYFiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbXJYFhi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 01:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXJYFh2
+	id S1760184AbXJYFiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 01:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXJYFh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 01:37:28 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:9854 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753624AbXJYFh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 01:37:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=k8U91ytkT89sB59erdcU6DPtz3aEr5HQE7UHUvXhwLQczMlY8nIC7ZKA3D6pSG7yq0mkGEpq9/napwcyDWqm98Hs5ttddGnW4ZXXHr3K//IF/xryM6AIuNlB1aF2QpBFgwCc+X22qCeZc5KKzJtAfZUq+mqz6ljOCpI+RFWUEr4=
-Message-ID: <84144f020710242237q3aa8e96dtc8cf3f02f2af2cc9@mail.gmail.com>
-Date: Thu, 25 Oct 2007 08:37:26 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [PATCH+comment] fix tmpfs BUG and AOP_WRITEPAGE_ACTIVATE
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, ezk@cs.sunysb.edu,
-       ryan@finnie.org, mhalcrow@us.ibm.com, cjwatson@ubuntu.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, stable@kernel.org
-In-Reply-To: <Pine.LNX.4.64.0710242233470.17796@blonde.wat.veritas.com>
+	Thu, 25 Oct 2007 01:37:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49546 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbXJYFhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 01:37:55 -0400
+Message-ID: <47202BAB.2040709@garzik.org>
+Date: Thu, 25 Oct 2007 01:37:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, barkalow@iabervon.org, linas@austin.ibm.com,
+       chunhao.huang@hotmail.com, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 0/4]: Resolve MSI vs. INTX_DISABLE quirks.
+References: <20071023.195108.69018458.davem@davemloft.net>
+In-Reply-To: <20071023.195108.69018458.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI>
-	 <200710142232.l9EMW8kK029572@agora.fsl.cs.sunysb.edu>
-	 <84144f020710150447o94b1babo8b6e6a647828465f@mail.gmail.com>
-	 <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
-	 <Pine.LNX.4.64.0710242152020.13001@blonde.wat.veritas.com>
-	 <20071024140836.a0098180.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0710242233470.17796@blonde.wat.veritas.com>
-X-Google-Sender-Auth: 7c513df83016214a
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+David Miller wrote:
+> The forthcoming patches are also available from:
+> 
+> 	kernel.org:/pub/scm/linux/kernel/git/davem/msiquirk-2.6.git
+> 
+> and clean up the handling of the common quirk wherein setting
+> INTX_DISABLE will mistakedly disable MSI generation for some
+> devices.
+> 
+> For devices without that problem, we want to keep the pci_intx() calls
+> in drivers/pci/msi.c because those help protect against devices
+> with the opposite problem.  Such devices always generate INTX
+> interrupts even when MSI is enabled, unless INTX_DISABLE is set.
+> 
+> Michael, please pay special attention to patch #3.  I think I
+> picked the correct PCI device IDs to match for the quirk
+> (5714* and 5780*) but it's possible we might need more elaborate
+> checks here.  It at least worked properly for the chips in my
+> Niagara system.
+> 
+> In addition to the Tigon3 cases, I added quirk entries for the
+> SB700/800 SATA chips and the IXP SB400 USB controllers.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
 
-On 10/25/07, Hugh Dickins <hugh@veritas.com> wrote:
-> --- 2.6.24-rc1/mm/shmem.c       2007-10-24 07:16:04.000000000 +0100
-> +++ linux/mm/shmem.c    2007-10-24 22:31:09.000000000 +0100
-> @@ -915,6 +915,21 @@ static int shmem_writepage(struct page *
->         struct inode *inode;
->
->         BUG_ON(!PageLocked(page));
-> +       /*
-> +        * shmem_backing_dev_info's capabilities prevent regular writeback or
-> +        * sync from ever calling shmem_writepage; but a stacking filesystem
-> +        * may use the ->writepage of its underlying filesystem, in which case
+I'm happy with this patch series.  A quirk is better than a 
+sledgehammer, and MSI-mode SATA is better than INTX-mode SATA :)
 
-I find the above bit somewhat misleading as it implies that the
-!wbc->for_reclaim case can be removed after ecryptfs has similar fix
-as unionfs. Can we just say that while BDI_CAP_NO_WRITEBACK does
-prevent some callers from entering ->writepage(), it's just an
-optimization and ->writepage() must deal with !wbc->for_reclaim case
-properly?
+	Jeff
 
-                                          Pekka
+
+
