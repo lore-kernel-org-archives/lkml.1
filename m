@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbXJYQij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXJYQi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761180AbXJYQij (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbXJYQfO
+	id S1761588AbXJYQi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXJYQfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:35:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56046 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 12:35:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56049 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755199AbXJYQfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:35:09 -0400
+	id S1752956AbXJYQfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:35:12 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 08/31] IGET: Stop BEFS from using iget() and read_inode() [try
+Subject: [PATCH 09/31] IGET: Stop BFS from using iget() and read_inode() [try
 	#5]
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 25 Oct 2007 17:34:33 +0100
-Message-ID: <20071025163433.5057.82915.stgit@warthog.procyon.org.uk>
+Date: Thu, 25 Oct 2007 17:34:38 +0100
+Message-ID: <20071025163438.5057.24281.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,131 +30,148 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the BEFS filesystem from using iget() and read_inode().  Replace
-befs_read_inode() with befs_iget(), and call that instead of iget().
-befs_iget() then uses iget_locked() directly and returns a proper error code
+Stop the BFS filesystem from using iget() and read_inode().  Replace
+bfs_read_inode() with bfs_iget(), and call that instead of iget().
+bfs_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-befs_fill_super() returns any error incurred when getting the root inode
+bfs_fill_super() returns any error incurred when getting the root inode
 instead of EINVAL.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Will Dyson <will_dyson@pobox.com>
 ---
 
- fs/befs/linuxvfs.c |   39 +++++++++++++++++++++++++--------------
- 1 files changed, 25 insertions(+), 14 deletions(-)
+ fs/bfs/bfs.h   |    2 ++
+ fs/bfs/dir.c   |    6 +++---
+ fs/bfs/inode.c |   32 ++++++++++++++++++++++----------
+ 3 files changed, 27 insertions(+), 13 deletions(-)
 
-diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
-index b28a20e..403fe66 100644
---- a/fs/befs/linuxvfs.c
-+++ b/fs/befs/linuxvfs.c
-@@ -35,7 +35,7 @@ static int befs_get_block(struct inode *, sector_t, struct buffer_head *, int);
- static int befs_readpage(struct file *file, struct page *page);
- static sector_t befs_bmap(struct address_space *mapping, sector_t block);
- static struct dentry *befs_lookup(struct inode *, struct dentry *, struct nameidata *);
--static void befs_read_inode(struct inode *ino);
-+static struct inode *befs_iget(struct super_block *, unsigned long);
- static struct inode *befs_alloc_inode(struct super_block *sb);
- static void befs_destroy_inode(struct inode *inode);
- static int befs_init_inodecache(void);
-@@ -52,7 +52,6 @@ static int befs_statfs(struct dentry *, struct kstatfs *);
- static int parse_options(char *, befs_mount_options *);
+diff --git a/fs/bfs/bfs.h b/fs/bfs/bfs.h
+index 130f6c6..5cf50d4 100644
+--- a/fs/bfs/bfs.h
++++ b/fs/bfs/bfs.h
+@@ -46,6 +46,8 @@ static inline struct bfs_inode_info *BFS_I(struct inode *inode)
+ #define printf(format, args...) \
+ 	printk(KERN_ERR "BFS-fs: %s(): " format, __FUNCTION__, ## args)
  
- static const struct super_operations befs_sops = {
--	.read_inode	= befs_read_inode,	/* initialize & read inode */
- 	.alloc_inode	= befs_alloc_inode,	/* allocate a new inode */
- 	.destroy_inode	= befs_destroy_inode, /* deallocate an inode */
- 	.put_super	= befs_put_super,	/* uninit super */
-@@ -198,9 +197,9 @@ befs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- 		return ERR_PTR(-ENODATA);
++/* inode.c */
++extern struct inode *bfs_iget(struct super_block *sb, unsigned long ino);
+ 
+ /* file.c */
+ extern const struct inode_operations bfs_file_inops;
+diff --git a/fs/bfs/dir.c b/fs/bfs/dir.c
+index 097f149..03c8bdb 100644
+--- a/fs/bfs/dir.c
++++ b/fs/bfs/dir.c
+@@ -141,10 +141,10 @@ static struct dentry * bfs_lookup(struct inode * dir, struct dentry * dentry, st
+ 	if (bh) {
+ 		unsigned long ino = (unsigned long)le16_to_cpu(de->ino);
+ 		brelse(bh);
+-		inode = iget(dir->i_sb, ino);
+-		if (!inode) {
++		inode = bfs_iget(dir->i_sb, ino);
++		if (IS_ERR(inode)) {
+ 			unlock_kernel();
+-			return ERR_PTR(-EACCES);
++			return ERR_CAST(inode);
+ 		}
  	}
+ 	unlock_kernel();
+diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
+index 7bd9c2b..d279382 100644
+--- a/fs/bfs/inode.c
++++ b/fs/bfs/inode.c
+@@ -32,25 +32,29 @@ MODULE_LICENSE("GPL");
  
--	inode = iget(dir->i_sb, (ino_t) offset);
--	if (!inode)
--		return ERR_PTR(-EACCES);
-+	inode = befs_iget(dir->i_sb, (ino_t) offset);
-+	if (IS_ERR(inode))
-+		return ERR_CAST(inode);
+ void dump_imap(const char *prefix, struct super_block * s);
  
- 	d_add(dentry, inode);
- 
-@@ -296,17 +295,23 @@ static void init_once(struct kmem_cache *cachep, void *foo)
- 	inode_init_once(&bi->vfs_inode);
- }
- 
--static void
--befs_read_inode(struct inode *inode)
-+static struct inode *befs_iget(struct super_block *sb, unsigned long ino)
+-static void bfs_read_inode(struct inode * inode)
++struct inode *bfs_iget(struct super_block *sb, unsigned long ino)
  {
- 	struct buffer_head *bh = NULL;
- 	befs_inode *raw_inode = NULL;
- 
--	struct super_block *sb = inode->i_sb;
- 	befs_sb_info *befs_sb = BEFS_SB(sb);
- 	befs_inode_info *befs_ino = NULL;
+-	unsigned long ino = inode->i_ino;
+ 	struct bfs_inode * di;
+ 	struct buffer_head * bh;
 +	struct inode *inode;
-+	long ret = -EIO;
+ 	int block, off;
  
--	befs_debug(sb, "---> befs_read_inode() " "inode = %lu", inode->i_ino);
-+	befs_debug(sb, "---> befs_read_inode() " "inode = %lu", ino);
-+
 +	inode = iget_locked(sb, ino);
 +	if (IS_ERR(inode))
-+		return inode;
++		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
++
+ 	if (ino < BFS_ROOT_INO || ino > BFS_SB(inode->i_sb)->si_lasti) {
+ 		printf("Bad inode number %s:%08lx\n", inode->i_sb->s_id, ino);
+-		make_bad_inode(inode);
+-		return;
++		goto error;
+ 	}
  
- 	befs_ino = BEFS_I(inode);
+ 	block = (ino - BFS_ROOT_INO)/BFS_INODES_PER_BLOCK + 1;
+ 	bh = sb_bread(inode->i_sb, block);
+ 	if (!bh) {
+ 		printf("Unable to read inode %s:%08lx\n", inode->i_sb->s_id, ino);
+-		make_bad_inode(inode);
+-		return;
++		goto error;
+ 	}
  
-@@ -402,15 +407,16 @@ befs_read_inode(struct inode *inode)
+ 	off = (ino - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
+@@ -85,6 +89,12 @@ static void bfs_read_inode(struct inode * inode)
+ 	BFS_I(inode)->i_dsk_ino = le16_to_cpu(di->i_ino); /* can be 0 so we store a copy */
  
  	brelse(bh);
- 	befs_debug(sb, "<--- befs_read_inode()");
--	return;
 +	unlock_new_inode(inode);
 +	return inode;
- 
-       unacquire_bh:
- 	brelse(bh);
- 
-       unacquire_none:
--	make_bad_inode(inode);
++
++error:
 +	iget_failed(inode);
- 	befs_debug(sb, "<--- befs_read_inode() - Bad inode");
--	return;
-+	return ERR_PTR(ret);
++	return ERR_PTR(-EIO);
  }
  
- /* Initialize the inode cache. Called at fs setup.
-@@ -752,6 +758,7 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
- 	befs_sb_info *befs_sb;
- 	befs_super_block *disk_sb;
- 	struct inode *root;
+ static int bfs_write_inode(struct inode * inode, int unused)
+@@ -271,7 +281,6 @@ static void destroy_inodecache(void)
+ static const struct super_operations bfs_sops = {
+ 	.alloc_inode	= bfs_alloc_inode,
+ 	.destroy_inode	= bfs_destroy_inode,
+-	.read_inode	= bfs_read_inode,
+ 	.write_inode	= bfs_write_inode,
+ 	.delete_inode	= bfs_delete_inode,
+ 	.put_super	= bfs_put_super,
+@@ -306,6 +315,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
+ 	struct inode * inode;
+ 	unsigned i, imap_len;
+ 	struct bfs_sb_info * info;
 +	long ret = -EINVAL;
  
- 	const unsigned long sb_block = 0;
- 	const off_t x86_sb_off = 512;
-@@ -833,7 +840,11 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
- 	/* Set real blocksize of fs */
- 	sb_set_blocksize(sb, (ulong) befs_sb->block_size);
- 	sb->s_op = (struct super_operations *) &befs_sops;
--	root = iget(sb, iaddr2blockno(sb, &(befs_sb->root_dir)));
-+	root = befs_iget(sb, iaddr2blockno(sb, &(befs_sb->root_dir)));
-+	if (IS_ERR(root)) {
-+		ret = PTR_ERR(root);
-+		goto unacquire_priv_sbp;
-+	}
- 	sb->s_root = d_alloc_root(root);
- 	if (!sb->s_root) {
- 		iput(root);
-@@ -868,7 +879,7 @@ befs_fill_super(struct super_block *sb, void *data, int silent)
+ 	info = kzalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info)
+@@ -340,14 +350,16 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
+ 		set_bit(i, info->si_imap);
  
-       unacquire_none:
- 	sb->s_fs_info = NULL;
+ 	s->s_op = &bfs_sops;
+-	inode = iget(s, BFS_ROOT_INO);
+-	if (!inode) {
++	inode = bfs_iget(s, BFS_ROOT_INO);
++	if (IS_ERR(inode)) {
++		ret = PTR_ERR(inode);
+ 		kfree(info->si_imap);
+ 		goto out;
+ 	}
+ 	s->s_root = d_alloc_root(inode);
+ 	if (!s->s_root) {
+ 		iput(inode);
++		ret = -ENOMEM;
+ 		kfree(info->si_imap);
+ 		goto out;
+ 	}
+@@ -402,7 +414,7 @@ out:
+ 	brelse(bh);
+ 	kfree(info);
+ 	s->s_fs_info = NULL;
 -	return -EINVAL;
 +	return ret;
  }
  
- static int
+ static int bfs_get_sb(struct file_system_type *fs_type,
 
