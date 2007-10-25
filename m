@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbXJYP2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbXJYP3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761634AbXJYP2e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 11:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXJYP20
+	id S1762173AbXJYP3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 11:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbXJYP3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 11:28:26 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45646 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757747AbXJYP2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 11:28:25 -0400
-Date: Thu, 25 Oct 2007 11:27:54 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [PATCH 3/3] RT: CPU priority management
-In-Reply-To: <20071025144633.19876.10342.stgit@novell1.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710251124370.5639@gandalf.stny.rr.com>
-References: <20071025144456.19876.94333.stgit@novell1.haskins.net>
- <20071025144633.19876.10342.stgit@novell1.haskins.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Oct 2007 11:29:32 -0400
+Received: from mga01.intel.com ([192.55.52.88]:48331 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756978AbXJYP3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 11:29:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,328,1188802800"; 
+   d="scan'208";a="358158910"
+Date: Thu, 25 Oct 2007 08:15:56 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, anil.s.keshavamurthy@intel.com
+Subject: Re: [PATCH] intel-iommu: Fix array overflow
+Message-ID: <20071025151555.GE18751@askeshav-devel.jf.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <s5htzoirywg.wl%tiwai@suse.de> <20071024233037.GA18079@linux.intel.com> <s5htzofbqh5.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <s5htzofbqh5.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 25, 2007 at 09:31:02AM +0200, Takashi Iwai wrote:
+> At Wed, 24 Oct 2007 16:30:37 -0700,
+> Mark Gross wrote:
+> > 
+> > On Tue, Oct 23, 2007 at 10:57:51AM +0200, Takashi Iwai wrote:
+> > > Fix possible array overflow:
+> > > 
+> > > drivers/pci/intel-iommu.c: In function ‘dmar_get_fault_reason’:
+> > > drivers/pci/intel-iommu.c:753: warning: array subscript is above array bounds
+> > > drivers/pci/intel-iommu.c: In function ‘iommu_page_fault’:
+> > > drivers/pci/intel-iommu.c:753: warning: array subscript is above array bounds
+> > > 
+> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > 
+> > > ---
+> > >  drivers/pci/intel-iommu.c |    4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> > > index b3d7031..e4b0a0d 100644
+> > > --- a/drivers/pci/intel-iommu.c
+> > > +++ b/drivers/pci/intel-iommu.c
+> > > @@ -749,8 +749,8 @@ static char *fault_reason_strings[] =
+> > >  
+> > >  char *dmar_get_fault_reason(u8 fault_reason)
+> > >  {
+> > > -	if (fault_reason > MAX_FAULT_REASON_IDX)
+> > > -		return fault_reason_strings[MAX_FAULT_REASON_IDX];
+> > > +	if (fault_reason >= MAX_FAULT_REASON_IDX)
+> > > +		return fault_reason_strings[MAX_FAULT_REASON_IDX - 1];
+> > 
+> > This looks like what the code meant to implement.
+> 
+> I think not.  The size of fault_reason_strings[] is
+> MAX_FAULT_REASON_IDX, not + 1.  So gcc warning is correct.
+> Maybe the main problem is that the constant name is confusing...
+Yup, GCC warning is correct. the size of fault_reason_strings[]
+is MAX_FAULT_REASON_IDX and hence the max array that can be 
+referenced is [MAX_FAULT_REASON_IDX -1], hence the fix by
+Takashi is correct.
 
---
-
-> +
-> +struct cpu_priority {
-> +	raw_spinlock_t lock;
-> +	cpumask_t      pri_to_cpu[CPUPRI_NR_PRIORITIES];
-> +	long           pri_active[CPUPRI_NR_PRIORITIES/BITS_PER_LONG];
-> +	int            cpu_to_pri[NR_CPUS];
-> +};
-> +
-> +static __cacheline_aligned_in_smp struct cpu_priority cpu_priority;
-> +
-
-[...]
-
-> +int cpupri_find(int def_cpu, struct task_struct *p)
-> +{
-> +	int                  idx      = 0;
-> +	struct cpu_priority *cp       = &cpu_priority;
-> +	int                  this_cpu = smp_processor_id();
-> +	int                  cpu      = def_cpu;
-> +	int                  task_pri = convert_prio(p->prio);
-> +
-> +	for_each_cpupri_active(cp->pri_active, idx) {
-
-[...]
-
-> +void cpupri_set(int cpu, int newpri)
-> +{
-> +	struct cpu_priority *cp      = &cpu_priority;
-> +	int                 *currpri = &cp->cpu_to_pri[cpu];
-> +	int                  oldpri  = *currpri;
-> +	unsigned long        flags;
-> +
-> +	newpri = convert_prio(newpri);
-> +
-> +	if (newpri == oldpri)
-> +		return;
-> +
-> +	spin_lock_irqsave(&cp->lock, flags);
-
-The cpu_priority and the cp->lock will be aboslutely horrible for
-cacheline bouncing.  Ironically, this will kill performance for the very
-machines this code is to help with.  The larger the number of CPUs you
-have the more cacheline bouncing this code will create.
-
-I still don't see the benefit from the cpupri code.
-
--- Steve
-
+-Anil
