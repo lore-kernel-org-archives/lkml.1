@@ -1,132 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbXJYGOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXJYGSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbXJYGOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 02:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXJYGOI
+	id S1759586AbXJYGSy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 02:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXJYGSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 02:14:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:46866 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbXJYGOH (ORCPT
+	Thu, 25 Oct 2007 02:18:46 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:36922 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753823AbXJYGSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 02:14:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M0D9r5n483wIJdFvwWiGXFAxWHHjOJLjGf9kqCIjmsVFFX/zUtW+yz5g/jWoGDS7vg1IIuz0o14HVnq0SJ17Fggg8shjLuUE+hqajqZndoYQCjeCllvx0L6GjHA3mEJkyN5Ng1ohkZT+yp7p9NMRq05NIwDDhS92t4kVfi3RIe4=
-Message-ID: <86802c440710242314i6e16b544g1e10f7af0f917cf9@mail.gmail.com>
-Date: Wed, 24 Oct 2007 23:14:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Randy Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [RFC - GIT pull] first step to get rid of x86_64 and i386 dirs
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20071024155043.04ba31cd.rdunlap@xenotime.net>
+	Thu, 25 Oct 2007 02:18:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ickdsRb3oQho6DXLOCdgo7I8hl3I6BYK3kyB1WeLclKO4g4Rnb6E5mCCZayI8FDg4P9p580VnIm9W0txFdb4+C76mq+lP+VuhSPzG3JORkk7MBMpQc2444X3lNGGwDLsjnHHAoWQeI8uz0CVahwuxoi7Eid1XHWAtO9+F0gezpc=  ;
+X-YMail-OSG: viqXQvkVM1lDpSZYSRPnee_VV81ukgFmQOW5ZZJF6BZc_ZoHoCsdyfmqlWuk7TVBlwgRcdb_9w--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Greg KH <greg@kroah.com>
+Subject: Re: sysfs sys/kernel/ namespace (was Re: [PATCH 0/2] add new notifier function ,take2)
+Date: Thu, 25 Oct 2007 16:12:04 +1000
+User-Agent: KMail/1.9.5
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Takenori Nagano <t-nagano@ah.jp.nec.com>
+References: <471700F4.1080200@ah.jp.nec.com> <200710251231.07185.nickpiggin@yahoo.com.au> <20071025054545.GB15255@kroah.com>
+In-Reply-To: <20071025054545.GB15255@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
-	 <20071024080451.GA32690@infradead.org>
-	 <20071024110733.GA1374@uranus.ravnborg.org>
-	 <20071024121218.GA23548@elte.hu>
-	 <20071024213052.GA5469@uranus.ravnborg.org>
-	 <20071024155043.04ba31cd.rdunlap@xenotime.net>
+Message-Id: <200710251612.04710.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> On Wed, 24 Oct 2007 23:30:52 +0200 Sam Ravnborg wrote:
->
-> > Hi Ingo.
-> >
-> > This is first step in getting rid of the two directories.
-> > I had to do some very minor modifications in common files
-> > to let it work out - but nothing really hackish.
-> >
-> > If you & Thomas + hpa are OK with the changes they can be
-> > pulled from:
-> >
-> >       git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86.git
-> >
-> > As this is mostly renames I have attached a git -M diff only.
-> >
-> > The remaining stuff is Kconfig files.
-> >
-> > Before looking into these I am hoping someone could
-> > step in and make the two Kconfig.debug
-> > files 100% equal - because then I can fix the kconfig
-> > stuff and finally kill the two directories.
->
-> Uh, maybe I jumped too far.  I merged the 2 x86 Kconfig.debug files
-> into arch/x86/Kconfig.debug....
->
-> ---
->
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Merge i386/Kconfig.debug and x86_64/Kconfig.debug into x86/Kconfig.debug,
-> using "depends on X86_32" or X86_64 when needed.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  arch/i386/Kconfig.debug   |   88 ----------------------------------
->  arch/x86/Kconfig.debug    |  119 ++++++++++++++++++++++++++++++++++++++++++++++
->  arch/x86_64/Kconfig.debug |   61 -----------------------
->  3 files changed, 119 insertions(+), 149 deletions(-)
->
-> --- linux-2.6.24-rc1.orig/arch/i386/Kconfig.debug
-> +++ /dev/null
-> @@ -1,88 +0,0 @@
-> -menu "Kernel hacking"
-> -
-> -config TRACE_IRQFLAGS_SUPPORT
-> -       bool
-> -       default y
-> -
-> -source "lib/Kconfig.debug"
-> -
-> -config EARLY_PRINTK
-> -       bool "Early printk" if EMBEDDED && DEBUG_KERNEL
-> -       default y
-> -       help
-> -         Write kernel log output directly into the VGA buffer or to a serial
-> -         port.
-...
-> --- /dev/null
-> +++ linux-2.6.24-rc1/arch/x86/Kconfig.debug
-> @@ -0,0 +1,119 @@
-> +menu "Kernel hacking"
-> +
-> +config TRACE_IRQFLAGS_SUPPORT
-> +       def_bool y
-> +
-> +source "lib/Kconfig.debug"
-> +
-> +config EARLY_PRINTK
-> +       bool "Early printk" if EMBEDDED && DEBUG_KERNEL
-> +       default y
-> +       depends on X86_32
-> +       help
-> +         Write kernel log output directly into the VGA buffer or to a serial
-> +         port.
-> +
-> +         This is useful for kernel debugging when your machine crashes very
-> +         early before the console code is initialized. For normal operation
-> +         it is not recommended because it looks ugly and doesn't cooperate
-> +         with klogd/syslogd or the X server. You should normally N here,
-> +         unless you want to debug such a crash.
-> +
-...
-in x86_64/Kconfig has EARLY_PRINTK too
+On Thursday 25 October 2007 15:45, Greg KH wrote:
+> On Thu, Oct 25, 2007 at 12:31:06PM +1000, Nick Piggin wrote:
+> > On Wednesday 24 October 2007 21:12, Kay Sievers wrote:
+> > > On 10/24/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-config EARLY_PRINTK
-        bool
-        default y
+> > > It was intended to be something like /proc/sys/kernel/ only.
+> >
+> > Really? So you'd be happy to have a /sys/dev /sys/fs /sys/kernel
+> > /sys/net /sys/vm etc? "kernel" to me shouldn't really imply the
+> > stuff under the kernel/ source directory or other random stuff
+> > that doesn't fit into another directory, but attributes that are
+> > directly related to the kernel software (rather than directly
+> > associated with any device).
+>
+> What would you want in /sys/net and /sys/dev and /sys/vm?  I don't mind
+> putting subdirs in /sys/kernel/ if you want it.
+
+I guess potentially things that are today in /proc/sys/*. Sysfs is much
+closer to the "right" place for this kind of attributes than procfs,
+isn't it?
 
 
-YH
+> > It would be nice to get a sysfs content maintainer or two. Just
+> > having new additions occasionally reviewed along with the rest of
+> > a patch, by random people, doesn't really aid consistency. Would it
+> > be much trouble to ask that _all_ additions to sysfs be accompanied
+> > by notification to this maintainer, along with a few line description?
+> > (then merge would require SOB from said maintainer).
+>
+> No, I would _love_ that.  We should make the requirement that all new
+> sysfs files be documented in Documentation/API/ like that details.
+
+Obviously I'm for that too. A mandatory cc to a linux-abi list,
+documentation, and an acked-by from the relevant API maintainers, etc.
+All it needs is upstream to agree and sometime to implement it.
+
+
+> I'll be glad to review it, but as it's pretty trivial to add sysfs
+> files, everyone ends up doing it :)
+
+If it fits with the overall direction that yourself / Kay / everyone
+else has in mind, then yes. Problem is that if this stuff goes
+unreviewed, or reviewed by different people who don't have a coherent
+idea of what the API should look like, then it ends in a mess that you
+can't fix easily.
