@@ -1,51 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbXJYW4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760993AbXJYW6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbXJYW4s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 18:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbXJYW4e
+	id S1760993AbXJYW6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 18:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXJYW6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 18:56:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36090 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760175AbXJYW4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 18:56:33 -0400
-Message-ID: <47211F19.5080607@garzik.org>
-Date: Thu, 25 Oct 2007 18:56:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 25 Oct 2007 18:58:07 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:40524 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752980AbXJYW6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 18:58:06 -0400
+Date: Fri, 26 Oct 2007 00:58:32 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Lothian <mike@fireburn.co.uk>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+Message-ID: <20071025225832.GZ30533@stusta.de>
+References: <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <4720FF2B.9020802@googlemail.com> <fc94aae90710251430s669418e5v72282ff5f8a5691e@mail.gmail.com> <20071025214647.GX30533@stusta.de> <fc94aae90710251542j54e0dfbfh90ef049ed6aad33c@mail.gmail.com>
 MIME-Version: 1.0
-To: =?UTF-8?B?SXNtYWlsIETDtm5tZXo=?= <ismail@pardus.org.tr>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Kleen, Andi" <ak@suse.de>
-Subject: Re: Is gcc thread-unsafe?
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org> <200710260126.48885.ismail@pardus.org.tr>
-In-Reply-To: <200710260126.48885.ismail@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fc94aae90710251542j54e0dfbfh90ef049ed6aad33c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ismail Dönmez wrote:
-> Thursday 25 October 2007 Tarihinde 17:55:00 yazmıştı:
->> I think the OpenBSD people decided to actually do something about this,
->> and I suspect it had *nothing* to do with license issues, and everything
->> to do with these kinds of problems. I wish them all the luck, although
->> personally I think LLVM is a much more interesting project.
+On Thu, Oct 25, 2007 at 11:42:47PM +0100, Michael Lothian wrote:
+> > What exactly is irritating?
+> > Please name the problems so that they can be fixed.
+> >
+> > > Detecting the cpu and using march=native could be all part of that
+> >
+> > You don't need march=native for this.
+> >
+> > You have to set the right config option for your CPU and you
+> > automatically get the right compiler options.
 > 
-> And on the LLVM side all hopes for clang [0] at least for better C++ error 
-> reporting ;-)
+> Well when doing a lspci here are some specific examples:
 > 
-> [0] http://clang.llvm.org/
+> 
+> 
+> 03:02.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
+> 
+> What modules would you think you'd need to compile to get this to work?
+> 
+> No it's not budget card os buget card ci even though the card its self
+> has no cam interface
+> 
+> 
+> 
+> 00:14.2 Audio device: ATI Technologies Inc SB600 Azalia
+> 
+> Is there any indication from this piece of info that the intel hda
+> driver is required?
+> 
+> 
+> 
+> 00:12.0 SATA controller: ATI Technologies Inc SB600 Non-Raid-5 SATA
+> 
+> This uses AHCI
+> 
+> 
+> 
+> As for the i2c and the hardware monitoring support well that's mostly guess work
+> 
+> 
+> Half the time it's easier doing a lsmod when booted on a livecd and
+> trying to figure out what options are required from the module names
+> which sometime can be just as tricky.
 
-Someone should take 'sparse' and use that as a C language front-end to 
-LLVM...
+Sure, distributions already have solved this and you can use their 
+work.
 
-	Jeff
+> Why not auto detect the CPU the same way GCC does and automatically
+> set the correct CPU and then go the whole hog and let GCC use the
+> correct flags if it's new enough using native
+> 
+> I can't understand why you wouldn't find this useful when setting up a
+> customised kernel.
+> 
+> Maybe even having a make addnewhardware option to quickly add extra
+> devices to your config file.
 
+Knowing your CPU is much easier to figure out than to figure out the 
+BIOS settings of your SATA controller that determine how to access it.
 
+If you do not even know what CPU you have you should really not compile 
+your own kernel.
+
+> Mike
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
