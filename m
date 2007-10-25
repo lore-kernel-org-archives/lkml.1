@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXJYQi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXJYQjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761588AbXJYQi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXJYQfR
+	id S1755994AbXJYQjZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbXJYQfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:35:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56049 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 12:35:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42472 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752956AbXJYQfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 12:35:12 -0400
+	id S1752956AbXJYQfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 12:35:18 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 09/31] IGET: Stop BFS from using iget() and read_inode() [try
+Subject: [PATCH 10/31] IGET: Stop CIFS from using iget() and read_inode() [try
 	#5]
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 25 Oct 2007 17:34:38 +0100
-Message-ID: <20071025163438.5057.24281.stgit@warthog.procyon.org.uk>
+Date: Thu, 25 Oct 2007 17:34:43 +0100
+Message-ID: <20071025163443.5057.28282.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,148 +30,107 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the BFS filesystem from using iget() and read_inode().  Replace
-bfs_read_inode() with bfs_iget(), and call that instead of iget().
-bfs_iget() then uses iget_locked() directly and returns a proper error code
+Stop the CIFS filesystem from using iget() and read_inode().  Replace
+cifs_read_inode() with cifs_iget(), and call that instead of iget().
+cifs_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-bfs_fill_super() returns any error incurred when getting the root inode
-instead of EINVAL.
+cifs_read_super() now returns any error incurred when getting the root inode
+instead of ENOMEM.
+
+cifs_iget() needs examining.  The comment "can not call macro FreeXid here
+since in a void func" is no longer true.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/bfs/bfs.h   |    2 ++
- fs/bfs/dir.c   |    6 +++---
- fs/bfs/inode.c |   32 ++++++++++++++++++++++----------
- 3 files changed, 27 insertions(+), 13 deletions(-)
+ fs/cifs/cifsfs.c |    8 ++++----
+ fs/cifs/cifsfs.h |    1 +
+ fs/cifs/inode.c  |   22 +++++++++++++++++++---
+ 3 files changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/fs/bfs/bfs.h b/fs/bfs/bfs.h
-index 130f6c6..5cf50d4 100644
---- a/fs/bfs/bfs.h
-+++ b/fs/bfs/bfs.h
-@@ -46,6 +46,8 @@ static inline struct bfs_inode_info *BFS_I(struct inode *inode)
- #define printf(format, args...) \
- 	printk(KERN_ERR "BFS-fs: %s(): " format, __FUNCTION__, ## args)
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index a6fbea5..c802ea0 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -122,10 +122,11 @@ cifs_read_super(struct super_block *sb, void *data,
+ #endif
+ 	sb->s_blocksize = CIFS_MAX_MSGSIZE;
+ 	sb->s_blocksize_bits = 14;	/* default 2**14 = CIFS_MAX_MSGSIZE */
+-	inode = iget(sb, ROOT_I);
++	inode = cifs_iget(sb, ROOT_I);
  
-+/* inode.c */
-+extern struct inode *bfs_iget(struct super_block *sb, unsigned long ino);
- 
- /* file.c */
- extern const struct inode_operations bfs_file_inops;
-diff --git a/fs/bfs/dir.c b/fs/bfs/dir.c
-index 097f149..03c8bdb 100644
---- a/fs/bfs/dir.c
-+++ b/fs/bfs/dir.c
-@@ -141,10 +141,10 @@ static struct dentry * bfs_lookup(struct inode * dir, struct dentry * dentry, st
- 	if (bh) {
- 		unsigned long ino = (unsigned long)le16_to_cpu(de->ino);
- 		brelse(bh);
--		inode = iget(dir->i_sb, ino);
--		if (!inode) {
-+		inode = bfs_iget(dir->i_sb, ino);
-+		if (IS_ERR(inode)) {
- 			unlock_kernel();
--			return ERR_PTR(-EACCES);
-+			return ERR_CAST(inode);
- 		}
+-	if (!inode) {
+-		rc = -ENOMEM;
++	if (IS_ERR(inode)) {
++		rc = PTR_ERR(inode);
++		inode = NULL;
+ 		goto out_no_root;
  	}
- 	unlock_kernel();
-diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
-index 7bd9c2b..d279382 100644
---- a/fs/bfs/inode.c
-+++ b/fs/bfs/inode.c
-@@ -32,25 +32,29 @@ MODULE_LICENSE("GPL");
  
- void dump_imap(const char *prefix, struct super_block * s);
+@@ -477,7 +478,6 @@ static int cifs_remount(struct super_block *sb, int *flags, char *data)
+ }
  
--static void bfs_read_inode(struct inode * inode)
-+struct inode *bfs_iget(struct super_block *sb, unsigned long ino)
+ static const struct super_operations cifs_super_ops = {
+-	.read_inode = cifs_read_inode,
+ 	.put_super = cifs_put_super,
+ 	.statfs = cifs_statfs,
+ 	.alloc_inode = cifs_alloc_inode,
+diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
+index 5574ba3..f85e07d 100644
+--- a/fs/cifs/cifsfs.h
++++ b/fs/cifs/cifsfs.h
+@@ -43,6 +43,7 @@ extern void cifs_read_inode(struct inode *);
+ 
+ /* Functions related to inodes */
+ extern const struct inode_operations cifs_dir_inode_ops;
++extern struct inode *cifs_iget(struct super_block *, unsigned long);
+ extern int cifs_create(struct inode *, struct dentry *, int,
+ 		       struct nameidata *);
+ extern struct dentry *cifs_lookup(struct inode *, struct dentry *,
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 5e8b388..6e9c364 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -580,10 +580,18 @@ static const struct inode_operations cifs_ipc_inode_ops = {
+ };
+ 
+ /* gets root inode */
+-void cifs_read_inode(struct inode *inode)
++struct inode *cifs_iget(struct super_block *sb, unsigned long ino)
  {
--	unsigned long ino = inode->i_ino;
- 	struct bfs_inode * di;
- 	struct buffer_head * bh;
+-	int xid, rc;
++	int xid;
+ 	struct cifs_sb_info *cifs_sb;
 +	struct inode *inode;
- 	int block, off;
- 
++	long rc;
++
 +	inode = iget_locked(sb, ino);
-+	if (IS_ERR(inode))
++	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
-+
- 	if (ino < BFS_ROOT_INO || ino > BFS_SB(inode->i_sb)->si_lasti) {
- 		printf("Bad inode number %s:%08lx\n", inode->i_sb->s_id, ino);
--		make_bad_inode(inode);
--		return;
-+		goto error;
+ 
+ 	cifs_sb = CIFS_SB(inode->i_sb);
+ 	xid = GetXid();
+@@ -600,10 +608,18 @@ void cifs_read_inode(struct inode *inode)
+ 		inode->i_fop = &simple_dir_operations;
+ 		inode->i_uid = cifs_sb->mnt_uid;
+ 		inode->i_gid = cifs_sb->mnt_gid;
++		_FreeXid(xid);
++		iget_failed(inode);
++		return ERR_PTR(rc);
  	}
  
- 	block = (ino - BFS_ROOT_INO)/BFS_INODES_PER_BLOCK + 1;
- 	bh = sb_bread(inode->i_sb, block);
- 	if (!bh) {
- 		printf("Unable to read inode %s:%08lx\n", inode->i_sb->s_id, ino);
--		make_bad_inode(inode);
--		return;
-+		goto error;
- 	}
- 
- 	off = (ino - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
-@@ -85,6 +89,12 @@ static void bfs_read_inode(struct inode * inode)
- 	BFS_I(inode)->i_dsk_ino = le16_to_cpu(di->i_ino); /* can be 0 so we store a copy */
- 
- 	brelse(bh);
+-	/* can not call macro FreeXid here since in a void func */
 +	unlock_new_inode(inode);
-+	return inode;
 +
-+error:
-+	iget_failed(inode);
-+	return ERR_PTR(-EIO);
++	/* can not call macro FreeXid here since in a void func
++	 * TODO: This is no longer true
++	 */
+ 	_FreeXid(xid);
++	return inode;
  }
  
- static int bfs_write_inode(struct inode * inode, int unused)
-@@ -271,7 +281,6 @@ static void destroy_inodecache(void)
- static const struct super_operations bfs_sops = {
- 	.alloc_inode	= bfs_alloc_inode,
- 	.destroy_inode	= bfs_destroy_inode,
--	.read_inode	= bfs_read_inode,
- 	.write_inode	= bfs_write_inode,
- 	.delete_inode	= bfs_delete_inode,
- 	.put_super	= bfs_put_super,
-@@ -306,6 +315,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 	struct inode * inode;
- 	unsigned i, imap_len;
- 	struct bfs_sb_info * info;
-+	long ret = -EINVAL;
- 
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
- 	if (!info)
-@@ -340,14 +350,16 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
- 		set_bit(i, info->si_imap);
- 
- 	s->s_op = &bfs_sops;
--	inode = iget(s, BFS_ROOT_INO);
--	if (!inode) {
-+	inode = bfs_iget(s, BFS_ROOT_INO);
-+	if (IS_ERR(inode)) {
-+		ret = PTR_ERR(inode);
- 		kfree(info->si_imap);
- 		goto out;
- 	}
- 	s->s_root = d_alloc_root(inode);
- 	if (!s->s_root) {
- 		iput(inode);
-+		ret = -ENOMEM;
- 		kfree(info->si_imap);
- 		goto out;
- 	}
-@@ -402,7 +414,7 @@ out:
- 	brelse(bh);
- 	kfree(info);
- 	s->s_fs_info = NULL;
--	return -EINVAL;
-+	return ret;
- }
- 
- static int bfs_get_sb(struct file_system_type *fs_type,
+ int cifs_unlink(struct inode *inode, struct dentry *direntry)
 
