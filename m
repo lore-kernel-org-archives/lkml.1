@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbXJYVnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbXJYVoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbXJYVnh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 17:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXJYVnb
+	id S1758621AbXJYVoQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 17:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXJYVoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 17:43:31 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4462 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbXJYVna (ORCPT
+	Thu, 25 Oct 2007 17:44:00 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:27990 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbXJYVn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 17:43:30 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Is gcc thread-unsafe?
-Date: Thu, 25 Oct 2007 14:42:56 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com>
+	Thu, 25 Oct 2007 17:43:59 -0400
+Date: Thu, 25 Oct 2007 14:43:41 -0700
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Joel Becker <joel.becker@oracle.com>, kurt.hackel@oracle.com,
+       ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make ocfs2_find_entry_el() static
+Message-ID: <20071025214341.GU28607@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20071024162327.GP30533@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <alpine.LFD.0.999.0710250744420.30120@woody.linux-foundation.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 25 Oct 2007 14:44:01 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 25 Oct 2007 14:44:04 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071024162327.GP30533@stusta.de>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 24, 2007 at 06:23:27PM +0200, Adrian Bunk wrote:
+> ocfs2_find_entry_el() can become static.
 
-	I asked a collection of knowledgeable people I know about the issue. The
-consensus is that the optimization is not permitted in POSIX code but that
-it is permitted in pure C code. The basic argument goes like this:
+Looks good, thanks Adrian.
+	--Mark
 
-	To make POSIX-compliant code even possible, surely optimizations that add
-writes to variables must be prohibited. That is -- if POSIX prohibits
-writing to a variable in certain cases only the programmer can detect, then
-a POSIX-compliant compiler cannot write to a variable except where
-explicitly told to do so. Any optimization that *adds* a write to a variable
-that would not otherwise occur *must* be prohibited.
-
-	Otherwise, it is literally impossible to comply with the POSIX requirement
-that concurrent modifications and reads to shared variables take place while
-holding a mutex.
-
-	The simplest solution is simply to ditch the optimization. If it really
-isn't even an optimization, then that's an easy way out.
-
-	DS
-
-
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
