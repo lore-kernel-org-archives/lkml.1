@@ -1,167 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbXJYUBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbXJYUBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbXJYUBg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 16:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXJYUB2
+	id S1755193AbXJYUBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 16:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbXJYUBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 16:01:28 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56606 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752977AbXJYUB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 16:01:26 -0400
-Date: Thu, 25 Oct 2007 22:03:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: [PATCH 1/6] x86: move i386 and x86_64 Makefiles to arch/x86
-Message-ID: <20071025200300.GB14501@uranus.ravnborg.org>
-References: <20071025195644.GA14501@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Oct 2007 16:01:41 -0400
+Received: from ranger.systems.pipex.net ([62.241.162.32]:52945 "EHLO
+	ranger.systems.pipex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759013AbXJYUBj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 16:01:39 -0400
+X-Greylist: delayed 1572 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 16:01:38 EDT
+From: Adam Baker <linux@baker-net.org.uk>
+To: rt2400-devel@lists.sourceforge.net
+Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
+Date: Thu, 25 Oct 2007 20:35:20 +0100
+User-Agent: KMail/1.9.5
+Cc: Parag Warudkar <kernel-stuff@comcast.net>, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
+In-Reply-To: <alpine.DEB.0.99.0710241909250.18618@parag-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071025195644.GA14501@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200710252035.20546.linux@baker-net.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 9d80894bef9805c70795f73ce1758d2a9e4cb077 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 25 Oct 2007 19:42:04 +0200
-Subject: [PATCH] x86: move i386 and x86_64 Makefiles to arch/x86
+On Thursday 25 October 2007 00:22, Parag Warudkar wrote:
+> I have a Belkin USB Wireless adapter with ID 050d:705a.
+> Both rt2500usb.c and rt73usb.c claim that they can drive the device with
+> this ID.
+>
+> When using the distro kernel as well as custom 2.4.24-rc1 both rt73usb and
+> rt2500usb get loaded and fight for the register writes and fail. rt2500usb
+> is not able to drive my device. So I have to manually rmmod/modprobe or
+> delete rt2500usb.ko and depmod every time I get a new kernel.
+>
+> If only rt73usb is loaded everything works well. To me it
+> sounds like rt2500usb should not be driving 050d:705a.
+>
 
-Moving the ARCH specific Makefiles for i386 and x86_64
-required a litle bit tweaking in the top-lvel Makefile.
+Unfortunately Belkin have sold both RT73 and RT2500 devices with
+that USB ID. You don't say what distro you are runing or what version
+of RT2x00 it ships with but last time I checked with the git version of
+rt2x00 it tried to load both drivers but the rt2500 driver noticed it was the 
+wrong hardware and shut down.
 
-SRCARCH is now set in the top-level Makefile
-because we need this info to include the correct
-arch Makefile.
+My Belkin stick is busy right now but I'll test that still works later.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- Makefile                                        |    7 +++++--
- arch/x86/Makefile                               |   13 +++++++++++++
- arch/{i386/Makefile => x86/Makefile_32}         |    7 ++-----
- arch/{i386/Makefile.cpu => x86/Makefile_32.cpu} |    0 
- arch/{x86_64/Makefile => x86/Makefile_64}       |    5 +----
- 5 files changed, 21 insertions(+), 11 deletions(-)
- create mode 100644 arch/x86/Makefile
- rename arch/{i386/Makefile => x86/Makefile_32} (98%)
- rename arch/{i386/Makefile.cpu => x86/Makefile_32.cpu} (100%)
- rename arch/{x86_64/Makefile => x86/Makefile_64} (99%)
+> There is another ID 050d:7050 which is also claimed to be handled by both
+> rt3500usb and rt73usb. Assuming rt73usb can drive this as well (I have no
+> way to be sure as I don't have device with this ID) the following patch
+> makes sure only rt73usb claims the 2 devices.
+>
 
-diff --git a/Makefile b/Makefile
-index 2a47290..8816060 100644
---- a/Makefile
-+++ b/Makefile
-@@ -196,6 +196,9 @@ CROSS_COMPILE	?=
- UTS_MACHINE 	:= $(ARCH)
- SRCARCH 	:= $(ARCH)
- 
-+# for i386 and x86_64 we use SRCARCH equal to x86
-+SRCARCH := $(if $(filter x86_64 i386,$(SRCARCH)),x86,$(SRCARCH))
-+
- KCONFIG_CONFIG	?= .config
- 
- # SHELL used by kbuild
-@@ -418,7 +421,7 @@ ifeq ($(config-targets),1)
- # Read arch specific Makefile to set KBUILD_DEFCONFIG as needed.
- # KBUILD_DEFCONFIG may point out an alternative default configuration
- # used for 'make defconfig'
--include $(srctree)/arch/$(ARCH)/Makefile
-+include $(srctree)/arch/$(SRCARCH)/Makefile
- export KBUILD_DEFCONFIG
- 
- config %config: scripts_basic outputmakefile FORCE
-@@ -497,7 +500,7 @@ else
- KBUILD_CFLAGS	+= -O2
- endif
- 
--include $(srctree)/arch/$(ARCH)/Makefile
-+include $(srctree)/arch/$(SRCARCH)/Makefile
- 
- ifdef CONFIG_FRAME_POINTER
- KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-new file mode 100644
-index 0000000..65077d7
---- /dev/null
-+++ b/arch/x86/Makefile
-@@ -0,0 +1,13 @@
-+# Unified Makefile for i386 and x86_64
-+
-+# No need to remake these files
-+$(srctree)/arch/x86/Makefile%: ;
-+
-+ifeq ($(ARCH),i386)
-+        include $(srctree)/arch/x86/Makefile_32
-+else
-+        include $(srctree)/arch/x86/Makefile_64
-+endif
-+
-+
-+
-diff --git a/arch/i386/Makefile b/arch/x86/Makefile_32
-similarity index 98%
-rename from arch/i386/Makefile
-rename to arch/x86/Makefile_32
-index f5b9a37..346ac07 100644
---- a/arch/i386/Makefile
-+++ b/arch/x86/Makefile_32
-@@ -1,5 +1,5 @@
- #
--# i386/Makefile
-+# i386 Makefile
- #
- # This file is included by the global makefile so that you can add your own
- # architecture-specific flags and dependencies. Remember to do have actions
-@@ -17,9 +17,6 @@
- # 20050320  Kianusch Sayah Karadji <kianusch@sk-tech.net>
- #           Added support for GEODE CPU
- 
--# Fill in SRCARCH
--SRCARCH	:= x86
--
- # BITS is used as extension for files which are available in a 32 bit
- # and a 64 bit version to simplify shared Makefiles.
- # e.g.: obj-y += foo_$(BITS).o
-@@ -46,7 +43,7 @@ KBUILD_CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
- KBUILD_CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
- 
- # CPU-specific tuning. Anything which can be shared with UML should go here.
--include $(srctree)/arch/i386/Makefile.cpu
-+include $(srctree)/arch/x86/Makefile_32.cpu
- 
- # temporary until string.h is fixed
- cflags-y += -ffreestanding
-diff --git a/arch/i386/Makefile.cpu b/arch/x86/Makefile_32.cpu
-similarity index 100%
-rename from arch/i386/Makefile.cpu
-rename to arch/x86/Makefile_32.cpu
-diff --git a/arch/x86_64/Makefile b/arch/x86/Makefile_64
-similarity index 99%
-rename from arch/x86_64/Makefile
-rename to arch/x86/Makefile_64
-index 20eb69b..57e714a 100644
---- a/arch/x86_64/Makefile
-+++ b/arch/x86/Makefile_64
-@@ -1,5 +1,5 @@
- #
--# x86_64/Makefile
-+# x86_64 Makefile
- #
- # This file is included by the global makefile so that you can add your own
- # architecture-specific flags and dependencies. Remember to do have actions
-@@ -21,9 +21,6 @@
- #
- # $Id: Makefile,v 1.31 2002/03/22 15:56:07 ak Exp $
- 
--# Fill in SRCARCH
--SRCARCH	:= x86
--
- # BITS is used as extension for files which are available in a 32 bit
- # and a 64 bit version to simplify shared Makefiles.
- # e.g.: obj-y += foo_$(BITS).o
--- 
-1.5.3.4.1157.g0e74-dirty
-
+There are a few such devices but they are all cases where there are reliable 
+reports of manufacturers shipping both device types with one USB ID. There 
+are some cases where the alternate chipset with the same USB ID isn't even a 
+ralink device but there isn't much we can do about those.
