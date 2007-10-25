@@ -1,51 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXJYH7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbXJYICh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbXJYH7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 03:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXJYH7h
+	id S1757273AbXJYICh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 04:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXJYICY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 03:59:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43272
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753459AbXJYH7g (ORCPT
+	Thu, 25 Oct 2007 04:02:24 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58436 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbXJYICX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 03:59:36 -0400
-Date: Thu, 25 Oct 2007 00:59:38 -0700 (PDT)
-Message-Id: <20071025.005938.104394521.davem@davemloft.net>
-To: Shane.Huang@amd.com
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
-       linas@austin.ibm.com, gregkh@suse.de, htejun@gmail.com,
-       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org,
-       brice@myri.com, mchan@broadcom.com
-Subject: Re: [PATCH 4/4]: [PCI]: Add MSI INTX_DISABLE quirks for ATI
- SB700/800 SATA and IXP SB400 USB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D936C@sshaexmb1.amd.com>
-References: <20071023.195343.35661973.davem@davemloft.net>
-	<5CAB7B5D6F8AB84AA868A46B47A507055D936C@sshaexmb1.amd.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 25 Oct 2007 04:02:23 -0400
+Message-ID: <47204CFF.50709@ah.jp.nec.com>
+Date: Thu, 25 Oct 2007 16:59:59 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: linux-kernel@vger.kernel.org, vgoyal@in.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, k-miyoshi@cb.jp.nec.com,
+       kexec@lists.infradead.org, Bernhard Walle <bwalle@suse.de>,
+       Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, kdb@oss.sgi.com
+Subject: Re: [PATCH 2/2] implement new notifier function to panic_notifier_list
+ ,take2
+References: <4716FFDB.7090502@ah.jp.nec.com>	<47171EEF.7030109@ah.jp.nec.com> <20071024111100.0f5d8b58.rdunlap@xenotime.net>
+In-Reply-To: <20071024111100.0f5d8b58.rdunlap@xenotime.net>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Shane Huang" <Shane.Huang@amd.com>
-Date: Wed, 24 Oct 2007 14:43:21 +0800
-
-> This patch and the third one seems can make my SB700 SATA controller
-> work under MSI(simply tested on 2.6.23-rc5). 
+Randy Dunlap wrote:
+> On Thu, 18 Oct 2007 17:53:03 +0900 Takenori Nagano wrote:
 > 
-> So you may withdraw the RS690/RD580/RX790 MSI disablement patches
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
-> t;h=4be8f906435a6af241821ab5b94b2b12cb7d57d8
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
-> t;h=aea6a433f50cd89b9cbd10850fd0b32f961f9883
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
-> t;h=f122392f679ebed39db08074f935d770504623eb
-> after the commit of these MSI/INTx quirks.
+>> This patch implements new notifier function to panic_notifier_list. We can
+>> change the list of order by debugfs.
+> 
+> Should be sysfs IMO.  debugfs isn't (should not be) required.
 
-Thank you for testing!
+OK. We try to find an appropriate place.
+http://lkml.org/lkml/2007/10/24/54
 
-I will add this change to my patch set.
+>> Thanks,
+>>
+>> ---
+>>
+>> Signed-off-by: Takenori Nagano <t-nagano@ah.jp.nec.com>
+>>
+>> ---
+>> diff -uprN linux-2.6.23.orig/arch/alpha/kernel/setup.c linux-2.6.23/arch/alpha/kernel/setup.c
+>> --- linux-2.6.23.orig/arch/alpha/kernel/setup.c	2007-10-10 05:31:38.000000000 +0900
+>> +++ linux-2.6.23/arch/alpha/kernel/setup.c	2007-10-18 08:56:53.928000000 +0900
+>> @@ -45,14 +45,22 @@
+>>  #include <asm/io.h>
+>>  #include <linux/log2.h>
+>>  
+>> -extern struct atomic_notifier_head panic_notifier_list;
+>> +extern struct tunable_atomic_notifier_head panic_notifier_list;
+>>  static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
+>> -static struct notifier_block alpha_panic_block = {
+>> +static struct notifier_block alpha_panic_block_base = {
+>>  	alpha_panic_event,
+>>          NULL,
+>>          INT_MAX /* try to do it first */
+>>  };
+>>  
+>> +static struct tunable_atomic_notifier_block alpha_panic_block = {
+>> +	&alpha_panic_block_base,
+> 
+> Use C99-style initializer.  and NULLs aren't needed.
+
+OK. I'll fix.
+
+Thanks,
+  Takenori
+
+> 
+>> +	NULL,
+>> +	NULL,
+>> +	NULL,
+>> +	NULL
+>> +};
+>> +
+>>  #include <asm/uaccess.h>
+>>  #include <asm/pgtable.h>
+>>  #include <asm/system.h>
+> 
+>> diff -uprN linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c
+>> --- linux-2.6.23.orig/arch/arm/mach-omap1/board-voiceblue.c	2007-10-10 05:31:38.000000000 +0900
+>> +++ linux-2.6.23/arch/arm/mach-omap1/board-voiceblue.c	2007-10-18 09:00:35.900000000 +0900
+>> @@ -228,14 +228,23 @@ static int panic_event(struct notifier_b
+>>  	return NOTIFY_DONE;
+>>  }
+>>  
+>> -static struct notifier_block panic_block = {
+>> +static struct notifier_block panic_block_base = {
+>>  	.notifier_call	= panic_event,
+>>  };
+>>  
+>> +static struct tunable_atomic_notifier_block panic_block = {
+>> +	.nb		= &panic_block_base,
+>> +	.head		= NULL,
+>> +	.dir		= NULL,
+>> +	.pri_dentry	= NULL,
+>> +	.desc_dentry	= NULL
+> 
+> Drop the NULLs.
+> 
+>> +};
+>> +
+>>  static int __init voiceblue_setup(void)
+>>  {
+>>  	/* Setup panic notifier */
+>> -	notifier_chain_register(&panic_notifier_list, &panic_block);
+>> +	tunable_atomic_notifier_chain_register(&panic_notifier_list,
+>> +					       &panic_block, "VoiceBlue", NULL);
+>>  
+>>  	return 0;
+>>  }
+>> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c
+>> --- linux-2.6.23.orig/arch/mips/sgi-ip22/ip22-reset.c	2007-10-10 05:31:38.000000000 +0900
+>> +++ linux-2.6.23/arch/mips/sgi-ip22/ip22-reset.c	2007-10-18 09:01:33.408000000 +0900
+>> @@ -226,10 +226,18 @@ static int panic_event(struct notifier_b
+>>  	return NOTIFY_DONE;
+>>  }
+>>  
+>> -static struct notifier_block panic_block = {
+>> +static struct notifier_block panic_block_base = {
+>>  	.notifier_call	= panic_event,
+>>  };
+>>  
+>> +static struct tunable_atomic_notifier_block panic_block = {
+>> +	.nb		= &panic_block_base,
+>> +	.head		= NULL,
+>> +	.dir		= NULL,
+>> +	.pri_dentry	= NULL,
+>> +	.desc_dentry	= NULL
+> 
+> Ditto.
+> 
+>> +};
+>> +
+>>  static int __init reboot_setup(void)
+>>  {
+>>  	_machine_restart = sgi_machine_restart;
+> 
+>> diff -uprN linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c
+>> --- linux-2.6.23.orig/arch/mips/sgi-ip32/ip32-reset.c	2007-10-10 05:31:38.000000000 +0900
+>> +++ linux-2.6.23/arch/mips/sgi-ip32/ip32-reset.c	2007-10-18 09:02:20.496000000 +0900
+>> @@ -175,10 +175,18 @@ static int panic_event(struct notifier_b
+>>  	return NOTIFY_DONE;
+>>  }
+>>  
+>> -static struct notifier_block panic_block = {
+>> +static struct notifier_block panic_block_base = {
+>>  	.notifier_call = panic_event,
+>>  };
+>>  
+>> +static struct tunable_atomic_notifier_block panic_block = {
+>> +	.nb		= &panic_block_base,
+>> +	.head		= NULL,
+>> +	.dir		= NULL,
+>> +	.pri_dentry	= NULL,
+>> +	.desc_dentry	= NULL
+> 
+> Ditto.
+> 
+>> +};
+>> +
+>>  static __init int ip32_reboot_setup(void)
+>>  {
+>>  	/* turn on the green led only */
+> 
+>> diff -uprN linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c linux-2.6.23/arch/parisc/kernel/pdc_chassis.c
+>> --- linux-2.6.23.orig/arch/parisc/kernel/pdc_chassis.c	2007-10-10 05:31:38.000000000 +0900
+>> +++ linux-2.6.23/arch/parisc/kernel/pdc_chassis.c	2007-10-18 08:56:54.052000000 +0900
+>> @@ -101,11 +101,18 @@ static int pdc_chassis_panic_event(struc
+>>  }   
+>>  
+>>  
+>> -static struct notifier_block pdc_chassis_panic_block = {
+>> +static struct notifier_block pdc_chassis_panic_block_base = {
+>>  	.notifier_call = pdc_chassis_panic_event,
+>>  	.priority = INT_MAX,
+>>  };
+>>  
+>> +static struct tunable_atomic_notifier_block pdc_chassis_panic_block = {
+>> +	.nb		= &pdc_chassis_panic_block_base,
+>> +	.head		= NULL,
+>> +	.dir		= NULL,
+>> +	.pri_dentry	= NULL,
+>> +	.desc_dentry	= NULL
+> 
+> Ditto... (I'll skip mentioning the rest of these.)
+> 
+>> +};
+>>  
+>>  /**
+>>   * parisc_reboot_event() - Called by the reboot handler.
+> 
+> 
+> ---
+> ~Randy
+> 
+> 
+
+-- 
++=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+
+ＮＥＣ コンピュータソフトウェア事業本部
+            ＯＳＳプラットフォーム開発本部
+
+        永野 武則 (Takenori Nagano)
+
+TEL:8-23-57270(MyLine) 042-333-5383(外線)
+e-mail:t-nagano@ah.jp.nec.com
++=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+=-=+
