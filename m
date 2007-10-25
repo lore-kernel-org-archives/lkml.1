@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbXJYH4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXJYH7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbXJYH4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 03:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXJYH4K
+	id S1756190AbXJYH7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 03:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXJYH7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 03:56:10 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:4011 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753222AbXJYH4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 03:56:09 -0400
-Date: Thu, 25 Oct 2007 09:54:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc1] fix sg_phys to use dma_addr_t
-Message-ID: <20071025075425.GD5053@kernel.dk>
-References: <Pine.LNX.4.64.0710241957240.4733@blonde.wat.veritas.com> <20071024192949.346687ed@laptopd505.fenrus.org> <Pine.LNX.4.64.0710250730260.9811@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710250730260.9811@blonde.wat.veritas.com>
+	Thu, 25 Oct 2007 03:59:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43272
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753459AbXJYH7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 03:59:36 -0400
+Date: Thu, 25 Oct 2007 00:59:38 -0700 (PDT)
+Message-Id: <20071025.005938.104394521.davem@davemloft.net>
+To: Shane.Huang@amd.com
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, gregkh@suse.de, htejun@gmail.com,
+       brice.goglin@gmail.com, david.gaarenstroom@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org,
+       brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 4/4]: [PCI]: Add MSI INTX_DISABLE quirks for ATI
+ SB700/800 SATA and IXP SB400 USB
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D936C@sshaexmb1.amd.com>
+References: <20071023.195343.35661973.davem@davemloft.net>
+	<5CAB7B5D6F8AB84AA868A46B47A507055D936C@sshaexmb1.amd.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25 2007, Hugh Dickins wrote:
-> On Wed, 24 Oct 2007, Arjan van de Ven wrote:
-> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> > > ---
-> > > Whether this is a complete patch, suitable for all architectures,
-> > > I'm not sure: it builds, boots and runs correctly on the x86_32 box
-> > > in question, but you'll be a lot wiser than me about using dma_addr_t
-> > > for everyone.  (Seems a bit of a shame to include <asm/types.h> here,
-> > > when I think all arches already get to include it one way or another,
-> > > typically via asm/scatterlist.h; but I guess it's safest to repeat
-> > > it.)
-> > 
-> > there is a problem with this... sg_phys doesn't return an actual *dma*
-> > address.... at least not an address you can give to the device.
-> > Using dma_addr_t is thus a bit misleading.....
+From: "Shane Huang" <Shane.Huang@amd.com>
+Date: Wed, 24 Oct 2007 14:43:21 +0800
+
+> This patch and the third one seems can make my SB700 SATA controller
+> work under MSI(simply tested on 2.6.23-rc5). 
 > 
-> True.  Perhaps sg_phys() should use its own sg_phys_addr_t, defined
-> or typedefed to be the same as dma_addr_t.  But would this inline
-> function then be the only place in the tree which uses that type?
-> If so, then it'd probably be better just to let sg_phys() carry on
-> using dma_addr_t, but insert a comment there to make your point.
-> 
-> But I'll leave it to Jens to fix up the patch appropriately: for
-> all I know, there might be arches on which using dma_addr_t there
-> actually does the wrong thing - I don't think so, but I know too
-> little about it.
+> So you may withdraw the RS690/RD580/RX790 MSI disablement patches
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
+> t;h=4be8f906435a6af241821ab5b94b2b12cb7d57d8
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
+> t;h=aea6a433f50cd89b9cbd10850fd0b32f961f9883
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
+> t;h=f122392f679ebed39db08074f935d770504623eb
+> after the commit of these MSI/INTx quirks.
 
-dma_addr_t would seem OK to me, given the lack of phys_addr_t.
+Thank you for testing!
 
--- 
-Jens Axboe
-
+I will add this change to my patch set.
