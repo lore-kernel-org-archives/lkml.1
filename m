@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbXJYQnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXJYQnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762608AbXJYQnL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 12:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbXJYQgL
+	id S1762846AbXJYQnf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 12:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbXJYQgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 12:36:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42565 "EHLO mx1.redhat.com"
+	Thu, 25 Oct 2007 12:36:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42564 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbXJYQgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752967AbXJYQgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 25 Oct 2007 12:36:04 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 22/31] IGET: Stop the MINIX filesystem from using iget() and
-	read_inode() [try #5]
+Subject: [PATCH 18/31] IGET: Stop HFSPLUS from using iget() and read_inode()
+	[try #5]
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        dhowells@redhat.com
-Date: Thu, 25 Oct 2007 17:35:51 +0100
-Message-ID: <20071025163551.5057.160.stgit@warthog.procyon.org.uk>
+Date: Thu, 25 Oct 2007 17:35:30 +0100
+Message-ID: <20071025163530.5057.28106.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,189 +30,189 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop the MINIX filesystem from using iget() and read_inode().  Replace
-minix_read_inode() with minix_iget(), and call that instead of iget().
-minix_iget() then uses iget_locked() directly and returns a proper error code
+Stop the HFSPLUS filesystem from using iget() and read_inode().  Replace
+hfsplus_read_inode() with hfsplus_iget(), and call that instead of iget().
+hfsplus_iget() then uses iget_locked() directly and returns a proper error code
 instead of an inode in the event of an error.
 
-minix_fill_super() returns any error incurred when getting the root inode
-instead of EINVAL.
+hfsplus_fill_super() returns any error incurred when getting the root inode.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/minix/inode.c |   43 +++++++++++++++++++++++++++++--------------
- fs/minix/minix.h |    1 +
- fs/minix/namei.c |    7 +++----
- 3 files changed, 33 insertions(+), 18 deletions(-)
+ fs/hfsplus/btree.c      |    6 ++++--
+ fs/hfsplus/dir.c        |    6 +++---
+ fs/hfsplus/hfsplus_fs.h |    3 +++
+ fs/hfsplus/super.c      |   47 +++++++++++++++++++++++++++++++++--------------
+ 4 files changed, 43 insertions(+), 19 deletions(-)
 
-diff --git a/fs/minix/inode.c b/fs/minix/inode.c
-index bf4cd31..5523407 100644
---- a/fs/minix/inode.c
-+++ b/fs/minix/inode.c
-@@ -18,7 +18,6 @@
- #include <linux/highuid.h>
- #include <linux/vfs.h>
- 
--static void minix_read_inode(struct inode * inode);
- static int minix_write_inode(struct inode * inode, int wait);
- static int minix_statfs(struct dentry *dentry, struct kstatfs *buf);
- static int minix_remount (struct super_block * sb, int * flags, char * data);
-@@ -96,7 +95,6 @@ static void destroy_inodecache(void)
- static const struct super_operations minix_sops = {
- 	.alloc_inode	= minix_alloc_inode,
- 	.destroy_inode	= minix_destroy_inode,
--	.read_inode	= minix_read_inode,
- 	.write_inode	= minix_write_inode,
- 	.delete_inode	= minix_delete_inode,
- 	.put_super	= minix_put_super,
-@@ -149,6 +147,7 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
- 	unsigned long i, block;
- 	struct inode *root_inode;
- 	struct minix_sb_info *sbi;
-+	int ret = -EINVAL;
- 
- 	sbi = kzalloc(sizeof(struct minix_sb_info), GFP_KERNEL);
- 	if (!sbi)
-@@ -246,10 +245,13 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
- 
- 	/* set up enough so that it can read an inode */
- 	s->s_op = &minix_sops;
--	root_inode = iget(s, MINIX_ROOT_INO);
--	if (!root_inode || is_bad_inode(root_inode))
-+	root_inode = minix_iget(s, MINIX_ROOT_INO);
-+	if (IS_ERR(root_inode)) {
-+		ret = PTR_ERR(root_inode);
- 		goto out_no_root;
-+	}
- 
-+	ret = -ENOMEM;
- 	s->s_root = d_alloc_root(root_inode);
- 	if (!s->s_root)
- 		goto out_iput;
-@@ -290,6 +292,7 @@ out_freemap:
- 	goto out_release;
- 
- out_no_map:
-+	ret = -ENOMEM;
- 	if (!silent)
- 		printk("MINIX-fs: can't allocate map\n");
- 	goto out_release;
-@@ -316,7 +319,7 @@ out_bad_sb:
- out:
- 	s->s_fs_info = NULL;
- 	kfree(sbi);
--	return -EINVAL;
-+	return ret;
- }
- 
- static int minix_statfs(struct dentry *dentry, struct kstatfs *buf)
-@@ -409,7 +412,7 @@ void minix_set_inode(struct inode *inode, dev_t rdev)
- /*
-  * The minix V1 function to read an inode.
-  */
--static void V1_minix_read_inode(struct inode * inode)
-+static struct inode *V1_minix_iget(struct inode * inode)
- {
- 	struct buffer_head * bh;
- 	struct minix_inode * raw_inode;
-@@ -418,8 +421,8 @@ static void V1_minix_read_inode(struct inode * inode)
- 
- 	raw_inode = minix_V1_raw_inode(inode->i_sb, inode->i_ino, &bh);
- 	if (!raw_inode) {
--		make_bad_inode(inode);
--		return;
-+		iget_failed(inode);
-+		return ERR_PTR(-EIO);
- 	}
- 	inode->i_mode = raw_inode->i_mode;
- 	inode->i_uid = (uid_t)raw_inode->i_uid;
-@@ -435,12 +438,14 @@ static void V1_minix_read_inode(struct inode * inode)
- 		minix_inode->u.i1_data[i] = raw_inode->i_zone[i];
- 	minix_set_inode(inode, old_decode_dev(raw_inode->i_zone[0]));
- 	brelse(bh);
-+	unlock_new_inode(inode);
-+	return inode;
- }
- 
- /*
-  * The minix V2 function to read an inode.
-  */
--static void V2_minix_read_inode(struct inode * inode)
-+static struct inode *V2_minix_iget(struct inode * inode)
- {
- 	struct buffer_head * bh;
- 	struct minix2_inode * raw_inode;
-@@ -449,8 +454,8 @@ static void V2_minix_read_inode(struct inode * inode)
- 
- 	raw_inode = minix_V2_raw_inode(inode->i_sb, inode->i_ino, &bh);
- 	if (!raw_inode) {
--		make_bad_inode(inode);
--		return;
-+		iget_failed(inode);
-+		return ERR_PTR(-EIO);
- 	}
- 	inode->i_mode = raw_inode->i_mode;
- 	inode->i_uid = (uid_t)raw_inode->i_uid;
-@@ -468,17 +473,27 @@ static void V2_minix_read_inode(struct inode * inode)
- 		minix_inode->u.i2_data[i] = raw_inode->i_zone[i];
- 	minix_set_inode(inode, old_decode_dev(raw_inode->i_zone[0]));
- 	brelse(bh);
-+	unlock_new_inode(inode);
-+	return inode;
- }
- 
- /*
-  * The global function to read an inode.
-  */
--static void minix_read_inode(struct inode * inode)
-+struct inode *minix_iget(struct super_block *sb, unsigned long ino)
- {
+diff --git a/fs/hfsplus/btree.c b/fs/hfsplus/btree.c
+index 050d29c..bb54336 100644
+--- a/fs/hfsplus/btree.c
++++ b/fs/hfsplus/btree.c
+@@ -22,6 +22,7 @@ struct hfs_btree *hfs_btree_open(struct super_block *sb, u32 id)
+ 	struct hfs_btree *tree;
+ 	struct hfs_btree_header_rec *head;
+ 	struct address_space *mapping;
 +	struct inode *inode;
+ 	struct page *page;
+ 	unsigned int size;
+ 
+@@ -33,9 +34,10 @@ struct hfs_btree *hfs_btree_open(struct super_block *sb, u32 id)
+ 	spin_lock_init(&tree->hash_lock);
+ 	tree->sb = sb;
+ 	tree->cnid = id;
+-	tree->inode = iget(sb, id);
+-	if (!tree->inode)
++	inode = hfsplus_iget(sb, id);
++	if (IS_ERR(inode))
+ 		goto free_tree;
++	tree->inode = inode;
+ 
+ 	mapping = tree->inode->i_mapping;
+ 	page = read_mapping_page(mapping, 0, NULL);
+diff --git a/fs/hfsplus/dir.c b/fs/hfsplus/dir.c
+index 1955ee6..2968364 100644
+--- a/fs/hfsplus/dir.c
++++ b/fs/hfsplus/dir.c
+@@ -97,9 +97,9 @@ again:
+ 		goto fail;
+ 	}
+ 	hfs_find_exit(&fd);
+-	inode = iget(dir->i_sb, cnid);
+-	if (!inode)
+-		return ERR_PTR(-EACCES);
++	inode = hfsplus_iget(dir->i_sb, cnid);
++	if (IS_ERR(inode))
++		return ERR_CAST(inode);
+ 	if (S_ISREG(inode->i_mode))
+ 		HFSPLUS_I(inode).dev = linkid;
+ out:
+diff --git a/fs/hfsplus/hfsplus_fs.h b/fs/hfsplus/hfsplus_fs.h
+index d9f5eda..d72d0a8 100644
+--- a/fs/hfsplus/hfsplus_fs.h
++++ b/fs/hfsplus/hfsplus_fs.h
+@@ -345,6 +345,9 @@ int hfsplus_parse_options(char *, struct hfsplus_sb_info *);
+ void hfsplus_fill_defaults(struct hfsplus_sb_info *);
+ int hfsplus_show_options(struct seq_file *, struct vfsmount *);
+ 
++/* super.c */
++struct inode *hfsplus_iget(struct super_block *, unsigned long);
++
+ /* tables.c */
+ extern u16 hfsplus_case_fold_table[];
+ extern u16 hfsplus_decompose_table[];
+diff --git a/fs/hfsplus/super.c b/fs/hfsplus/super.c
+index ecf70da..b0f9ad3 100644
+--- a/fs/hfsplus/super.c
++++ b/fs/hfsplus/super.c
+@@ -20,11 +20,18 @@ static void hfsplus_destroy_inode(struct inode *inode);
+ 
+ #include "hfsplus_fs.h"
+ 
+-static void hfsplus_read_inode(struct inode *inode)
++struct inode *hfsplus_iget(struct super_block *sb, unsigned long ino)
+ {
+ 	struct hfs_find_data fd;
+ 	struct hfsplus_vh *vhdr;
+-	int err;
++	struct inode *inode;
++	long err = -EIO;
 +
 +	inode = iget_locked(sb, ino);
 +	if (!inode)
 +		return ERR_PTR(-ENOMEM);
 +	if (!(inode->i_state & I_NEW))
 +		return inode;
-+
- 	if (INODE_VERSION(inode) == MINIX_V1)
--		V1_minix_read_inode(inode);
-+		return V1_minix_iget(inode);
- 	else
--		V2_minix_read_inode(inode);
-+		return V2_minix_iget(inode);
+ 
+ 	INIT_LIST_HEAD(&HFSPLUS_I(inode).open_dir_list);
+ 	init_MUTEX(&HFSPLUS_I(inode).extents_lock);
+@@ -41,7 +48,7 @@ static void hfsplus_read_inode(struct inode *inode)
+ 		hfs_find_exit(&fd);
+ 		if (err)
+ 			goto bad_inode;
+-		return;
++		goto done;
+ 	}
+ 	vhdr = HFSPLUS_SB(inode->i_sb).s_vhdr;
+ 	switch(inode->i_ino) {
+@@ -70,10 +77,13 @@ static void hfsplus_read_inode(struct inode *inode)
+ 		goto bad_inode;
+ 	}
+ 
+-	return;
++done:
++	unlock_new_inode(inode);
++	return inode;
+ 
+- bad_inode:
+-	make_bad_inode(inode);
++bad_inode:
++	iget_failed(inode);
++	return ERR_PTR(err);
  }
  
- /*
-diff --git a/fs/minix/minix.h b/fs/minix/minix.h
-index ac5d3a7..326edfe 100644
---- a/fs/minix/minix.h
-+++ b/fs/minix/minix.h
-@@ -45,6 +45,7 @@ struct minix_sb_info {
- 	unsigned short s_version;
- };
- 
-+extern struct inode *minix_iget(struct super_block *, unsigned long);
- extern struct minix_inode * minix_V1_raw_inode(struct super_block *, ino_t, struct buffer_head **);
- extern struct minix2_inode * minix_V2_raw_inode(struct super_block *, ino_t, struct buffer_head **);
- extern struct inode * minix_new_inode(const struct inode * dir, int * error);
-diff --git a/fs/minix/namei.c b/fs/minix/namei.c
-index f4aa7a9..3b1684a 100644
---- a/fs/minix/namei.c
-+++ b/fs/minix/namei.c
-@@ -54,10 +54,9 @@ static struct dentry *minix_lookup(struct inode * dir, struct dentry *dentry, st
- 
- 	ino = minix_inode_by_name(dentry);
- 	if (ino) {
--		inode = iget(dir->i_sb, ino);
-- 
--		if (!inode)
--			return ERR_PTR(-EACCES);
-+		inode = minix_iget(dir->i_sb, ino);
-+ 		if (IS_ERR(inode))
-+			return ERR_CAST(inode);
+ static int hfsplus_write_inode(struct inode *inode, int unused)
+@@ -262,7 +272,6 @@ static int hfsplus_remount(struct super_block *sb, int *flags, char *data)
+ static const struct super_operations hfsplus_sops = {
+ 	.alloc_inode	= hfsplus_alloc_inode,
+ 	.destroy_inode	= hfsplus_destroy_inode,
+-	.read_inode	= hfsplus_read_inode,
+ 	.write_inode	= hfsplus_write_inode,
+ 	.clear_inode	= hfsplus_clear_inode,
+ 	.put_super	= hfsplus_put_super,
+@@ -278,7 +287,7 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
+ 	struct hfsplus_sb_info *sbi;
+ 	hfsplus_cat_entry entry;
+ 	struct hfs_find_data fd;
+-	struct inode *root;
++	struct inode *root, *inode;
+ 	struct qstr str;
+ 	struct nls_table *nls = NULL;
+ 	int err = -EINVAL;
+@@ -366,18 +375,25 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
+ 		goto cleanup;
  	}
- 	d_add(dentry, inode);
- 	return NULL;
+ 
+-	HFSPLUS_SB(sb).alloc_file = iget(sb, HFSPLUS_ALLOC_CNID);
+-	if (!HFSPLUS_SB(sb).alloc_file) {
++	inode = hfsplus_iget(sb, HFSPLUS_ALLOC_CNID);
++	if (IS_ERR(inode)) {
+ 		printk(KERN_ERR "hfs: failed to load allocation file\n");
++		err = PTR_ERR(inode);
+ 		goto cleanup;
+ 	}
++	HFSPLUS_SB(sb).alloc_file = inode;
+ 
+ 	/* Load the root directory */
+-	root = iget(sb, HFSPLUS_ROOT_CNID);
++	root = hfsplus_iget(sb, HFSPLUS_ROOT_CNID);
++	if (IS_ERR(root)) {
++		printk(KERN_ERR "hfs: failed to load root directory\n");
++		err = PTR_ERR(root);
++		goto cleanup;
++	}
+ 	sb->s_root = d_alloc_root(root);
+ 	if (!sb->s_root) {
+-		printk(KERN_ERR "hfs: failed to load root directory\n");
+ 		iput(root);
++		err = -ENOMEM;
+ 		goto cleanup;
+ 	}
+ 	sb->s_root->d_op = &hfsplus_dentry_operations;
+@@ -390,9 +406,12 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
+ 		hfs_find_exit(&fd);
+ 		if (entry.type != cpu_to_be16(HFSPLUS_FOLDER))
+ 			goto cleanup;
+-		HFSPLUS_SB(sb).hidden_dir = iget(sb, be32_to_cpu(entry.folder.id));
+-		if (!HFSPLUS_SB(sb).hidden_dir)
++		inode = hfsplus_iget(sb, be32_to_cpu(entry.folder.id));
++		if (IS_ERR(inode)) {
++			err = PTR_ERR(inode);
+ 			goto cleanup;
++		}
++		HFSPLUS_SB(sb).hidden_dir = inode;
+ 	} else
+ 		hfs_find_exit(&fd);
+ 
 
