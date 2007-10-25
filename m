@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbXJYONg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbXJYOOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760106AbXJYONg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 10:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXJYON1
+	id S1760832AbXJYOOA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 10:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXJYONu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 10:13:27 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:44267 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbXJYON0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 10:13:26 -0400
-Date: Thu, 25 Oct 2007 15:13:13 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [IDE] Fix build bug
-Message-ID: <20071025141313.GA23536@linux-mips.org>
-References: <20071025135334.GA23272@linux-mips.org> <20071025141305.GA11698@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071025141305.GA11698@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 25 Oct 2007 10:13:50 -0400
+Received: from ns.suse.de ([195.135.220.2]:42352 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760157AbXJYONt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 10:13:49 -0400
+Subject: Re: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <20071025154833.0240b8a2@hyperion.delvare>
+References: <1193236387.4590.230.camel@queen.suse.de>
+	 <20071024205347.6948c081.akpm@linux-foundation.org>
+	 <20071025154833.0240b8a2@hyperion.delvare>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Thu, 25 Oct 2007 16:13:47 +0200
+Message-Id: <1193321627.4590.278.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 04:13:05PM +0200, Sam Ravnborg wrote:
-
-> On Thu, Oct 25, 2007 at 02:53:34PM +0100, Ralf Baechle wrote:
-> >   CC      drivers/ide/pci/generic.o
-> > drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
-> > +section type conflict
+On Thu, 2007-10-25 at 15:48 +0200, Jean Delvare wrote:
+> Hi Andrew,
+> 
+> On Wed, 24 Oct 2007 20:53:47 -0700, Andrew Morton wrote:
+> > On Wed, 24 Oct 2007 16:33:07 +0200 Thomas Renninger <trenn@suse.de> wrote:
 > > 
-> > This sort of build error is becoming a regular issue.  Either all or non
-> > of the elements that go into a particular section of a compilation unit
-> > need to be const.  Or an error may result such as in this case if
-> > CONFIG_HOTPLUG is unset.
-> So we can avoid this if we invent a __constinitdata tag that uses
-> a new section?
-> I ask mainly to understand this error - not that I am that found
-> of the idea.
+> > > From: Thomas Renninger <trenn@suse.de>
+> > > To: linux-acpi <linux-acpi@vger.kernel.org>
+> > > Cc: linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jean Delvare <khali@linux-fr.org>
+> > > Reply-To: trenn@suse.de
+> > > Subject: [Fwd: [PATCH 3/5] Export acpi_check_resource_conflict]
+> > > Date: Wed, 24 Oct 2007 16:33:07 +0200
+> > > Organization: Novell/SUSE
+> > > X-Mailer: Evolution 2.8.2 
+> > > 
+> > > Export acpi_check_resource_conflict(), sometimes drivers already have
+> > > a struct resource at hand so no need to use the wrappers to build a new
+> > > one.
+> > > 
+> > > Signed-off-by: Jean Delvare <jdelvare@suse.de>
+> > > ---
+> > 
+> > The attributions on this are all mucked up.
+> > 
+> > I _think_ it was written by Jean, in which case the changlog should
+> > have had From:him right at the start to indicate this.  And as you
+> > were in the delivery path, it should have had your signoff.
+> > 
+> > I'll make those changes - please let me know if I misguessed.
+> 
+> You are correct, patches 3/5, 4/5 and 5/5 of this patchset were written
+> by me (as in: I'm the one to blame if something breaks). I expected
+> Thomas to add a From: header and add his own Signed-off-by line but
+> instead he forwarded my mails directly. Thanks for fixing up the mess,
+> we'll try to make it better next time.
 
-Yes.
+As said, I wasn't sure against what I should base all this.
+I would had cleaned it up, depending on what you told me. I also didn't
+know about the From: tag if you send patches not from your own, the next
+time...
+Anyways, it's nice to see how things can move on right away without much
+delay and discussion.
 
-  Ralf
+Thanks,
+
+   Thomas
+
