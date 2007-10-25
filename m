@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbXJYKXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759683AbXJYKct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759520AbXJYKXd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 06:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbXJYKXZ
+	id S1759683AbXJYKct (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 06:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbXJYKcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 06:23:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51811 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbXJYKXY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 06:23:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: LSM conversion to static interface
-In-Reply-To: Your message of "Tue, 23 Oct 2007 10:34:09 CDT."
-             <20071023153409.GA14215@vino.hallyn.com>
-From: Valdis.Kletnieks@vt.edu
-References: <167451.96128.qm@web38607.mail.mud.yahoo.com> <alpine.LFD.0.999.0710171913270.26902@woody.linux-foundation.org> <200710192226.53233.agruen@suse.de> <alpine.LFD.0.999.0710191336250.26902@woody.linux-foundation.org> <Pine.LNX.4.64.0710201255170.1997@fbirervta.pbzchgretzou.qr> <471D8A4C.3020101@debian.org> <Pine.LNX.4.64.0710231051090.16684@fbirervta.pbzchgretzou.qr> <20071023152005.GA13767@vino.hallyn.com> <Pine.LNX.4.64.0710231725550.16684@fbirervta.pbzchgretzou.qr>
-            <20071023153409.GA14215@vino.hallyn.com>
+	Thu, 25 Oct 2007 06:32:41 -0400
+Received: from mail44.messagelabs.com ([216.82.249.179]:37471 "HELO
+	mail44.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754044AbXJYKck (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 06:32:40 -0400
+X-VirusChecked: Checked
+X-Env-Sender: amit.walambe@eurotech-ltd.co.uk
+X-Msg-Ref: server-3.tower-44.messagelabs.com!1193308358!32096422!1
+X-StarScan-Version: 5.5.12.14.2; banners=.,-,-
+X-Originating-IP: [194.200.159.164]
+Date: Thu, 25 Oct 2007 11:32:36 +0100
+From: Amit Walambe <amit.walambe@eurotech-ltd.co.uk>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: x86 compile failure on 2.6.24-rc1
+Message-ID: <20071025113236.0d33e31f@eurotech-ltd.co.uk>
+In-Reply-To: <20071025102040.GA30907@elte.hu>
+References: <20071025100550.637a3af3@eurotech-ltd.co.uk>
+	<20071025102040.GA30907@elte.hu>
+Organization: Eurotech Ltd.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1193307789_2831P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 25 Oct 2007 06:23:09 -0400
-Message-ID: <5541.1193307789@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1193307789_2831P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 25 Oct 2007 12:20:40 +0200
+"Ingo Molnar" <mingo@elte.hu> wrote:
+> 
+> * Amit Walambe <amit.walambe@eurotech-ltd.co.uk> wrote:
+> 
+> > Hi!
+> > I get following error while compiling 2.6.24-rc1 : 
+> > 
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > arch/x86/kernel/built-in.o: In function `machine_crash_shutdown':
+> > (.text+0x191c8): undefined reference to `genapic'
+> > make: *** [.tmp_vmlinux1] Error 1
+> 
+> see:
+> 
+>  http://lkml.org/lkml/2007/10/24/128
+> 
+> 	Ingo
+Thanks Ingo!
+Sorry for the noise.
+- Amit
 
-On Tue, 23 Oct 2007 10:34:09 CDT, "Serge E. Hallyn" said:
-
-> And he will still be able to *run* the suid binary, but if cap_bound is
-> reduced he won't be able to use capabilities taken out of the bounding
-> set, multiadm loaded or not.
-
-I am willing to bet that there's still a *lot* of unaudited set[ug]id code
-out there that's vulnerable to the same sorts of attacks as the one that
-hit Sendmail a few back.  As such, I have to agree with your original
-post of the patch that CAP_SYS_ADMIN should be required to lower the set,
-as there's just too much danger of an exploit if users can create their
-own reduced-set processes.
-
-I'm debating whether we should have a printk if we detect that a removed
-capability caused an -EPERM.  Yes, it can be used to spam the logs.  On the
-other hand, I as the sysadmin would like to know if it's happening. Looks like
-time for a sysctl or something....
-
---==_Exmh_1193307789_2831P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHIG6NcC3lWbTT17ARAga4AJ9tP5AhJ0tcET6g1JWjes8ADhk/YwCfTSic
-75TqSZsB72Dk4mE9DaxuJBA=
-=SSEX
------END PGP SIGNATURE-----
-
---==_Exmh_1193307789_2831P--
+______________________________________________________________________
+This email has been scanned by the MessageLabs Email Security System.
+For more information please visit http://www.messagelabs.com/email 
+______________________________________________________________________
