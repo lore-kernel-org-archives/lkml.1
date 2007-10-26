@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbXJZXqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbXJZXqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbXJZXqU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbXJZXqN
+	id S932466AbXJZXqz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbXJZXql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:46:13 -0400
-Received: from outland.allotrope.com.au ([206.251.255.246]:52966 "EHLO
-	Outland.Allotrope.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbXJZXqM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:46:12 -0400
-X-Greylist: delayed 1633 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 19:46:12 EDT
-Message-ID: <52990.58.172.210.17.1193526927.squirrel@webmail.allotrope.com.au>
-Date: Sun, 28 Oct 2007 10:15:27 +1100 (EST)
-Subject: An additional entry to the pnp_dev_table for the serial driver 
-     against 2.6.21.4
-From: "Damian Jurd" <dnj@Allotrope.com.au>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6-7.el4.centos4
+	Fri, 26 Oct 2007 19:46:41 -0400
+Received: from palrel12.hp.com ([156.153.255.237]:33239 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759694AbXJZXqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 19:46:39 -0400
+Message-ID: <47227C5C.1070507@hp.com>
+Date: Fri, 26 Oct 2007 16:46:36 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: David Miller <davem@davemloft.net>
+Cc: ebiederm@xmission.com, bunk@kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
+References: <20071026230807.GE30533@stusta.de>	<m1zly5wjie.fsf@ebiederm.dsl.xmission.com>	<472278E3.4000909@hp.com> <20071026.163958.171785530.davem@davemloft.net>
+In-Reply-To: <20071026.163958.171785530.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+David Miller wrote:
+> If DLM really wants minimum, it can use SO_SNDBUFFORCE and
+> SO_RCVBUFFORCE socket options and use whatever limits it
+> likes.
+> 
+> But even this is questionable.
 
-The following is an extra entry to enable the touch screen on the new LG
-C1 EXPRESS DUAL machine.
+Drift...
 
-Thanks,
-D.
+Is that something netperf should be using though?  Right now it uses the regular 
+SO_[SND|RCV]BUF calls and is at the mercy of sysctls.  I wonder if it would be 
+better to have it use their FORCE versions to make life easier on the 
+benchmarker - such as myself - who has an unfortunate habit of forgetting to 
+update sysctl.conf :)
 
-diff -uprN -X linux-2.6.21.4__vanilla/Documentation/dontdiff
-linux-2.6.21.4__vanilla/drivers/serial/8250_pnp.c
-linux-2.6.21.4__C1-PB11A3/drivers/serial/8250_pnp.c
---- linux-2.6.21.4__vanilla/drivers/serial/8250_pnp.c   2007-06-08
-07:27:31.000000000 +1000
-+++ linux-2.6.21.4__C1-PB11A3/drivers/serial/8250_pnp.c 2007-06-10
-10:53:31.000000000 +1000
-@@ -343,6 +343,8 @@ static const struct pnp_device_id pnp_de
-        /* Fujitsu Wacom Tablet PC devices */
-        {       "FUJ02E5",              0       },
-        {       "FUJ02E6",              0       },
-+       /* LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a FUJ02E6
-in disguise) */
-+       {       "LTS0001",              0       },
-        /* Rockwell's (PORALiNK) 33600 INT PNP */
-        {       "WCI0003",              0       },
-        /* Unkown PnP modems */
-
-
+rick jones
