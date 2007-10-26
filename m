@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762781AbXJZSBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXJZSGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762781AbXJZSBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762692AbXJZSAp
+	id S1759508AbXJZSGE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXJZSFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:00:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53761 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762619AbXJZSAo (ORCPT
+	Fri, 26 Oct 2007 14:05:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60418 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbXJZSFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:00:44 -0400
-Date: Fri, 26 Oct 2007 11:00:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, rientjes@google.com,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
-In-Reply-To: <20071026105431.77d56253.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0710261056270.15895@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
- <alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
- <alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
- <20071025230409.81f20ed3.pj@sgi.com> <alpine.DEB.0.9999.0710260204590.8261@chino.kir.corp.google.com>
- <20071026025634.0f32e1e2.pj@sgi.com> <20071026101805.df3ebfda.pj@sgi.com>
- <1193420627.5032.46.camel@localhost> <20071026105431.77d56253.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 14:05:53 -0400
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47221E6F.1090607@lwfinger.net>
+References: <47221E6F.1090607@lwfinger.net>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 20:07:44 +0200
+Message-Id: <1193422064.2190.6.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18XX8NU/L4+vniCGjj5LfZipoLPd/jaOQ9GnC6
+ 06i7rWxMRkY2L6r6ALUUiwyLA0Ys6M2HHFPTjnkpZA7Qdobs8s
+ PZlewK0jNTdGA3W9YSJB9mRta7tn1aA
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Paul Jackson wrote:
+On Fri, 2007-10-26 at 12:05 -0500, Larry Finger wrote:
+> On my openSUSE 10.3 x86_64 system running v2.6.24-rc1-281-g22d2aa1,
+> I get the sysfs rename messages.
 
-> > Will it handle the case of MPOL_INTERLEAVE policy on a shm segment that
-> > is mapped by tasks in different, possibly disjoint, cpusets.  Local
-> > allocation does, and my patch does.  That was one of the primary
-> > goals--to address an issue that Christoph has with shared policies.
-> > cpusets really muck these up!
-> 
-> It probably won't handle that.  I don't get along too well with shmem.
+Care to try this? Seems like a silly bug in the core if
+SYSFS_DEPRECATED=y. That's why we didn't catch this earlier, sorry.
 
-IMHO shmem policy support is pretty much messed up (seems that we 
-introduced new races by trying to fix the refcounts). I tend to ignore the 
-stuff unless it impacts regular shared or regular memory. Before we do any 
-of this fancy stuff lets at least get the refcount handling right?
+Thanks a lot for the help,
+Kay
 
-> Can you to an anti-shmem bigot how MPOL_INTERLEAVE should work with
-> shmem segments mapped in diverse ways by different tasks in different
-> cpusets?  What would be the key attribute(s) of a proper solution?
-> Maybe if we keep it simple enough, I can avoid mucking it up too much
-> this time around.
 
-With relative nodemasks we could have a MPOL_INTERLEAVE policy working in 
-multiple cpuset contexts. If nodes 0 and 1 are set in a nodemask then the 
-first two nodes of the current cpuset are interleaved through. Nodes that 
-do not exist are ignored. So if there is no second node then 
-MPOL_INTERLEAVE becomes a noop.
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Driver Core: fix bug in device_rename() for SYSFS_DEPRECATED=y
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index c134341..3f4d6aa 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1228,18 +1228,18 @@ int device_rename(struct device *dev, char *new_name)
+ 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+ 		}
+ 	}
+-#endif
+-
++#else
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+ 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+ 					  dev->bus_id);
+ 		if (error) {
+-			/* Uh... how to unravel this if restoring can fail? */
+ 			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+ 				__FUNCTION__, error);
+ 		}
+ 	}
++#endif
++
+ out:
+ 	put_device(dev);
+ 
+
