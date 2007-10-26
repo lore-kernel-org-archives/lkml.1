@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765162AbXJZU5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXJZU6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765162AbXJZU5t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXJZU5m
+	id S1763100AbXJZU6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXJZU54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:57:42 -0400
-Received: from waste.org ([66.93.16.53]:59691 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754163AbXJZU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:57:41 -0400
-Date: Fri, 26 Oct 2007 15:57:14 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071026205714.GQ17536@waste.org>
-References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx> <200710261211.01423.rusty@rustcorp.com.au> <20071026115727.GR27248@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071026115727.GR27248@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 26 Oct 2007 16:57:56 -0400
+Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:41513 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758593AbXJZU5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:57:55 -0400
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2.624-rc1 regression] lost battery information
+Cc: arvidjaar@mail.ru, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-To: <472232D3.6000807@gmail.com>
+References: <200710262024.06012.arvidjaar@mail.ru> <200710262120.22536.arvidjaar@mail.ru> <47222DF3.3040208@gmail.com> <200710262215.42939.arvidjaar@mail.ru> <472232D3.6000807@gmail.com>
+Message-Id: <E1IlWFd-0002fD-6c@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 26 Oct 2007 22:57:53 +0200
+X-OriginalArrivalTime: 26 Oct 2007 20:57:53.0381 (UTC) FILETIME=[E06D8150:01C81812]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 05:57:27AM -0600, Matthew Wilcox wrote:
-> On Fri, Oct 26, 2007 at 12:11:01PM +1000, Rusty Russell wrote:
-> > 	This just seems like more optimization and complexity that we need.  Interfaces
-> > using vsnprintf don't seem like good candidates for optimization.
-> 
-> That's a fair point, but I'm optimising for fewer trips into the
-> slab(/slub/slob) allocator, and thus having less of an impact on the
-> rest of the system.  Given that 'an alloc on every call' was one of the
-> complaints Matt had about my v1 stringbuf patch, I can't imagine he'll
-> be happy about this one either.
+Alexey Starikovskiy wrote:
+> Andrey Borzenkov wrote:
+>> is it in -rc1 or can you point me to the patch (I'd rather avoid having
+>> to pull from different git trees). Thank you.
+> No, it should be rc1.
+>> 
+>> And what about ACPI_PROCFS case? It still needs attention I believe.
+> As you can see, there is info in /proc too:
 
-Well I expect once you start letting people easily build strings by
-concatenation, you'll very shortly afterwards have people using them
-in loops. And having hidden O(n^2) behavior in there is a little sad,
-even though n will tend to be small and well-bounded. If we can do
-something simple to avoid it, we should.
+I'm missing the info in /sys too, so it looks like the error in proc and
+the missing info in /sys are related.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Alexey: do you have POWER_SUPPLY and/or AC/BATTERY compiled in or modular?
+I wonder if that could make the difference.
