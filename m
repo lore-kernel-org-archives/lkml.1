@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbXJZIFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXJZIJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbXJZIFo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 04:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbXJZIFU
+	id S1755631AbXJZIJe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 04:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXJZIJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 04:05:20 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:33861 "EHLO
+	Fri, 26 Oct 2007 04:09:19 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:42152 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbXJZIFO (ORCPT
+	with ESMTP id S1751190AbXJZIJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 04:05:14 -0400
+	Fri, 26 Oct 2007 04:09:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Ine755LOqJWZwaPsV0QAmvgbsk9XEw/f9oZMtIgENTRTYaj6YFxeIdiOc9BqHF2CU0BtB/5AnWfAPu3w1VCXVPaS0suoH3GI+1S8QXKVIV/IXhasyRRv9Cm7cAKnmpy5ctdjxXHIqfRjebAGxwFPGpKo9kmqPqKiqJv6cj5yvQ0=
-Message-ID: <84144f020710260105w358bf6f0m6c373108b9aab9a8@mail.gmail.com>
-Date: Fri, 26 Oct 2007 11:05:14 +0300
+        b=hjiBsJ87JDioR2m9TKpjGwtHUiOHJCtQBf79JR+79/oTToYxoB8IWsEXwwTytXL1ypZWc/HY6MctDhBaEd/8sDO2F8n8TDP3iOTf31l+UQh67uA/bb2520X++gioK4Vl4R8J0Is66keQhdz2myB5rqcm8/eGjcNEnUpZm4mJR+8=
+Message-ID: <84144f020710260109s56f9cdf2tcd7b7258fcb2bd8@mail.gmail.com>
+Date: Fri, 26 Oct 2007 11:09:16 +0300
 From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Hugh Dickins" <hugh@veritas.com>
+To: "Neil Brown" <neilb@suse.de>
 Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland
-Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, "Ryan Finnie" <ryan@finnie.org>,
+Cc: "Hugh Dickins" <hugh@veritas.com>, "Erez Zadok" <ezk@cs.sunysb.edu>,
+       "Ryan Finnie" <ryan@finnie.org>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       cjwatson@ubuntu.com, linux-mm@kvack.org, neilb@suse.de
-In-Reply-To: <Pine.LNX.4.64.0710251556300.1521@blonde.wat.veritas.com>
+       cjwatson@ubuntu.com, linux-mm@kvack.org
+In-Reply-To: <18209.19021.383347.160126@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -34,24 +35,17 @@ References: <Pine.LNX.4.64.0710142049000.13119@sbz-30.cs.Helsinki.FI>
 	 <Pine.LNX.4.64.0710222101420.23513@blonde.wat.veritas.com>
 	 <84144f020710221348x297795c0qda61046ec69a7178@mail.gmail.com>
 	 <Pine.LNX.4.64.0710251556300.1521@blonde.wat.veritas.com>
-X-Google-Sender-Auth: fd1aa3ae1e54fc2b
+	 <18209.19021.383347.160126@notabene.brown>
+X-Google-Sender-Auth: 8bf4716b5efbb9cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+Hi,
 
-On 10/25/07, Hugh Dickins <hugh@veritas.com> wrote:
-> @@ -349,10 +349,6 @@ static pageout_t pageout(struct page *pa
->                 res = mapping->a_ops->writepage(page, &wbc);
->                 if (res < 0)
->                         handle_write_error(mapping, page, res);
-> -               if (res == AOP_WRITEPAGE_ACTIVATE) {
-> -                       ClearPageReclaim(page);
-> -                       return PAGE_ACTIVATE;
-> -               }
+On 10/26/07, Neil Brown <neilb@suse.de> wrote:
+> It seems that the new requirement is that if the address_space
+> chooses not to write out the page, it should now call SetPageActive().
+> If that is the case, I think it should be explicit in the
+> documentation - please?
 
-I don't see ClearPageReclaim added anywhere. Is that done on purpose?
-Other than that, the patch looks good to me and I think we should
-stick it into -mm to punish Andrew for his secret hack ;-).
-
-                                          Pekka
+Agreed.
