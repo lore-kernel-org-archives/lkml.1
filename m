@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762593AbXJZSAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763351AbXJZSAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762593AbXJZSAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbXJZSAa
+	id S1763351AbXJZSAz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbXJZSAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:00:30 -0400
-Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:45135 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752556AbXJZSA3 (ORCPT
+	Fri, 26 Oct 2007 14:00:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37659 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754970AbXJZSAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:00:29 -0400
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [2.624-rc1 regression] lost battery information
-Cc: aystarik@gmail.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-To: <200710262120.22536.arvidjaar@mail.ru>
-References: <200710262024.06012.arvidjaar@mail.ru> <47221C67.9050502@gmail.com> <200710262120.22536.arvidjaar@mail.ru>
-Message-Id: <E1IlTTv-0008RL-IH@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Fri, 26 Oct 2007 20:00:27 +0200
-X-OriginalArrivalTime: 26 Oct 2007 18:00:27.0831 (UTC) FILETIME=[172F7C70:01C817FA]
+	Fri, 26 Oct 2007 14:00:31 -0400
+Message-ID: <47222AFA.9030902@zytor.com>
+Date: Fri, 26 Oct 2007 10:59:22 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: Fix boot protocol KEEP_SEGMENTS check.
+References: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> I already have power_supply module, battery depends on it and it is
-> autloaded. But I fail to see where I can get battery info in /sys
+Eric W. Biederman wrote:
+> 
+> Both x86 and x86_64 support the same boot protocol so we need
+> to implement the KEEP_SEGMENTS on x86_64 as well.  It isn't
+> just paravirt bootloaders that could use this functionality.
+> 
 
-Ah, yes. I see what you mean now and I can confirm the same regression wrt
-missing battery data in /proc for my laptop.
+Out of curiousity, what other users do you see?
 
-$ cat /proc/acpi/battery/BAT1/*
-cat: /proc/acpi/battery/BAT1/alarm: Bad address
-cat: /proc/acpi/battery/BAT1/info: Bad address
-cat: /proc/acpi/battery/BAT1/state: Bad address
-
-Sorry for the earlier misunderstanding.
+	-hpa
