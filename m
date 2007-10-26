@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbXJZFEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXJZFMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762709AbXJZFEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 01:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXJZFD6
+	id S1756576AbXJZFMN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 01:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXJZFL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 01:03:58 -0400
-Received: from 1wt.eu ([62.212.114.60]:3560 "EHLO 1wt.eu"
+	Fri, 26 Oct 2007 01:11:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59039 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbXJZFD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 01:03:57 -0400
-Date: Fri, 26 Oct 2007 06:57:55 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Andi Kleen <ak@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-Message-ID: <20071026045754.GX10199@1wt.eu>
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260116.10904.ak@suse.de> <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org> <200710260142.37902.ak@suse.de>
-Mime-Version: 1.0
+	id S1751443AbXJZFL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 01:11:58 -0400
+Date: Thu, 25 Oct 2007 21:59:50 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
+Message-ID: <20071026045950.GA22920@suse.de>
+References: <200710181401.50470.jbarnes@virtuousgeek.org> <200710240818.31128.jbarnes@virtuousgeek.org> <200710242322.36291.rjw@sisk.pl> <200710251653.19978.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710260142.37902.ak@suse.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200710251653.19978.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 01:42:37AM +0200, Andi Kleen wrote:
-> On Friday 26 October 2007 01:32:53 Linus Torvalds wrote:
-> > 
-> > On Fri, 26 Oct 2007, Andi Kleen wrote:
-> > > 
-> > > No it can't (at least not on x86) as I have explained in the rest of the mail 
-> > > you conveniently snipped.
-> > 
-> > I "conveniently snipped it" because it was pointless.
-> > 
-> > "adc" or "cmov" has nothing what-so-ever to do with it. If some routine 
-> > returns 0-vs-1 and gcc then turns "if (routine()) x++" into 
-> > "x+=routine()", what does that have to do with adc or cmov?
+On Thu, Oct 25, 2007 at 04:53:18PM -0700, Jesse Barnes wrote:
+> Ok, here's yet another version that uses the device model for the
+> suspend/resume, rather than pci hooks.
 > 
-> That is not what gcc did in that case. I don't think it tracks sets of values
-> over function calls (or even inside functions) at all.
-> 
-> The generated code was
-> 
->           cmpl    $1, %eax                ; test res
->           movl    acquires_count, %edx    ; load
->           adcl    $0, %edx                ; maybe add 1
->           movl    %edx, acquires_count    ; store
-> 
-> So it just added the result of a comparison into a variable
-> by (ab)using carry for this.
+> Greg, DRM desperately needs review of its device model usage, can you
+> take a look at this patch and the current drm_sysfs.c code?  Right now,
+> we're mixing class_devices and regular devices (the latter seem to be
+> required for suspend/resume to work correctly), but this seems wrong.
+> Any ideas?  Should we just rip out the class_device stuff and create
+> full-on DRM device nodes?
 
-While this is OK in mono-threaded code, it introduces a race condition in
-multi-threaded code. The code above tried to acquire a lock, and eax was
-set to 1 if it succeeded. And whatever the result, all threads still
-happily modify the shared memory area (acquires_count). So the classical
-case where two threads perform the same operation at the same time ends
-up with a random value in acquires_count.
+The class_device stuff is already ripped out in the latest -mm trees and
+I will be forwarding that change on for 2.6.25 after 2.6.24 is out.  So
+yes, it should be taken away :)
 
-> In theory such things can be done with CMOV too by redirecting
-> a store into a dummy variable to cancel it, but gcc doesn't
-> do that on its own.
+But converting from class_device to struct device does not mean you use
+a "device node".  But you could if you want to :)
 
-Even with a CMOV, it's the memory write which should not be performed
-if the lock was not acquired.
+Other than that, the driver model usage isn't the best, but I think the
+majority of the major issues are fixed up now, especially with the
+removal of class_device.  Is there anything specific you are curious
+about?
 
-(...)
-> But for registers it's a fine optimization.
+thanks,
 
-100% agree.
-
-What would really be needed is an attribute around conditions to
-indicate whether they *may* be optimized or not. Something similar
-to the likely/unlikely we currently use, we could have something
-like __attribute__((unsafe_cond(cond))). I think that it could still
-optimize by default but let the user explicitly state that he is
-playing with thread-unsafe code. As you pointed out, you did not
-find any such mis-optimization in the kernel, which means that it
-does not hit too often. That's the reason why I'd let the user be
-careful.
-
-Willy
-
+greg k-h
