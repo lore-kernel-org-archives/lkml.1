@@ -1,53 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXJZTlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbXJZTlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbXJZTlS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXJZTlK
+	id S1753618AbXJZTlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXJZTl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:41:10 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33623 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbXJZTlJ (ORCPT
+	Fri, 26 Oct 2007 15:41:26 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51242 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbXJZTlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:41:09 -0400
-Message-ID: <47224295.2020406@zytor.com>
-Date: Fri, 26 Oct 2007 12:40:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 26 Oct 2007 15:41:25 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
+References: <m1640t3has.fsf@ebiederm.dsl.xmission.com>
+	<alpine.LFD.0.999.0710261053030.30120@woody.linux-foundation.org>
+Date: Fri, 26 Oct 2007 13:35:43 -0600
+In-Reply-To: <alpine.LFD.0.999.0710261053030.30120@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Fri, 26 Oct 2007 10:55:24 -0700 (PDT)")
+Message-ID: <m1y7dpzn1s.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: Fix boot protocol KEEP_SEGMENTS check.
-References: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> The kernel only ever supports 1 version of the boot protocol
-> so there is no need to check the boot protocol revision to
-> see if a feature is supported.
-> 
-> Both x86 and x86_64 support the same boot protocol so we need
-> to implement the KEEP_SEGMENTS on x86_64 as well.  It isn't
-> just paravirt bootloaders that could use this functionality.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Vivek Goyal <vgoyal@in.ibm.com>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Cc: Zachary Amsden <zach@vmware.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
 
-Btw, Acked-by: H. Peter Anvin <hpa@zytor.com>
+This is my trivial patch to swat innumerable little bugs
+with a single blow.
+
+After some intensive review (my apologies for not having
+gotten to this sooner) what we have looks like a good
+base to build on with the current pid namespace code but
+it is not complete, and it is still much to simple to find
+issues where the kernel does the wrong thing outside of
+the initial pid namespace.
+
+Until the dust settles and we are certain we have the ABI and
+the implementation is as correct as humanly possible let's keep
+process ID namespaces behind CONFIG_EXPERIMENTAL. 
+
+Allowing us the option of fixing any ABI or other bugs
+we find as long as they are minor.
+
+Allowing users of the kernel to avoid those bugs simply
+by ensuring their kernel does not have support for multiple
+pid namespaces.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ include/linux/pid_namespace.h |   22 ++++++++++++++++++++++
+ init/Kconfig                  |   12 ++++++++++++
+ kernel/pid.c                  |    2 ++
+ 3 files changed, 36 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
+index 0135c76..0227e68 100644
+--- a/include/linux/pid_namespace.h
++++ b/include/linux/pid_namespace.h
+@@ -29,6 +29,7 @@ struct pid_namespace {
+ 
+ extern struct pid_namespace init_pid_ns;
+ 
++#ifdef CONFIG_PID_NS
+ static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
+ {
+ 	if (ns != &init_pid_ns)
+@@ -45,6 +46,27 @@ static inline void put_pid_ns(struct pid_namespace *ns)
+ 		kref_put(&ns->kref, free_pid_ns);
+ }
+ 
++#else /* !CONFIG_PID_NS */
++#include <linux/err.h>
++
++static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
++{
++	return ns;
++}
++
++static inline struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns)
++{
++	if (flags & CLONE_NEWPID)
++		ns = ERR_PTR(-EINVAL);
++	return ns;
++}
++
++static inline void put_pid_ns(struct pid_namespace *ns)
++{
++}
++
++#endif /* CONFIG_PID_NS */
++
+ static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
+ {
+ 	return tsk->nsproxy->pid_ns;
+diff --git a/init/Kconfig b/init/Kconfig
+index 8b88d0b..72e37c0 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -215,6 +215,18 @@ config USER_NS
+ 	  vservers, to use user namespaces to provide different
+ 	  user info for different servers.  If unsure, say N.
+ 
++config PID_NS
++	bool "PID Namespaces (EXPERIMENTAL)"
++	default n
++	depends on EXPERIMENTAL
++	help
++	  Suport process id namespaces.  This allows having multiple
++	  process with the same pid as long as they are in different
++	  pid namespaces.  This is a building block of containers.
++
++	  Unless you want to work with an experimental feature
++	  say N here.
++
+ config AUDIT
+ 	bool "Auditing support"
+ 	depends on NET
+diff --git a/kernel/pid.c b/kernel/pid.c
+index d1db36b..f815455 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -537,6 +537,7 @@ err_alloc:
+ 	return NULL;
+ }
+ 
++#ifdef CONFIG_PID_NS
+ static struct pid_namespace *create_pid_namespace(int level)
+ {
+ 	struct pid_namespace *ns;
+@@ -621,6 +622,7 @@ void free_pid_ns(struct kref *kref)
+ 	if (parent != NULL)
+ 		put_pid_ns(parent);
+ }
++#endif /* CONFIG_PID_NS */
+ 
+ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
+ {
+-- 
+1.5.3.rc6.17.g1911
+
