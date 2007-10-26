@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXJZLqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXJZLst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759905AbXJZLqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJZLqP
+	id S1759547AbXJZLst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXJZLsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:46:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36959 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbXJZLqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:46:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Add an ERR_CAST() function to complement ERR_PTR and co. [try
-	#5.2]
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Fri, 26 Oct 2007 12:46:07 +0100
-Message-ID: <20071026114607.3698.52702.stgit@warthog.procyon.org.uk>
-In-Reply-To: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
-References: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
-User-Agent: StGIT/0.13
+	Fri, 26 Oct 2007 07:48:41 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:56450 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751201AbXJZLsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 07:48:41 -0400
+Message-ID: <4721D3FB.6040401@bx.jp.nec.com>
+Date: Fri, 26 Oct 2007 20:48:11 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: =?UTF-8?B?WU9TSElGVUpJIEhpZGVha2kgLyDlkInol6Toi7HmmI4=?= 
+	<yoshfuji@linux-ipv6.org>
+CC: linux-kernel@vger.kernel.org, gregkh@suse.de, apw@shadowen.org
+Subject: Re: [PATCH 2/2] add SubmittingPatches to Documentation/ja_JP
+References: <47218DBC.8070404@bx.jp.nec.com>	<47218F5C.1040402@bx.jp.nec.com> <20071026.161252.118133301.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20071026.161252.118133301.yoshfuji@linux-ipv6.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an ERR_CAST() function to complement ERR_PTR and co. for the purposes of
-casting an error entyped as one pointer type to an error of another pointer
-type whilst making it explicit as to what is going on.
+Thank you for your reply!
 
-This provides a replacement for the ERR_PTR(PTR_ERR(p)) construct.
+> Basically okay, but please refer to the original DCO
+> document.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+What is "DCO document"? 
+DCO stands for Developer's Certificate of Origin in SumittingPatches?
+If so, I will put original text of the DCO into the translated SubmittingPatches.
+If not so, please tell me about DCO document.
 
- include/linux/err.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+> Your mailer is broken.  You should include "charset" parameter
+> in your multipart.  Maybe it is better to prepare a git repository,
+> or attach it as a binary (application/octet-stream).
 
-diff --git a/include/linux/err.h b/include/linux/err.h
-index 1ab1d44..ec87f31 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -34,6 +34,19 @@ static inline long IS_ERR(const void *ptr)
- 	return IS_ERR_VALUE((unsigned long)ptr);
- }
- 
-+/**
-+ * ERR_CAST - Explicitly cast an error-valued pointer to another pointer type
-+ * @ptr: The pointer to cast.
-+ *
-+ * Explicitly cast an error-valued pointer to another pointer type in such a
-+ * way as to make it clear that's what's going on.
-+ */
-+static inline void *ERR_CAST(const void *ptr)
-+{
-+	/* cast away the const */
-+	return (void *) ptr;
-+}
-+
- #endif
- 
- #endif /* _LINUX_ERR_H */
+Thanks, I couldn't notice possibility of false recognition of character code 
+because there was no probelm in my environment.
+But, I used mew as MUA and the patch was recognized as Ascii, not UTF-8.
+I think alternative based on your suggestions.
+
+Thanks
+
+> --yoshfuji
+> 
+> In article <47218F5C.1040402@bx.jp.nec.com> (at Fri, 26 Oct 2007 15:55:24 +0900), Keiichi KII <k-keiichi@bx.jp.nec.com> says:
+> 
+>> From: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+>>
+>> This patch adds SubmittingPatches translated into Japanese to 
+>> Documentation/ja_JP directory.
+>>
+>> I attach the patch because there is a possibility that MUA 
+>> will change the character encoding sometimes.
+>>
+>> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+>> -- 
+>> Keiichi KII
+>> NEC Corporation OSS Platform Development Division
+>> E-mail: k-keiichi@bx.jp.nec.com 
+>>
+>>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+-- 
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
 
