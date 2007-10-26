@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbXJZMfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXJZMhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760577AbXJZMfS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 08:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbXJZMfF
+	id S1760764AbXJZMhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 08:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXJZMhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 08:35:05 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:56393 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753340AbXJZMfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 08:35:03 -0400
-Subject: Re: [AppArmor 35/45] Allow permission functions to tell between
-	parent and leaf checks
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: jjohansen@suse.de
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>
-In-Reply-To: <20071026064051.877606581@suse.de>
-References: <20071026064024.243943043@suse.de>
-	 <20071026064051.877606581@suse.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 26 Oct 2007 08:32:23 -0400
-Message-Id: <1193401943.11953.3.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Fri, 26 Oct 2007 08:37:33 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:18721 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbXJZMhb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 08:37:31 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH] ehea: add kexec support
+Date: Fri, 26 Oct 2007 14:37:28 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
+Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200710261437.29117.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 23:40 -0700, jjohansen@suse.de wrote:
-> plain text document attachment (parent-permission.diff)
-> Set the LOOKUP_CONTINUE flag when checking parent permissions. This allows
-> permission functions to tell between parent and leaf checks.
-> 
-> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-> Signed-off-by: John Johansen <jjohansen@suse.de>
-> 
-> ---
->  fs/namei.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -1472,6 +1472,10 @@ static int may_delete(struct inode *dir,
->  	BUG_ON(victim->d_parent->d_inode != dir);
->  	audit_inode_child(victim->d_name.name, victim, dir);
->  
-> +#if 0
-> +	if (nd)
-> +		nd->flags |= LOOKUP_CONTINUE;
-> +#endif
+eHEA resources that are allocated via H_CALLs have a unique identifier each.
+These identifiers are necessary to free the resources. A reboot notifier
+is used to free all eHEA resources before the indentifiers get lost, i.e
+before kexec starts a new kernel.
 
-#if 0?
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
->  	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
->  	if (error)
->  		return error;
-> @@ -1509,6 +1513,8 @@ static inline int may_create(struct inod
->  		return -EEXIST;
->  	if (IS_DEADDIR(dir))
->  		return -ENOENT;
-> +	if (nd)
-> +		nd->flags |= LOOKUP_CONTINUE;
->  	return permission(dir,MAY_WRITE | MAY_EXEC, nd);
->  }
->  
-> 
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 4b4b74e..f78e5bf 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0079"
++#define DRV_VERSION	"EHEA_0080"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 0a7e789..f0319f1 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -33,6 +33,9 @@
+ #include <linux/if.h>
+ #include <linux/list.h>
+ #include <linux/if_ether.h>
++#include <linux/notifier.h>
++#include <linux/reboot.h>
++
+ #include <net/ip.h>
+ 
+ #include "ehea.h"
+@@ -3295,6 +3298,20 @@ static int __devexit ehea_remove(struct of_device *dev)
+ 	return 0;
+ }
+ 
++static int ehea_reboot_notifier(struct notifier_block *nb,
++				unsigned long action, void *unused)
++{
++	if (action == SYS_RESTART) {
++		ehea_info("Reboot: freeing all eHEA resources");
++		ibmebus_unregister_driver(&ehea_driver);
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block ehea_reboot_nb = {
++        .notifier_call = ehea_reboot_notifier,
++};
++
+ static int check_module_parm(void)
+ {
+ 	int ret = 0;
+@@ -3351,6 +3368,8 @@ int __init ehea_module_init(void)
+ 	if (ret)
+ 		goto out;
+ 
++	register_reboot_notifier(&ehea_reboot_nb);
++
+ 	ret = ibmebus_register_driver(&ehea_driver);
+ 	if (ret) {
+ 		ehea_error("failed registering eHEA device driver on ebus");
+@@ -3362,6 +3381,7 @@ int __init ehea_module_init(void)
+ 	if (ret) {
+ 		ehea_error("failed to register capabilities attribute, ret=%d",
+ 			   ret);
++		unregister_reboot_notifier(&ehea_reboot_nb);
+ 		ibmebus_unregister_driver(&ehea_driver);
+ 		goto out;
+ 	}
+@@ -3375,6 +3395,7 @@ static void __exit ehea_module_exit(void)
+ 	flush_scheduled_work();
+ 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
++	unregister_reboot_notifier(&ehea_reboot_nb);
+ 	ehea_destroy_busmap();
+ }
+ 
 -- 
-Stephen Smalley
-National Security Agency
+1.5.2
 
