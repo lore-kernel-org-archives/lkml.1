@@ -1,106 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXJZDka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbXJZDmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbXJZDka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 23:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXJZDkX
+	id S1763547AbXJZDmM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 23:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXJZDl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 23:40:23 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43988
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbXJZDkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 23:40:21 -0400
-Date: Thu, 25 Oct 2007 20:45:31 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Ray Lee <ray-lk@madrabbit.org>, Chris Wright <chrisw@sous-sol.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
-       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-In-Reply-To: <20071025232150.25d6e5bd@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0710252042250.21140@asgard.lang.hm>
-References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
- <20071025002356.GB3660@sequoia.sous-sol.org>
- <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
- <20071025024131.6082e4a8@the-village.bc.nu>
- <2c0942db0710251117k37c30b2ex5cc6d8cd8c9ea029@mail.gmail.com>
- <20071025232150.25d6e5bd@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 25 Oct 2007 23:41:58 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4554 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754108AbXJZDl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 23:41:57 -0400
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+From: Joe Perches <joe@perches.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+In-Reply-To: <200710261211.01423.rusty@rustcorp.com.au>
+References: <20071024195847.GE27248@parisc-linux.org>
+	 <1193255992-14385-1-git-send-email-matthew@wil.cx>
+	 <200710261211.01423.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Thu, 25 Oct 2007 20:41:32 -0700
+Message-Id: <1193370092.26695.32.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, Alan Cox wrote:
+On Fri, 2007-10-26 at 12:11 +1000, Rusty Russell wrote:
+> On Thursday 25 October 2007 05:59:49 Matthew Wilcox wrote:
+> > Consecutive calls to printk are non-atomic, which leads to various
+> > implementations for accumulating strings which can be printed in one call.
+> > This is a generic string buffer which can also be used for non-printk
+> > purposes.
 
->>> There is a ton of evidence both in computing and outside of it which
->>> shows that poor security can be very much worse than no security at all.
->>
->> (So, I take it that you *don't* lock your bike up, as poor security is
->> worse than none?)
->
-> On the contrary because I know it is not secure I would
->
-> a) Insure it
+> This just seems like more optimization and complexity that we need.
+> Interfaces using vsnprintf don't seem like good candidates for
+> optimization.
 
-and the unsurance company would have a clause in the policy that wouldn't 
-cover you unless you used a lock, becouse they recognise that while it 
-wouldn't stop everyone there is a large group of potential thieves that it 
-would stop.
+Perhaps just tie stringbuf to printk and make stringbuf->buf
+the same 1K size as the printk buffer?
 
-> b) Not waste vast amounts of money on a useless expensive lock
+no reallocs, no in-place out-of-memory handling
+normal kzalloc and kfree of stringbuf * or add sb_alloc & sb_free
 
-who said the lock was expensive? and while you are not willing to spend 
-money on a lock you are willing to spend (much more) money on an insurance 
-policy.
+struct stringbuf {
+	int len;
+	char buf[1024];
+}
 
-David Lang
+/**
+ * sb_printf_append - append to a stringbuf
+ * @sb: a pointer to the stringbuf
+ * @fmt: printf-style format
+ */
+void sb_printf_append(struct stringbuf *sb, const char *fmt, ...)
+{
+	va_list args;
 
-> c) Make sure the bike looked not worth stealing
-> d) Take the saddle with me
->
-> (or the software versions of that
->
-> a) Keep backups
-> b) Not waste vast amounts of money on bogus security software
-> c) Keep the system looking uninteresting
-> d) Encrypt the data)
->
->> 'Inappropriate risks' nowadays is surfing the web and opening up mail
->> attachments that claim to be movies of dancing bears. I'd argue that
->> users have a reasonable expectation that these are things that should
->> 'just work,' and be safe, much as normal humans have an expectation
->> that their car isn't going to explode when they turn the ignition.
->
-> Yes and its very clear from the things said by politicians that if the
-> computer software people don't do this soon, the legislators will make
-> very sure they do by stripping away all the techniques used to hide from
-> liability for failure.
->
->> Perfect is the enemy of good, or words to that effect, right? My point
->> is that requiring perfection out of a security framework is a bar
->> that's going to be awfully difficult to reach (and when it supposedly
->> has been achieved, as in SELinux, mere mortals find it too troublesome
->> to run with as it's far too difficult to configure). Security can and
->> should be done in layers, and what one may miss, another may catch.
->
-> Absolutely - but those layers should do whatever they do *right* and
-> really do it, whether they are complex whole system controls like SELinux
-> or simple network security tools.
->
-> Alan
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+	va_start(args, fmt);
+	sb->len += vscnprintf(&sb->buf[len], sizeof(sb->buf) - sb->len, fmt, args);
+	va_end(args);
+}
+EXPORT_SYMBOL(sb_printf_append);
+
+
