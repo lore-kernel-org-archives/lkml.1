@@ -1,128 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764564AbXJZHGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXJZHH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764564AbXJZHGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 03:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759049AbXJZG6R
+	id S1761408AbXJZHH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 03:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761455AbXJZG6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:58:17 -0400
-Received: from ns.suse.de ([195.135.220.2]:34871 "EHLO mx1.suse.de"
+	Fri, 26 Oct 2007 02:58:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34880 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761387AbXJZG6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:58:15 -0400
+	id S1760461AbXJZG6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:58:18 -0400
 X-Mailbox-Line: From jjohansen@suse.de Thu Oct 25 23:40:50 2007
-Message-Id: <20071026064050.406189223@suse.de>
+Message-Id: <20071026064050.550710239@suse.de>
 References: <20071026064024.243943043@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 25 Oct 2007 23:40:49 -0700
+Date: Thu, 25 Oct 2007 23:40:50 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 25/45] Add a struct vfsmount parameter to vfs_listxattr()
-Content-Disposition: inline; filename=vfs-listxattr.diff
+Subject: [AppArmor 26/45] Pass struct vfsmount to the inode_listxattr LSM hook
+Content-Disposition: inline; filename=security-listxattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+This is needed for computing pathnames in the AppArmor LSM.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/xattr.c            |   25 ++++++++++++++-----------
- include/linux/xattr.h |    3 ++-
- 2 files changed, 16 insertions(+), 12 deletions(-)
+ fs/xattr.c               |    2 +-
+ include/linux/security.h |    9 +++++----
+ security/dummy.c         |    2 +-
+ security/security.c      |    4 ++--
+ security/selinux/hooks.c |    2 +-
+ 5 files changed, 10 insertions(+), 9 deletions(-)
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -141,18 +141,20 @@ vfs_getxattr(struct dentry *dentry, stru
- EXPORT_SYMBOL_GPL(vfs_getxattr);
- 
- ssize_t
--vfs_listxattr(struct dentry *d, char *list, size_t size)
-+vfs_listxattr(struct dentry *dentry, struct vfsmount *mnt, char *list,
-+	      size_t size)
- {
-+	struct inode *inode = dentry->d_inode;
+@@ -147,7 +147,7 @@ vfs_listxattr(struct dentry *dentry, str
+ 	struct inode *inode = dentry->d_inode;
  	ssize_t error;
  
--	error = security_inode_listxattr(d);
-+	error = security_inode_listxattr(dentry);
+-	error = security_inode_listxattr(dentry);
++	error = security_inode_listxattr(dentry, mnt);
  	if (error)
  		return error;
  	error = -EOPNOTSUPP;
--	if (d->d_inode->i_op && d->d_inode->i_op->listxattr) {
--		error = d->d_inode->i_op->listxattr(d, list, size);
--	} else {
--		error = security_inode_listsecurity(d->d_inode, list, size);
-+	if (inode->i_op && inode->i_op->listxattr)
-+		error = inode->i_op->listxattr(dentry, list, size);
-+	else {
-+		error = security_inode_listsecurity(inode, list, size);
- 		if (size && error > size)
- 			error = -ERANGE;
- 	}
-@@ -373,7 +375,8 @@ sys_fgetxattr(int fd, char __user *name,
-  * Extended attribute LIST operations
-  */
- static ssize_t
--listxattr(struct dentry *d, char __user *list, size_t size)
-+listxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *list,
-+	  size_t size)
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -409,7 +409,7 @@ struct request_sock;
+  * 	Return 0 if permission is granted.
+  * @inode_listxattr:
+  * 	Check permission before obtaining the list of extended attribute 
+- * 	names for @dentry.
++ * 	names for @dentry and @mnt.
+  * 	Return 0 if permission is granted.
+  * @inode_removexattr:
+  * 	Check permission before removing the extended attribute
+@@ -1280,7 +1280,7 @@ struct security_operations {
+ 				     size_t size, int flags);
+ 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
+ 			       char *name);
+-	int (*inode_listxattr) (struct dentry *dentry);
++	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
+ 	int (*inode_removexattr) (struct dentry *dentry, char *name);
+ 	int (*inode_need_killpriv) (struct dentry *dentry);
+ 	int (*inode_killpriv) (struct dentry *dentry);
+@@ -1544,7 +1544,7 @@ void security_inode_post_setxattr(struct
+ 				  int flags);
+ int security_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
+ 			    char *name);
+-int security_inode_listxattr(struct dentry *dentry);
++int security_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt);
+ int security_inode_removexattr(struct dentry *dentry, char *name);
+ int security_inode_need_killpriv(struct dentry *dentry);
+ int security_inode_killpriv(struct dentry *dentry);
+@@ -1949,7 +1949,8 @@ static inline int security_inode_getxatt
+ 	return 0;
+ }
+ 
+-static inline int security_inode_listxattr (struct dentry *dentry)
++static inline int security_inode_listxattr (struct dentry *dentry,
++					    struct vfsmount *mnt)
  {
- 	ssize_t error;
- 	char *klist = NULL;
-@@ -386,7 +389,7 @@ listxattr(struct dentry *d, char __user 
- 			return -ENOMEM;
- 	}
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -371,7 +371,7 @@ static int dummy_inode_getxattr (struct 
+ 	return 0;
+ }
  
--	error = vfs_listxattr(d, klist, size);
-+	error = vfs_listxattr(dentry, mnt, klist, size);
- 	if (error > 0) {
- 		if (size && copy_to_user(list, klist, error))
- 			error = -EFAULT;
-@@ -408,7 +411,7 @@ sys_listxattr(char __user *path, char __
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = listxattr(nd.dentry, list, size);
-+	error = listxattr(nd.dentry, nd.mnt, list, size);
- 	path_release(&nd);
- 	return error;
+-static int dummy_inode_listxattr (struct dentry *dentry)
++static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return 0;
  }
-@@ -422,7 +425,7 @@ sys_llistxattr(char __user *path, char _
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = listxattr(nd.dentry, list, size);
-+	error = listxattr(nd.dentry, nd.mnt, list, size);
- 	path_release(&nd);
- 	return error;
+--- a/security/security.c
++++ b/security/security.c
+@@ -468,11 +468,11 @@ int security_inode_getxattr(struct dentr
+ 	return security_ops->inode_getxattr(dentry, mnt, name);
  }
-@@ -437,7 +440,7 @@ sys_flistxattr(int fd, char __user *list
- 	if (!f)
- 		return error;
- 	audit_inode(NULL, f->f_path.dentry);
--	error = listxattr(f->f_path.dentry, list, size);
-+	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size);
- 	fput(f);
- 	return error;
- }
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -48,7 +48,8 @@ struct xattr_handler {
  
- ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
- 		     size_t);
--ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
-+ssize_t vfs_listxattr(struct dentry *d, struct vfsmount *, char *list,
-+		      size_t size);
- int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
- 		 int);
- int vfs_removexattr(struct dentry *, char *);
+-int security_inode_listxattr(struct dentry *dentry)
++int security_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_listxattr(dentry);
++	return security_ops->inode_listxattr(dentry, mnt);
+ }
+ 
+ int security_inode_removexattr(struct dentry *dentry, char *name)
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2415,7 +2415,7 @@ static int selinux_inode_getxattr (struc
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_listxattr (struct dentry *dentry)
++static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
 
 -- 
 
