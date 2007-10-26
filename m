@@ -1,39 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXJZU6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764739AbXJZU77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763100AbXJZU6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXJZU54
+	id S1764739AbXJZU77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbXJZU7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:57:56 -0400
-Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:41513 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758593AbXJZU5z (ORCPT
+	Fri, 26 Oct 2007 16:59:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37440 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754974AbXJZU7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:57:55 -0400
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.624-rc1 regression] lost battery information
-Cc: arvidjaar@mail.ru, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-To: <472232D3.6000807@gmail.com>
-References: <200710262024.06012.arvidjaar@mail.ru> <200710262120.22536.arvidjaar@mail.ru> <47222DF3.3040208@gmail.com> <200710262215.42939.arvidjaar@mail.ru> <472232D3.6000807@gmail.com>
-Message-Id: <E1IlWFd-0002fD-6c@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Fri, 26 Oct 2007 22:57:53 +0200
-X-OriginalArrivalTime: 26 Oct 2007 20:57:53.0381 (UTC) FILETIME=[E06D8150:01C81812]
+	Fri, 26 Oct 2007 16:59:48 -0400
+Date: Fri, 26 Oct 2007 13:55:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [0/3] Distributed storage. Mirror algo extension for automatic
+ recovery.
+Message-Id: <20071026135538.d22125a2.akpm@linux-foundation.org>
+In-Reply-To: <20071018191741.GA848@2ka.mipt.ru>
+References: <20071018191741.GA848@2ka.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy wrote:
-> Andrey Borzenkov wrote:
->> is it in -rc1 or can you point me to the patch (I'd rather avoid having
->> to pull from different git trees). Thank you.
-> No, it should be rc1.
->> 
->> And what about ACPI_PROCFS case? It still needs attention I believe.
-> As you can see, there is info in /proc too:
+On Thu, 18 Oct 2007 23:17:41 +0400
+Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-I'm missing the info in /sys too, so it looks like the error in proc and
-the missing info in /sys are related.
+> I'm pleased to announce sixth release of the distributed storage
+> subsystem, which allows to form a storage on top of remote and local
+> nodes, which in turn can be exported to another storage as a node to
+> form tree-like storages.
 
-Alexey: do you have POWER_SUPPLY and/or AC/BATTERY compiled in or modular?
-I wonder if that could make the difference.
+I went back and re-read last month's discussion and I'm not seeing any
+reason why we shouldn't start thinking about merging this.
+
+How close is it to that stage?  A peek at your development blog indicates
+that things are still changing at a moderate rate?
+
