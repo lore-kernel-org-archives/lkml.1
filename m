@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762951AbXJZSH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbXJZSMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762951AbXJZSH4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762455AbXJZSH1
+	id S1760216AbXJZSMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbXJZSMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:07:27 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1813 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762147AbXJZSH0 (ORCPT
+	Fri, 26 Oct 2007 14:12:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:39667 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbXJZSMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:07:26 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Is gcc thread-unsafe?
-Date: Fri, 26 Oct 2007 11:06:13 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCELIHMAC.davids@webmaster.com>
+	Fri, 26 Oct 2007 14:12:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JRB3BzboPpx9gHQoNt0+D+GbsVQc40hR/H4OVKoqLG969Q6MH0rCQWCnvwV2Aup1jzuhOzjv/znR9ukj6ETtVXKd7h4WycZYUGKKEiJaA6o94cuDg+ZFmj48sHtYa4hmeu+IVT9x5al3QOIV+vrKGqFqU1llnV0Nr4DbkkgRgGM=
+Message-ID: <47222DF3.3040208@gmail.com>
+Date: Fri, 26 Oct 2007 22:12:03 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.624-rc1 regression] lost battery information
+References: <200710262024.06012.arvidjaar@mail.ru> <47221C67.9050502@gmail.com> <200710262120.22536.arvidjaar@mail.ru>
+In-Reply-To: <200710262120.22536.arvidjaar@mail.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <18210.2314.57767.962503@zebedee.pink>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 26 Oct 2007 11:07:15 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 26 Oct 2007 11:07:17 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrey Borzenkov wrote:
+> On Friday 26 October 2007, Alexey Starikovskiy wrote:
+>> Andrey Borzenkov wrote:
+>>> I have lost battery in 2.6.24-rc1. Without CONFIG_ACPI_PROCFS I have
+>>> no /proc/acpi/battery and cannot test netlink interface because right now
+>>> there is no consumer of this.
+>> for /sysfs interface you need to enable power_supply driver.
+>> or you could apply this patch and power_supply will be selected by battery
+>> itself.
+>>
+> 
+> I already have power_supply module, battery depends on it and it is autloaded. 
+> But I fail to see where I can get battery info in /sys
+Intent was to put into /sysfs same information:
+aystarik@samsung:~/client_conf$ ls /sys/class/power_supply/BAT1/
+alarm  charge_full  charge_full_design  charge_now  current_now  device  manufacturer  model_name  present  status  subsystem  technology  type  uevent  voltage_min_design  voltage_now
 
-> Well, yeah.  I know what you mean.  However, at this moment, some gcc
-> developers are trying really hard not to be total d*ckheads about this
-> issue, but get gcc fixed.  Give us a chance.
->
-> Andrew.
+aystarik@samsung:~/client_conf$ cat /sys/class/power_supply/BAT1/*
+0
+4172000
+4300000
+4172000
+0
+cat: /sys/class/power_supply/BAT1/device: Is a directory
+Pacifi
+Bat1
+1
+Full
+cat: /sys/class/power_supply/BAT1/subsystem: Is a directory
+Li-ion
+Battery
+PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0C0A:00
+PHYSDEVBUS=acpi
+PHYSDEVDRIVER=battery
+POWER_SUPPLY_NAME=BAT1
+POWER_SUPPLY_TYPE=Battery
+POWER_SUPPLY_STATUS=Full
+POWER_SUPPLY_PRESENT=1
+POWER_SUPPLY_TECHNOLOGY=Li-ion
+POWER_SUPPLY_VOLTAGE_MIN_DESIGN=14800000
+POWER_SUPPLY_VOLTAGE_NOW=16522000
+POWER_SUPPLY_CURRENT_NOW=0
+POWER_SUPPLY_CHARGE_FULL_DESIGN=4300000
+POWER_SUPPLY_CHARGE_FULL=4172000
+POWER_SUPPLY_CHARGE_NOW=4172000
+POWER_SUPPLY_MODEL_NAME=Bat1
+POWER_SUPPLY_MANUFACTURER=Pacifi
+14800000
+16522000
 
-Can we get some kind of consensus that 'optimizations' that add writes to
-any object that the programmer might have taken the address of are invalid
-on any platform that supports memory protection? That seems like obvious
-common sense to me.
-
-And it has the advantage that it can't be language-lawyered. There is no
-document that states the rational requirements of a compiler that's going to
-support a memory protection model. So they can be anything rational people
-think they should be.
-
-DS
-
-
+aystarik@samsung:~/client_conf$ cat /proc/acpi/battery/BAT1/*
+alarm:                   unsupported
+present:                 yes
+design capacity:         4300 mAh
+last full capacity:      4172 mAh
+battery technology:      rechargeable
+design voltage:          14800 mV
+design capacity warning: 208 mAh
+design capacity low:     41 mAh
+capacity granularity 1:  41 mAh
+capacity granularity 2:  41 mAh
+model number:            Bat1
+serial number:           001
+battery type:            LION
+OEM info:                Pacifi
+present:                 yes
+capacity state:          ok
+charging state:          charged
+present rate:            0 mA
+remaining capacity:      4172 mAh
+present voltage:         16518 mV
