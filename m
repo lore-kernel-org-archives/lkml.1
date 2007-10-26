@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbXJZLpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXJZLqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760774AbXJZLpB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbXJZLom
+	id S1759905AbXJZLqY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJZLqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:44:42 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37126 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759583AbXJZLol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:44:41 -0400
-Date: Fri, 26 Oct 2007 13:45:10 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: =?utf-8?Q?P=C3=A1draig?= Brady <P@draigBrady.com>
-Cc: Michael Lothian <mike@fireburn.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Possibility of adding -march=native to x86
-Message-ID: <20071026114510.GD30533@stusta.de>
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <20071025202031.GU30533@stusta.de> <4721C44E.4000800@draigBrady.com>
+	Fri, 26 Oct 2007 07:46:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36959 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbXJZLqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 07:46:13 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Add an ERR_CAST() function to complement ERR_PTR and co. [try
+	#5.2]
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Fri, 26 Oct 2007 12:46:07 +0100
+Message-ID: <20071026114607.3698.52702.stgit@warthog.procyon.org.uk>
+In-Reply-To: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
+References: 20071025163357.5057.35399.stgit@warthog.procyon.org.uk
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4721C44E.4000800@draigBrady.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 11:41:18AM +0100, Pádraig Brady wrote:
-> Adrian Bunk wrote:
-> > On Thu, Oct 25, 2007 at 09:12:45PM +0100, Michael Lothian wrote:
-> >>> The MPENTIUM4 option does not only set -march=pentium4, it also enables
-> >>> several other options in arch/i386/Kconfig.cpu resulting in better
-> >>> performance.
-> >> How about an autodetect to set the right options here too using cpuid?
-> >>
-> >> With a warning of course that the code produced will be specifically
-> >> for the native cpu that it's compiled on.
-> > 
-> > If you don't know or can figure out yourself the CPU you have, you'd 
-> > better not compile your own kernel...
-> 
-> There also is the added variable of what your version of gcc supports.
-> The kernel gcc options would have to be the highest common factor.
-> See also http://www.pixelbeat.org/scripts/gcccpuopt
+Add an ERR_CAST() function to complement ERR_PTR and co. for the purposes of
+casting an error entyped as one pointer type to an error of another pointer
+type whilst making it explicit as to what is going on.
 
-arch/i386/Makefile.cpu already does more or less the same.
+This provides a replacement for the ERR_PTR(PTR_ERR(p)) construct.
 
-> Pádraig.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-cu
-Adrian
+ include/linux/err.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/include/linux/err.h b/include/linux/err.h
+index 1ab1d44..ec87f31 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -34,6 +34,19 @@ static inline long IS_ERR(const void *ptr)
+ 	return IS_ERR_VALUE((unsigned long)ptr);
+ }
+ 
++/**
++ * ERR_CAST - Explicitly cast an error-valued pointer to another pointer type
++ * @ptr: The pointer to cast.
++ *
++ * Explicitly cast an error-valued pointer to another pointer type in such a
++ * way as to make it clear that's what's going on.
++ */
++static inline void *ERR_CAST(const void *ptr)
++{
++	/* cast away the const */
++	return (void *) ptr;
++}
++
+ #endif
+ 
+ #endif /* _LINUX_ERR_H */
 
