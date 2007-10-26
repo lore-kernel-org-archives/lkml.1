@@ -1,125 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbXJZRuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbXJZRwC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757208AbXJZRuF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJZRtz
+	id S1756282AbXJZRwC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:52:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXJZRvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:49:55 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54345 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbXJZRty (ORCPT
+	Fri, 26 Oct 2007 13:51:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:36245 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbXJZRvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:49:54 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@ftp.linux.org.uk>,
-       <linux-kernel@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH] proc: Fix proc_kill_inodes to kill dentries on all proc superblocks
-Date: Fri, 26 Oct 2007 11:48:55 -0600
-Message-ID: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 13:51:54 -0400
+Date: Fri, 26 Oct 2007 19:51:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sylvain.meyer@worldonline.fr,
+       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@pol.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] Intel FB pixel clock calculation fix
+Message-ID: <20071026175143.GB1573@elf.ucw.cz>
+References: <m3ir6il3wl.fsf@maximus.localdomain> <20070910225221.f0eaf22c.akpm@linux-foundation.org> <m3veah75u6.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3veah75u6.fsf@maximus.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2007-09-11 14:18:57, Krzysztof Halasa wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> >> Intel framebuffer mis-calculated pixel clocks.
+> 
+> > and... what are the consequences of this miscalculation?  I need to know
+> > such things so that I can decide whether a change is needed in 2.6.23.  And
+> > 2.6.22.
+> 
+> The pixel clock (and thus both H and V sync) will be slower than
+> requested, so if you set the minimum allowed the display may not
+> sync. In case of really old CRT display it could theoretically
+> damage it.
+> 
+> I'm using it with PAL TV (using RGB input - SCART connector) and
+> the bug prevented it from working at all (TV requirements are more
+> strict and made the bug visible).
+> 
+> I think 2.6.22 would be overkill, .23 - not sure.
 
-It appears we overlooked support for removing generic proc files
-when we added support for multiple proc super blocks.  Handle
-that now.
-
-Since all of the relevant code is already inside of a spin_lock
-we can just grab the superblock lock and walk through all of
-the instances of proc superblocks.
-
-Heavy weight but it is simple and should work.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/proc/generic.c  |   38 +++++++++++++++++++++-----------------
- fs/proc/internal.h |    2 ++
- fs/proc/root.c     |    2 +-
- 3 files changed, 24 insertions(+), 18 deletions(-)
-
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 1bdb624..3906770 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -561,28 +561,32 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
- static void proc_kill_inodes(struct proc_dir_entry *de)
- {
- 	struct list_head *p;
--	struct super_block *sb = proc_mnt->mnt_sb;
-+	struct super_block *sb;
- 
- 	/*
- 	 * Actually it's a partial revoke().
- 	 */
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file * filp = list_entry(p, struct file, f_u.fu_list);
--		struct dentry * dentry = filp->f_path.dentry;
--		struct inode * inode;
--		const struct file_operations *fops;
--
--		if (dentry->d_op != &proc_dentry_operations)
--			continue;
--		inode = dentry->d_inode;
--		if (PDE(inode) != de)
--			continue;
--		fops = filp->f_op;
--		filp->f_op = NULL;
--		fops_put(fops);
-+	spin_lock(&sb_lock);
-+	list_for_each_entry(sb, &proc_fs_type.fs_supers, s_instances) {
-+		file_list_lock();
-+		list_for_each(p, &sb->s_files) {
-+			struct file * filp = list_entry(p, struct file, f_u.fu_list);
-+			struct dentry * dentry = filp->f_path.dentry;
-+			struct inode * inode;
-+			const struct file_operations *fops;
-+
-+			if (dentry->d_op != &proc_dentry_operations)
-+				continue;
-+			inode = dentry->d_inode;
-+			if (PDE(inode) != de)
-+				continue;
-+			fops = filp->f_op;
-+			filp->f_op = NULL;
-+			fops_put(fops);
-+		}
-+		file_list_unlock();
- 	}
--	file_list_unlock();
-+	spin_unlock(&sb_lock);
- }
- 
- static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 1820eb2..1b2b6c6 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -78,3 +78,5 @@ static inline int proc_fd(struct inode *inode)
- {
- 	return PROC_I(inode)->fd;
- }
-+
-+extern struct file_system_type proc_fs_type;
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index ec9cb3b..1f86bb8 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -98,7 +98,7 @@ static void proc_kill_sb(struct super_block *sb)
- 	put_pid_ns(ns);
- }
- 
--static struct file_system_type proc_fs_type = {
-+struct file_system_type proc_fs_type = {
- 	.name		= "proc",
- 	.get_sb		= proc_get_sb,
- 	.kill_sb	= proc_kill_sb,
+I don't think this is -stable kind of bug.
+									Pavel
 -- 
-1.5.3.rc6.17.g1911
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
