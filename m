@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765481AbXJZQpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbXJZQrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765481AbXJZQpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765292AbXJZQpJ
+	id S1763663AbXJZQrm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXJZQre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:45:09 -0400
-Received: from spock.bluecherry.net ([66.138.159.248]:3626 "EHLO
-	spock.bluecherry.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764354AbXJZQpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:45:05 -0400
-Date: Fri, 26 Oct 2007 12:44:41 -0400
-From: "Zephaniah E. Hull" <warp@aehallh.com>
-To: Ryan Lortie <desrt@desrt.ca>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-Message-ID: <20071026164441.GI26573@aehallh.com>
-Mail-Followup-To: Ryan Lortie <desrt@desrt.ca>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>,
-	linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-References: <20070609084800.GR6362@aehallh.com> <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com> <1193191094.32696.2.camel@moonpix.desrt.ca> <200710232333.08306.dmitry.torokhov@gmail.com> <20071024153508.GG26573@aehallh.com> <1193290654.15893.2.camel@moonpix.desrt.ca>
+	Fri, 26 Oct 2007 12:47:34 -0400
+Received: from lixom.net ([66.141.50.11]:40108 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754940AbXJZQre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 12:47:34 -0400
+Date: Fri, 26 Oct 2007 11:55:10 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: [PATCH] [POWERPC] Fix CONFIG_SMP=n build breaks
+Message-ID: <20071026165510.GA2323@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1193290654.15893.2.camel@moonpix.desrt.ca>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 01:37:34AM -0400, Ryan Lortie wrote:
-> On Wed, 2007-24-10 at 11:35 -0400, Zephaniah E. Hull wrote:
-> > We need a way to, at the absolute minimum, unbind the keyboard from the
-> > text console.  The current solution sucks for things like rfkill.
-> > 
-> > I'm not convinced that Ryan's fix is any better, but just saying that X
-> > should open the console and ignore the characters is simply not an
-> > option as far as I am concerned for X.
-> 
-> Can you think of any other way to separate things like rfkill/evdev from
-> things like the text console that's less hacky than my 'priority'
-> scheme?
+Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
 
-What we really want to give is exclusitivity verses other 'end users',
-as opposed the 'filters'.
+arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
+arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
+arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
+arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
 
-I'm defining an 'end user' to be a handler that cares about all the
-events from a device and plans on doing something with it.
 
-That would be the console layer for keyboards, /dev/input/mice and
-/dev/input/mouse<n> for mice, X for both of those, etc.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-A 'filter' cares about a key or two, and might even want to remove it
-from the stream, rfkill is a good example.
-
-Now, how do we design for that?  Not a clue right now, still thinking
-about it really.
-
-Zephaniah E. Hull.
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 151fd8b..222678f 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -158,6 +158,11 @@ static unsigned int iic_get_irq(void)
+ 	return virq;
+ }
+ 
++void iic_setup_cpu(void)
++{
++	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++}
++
+ #ifdef CONFIG_SMP
+ 
+ /* Use the highest interrupt priorities for IPI */
+@@ -166,11 +171,6 @@ static inline int iic_ipi_to_irq(int ipi)
+ 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
+ }
+ 
+-void iic_setup_cpu(void)
+-{
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
+-}
+-
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+ 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
+diff --git a/arch/powerpc/platforms/cell/spu_priv1_mmio.c b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+index 67fa724..e5e08ac 100644
+--- a/arch/powerpc/platforms/cell/spu_priv1_mmio.c
++++ b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+@@ -75,9 +75,11 @@ static u64 int_stat_get(struct spu *spu, int class)
+ 
+ static void cpu_affinity_set(struct spu *spu, int cpu)
+ {
++#ifdef CONFIG_SMP
+ 	u64 target = iic_get_target_id(cpu);
+ 	u64 route = target << 48 | target << 32 | target << 16;
+ 	out_be64(&spu->priv1->int_route_RW, route);
++#endif
+ }
+ 
+ static u64 mfc_dar_get(struct spu *spu)
