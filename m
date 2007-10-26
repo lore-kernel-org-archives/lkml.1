@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbXJZGiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbXJZGj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbXJZGiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 02:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXJZGiK
+	id S1756365AbXJZGj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 02:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXJZGjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:38:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50553 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXJZGiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:38:08 -0400
-Date: Fri, 26 Oct 2007 08:37:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Edward Hsu <edward_hsu@realtek.com.tw>, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc1 fails with lockup - /sbin/ifconfig / inet_ioctl() /
-	dev_close() / rtl8169_down()
-Message-ID: <20071026063733.GA12426@elte.hu>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu> <1193241191.14314.8.camel@localhost> <20071024155521.GA16690@elte.hu> <1193242267.6914.6.camel@twins> <1193378269.17910.4.camel@localhost>
+	Fri, 26 Oct 2007 02:39:49 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:28981 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbXJZGjs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:39:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KgmPWEdVVEmyQ2Ehv12yi3FQVuVehd5ZFd1QtfIy16Cav+j/vZC+H/n0GvlPiKx9uh/cbpj5s/Vibk6NXt4R/1o6/+20hONmGKoR8xclKzdTHElkxKFuNXE4XJwrr+uQiDHraSkGvx3A1ybGn6eZkFz+6YUGsvtVKbOUD8IGYhw=
+Message-ID: <86802c440710252339kcf5d46dh4602fff9ac8d3a66@mail.gmail.com>
+Date: Thu, 25 Oct 2007 23:39:47 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 5/6] x86: move i386 and x86_64 Kconfig files to x86 directory
+Cc: "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+In-Reply-To: <20071026061425.GA19022@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1193378269.17910.4.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20071025195644.GA14501@uranus.ravnborg.org>
+	 <20071025200546.GF14501@uranus.ravnborg.org>
+	 <86802c440710251853w1b33ea66j13181664cb5a30a0@mail.gmail.com>
+	 <20071025194653.46d39a13.rdunlap@xenotime.net>
+	 <86802c440710252251v1ad07c12x22254c1b4ed3ceee@mail.gmail.com>
+	 <20071026061425.GA19022@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/25/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > but
+> > in git
+> >
+> > http://git.kernel.org/?p=linux/kernel/git/sam/x86.git;a=commitdiff;h=d013a27cb79a01b324f93adb275162c244cca2de
+> >
+> > doesn't include that removing..
+>
+> That's the bug Kay noticed.
+> It should not have been removed so I fixedit and pushed out a new change.
+> Again - please see reply to Kay and read the [GIT PULL] mail.
 
-* Romano Giannetti <romanol@upcomillas.es> wrote:
+Good. that compiles without problem on x86_64.
 
-> > Does this help?
-> 
-> I tried this, but although I have the D-state processes, I cannot see 
-> any debug trace now. Results are at:
-> 
-> http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_3/
-> 
-> Can I try anything more? This is quite a show-stopper for me... and 
-> before trying to bisect 11Mbyte of patches...
+BTW:
+why not using Kconfig.x86_32 instead of Kconfig.i386?
 
-hm, from your log it appears that lockdep did not find anything, still 
-the hang does trigger.
+YH
 
-it's /sbin/ifconfig and inet_ioctl() / dev_close() / rtl8169_down() that 
-seems to be hanging. I've extracted the relevant backtrace below. I've 
-Cc:-ed people who might have a better idea about what's going on.
-
-	Ingo
-
- ------------------>
- ifconfig      S c0476f80     0  7226   7166
-        cbb67df0 00000046 c02f3f97 c0476f80 cbb67dc0 c01489d5 c2b81550 c2b8168c 
-        c1cf7b80 00000000 c30bd250 00000000 cbb67dd0 00000282 cbb67e00 c0476f80 
-        cbb67df0 c0132618 00004232 00000000 00000282 cbb67e00 00004232 f884e000 
- Call Trace:
-  [schedule_timeout+72/192] schedule_timeout+0x48/0xc0
-  [schedule_timeout_interruptible+21/32] schedule_timeout_interruptible+0x15/0x20
-  [msleep_interruptible+39/64] msleep_interruptible+0x27/0x40
-  [<f88422f0>] rtl8169_down+0xb0/0xd0 [r8169]
-  [<f88424cf>] rtl8169_close+0x1f/0xb0 [r8169]
-  [dev_close+71/96] dev_close+0x47/0x60
-  [dev_change_flags+125/384] dev_change_flags+0x7d/0x180
-  [devinet_ioctl+1225/1632] devinet_ioctl+0x4c9/0x660
-  [inet_ioctl+107/144] inet_ioctl+0x6b/0x90
-  [sock_ioctl+208/544] sock_ioctl+0xd0/0x220
-  [do_ioctl+40/128] do_ioctl+0x28/0x80
-  [vfs_ioctl+87/640] vfs_ioctl+0x57/0x280
-  [sys_ioctl+57/96] sys_ioctl+0x39/0x60
-  [sysenter_past_esp+95/165] sysenter_past_esp+0x5f/0xa5
-  =======================
+YH
