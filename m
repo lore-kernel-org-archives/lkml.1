@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXJZKsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbXJZKtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbXJZKsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 06:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXJZKsP
+	id S1756347AbXJZKtB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 06:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXJZKsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 06:48:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45173
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751283AbXJZKsP (ORCPT
+	Fri, 26 Oct 2007 06:48:53 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:44296 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbXJZKsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 06:48:15 -0400
-Date: Fri, 26 Oct 2007 03:48:16 -0700 (PDT)
-Message-Id: <20071026.034816.178511694.davem@davemloft.net>
-To: 12o3l@tiscali.nl
+	Fri, 26 Oct 2007 06:48:52 -0400
+Date: Fri, 26 Oct 2007 12:51:25 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-pcmcia@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/?] Unlock when sn_oemdata can't be extended
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <471F1C48.1000803@tiscali.nl>
-References: <471E9322.1030408@tiscali.nl>
-	<471F1C48.1000803@tiscali.nl>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071026105125.GA28769@enneenne.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH] PCMCIA: prevent auto insert during resume.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <12o3l@tiscali.nl>
-Date: Wed, 24 Oct 2007 12:19:52 +0200
+If a socket has been ejected before sleeping, at resume time it
+shouldn't be awaked.
 
->      Several unlocking issues
->      Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ drivers/pcmcia/cs.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-Some of these are wrong, for example:
+diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
+index 729e37d..d69de74 100644
+--- a/drivers/pcmcia/cs.c
++++ b/drivers/pcmcia/cs.c
+@@ -562,10 +562,8 @@ static int socket_resume(struct pcmcia_socket *skt)
+ 	skt->ops->init(skt);
+ 	skt->ops->set_socket(skt, &skt->socket);
+ 
+-	if (!(skt->state & SOCKET_PRESENT)) {
+-		skt->state &= ~SOCKET_SUSPEND;
+-		return socket_insert(skt);
+-	}
++	if (!(skt->state & SOCKET_PRESENT))
++		goto resume_exit;
+ 
+ 	ret = socket_setup(skt, SS_COMA, resume_delay);
+ 	if (ret == CS_SUCCESS) {
+@@ -599,6 +597,7 @@ static int socket_resume(struct pcmcia_socket *skt)
+ 		socket_shutdown(skt);
+ 	}
+ 
++resume_exit:
+ 	skt->state &= ~SOCKET_SUSPEND;
+ 
+ 	return CS_SUCCESS;
+-- 
+1.5.2.5
 
-> diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
-> index 817169e..b09c499 100644
-> --- a/net/bridge/netfilter/ebtables.c
-> +++ b/net/bridge/netfilter/ebtables.c
-> @@ -282,8 +282,10 @@ find_inlist_lock_noload(struct list_head *head, const char *name, int *error,
->  		return NULL;
->  
->  	list_for_each_entry(e, head, list) {
-> -		if (strcmp(e->name, name) == 0)
-> +		if (strcmp(e->name, name) == 0) {
-> +			mutex_unlock(mutex);
->  			return e;
-> +		}
->  	}
->  	*error = -ENOENT;
->  	mutex_unlock(mutex);
-
-Please look at the comment right about this function, it clearly
-explains that if the named object is found, the function returns
-with the mutex locked.
-
-The rest of the networking cases look OK, please just resubmit
-the correct networking cases to netdev@vger.kernel.org.
-
-Thanks.
