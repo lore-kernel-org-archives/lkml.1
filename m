@@ -1,36 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbXJZK5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbXJZK5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbXJZK5E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 06:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXJZK4v
+	id S1758252AbXJZK5Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 06:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXJZK44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 06:56:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39699
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751554AbXJZK4u (ORCPT
+	Fri, 26 Oct 2007 06:56:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:55013 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXJZK4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 06:56:50 -0400
-Date: Fri, 26 Oct 2007 03:56:52 -0700 (PDT)
-Message-Id: <20071026.035652.189993268.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: ryanr23@gmail.com, samuel@sortiz.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [2.6 patch] make ircomm_tty static
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071024162355.GZ30533@stusta.de>
-References: <20071024162355.GZ30533@stusta.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 26 Oct 2007 06:56:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eAaVwfAAmVR86WkVQ4cc56682aUNQAe1vnvi3R2xa9uZGt6AZt4FQtWym73/GDHdxFiy3O5zLipc21KIE74FTftDYcrXJEoHf4lADRLbzLZoWwk6zgKxcTPHL3YOW613jMIjaZOzzPKARg7kSxnikXzNu7FhaZFNWolohPf9+q4=
+Message-ID: <9783dadb0710260356g4ef94e3dvadf69d4d263c2361@mail.gmail.com>
+Date: Fri, 26 Oct 2007 12:56:52 +0200
+From: "David Gaarenstroom" <david.gaarenstroom@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 5/5]: [PCI]: Remove 3 incorrect MSI quirks.
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, chunhao.huang@hotmail.com, gregkh@suse.de,
+       htejun@gmail.com, brice.goglin@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, shane.huang@amd.com,
+       linux-ide@vger.kernel.org, brice@myri.com, mchan@broadcom.com
+In-Reply-To: <20071025.011716.123998434.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071025.011716.123998434.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Wed, 24 Oct 2007 18:23:55 +0200
+2007/10/25, David Miller <davem@davemloft.net>:
+>
+> Now that we have dealt with the real issue, in that some ATI SATA and
+> USB controllers needed the INTX_DISABLE quirk, we can remove these AMD
+> chipset global MSI disabling quirks.
 
-> ircomm_tty can now become static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+IMHO we should remove *all* former ATI "AMD" chipset global MSI
+disabling quirks... The whole idea was to sort things out once and for
+all. At least the RS480 quirk can be removed, now that the USB driver
+has the workaround for the SB400 southbridge USB. I suspect the same
+counts for the other ATI chipsets...
 
-Applied.
+To quote Greg K-H:
+"But for now, let's not take a band-aid that prevents others from
+working to solve the real issues here."
