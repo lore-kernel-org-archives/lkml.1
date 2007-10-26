@@ -1,116 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbXJZSe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765257AbXJZSfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764821AbXJZSe1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXJZSeQ
+	id S1765257AbXJZSfO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbXJZSe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:34:16 -0400
-Received: from flatline.sindominio.net ([82.144.4.26]:35249 "EHLO
-	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758958AbXJZSeO (ORCPT
+	Fri, 26 Oct 2007 14:34:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52250 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753956AbXJZSe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:34:14 -0400
-Date: Fri, 26 Oct 2007 20:34:19 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Parallel port: Convert port_mutex to the mutex API
-Message-ID: <20071026183419.GP9824@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 26 Oct 2007 14:34:56 -0400
+Date: Fri, 26 Oct 2007 11:33:05 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, Francois Romieu <romieu@fr.zoreil.com>,
+       Jeff Garzik <jeff@garzik.org>
+Cc: Romano Giannetti <romanol@upcomillas.es>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Edward Hsu <edward_hsu@realtek.com.tw>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] r8169: don't call napi_disable if not doing NAPI
+Message-ID: <20071026113305.57dea765@freepuppy.rosehill>
+In-Reply-To: <20071026175613.GA18770@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+	<1193232344.32208.0.camel@localhost>
+	<20071024142759.GA13657@elte.hu>
+	<1193241191.14314.8.camel@localhost>
+	<20071024155521.GA16690@elte.hu>
+	<1193242267.6914.6.camel@twins>
+	<1193378269.17910.4.camel@localhost>
+	<20071026063733.GA12426@elte.hu>
+	<20071026094833.539a69aa@freepuppy.rosehill>
+	<20071026175613.GA18770@elte.hu>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parallel port: Convert port_mutex to the mutex API
+Don't call napi_disable if not configured.
+And make sure that any misuse of napi_xxx in future fails
+with a compile error.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
---
-
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index c59e2a0..60aecf9 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -312,7 +312,7 @@ static ssize_t lp_write(struct file * file, const char __user * buf,
- 	if (copy_size > LP_BUFFER_SIZE)
- 		copy_size = LP_BUFFER_SIZE;
+--- a/drivers/net/r8169.c	2007-10-24 21:38:43.000000000 -0700
++++ b/drivers/net/r8169.c	2007-10-26 11:27:02.000000000 -0700
+@@ -392,7 +392,9 @@ struct rtl8169_private {
+ 	void __iomem *mmio_addr;	/* memory map physical address */
+ 	struct pci_dev *pci_dev;	/* Index of PCI device */
+ 	struct net_device *dev;
++#ifdef CONFIG_R8169_NAPI
+ 	struct napi_struct napi;
++#endif
+ 	spinlock_t lock;		/* spin lock flag */
+ 	u32 msg_enable;
+ 	int chipset;
+@@ -2989,13 +2991,16 @@ static void rtl8169_down(struct net_devi
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+-	unsigned int poll_locked = 0;
+ 	unsigned int intrmask;
  
--	if (down_interruptible (&lp_table[minor].port_mutex))
-+	if (mutex_lock_interruptible (&lp_table[minor].port_mutex))
- 		return -EINTR;
+ 	rtl8169_delete_timer(dev);
  
- 	if (copy_from_user (kbuf, buf, copy_size)) {
-@@ -399,7 +399,7 @@ static ssize_t lp_write(struct file * file, const char __user * buf,
- 		lp_release_parport (&lp_table[minor]);
- 	}
- out_unlock:
--	up (&lp_table[minor].port_mutex);
-+	mutex_unlock (&lp_table[minor].port_mutex);
+ 	netif_stop_queue(dev);
  
-  	return retv;
- }
-@@ -421,7 +421,7 @@ static ssize_t lp_read(struct file * file, char __user * buf,
- 	if (count > LP_BUFFER_SIZE)
- 		count = LP_BUFFER_SIZE;
++#ifdef CONFIG_R8169_NAPI
++	napi_disable(&tp->napi);
++#endif
++
+ core_down:
+ 	spin_lock_irq(&tp->lock);
  
--	if (down_interruptible (&lp_table[minor].port_mutex))
-+	if (mutex_lock_interruptible (&lp_table[minor].port_mutex))
- 		return -EINTR;
+@@ -3009,11 +3014,6 @@ core_down:
  
- 	lp_claim_parport_or_block (&lp_table[minor]);
-@@ -479,7 +479,7 @@ static ssize_t lp_read(struct file * file, char __user * buf,
- 	if (retval > 0 && copy_to_user (buf, kbuf, retval))
- 		retval = -EFAULT;
+ 	synchronize_irq(dev->irq);
  
--	up (&lp_table[minor].port_mutex);
-+	mutex_unlock (&lp_table[minor].port_mutex);
+-	if (!poll_locked) {
+-		napi_disable(&tp->napi);
+-		poll_locked++;
+-	}
+-
+ 	/* Give a racing hard_start_xmit a few cycles to complete. */
+ 	synchronize_sched();  /* FIXME: should this be synchronize_irq()? */
  
- 	return retval;
- }
-@@ -889,7 +889,7 @@ static int __init lp_init (void)
- 		lp_table[i].last_error = 0;
- 		init_waitqueue_head (&lp_table[i].waitq);
- 		init_waitqueue_head (&lp_table[i].dataq);
--		init_MUTEX (&lp_table[i].port_mutex);
-+		mutex_init (&lp_table[i].port_mutex);
- 		lp_table[i].timeout = 10 * HZ;
- 	}
- 
-diff --git a/include/linux/lp.h b/include/linux/lp.h
-index 7059b6b..0df024b 100644
---- a/include/linux/lp.h
-+++ b/include/linux/lp.h
-@@ -99,7 +99,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/wait.h>
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
- 
- /* Magic numbers for defining port-device mappings */
- #define LP_PARPORT_UNSPEC -4
-@@ -145,7 +145,7 @@ struct lp_struct {
- #endif
- 	wait_queue_head_t waitq;
- 	unsigned int last_error;
--	struct semaphore port_mutex;
-+	struct mutex port_mutex;
- 	wait_queue_head_t dataq;
- 	long timeout;
- 	unsigned int best_mode;
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-       The yellow ships hung in the air just like bricks dont do
-                 (The Hitch-Hiker's Guide to the Galaxy)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
