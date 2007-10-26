@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbXJZNsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbXJZNzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760663AbXJZNsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 09:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXJZNsW
+	id S1759487AbXJZNzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 09:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXJZNzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 09:48:22 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:36055
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbXJZNsV (ORCPT
+	Fri, 26 Oct 2007 09:55:47 -0400
+Received: from ro-out-1112.google.com ([72.14.202.177]:51307 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752147AbXJZNzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 09:48:21 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 09:48:21 EDT
-Message-ID: <4721EEA8.1060601@roinet.com>
-Date: Fri, 26 Oct 2007 09:42:00 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 26 Oct 2007 09:55:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ssKyvg0kpMT3xA6nQ4krb0lIoBV1k9hKIowE7rv6zVrSfMkYkrmcPrjoD8pQrvB72DqYSf4VYYRy/+5FmkvEwN/G+djRHPNkSa1bOkivrRQ3m6cigysG5UxLbHzikc2EjV2uI7ub12aEkbfKZn2QKD78TFIoNFRo137SyPj9H0Q=
+Date: Fri, 26 Oct 2007 21:50:54 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PROBLEM] UM does not compile on i386
+Message-ID: <20071026135054.GC3953@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <84144f020710260558o16238b54y89936bcfc18a0e6c@mail.gmail.com>
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, Bill Davidsen <davidsen@tmr.com>,
-       Adrian Bunk <bunk@kernel.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, saw@saw.sw.com.sg
-Subject: Re: [2.6.25 patch] the planned eepro100 removal
-References: <20071024162440.GN30533@stusta.de> <4720FFAA.9080709@tmr.com> <47211A67.2090201@pobox.com> <47211C08.2040601@intel.com>
-In-Reply-To: <47211C08.2040601@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020710260558o16238b54y89936bcfc18a0e6c@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Jeff Garzik wrote:
->> Bill Davidsen wrote:
->>> Adrian Bunk wrote:
->>>> This patch contains the planned removal of the eepro100 driver.
->>>>
->>> Are the e100 people satisfied that e100 now handles all known cases? I 
->> Nope.  There are still e100 work outstanding that means we cannot kill
->> eepro100.
-> 
-> Agreed, there is still a receive unit hang in the last version that I got from
-> David Acker.
-> 
-> Auke
-Yes, I have not had much time to work on it.  :-(
+On Fri, Oct 26, 2007 at 03:58:04PM +0300, Pekka Enberg wrote:
+>Hi,
+>
+>The current Linus' git does not compile on i386 for UM defconfig:
+>
+>  CC      init/do_mounts.o
+>In file included from init/do_mounts.c:19:
+>init/do_mounts.h: In function 'bstat':
+>init/do_mounts.h:25: error: storage size of 'stat' isn't known
+>init/do_mounts.h:25: warning: unused variable 'stat'
+>init/do_mounts.h:33: warning: control reaches end of non-void function
+>make[1]: *** [init/do_mounts.o] Error 1
+>make: *** [init] Error 2
+>
+>                                      Pekka
 
-In testing, I was also able to get crashes which I believe are from receive skb corruption.
+Fixed by Balbir Singh[1].
 
-It doesn't ever appear in our normal use testing, just when using pktgen against it while it uses pktgen out.  Sadly 
-this has pushed it down the slippery priority slope.
+[1] http://lkml.org/lkml/2007/10/25/181
 
-I am sorry if I am holding things up.  I will try to put some more time in on this issue as soon as I can.
-
--Ack
+-- 
+May the Source Be With You.
