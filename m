@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXJZRFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765533AbXJZRFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbXJZRFF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXJZREz
+	id S1765533AbXJZRFo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXJZRFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:04:55 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56961 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750849AbXJZREy (ORCPT
+	Fri, 26 Oct 2007 13:05:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52947 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757761AbXJZRFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:04:54 -0400
-Date: Fri, 26 Oct 2007 10:04:51 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071026100451.c0742740.pj@sgi.com>
-In-Reply-To: <1193413054.5032.20.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<20071025192945.82962eea.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
-	<20071025201455.acb4e72c.pj@sgi.com>
-	<alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
-	<1193413054.5032.20.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Oct 2007 13:05:34 -0400
+Message-ID: <47221D2A.2050304@zytor.com>
+Date: Fri, 26 Oct 2007 10:00:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Huang, Ying" <ying.huang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+ runtime service support
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>	<alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>	<1193360591.23935.212.camel@caritas-dev.intel.com> <20071026123128.4fbe9568@the-village.bc.nu>
+In-Reply-To: <20071026123128.4fbe9568@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> Paul:  what do you think about subsetting the cpuset.txt into a man page
-> or 2 that can be referenced by other man pages' See Also sections?
+Alan Cox wrote:
+>>> Again, these are wrappers to access EFI and not Windows.
+>> EFI uses the Windows x86_64 calling convention. The lin2win may be a
+>> more general naming convention that can be used for some other code (the
+>> NDISwrapper?) in the future. Do you agree?
+> 
+> The SYSV description is wrong as well. SYSV has no calling convention. I
+> think you mean iABI or iBCS2 ?
+> 
+> Whats wrong with following the pattern of other calls like syscall(...)
+> and just having eficall() ?
 
-Oh dear --- looking back in my work queue I have with my employer, I
-see I have a task that is now over a year old, still unfinished, to
-provide man pages for cpusets to Michael Kerrisk" <mtk-manpages@gmx.net>
+Either that (which is basically his lin2win6), or use wrapper-generators 
+like we used to do for system calls -- the latter will produce more 
+efficient code.  I don't think it matters.
 
-So, yes, I agree this would be a "good thing".  I just haven't gotten a
-round to it (http://www.quantumenterprises.co.uk/roundtuit/index.htm)
-yet.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+	-hpa
