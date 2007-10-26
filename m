@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbXJZUuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXJZU4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763926AbXJZUuZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbXJZUuL
+	id S1761417AbXJZU4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbXJZU4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:50:11 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49016 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754063AbXJZUuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:50:09 -0400
-Date: Fri, 26 Oct 2007 22:52:44 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Message-ID: <20071026205244.GD19019@enneenne.com>
-References: <20071026105125.GA28769@enneenne.com> <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com> <20071026183740.GF4321@flint.arm.linux.org.uk>
+	Fri, 26 Oct 2007 16:56:37 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:58583 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753607AbXJZU4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:56:37 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] error: implicit declaration of function `get_softnet_dma'
+Date: Fri, 26 Oct 2007 23:55:35 +0300
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20071026183740.GF4321@flint.arm.linux.org.uk>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Message-Id: <200710262355.36890.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 07:37:40PM +0100, Russell King wrote:
-> On Fri, Oct 26, 2007 at 07:18:57PM +0200, Rodolfo Giometti wrote:
-> > On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
-> > > Or that - probably a sysfs attribute on the pcmcia socket would be
-> > > better.
-> > 
-> > Ok, but how can I do it? Can you please suggest to me the name of such
-> > attribute and where should I add it into the PCMCIA code? Also, which
-> > should be the default dehaviour? ;)
-> 
-> My consulting rates are...  Seriously, if you want me to write a patch
-> for you, you have to pay for that.
+Hi;
 
-O_o You misunderstand me... I just like some hints about to do it by
-myself.
+Following trivial patch corrects 
 
-Since (most probably) you are the one which should accept or deny my
-patch I simple asked to you how I should do the job in order to avoid
-a reject! :)
+caglar@zangetsu linux-2.6 $ make
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  LD      net/ipv6/built-in.o
+  CC [M]  net/ipv6/tcp_ipv6.o
+net/ipv6/tcp_ipv6.c: In function `tcp_v6_rcv':
+net/ipv6/tcp_ipv6.c:1736: error: implicit declaration of function `get_softnet_dma'
+net/ipv6/tcp_ipv6.c:1736: warning: assignment makes pointer from integer without a cast
+make[2]: *** [net/ipv6/tcp_ipv6.o] Hata 1
+make[1]: *** [net/ipv6] Hata 2
+make: *** [net] Hata 2
 
-The name of the attribute, which should be its default behaviour and
-an hint where should I put the code (just a file name or a function
-one).
+compiliation error for current Linus's git tree
 
-Thanks in advance,
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
-Rodolfo
-
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index 06fa4ba..8520802 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -59,6 +59,7 @@
+ #include <net/snmp.h>
+ #include <net/dsfield.h>
+ #include <net/timewait_sock.h>
++#include <net/netdma.h>
+ 
+ #include <asm/uaccess.h>
+ 
+Cheers
 -- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
