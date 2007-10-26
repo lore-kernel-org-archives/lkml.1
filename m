@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765029AbXJZUkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXJZUkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765029AbXJZUkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbXJZUjr
+	id S1765287AbXJZUkr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764796AbXJZUjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:39:47 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:1149 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757327AbXJZUjp (ORCPT
+	Fri, 26 Oct 2007 16:39:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:44399 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763539AbXJZUju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:39:45 -0400
-Date: Fri, 26 Oct 2007 22:39:42 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with
- ACPI Operation Region resources
-Message-ID: <20071026223942.6dbfebe0@hyperion.delvare>
-In-Reply-To: <200710260709.20716.bjorn.helgaas@hp.com>
-References: <1193236319.4590.225.camel@queen.suse.de>
-	<200710252159.11594.bjorn.helgaas@hp.com>
-	<1193395520.4590.349.camel@queen.suse.de>
-	<200710260709.20716.bjorn.helgaas@hp.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 16:39:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=sOk/zT31qVPAvRyB+Y3ChDX3K/UZTek/iM10m81ESznGjN0a6z7uey75C8pSSubfG0E7CKuOgME7ltPpFcyWtoG+jxzTgw3AarmF68+ws3dy9HurNo7vLAfsMqSOLEKuB/wMA6arKqgAstboKSusCyazj38U7GfzmgO+50It7Os=
+Date: Sat, 27 Oct 2007 00:39:41 +0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, willy@linux.intel.com,
+       Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: [PATCH 2/5] Use macros instead of TASK_ flags
+Message-ID: <20071026203941.GA15427@martell.zuzino.mipt.ru>
+References: <11932286982175-git-send-email-matthew@wil.cx> <1193228698799-git-send-email-matthew@wil.cx> <20071026114515.6e90222c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026114515.6e90222c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bjorn,
-
-On Fri, 26 Oct 2007 07:09:19 -0600, Bjorn Helgaas wrote:
-> On Friday 26 October 2007 4:45:20 am Thomas Renninger wrote:
-> > Maybe the list set up by this patch set should be similarly exported
-> > like /proc/ioports /proc/iomem
-> > to where ever appropriate (maybe /sys/devices/system/acpi/opreg_io
-> > and /sys/devices/system/acpi/opreg_mem?) to get a better overview what
-> > kind of devices are served by the Op regions on different machines.
+On Fri, Oct 26, 2007 at 11:45:15AM -0700, Andrew Morton wrote:
+> On Wed, 24 Oct 2007 08:24:55 -0400
+> Matthew Wilcox <matthew@wil.cx> wrote:
 > 
-> I want to try hard to avoid making ACPI a special case in this way.
-> The current /proc/io{ports,mem} contains reservations for everything
-> else.  I'd hate to have to look two places just because of ACPI.
+> > Abstracting away direct uses of TASK_ flags allows us to change the
+> > definitions of the task flags more easily.
 
-I agree. I consider the patches Thomas and myself just posted as a
-temporary workaround (even though we can't say how long this
-"temporary" will last). Ideally, we should register the I/O ports
-declared in ACPI OpRegions - just not now as it would break too many
-drivers. Time we tell how "clean" we manage to go.
+> > --- a/arch/ia64/kernel/perfmon.c
+> > +++ b/arch/ia64/kernel/perfmon.c
+> > @@ -2631,7 +2631,7 @@ pfm_task_incompatible(pfm_context_t *ctx, struct task_struct *task)
+> >  	 */
+> >  	if (task == current) return 0;
+> >  
+> > -	if ((task->state != TASK_STOPPED) && (task->state != TASK_TRACED)) {
+> > +	if (!is_task_stopped_or_traced(task)) {
+> >  		DPRINT(("cannot attach to non-stopped task [%d] state=%ld\n", task_pid_nr(task), task->state));
+> >  		return -EBUSY;
+> >  	}
+> > @@ -4792,7 +4792,7 @@ recheck:
+> >  	 * the task must be stopped.
+> >  	 */
+> >  	if (PFM_CMD_STOPPED(cmd)) {
+> > -		if ((task->state != TASK_STOPPED) && (task->state != TASK_TRACED)) {
+> > +		if (!is_task_stopped_or_traced(task)) {
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--- 
-Jean Delvare
+I think this is horrible. Are you going to add full blown static inline
+function for every combination of state tests?
+
+> I have dropped this hunk because the file which it is patching is removed
+> by the (newly-added-to-mm) git-perfmon.patch.  I can't immediately find any
+> corresponding code which was readded in a different place by git-perfmon so
+> it looks like this code was simply zapped.
+> 
+> Of course, if git-perfmon doesn't merge in 2.6.25 then I'll end up merging
+> your patch but accidentally leaving 2.6.25's arch/ia64/kernel/perfmon.c
+> unpatched.  It looks like that'll be non-fatal.
+> 
+> This isn't going to go very well and I might end up having to drop this
+> whole patch series and ask for a refactored one.  We'll see.
