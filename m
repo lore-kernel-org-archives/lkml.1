@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbXJZRzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbXJZR4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbXJZRzv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJZRzo
+	id S1760541AbXJZR4V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbXJZR4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:55:44 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:60636 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbXJZRzn (ORCPT
+	Fri, 26 Oct 2007 13:56:03 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32984 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754682AbXJZR4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:55:43 -0400
-X-Greylist: delayed 944 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 13:55:43 EDT
-Message-ID: <4722265C.7050907@nortel.com>
-Date: Fri, 26 Oct 2007 11:39:40 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Fri, 26 Oct 2007 13:56:01 -0400
+Date: Fri, 26 Oct 2007 10:55:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <20071026174409.GA1573@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0710261052530.15895@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0709101220001.24735@schroedinger.engr.sgi.com>
+ <1189454145.21778.48.camel@twins> <Pine.LNX.4.64.0709101318160.25407@schroedinger.engr.sgi.com>
+ <1189457286.21778.68.camel@twins> <20071026174409.GA1573@elf.ucw.cz>
 MIME-Version: 1.0
-To: Andrew Haley <aph@redhat.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, davids@webmaster.com,
-       "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       "Kleen, Andi" <ak@suse.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-References: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com> <200710260922.54428.nickpiggin@yahoo.com.au> <18209.54926.290448.957962@zebedee.pink>
-In-Reply-To: <18209.54926.290448.957962@zebedee.pink>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Oct 2007 17:39:44.0001 (UTC) FILETIME=[31CE1710:01C817F7]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Haley wrote:
+On Fri, 26 Oct 2007, Pavel Machek wrote:
 
-> We're listening, really.  It's unacceptable that gcc should break
-> code.
+> > And, _no_, it does not necessarily mean global serialisation. By simply
+> > saying there must be N pages available I say nothing about on which node
+> > they should be available, and the way the watermarks work they will be
+> > evenly distributed over the appropriate zones.
+> 
+> Agreed. Scalability of emergency swapping reserved is simply
+> unimportant. Please, lets get swapping to _work_ first, then we can
+> make it faster.
 
-In that case a conversion of a conditional branch to an unconditional 
-write to a visible variable is not an acceptable behaviour.  Aside from 
-the kernel issues, it would break any number of threaded userspace apps.
+Global reserve means that any cpuset that runs out of memory may exhaust 
+the global reserve and thereby impact the rest of the system. The 
+emergencies that are currently localized to a subset of the system and 
+may lead to the failure of a job may now become global and lead to the 
+failure of all jobs running on it.
 
-As was mentioned elsewhere, it's akin to sprinkling
-
-int j = i; i = j;
-
-throughout the code.  If "i" is accessed by multiple threads, this is 
-not allowed unless a lock is held.
-
-Chris
+But Peter mentioned that he has some way of tracking the amount of memory 
+used in a certain context (beancounter?) which would address the issue.
