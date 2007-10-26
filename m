@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbXJZOZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXJZO2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbXJZOZb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 10:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbXJZOZY
+	id S1753507AbXJZO2o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 10:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXJZO2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 10:25:24 -0400
-Received: from web32612.mail.mud.yahoo.com ([68.142.207.239]:46524 "HELO
-	web32612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750865AbXJZOZX (ORCPT
+	Fri, 26 Oct 2007 10:28:36 -0400
+Received: from queueout04-winn.ispmail.ntl.com ([81.103.221.58]:35038 "EHLO
+	queueout04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751414AbXJZO2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 10:25:23 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 10:25:22 EDT
-X-Mailer: YahooMailRC/814.06 YahooMailWebService/0.7.152
-Date: Fri, 26 Oct 2007 07:18:41 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: 2.6.24-rc1: First impressions
-To: linux-kernel@vger.kernel.org
-Cc: Peter zijlstra <a.p.zijlstra@chello.nl>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
+	Fri, 26 Oct 2007 10:28:35 -0400
+X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 10:28:35 EDT
+Message-Id: <200710261413.l9QEDEQn025585@littlepinkcloud.COM>
+X-Sieve: CMU Sieve 2.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <796505.25770.qm@web32612.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <200710260922.54428.nickpiggin@yahoo.com.au>
+References: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com>
+	<200710260922.54428.nickpiggin@yahoo.com.au>
+X-Mailer: VM 7.19 under Emacs 22.0.93.1
+From: Andrew Haley <aph@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: davids@webmaster.com, "Torvalds, Linus" <torvalds@linux-foundation.org>,
+       "Kleen, Andi" <ak@suse.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Is gcc thread-unsafe?
+Date: Fri, 26 Oct 2007 12:59:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi ,
+[ I had to resend this message.  Sorry if you received two copies. ]
 
- just to give some feedback on 2.6.24-rc1. For some time I am tracking IO/writeback problems that hurt system responsiveness big-time. I tested Peters stuff together with Fenguangs additions and it looked promising. Therefore I was very happy to see Peters stuff going into 2.6.24 and waited eagerly for rc1. In short, I am impressed. This really looks good. IO throughput is great and I could not reproduce the responsiveness problems so far.
+Nick Piggin writes:
+ > Can you retain cc list, please?
+ > 
+ > On Friday 26 October 2007 07:42, David Schwartz wrote:
 
- Below are a some numbers of my brute-force I/O tests that I can use to bring responsiveness down. My platform is a HP/DL380g4, dual CPUs, HT-enabled, 8 GB Memory, SmartaArray6i controller with 4x72GB SCSI disks as RAID5 (battery protected writeback cahe enabled) and gigabit networking (tg3). User space is 64-bit RHEL4.3
+ > > 	I asked a collection of knowledgeable people I know about the
+ > > issue. The consensus is that the optimization is not permitted in
+ > > POSIX code but that it is permitted in pure C code. The basic
+ > > argument goes like this:
+ > >
+ > > 	To make POSIX-compliant code even possible, surely
+ > > optimizations that add writes to variables must be
+ > > prohibited. That is -- if POSIX prohibits writing to a variable
+ > > in certain cases only the programmer can detect, then a
+ > > POSIX-compliant compiler cannot write to a variable except where
+ > > explicitly told to do so. Any optimization that *adds* a write to
+ > > a variable that would not otherwise occur *must* be prohibited.
 
- I am basically doing copies using "dd" with 1MB blocksize. Local Filesystem ist ext2 (noatime). IO-Scheduler is dealine, as it tends to give best results. NFS3 Server is a Sun/T2000/Solaris10. The tests are:
+I don't think that POSIX is quite as explicit as that.  See
+http://www.hpl.hp.com/techreports/2004/HPL-2004-209.pdf
 
-dd1 - copy 16 GB from /dev/zero to local FS
-dd1-dir - same, but using O_DIRECT for output
-dd2/dd2-dir - copy 2x7.6 GB in parallel from /dev/zero to local FS
-dd3/dd3-dir - copy 3x5.2 GB in parallel from /dev/zero lo local FS
-net1 - copy 5.2 GB from NFS3 share to local FS
-mix3 - copy 3x5.2 GB from /dev/zero to local disk and two NFS3 shares
+ > > 	Otherwise, it is literally impossible to comply with the POSIX
+ > > requirement that concurrent modifications and reads to shared
+ > > variables take place while holding a mutex.
+ > 
+ > Now all you have to do is tell this to the gcc developers ;)
 
- I did the numbers for 2.6.19.2, 2.6.22.6 and 2.6.24-rc1. All units are MB/sec.
+We're listening, really.  It's unacceptable that gcc should break
+code.
 
-test           2.6.19.2     2.6.22.6    2.6.24.-rc1
-----------------------------------------------------------------
-dd1           28            50                96
-dd1-dir     88                88                86
-dd2          2x16.5       2x11            2x44.5
-dd2-dir      2x44          2x44            2x43
-dd3            3x9.8        3x8.7         3x30
-dd3-dir      3x29.5      3x29.5        3x28.5
-net1            30-33         50-55         37-52
-mix3           17/32         25/50        96/35 (disk/combined-network)
+However, fixing it is hard.  The best plan is probably to implement
+(part of) the proposed standard memory model, and that requires
+careful consideration.  We could in theory simply disable this
+particular optimization, but that probably isn't a good idea on its
+own because other optimizations might well break other code in a
+similar way.  We need to have a very close look at the thread-safe
+memory model in order to determine where we do things that might
+break.
 
+An official standard containing this is still at least two years out.
 
- Some observations:
+Andrew.
 
-- single threaded disk speed really went up wit 2.6.24-rc1. It is now even better than O_DIRECT
-- O_DIRECT took a slight hit compared to the older kernels. Not an issue for me, but maybe others care
-- multi threaded non O_DIRECT scales for the first time ever !!!! Almost no loss compared to single threaded !!!!!!
-- network throughput took a hit from 2.6.22.6 and is not as repeatable. Still better than 2.6.19.2 though
-
- What actually surprises me most is the big performance win on the single threaded non O_DIRECT dd test. I did not expect that :-) What I had hoped for was of course the scalability.
-
- So, this looks great and most likely I will push 2.6.24 (maybe .X) into my environment.
-
-Happy weekend
-Martin
-
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
-
-
+-- 
+Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
+Registered in England and Wales No. 3798903
