@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXJZAiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXJZAlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbXJZAiI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXJZAh5
+	id S1760620AbXJZAlB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXJZAkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:37:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51055 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbXJZAh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:37:56 -0400
-Date: Fri, 26 Oct 2007 01:37:53 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: device-mapper development <dm-devel@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] [PATCH] dm: noflush resizing (0/3)
-Message-ID: <20071026003753.GO10006@agk.fab.redhat.com>
-Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <471FB83D.4060307@ce.jp.nec.com> <20071025012456.GK10006@agk.fab.redhat.com> <4720A59A.8060001@ce.jp.nec.com> <20071025144833.GN10006@agk.fab.redhat.com> <4720E479.4020906@ce.jp.nec.com>
+	Thu, 25 Oct 2007 20:40:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50599 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752079AbXJZAkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 20:40:51 -0400
+Date: Fri, 26 Oct 2007 01:43:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mike Waychison <mikew@google.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
+Message-ID: <20071026014325.14f5fe1c@the-village.bc.nu>
+In-Reply-To: <47213668.50907@google.com>
+References: <20071025230758.945535769@crlf.corp.google.com>
+	<20071026012217.4cc30390@the-village.bc.nu>
+	<47213668.50907@google.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4720E479.4020906@ce.jp.nec.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 02:46:17PM -0400, Jun'ichi Nomura wrote:
-> So as far as I understand, the point is:
->   1. it's preferable to resize inode after the resume, if possible
+> I found Chris's comment about negative block numbers, I'll send a patch 
+> out for that.
+> 
+> You mentioned back in 99 about racing with ftruncate.  Is it sufficient 
+> to mutex_lock(i_mutex) and down_read(i_alloc_sem)?
 
-Not quite - I'm not expressing a preference yet.
+One for the fs guys. That code has changed far beyond anything I
+understand any more 8)
 
-I'm saying the patches you presented were one option to resolve the
-problem, but it was not obvious to me they are the only option and I
-wanted to see a deeper analysis (keeping in mind the general direction
-I want the device-mapper code to be heading in).
-
-In other words, an analysis that draws out the conflict at the heart of
-this problem, and whether the problem we have with this locking is
-intrinsic to the current design or just a matter of implementation that
-can be fixed with some re-ordering or tweaks to the usage rules or types
-of the locks.
-
-Alasdair
--- 
-agk@redhat.com
