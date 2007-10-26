@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765454AbXJZUlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765517AbXJZUlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765454AbXJZUlL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764668AbXJZUkK
+	id S1765517AbXJZUlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765292AbXJZUkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:40:10 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:44593 "EHLO atlrel7.hp.com"
+	Fri, 26 Oct 2007 16:40:46 -0400
+Received: from mga02.intel.com ([134.134.136.20]:56365 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764618AbXJZUkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:40:07 -0400
-Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: rientjes@google.com, akpm@linux-foundation.org, ak@suse.de,
-       clameter@sgi.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20071026105431.77d56253.pj@sgi.com>
-References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
-	 <20071025230409.81f20ed3.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710260204590.8261@chino.kir.corp.google.com>
-	 <20071026025634.0f32e1e2.pj@sgi.com> <20071026101805.df3ebfda.pj@sgi.com>
-	 <1193420627.5032.46.camel@localhost>  <20071026105431.77d56253.pj@sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 26 Oct 2007 16:39:09 -0400
-Message-Id: <1193431149.5032.60.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1753325AbXJZUkn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:40:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,335,1188802800"; 
+   d="scan'208";a="256419592"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [RFC PATCH 0/2] Fix linux/swap.h build wart
+Date: Fri, 26 Oct 2007 13:38:12 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A02C9D4B6@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20071026192548.GA9174@c2.user-mode-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC PATCH 0/2] Fix linux/swap.h build wart
+Thread-Index: AcgYC3aj/sIWVb66SROq7DEjvjtONQAAh3fg
+References: <20071026192548.GA9174@c2.user-mode-linux.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Jeff Dike" <jdike@addtoit.com>, "LKML" <linux-kernel@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>, <linux-arch@vger.kernel.org>
+X-OriginalArrivalTime: 26 Oct 2007 20:38:13.0055 (UTC) FILETIME=[20E60CF0:01C81810]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 10:54 -0700, Paul Jackson wrote:
-> > Will it handle the case of MPOL_INTERLEAVE policy on a shm segment that
-> > is mapped by tasks in different, possibly disjoint, cpusets.  Local
-> > allocation does, and my patch does.  That was one of the primary
-> > goals--to address an issue that Christoph has with shared policies.
-> > cpusets really muck these up!
-> 
-> It probably won't handle that.  I don't get along too well with shmem.
+> These patches propose to break the recursion instead by removing the
+> linux/pagemap.h -> linux/highmem.h inclusion.  I'd like to know
+> whether there are any fundamental reasons that this include should be
+> preserved.
 
-Not surprising :).  shmem doesn't get along too well with cpusets.
+Not fundamental reasons, but these patches break the ia64 build for most
+configs with:
 
-> 
-> Can you to an anti-shmem bigot how MPOL_INTERLEAVE should work with
-         ^ explain ?
-> shmem segments mapped in diverse ways by different tasks in different
-> cpusets?  What would be the key attribute(s) of a proper solution?
-> Maybe if we keep it simple enough, I can avoid mucking it up too much
-> this time around.
+In file included from kernel/futex.c:59:
+include/asm/futex.h: In function `futex_atomic_op_inuser':
+include/asm/futex.h:62: error: implicit declaration of function `pagefault_disable'
+include/asm/futex.h:86: error: implicit declaration of function `pagefault_enable'
+make[1]: *** [kernel/futex.o] Error 1
 
-Personally, I'm of the opinion "if it hurts when you do that, don't do
-that".  I have uses for shared memory and mempolicies on the same, but
-they don't involve sharing shmem [nor mapped files] between cpusets nor
-dynamically changing cpusets.  So, my approach would be to document the
-issues clearly [another reason I'd like to see cpuset man pages] and
-make sure that folks can't accidentally trip over them.  But, I suppose
-all the documentation in the world won't stop some people from hurting
-themselves.  As my grandmother used to tell me, "children and fools
-shouldn't play with sharp tools."  [Then she'd always ask me, "Which one
-are you?"  I guess time has answered that question...]
+Adding an include of <linux/uaccess.h> to kernel/futex.c is sufficient (but
+not necessarily right) to unbreak this.
 
-Lee
+A few configs also fail with:
+mm/migrate.c: In function `migrate_page_copy':
+mm/migrate.c:359: error: implicit declaration of function `copy_highpage'
+make[1]: *** [mm/migrate.o] Error 1
 
+Making mm/migrate.c include <linux/highmem.h> fixes this one.
+
+-Tony
