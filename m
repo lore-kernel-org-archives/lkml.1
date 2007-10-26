@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXJZVfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXJZVgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbXJZVfs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763194AbXJZVfi
+	id S932169AbXJZVgZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759846AbXJZVgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:35:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41911 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759587AbXJZVfh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:35:37 -0400
-Date: Fri, 26 Oct 2007 14:35:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
-Message-Id: <20071026143525.b9218ed7.akpm@linux-foundation.org>
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>
-References: <20071019075443.GA6407@havoc.gtf.org>
-	<20071019075808.GH6407@havoc.gtf.org>
-	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 26 Oct 2007 17:36:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41279 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753009AbXJZVgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:36:15 -0400
+Date: Fri, 26 Oct 2007 17:35:50 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Martin Bligh <mbligh@mbligh.org>, marcelo@kvack.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com, linux-mm@kvack.org
+Subject: Re: OOM notifications
+Message-ID: <20071026173550.333d8eb4@bree.surriel.com>
+In-Reply-To: <20071026141112.18af0fa6.akpm@linux-foundation.org>
+References: <20071018201531.GA5938@dmt>
+	<20071026140201.ae52757c.akpm@linux-foundation.org>
+	<472256AB.6060109@mbligh.org>
+	<20071026141112.18af0fa6.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Oct 2007 09:00:23 -0400
-"Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
+On Fri, 26 Oct 2007 14:11:12 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> ACK with comment ...
+> Sure, but in terms of high-level userspace interface, being able to
+> select() on a group of priority buckets (spread across different
+> nodes, zones and cgroups) seems a lot more flexible than any
+> signal-based approach we could come up with.
 
-Please don't top-post and then include 65 kbytes of unneeded goop.
+Absolutely, the process needs to be able to just poll or
+select on a file descriptor from the process main loop.
 
-> This API changed in 2.4.23 switching to irqreturn_t, and 2.6.19 dropping
-> the struct_pt_regs argument, this is yet another API change in the same
-> function. The last one came with no clues to differentiate except kernel
-> version (for those of us that are required to produce updated
-> back-ported driver modules once this patch becomes a legacy). I am
-> *praying* that this API change is clean across 2.6.24 and add my voice
-> to all to ACK this clearly!
-> 
+I am not convinced that the magic of NUMA memory distribution
+and NUMA memory pressure should be visible to userspace.  Due
+to the thundering herd problem we cannot wake up all of the
+processes that select on the filedescriptor at the same time
+anyway, so we can (later on) add NUMA magic to the process
+selection logic in the kernel to only wake up processes on
+the right NUMA nodes.
 
-That was a goofup.  I proposed that we should add a #define
-TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the patch,
-but it got lost.
+The initial patch probably does not need that.
 
-I agree it would be a kind thing to do in this case.
-
-Not that I ever want to see these patches again ;)
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
