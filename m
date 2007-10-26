@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXJZEOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbXJZEPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbXJZEOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 00:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXJZEOd
+	id S1758308AbXJZEPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 00:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXJZEPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 00:14:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52726 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbXJZEOd (ORCPT
+	Fri, 26 Oct 2007 00:15:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48510 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbXJZEPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 00:14:33 -0400
-Date: Thu, 25 Oct 2007 20:28:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>, bbpetkov@yahoo.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename
-	'bInterfaceNumber'
-Message-ID: <20071026032809.GA21901@kroah.com>
-References: <20071025090659.GA2847@darkstar.te-china.tietoenator.com> <20071025181156.GB10720@kroah.com> <a8e1da0710251901r56c27efdkc7ca729c0bac003d@mail.gmail.com> <20071026024201.GA21311@kroah.com> <a8e1da0710252011j16ef486fvcee7816ce628b2e@mail.gmail.com>
+	Fri, 26 Oct 2007 00:15:38 -0400
+Message-ID: <47216905.2030207@zytor.com>
+Date: Thu, 25 Oct 2007 21:11:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0710252011j16ef486fvcee7816ce628b2e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Huang, Ying" <ying.huang@intel.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+ runtime service support
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain> <1193369792.23935.283.camel@caritas-dev.intel.com>
+In-Reply-To: <1193369792.23935.283.camel@caritas-dev.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 11:11:22AM +0800, Dave Young wrote:
-> On 10/26/07, Greg KH <greg@kroah.com> wrote:
-> > > Anyway the sysfs_dirent_exist is useful for extern use, How about add
-> > > and export this function? Greg, If you agree, I would send it as
-> > > another patch.
-> >
-> > What would need that function?
-> I think the function is needed sometimes except for files related to
-> devices like usb and others that could be removed suddenly.
+Huang, Ying wrote:
+> 
+> - 3 files: efi.c, efi_32.c, efi_64.c, common code goes in efi.c, EFI
+> 32/64 specific code goes in efi_32/64.c. This will make some variable,
+> function external instead of static.
+> 
 
-Almost all types of devices can now be removed "suddenly" from a system.
-Hm, I almost don't know of a type that can _not_ be removed anymore...
+This is preferred.
 
-But if you have a patch that needs this function, I'd be glad to
-reconsider.
-
-thanks,
-
-greg k-h
+	-hpa
