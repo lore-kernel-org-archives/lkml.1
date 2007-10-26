@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbXJZBOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbXJZBPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbXJZBOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 21:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbXJZBOd
+	id S1753545AbXJZBPT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 21:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXJZBOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 21:14:33 -0400
-Received: from mga11.intel.com ([192.55.52.93]:55056 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753500AbXJZBOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 21:14:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
-   d="scan'208";a="358712108"
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
-	runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1myu75drx.fsf@ebiederm.dsl.xmission.com>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	 <m1myu75drx.fsf@ebiederm.dsl.xmission.com>
+	Thu, 25 Oct 2007 21:14:51 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50571 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761360AbXJZBOu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 21:14:50 -0400
+Subject: Re: Is gcc thread-unsafe?
+From: Zachary Amsden <zach@vmware.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0710251651550.30120@woody.linux-foundation.org>
+References: <200710251324.49888.nickpiggin@yahoo.com.au>
+	 <200710260116.10904.ak@suse.de>
+	 <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org>
+	 <200710260142.37902.ak@suse.de>
+	 <alpine.LFD.0.999.0710251651550.30120@woody.linux-foundation.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Oct 2007 09:17:14 +0800
-Message-Id: <1193361434.23935.226.camel@caritas-dev.intel.com>
+Date: Thu, 25 Oct 2007 18:15:38 -0700
+Message-Id: <1193361338.9793.37.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 26 Oct 2007 01:14:25.0790 (UTC) FILETIME=[8C9AF9E0:01C8176D]
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 11:01 -0600, Eric W. Biederman wrote:
-> > +static efi_status_t __init phys_efi_set_virtual_address_map(
-> > +	unsigned long memory_map_size,
-> > +	unsigned long descriptor_size,
-> > +	u32 descriptor_version,
-> > +	efi_memory_desc_t *virtual_map)
-> > +{
-> > +	efi_status_t status;
-> > +
-> > +	efi_call_phys_prelog();
-> > +	status = lin2win4((void *)efi_phys.set_virtual_address_map,
-> > +			  (u64)memory_map_size, (u64)descriptor_size,
-> > +			  (u64)descriptor_version, (u64)virtual_map);
-> > +	efi_call_phys_epilog();
-> > +	return status;
-> > +}
+On Thu, 2007-10-25 at 16:57 -0700, Linus Torvalds wrote:
 > 
-> So you still have this piece of code which makes a kernel using
-> efi not compatible with kexec.  But you are still supporting a physical
-> call mode for efi.  If you are going to do this can we please just
-> remove the hacks that make the EFI physical call mode early boot only
-> and just always use that mode.  Depending on weird call once functions
-> like efi_set_virtual_address_map makes me very uncomfortable.
+> On Fri, 26 Oct 2007, Andi Kleen wrote:
+> > 
+> > The conditional add/sub using carry trick is not generally bogus. 
+> > But for registers it's a fine optimization.
+> 
+> For registers it's fine. For memory, it's a disaster. It's more than just 
+> dirty cachelines and introducing race conditions, it's also about 
+> protection and dirty pages.
+> 
+> So even in user space, to even be correct in the first place, the compiler 
 
-The kexec issue is solved as that of IA-64. The EFI runtime code and
-data memory area is mapped with identity mapping, so they will have same
-virtual address across kexec. The memory mapped IO memory area used by
-EFI runtime services is mapped with fixmap, so they will have same
-virtual address across kexec too. And the efi_set_virtual_address_map
-runtime service function will be skipped in the kexeced kernel (set to
-"nop" in /sbin/kexec). So the kexeced kernel can use the virtual mode of
-EFI from kernel bootstrap on.
+It's actually a fair bit worse for us.  We have paths where a false
+optimization like this would hyperspace the machine.  In fact, this
+frightens me so much I've just gone off to investigate whether gcc has
+gone and done this to any of our code.
 
-Best Regards,
-Huang Ying
+Clearly the right solution is to introduce threads and write protected
+memory into gcc so that the developers are either motivated to ensure
+they work or self-destruct.
+
+Zach
+
