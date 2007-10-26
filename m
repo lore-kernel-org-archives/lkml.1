@@ -1,449 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbXJZAwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbXJZAxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbXJZAwl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXJZAwd
+	id S1756950AbXJZAxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbXJZAxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:52:33 -0400
-Received: from quark.didntduck.org ([69.55.226.66]:58284 "EHLO
-	quark.didntduck.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbXJZAwc (ORCPT
+	Thu, 25 Oct 2007 20:53:47 -0400
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:25351 "EHLO
+	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752706AbXJZAxr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:52:32 -0400
-Message-ID: <47213A3B.6050803@didntduck.org>
-Date: Thu, 25 Oct 2007 20:52:11 -0400
-From: Brian Gerst <bgerst@didntduck.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: merge cpufeature.h
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 20:53:47 -0400
+X-Greylist: delayed 1210 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 20:53:46 EDT
+Message-Id: <4720FD380200005A0002CCB1@mcclure.wal.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 25 Oct 2007 20:33:21 -0400
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <rostedt@goodmis.org>
+Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <dmitry.adamushko@gmail.com>,
+       <dvhltc@us.ibm.com>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 2/3] RT: Cache cpus_allowed weight for optimizing
+	migration
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Brian Gerst <bgerst@didntduck.org>
----
- include/asm-x86/cpufeature.h    |  185 ++++++++++++++++++++++++++++++++++++++-
- include/asm-x86/cpufeature_32.h |  176 -------------------------------------
- include/asm-x86/cpufeature_64.h |   30 ------
- 3 files changed, 183 insertions(+), 208 deletions(-)
- delete mode 100644 include/asm-x86/cpufeature_32.h
- delete mode 100644 include/asm-x86/cpufeature_64.h
+>>> Steven Rostedt <rostedt@goodmis.org> 10/25/07 8:03 PM >>>
+>
+>> Why do you think moving the logic to pick_next_highest is a better
+>> design?  To be honest, I haven't really studied your new logic in
+>> push_rt_tasks to understand why you might feel this way.  If you can
+>> make the case that it is better in the other location then I agree with
+>> you that we should move it there in this patch, and potentially adjust
+>> it later.  Until then, I see no problem with it being here.
+>
+>Ah, after reading the comment in your code, I might know where our
+>miscommunication is from.  When you hit a task that can't migrate, you
+>simply stop and don't bother looking for a lowest rq to place it on.
+>
+>I'm saying to do one better. Put the code in the pick_next_highest_task_rt
+>and _skip_ rt tasks with nr_cpus_allowed == 1. So we can then look to
+>migrate another RT task that is lower in priority than a bounded RT task.
+>
+>Does this clear up what I'm trying to say?
 
-diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
-index b7160a4..277fbb3 100644
---- a/include/asm-x86/cpufeature.h
-+++ b/include/asm-x86/cpufeature.h
-@@ -1,5 +1,186 @@
-+/*
-+ * cpufeature.h
-+ *
-+ * Defines x86 CPU feature bits
-+ */
-+
-+#ifndef __ASM_X86_CPUFEATURE_H
-+#define __ASM_X86_CPUFEATURE_H
-+
-+#ifndef __ASSEMBLY__
-+#include <linux/bitops.h>
-+#endif
-+#include <asm/required-features.h>
-+
-+#define NCAPINTS	8	/* N 32-bit words worth of info */
-+
-+/* Intel-defined CPU features, CPUID level 0x00000001 (edx), word 0 */
-+#define X86_FEATURE_FPU		(0*32+ 0) /* Onboard FPU */
-+#define X86_FEATURE_VME		(0*32+ 1) /* Virtual Mode Extensions */
-+#define X86_FEATURE_DE		(0*32+ 2) /* Debugging Extensions */
-+#define X86_FEATURE_PSE		(0*32+ 3) /* Page Size Extensions */
-+#define X86_FEATURE_TSC		(0*32+ 4) /* Time Stamp Counter */
-+#define X86_FEATURE_MSR		(0*32+ 5) /* Model-Specific Registers, RDMSR, WRMSR */
-+#define X86_FEATURE_PAE		(0*32+ 6) /* Physical Address Extensions */
-+#define X86_FEATURE_MCE		(0*32+ 7) /* Machine Check Architecture */
-+#define X86_FEATURE_CX8		(0*32+ 8) /* CMPXCHG8 instruction */
-+#define X86_FEATURE_APIC	(0*32+ 9) /* Onboard APIC */
-+#define X86_FEATURE_SEP		(0*32+11) /* SYSENTER/SYSEXIT */
-+#define X86_FEATURE_MTRR	(0*32+12) /* Memory Type Range Registers */
-+#define X86_FEATURE_PGE		(0*32+13) /* Page Global Enable */
-+#define X86_FEATURE_MCA		(0*32+14) /* Machine Check Architecture */
-+#define X86_FEATURE_CMOV	(0*32+15) /* CMOV instruction (FCMOVCC and FCOMI too if FPU present) */
-+#define X86_FEATURE_PAT		(0*32+16) /* Page Attribute Table */
-+#define X86_FEATURE_PSE36	(0*32+17) /* 36-bit PSEs */
-+#define X86_FEATURE_PN		(0*32+18) /* Processor serial number */
-+#define X86_FEATURE_CLFLSH	(0*32+19) /* Supports the CLFLUSH instruction */
-+#define X86_FEATURE_DS		(0*32+21) /* Debug Store */
-+#define X86_FEATURE_ACPI	(0*32+22) /* ACPI via MSR */
-+#define X86_FEATURE_MMX		(0*32+23) /* Multimedia Extensions */
-+#define X86_FEATURE_FXSR	(0*32+24) /* FXSAVE and FXRSTOR instructions (fast save and restore */
-+				          /* of FPU context), and CR4.OSFXSR available */
-+#define X86_FEATURE_XMM		(0*32+25) /* Streaming SIMD Extensions */
-+#define X86_FEATURE_XMM2	(0*32+26) /* Streaming SIMD Extensions-2 */
-+#define X86_FEATURE_SELFSNOOP	(0*32+27) /* CPU self snoop */
-+#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */
-+#define X86_FEATURE_ACC		(0*32+29) /* Automatic clock control */
-+#define X86_FEATURE_IA64	(0*32+30) /* IA-64 processor */
-+
-+/* AMD-defined CPU features, CPUID level 0x80000001, word 1 */
-+/* Don't duplicate feature flags which are redundant with Intel! */
-+#define X86_FEATURE_SYSCALL	(1*32+11) /* SYSCALL/SYSRET */
-+#define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
-+#define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
-+#define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
-+#define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
-+#define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
-+#define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
-+#define X86_FEATURE_3DNOW	(1*32+31) /* 3DNow! */
-+
-+/* Transmeta-defined CPU features, CPUID level 0x80860001, word 2 */
-+#define X86_FEATURE_RECOVERY	(2*32+ 0) /* CPU in recovery mode */
-+#define X86_FEATURE_LONGRUN	(2*32+ 1) /* Longrun power control */
-+#define X86_FEATURE_LRTI	(2*32+ 3) /* LongRun table interface */
-+
-+/* Other features, Linux-defined mapping, word 3 */
-+/* This range is used for feature bits which conflict or are synthesized */
-+#define X86_FEATURE_CXMMX	(3*32+ 0) /* Cyrix MMX extensions */
-+#define X86_FEATURE_K6_MTRR	(3*32+ 1) /* AMD K6 nonstandard MTRRs */
-+#define X86_FEATURE_CYRIX_ARR	(3*32+ 2) /* Cyrix ARRs (= MTRRs) */
-+#define X86_FEATURE_CENTAUR_MCR	(3*32+ 3) /* Centaur MCRs (= MTRRs) */
-+/* cpu types for specific tunings: */
-+#define X86_FEATURE_K8		(3*32+ 4) /* Opteron, Athlon64 */
-+#define X86_FEATURE_K7		(3*32+ 5) /* Athlon */
-+#define X86_FEATURE_P3		(3*32+ 6) /* P3 */
-+#define X86_FEATURE_P4		(3*32+ 7) /* P4 */
-+#define X86_FEATURE_CONSTANT_TSC (3*32+ 8) /* TSC ticks at a constant rate */
-+#define X86_FEATURE_UP		(3*32+ 9) /* smp kernel running on up */
-+#define X86_FEATURE_FXSAVE_LEAK	(3*32+10) /* FXSAVE leaks FOP/FIP/FOP */
-+#define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
-+#define X86_FEATURE_PEBS	(3*32+12)  /* Precise-Event Based Sampling */
-+#define X86_FEATURE_BTS		(3*32+13)  /* Branch Trace Store */
-+/* 14 free */
-+#define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */
-+#define X86_FEATURE_REP_GOOD	(3*32+16) /* rep microcode works well on this CPU */
-+
-+/* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
-+#define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
-+#define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
-+#define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
-+#define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
-+#define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
-+#define X86_FEATURE_CID		(4*32+10) /* Context ID */
-+#define X86_FEATURE_CX16	(4*32+13) /* CMPXCHG16B */
-+#define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */
-+#define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */
-+
-+/* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
-+#define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */
-+#define X86_FEATURE_XSTORE_EN	(5*32+ 3) /* on-CPU RNG enabled */
-+#define X86_FEATURE_XCRYPT	(5*32+ 6) /* on-CPU crypto (xcrypt insn) */
-+#define X86_FEATURE_XCRYPT_EN	(5*32+ 7) /* on-CPU crypto enabled */
-+#define X86_FEATURE_ACE2	(5*32+ 8) /* Advanced Cryptography Engine v2 */
-+#define X86_FEATURE_ACE2_EN	(5*32+ 9) /* ACE v2 enabled */
-+#define X86_FEATURE_PHE		(5*32+ 10) /* PadLock Hash Engine */
-+#define X86_FEATURE_PHE_EN	(5*32+ 11) /* PHE enabled */
-+#define X86_FEATURE_PMM		(5*32+ 12) /* PadLock Montgomery Multiplier */
-+#define X86_FEATURE_PMM_EN	(5*32+ 13) /* PMM enabled */
-+
-+/* More extended AMD flags: CPUID level 0x80000001, ecx, word 6 */
-+#define X86_FEATURE_LAHF_LM	(6*32+ 0) /* LAHF/SAHF in long mode */
-+#define X86_FEATURE_CMP_LEGACY	(6*32+ 1) /* If yes HyperThreading not valid */
-+
-+/*
-+ * Auxiliary flags: Linux defined - For features scattered in various
-+ * CPUID levels like 0x6, 0xA etc
-+ */
-+#define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
-+
-+#define cpu_has(c, bit)							\
-+	(__builtin_constant_p(bit) &&					\
-+	 ( (((bit)>>5)==0 && (1UL<<((bit)&31) & REQUIRED_MASK0)) ||	\
-+	   (((bit)>>5)==1 && (1UL<<((bit)&31) & REQUIRED_MASK1)) ||	\
-+	   (((bit)>>5)==2 && (1UL<<((bit)&31) & REQUIRED_MASK2)) ||	\
-+	   (((bit)>>5)==3 && (1UL<<((bit)&31) & REQUIRED_MASK3)) ||	\
-+	   (((bit)>>5)==4 && (1UL<<((bit)&31) & REQUIRED_MASK4)) ||	\
-+	   (((bit)>>5)==5 && (1UL<<((bit)&31) & REQUIRED_MASK5)) ||	\
-+	   (((bit)>>5)==6 && (1UL<<((bit)&31) & REQUIRED_MASK6)) ||	\
-+	   (((bit)>>5)==7 && (1UL<<((bit)&31) & REQUIRED_MASK7)) )	\
-+	  ? 1 :								\
-+	  test_bit(bit, (c)->x86_capability))
-+#define boot_cpu_has(bit)	cpu_has(&boot_cpu_data, bit)
-+
-+#define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
-+#define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
-+#define cpu_has_pse		boot_cpu_has(X86_FEATURE_PSE)
-+#define cpu_has_tsc		boot_cpu_has(X86_FEATURE_TSC)
-+#define cpu_has_pge		boot_cpu_has(X86_FEATURE_PGE)
-+#define cpu_has_apic		boot_cpu_has(X86_FEATURE_APIC)
-+#define cpu_has_sep		boot_cpu_has(X86_FEATURE_SEP)
-+#define cpu_has_mtrr		boot_cpu_has(X86_FEATURE_MTRR)
-+#define cpu_has_mmx		boot_cpu_has(X86_FEATURE_MMX)
-+#define cpu_has_fxsr		boot_cpu_has(X86_FEATURE_FXSR)
-+#define cpu_has_xmm		boot_cpu_has(X86_FEATURE_XMM)
-+#define cpu_has_xmm2		boot_cpu_has(X86_FEATURE_XMM2)
-+#define cpu_has_xmm3		boot_cpu_has(X86_FEATURE_XMM3)
-+#define cpu_has_ht		boot_cpu_has(X86_FEATURE_HT)
-+#define cpu_has_nx		boot_cpu_has(X86_FEATURE_NX)
-+#define cpu_has_xstore		boot_cpu_has(X86_FEATURE_XSTORE)
-+#define cpu_has_xstore_enabled	boot_cpu_has(X86_FEATURE_XSTORE_EN)
-+#define cpu_has_xcrypt		boot_cpu_has(X86_FEATURE_XCRYPT)
-+#define cpu_has_xcrypt_enabled	boot_cpu_has(X86_FEATURE_XCRYPT_EN)
-+#define cpu_has_ace2		boot_cpu_has(X86_FEATURE_ACE2)
-+#define cpu_has_ace2_enabled	boot_cpu_has(X86_FEATURE_ACE2_EN)
-+#define cpu_has_phe		boot_cpu_has(X86_FEATURE_PHE)
-+#define cpu_has_phe_enabled	boot_cpu_has(X86_FEATURE_PHE_EN)
-+#define cpu_has_pmm		boot_cpu_has(X86_FEATURE_PMM)
-+#define cpu_has_pmm_enabled	boot_cpu_has(X86_FEATURE_PMM_EN)
-+#define cpu_has_ds		boot_cpu_has(X86_FEATURE_DS)
-+#define cpu_has_pebs		boot_cpu_has(X86_FEATURE_PEBS)
-+#define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
-+#define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
-+
- #ifdef CONFIG_X86_32
--# include "cpufeature_32.h"
-+#define cpu_has_vme		boot_cpu_has(X86_FEATURE_VME)
-+#define cpu_has_pae		boot_cpu_has(X86_FEATURE_PAE)
-+#define cpu_has_mp		boot_cpu_has(X86_FEATURE_MP)
-+#define cpu_has_k6_mtrr		boot_cpu_has(X86_FEATURE_K6_MTRR)
-+#define cpu_has_cyrix_arr	boot_cpu_has(X86_FEATURE_CYRIX_ARR)
-+#define cpu_has_centaur_mcr	boot_cpu_has(X86_FEATURE_CENTAUR_MCR)
- #else
--# include "cpufeature_64.h"
-+#define cpu_has_vme		0
-+#define cpu_has_pae		___BUG___
-+#define cpu_has_mp		1
-+#define cpu_has_k6_mtrr		0
-+#define cpu_has_cyrix_arr	0
-+#define cpu_has_centaur_mcr	0
- #endif
-+
-+#endif /* __ASM_X86_CPUFEATURE_H */
-+
-+/* 
-+ * Local Variables:
-+ * mode:c
-+ * comment-column:42
-+ * End:
-+ */
-diff --git a/include/asm-x86/cpufeature_32.h b/include/asm-x86/cpufeature_32.h
-deleted file mode 100644
-index f17e688..0000000
---- a/include/asm-x86/cpufeature_32.h
-+++ /dev/null
-@@ -1,176 +0,0 @@
--/*
-- * cpufeature.h
-- *
-- * Defines x86 CPU feature bits
-- */
--
--#ifndef __ASM_I386_CPUFEATURE_H
--#define __ASM_I386_CPUFEATURE_H
--
--#ifndef __ASSEMBLY__
--#include <linux/bitops.h>
--#endif
--#include <asm/required-features.h>
--
--#define NCAPINTS	8	/* N 32-bit words worth of info */
--
--/* Intel-defined CPU features, CPUID level 0x00000001 (edx), word 0 */
--#define X86_FEATURE_FPU		(0*32+ 0) /* Onboard FPU */
--#define X86_FEATURE_VME		(0*32+ 1) /* Virtual Mode Extensions */
--#define X86_FEATURE_DE		(0*32+ 2) /* Debugging Extensions */
--#define X86_FEATURE_PSE 	(0*32+ 3) /* Page Size Extensions */
--#define X86_FEATURE_TSC		(0*32+ 4) /* Time Stamp Counter */
--#define X86_FEATURE_MSR		(0*32+ 5) /* Model-Specific Registers, RDMSR, WRMSR */
--#define X86_FEATURE_PAE		(0*32+ 6) /* Physical Address Extensions */
--#define X86_FEATURE_MCE		(0*32+ 7) /* Machine Check Architecture */
--#define X86_FEATURE_CX8		(0*32+ 8) /* CMPXCHG8 instruction */
--#define X86_FEATURE_APIC	(0*32+ 9) /* Onboard APIC */
--#define X86_FEATURE_SEP		(0*32+11) /* SYSENTER/SYSEXIT */
--#define X86_FEATURE_MTRR	(0*32+12) /* Memory Type Range Registers */
--#define X86_FEATURE_PGE		(0*32+13) /* Page Global Enable */
--#define X86_FEATURE_MCA		(0*32+14) /* Machine Check Architecture */
--#define X86_FEATURE_CMOV	(0*32+15) /* CMOV instruction (FCMOVCC and FCOMI too if FPU present) */
--#define X86_FEATURE_PAT		(0*32+16) /* Page Attribute Table */
--#define X86_FEATURE_PSE36	(0*32+17) /* 36-bit PSEs */
--#define X86_FEATURE_PN		(0*32+18) /* Processor serial number */
--#define X86_FEATURE_CLFLSH	(0*32+19) /* Supports the CLFLUSH instruction */
--#define X86_FEATURE_DS		(0*32+21) /* Debug Store */
--#define X86_FEATURE_ACPI	(0*32+22) /* ACPI via MSR */
--#define X86_FEATURE_MMX		(0*32+23) /* Multimedia Extensions */
--#define X86_FEATURE_FXSR	(0*32+24) /* FXSAVE and FXRSTOR instructions (fast save and restore */
--				          /* of FPU context), and CR4.OSFXSR available */
--#define X86_FEATURE_XMM		(0*32+25) /* Streaming SIMD Extensions */
--#define X86_FEATURE_XMM2	(0*32+26) /* Streaming SIMD Extensions-2 */
--#define X86_FEATURE_SELFSNOOP	(0*32+27) /* CPU self snoop */
--#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */
--#define X86_FEATURE_ACC		(0*32+29) /* Automatic clock control */
--#define X86_FEATURE_IA64	(0*32+30) /* IA-64 processor */
--
--/* AMD-defined CPU features, CPUID level 0x80000001, word 1 */
--/* Don't duplicate feature flags which are redundant with Intel! */
--#define X86_FEATURE_SYSCALL	(1*32+11) /* SYSCALL/SYSRET */
--#define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
--#define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
--#define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
--#define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
--#define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
--#define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
--#define X86_FEATURE_3DNOW	(1*32+31) /* 3DNow! */
--
--/* Transmeta-defined CPU features, CPUID level 0x80860001, word 2 */
--#define X86_FEATURE_RECOVERY	(2*32+ 0) /* CPU in recovery mode */
--#define X86_FEATURE_LONGRUN	(2*32+ 1) /* Longrun power control */
--#define X86_FEATURE_LRTI	(2*32+ 3) /* LongRun table interface */
--
--/* Other features, Linux-defined mapping, word 3 */
--/* This range is used for feature bits which conflict or are synthesized */
--#define X86_FEATURE_CXMMX	(3*32+ 0) /* Cyrix MMX extensions */
--#define X86_FEATURE_K6_MTRR	(3*32+ 1) /* AMD K6 nonstandard MTRRs */
--#define X86_FEATURE_CYRIX_ARR	(3*32+ 2) /* Cyrix ARRs (= MTRRs) */
--#define X86_FEATURE_CENTAUR_MCR	(3*32+ 3) /* Centaur MCRs (= MTRRs) */
--/* cpu types for specific tunings: */
--#define X86_FEATURE_K8		(3*32+ 4) /* Opteron, Athlon64 */
--#define X86_FEATURE_K7		(3*32+ 5) /* Athlon */
--#define X86_FEATURE_P3		(3*32+ 6) /* P3 */
--#define X86_FEATURE_P4		(3*32+ 7) /* P4 */
--#define X86_FEATURE_CONSTANT_TSC (3*32+ 8) /* TSC ticks at a constant rate */
--#define X86_FEATURE_UP		(3*32+ 9) /* smp kernel running on up */
--#define X86_FEATURE_FXSAVE_LEAK (3*32+10) /* FXSAVE leaks FOP/FIP/FOP */
--#define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
--#define X86_FEATURE_PEBS	(3*32+12)  /* Precise-Event Based Sampling */
--#define X86_FEATURE_BTS		(3*32+13)  /* Branch Trace Store */
--/* 14 free */
--#define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */
--#define X86_FEATURE_REP_GOOD   (3*32+16) /* rep microcode works well on this CPU */
--
--/* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
--#define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
--#define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */
--#define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */
--#define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */
--#define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */
--#define X86_FEATURE_CID		(4*32+10) /* Context ID */
--#define X86_FEATURE_CX16        (4*32+13) /* CMPXCHG16B */
--#define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */
--#define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */
--
--/* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
--#define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */
--#define X86_FEATURE_XSTORE_EN	(5*32+ 3) /* on-CPU RNG enabled */
--#define X86_FEATURE_XCRYPT	(5*32+ 6) /* on-CPU crypto (xcrypt insn) */
--#define X86_FEATURE_XCRYPT_EN	(5*32+ 7) /* on-CPU crypto enabled */
--#define X86_FEATURE_ACE2	(5*32+ 8) /* Advanced Cryptography Engine v2 */
--#define X86_FEATURE_ACE2_EN	(5*32+ 9) /* ACE v2 enabled */
--#define X86_FEATURE_PHE		(5*32+ 10) /* PadLock Hash Engine */
--#define X86_FEATURE_PHE_EN	(5*32+ 11) /* PHE enabled */
--#define X86_FEATURE_PMM		(5*32+ 12) /* PadLock Montgomery Multiplier */
--#define X86_FEATURE_PMM_EN	(5*32+ 13) /* PMM enabled */
--
--/* More extended AMD flags: CPUID level 0x80000001, ecx, word 6 */
--#define X86_FEATURE_LAHF_LM	(6*32+ 0) /* LAHF/SAHF in long mode */
--#define X86_FEATURE_CMP_LEGACY	(6*32+ 1) /* If yes HyperThreading not valid */
--
--/*
-- * Auxiliary flags: Linux defined - For features scattered in various
-- * CPUID levels like 0x6, 0xA etc
-- */
--#define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
--
--#define cpu_has(c, bit)							\
--	(__builtin_constant_p(bit) &&					\
--	 ( (((bit)>>5)==0 && (1UL<<((bit)&31) & REQUIRED_MASK0)) ||	\
--	   (((bit)>>5)==1 && (1UL<<((bit)&31) & REQUIRED_MASK1)) ||	\
--	   (((bit)>>5)==2 && (1UL<<((bit)&31) & REQUIRED_MASK2)) ||	\
--	   (((bit)>>5)==3 && (1UL<<((bit)&31) & REQUIRED_MASK3)) ||	\
--	   (((bit)>>5)==4 && (1UL<<((bit)&31) & REQUIRED_MASK4)) ||	\
--	   (((bit)>>5)==5 && (1UL<<((bit)&31) & REQUIRED_MASK5)) ||	\
--	   (((bit)>>5)==6 && (1UL<<((bit)&31) & REQUIRED_MASK6)) ||	\
--	   (((bit)>>5)==7 && (1UL<<((bit)&31) & REQUIRED_MASK7)) )	\
--	  ? 1 :								\
--	  test_bit(bit, (c)->x86_capability))
--#define boot_cpu_has(bit)	cpu_has(&boot_cpu_data, bit)
--
--#define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
--#define cpu_has_vme		boot_cpu_has(X86_FEATURE_VME)
--#define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
--#define cpu_has_pse		boot_cpu_has(X86_FEATURE_PSE)
--#define cpu_has_tsc		boot_cpu_has(X86_FEATURE_TSC)
--#define cpu_has_pae		boot_cpu_has(X86_FEATURE_PAE)
--#define cpu_has_pge		boot_cpu_has(X86_FEATURE_PGE)
--#define cpu_has_apic		boot_cpu_has(X86_FEATURE_APIC)
--#define cpu_has_sep		boot_cpu_has(X86_FEATURE_SEP)
--#define cpu_has_mtrr		boot_cpu_has(X86_FEATURE_MTRR)
--#define cpu_has_mmx		boot_cpu_has(X86_FEATURE_MMX)
--#define cpu_has_fxsr		boot_cpu_has(X86_FEATURE_FXSR)
--#define cpu_has_xmm		boot_cpu_has(X86_FEATURE_XMM)
--#define cpu_has_xmm2		boot_cpu_has(X86_FEATURE_XMM2)
--#define cpu_has_xmm3		boot_cpu_has(X86_FEATURE_XMM3)
--#define cpu_has_ht		boot_cpu_has(X86_FEATURE_HT)
--#define cpu_has_mp		boot_cpu_has(X86_FEATURE_MP)
--#define cpu_has_nx		boot_cpu_has(X86_FEATURE_NX)
--#define cpu_has_k6_mtrr		boot_cpu_has(X86_FEATURE_K6_MTRR)
--#define cpu_has_cyrix_arr	boot_cpu_has(X86_FEATURE_CYRIX_ARR)
--#define cpu_has_centaur_mcr	boot_cpu_has(X86_FEATURE_CENTAUR_MCR)
--#define cpu_has_xstore		boot_cpu_has(X86_FEATURE_XSTORE)
--#define cpu_has_xstore_enabled	boot_cpu_has(X86_FEATURE_XSTORE_EN)
--#define cpu_has_xcrypt		boot_cpu_has(X86_FEATURE_XCRYPT)
--#define cpu_has_xcrypt_enabled	boot_cpu_has(X86_FEATURE_XCRYPT_EN)
--#define cpu_has_ace2		boot_cpu_has(X86_FEATURE_ACE2)
--#define cpu_has_ace2_enabled	boot_cpu_has(X86_FEATURE_ACE2_EN)
--#define cpu_has_phe		boot_cpu_has(X86_FEATURE_PHE)
--#define cpu_has_phe_enabled	boot_cpu_has(X86_FEATURE_PHE_EN)
--#define cpu_has_pmm		boot_cpu_has(X86_FEATURE_PMM)
--#define cpu_has_pmm_enabled	boot_cpu_has(X86_FEATURE_PMM_EN)
--#define cpu_has_ds		boot_cpu_has(X86_FEATURE_DS)
--#define cpu_has_pebs 		boot_cpu_has(X86_FEATURE_PEBS)
--#define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
--#define cpu_has_bts 		boot_cpu_has(X86_FEATURE_BTS)
--
--#endif /* __ASM_I386_CPUFEATURE_H */
--
--/* 
-- * Local Variables:
-- * mode:c
-- * comment-column:42
-- * End:
-- */
-diff --git a/include/asm-x86/cpufeature_64.h b/include/asm-x86/cpufeature_64.h
-deleted file mode 100644
-index e18496b..0000000
---- a/include/asm-x86/cpufeature_64.h
-+++ /dev/null
-@@ -1,30 +0,0 @@
--/*
-- * cpufeature_32.h
-- *
-- * Defines x86 CPU feature bits
-- */
--
--#ifndef __ASM_X8664_CPUFEATURE_H
--#define __ASM_X8664_CPUFEATURE_H
--
--#include "cpufeature_32.h"
--
--#undef  cpu_has_vme
--#define cpu_has_vme            0
--
--#undef  cpu_has_pae
--#define cpu_has_pae            ___BUG___
--
--#undef  cpu_has_mp
--#define cpu_has_mp             1 /* XXX */
--
--#undef  cpu_has_k6_mtrr
--#define cpu_has_k6_mtrr        0
--
--#undef  cpu_has_cyrix_arr
--#define cpu_has_cyrix_arr      0
--
--#undef  cpu_has_centaur_mcr
--#define cpu_has_centaur_mcr    0
--
--#endif /* __ASM_X8664_CPUFEATURE_H */
--- 
-1.5.3.4.319.gdd817
+Ah, yes.  That is quite brilliant, actually.  
+
+>BTW, stop looking for a lowest_rq isn't really an optimization here. Since
+>we only look at cpus that are in the tasks cpu affinity mask and we skip
+>the cpu that it currently is on. So we don't even take a lock in that
+>case.
+
+You are, of course, completely correct.  This patch historically was after cpupri, and this change is relevant in that case only.   Since cpupri doesnt have the nice property as yours where its limited to cpus_allowed, it helps to stop the search on that special case.  In the current alg, its just redundant .text and it should be removed.
 
 
+>and _skip_ rt tasks with nr_cpus_allowed == 1. So we can then look to
+>migrate another RT task that is lower in priority than a bounded RT task.
+>
+>Does this clear up what I'm trying to say?
+
+Ah, yes.  That is quite brilliant, actually.  
+
+>BTW, stop looking for a lowest_rq isn't really an optimization here. Since
+>we only look at cpus that are in the tasks cpu affinity mask and we skip
+>the cpu that it currently is on. So we don't even take a lock in that
+>case.
+
+You are, of course, completely correct.  This patch historically was after cpupri.  This change is relevant in that case only since cpupri doesnt have the nice property as yours where its limited to cpus_allowed, it helps to stop the search on that special case.  In the current alg, its just redundant .text and it should be removed.
+
+I will make those changes and submit a new patch.
+
+Thanks for setting me straight!
+-Greg
