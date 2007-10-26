@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762392AbXJZSQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbXJZSTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762392AbXJZSQc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbXJZSQY
+	id S1763455AbXJZSTh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXJZST3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:16:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44104 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753252AbXJZSQX (ORCPT
+	Fri, 26 Oct 2007 14:19:29 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:64114 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbXJZST2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:16:23 -0400
-Date: Fri, 26 Oct 2007 11:14:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Haley <aph@redhat.com>
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <20071026190856.18510fc4@the-village.bc.nu>
-Message-ID: <alpine.LFD.0.999.0710261111390.30120@woody.linux-foundation.org>
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
- <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
- <alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
- <alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
- <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
- <20071026190856.18510fc4@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 26 Oct 2007 14:19:28 -0400
+Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Greg KH <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200710261112.19716.jbarnes@virtuousgeek.org>
+References: <200710181401.50470.jbarnes@virtuousgeek.org>
+	 <200710260957.15137.jbarnes@virtuousgeek.org>
+	 <3ae72650710261010p195e2228h91c9cb11829c2a77@mail.gmail.com>
+	 <200710261112.19716.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 20:21:05 +0200
+Message-Id: <1193422865.2190.18.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/ohPzxteF/r46mBumQx+YZdT8851IxpVjoYKG
+ /H+C3uovESSbVrJ5j5YJryTZqJZ5IhSwXpJOYXYNrtyE1rpI0C
+ Z6KqZOxaRu7JAo74kjtKxJGzor3AbTu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 26 Oct 2007, Alan Cox wrote:
->
-> > non-volatile variables. But for asm statements this can be solved by
-> > adding memory to the list of clobbered registers -- this will prevent
-> > any reordering of manipulations of non-volatile variables and asm
-> > statements.
+On Fri, 2007-10-26 at 11:12 -0700, Jesse Barnes wrote:
+> On Friday, October 26, 2007 10:10 am Kay Sievers wrote:
+> > The conversion is already queued in Greg's tree, and in -mm:
+> > http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f
+> >=driver/drm-convert-from-class_device-to-device-in-drivers-char-drm.pa
+> >tch;h=f993183d1cb017f981cc2232d17930af40459bd8;hb=HEAD
 > 
-> IFF the processor doesn't reorder them in hardware, which on some
-> processors is visibly out of order when viewed from an I/O device or
-> another CPU.
-> 
-> You can stop the compiler but not the CPU - and some processors will
-> certainly speculatively load across conditionals, reorder writes etc
+> Hm, I've done it slightly differently, by adding an actual device to the 
+> drm_device structure...  I'll post it once I've cleaned it up a little 
+> more.
 
-Well, when we're talking inline asms used for locking, the whole point of 
-using inline asm is exactly that you cannot do it with regular accesses, 
-and have to add architecture-specific barriers. If the user gets that 
-wrong, then it's a user problem, not a compiler issue.
+Sure, as long as "struct class_device" is no longer used in the code,
+and you don't embed two "struct device" device structures in a single
+object, all should be fine.
+We plan to remove "struct class_device" soon from the kernel. :)
 
-So that's not the problem. The problem is if the compiler then does other 
-things wrong *despite* the inline asm being correct. 
+Thanks,
+Kay
 
-				Linus
