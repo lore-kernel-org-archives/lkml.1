@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXJZSGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbXJZSH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbXJZSGE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXJZSFy
+	id S1762404AbXJZSH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXJZSHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:05:54 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60418 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835AbXJZSFx (ORCPT
+	Fri, 26 Oct 2007 14:07:14 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40646 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754052AbXJZSHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:05:53 -0400
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47221E6F.1090607@lwfinger.net>
-References: <47221E6F.1090607@lwfinger.net>
-Content-Type: text/plain
-Date: Fri, 26 Oct 2007 20:07:44 +0200
-Message-Id: <1193422064.2190.6.camel@lov.site>
+	Fri, 26 Oct 2007 14:07:12 -0400
+Date: Fri, 26 Oct 2007 19:08:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Haley" <aph@redhat.com>
+Subject: Re: Is gcc thread-unsafe?
+Message-ID: <20071026190856.18510fc4@the-village.bc.nu>
+In-Reply-To: <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
+	<e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
+	<alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
+	<e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18XX8NU/L4+vniCGjj5LfZipoLPd/jaOQ9GnC6
- 06i7rWxMRkY2L6r6ALUUiwyLA0Ys6M2HHFPTjnkpZA7Qdobs8s
- PZlewK0jNTdGA3W9YSJB9mRta7tn1aA
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 12:05 -0500, Larry Finger wrote:
-> On my openSUSE 10.3 x86_64 system running v2.6.24-rc1-281-g22d2aa1,
-> I get the sysfs rename messages.
+> non-volatile variables. But for asm statements this can be solved by
+> adding memory to the list of clobbered registers -- this will prevent
+> any reordering of manipulations of non-volatile variables and asm
+> statements.
 
-Care to try this? Seems like a silly bug in the core if
-SYSFS_DEPRECATED=y. That's why we didn't catch this earlier, sorry.
+IFF the processor doesn't reorder them in hardware, which on some
+processors is visibly out of order when viewed from an I/O device or
+another CPU.
 
-Thanks a lot for the help,
-Kay
-
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Driver Core: fix bug in device_rename() for SYSFS_DEPRECATED=y
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
-
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index c134341..3f4d6aa 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1228,18 +1228,18 @@ int device_rename(struct device *dev, char *new_name)
- 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
- 		}
- 	}
--#endif
--
-+#else
- 	if (dev->class) {
- 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
- 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
- 					  dev->bus_id);
- 		if (error) {
--			/* Uh... how to unravel this if restoring can fail? */
- 			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
- 				__FUNCTION__, error);
- 		}
- 	}
-+#endif
-+
- out:
- 	put_device(dev);
- 
+You can stop the compiler but not the CPU - and some processors will
+certainly speculatively load across conditionals, reorder writes etc
 
