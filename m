@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXJZEni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbXJZEuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbXJZEni (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 00:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXJZEna
+	id S1760205AbXJZEuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 00:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXJZEtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 00:43:30 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:50999 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbXJZEna (ORCPT
+	Fri, 26 Oct 2007 00:49:53 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:2301 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbXJZEtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 00:43:30 -0400
+	Fri, 26 Oct 2007 00:49:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uk2/3NBIs3vX+fWvx/vMHUt+sRQl+nPFpVJbEV464XikhuothIHEOFSMvhjBbPmzfy0OYvZqxAX6U6B3cR8CIYgxwcztD54STZwqT7VETsM68mihiDhYNBGykJePSSwztQqqiycxy+DOAzWWnxw6DdarO7dSGU1FphIHMSyTPuE=
-Message-ID: <a8e1da0710252143t18278e1eg5544d900df24ddc9@mail.gmail.com>
-Date: Fri, 26 Oct 2007 12:43:28 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Matthew Dharm" <mdharm-kernel@one-eyed-alien.net>, bbpetkov@yahoo.de,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "USB development list" <linux-usb-devel@lists.sourceforge.net>
-In-Reply-To: <20071026032809.GA21901@kroah.com>
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=s0bjZtlGTFBQtp47XY92vVY+puRRNDTnc/umdPMMfD4PNtce+HRT+M08G2HAGifhSz7HjdM9yVP73FdaL9zWo0PJ6K/8DJg+ZZfZ85eBOT4ntXWAta08y+6zUAk6Q03mZ2s0NI2+LoEdHzg07vCaWHRQ3hTZDoBioChigZRZgTc=
+Date: Fri, 26 Oct 2007 12:45:02 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: "Wang, Baojun" <wangbj@lzu.edu.cn>
+Cc: linux-kernel@vger.kernel.org, gentoo-user@lists.gentoo.org
+Subject: Re: kernel 2.6.23 CFS problem?
+Message-ID: <20071026044502.GB2458@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <200710261057.48179.wangbj@lzu.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071025090659.GA2847@darkstar.te-china.tietoenator.com>
-	 <20071025181156.GB10720@kroah.com>
-	 <a8e1da0710251901r56c27efdkc7ca729c0bac003d@mail.gmail.com>
-	 <20071026024201.GA21311@kroah.com>
-	 <a8e1da0710252011j16ef486fvcee7816ce628b2e@mail.gmail.com>
-	 <20071026032809.GA21901@kroah.com>
+In-Reply-To: <200710261057.48179.wangbj@lzu.edu.cn>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/26/07, Greg KH <greg@kroah.com> wrote:
-> On Fri, Oct 26, 2007 at 11:11:22AM +0800, Dave Young wrote:
-> > On 10/26/07, Greg KH <greg@kroah.com> wrote:
-> > > > Anyway the sysfs_dirent_exist is useful for extern use, How about add
-> > > > and export this function? Greg, If you agree, I would send it as
-> > > > another patch.
-> > >
-> > > What would need that function?
-> > I think the function is needed sometimes except for files related to
-> > devices like usb and others that could be removed suddenly.
+On Fri, Oct 26, 2007 at 10:57:45AM +0800, Wang, Baojun wrote:
+>hi, list
 >
-> Almost all types of devices can now be removed "suddenly" from a system.
-> Hm, I almost don't know of a type that can _not_ be removed anymore...
+>  I've upgraded my kernel from 2.6.22.9 to 2.6.23 when it was out, After that 
+>I can't install ELDK 4.1 anymore (The one I installed was crashed), it always 
+>stopped at preparing install package XXX (or YYY sometimes), I've waited for 
+>a very long time(more than 1 hour), but it still the same. After I switch 
+>back to kernel 2.6.22.9, everything is fine. Is there somebody have the some 
+>problem like me?
 >
-> But if you have a patch that needs this function, I'd be glad to
-> reconsider.
-Not yet,  anyway thank you very much :)
+
+What's your XXX or YYY?
+
+What error messages did you get?
+
+Why don't you try to update your glibc or something like that?
+
+I am afraid it's off-topic here.
+
+Regards.
+
+-- 
+May the Source Be With You.
