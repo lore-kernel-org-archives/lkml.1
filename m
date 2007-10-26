@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXJZQgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXJZQg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764097AbXJZQgr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXJZQgc
+	id S1754681AbXJZQg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXJZQgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:36:32 -0400
-Received: from waste.org ([66.93.16.53]:56548 "EHLO cinder.waste.org"
+	Fri, 26 Oct 2007 12:36:33 -0400
+Received: from waste.org ([66.93.16.53]:56550 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751241AbXJZQgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753677AbXJZQgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 26 Oct 2007 12:36:31 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
@@ -17,122 +17,195 @@ Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        David Rientjes <rientjes@google.com>,
        Fengguang Wu <wfg@mail.ustc.edu.cn>
 In-Reply-To: <1.430487409@selenic.com>
-Message-Id: <2.430487409@selenic.com>
-Subject: [PATCH 1/12] maps4: add proportional set size accounting in smaps
-Date: Fri, 26 Oct 2007 11:36:27 -0500
+Message-Id: <5.430487409@selenic.com>
+Subject: [PATCH 4/12] maps4: introduce a generic page walker
+Date: Fri, 26 Oct 2007 11:36:30 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Introduce a general page table walker
 
-The "proportional set size" (PSS) of a process is the count of pages it has
-in memory, where each page is divided by the number of processes sharing
-it.  So if a process has 1000 pages all to itself, and 1000 shared with one
-other process, its PSS will be 1500.
-
-               - lwn.net: "ELC: How much memory are applications really using?"
-
-The PSS proposed by Matt Mackall is a very nice metic for measuring an
-process's memory footprint.  So collect and export it via
-/proc/<pid>/smaps.
-
-Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the
-job.  They are comprehensive tools.  But for PSS, let's do it in the simple
-way.
-
-Cc: John Berthels <jjberthels@gmail.com>
-Cc: Bernardo Innocenti <bernie@codewiz.org>
-Cc: Padraig Brady <P@draigBrady.com>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
 Signed-off-by: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Hugh Dickins <hugh@veritas.com>
----
 
- fs/proc/task_mmu.c |   29 ++++++++++++++++++++++++++++-
- 1 files changed, 28 insertions(+), 1 deletion(-)
-
-Index: l/fs/proc/task_mmu.c
+Index: l/include/linux/mm.h
 ===================================================================
---- l.orig/fs/proc/task_mmu.c	2007-10-16 21:13:47.000000000 -0500
-+++ l/fs/proc/task_mmu.c	2007-10-22 15:53:12.000000000 -0500
-@@ -114,6 +114,25 @@ static void pad_len_spaces(struct seq_fi
- 	seq_printf(m, "%*c", len, ' ');
- }
- 
-+/*
-+ * Proportional Set Size(PSS): my share of RSS.
-+ *
-+ * PSS of a process is the count of pages it has in memory, where each
-+ * page is divided by the number of processes sharing it.  So if a
-+ * process has 1000 pages all to itself, and 1000 shared with one other
-+ * process, its PSS will be 1500.
-+ *
-+ * To keep (accumulated) division errors low, we adopt a 64bit
-+ * fixed-point pss counter to minimize division errors. So (pss >>
-+ * PSS_SHIFT) would be the real byte count.
-+ *
-+ * A shift of 12 before division means (assuming 4K page size):
-+ * 	- 1M 3-user-pages add up to 8KB errors;
-+ * 	- supports mapcount up to 2^24, or 16M;
-+ * 	- supports PSS up to 2^52 bytes, or 4PB.
-+ */
-+#define PSS_SHIFT 12
+--- l.orig/include/linux/mm.h	2007-10-26 11:19:36.000000000 -0500
++++ l/include/linux/mm.h	2007-10-26 11:20:37.000000000 -0500
+@@ -773,6 +773,28 @@ unsigned long unmap_vmas(struct mmu_gath
+ 		struct vm_area_struct *start_vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+ 		struct zap_details *);
 +
- struct mem_size_stats
- {
- 	unsigned long resident;
-@@ -122,6 +141,7 @@ struct mem_size_stats
- 	unsigned long private_clean;
- 	unsigned long private_dirty;
- 	unsigned long referenced;
-+	u64 pss;
- };
++/**
++ * mm_walk - callbacks for walk_page_range
++ * @pgd_entry: if set, called for each non-empty PGD (top-level) entry
++ * @pud_entry: if set, called for each non-empty PUD (2nd-level) entry
++ * @pmd_entry: if set, called for each non-empty PMD (3rd-level) entry
++ * @pte_entry: if set, called for each non-empty PTE (4th-level) entry
++ * @pte_hole: if set, called for each hole at all levels
++ *
++ * (see walk_page_range for more details)
++ */
++struct mm_walk {
++	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
++	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
++	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
++	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
++	int (*pte_hole)(unsigned long, unsigned long, void *);
++};
++
++int walk_page_range(const struct mm_struct *, unsigned long addr,
++		    unsigned long end, const struct mm_walk *walk,
++		    void *private);
+ void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+ void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+Index: l/mm/Makefile
+===================================================================
+--- l.orig/mm/Makefile	2007-10-26 11:19:36.000000000 -0500
++++ l/mm/Makefile	2007-10-26 11:20:01.000000000 -0500
+@@ -5,7 +5,7 @@
+ mmu-y			:= nommu.o
+ mmu-$(CONFIG_MMU)	:= fremap.o highmem.o madvise.o memory.o mincore.o \
+ 			   mlock.o mmap.o mprotect.o mremap.o msync.o rmap.o \
+-			   vmalloc.o
++			   vmalloc.o pagewalk.o
  
- struct pmd_walker {
-@@ -195,6 +215,7 @@ static int show_map_internal(struct seq_
- 		seq_printf(m,
- 			   "Size:           %8lu kB\n"
- 			   "Rss:            %8lu kB\n"
-+			   "Pss:            %8lu kB\n"
- 			   "Shared_Clean:   %8lu kB\n"
- 			   "Shared_Dirty:   %8lu kB\n"
- 			   "Private_Clean:  %8lu kB\n"
-@@ -202,6 +223,7 @@ static int show_map_internal(struct seq_
- 			   "Referenced:     %8lu kB\n",
- 			   (vma->vm_end - vma->vm_start) >> 10,
- 			   mss->resident >> 10,
-+			   (unsigned long)(mss.pss >> (10 + PSS_SHIFT)),
- 			   mss->shared_clean  >> 10,
- 			   mss->shared_dirty  >> 10,
- 			   mss->private_clean >> 10,
-@@ -226,6 +248,7 @@ static void smaps_pte_range(struct vm_ar
- 	pte_t *pte, ptent;
- 	spinlock_t *ptl;
- 	struct page *page;
-+	int mapcount;
- 
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
- 	for (; addr != end; pte++, addr += PAGE_SIZE) {
-@@ -242,16 +265,19 @@ static void smaps_pte_range(struct vm_ar
- 		/* Accumulate the size in pages that have been accessed. */
- 		if (pte_young(ptent) || PageReferenced(page))
- 			mss->referenced += PAGE_SIZE;
--		if (page_mapcount(page) >= 2) {
-+		mapcount = page_mapcount(page);
-+		if (mapcount >= 2) {
- 			if (pte_dirty(ptent))
- 				mss->shared_dirty += PAGE_SIZE;
- 			else
- 				mss->shared_clean += PAGE_SIZE;
-+			mss->pss += (PAGE_SIZE << PSS_SHIFT) / mapcount;
- 		} else {
- 			if (pte_dirty(ptent))
- 				mss->private_dirty += PAGE_SIZE;
- 			else
- 				mss->private_clean += PAGE_SIZE;
-+			mss->pss += (PAGE_SIZE << PSS_SHIFT);
- 		}
- 	}
- 	pte_unmap_unlock(pte - 1, ptl);
+ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
+ 			   page_alloc.o page-writeback.o pdflush.o \
+Index: l/mm/pagewalk.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ l/mm/pagewalk.c	2007-10-26 11:20:01.000000000 -0500
+@@ -0,0 +1,131 @@
++#include <linux/mm.h>
++#include <linux/highmem.h>
++#include <linux/sched.h>
++
++static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
++			  const struct mm_walk *walk, void *private)
++{
++	pte_t *pte;
++	int err = 0;
++
++	pte = pte_offset_map(pmd, addr);
++	do {
++		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
++		if (err)
++		       break;
++	} while (pte++, addr += PAGE_SIZE, addr != end);
++
++	pte_unmap(pte);
++	return err;
++}
++
++static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
++			  const struct mm_walk *walk, void *private)
++{
++	pmd_t *pmd;
++	unsigned long next;
++	int err = 0;
++
++	pmd = pmd_offset(pud, addr);
++	do {
++		next = pmd_addr_end(addr, end);
++		if (pmd_none_or_clear_bad(pmd)) {
++			if (walk->pte_hole)
++				err = walk->pte_hole(addr, next, private);
++			if (err)
++				break;
++			continue;
++		}
++		if (walk->pmd_entry)
++			err = walk->pmd_entry(pmd, addr, next, private);
++		if (!err && walk->pte_entry)
++			err = walk_pte_range(pmd, addr, next, walk, private);
++		if (err)
++			break;
++	} while (pmd++, addr = next, addr != end);
++
++	return err;
++}
++
++static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
++			  const struct mm_walk *walk, void *private)
++{
++	pud_t *pud;
++	unsigned long next;
++	int err = 0;
++
++	pud = pud_offset(pgd, addr);
++	do {
++		next = pud_addr_end(addr, end);
++		if (pud_none_or_clear_bad(pud)) {
++			if (walk->pte_hole)
++				err = walk->pte_hole(addr, next, private);
++			if (err)
++				break;
++			continue;
++		}
++		if (walk->pud_entry)
++			err = walk->pud_entry(pud, addr, next, private);
++		if (!err && (walk->pmd_entry || walk->pte_entry))
++			err = walk_pmd_range(pud, addr, next, walk, private);
++		if (err)
++			break;
++	} while (pud++, addr = next, addr != end);
++
++	return err;
++}
++
++/**
++ * walk_page_range - walk a memory map's page tables with a callback
++ * @mm - memory map to walk
++ * @addr - starting address
++ * @end - ending address
++ * @walk - set of callbacks to invoke for each level of the tree
++ * @private - private data passed to the callback function
++ *
++ * Recursively walk the page table for the memory area in a VMA,
++ * calling supplied callbacks. Callbacks are called in-order (first
++ * PGD, first PUD, first PMD, first PTE, second PTE... second PMD,
++ * etc.). If lower-level callbacks are omitted, walking depth is reduced.
++ *
++ * Each callback receives an entry pointer, the start and end of the
++ * associated range, and a caller-supplied private data pointer.
++ *
++ * No locks are taken, but the bottom level iterator will map PTE
++ * directories from highmem if necessary.
++ *
++ * If any callback returns a non-zero value, the walk is aborted and
++ * the return value is propagated back to the caller. Otherwise 0 is returned.
++ */
++int walk_page_range(const struct mm_struct *mm,
++		    unsigned long addr, unsigned long end,
++		    const struct mm_walk *walk, void *private)
++{
++	pgd_t *pgd;
++	unsigned long next;
++	int err = 0;
++
++	if (addr >= end)
++		return err;
++
++	pgd = pgd_offset(mm, addr);
++	do {
++		next = pgd_addr_end(addr, end);
++		if (pgd_none_or_clear_bad(pgd)) {
++			if (walk->pte_hole)
++				err = walk->pte_hole(addr, next, private);
++			if (err)
++				break;
++			continue;
++		}
++		if (walk->pgd_entry)
++			err = walk->pgd_entry(pgd, addr, next, private);
++		if (!err &&
++		    (walk->pud_entry || walk->pmd_entry || walk->pte_entry))
++			err = walk_pud_range(pgd, addr, next, walk, private);
++		if (err)
++			break;
++	} while (pgd++, addr = next, addr != end);
++
++	return err;
++}
