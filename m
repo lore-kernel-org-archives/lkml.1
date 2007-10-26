@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbXJZXmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXJZXn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932301AbXJZXmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbXJZXjJ
+	id S932443AbXJZXn0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJZXj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:39:09 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12233 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764314AbXJZXiz (ORCPT
+	Fri, 26 Oct 2007 19:39:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59860
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932147AbXJZXj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:38:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:date:from:to:cc:subject:content-disposition;
-	b=ar7ODvAFDv05n1GfdRB8CMjcC6zn5Rsz21ByXmJ0KE6szbV3VRdk76qfwqWY6ZZQs
-	TggThl05Z/ueUAk5RQy9w==
-Message-Id: <20071026233848.192539989@crlf.corp.google.com>
-References: <20071026233732.568575496@crlf.corp.google.com>
-Date: Fri, 26 Oct 2007 16:37:34 -0700
-From: Mike Waychison <mikew@google.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
-Subject: [patch 2/6][RFC] Allow FIBMAP to return EFBIG on large filesystems.
-Content-Disposition: inline; filename=add_fibmap_check_32bit.patch
+	Fri, 26 Oct 2007 19:39:57 -0400
+Date: Fri, 26 Oct 2007 16:39:58 -0700 (PDT)
+Message-Id: <20071026.163958.171785530.davem@davemloft.net>
+To: rick.jones2@hp.com
+Cc: ebiederm@xmission.com, bunk@kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <472278E3.4000909@hp.com>
+References: <20071026230807.GE30533@stusta.de>
+	<m1zly5wjie.fsf@ebiederm.dsl.xmission.com>
+	<472278E3.4000909@hp.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Propagate an error (EFBIG) to userspace if the physical block is too large to return in a 32bit int instead of truncating it.
+From: Rick Jones <rick.jones2@hp.com>
+Date: Fri, 26 Oct 2007 16:31:47 -0700
 
-Signed-off-by: Mike Waychison <mikew@google.com>
+> Eric W. Biederman wrote:
+> > Adrian Bunk <bunk@kernel.org> writes:
+> > 
+> > 
+> >>This patch fixes the following build error with CONFIG_SYSCTL=n:
+> >>
+> >><--  snip  -->
+> >>
+> >>...
+> >>ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
+> >>ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
+> >>ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
+> >>make[2]: *** [__modpost] Error 1
+> > 
+> > 
+> > I was going to ask if allowing drivers to increase rmem_max
+> > is something that we want to do.  Apparently the road runner
+> > driver has been doing this since the 2.6.12-rc1 when the
+> > git repository starts so this probably isn't a latent bug.
+> 
+> Although it does rather sound like a driver writer yanking the rope from the 
+> hand's of the sysadmin and hanging him with it rather than letting the sysadmin 
+> do it himself.  I've seen other drivers' README's suggesting larger mem's but 
+> not their sources doing it.
 
- fs/ioctl.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+I really don't think what the roadrunner driver is doing is
+correct at all.
 
-Index: linux-2.6.23/fs/ioctl.c
-===================================================================
---- linux-2.6.23.orig/fs/ioctl.c	2007-10-26 15:26:10.000000000 -0700
-+++ linux-2.6.23/fs/ioctl.c	2007-10-26 16:16:28.000000000 -0700
-@@ -52,6 +52,7 @@ static int file_ioctl(struct file *filp,
- 		case FIBMAP:
- 		{
- 			struct address_space *mapping = filp->f_mapping;
-+			sector_t phys_block;
- 			int res;
- 			/* do we support this mess? */
- 			if (!mapping->a_ops->bmap)
-@@ -64,8 +65,15 @@ static int file_ioctl(struct file *filp,
- 				return -EINVAL;
- 
- 			lock_kernel();
--			res = mapping->a_ops->bmap(mapping, block);
-+			phys_block = mapping->a_ops->bmap(mapping, block);
- 			unlock_kernel();
-+
-+			/* Make sure that the return value fits in the
-+			 * user's buffer. */
-+			if ((u32)phys_block < phys_block)
-+				return -EFBIG;
-+
-+			res = phys_block;
- 			return put_user(res, p);
- 		}
- 		case FIGETBSZ:
+I also think what DLM is doing is wrong too.
 
---
+If DLM really wants minimum, it can use SO_SNDBUFFORCE and
+SO_RCVBUFFORCE socket options and use whatever limits it
+likes.
+
+But even this is questionable.
+
+I'll put in Adrian's patch to fix the build as a first
+priority, but in the long term this cruft has gotta go.
