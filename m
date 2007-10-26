@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbXJZRyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbXJZRzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbXJZRyl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJZRye
+	id S1758661AbXJZRzv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJZRzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:54:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48643 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752003AbXJZRyd (ORCPT
+	Fri, 26 Oct 2007 13:55:44 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:60636 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbXJZRzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:54:33 -0400
-Date: Fri, 26 Oct 2007 10:54:31 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, akpm@linux-foundation.org, ak@suse.de,
-       clameter@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
-Message-Id: <20071026105431.77d56253.pj@sgi.com>
-In-Reply-To: <1193420627.5032.46.camel@localhost>
-References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
-	<20071025230409.81f20ed3.pj@sgi.com>
-	<alpine.DEB.0.9999.0710260204590.8261@chino.kir.corp.google.com>
-	<20071026025634.0f32e1e2.pj@sgi.com>
-	<20071026101805.df3ebfda.pj@sgi.com>
-	<1193420627.5032.46.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Oct 2007 13:55:43 -0400
+X-Greylist: delayed 944 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 13:55:43 EDT
+Message-ID: <4722265C.7050907@nortel.com>
+Date: Fri, 26 Oct 2007 11:39:40 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andrew Haley <aph@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, davids@webmaster.com,
+       "Torvalds, Linus" <torvalds@linux-foundation.org>,
+       "Kleen, Andi" <ak@suse.de>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Is gcc thread-unsafe?
+References: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com> <200710260922.54428.nickpiggin@yahoo.com.au> <18209.54926.290448.957962@zebedee.pink>
+In-Reply-To: <18209.54926.290448.957962@zebedee.pink>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Oct 2007 17:39:44.0001 (UTC) FILETIME=[31CE1710:01C817F7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Will it handle the case of MPOL_INTERLEAVE policy on a shm segment that
-> is mapped by tasks in different, possibly disjoint, cpusets.  Local
-> allocation does, and my patch does.  That was one of the primary
-> goals--to address an issue that Christoph has with shared policies.
-> cpusets really muck these up!
+Andrew Haley wrote:
 
-It probably won't handle that.  I don't get along too well with shmem.
+> We're listening, really.  It's unacceptable that gcc should break
+> code.
 
-Can you to an anti-shmem bigot how MPOL_INTERLEAVE should work with
-shmem segments mapped in diverse ways by different tasks in different
-cpusets?  What would be the key attribute(s) of a proper solution?
-Maybe if we keep it simple enough, I can avoid mucking it up too much
-this time around.
+In that case a conversion of a conditional branch to an unconditional 
+write to a visible variable is not an acceptable behaviour.  Aside from 
+the kernel issues, it would break any number of threaded userspace apps.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+As was mentioned elsewhere, it's akin to sprinkling
+
+int j = i; i = j;
+
+throughout the code.  If "i" is accessed by multiple threads, this is 
+not allowed unless a lock is held.
+
+Chris
