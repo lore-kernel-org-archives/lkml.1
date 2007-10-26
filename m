@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXJZJ3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXJZJdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbXJZJ3l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbXJZJ3Z
+	id S1757999AbXJZJdn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXJZJde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:29:25 -0400
-Received: from mga03.intel.com ([143.182.124.21]:44424 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755299AbXJZJ3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:29:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,332,1188802800"; 
-   d="scan'208";a="305911813"
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
-	runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.0.9999.0710261027260.3186@localhost.localdomain>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-	 <1193360591.23935.212.camel@caritas-dev.intel.com>
-	 <alpine.LFD.0.9999.0710261027260.3186@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Oct 2007 17:30:02 +0800
-Message-Id: <1193391002.23935.300.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 26 Oct 2007 09:27:12.0168 (UTC) FILETIME=[638A3A80:01C817B2]
+	Fri, 26 Oct 2007 05:33:34 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:56860 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbXJZJdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:33:33 -0400
+To: dgc@sgi.com
+CC: staubach@redhat.com, akpm@linux-foundation.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20071025235206.GA995458@sgi.com> (message from David Chinner on
+	Fri, 26 Oct 2007 09:52:06 +1000)
+Subject: Re: [PATCH] VFS: new fgetattr() file operation
+References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com> <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu> <20071025224235.GZ995458@sgi.com> <E1IlBqA-0006yj-00@dorka.pomaz.szeredi.hu> <20071025235206.GA995458@sgi.com>
+Message-Id: <E1IlLZi-0007Iv-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 26 Oct 2007 11:33:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 10:48 +0200, Thomas Gleixner wrote:
-> > EFI uses the Windows x86_64 calling convention. The lin2win may be a
-> > more general naming convention that can be used for some other code (the
-> > NDISwrapper?) in the future. Do you agree?
+> On Fri, Oct 26, 2007 at 01:10:14AM +0200, Miklos Szeredi wrote:
+> > > On Wed, Oct 24, 2007 at 05:27:04PM +0200, Miklos Szeredi wrote:
+> > > > > >> Wouldn't you be better off by attempting to implement an "open
+> > > > > >> by ino" operation and an operation to get the generation count
+> > > > > >> for the file and then modifying the network protocol of interest
+> > > > > >> to use these as identifiers for the file to be manipulated?
+> > > > > >>     
+> > > > > >
+> > > > > > You mean an "open by inode" on the userspace API?  My guess, it
+> > > > > > wouldn't get very far.
+> > > > > 
+> > > > > This isn't a new idea and has been implemented on a variety of
+> > > > > different systems.
+> > > > 
+> > > > Like?
+> > > 
+> > > XFS.
+> > > 
+> > > 'man open_by_handle'
+> > 
+> > Doesn't seem widely used, with 600 something google hits.
 > 
-> I agree not at all. I do not care whether the EFI creators smoked the
-> Windows-crackpipe or some other hallucinogen when they decided to use
-> this calling convention. We definitely do not want to think about
-> NDISwrapper or any other Windows related hackery in the kernel.
+> from the man page:
+> 
+> "They are intended  for  use  by a limited set of system utilities such
+> as backup programs."
+> 
+> It also gets used by HSMs and so it is current, tested and is not
+> going away....
 
-OK, I will change the name to something like lin2efi.
+Sure.
 
-> I still do not understand why we need all this EFI hackery at all
-> aside of the possible usage for saving a crash dump on FLASH, which we
-> could do directly from the kernel as well.
+> > And in this
+> > old thread Linus is not entirely enthusiastic about the concept:
+> > 
+> >   http://lkml.org/lkml/1999/1/11/244
+> 
+> That was "open by inode number", AFAICT. A handle is an opaque
+> blob that can be an arbitrary length defined by the filesystem.
+> You have to convert a fd or path to a handle first before you can
+> use it later, so any filesystem can implement it...
+> 
+> i.e. it is exactly what this (unanswered) post suggested:
+> 
+> http://lkml.org/lkml/1999/1/13/186
 
-Ask every user to setup a crash dump environment is a bit difficult
-because some configuration like reserving memory, loading crash dump
-kernel must be done. But saving OOPS information in FLASH via EFI
-variable runtime service is quite simple, without configuration
-requirement. That is, there could be more bug report with OOPS
-information. I think this is useful.
+Well, yeah, if a filesystem doesn't have a global index, the whole
+path could just be stuffed into the handle.
 
-Best Regards,
-Huang Ying
+But there's not much point in that, is there?  And because the
+interface bypasses normal access checking on parent directories, it
+has security implications, making it not generally useful.
+
+Specifically, it is not useful for the "unprivileged file server" case
+that Peter was suggesting.
+
+Miklos
