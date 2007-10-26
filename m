@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbXJZUWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761811AbXJZUYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760819AbXJZUWx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJZUWq
+	id S1761811AbXJZUYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXJZUYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:22:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51583 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbXJZUWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:22:45 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Miklos Szeredi <mszeredi@suse.cz>
-Subject: Re: [AppArmor 32/45] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
-Date: Fri, 26 Oct 2007 22:24:45 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-References: <20071026064024.243943043@suse.de> <20071026064051.393728475@suse.de> <1193398252.4721.7.camel@localhost>
-In-Reply-To: <1193398252.4721.7.camel@localhost>
+	Fri, 26 Oct 2007 16:24:12 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54541 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752077AbXJZUYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:24:11 -0400
+Date: Fri, 26 Oct 2007 22:17:42 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Edward Hsu <edward_hsu@realtek.com.tw>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] r8169: don't call napi_disable if not doing NAPI
+Message-ID: <20071026201742.GA29246@electric-eye.fr.zoreil.com>
+References: <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu> <1193241191.14314.8.camel@localhost> <20071024155521.GA16690@elte.hu> <1193242267.6914.6.camel@twins> <1193378269.17910.4.camel@localhost> <20071026063733.GA12426@elte.hu> <20071026094833.539a69aa@freepuppy.rosehill> <20071026175613.GA18770@elte.hu> <20071026113305.57dea765@freepuppy.rosehill>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710262224.45773.agruen@suse.de>
+In-Reply-To: <20071026113305.57dea765@freepuppy.rosehill>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007 13:30, Miklos Szeredi wrote:
-> There's a slight problem (other than HCH not liking it) with this
-> approach of passing the open file in iattr:  for special files, the
-> struct file pointer makes no sense to the filesystem, since it is always
-> opened by the generic functions.
+Stephen Hemminger <shemminger@linux-foundation.org> :
+> Don't call napi_disable if not configured.
+> And make sure that any misuse of napi_xxx in future fails
+> with a compile error.
 
-So what do you think where the inodes come from for syscalls like fchmod? Out 
-of struct file, of course. But your f_op->getattr and f_op->setattr patches 
-are meant for passing struct file down to filesystems anyway, so that 
-completely contradicts what you are saying above.
+Disable napi polling early and remove the useless poll_locked logic.
 
-> So I think the correct solution (which was suggested by Trond and
-> others) is to define an f_op->fsetattr() method, which interested
-> filesystems can define.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-That's nothing but a replacement for ATTR_FILE and iattr->ia_file. Except by 
-removing the ATTR_FILE flag, LSMs will no longer get that information for 
-distinguishing file descriptor operations from other operations.
+Acked-off-by: Francois Romieu <romieu@fr.zoreil.com>
 
-AppArmor needs to know when notify_change is called on a file descriptor, but 
-it doesn't care about the file descriptor itself. So any way of passing along 
-that information will be fine.
-
-Thanks,
-Andreas
+-- 
+Ueimor
