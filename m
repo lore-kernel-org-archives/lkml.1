@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbXJZNoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbXJZNpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759487AbXJZNoP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 09:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbXJZNoA
+	id S1760877AbXJZNpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 09:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbXJZNpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 09:44:00 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:56563 "EHLO atlrel6.hp.com"
+	Fri, 26 Oct 2007 09:45:36 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42531 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750779AbXJZNn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 09:43:59 -0400
-Message-ID: <4721EF03.1080605@hp.com>
-Date: Fri, 26 Oct 2007 09:43:31 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] [CRYPTO]: Fix hmac_digest from the SG breakage.
-References: <4720F775.8030702@hp.com> <20071025.184654.191409554.davem@davemloft.net>
-In-Reply-To: <20071025.184654.191409554.davem@davemloft.net>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752093AbXJZNpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 09:45:35 -0400
+Subject: Re: [interesting] smattering of possible memory ordering bugs
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, paulus@samba.org,
+       benh@kernel.crashing.org, adaplas@gmail.com,
+       "Morton, Andrew" <akpm@linux-foundation.org>, xfs-masters@oss.sgi.com
+In-Reply-To: <200710261209.58519.nickpiggin@yahoo.com.au>
+References: <200710261209.58519.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 08:45:24 -0500
+Message-Id: <1193406324.6834.3.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Vlad Yasevich <vladislav.yasevich@hp.com>
-> Date: Thu, 25 Oct 2007 16:07:17 -0400
-> 
->> Crypto now uses SG helper functions.  Fix hmac_digest to use those
->> functions correctly and fix the oops associated with it.
->>
->> Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-> 
-> Since I keep hitting this when I try to test IPSEC on my systems
-> I'm going to apply this to my net-2.6 tree.
-> 
-> Herbert, I hope you don't mind :-)
-> 
+Memory barriers aren't one of my strengths, but this appears correct.
 
-Got reported to me because SCTP kept breaking.  Wasn't sure which
-way to send it.
+Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-As long as it's somewhere, I am happy.
+On Fri, 2007-10-26 at 12:09 +1000, Nick Piggin wrote:
+> Index: linux-2.6/fs/jfs/jfs_metapage.c
+> ===================================================================
+> --- linux-2.6.orig/fs/jfs/jfs_metapage.c
+> +++ linux-2.6/fs/jfs/jfs_metapage.c
+> @@ -39,11 +39,12 @@ static struct {
+>  #endif
+>  
+>  #define metapage_locked(mp) test_bit(META_locked, &(mp)->flag)
+> -#define trylock_metapage(mp) test_and_set_bit(META_locked,
+> &(mp)->flag)
+> +#define trylock_metapage(mp) test_and_set_bit_lock(META_locked,
+> &(mp)->flag)
+>  
+>  static inline void unlock_metapage(struct metapage *mp)
+>  {
+> -       clear_bit(META_locked, &mp->flag);
+> +       clear_bit_unlock(META_locked, &mp->flag);
+> +       smp_mb__after_clear_bit();
+>         wake_up(&mp->wait);
+>  }
+>   
 
-Thanks
--vlad
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
