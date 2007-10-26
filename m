@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXJZR2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761422AbXJZR3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759803AbXJZR2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXJZR2o
+	id S1761422AbXJZR3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXJZR3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:28:44 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1028 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbXJZR2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:28:43 -0400
-Date: Fri, 26 Oct 2007 19:28:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: [PATCH 09/10] Change table chaining layout
-Message-ID: <20071026172838.GD8875@kernel.dk>
-References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org> <200710251840.02157.rusty@rustcorp.com.au> <alpine.LFD.0.999.0710250834390.30120@woody.linux-foundation.org> <18209.29891.911465.715995@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
+	Fri, 26 Oct 2007 13:29:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:43648 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074AbXJZR3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 13:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ko7rRDW370pPQp1qQpPjv+PQw9WPDNETt7Y97ikfzPLMJlGl3K1liyJq3DRFTL2kvodS/dBUL9EpjpxO4ZEHfKE4KjxdrSJdPT/RiME8ZMpJHs9ZR5oAJQj9uDepkS+7xhUY2lCisPNXQX2eAXAZilQkeMIUDsU0psWRPbbBNNk=
+Message-ID: <d120d5000710261029t6673c60ci923823fb84cac373@mail.gmail.com>
+Date: Fri, 26 Oct 2007 13:29:37 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Ryan Lortie" <desrt@desrt.ca>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, "Vojtech Pavlik" <vojtech@suse.cz>,
+       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
+Subject: Re: [PATCH] Input: Support for a less exclusive grab.
+In-Reply-To: <20071026164441.GI26573@aehallh.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
+References: <20070609084800.GR6362@aehallh.com>
+	 <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com>
+	 <1193191094.32696.2.camel@moonpix.desrt.ca>
+	 <200710232333.08306.dmitry.torokhov@gmail.com>
+	 <20071024153508.GG26573@aehallh.com>
+	 <1193290654.15893.2.camel@moonpix.desrt.ca>
+	 <20071026164441.GI26573@aehallh.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26 2007, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 26 Oct 2007, Paul Mackerras wrote:
+On 10/26/07, Zephaniah E. Hull <warp@aehallh.com> wrote:
+> On Thu, Oct 25, 2007 at 01:37:34AM -0400, Ryan Lortie wrote:
+> > On Wed, 2007-24-10 at 11:35 -0400, Zephaniah E. Hull wrote:
+> > > We need a way to, at the absolute minimum, unbind the keyboard from the
+> > > text console.  The current solution sucks for things like rfkill.
+> > >
+> > > I'm not convinced that Ryan's fix is any better, but just saying that X
+> > > should open the console and ignore the characters is simply not an
+> > > option as far as I am concerned for X.
 > >
-> > Linus Torvalds writes:
-> > 
-> > > Nobody should *ever* walk the list to find the length. Does anybody really 
-> > > do that? Yes, we pass the thing down, but do people *need* it?
-> > 
-> > Yes, I need it for devices that use the macintosh DBDMA
-> > (descriptor-based DMA) hardware.  The DBDMA hardware reads an array of
-> > descriptors from system RAM, so I need to allocate an array and fill
-> > it in with DBDMA command blocks (and then dma-map it and point the
-> > device at it).
-> 
-> Yes, for allocation purposes you'd need the size ahead of time, agreed. 
-> Otherwise you have to walk the list twice.
+> > Can you think of any other way to separate things like rfkill/evdev from
+> > things like the text console that's less hacky than my 'priority'
+> > scheme?
+>
+> What we really want to give is exclusitivity verses other 'end users',
+> as opposed the 'filters'.
+>
+> I'm defining an 'end user' to be a handler that cares about all the
+> events from a device and plans on doing something with it.
+>
+> That would be the console layer for keyboards, /dev/input/mice and
+> /dev/input/mouse<n> for mice, X for both of those, etc.
+>
+> A 'filter' cares about a key or two, and might even want to remove it
+> from the stream, rfkill is a good example.
+>
 
-Do you really allocate a fresh table for every command, or just a max
-sized one at init?
+No, rfkill does not want to remove anything from the event stream. It
+perfectly happy with other users seeing the same events and doing
+their own things with them.
 
-> > Maybe the drivers for devices that use DBDMA are now buggy.  Certainly
-> > filling in the array of DBDMA command blocks involves walking the
-> > list, but it would extremely useful to know how much to allocate
-> > before we start filling them in.  So we at least need an upper bound
-> > on the number of "real" entries, even if we don't have the exact
-> > number.
-> 
-> Hmm. Depending on where you do this, and if this is some block-layer 
-> specific driver/code (rather than necessarily a generic SG thing), you do 
-> have the req->nr_phys_segments thing which should be that for you (ie the 
-> SG list may have _fewer_ requests in it in case some of those entries got 
-> squashed together due to be contiguous).
-> 
-> But yeah, I don't think it would be wrong at all to have a
-> 
-> 	struct scatterlist_head {
-> 		unsigned int entries;
-> 		unsigned int flags;	/* ? */
-> 		struct scatterlist *sg;
-> 	};
-> 
-> which would be passed down at higher levels.
+> Now, how do we design for that?  Not a clue right now, still thinking
+> about it really.
+>
 
-That'd be fine with me as well, but I really don't think that a lot of
-people really do need the sg count when you can just loop over the table
-until it returns NULL.
+I really think that it should be solved by applications themselves.
+Applications should only open devices they are interested in and only
+process events they are interested in. The rest should be simply
+ignored by the application. This is the only sane way. Otherwise we
+will need to split applications into first and second class citizens
+and have to manage dependencies between them.
+
+The only exception is console because both kerenl and X are fighting
+over control of VT switching. As a workaround one could open console
+in raw mode. If this feels too "dirty" I guess we could have ioctl for
+"taking over console" for applications willing to do so. The ioctl
+would disable VT switching and touching LEDs by the console driver.
 
 -- 
-Jens Axboe
-
+Dmitry
