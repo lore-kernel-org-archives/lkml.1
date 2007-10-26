@@ -1,151 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765604AbXJZRGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbXJZRH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765604AbXJZRGJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbXJZRFz
+	id S1764059AbXJZRH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXJZRHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:05:55 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:63183 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750849AbXJZRFy (ORCPT
+	Fri, 26 Oct 2007 13:07:19 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:28107 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757718AbXJZRHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:05:54 -0400
-Message-ID: <47221E6F.1090607@lwfinger.net>
-Date: Fri, 26 Oct 2007 12:05:51 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 26 Oct 2007 13:07:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JE6c4YXeGYk3XRNMW4i+kzKR7V5HKp66iNEa2B8uMuE6c8SLaXr8Wm6oRk9o1SZ/wrIyiWL8IFoZ1TB2DHE1IL4vPix4URDlqiK0BXBGdxOcoeZXaOhsYm23YXQPJ3jHbRvjYyLckFiUXdyutTqLoVW3OAVzsMDG1LIu7L/Kt6I=
+Message-ID: <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+Date: Fri, 26 Oct 2007 19:07:14 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Is gcc thread-unsafe?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Haley" <aph@redhat.com>
+In-Reply-To: <alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
+	 <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
+	 <alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
+	 <alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my openSUSE 10.3 x86_64 system running v2.6.24-rc1-281-g22d2aa1, I get the sysfs rename messages.
+On 10/26/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+> On Fri, 26 Oct 2007, Linus Torvalds wrote:
+> >
+> > On Fri, 26 Oct 2007, Bart Van Assche wrote:
+> > >
+> > > You can find my proposal to improve gcc here:
+> > > http://gcc.gnu.org/ml/gcc/2007-10/msg00465.html
+> >
+> > Btw, I think this is fine per se, but putting "__attribute__((acquire))"
+> > on the functions that acquire a lock does seem to be problematic, in that
+> > quite often you might well want to inline those things. How would you
+> > handle that?
+>
+> Thinking some more about this, you really have two cases:
+>  - full functions taking/releasing locks (possibly conditionally, ie
+>   with something like trylock and/or based on argument values).
+>
+>   You simply *cannot* require these to be marked, because the locking may
+>   have been done indirectly. Yes, you can mark things like
+>   "pthread_mutex_trylock()" as being an acquire-function, but the fact
+>   is, users will then wrap these things in *other* functions, and return
+>   their return values.
+>
+>   Ergo: a compiler *must* assume that a function call that it
+>   didn't inline involves locking. There's no point in adding some
+>   gcc-specific attributes to system header files, because it's not going
+>   to fix anything in any portable program.
 
-Using Greg's patch, nothing changed. The log results are:
+You have a point here.
 
-sysfs: duplicate filename 'eth1' can not be created
-WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+>  - inline assembly (together with, potentially, compiler primitives).
+>    That's the only other way to reliably do locking from C.
+>
+>    This one gcc could certainly extend on. But would there really be any
+>    upside? It would be easier/better to say that inline assembly (at least
+>    if it clobbers memory or is volatile) has the same serialization issues
+>    as a function call.
 
-Call Trace:
- [<ffffffff802d1180>] sysfs_add_one+0x5c/0xc9
- [<ffffffff802d20e1>] sysfs_create_link+0xd3/0x12e
- [<ffffffff80363855>] device_rename+0x17a/0x1db
- [<ffffffff80393a5d>] dev_change_name+0x101/0x1fe
- [<ffffffff80393d5e>] dev_ifsioc+0x204/0x2bf
- [<ffffffff80394352>] dev_ioctl+0x539/0x644
- [<ffffffff80252e12>] __lock_acquire+0xd26/0xd47
- [<ffffffff8028fab9>] fd_install+0x30/0x68
- [<ffffffff80386ca2>] sock_ioctl+0x204/0x212
- [<ffffffff8029d666>] do_ioctl+0x2a/0x77
- [<ffffffff8029d904>] vfs_ioctl+0x251/0x26e
- [<ffffffff803eff8b>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8029d963>] sys_ioctl+0x42/0x67
- [<ffffffff8020c15e>] system_call+0x7e/0x83
+A problem is that the serialization properties defined for functions
+in the C standard only apply to volatile variables, not to
+non-volatile variables. But for asm statements this can be solved by
+adding memory to the list of clobbered registers -- this will prevent
+any reordering of manipulations of non-volatile variables and asm
+statements.
 
-net eth1: device_rename: sysfs_create_symlink failed (-17)
-udev: renamed network interface wlan0 to eth1
-===========================================================
+Andrew, do you know whether gcc currently contains any optimization
+that interchanges the order of accesses to non-volatile variables and
+function calls ?
 
-Kay's patch shows the following BUG, as well as the rename message:
+> So the fact is, any compiler that turns
+>
+>         if (conditional)
+>                 x++;
+>
+> into an unconditional write to x (where 'x' is potentially visible to the
+> outside - global visibility or has had its address taken) is just broken.
+>
+> No ifs, buts or maybes about it. You simply cannot do that optimization,
+> because there is no way for the compiler to know whether the conditional
+> implies that you hold a lock or not.
 
-BUG: sleeping function called from invalid context at kernel/mutex.c:207
-in_atomic():1, irqs_disabled():0
-2 locks held by udevd/1965:
- #0:  (rtnl_mutex){--..}, at: [<ffffffff8039c6f4>] rtnl_lock+0x12/0x14
- #1:  (&dev_base_lock){-.--}, at: [<ffffffff80393a1b>] dev_change_name+0xff/0x1f0
+I agree with the above, but I see this as a different issue -- it
+wasn't my intention to solve this with my proposal for acquire and
+release attributes.
 
-Call Trace:
- [<ffffffff80250854>] debug_show_held_locks+0x22/0x24
- [<ffffffff8022d10c>] __might_sleep+0x10a/0x10c
- [<ffffffff803ef006>] mutex_lock_nested+0x28/0x2e1
- [<ffffffff802f387d>] kobject_rename+0x6b/0xea
- [<ffffffff802d19b9>] sysfs_rename_dir+0x2d/0x178
- [<ffffffff802f387d>] kobject_rename+0x6b/0xea
- [<ffffffff802f38b0>] kobject_rename+0x9e/0xea
- [<ffffffff80363760>] device_rename+0xc5/0x1db
- [<ffffffff80393a26>] dev_change_name+0x10a/0x1f0
- [<ffffffff80393d10>] dev_ifsioc+0x204/0x2bf
- [<ffffffff80394304>] dev_ioctl+0x539/0x644
- [<ffffffff80252e12>] __lock_acquire+0xd26/0xd47
- [<ffffffff8028fab9>] fd_install+0x30/0x68
- [<ffffffff80386c62>] sock_ioctl+0x204/0x212
- [<ffffffff8029d666>] do_ioctl+0x2a/0x77
- [<ffffffff8029d904>] vfs_ioctl+0x251/0x26e
- [<ffffffff803eff3b>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8029d963>] sys_ioctl+0x42/0x67
- [<ffffffff8020c15e>] system_call+0x7e/0x83
-
-WARNING: at kernel/mutex.c:135 __mutex_lock_common()
-
-Call Trace:
- [<ffffffff8022d10c>] __might_sleep+0x10a/0x10c
- [<ffffffff803ef062>] mutex_lock_nested+0x84/0x2e1
- [<ffffffff802f387d>] kobject_rename+0x6b/0xea
- [<ffffffff802d19b9>] sysfs_rename_dir+0x2d/0x178
- [<ffffffff802f387d>] kobject_rename+0x6b/0xea
- [<ffffffff802f38b0>] kobject_rename+0x9e/0xea
- [<ffffffff80363760>] device_rename+0xc5/0x1db
- [<ffffffff80393a26>] dev_change_name+0x10a/0x1f0
- [<ffffffff80393d10>] dev_ifsioc+0x204/0x2bf
- [<ffffffff80394304>] dev_ioctl+0x539/0x644
- [<ffffffff80252e12>] __lock_acquire+0xd26/0xd47
- [<ffffffff8028fab9>] fd_install+0x30/0x68
- [<ffffffff80386c62>] sock_ioctl+0x204/0x212
- [<ffffffff8029d666>] do_ioctl+0x2a/0x77
- [<ffffffff8029d904>] vfs_ioctl+0x251/0x26e
- [<ffffffff803eff3b>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8029d963>] sys_ioctl+0x42/0x67
- [<ffffffff8020c15e>] system_call+0x7e/0x83
-
-sysfs: duplicate filename 'eth1' can not be created
-WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-
-Call Trace:
- [<ffffffff802d1180>] sysfs_add_one+0x5c/0xc9
- [<ffffffff802d20e1>] sysfs_create_link+0xd3/0x12e
- [<ffffffff80363815>] device_rename+0x17a/0x1db
- [<ffffffff80393a26>] dev_change_name+0x10a/0x1f0
- [<ffffffff80393d10>] dev_ifsioc+0x204/0x2bf
- [<ffffffff80394304>] dev_ioctl+0x539/0x644
- [<ffffffff80252e12>] __lock_acquire+0xd26/0xd47
- [<ffffffff8028fab9>] fd_install+0x30/0x68
- [<ffffffff80386c62>] sock_ioctl+0x204/0x212
- [<ffffffff8029d666>] do_ioctl+0x2a/0x77
- [<ffffffff8029d904>] vfs_ioctl+0x251/0x26e
- [<ffffffff803eff3b>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8029d963>] sys_ioctl+0x42/0x67
- [<ffffffff8020c15e>] system_call+0x7e/0x83
-
-net eth1: device_rename: sysfs_create_symlink failed (-17)
-
-=============================================================
-
-
-The following patch logs the problem with a minimum of log output.
-
-Index: linux-2.6/fs/sysfs/dir.c
-===================================================================
---- linux-2.6.orig/fs/sysfs/dir.c
-+++ linux-2.6/fs/sysfs/dir.c
-@@ -418,12 +418,8 @@ void sysfs_addrm_start(struct sysfs_addr
-  */
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
--	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
--		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
--		       "can not be created\n", sd->s_name);
--		WARN_ON(1);
-+	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
- 		return -EEXIST;
--	}
-
- 	sd->s_parent = sysfs_get(acxt->parent_sd);
-
-
-
-
-Larry
+Bart Van Assche.
