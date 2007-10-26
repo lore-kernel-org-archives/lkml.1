@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbXJZSMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbXJZSNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760216AbXJZSMc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbXJZSMX
+	id S1763029AbXJZSNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXJZSNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:12:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:39667 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbXJZSMV (ORCPT
+	Fri, 26 Oct 2007 14:13:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:62100 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755519AbXJZSNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:12:21 -0400
+	Fri, 26 Oct 2007 14:13:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=JRB3BzboPpx9gHQoNt0+D+GbsVQc40hR/H4OVKoqLG969Q6MH0rCQWCnvwV2Aup1jzuhOzjv/znR9ukj6ETtVXKd7h4WycZYUGKKEiJaA6o94cuDg+ZFmj48sHtYa4hmeu+IVT9x5al3QOIV+vrKGqFqU1llnV0Nr4DbkkgRgGM=
-Message-ID: <47222DF3.3040208@gmail.com>
-Date: Fri, 26 Oct 2007 22:12:03 +0400
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=HrTacz49lbwao5sYPsLhU7aY2w/4E74EQrbEYYfOwW0y7f1ZpyoabmtN5+PyKQeoC9Aqc31qr5xweWAyndKe0QZ1vPd/hHHc3Gd+F0R/TMzmLsTQAC2P/mBi/or9YNXX9sZIWkAPtgzDano8OlxPeG85K8PdTCR5wrg6H83mD2Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Regression: commit "ide: constify struct ide_port_info" causes breakage
+Date: Fri, 26 Oct 2007 20:18:14 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20071026155648.GB4321@flint.arm.linux.org.uk>
+In-Reply-To: <20071026155648.GB4321@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.624-rc1 regression] lost battery information
-References: <200710262024.06012.arvidjaar@mail.ru> <47221C67.9050502@gmail.com> <200710262120.22536.arvidjaar@mail.ru>
-In-Reply-To: <200710262120.22536.arvidjaar@mail.ru>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710262018.14815.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> On Friday 26 October 2007, Alexey Starikovskiy wrote:
->> Andrey Borzenkov wrote:
->>> I have lost battery in 2.6.24-rc1. Without CONFIG_ACPI_PROCFS I have
->>> no /proc/acpi/battery and cannot test netlink interface because right now
->>> there is no consumer of this.
->> for /sysfs interface you need to enable power_supply driver.
->> or you could apply this patch and power_supply will be selected by battery
->> itself.
->>
+On Friday 26 October 2007, Russell King wrote:
+> commit 8562043606430185cad26d085d46adcc7ad67fd1 is broken, causing:
 > 
-> I already have power_supply module, battery depends on it and it is autloaded. 
-> But I fail to see where I can get battery info in /sys
-Intent was to put into /sysfs same information:
-aystarik@samsung:~/client_conf$ ls /sys/class/power_supply/BAT1/
-alarm  charge_full  charge_full_design  charge_now  current_now  device  manufacturer  model_name  present  status  subsystem  technology  type  uevent  voltage_min_design  voltage_now
+>   CC      drivers/ide/pci/cmd64x.o
+>   CC      drivers/ide/pci/hpt366.o
+> drivers/ide/pci/hpt366.c:1428: error: hpt366_chipsets causes a section type conflict
+> 
+> and therefore should be reverted.
 
-aystarik@samsung:~/client_conf$ cat /sys/class/power_supply/BAT1/*
-0
-4172000
-4300000
-4172000
-0
-cat: /sys/class/power_supply/BAT1/device: Is a directory
-Pacifi
-Bat1
-1
-Full
-cat: /sys/class/power_supply/BAT1/subsystem: Is a directory
-Li-ion
-Battery
-PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0C0A:00
-PHYSDEVBUS=acpi
-PHYSDEVDRIVER=battery
-POWER_SUPPLY_NAME=BAT1
-POWER_SUPPLY_TYPE=Battery
-POWER_SUPPLY_STATUS=Full
-POWER_SUPPLY_PRESENT=1
-POWER_SUPPLY_TECHNOLOGY=Li-ion
-POWER_SUPPLY_VOLTAGE_MIN_DESIGN=14800000
-POWER_SUPPLY_VOLTAGE_NOW=16522000
-POWER_SUPPLY_CURRENT_NOW=0
-POWER_SUPPLY_CHARGE_FULL_DESIGN=4300000
-POWER_SUPPLY_CHARGE_FULL=4172000
-POWER_SUPPLY_CHARGE_NOW=4172000
-POWER_SUPPLY_MODEL_NAME=Bat1
-POWER_SUPPLY_MANUFACTURER=Pacifi
-14800000
-16522000
+Fixed 3 days ago, patch was posted to LKML.
 
-aystarik@samsung:~/client_conf$ cat /proc/acpi/battery/BAT1/*
-alarm:                   unsupported
-present:                 yes
-design capacity:         4300 mAh
-last full capacity:      4172 mAh
-battery technology:      rechargeable
-design voltage:          14800 mV
-design capacity warning: 208 mAh
-design capacity low:     41 mAh
-capacity granularity 1:  41 mAh
-capacity granularity 2:  41 mAh
-model number:            Bat1
-serial number:           001
-battery type:            LION
-OEM info:                Pacifi
-present:                 yes
-capacity state:          ok
-charging state:          charged
-present rate:            0 mA
-remaining capacity:      4172 mAh
-present voltage:         16518 mV
+http://lkml.org/lkml/2007/10/23/411
+
+[ Will be pushed to Linus together with few other fixes soon. ]
+
+> The problem arises because hpt366 has other data marked with __devinitdata,
+> so the compiler tries to define the initdata section with read-write
+> attributes at one point, and read-only attributes when encountering the
+> const-but-devinitdata declaration:
+> 
+> static struct hpt_info hpt36x __devinitdata = {
+> static struct hpt_info hpt370 __devinitdata = {
+> static struct hpt_info hpt370a __devinitdata = {
+> ...
+> static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
+> 
+> If we want ide_port_info to be read-only initdata, then we need
+> __devroinitdata and __roinitdata tags.
+
+http://lkml.org/lkml/2007/10/23/412
+
+Thanks,
+Bart
