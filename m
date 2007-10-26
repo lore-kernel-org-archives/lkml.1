@@ -1,79 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761867AbXJZTti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbXJZT6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761867AbXJZTti (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXJZTtb
+	id S1754762AbXJZT6T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJZT6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:49:31 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52841 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbXJZTta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:49:30 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@ftp.linux.org.uk>,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH] proc: Simplify and correct proc_flush_task
-References: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>
-	<alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
-Date: Fri, 26 Oct 2007 13:43:28 -0600
-In-Reply-To: <alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Fri, 26 Oct 2007 11:06:52 -0700 (PDT)")
-Message-ID: <m1r6jhzmov.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 15:58:10 -0400
+Received: from khc.piap.pl ([195.187.100.11]:49799 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110AbXJZT6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 15:58:09 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sylvain.meyer@worldonline.fr,
+       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@pol.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] Intel FB pixel clock calculation fix
+References: <m3ir6il3wl.fsf@maximus.localdomain>
+	<20070910225221.f0eaf22c.akpm@linux-foundation.org>
+	<m3veah75u6.fsf@maximus.localdomain>
+	<20071026175143.GB1573@elf.ucw.cz>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 26 Oct 2007 21:58:05 +0200
+In-Reply-To: <20071026175143.GB1573@elf.ucw.cz> (Pavel Machek's message of "Fri, 26 Oct 2007 19:51:43 +0200")
+Message-ID: <m33avxlkc2.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek <pavel@ucw.cz> writes:
 
-Currently we special case when we have only the initial pid namespace.
-Unfortunately in doing so the copied case for the other namespaces was
-broken so we don't properly flush the thread directories :(
+> On Tue 2007-09-11 14:18:57, Krzysztof Halasa wrote:
+>> I think 2.6.22 would be overkill, .23 - not sure.
+>
+> I don't think this is -stable kind of bug.
 
-So this patch removes the unnecessary special case (removing a
-usage of proc_mnt) and corrects the flushing of the thread directories.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/proc/base.c |   15 ++++++---------
- 1 files changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index aeaf0d0..a17c268 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2328,21 +2328,18 @@ out:
- 
- void proc_flush_task(struct task_struct *task)
- {
--	int i, leader;
--	struct pid *pid, *tgid;
-+	int i;
-+	struct pid *pid, *tgid = NULL;
- 	struct upid *upid;
- 
--	leader = thread_group_leader(task);
--	proc_flush_task_mnt(proc_mnt, task->pid, leader ? task->tgid : 0);
- 	pid = task_pid(task);
--	if (pid->level == 0)
--		return;
-+	if (thread_group_leader(task))
-+		tgid = task_tgid(task);
- 
--	tgid = task_tgid(task);
--	for (i = 1; i <= pid->level; i++) {
-+	for (i = 0; i <= pid->level; i++) {
- 		upid = &pid->numbers[i];
- 		proc_flush_task_mnt(upid->ns->proc_mnt, upid->nr,
--				leader ? 0 : tgid->numbers[i].nr);
-+			tgid ? tgid->numbers[i].nr : 0);
- 	}
- 
- 	upid = &pid->numbers[pid->level];
+Given the timeframe, I can only agree once again :-)
 -- 
-1.5.3.rc6.17.g1911
-
+Krzysztof Halasa
