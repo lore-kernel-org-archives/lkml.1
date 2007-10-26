@@ -1,77 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbXJZCJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763248AbXJZCKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763159AbXJZCJl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 22:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXJZCJe
+	id S1763248AbXJZCKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 22:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbXJZCKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 22:09:34 -0400
-Received: from mga11.intel.com ([192.55.52.93]:49103 "EHLO mga11.intel.com"
+	Thu, 25 Oct 2007 22:10:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:39650 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755366AbXJZCJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 22:09:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
-   d="scan'208";a="186578456"
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
-	runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <m17ilb5cfv.fsf@ebiederm.dsl.xmission.com>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-	 <m1r6jj5e27.fsf@ebiederm.dsl.xmission.com>
-	 <200710251906.10210.ak@novell.com> <4720CD80.5030106@zytor.com>
-	 <m17ilb5cfv.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
+	id S1758550AbXJZCKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 22:10:33 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Date: Fri, 26 Oct 2007 12:11:01 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx>
+In-Reply-To: <1193255992-14385-1-git-send-email-matthew@wil.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Oct 2007 10:12:18 +0800
-Message-Id: <1193364738.23935.246.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 26 Oct 2007 02:09:29.0474 (UTC) FILETIME=[3DC12620:01C81775]
+Content-Disposition: inline
+Message-Id: <200710261211.01423.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 11:30 -0600, Eric W. Biederman wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
-> > Andi Kleen wrote:
-> >>> Especially for accessing the real time clock that has a well
-> >>> defined hardware interface going through efi an additional
-> >>> software emulation layer looks like asking for trouble.
-> >>
-> >> I agree it's pointless for the hardware clock, but EFI also offers services to
-> >> write some data to the CMOS RAM
-> >> which could be very useful to save oops data over reboot.
-> >> I don't think this can be done safely otherwise without BIOS cooperation.
-> >>
-> >
-> > The ability to scurry away even a small amount of data without relying on the
-> > disk system is highly desirable.  Think next-boot type information.
-> 
-> Yes.  If that were to be the justifying case and if that was what
-> the code was implementing I could see the point.
-> 
-> However this point was made in an earlier review.  This point
-> was already been made, and still this patchset doesn't
-> include that functionality and it still includes the code
-> to disable direct hardware access for no seemingly sane
-> reason.
+On Thursday 25 October 2007 05:59:49 Matthew Wilcox wrote:
+> Consecutive calls to printk are non-atomic, which leads to various
+> implementations for accumulating strings which can be printed in one call.
+> This is a generic string buffer which can also be used for non-printk
+> purposes.  There is no sb_scanf implementation yet as I haven't identified
+> a user for it.
+>
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> ---
+>  include/linux/stringbuf.h |   77 ++++++++++++++++++++++++++++++++++++++++
+>  lib/Makefile              |    2 +-
+>  lib/stringbuf.c           |   85 +++++++++++++++++++++++++++++++++++++++++++++
+> 3 files changed, 163 insertions(+), 1 deletions(-)
 
-The EFI variable runtime service is included in this patchset.
+Hi Willy,
 
-The EFI time runtime service is selectable via kernel command line
-parameter now. If it is desired, it can be disabled by default, and only
-enabled if specified in kernel command line parameter. I think the time
-runtime service may be useful if the underlying hardware is changed
-silently by some vendor.
+	This just seems like more optimization and complexity that we need.  Interfaces
+using vsnprintf don't seem like good candidates for optimization.
 
-Best Regards,
-Huang Ying
+How about this?  It's as simple as I could make it...
+
+ include/linux/stringbuf.h |   30 ++++++++++++++++++++++++++++++
+ lib/Makefile              |    2 +-
+ lib/stringbuf.c           |   41 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 72 insertions(+), 1 deletions(-)
+ create mode 100644 include/linux/stringbuf.h
+ create mode 100644 lib/stringbuf.c
+
+diff --git a/include/linux/stringbuf.h b/include/linux/stringbuf.h
+new file mode 100644
+index 0000000..70b21c6
+--- /dev/null
++++ b/include/linux/stringbuf.h
+@@ -0,0 +1,30 @@
++#ifndef _LINUX_STRINGBUF_H
++#define _LINUX_STRINGBUF_H
++#include <linux/slab.h>
++
++/* This starts NULL and gets krealloc'ed as it grows. */
++struct stringbuf {
++	char buf[0];
++};
++
++/* Your stringbuf will point to this if we run out of memory. */
++extern char enomem_string[];
++
++/* Tack some stuff on the stringbuf. */
++extern void sb_printf_append(struct stringbuf **sb,
++			     gfp_t gfp, const char *fmt, ...)
++	__attribute__((format(printf, 3, 4)));
++
++/**
++ * sb_free - free a stringbuf used by sb_printf_append.
++ * @sb: the stringbuf pointer
++ *
++ * Handles the NULL and OOM cases, so no checking needed.
++ */
++static inline void sb_free(struct stringbuf *sb)
++{
++	if (sb->buf != enomem_string)
++		kfree(sb);
++}
++
++#endif /* _LINUX_STRINGBUF_H */
+diff --git a/lib/Makefile b/lib/Makefile
+index 3a0983b..f075389 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -14,7 +14,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+ lib-y	+= kobject.o kref.o klist.o
+ 
+ obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+-	 bust_spinlocks.o hexdump.o kasprintf.o
++	 bust_spinlocks.o hexdump.o kasprintf.o stringbuf.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
+diff --git a/lib/stringbuf.c b/lib/stringbuf.c
+new file mode 100644
+index 0000000..ffe977a
+--- /dev/null
++++ b/lib/stringbuf.c
+@@ -0,0 +1,41 @@
++#include <stdarg.h>
++#include <linux/stringbuf.h>
++#include <linux/module.h>
++
++char enomem_string[] __attribute__((aligned(__alignof__(struct stringbuf))))
++	= "stringbuf: out of memory";
++
++/**
++ * sb_printf_append - append to a stringbuf
++ * @sb: a pointer to the stringbuf ptr (which starts NULL)
++ * @gfp: flags for allocation
++ * @fmt: printf-style format
++ *
++ * Reallocates *@sb and appends to it.  Sets *sb to a explanatory string if
++ * out of memory.
++ */
++void sb_printf_append(struct stringbuf **sb, gfp_t gfp, const char *fmt, ...)
++{
++	unsigned int fmtlen, len;
++	va_list args;
++	struct stringbuf *oldsb = *sb;
++
++	if (oldsb->buf == enomem_string)
++		return;
++
++	va_start(args, fmt);
++	fmtlen = vsnprintf(NULL, 0, fmt, args);
++	va_end(args);
++
++	len = oldsb ? strlen(oldsb->buf) : 0;
++	*sb = krealloc(oldsb, len + fmtlen + 1, gfp);
++	if (!*sb) {
++		kfree(oldsb);
++		*sb = (struct stringbuf *)enomem_string;
++	} else {
++		va_start(args, fmt);
++		vsprintf((*sb)->buf + len, fmt, args);
++		va_end(args);
++	}
++}
++EXPORT_SYMBOL(sb_printf_append);
