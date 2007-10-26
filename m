@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763870AbXJZVFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbXJZVF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763870AbXJZVFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXJZVFY
+	id S1758007AbXJZVF4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbXJZVFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:05:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:11129 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbXJZVFX (ORCPT
+	Fri, 26 Oct 2007 17:05:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47076 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751781AbXJZVFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:05:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=pw1pob7wwBNkbw1aqVHVCQ5tSv9XFhonQbsFfazvt2NZBOojmWPRlvIE92sDX6DxqcfP6VW5ECzLGwSU7t+qHyGJqU9U++D/1BopAJURwd0em6GZquG2qmwNCf5PWYQ9x4eCtcWK83iiIq17BFKInf2ElXURAN0UIaynkX0WOkw=
-From: Matej Laitl <strohel@gmail.com>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: ACPI: use select POWER_SUPPLY for AC, BATTERY and SBS (was: [2.624-rc1 regression] lost battery information)
-Date: Fri, 26 Oct 2007 23:05:14 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200710262024.06012.arvidjaar@mail.ru> <47221C67.9050502@gmail.com>
-In-Reply-To: <47221C67.9050502@gmail.com>
+	Fri, 26 Oct 2007 17:05:45 -0400
+Date: Fri, 26 Oct 2007 14:05:44 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Rientjes <rientjes@google.com>
+cc: Paul Jackson <pj@sgi.com>, Lee.Schermerhorn@hp.com,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0710261357370.17483@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+ <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+ <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+ <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+ <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710262305.15495.strohel@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Starikovskiy wrote:
-> ACPI: use select POWER_SUPPLY for AC, BATTERY and SBS
->
-> From: Alexey Starikovskiy <astarikovskiy@suse.de>
->
-> POWER_SUPPLY is needed for AC, battery, and SBS sysfs support.
-> Use 'select' instead of 'depends on', as it is will not be selected
-> by anything else, leading to confusion.
->
-> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-> ---
->
->  drivers/acpi/Kconfig |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index 5d0e26a..ecd87d7 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -88,7 +88,8 @@ config ACPI_PROC_EVENT
->
->  config ACPI_AC
->         tristate "AC Adapter"
-> -       depends on X86 && POWER_SUPPLY
-> +       depends on X86
-> +       select POWER_SUPPLY
->         default y
->         help
->           This driver adds support for the AC Adapter object, which
-> indicates @@ -97,7 +98,8 @@ config ACPI_AC
->
->  config ACPI_BATTERY
->         tristate "Battery"
-> -       depends on X86 && POWER_SUPPLY
-> +       depends on X86
-> +       select POWER_SUPPLY
->         default y
->         help
->           This driver adds support for battery information through
-> @@ -352,7 +354,7 @@ config ACPI_HOTPLUG_MEMORY
->  config ACPI_SBS
->         tristate "Smart Battery System"
->         depends on X86
-> -       depends on POWER_SUPPLY
-> +       select POWER_SUPPLY
->         help
->           This driver adds support for the Smart Battery System, another
->           type of access to battery information, found on some laptops.
+On Fri, 26 Oct 2007, David Rientjes wrote:
 
-I'd love if this got merged, as I also lost my battery information by 
-not-enabling POWER_SUPPLY (which looks like something unrelated to ACPI). (I 
-know "select" is evil, but this use-case is appropriate, IMO)
+> Well, passing a single node to set_mempolicy() for MPOL_INTERLEAVE doesn't 
+> make a whole lot of sense in the first place.  I prefer your solution of 
+> allowing set_mempolicy(MPOL_INTERLEAVE, NODE_MASK_ALL) to mean "interleave 
+> me over everything I'm allowed to access."  NODE_MASK_ALL would be stored 
+> in the struct mempolicy and used later on mpol_rebind_policy().
 
-Matej
+So instead of an empty nodemask we would pass a nodemask where all bits 
+are set? And they would stay set but the cpuset restrictions would 
+effectively limit the interleaving to the allowed set?
+
+rebind could ignore rebinds if all bits are set.
+
+
