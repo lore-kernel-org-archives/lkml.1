@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764749AbXJZXwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765748AbXJZXzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764749AbXJZXwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbXJZXwe
+	id S1765748AbXJZXzI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXJZXy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:52:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34386
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751817AbXJZXwd (ORCPT
+	Fri, 26 Oct 2007 19:54:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50554 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbXJZXy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:52:33 -0400
-Date: Fri, 26 Oct 2007 16:52:35 -0700 (PDT)
-Message-Id: <20071026.165235.124016148.davem@davemloft.net>
-To: rick.jones2@hp.com
-Cc: ebiederm@xmission.com, bunk@kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47227C5C.1070507@hp.com>
-References: <472278E3.4000909@hp.com>
-	<20071026.163958.171785530.davem@davemloft.net>
-	<47227C5C.1070507@hp.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 26 Oct 2007 19:54:57 -0400
+Date: Fri, 26 Oct 2007 16:50:35 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
+Message-ID: <20071026165035.33383e36@laptopd505.fenrus.org>
+In-Reply-To: <4722608E.3000405@garzik.org>
+References: <20071019075443.GA6407@havoc.gtf.org>
+	<20071019075808.GH6407@havoc.gtf.org>
+	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>
+	<20071026143525.b9218ed7.akpm@linux-foundation.org>
+	<4722608E.3000405@garzik.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rick Jones <rick.jones2@hp.com>
-Date: Fri, 26 Oct 2007 16:46:36 -0700
+On Fri, 26 Oct 2007 17:47:58 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-> David Miller wrote:
-> > If DLM really wants minimum, it can use SO_SNDBUFFORCE and
-> > SO_RCVBUFFORCE socket options and use whatever limits it
-> > likes.
+> Andrew Morton wrote:
+> > That was a goofup.  I proposed that we should add a #define
+> > TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the
+> > patch, but it got lost.
 > > 
-> > But even this is questionable.
-> 
-> Drift...
-> 
-> Is that something netperf should be using though?  Right now it uses the regular 
-> SO_[SND|RCV]BUF calls and is at the mercy of sysctls.  I wonder if it would be 
-> better to have it use their FORCE versions to make life easier on the 
-> benchmarker - such as myself - who has an unfortunate habit of forgetting to 
-> update sysctl.conf :)
+> > I agree it would be a kind thing to do in this case.
 
-The force calls are for root only.
+> 
+> 
+> Yep, I was thinking that including
+> 
+> 	#define IRQ_HANDLER_V3
+> 
+> would be a good idea.
+>
 
-And I want to remind you that explicitly setting socket
-buffer sizes hurts performance with TCP.  I know you know
-this but it bears restating for the benefit of others.
+it sets a certain precedent though.... we don't do this for the 500
+other API changes we do each release (see stable-api-nonsense)... so
+this one is mostly arbitrary picked out
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
