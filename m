@@ -1,107 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761496AbXJZQuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764308AbXJZQvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761496AbXJZQuQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbXJZQt6
+	id S1764308AbXJZQvd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbXJZQv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:49:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50795 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754049AbXJZQt5 (ORCPT
+	Fri, 26 Oct 2007 12:51:26 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:47123 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267AbXJZQvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:49:57 -0400
-Date: Fri, 26 Oct 2007 09:48:33 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>, Francois Romieu <romieu@fr.zoreil.com>
-Cc: Romano Giannetti <romanol@upcomillas.es>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Edward Hsu <edward_hsu@realtek.com.tw>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc1 fails with lockup - /sbin/ifconfig / inet_ioctl() /
- dev_close() / rtl8169_down()
-Message-ID: <20071026094833.539a69aa@freepuppy.rosehill>
-In-Reply-To: <20071026063733.GA12426@elte.hu>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
-	<1193232344.32208.0.camel@localhost>
-	<20071024142759.GA13657@elte.hu>
-	<1193241191.14314.8.camel@localhost>
-	<20071024155521.GA16690@elte.hu>
-	<1193242267.6914.6.camel@twins>
-	<1193378269.17910.4.camel@localhost>
-	<20071026063733.GA12426@elte.hu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 12:51:25 -0400
+Date: Fri, 26 Oct 2007 18:54:00 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Message-ID: <20071026165400.GA19019@enneenne.com>
+References: <20071026105125.GA28769@enneenne.com> <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026163651.GD4321@flint.arm.linux.org.uk>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 08:37:33 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Romano Giannetti <romanol@upcomillas.es> wrote:
-> 
-> > > Does this help?
+On Fri, Oct 26, 2007 at 05:36:51PM +0100, Russell King wrote:
+> On Fri, Oct 26, 2007 at 06:27:06PM +0200, Rodolfo Giometti wrote:
+> > On Fri, Oct 26, 2007 at 05:02:06PM +0100, Russell King wrote:
+> > > When you bring the battery device out of resume, and you've inserted a
+> > > card, you want it to be detected.  Your change means you have to wait
+> > > until the system has finished resuming before you plug the card in,
+> > > which practically is a pain in the butt and actually leads to user
+> > > errors.  IOW:
+> > > 
+> > > "I plugged my wireless card in after I pressed the power button, why
+> > > wasn't it detected?"
 > > 
-> > I tried this, but although I have the D-state processes, I cannot see 
-> > any debug trace now. Results are at:
+> > My patch doesn't affect the power on sequence, just the resume
+> > one.
+> 
+> On a lot of devices, the "power button" is the resume button.  When you
+> "turn it off" it suspends, and when you "turn it on" it resumes.
+
+I see. My device has two buttons.
+
+However even in this case, if you never eject the device, then switch
+off (sleep), change the device into the slot and then power on (wake
+up), with my patch everything continues to work as before.
+
+The differences come up only if you eject the device before power off.
+
+> > Also if you didn't eject the socket, at resume the device will be
+> > powered up again, my patch just prevents that a pre-powered off device
+> > to be turned on at resume time.
 > > 
-> > http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_3/
+> > However you should consider that some embedded systems have fixed
+> > PCMCIA devices that can't be removed so there are no reasons to detect
+> > them after resume, nobody can change them. :)
 > > 
-> > Can I try anything more? This is quite a show-stopper for me... and 
-> > before trying to bisect 11Mbyte of patches...
+> > Also battery powered devices can go very frequently to sleep and the
+> > current behavior force the user to switch off the unused device each
+> > time the system resumes from sleep.
 > 
-> hm, from your log it appears that lockdep did not find anything, still 
-> the hang does trigger.
+> I realise that.  I do work on embedded devices, and this behaviour is
+> explicitly there to support embedded devices.
 > 
-> it's /sbin/ifconfig and inet_ioctl() / dev_close() / rtl8169_down() that 
-> seems to be hanging. I've extracted the relevant backtrace below. I've 
-> Cc:-ed people who might have a better idea about what's going on.
-> 
-> 	Ingo
+> I've suggested a workable solution to you which allows both of us to
+> have the behaviour we both desire from the system.  That sounds like
+> a negotiated solution to me...
 
-Are you building with NAPI enabled or not. Looks like the following
-might help the non-napi case.
+Do you mean to switch off the socket from userland? It could be a
+solution but in this case the device is powered on each time even if
+for a short delay...
 
---- a/drivers/net/r8169.c	2007-10-24 21:38:43.000000000 -0700
-+++ b/drivers/net/r8169.c	2007-10-26 09:46:07.000000000 -0700
-@@ -2989,13 +2989,16 @@ static void rtl8169_down(struct net_devi
- {
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 	void __iomem *ioaddr = tp->mmio_addr;
--	unsigned int poll_locked = 0;
- 	unsigned int intrmask;
- 
- 	rtl8169_delete_timer(dev);
- 
- 	netif_stop_queue(dev);
- 
-+#ifdef CONFIG_R8169_NAPI
-+	napi_disable(&tp->napi);
-+#endif
-+
- core_down:
- 	spin_lock_irq(&tp->lock);
- 
-@@ -3009,11 +3012,6 @@ core_down:
- 
- 	synchronize_irq(dev->irq);
- 
--	if (!poll_locked) {
--		napi_disable(&tp->napi);
--		poll_locked++;
--	}
--
- 	/* Give a racing hard_start_xmit a few cycles to complete. */
- 	synchronize_sched();  /* FIXME: should this be synchronize_irq()? */
- 
+Maybe we can add an entry into sysfs? Or just a module parameter? So
+developers can choose their preferred behaviour. :)
 
+Thanks for your time,
 
-
+Rodolfo
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
