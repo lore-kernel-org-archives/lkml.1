@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbXJZVPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765952AbXJZVQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765727AbXJZVPj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXJZVPd
+	id S1765952AbXJZVQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761623AbXJZVP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:15:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:22914 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925AbXJZVPc (ORCPT
+	Fri, 26 Oct 2007 17:15:58 -0400
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:49903 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758688AbXJZVP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:15:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=ZfZBoO7O/aaX0Gn9tD/3WiqUD/zciLRaLe19ldCosJMxflKwmvxH+qDHrL+7vpOKMfz+PpsTC0I3dUjdixqCksEk5BI8208hGS+4hFopyqZG5XYu5R+Ga8nv2ZbQTS3iFXAIDwzYcaW9lVHwLGBXOqifREZktLgUpS1LeT/bezc=
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
-Date: Fri, 26 Oct 2007 23:34:54 +0200
-User-Agent: KMail/1.9.7
-Cc: Adam Baker <linux@baker-net.org.uk>, rt2400-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-stuff@comcast.net
-References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop> <200710262058.56188.linux@baker-net.org.uk> <adaejfhzlnh.fsf@cisco.com>
-In-Reply-To: <adaejfhzlnh.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 26 Oct 2007 17:15:57 -0400
+Date: Fri, 26 Oct 2007 23:15:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Riku Voipio <riku.voipio@iki.fi>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] hwmon/f75375s.c: buggy if()
+Message-ID: <20071026231555.7069639d@hyperion.delvare>
+In-Reply-To: <20071026111423.GA16559@kos.to>
+References: <20071017195439.GD3778@stusta.de>
+	<20071017204508.GA32110@kos.to>
+	<20071018133744.GC3526@jupiter.solarsys.private>
+	<20071019143754.0aa4483b@hyperion.delvare>
+	<20071024115034.GA5797@kos.to>
+	<20071025022529.GF30546@jupiter.solarsys.private>
+	<20071025114814.GA2452@kos.to>
+	<20071026103647.78f44826@hyperion.delvare>
+	<20071026111423.GA16559@kos.to>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710262334.54684.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007, Roland Dreier wrote:
->  > The function that is returning ENODEV is the driver probe function. According 
->  > to Documentation/DocBook/writing_usb_driver/ch03.html when that function is 
->  > called 
->  > 
->  > "The driver now needs to verify that this device is actually one that it can 
->  > accept. If so, it returns 0. If not, or if any error occurs during 
->  > initialization, an errorcode (such as -ENOMEM or -ENODEV) is returned from 
->  > the probe function."
->  > 
->  > It isn't a device the driver can accept so it returns -ENODEV
+On Fri, 26 Oct 2007 14:14:23 +0300, Riku Voipio wrote:
+> On Fri, Oct 26, 2007 at 10:36:47AM +0200, Jean Delvare wrote:
+> > Patch looks correct, however it doesn't apply on top of Mark's tree. I
+> > was able to get it to apply by reverting "(f75375s) fix pwm mode
+> > setting" first, but then the build fails. Presumably the other f75375s
+> > patches interact badly. Can you please respin this patch on top of
+> > Mark's tree (i.e. on top the the 4 other f75375s patches you sent since
+> > the -rc1 merge)? Thanks.
 > 
-> That's all true but irrelevant.  That error return isn't propagated
-> back to userspace when it runs modprobe (and in fact it *can't* be
-> sanely returned to userspace -- what do you do if the probe function
-> succeeds for two devices and fails for a third?).  So there's not
-> really any way for userspace to loop through a list of modules until
-> one succeeds.
+> The surrounding code had wandered to another function, so it's suprising
+> it applied at all. Here's respin.
 
-We are mixing 2 things up I think.
+Patch looks OK, thanks.
 
-We have module loading, which is called when the module is loaded and
-will register what PCI or USB devices it supports.
-And we have hardware probing, which results in the kernel calling the probe()
-function of the usb_driver or pci_driver structure.
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
-The the return value of the module loading is not an issue, since indeed that is called
-while the hardware might not be present.
-The hardware probing _is_ called when the hardware is present, reason is simple,
-hotplugging detects the new card and checks all registered USB/PCI ID's for a driver
-that matches the device. If it matches the probe() function is called.
-And that is where the ENODEV error could be checked, if the driver decides that the
-plugged in device it was offere by the kernel is not a device it supports it needs
-to tell that to the kernel. In turn the kernel can continue looking into the registered
-USB/PCI ID lists to find a different driver that does support the hardware.
+Riku, I have 14 patches posted to the lm-sensors list pending for
+review. Would you mind reviewing one of them? Thanks.
 
-Ivo
+-- 
+Jean Delvare
