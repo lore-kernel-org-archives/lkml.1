@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbXJZSNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXJZSO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763029AbXJZSNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXJZSNH
+	id S1758875AbXJZSO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXJZSOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:13:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:62100 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755519AbXJZSNE (ORCPT
+	Fri, 26 Oct 2007 14:14:18 -0400
+Received: from outbound-mail-44.bluehost.com ([69.89.18.13]:60238 "HELO
+	outbound-mail-44.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752346AbXJZSOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:13:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HrTacz49lbwao5sYPsLhU7aY2w/4E74EQrbEYYfOwW0y7f1ZpyoabmtN5+PyKQeoC9Aqc31qr5xweWAyndKe0QZ1vPd/hHHc3Gd+F0R/TMzmLsTQAC2P/mBi/or9YNXX9sZIWkAPtgzDano8OlxPeG85K8PdTCR5wrg6H83mD2Y=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Regression: commit "ide: constify struct ide_port_info" causes breakage
-Date: Fri, 26 Oct 2007 20:18:14 +0200
+	Fri, 26 Oct 2007 14:14:17 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
+Date: Fri, 26 Oct 2007 11:12:18 -0700
 User-Agent: KMail/1.9.7
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071026155648.GB4321@flint.arm.linux.org.uk>
-In-Reply-To: <20071026155648.GB4321@flint.arm.linux.org.uk>
+Cc: "Greg KH" <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@ucw.cz>
+References: <200710181401.50470.jbarnes@virtuousgeek.org> <200710260957.15137.jbarnes@virtuousgeek.org> <3ae72650710261010p195e2228h91c9cb11829c2a77@mail.gmail.com>
+In-Reply-To: <3ae72650710261010p195e2228h91c9cb11829c2a77@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710262018.14815.bzolnier@gmail.com>
+Message-Id: <200710261112.19716.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007, Russell King wrote:
-> commit 8562043606430185cad26d085d46adcc7ad67fd1 is broken, causing:
-> 
->   CC      drivers/ide/pci/cmd64x.o
->   CC      drivers/ide/pci/hpt366.o
-> drivers/ide/pci/hpt366.c:1428: error: hpt366_chipsets causes a section type conflict
-> 
-> and therefore should be reverted.
+On Friday, October 26, 2007 10:10 am Kay Sievers wrote:
+> The conversion is already queued in Greg's tree, and in -mm:
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f
+>=driver/drm-convert-from-class_device-to-device-in-drivers-char-drm.pa
+>tch;h=f993183d1cb017f981cc2232d17930af40459bd8;hb=HEAD
 
-Fixed 3 days ago, patch was posted to LKML.
+Hm, I've done it slightly differently, by adding an actual device to the 
+drm_device structure...  I'll post it once I've cleaned it up a little 
+more.
 
-http://lkml.org/lkml/2007/10/23/411
+> /sys/class/drm will look the same as with the class_device's, only if
+> !CONFIG_SYSFS_DEPRECATED, there will be symlinks instead of
+> directories, otherwise the same pathes, like for all other
+> (converted) classes too.
 
-[ Will be pushed to Linus together with few other fixes soon. ]
+Ok, thanks.
 
-> The problem arises because hpt366 has other data marked with __devinitdata,
-> so the compiler tries to define the initdata section with read-write
-> attributes at one point, and read-only attributes when encountering the
-> const-but-devinitdata declaration:
-> 
-> static struct hpt_info hpt36x __devinitdata = {
-> static struct hpt_info hpt370 __devinitdata = {
-> static struct hpt_info hpt370a __devinitdata = {
-> ...
-> static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
-> 
-> If we want ide_port_info to be read-only initdata, then we need
-> __devroinitdata and __roinitdata tags.
-
-http://lkml.org/lkml/2007/10/23/412
-
-Thanks,
-Bart
+Jesse
