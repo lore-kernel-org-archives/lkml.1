@@ -1,37 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765208AbXJZXj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXJZXko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765208AbXJZXj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763442AbXJZXiu
+	id S932162AbXJZXko (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764255AbXJZXiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:38:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12197 "EHLO
+	Fri, 26 Oct 2007 19:38:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:3379 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762962AbXJZXit (ORCPT
+	with ESMTP id S1764049AbXJZXix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:38:49 -0400
+	Fri, 26 Oct 2007 19:38:53 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:cc:subject;
-	b=cvhy2JFCMIh8Wr7zDg5W89z6r12vpGUSyquZe8hrNW5hlGEnxhJfN7Sr1Fs/40vtU
-	OByvtN70P1a7uRdFjldNg==
-Message-Id: <20071026233732.568575496@crlf.corp.google.com>
-Date: Fri, 26 Oct 2007 16:37:32 -0700
+	h=received:message-id:references:date:from:to:cc:subject:content-disposition;
+	b=MfuaLNISwI6PbsCYf0x5Ggzl9/7VfiX2QWTWC14UZ0ULsfGFXQAEb67orJL0THK0I
+	3hoyp2BByvUikvfruH8fw==
+Message-Id: <20071026233847.864038076@crlf.corp.google.com>
+References: <20071026233732.568575496@crlf.corp.google.com>
+Date: Fri, 26 Oct 2007 16:37:33 -0700
 From: Mike Waychison <mikew@google.com>
 To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 0/6][RFC] Cleanup FIBMAP
+Cc: linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
+Subject: [patch 1/6][RFC] Keep FIBMAP from looking at negative block nrs
+Content-Disposition: inline; filename=fix_negative_fibmap_blocks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following series is meant to clean up FIBMAP paths with the eventual goal of allowing users to be able to FIBMAP their data.
+Return an error if the user requests a negative logical block in a file.
 
-I'm sending this as an RFC as I've only tested this on a x86_64 kernel with a 32bit binary on ext2 and I've noticed a couple ext2_warnings already.
+Signed-off-by: Mike Waychison <mikew@google.com>
+ fs/ioctl.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-I'm unsure of the locking in [4/6] fix_race_with_truncate.patch.  Any help here would greatly be appreciated.
+Index: linux-2.6.23/fs/ioctl.c
+===================================================================
+--- linux-2.6.23.orig/fs/ioctl.c	2007-10-26 15:25:48.000000000 -0700
++++ linux-2.6.23/fs/ioctl.c	2007-10-26 16:16:29.000000000 -0700
+@@ -60,6 +60,8 @@ static int file_ioctl(struct file *filp,
+ 				return -EPERM;
+ 			if ((error = get_user(block, p)) != 0)
+ 				return error;
++			if (block < 0)
++				return -EINVAL;
+ 
+ 			lock_kernel();
+ 			res = mapping->a_ops->bmap(mapping, block);
 
-The last patch, [6/6] drop_cap_sys_rawio_for_fibmap.patch, is of course, not to be applied until any remaining issues are fixed :)
-
-Thanks,
-
-Mike Waychison
 --
