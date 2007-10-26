@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763157AbXJZD5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763356AbXJZD6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763157AbXJZD5Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 23:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbXJZD5S
+	id S1763356AbXJZD6n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 23:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbXJZD6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 23:57:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:65040 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbXJZD5R (ORCPT
+	Thu, 25 Oct 2007 23:58:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:20937 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbXJZD6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 23:57:17 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Linux machines dieing in swap storms
-To: Rik van Riel <riel@redhat.com>, Richard Purdie <rpurdie@rpsys.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 26 Oct 2007 05:56:49 +0200
-References: <9icP2-2hb-17@gated-at.bofh.it> <9ifML-6Xs-25@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Thu, 25 Oct 2007 23:58:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=mGbXGvrV42rcd8DpnX8G16JxFDoMgYNZYWRBBFwatBQ/QFORbGBG1YhRr3IvGA5KT
+	Ixobv0UZi+UuNKHtR8NWg==
+Date: Thu, 25 Oct 2007 20:58:19 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <20071025201455.acb4e72c.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com> <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com> <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com> <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com> <20071025192945.82962eea.pj@sgi.com> <alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
+ <20071025201455.acb4e72c.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IlGJV-0007vW-A6@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19IZAZ36yiKImQs7v7ujtXVSpdTqu7FhqXUXWH
- pByRksdlirtBYFsQsJ9rKcuYF3CrC9FF4LeM9RnQCouu41R9ua
- ndqb8722PaxumlX3/c6qA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel <riel@redhat.com> wrote:
-> On Thu, 25 Oct 2007 16:20:41 +0100
-> Richard Purdie <rpurdie@rpsys.net> wrote:
+On Thu, 25 Oct 2007, Paul Jackson wrote:
 
->> Advice on solving this welcome preferably in mainline but I'll happily
->> hack my kernels with a workaround if need be.
+> The user space man pages for set_mempolicy(2) are now even more
+> behind the curve, by not mentioning that MPOL_INTERLEAVE's mask
+> might mean nothing, if (1) in a cpuset marked memory_spread_user,
+> (2) after the cpuset has changed 'mems'.
 > 
-> I can't see any easy hacks or workarounds to fix the issue in the
-> current MM, except maybe activate the OOM killer if the amount of
-> page cache and buffer cache is really low and swap is full...
+
+Yeah.  They were already outdated in the sense that they did not specify 
+that the interleave nodemask could change as a result of a cpuset mems 
+change.
+
+> I wonder if there is any way to fix that.  Who does the man pages
+> for Linux system calls?
 > 
-> In the longer run, I'm working on:
+
+Good question.
+
+> Hmmm ... that reminds me ... the period of time between when the
+> task issues the set_mempolicy(2) MPOL_INTERLEAVE call and when some
+> cpuset 'mems' change subsequently moves its memory placement is an
+> anomaly here. During that period of time, the MPOL_INTERLEAVE mask
+> -does- apply, even if a subset of the 'mems' in the tasks cpuset.
+> This could result in test cases missing some failures.  If they
+> test with a particular, carefully crafted MPOL_INTERLEAVE mask
+> that is a proper (strictly less than) subset of the nodes allowed
+> in the cpuset, they might not notice that their code is broken if
+> they happen to be in a memory_spread_user cpuset after a 'mems'
+> change has jammed the entire cpusets 'mems' into their interleave
+> mask.
 > 
-> http://linux-mm.org/PageReplacementDesign
 
-What about only reclaimimn cache if the cache has grown beyond a watermark
-and only reclaimimn non-cache if it's below another watermark? I can imagine
-it will solve my diskcache-pushes-out-mousehandler problem, and I'm pretty
-sure having very low file cache is bad for performance, too.
+Well, sure, but mempolicy's already get overridden by cpusets anyway.  For 
+example, if you were to attach a task with an MPOL_BIND mempolicy to a 
+cpuset with a disjoint set of allowed mems.
 
-Another thing I can imagine is to detect thrashing conditions and to
-change scheduling in order to increase the likehood of cache hits and
-thereby progress: If an application just got a page, keep it running for
-a while (accumulating negative credits).
--- 
-"Of course, as admin, I can read all your email. But I am not THAT bored!"
-        -- unknown author in comp.unix.aix
+The important distinction is that you can still interleave over a subset 
+of the mems_allowed if you set your memory policy after being attached to 
+the cpuset.
 
-Friß, Spammer: 9w@t.7eggert.dyndns.org gNhwn@wocz.7eggert.dyndns.org
+> Perhaps we should make it so that doing a set_mempolicy(2) call
+> to set MPOL_INTERLEAVE immediately changes the memory policy to
+> the cpusets mems_allowed.
+> 
+
+No, because that would negate the above.  We still want to be able to 
+restrict interleaved memory policies to a subset of allowed mems.  This 
+option gives the most power to applications.
+
+> A key advantage in doing this would be that the set_mempolicy user
+> documentation could simply state that the MPOL_INTERLEAVE mask is
+> ignored when in a cpuset marked memory_spread_user, instead interleaving
+> over all the memory nodes in the cpuset.  This would be quite a bit
+> simpler and clearer than saying that the cpusets nodes are used only
+> after subsequent cpuset 'mems' changes.
+> 
+
+I think that documenting the change in the man page as saying that "the 
+nodemask will include all allowed nodes if the mems_allowed of a 
+memory_spread_user cpuset is expanded" is better.
+
+I've got a few fixes for my patchset queued so I'll resend it later; it's 
+mostly style changes but there is a subtle bug where the task changing the 
+value of a cpuset's memory_spread_page is not in the same cpuset.
+
+		David
