@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764907AbXJZSia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761635AbXJZSir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764907AbXJZSia (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761011AbXJZSiK
+	id S1761635AbXJZSir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764506AbXJZSiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:38:10 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42803 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760257AbXJZSiJ (ORCPT
+	Fri, 26 Oct 2007 14:38:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43374 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763933AbXJZSiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:38:09 -0400
-Date: Fri, 26 Oct 2007 19:37:40 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
-Message-ID: <20071026183740.GF4321@flint.arm.linux.org.uk>
-Mail-Followup-To: Rodolfo Giometti <giometti@enneenne.com>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20071026105125.GA28769@enneenne.com> <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com>
-Mime-Version: 1.0
+	Fri, 26 Oct 2007 14:38:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@ftp.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH] proc: Fix proc_kill_inodes to kill dentries on all proc superblocks
+References: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>
+	<alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
+Date: Fri, 26 Oct 2007 12:36:53 -0600
+In-Reply-To: <alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Fri, 26 Oct 2007 11:06:52 -0700 (PDT)")
+Message-ID: <m1d4v12056.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071026171857.GC19019@enneenne.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 07:18:57PM +0200, Rodolfo Giometti wrote:
-> On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
-> > Or that - probably a sysfs attribute on the pcmcia socket would be
-> > better.
-> 
-> Ok, but how can I do it? Can you please suggest to me the name of such
-> attribute and where should I add it into the PCMCIA code? Also, which
-> should be the default dehaviour? ;)
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-My consulting rates are...  Seriously, if you want me to write a patch
-for you, you have to pay for that.
+> On Fri, 26 Oct 2007, Eric W. Biederman wrote:
+>> 
+>> It appears we overlooked support for removing generic proc files
+>> when we added support for multiple proc super blocks.  Handle
+>> that now.
+>
+> There seems to be more users of "proc_mnt" out there. proc_flush_task, 
+> anyone?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Yes.  I've seen those and I do have some patches in my queue
+to address those.  Technically none of those causes us to
+do the wrong thing in the presence of multiple proc superblocks,
+by the usage of proc_mnt.  It still looks worth it to see
+if we can kill all of the users of proc_mnt.
+
+proc_flush_task is technically ok in it's usage of proc_mnt.
+It is just using it as what appears to be an unnecessary optimization.
+However the added complexity is currently hiding another bug.
+We call proc_flush_task_mnt with the wrong arguments.
+Further I haven't convinced myself the call to pid_ns_release_proc
+does not have some strange race in there, although there is
+nothing obviously wrong there.
+
+Eric
