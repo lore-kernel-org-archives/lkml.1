@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764668AbXJZUjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764868AbXJZUj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764668AbXJZUjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbXJZUjK
+	id S1764868AbXJZUj4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXJZUjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:39:10 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52801 "EHLO mx1.suse.de"
+	Fri, 26 Oct 2007 16:39:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33075 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755608AbXJZUjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:39:09 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Haley" <aph@redhat.com>
-Subject: Re: Is gcc thread-unsafe?
-From: Andi Kleen <andi@firstfloor.org>
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
-	<e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
-	<alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
-	<e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
-	<20071026190856.18510fc4@the-village.bc.nu>
-Date: Fri, 26 Oct 2007 22:39:07 +0200
-In-Reply-To: <20071026190856.18510fc4@the-village.bc.nu> (Alan Cox's message of "Fri\, 26 Oct 2007 19\:08\:56 +0100")
-Message-ID: <p73d4v1pq50.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
+	id S1753819AbXJZUjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:39:42 -0400
+Date: Fri, 26 Oct 2007 22:41:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Piero Ottuzzi <lkmltimes@gmail.com>
+Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org,
+       Jesper Nilsson <Jesper.Nilsson@axis.com>
+Subject: Re: Upcomming CRIS patches
+Message-ID: <20071026204118.GA24334@uranus.ravnborg.org>
+References: <BFECAF9E178F144FAEF2BF4CE739C6680547FAFA@exmail1.se.axis.com> <BFECAF9E178F144FAEF2BF4CE739C66804C4011D@exmail1.se.axis.com> <fceeb6990710260204o5ecab9abm944be41ee57acd6c@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fceeb6990710260204o5ecab9abm944be41ee57acd6c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->
-> You can stop the compiler but not the CPU - and some processors will
-> certainly speculatively load across conditionals, reorder writes etc
+Hi Piero.
 
-The difference is that the CPU knows how to cancel most[1] side effects
-of these speculative accesses (e.g. by not issuing exceptions[2] etc.). 
+On Fri, Oct 26, 2007 at 11:04:36AM +0200, Piero Ottuzzi wrote:
+> 
+> you can download the compiler without registration at [1].
+> 
+> Bye
+> Piero
+> [1]http://www.axis.com/ftp/pub/axis/tools/cris/compiler-kit/
 
-The compiler doesn't normally (except on some architectures with special support like IA64;
-but I'm not sure gcc supports it there) 
+Downloaded the .gz files and installed them.
+When trying to build current cris sources it failed quickly
+so I will await the upcoming cris update.
 
-[1] In some it can't and we've had problems with that in the past. e.g. in
-a few cases speculative reads can be a problem. But we generally fix or
-workaround those cases in the code.
-[2] Modulo hardware bugs -- see the hall of shame in x86_64 fault.c
+[Complained about the -mlinux flag]
 
--Andi
+	Sam
