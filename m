@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbXJZRZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXJZR2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbXJZRZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXJZRZq
+	id S1759803AbXJZR2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXJZR2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:25:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37497 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753785AbXJZRZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:25:45 -0400
-Date: Fri, 26 Oct 2007 10:25:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Haley <aph@redhat.com>
-cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <18210.8170.598519.439148@zebedee.pink>
-Message-ID: <alpine.LFD.0.999.0710261020250.30120@woody.linux-foundation.org>
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
- <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
- <alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
- <alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
- <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
- <18210.8170.598519.439148@zebedee.pink>
+	Fri, 26 Oct 2007 13:28:44 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1028 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754205AbXJZR2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 13:28:43 -0400
+Date: Fri, 26 Oct 2007 19:28:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: [PATCH 09/10] Change table chaining layout
+Message-ID: <20071026172838.GD8875@kernel.dk>
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com> <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org> <200710251840.02157.rusty@rustcorp.com.au> <alpine.LFD.0.999.0710250834390.30120@woody.linux-foundation.org> <18209.29891.911465.715995@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 26 Oct 2007, Andrew Haley wrote:
->
-> Bart Van Assche writes:
+On Fri, Oct 26 2007, Linus Torvalds wrote:
 > 
->  > Andrew, do you know whether gcc currently contains any optimization
->  > that interchanges the order of accesses to non-volatile variables
->  > and function calls ?
 > 
-> It sure does.
+> On Fri, 26 Oct 2007, Paul Mackerras wrote:
+> >
+> > Linus Torvalds writes:
+> > 
+> > > Nobody should *ever* walk the list to find the length. Does anybody really 
+> > > do that? Yes, we pass the thing down, but do people *need* it?
+> > 
+> > Yes, I need it for devices that use the macintosh DBDMA
+> > (descriptor-based DMA) hardware.  The DBDMA hardware reads an array of
+> > descriptors from system RAM, so I need to allocate an array and fill
+> > it in with DBDMA command blocks (and then dma-map it and point the
+> > device at it).
+> 
+> Yes, for allocation purposes you'd need the size ahead of time, agreed. 
+> Otherwise you have to walk the list twice.
 
-Note that doing so is perfectly fine.
+Do you really allocate a fresh table for every command, or just a max
+sized one at init?
 
-But only for local variables that haven't had their addresses taken.
+> > Maybe the drivers for devices that use DBDMA are now buggy.  Certainly
+> > filling in the array of DBDMA command blocks involves walking the
+> > list, but it would extremely useful to know how much to allocate
+> > before we start filling them in.  So we at least need an upper bound
+> > on the number of "real" entries, even if we don't have the exact
+> > number.
+> 
+> Hmm. Depending on where you do this, and if this is some block-layer 
+> specific driver/code (rather than necessarily a generic SG thing), you do 
+> have the req->nr_phys_segments thing which should be that for you (ie the 
+> SG list may have _fewer_ requests in it in case some of those entries got 
+> squashed together due to be contiguous).
+> 
+> But yeah, I don't think it would be wrong at all to have a
+> 
+> 	struct scatterlist_head {
+> 		unsigned int entries;
+> 		unsigned int flags;	/* ? */
+> 		struct scatterlist *sg;
+> 	};
+> 
+> which would be passed down at higher levels.
 
-The fact is, those kinds of variables really *are* special. They are 
-provably not accessible from any other context, and re-ordering them (or 
-doing anything AT ALL to them - the most basic and very important 
-optimization is caching them in registers, of course) is always purely an 
-internal compiler issue.
+That'd be fine with me as well, but I really don't think that a lot of
+people really do need the sg count when you can just loop over the table
+until it returns NULL.
 
-But if gcc re-orders functions calls with *other* memory accesses, gcc is 
-totally broken. I doubt it does that. It would break on all but the most 
-trivial programs, and it would be a clear violation of even standard C.
+-- 
+Jens Axboe
 
-HOWEVER: the bug that started this thread isn't even "reordering 
-accesses", it's *adding* accesses that weren't there (and please don't mix 
-this up with "volatile", since volatile is a totally unrelated issue and 
-has nothing what-so-ever to do with anything).
-
-		Linus
