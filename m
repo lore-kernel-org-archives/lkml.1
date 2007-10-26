@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXJZFMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbXJZFTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbXJZFMN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 01:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXJZFL6
+	id S1757590AbXJZFTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 01:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbXJZFTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 01:11:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59039 "EHLO mx2.suse.de"
+	Fri, 26 Oct 2007 01:19:23 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4606 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751443AbXJZFL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 01:11:58 -0400
-Date: Thu, 25 Oct 2007 21:59:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-Message-ID: <20071026045950.GA22920@suse.de>
-References: <200710181401.50470.jbarnes@virtuousgeek.org> <200710240818.31128.jbarnes@virtuousgeek.org> <200710242322.36291.rjw@sisk.pl> <200710251653.19978.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710251653.19978.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751946AbXJZFTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 01:19:22 -0400
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+From: Joe Perches <joe@perches.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+In-Reply-To: <1193370092.26695.32.camel@localhost>
+References: <20071024195847.GE27248@parisc-linux.org>
+	 <1193255992-14385-1-git-send-email-matthew@wil.cx>
+	 <200710261211.01423.rusty@rustcorp.com.au>
+	 <1193370092.26695.32.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 25 Oct 2007 22:05:57 -0700
+Message-Id: <1193375157.26695.58.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 04:53:18PM -0700, Jesse Barnes wrote:
-> Ok, here's yet another version that uses the device model for the
-> suspend/resume, rather than pci hooks.
-> 
-> Greg, DRM desperately needs review of its device model usage, can you
-> take a look at this patch and the current drm_sysfs.c code?  Right now,
-> we're mixing class_devices and regular devices (the latter seem to be
-> required for suspend/resume to work correctly), but this seems wrong.
-> Any ideas?  Should we just rip out the class_device stuff and create
-> full-on DRM device nodes?
+Perhaps have an sb_alloc function and a failure mode that
+uses printk when sb_alloc fails or sb_append is passed null?
 
-The class_device stuff is already ripped out in the latest -mm trees and
-I will be forwarding that change on for 2.6.25 after 2.6.24 is out.  So
-yes, it should be taken away :)
+Perhaps something like:
 
-But converting from class_device to struct device does not mean you use
-a "device node".  But you could if you want to :)
+stringbuf *sb_alloc(char* level, gfp_t priority)
+{
+	stringbuf *sb = kmalloc(sizeof(*sb), priority);
+	if (sb)
+		sb>len = sprintf(sb->buf, "%s", level);
+	else
+		printk(level);
+	return sb;
+}
+EXPORT_SYMBOL(sb_alloc);
 
-Other than that, the driver model usage isn't the best, but I think the
-majority of the major issues are fixed up now, especially with the
-removal of class_device.  Is there anything specific you are curious
-about?
+/**
+ * sb_append - append to a stringbuf
+ * @sb: a pointer to the stringbuf
+ * @fmt: printf-style format
+ */
+void sb_append(struct stringbuf *sb, const char *fmt, ...)
+{
+	va_list args;
 
-thanks,
+	va_start(args, fmt);
+	if (sb)
+		sb->len += vscnprintf(&sb->buf[len], sizeof(sb->buf) - sb->len, fmt, args);
+	else
+		vprintk(fmt, args);
+	va_end(args);
+}
+EXPORT_SYMBOL(sb_append);
 
-greg k-h
+void sb_printk(struct stringbuf *sb)
+{
+	if (sb && sb->len > 0) {
+		printk(sb->buf);
+		sb->len = 0;
+	}
+}
+EXPORT_SYMBOL(sb_printk);
+
+void sb_free(stringbuf *sb)
+{
+	kfree(sb);
+}
+EXPORT_SYMBOL(sb_free);
+
+
