@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764805AbXJZV7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbXJZWAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764805AbXJZV7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXJZV7E
+	id S1765038AbXJZWAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXJZWAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:59:04 -0400
-Received: from dvhart.com ([64.146.134.43]:48328 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbXJZV7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:59:03 -0400
-Message-ID: <47226325.4000404@mbligh.org>
-Date: Fri, 26 Oct 2007 14:59:01 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 26 Oct 2007 18:00:08 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38324 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbXJZWAH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 18:00:07 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Kir Kolyshkin" <kir@swsoft.com>
+Cc: <containers@lists.osdl.org>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <torvalds@linux-foundation.org>,
+       kir@openvz.org
+Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
+References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
+Date: Fri, 26 Oct 2007 15:59:29 -0600
+In-Reply-To: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
+	(Kir Kolyshkin's message of "Fri, 26 Oct 2007 16:58:32 -0400")
+Message-ID: <m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, drepper@redhat.com, linux-mm@kvack.org
-Subject: Re: OOM notifications
-References: <20071018201531.GA5938@dmt>	<20071026140201.ae52757c.akpm@linux-foundation.org>	<472256AB.6060109@mbligh.org>	<20071026141112.18af0fa6.akpm@linux-foundation.org> <20071026173550.333d8eb4@bree.surriel.com>
-In-Reply-To: <20071026173550.333d8eb4@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Fri, 26 Oct 2007 14:11:12 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> Sure, but in terms of high-level userspace interface, being able to
->> select() on a group of priority buckets (spread across different
->> nodes, zones and cgroups) seems a lot more flexible than any
->> signal-based approach we could come up with.
-> 
-> Absolutely, the process needs to be able to just poll or
-> select on a file descriptor from the process main loop.
-> 
-> I am not convinced that the magic of NUMA memory distribution
-> and NUMA memory pressure should be visible to userspace.  Due
-> to the thundering herd problem we cannot wake up all of the
-> processes that select on the filedescriptor at the same time
-> anyway, so we can (later on) add NUMA magic to the process
-> selection logic in the kernel to only wake up processes on
-> the right NUMA nodes.
-> 
-> The initial patch probably does not need that.
+"Kir Kolyshkin" <kir@swsoft.com> writes:
 
-Depends if you're using cpusets or not, I think?
+> Eric,
+>
+> Could you please hold off the horses a bit and wait till Pavel Emelyanov
+> returns? It means next Monday; he's currently at a conference whose organisers
+> don't provide internet access.
 
+When we decided to go top down (i.e. user interface first) instead of
+bottom up with the pid namespace implementation it was my
+understanding that we had agreed we would make the pid namespaces
+depend on CONFIG_EXPERIMENTAL so that we wouldn't be stuck forever
+supporting early ABI mistakes.
+
+So to my knowledge the conversation has already happened.  I believe
+something in the confusion of trying to use these options to shrink
+the kernel and the futility of that, caused whatever config options
+we had before to be dropped.
+
+Further I was happy to let Pavel and Suka work on this code because
+the appeared to know what they were doing and it freed me to do other
+things.  I don't think there are any mysteries in what we are trying
+to do that I need them to explain.
+
+> I feel it makes great sense to review/discuss patches first on containers@
+> first before submitting directly to lkml/Linus.
+
+My feel before starting to review the pid namespace patches was that
+the work was essentially done except a handful of minor details.  Upon
+closer examination, I found that not to be the case.  My rough fix
+queue had 25 or so patches as of last night to fix pid namespace
+issues.
+
+I have no confidence that we will fix all of the pid namespaces issues
+before 2.6.24-final.  I do think we can get most of them fixed.
+
+Given that most of the remaining issues are integration issues
+with the rest of the kernel having the code merged should make
+it much easier to see what is going on and actually fix things.
+So I am not in favor of reverting this code despite seeing numerous
+problems.
+
+> Speaking of this particular patch -- I don't understand how you fix
+> "innumerable little bugs" by providing stubs instead of real functions.
+> Sent from my BlackBerry; please reply to kir@openvz.org
+
+It doesn't fix the bugs it avoids them because there is no way to
+get to the them and trigger them.  So far I have yet to find a bug
+that is a problem with only a single pid namespace in the kernel.
+
+Since everyone agrees that there are at least some deficiencies in
+the current pid namespace I think this makes sense, to mark
+the code as EXPERIMENTAL and have a way for people who care to
+shut it off just so they don't have to worry about new issues.
+
+As far as how the config option is implemented I don't much care
+so long as I get the -EINVAL when I pass CLONE_NEWPID as root.
+
+Essentially this patch is part of a defense in depth against pid
+namespace problems hitting people.  This patch is my first line
+of defense.  Actually fixing all of the rest of the known bugs
+is the other line.
+
+Eric
