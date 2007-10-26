@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbXJZBAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbXJZBKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758312AbXJZBAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 21:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXJZBAd
+	id S1754859AbXJZBKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 21:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXJZBKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 21:00:33 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22272 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752534AbXJZBAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 21:00:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
-   d="scan'208";a="358670954"
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
-	runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-Content-Type: text/plain
+	Thu, 25 Oct 2007 21:10:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:24166 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbXJZBK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 21:10:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=XBE3DnqC4SUsVcpfvbWpRorTItOju7L50KF8FbzfukqZxa/I9Ntt64Ma1QlzQC753
+	XK0aiaeFi2+xVOxikO5FQ==
+Message-ID: <6599ad830710251810r6bb1e390nf3612031af8b6767@mail.gmail.com>
+Date: Thu, 25 Oct 2007 18:10:24 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [2.6 patch] kernel/cgroup.c: remove dead code
+Cc: bunk@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20071024103411.dfd3ae04.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Oct 2007 09:03:11 +0800
-Message-Id: <1193360591.23935.212.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 26 Oct 2007 01:00:21.0955 (UTC) FILETIME=[95A3F930:01C8176B]
+Content-Disposition: inline
+References: <20071024162534.GZ30533@stusta.de>
+	 <6599ad830710240930r6649dec0q21b8c00f7d8a796a@mail.gmail.com>
+	 <20071024103411.dfd3ae04.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
-> > EFI runtime
-> > services initialization are implemented in efi.c. Some x86_64
-> > specifics are worth noting here. On x86_64, parameters passed to UEFI
-> > firmware services need to follow the UEFI calling convention. For this
-> > purpose, a set of functions named lin2win<x> (<x> is the number of
-> > parameters) are implemented. EFI function calls are wrapped before
-> > calling the firmware service.
-> 
-> Why needs this to be called lin2win? We do not call Windows, we call
-> EFI services, so please use a naming convention which is related to
-> the functionality of the code.
-> 
-> > + *
-> > + *  Function calling ABI conversion from SYSV to Windows for x86_64
-> 
-> Again, these are wrappers to access EFI and not Windows.
+On 10/24/07, Paul Jackson <pj@sgi.com> wrote:
+> Paul M wrote:
+> > I think I'd rather not make this change - if we later changed the size
+> > of release_agent_path[] this could silently fail. Can we get around
+> > the coverity checker somehow?
+>
+> Perhaps we can simplify this check then, to:
+>
+>   BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX));
+>
+> Less runtime code.
 
-EFI uses the Windows x86_64 calling convention. The lin2win may be a
-more general naming convention that can be used for some other code (the
-NDISwrapper?) in the future. Do you agree?
+Sounds reasonable to me. Is there any kind of compile-time assert
+macro in the kernel?
 
-Best Regards,
-Huang Ying
+Paul
