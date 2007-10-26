@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762762AbXJZWZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764791AbXJZW1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762762AbXJZWZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXJZWYy
+	id S1764791AbXJZW1W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbXJZW1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:24:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56876 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754932AbXJZWYx (ORCPT
+	Fri, 26 Oct 2007 18:27:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46239 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbXJZW1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:24:53 -0400
-Date: Fri, 26 Oct 2007 15:24:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Giacomo Catenazzi <cate@cateee.net>
-cc: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <4722600A.4090903@cateee.net>
-Message-ID: <alpine.LFD.0.999.0710261453160.30120@woody.linux-foundation.org>
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
- <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
- <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
- <4722600A.4090903@cateee.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 26 Oct 2007 18:27:14 -0400
+Date: Fri, 26 Oct 2007 15:23:21 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Crispin Cowan <crispin@crispincowan.com>
+Cc: Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [AppArmor 00/45] AppArmor security module overview
+Message-ID: <20071026152321.61e12041@laptopd505.fenrus.org>
+In-Reply-To: <47226755.8090106@crispincowan.com>
+References: <20071026064024.243943043@suse.de>
+	<20071026073721.618b4778@laptopd505.fenrus.org>
+	<200710262244.57147.agruen@suse.de>
+	<20071026141358.38342c0f@laptopd505.fenrus.org>
+	<47226755.8090106@crispincowan.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Oct 2007 15:16:53 -0700
+Crispin Cowan <crispin@crispincowan.com> wrote:
 
-
-On Fri, 26 Oct 2007, Giacomo Catenazzi wrote:
 > 
-> So we have the great opportunity to change the standard, then
-> gcc will change ;-)
+> > On the first part (discussion of the model) I doubt we can get
+> > people to agree, that's pretty much phylosophical... on the second
+> > part (how well the code/design lives up to its own goals) the
+> > analysis can be objective and technical.
+> >   
+> I will try to do that as soon as possible. While I will strive to be
+> both clear and precise, achieving both is challenging. So, if someone
+> discovers a mis-match between the description and the code, would a
+> patch to the description be an acceptable resolution, if it did not
+> render the model silly?
+> 
 
-I see the smiley, but sadly, new standards take ten years or more to 
-mature. Which means that even if the upcoming one is "perfect", things 
-will be wrong with it, if only because people will have new usage 
-scenarios where the standard simply isn't relevant or that it otherwise 
-just doesn't address, and that then gets us back to the same issues 
-somewhere else.
-
-So it would be much better if developers just didn't think the standard 
-trumped "real and existing code and problems", and shot down the language 
-lawyers (and don't get me wrong - it's not just in gcc, btw. We _have_ had 
-some of the same behavior in the kernel, although I will argue that our 
-"backwards compatibility trumps pretty much everything else" rules at 
-least solves _some_ of the problems).
-
-Standards are just papers. Yes, they're important, but they are definitely 
-not more important than anything else, and they are a lot _less_ important 
-than some people seem to think. Gcc has done more for programming by being 
-a de-facto standard and widely available, than the _paper_ standards often 
-ever do!
-
-It's also sad that a lot of these things seem to be done in the name of 
-optimizing code, and then in many cases it drives people *away* from using 
-that optimizer for anything but benchmarking.
-
-In the kernel, we historically used to try for extreme optimizations, 
-these days we spend more time tuning the optimizations _down_ because they 
-aren't optimizations at all (ie using -Os instead of -O2), or they were 
-buggy enough that we have to explicitly disable them (aliasing, 
-"unit-at-a-time" etc).
-
-			Linus
+I think it's entirely reasonable that if it turns out that the code
+can't do a certain aspect of the envisioned security (eg not just a
+code bug but a design level issue), the answer is to adjust the
+vision...
 
 
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
