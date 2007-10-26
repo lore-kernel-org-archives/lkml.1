@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbXJZL7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbXJZMBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbXJZL7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXJZL7G
+	id S1761888AbXJZMBF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 08:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXJZMAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:59:06 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58670 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753591AbXJZL7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:59:05 -0400
-Date: Fri, 26 Oct 2007 13:01:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: [PATCH 0/6] kill i386 and x86_64 directories
-Message-ID: <20071026130125.78ea7017@the-village.bc.nu>
-In-Reply-To: <20071026062336.GA19253@uranus.ravnborg.org>
-References: <20071025195644.GA14501@uranus.ravnborg.org>
-	<alpine.LFD.0.9999.0710252212420.3186@localhost.localdomain>
-	<20071026062336.GA19253@uranus.ravnborg.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 08:00:54 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:13601 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbXJZMAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 08:00:54 -0400
+Date: Fri, 26 Oct 2007 13:58:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Initialise scatter/gather list in ata_sg_setup
+Message-ID: <20071026115859.GJ5155@kernel.dk>
+References: <20071025192959.GA5827@kryten> <20071025193226.GA20459@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071025193226.GA20459@kryten>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 08:23:36 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Thu, Oct 25, 2007 at 10:17:53PM +0200, Thomas Gleixner wrote:
-> > 
-> > I think the last remaining bit to cleanup is the symlink from
-> > arch/x86/boot/bzImage. Now that the old directories are gone it does
-> > not make much sense to keep them alive. Andrew will survive it :)
+On Thu, Oct 25 2007, Anton Blanchard wrote:
 > 
-> It is not just Andrew I'm afraid.
-> We got a Debian bug-report too when we did not have the symlink and I
-> asume this is true for several others.
-> We should let it stay in 2.6.24 and remove the symlink for 2.6.25 IMO.
+> (Sorry the subject was incorrect)...
+> 
+> After turning on DEBUG_SG I hit a fail:
+> 
+> kernel BUG at include/linux/scatterlist.h:50!
+> 
+> 	ata_qc_issue
+> 	ata_scsi_translate
+> 	ipr_queuecommand
+> 	scsi_dispatch_cmd
+> 	scsi_request_fn
+> 	elv_insert
+> 	blk_execute_rq_nowait
+> 	blk_execute_rq
+> 	sg_io
+> 	scsi_cmd_ioctl
+> 	cdrom_ioctl
+> 	sr_block_ioctl
+> 	blkdev_driver_ioctl
+> 	blkdev_ioctl
+> 	block_ioctl
+> 	do_ioctl
+> 	vfs_ioctl
+> 	sys_ioctl
+> 	sg_ioctl_trans
+> 
+> It looks like ata_sg_setup is working on an uninitialised sg table. Call
+> sg_init_table to initialise it before use.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Jens this is against your sg branch. This fixes the fail but Id
+> appreciate a confirmation that it's the right fix :)
 
-I would put it on the list and leave it for a couple of years so that
-people using old distros have all upgraded at that point. Adrian will
-remember to delete it if its on the list to go ....
+The patch looks OK, you could also get away with just doing that
+sg_init_table() on qc init/alloc.
+
+
+-- 
+Jens Axboe
+
