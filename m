@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762268AbXJZRk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbXJZRnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762268AbXJZRk5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXJZRku
+	id S1762608AbXJZRnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXJZRnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:40:50 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:36454 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbXJZRkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:40:49 -0400
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
-In-Reply-To: <20071026100451.c0742740.pj@sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	 <20071025185506.8c373aa8.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	 <20071025192945.82962eea.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
-	 <20071025201455.acb4e72c.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
-	 <1193413054.5032.20.camel@localhost>  <20071026100451.c0742740.pj@sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 26 Oct 2007 13:28:13 -0400
-Message-Id: <1193419694.5032.40.camel@localhost>
+	Fri, 26 Oct 2007 13:43:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52792 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754055AbXJZRnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 13:43:08 -0400
+Date: Fri, 26 Oct 2007 10:43:06 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, akpm@linux-foundation.org, ak@suse.de,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
+Message-Id: <20071026104306.38f6f6ba.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710261038250.15270@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
+	<20071025230409.81f20ed3.pj@sgi.com>
+	<alpine.DEB.0.9999.0710260204590.8261@chino.kir.corp.google.com>
+	<20071026025634.0f32e1e2.pj@sgi.com>
+	<20071026101805.df3ebfda.pj@sgi.com>
+	<Pine.LNX.4.64.0710261038250.15270@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 10:04 -0700, Paul Jackson wrote:
-> Lee wrote:
-> > Paul:  what do you think about subsetting the cpuset.txt into a man page
-> > or 2 that can be referenced by other man pages' See Also sections?
-> 
-> Oh dear --- looking back in my work queue I have with my employer, I
-> see I have a task that is now over a year old, still unfinished, to
-> provide man pages for cpusets to Michael Kerrisk" <mtk-manpages@gmx.net>
-> 
-> So, yes, I agree this would be a "good thing".  I just haven't gotten a
-> round to it (http://www.quantumenterprises.co.uk/roundtuit/index.htm)
-> yet.
+> I really want cpuset relative nodemasks. Nodes need to reference
+> to available nodes. If you set all of them then it will use all available 
+> nodes and ignore the ones not allowed. If you just set the first two bits 
+> then it will use the first and second node of a cpuset.
 
+Exactly.  I think I am ending up with exactly this.
 
-I'm a little backed up myself, right now, or I'd offer to take a cut for
-you to review.  Once I get some free time [Hah!], I'll check with you
-again.  If you get started before then, I'd be happy to review.
+I'm just getting there by a strange way of thinking
+(as usual ;).
 
-Lee
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
