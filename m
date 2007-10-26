@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764246AbXJZRKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765331AbXJZRLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764246AbXJZRKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbXJZRKk
+	id S1765331AbXJZRLP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbXJZRK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:10:40 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:19744 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbXJZRKi (ORCPT
+	Fri, 26 Oct 2007 13:10:57 -0400
+Received: from mga11.intel.com ([192.55.52.93]:27519 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755818AbXJZRK4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:10:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Q2w3DC8vr81m6nrtbpujOiQtPISHjr/bWUTidiCYyzHVuICBTez4y7Dafm911n9wxpWoNdHYlWnr2wjXjVduofpbP4WwIYZYrHSaoCOflVgJTTopbT9KDcHSLh/oVi0R4QZXVxhJ6Ewvkvs97DtKqLdtUDnc2puE7pJ0jMR57R8=
-Message-ID: <3ae72650710261010p195e2228h91c9cb11829c2a77@mail.gmail.com>
-Date: Fri, 26 Oct 2007 19:10:38 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-Cc: "Greg KH" <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Pavel Machek" <pavel@ucw.cz>
-In-Reply-To: <200710260957.15137.jbarnes@virtuousgeek.org>
+	Fri, 26 Oct 2007 13:10:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,334,1188802800"; 
+   d="scan'208";a="187592633"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200710181401.50470.jbarnes@virtuousgeek.org>
-	 <200710251653.19978.jbarnes@virtuousgeek.org>
-	 <20071026045950.GA22920@suse.de>
-	 <200710260957.15137.jbarnes@virtuousgeek.org>
-X-Google-Sender-Auth: c370f32905f41f2a
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] DMA: Fix broken device refcounting
+Date: Fri, 26 Oct 2007 10:10:17 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C034CC702@orsmsx418.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] DMA: Fix broken device refcounting
+Thread-Index: AcgX6xO6uG3w9lkWQU2JQWJBlHK/CQABg9ZwAABqQLA=
+References: <1193415162504-git-send-email-hskinnemoen@atmel.com> 
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Nelson, Shannon" <shannon.nelson@intel.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 26 Oct 2007 17:10:18.0118 (UTC) FILETIME=[1541BA60:01C817F3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/26/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Thursday, October 25, 2007 9:59 pm Greg KH wrote:
-> > On Thu, Oct 25, 2007 at 04:53:18PM -0700, Jesse Barnes wrote:
-> > > Ok, here's yet another version that uses the device model for the
-> > > suspend/resume, rather than pci hooks.
-> > >
-> > > Greg, DRM desperately needs review of its device model usage, can
-> > > you take a look at this patch and the current drm_sysfs.c code?
-> > > Right now, we're mixing class_devices and regular devices (the
-> > > latter seem to be required for suspend/resume to work correctly),
-> > > but this seems wrong. Any ideas?  Should we just rip out the
-> > > class_device stuff and create full-on DRM device nodes?
-> >
-> > The class_device stuff is already ripped out in the latest -mm trees
-> > and I will be forwarding that change on for 2.6.25 after 2.6.24 is
-> > out.  So yes, it should be taken away :)
-> >
-> > But converting from class_device to struct device does not mean you
-> > use a "device node".  But you could if you want to :)
+>-----Original Message-----
+>From: Nelson, Shannon 
+>Sent: Friday, October 26, 2007 10:00 AM
+>To: 'Haavard Skinnemoen'
+>Cc: Williams, Dan J; linux-kernel@vger.kernel.org; 
+>akpm@linux-foundation.org
+>Subject: RE: [PATCH] DMA: Fix broken device refcounting
 >
-> Yeah, bad choice of words. :)
+>--
 >
-> To retain compatibility, we need to have directories under the DRM class
-> dir (/sys/class/drm) for each card (e.g. card0) that contains a file
-> describing which graphics driver is bound to the device.  For class
-> devices, we could just add an attributes structure to the device.  Can
-> we do the same with regular, non-class devices?
+>When a channel is removed from dmaengine, too many kref_put() calls
+>are made and the device removal happens too soon, usually causing
+>a panic.
+>
+>Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+>---
+>
+> drivers/dma/dmaengine.c |    1 -
+> 1 files changed, 0 insertions(+), 1 deletions(-)
+>
+>diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+>index 8248992..144a1b7 100644
+>--- a/drivers/dma/dmaengine.c
+>+++ b/drivers/dma/dmaengine.c
+>@@ -131,7 +131,6 @@ static void 
+>dma_async_device_cleanup(struct kref *kref);
+> static void dma_class_dev_release(struct class_device *cd)
+> {
+> 	struct dma_chan *chan = container_of(cd, struct 
+>dma_chan, class_dev);
+>-	kref_put(&chan->device->refcount, dma_async_device_cleanup);
+> }
+> 
+> static struct class dma_devclass = {
 
-The conversion is already queued in Greg's tree, and in -mm:
-http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/drm-convert-from-class_device-to-device-in-drivers-char-drm.patch;h=f993183d1cb017f981cc2232d17930af40459bd8;hb=HEAD
+Of course, to avoid compiler complaints, it might be better as something
+like:
 
-/sys/class/drm will look the same as with the class_device's, only if
-!CONFIG_SYSFS_DEPRECATED, there will be symlinks instead of
-directories, otherwise the same pathes, like for all other (converted)
-classes too.
+static void dma_class_dev_release(struct class_device *cd)
+{
+-	struct dma_chan *chan = container_of(cd, struct dma_chan,
+class_dev);
+-	kref_put(&chan->device->refcount, dma_async_device_cleanup);
++	return;
+}
 
-Thanks,
-Kay
+sln
