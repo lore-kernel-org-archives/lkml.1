@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbXJZVqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXJZVsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763040AbXJZVqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXJZVp5
+	id S1763500AbXJZVsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXJZVsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:45:57 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:41555 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbXJZVp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:45:57 -0400
-Message-ID: <4722600A.4090903@cateee.net>
-Date: Fri, 26 Oct 2007 23:45:46 +0200
-From: Giacomo Catenazzi <cate@cateee.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Fri, 26 Oct 2007 17:48:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50160 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753539AbXJZVsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:48:01 -0400
+Message-ID: <4722608E.3000405@garzik.org>
+Date: Fri, 26 Oct 2007 17:47:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is gcc thread-unsafe?
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com> <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com> <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com
+Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
+References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075808.GH6407@havoc.gtf.org>	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com> <20071026143525.b9218ed7.akpm@linux-foundation.org>
+In-Reply-To: <20071026143525.b9218ed7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Andrew Morton wrote:
+> That was a goofup.  I proposed that we should add a #define
+> TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the patch,
+> but it got lost.
+> 
+> I agree it would be a kind thing to do in this case.
 
-> The gcc lists seem to often get to the point where people quote the 
-> standard, and that's that. In that environment, the paper standard (that 
-> hass *nothing* to do with reality) trumps any other argument. "What we do 
-> is _allowed_ by the standard" seems to be a good argument, even if it 
-> breaks real code and there is no sane way to avoid doing it.
 
-So we have the great opportunity to change the standard, then
-gcc will change ;-)
+Yep, I was thinking that including
 
-C is in pre-review phase, and it is taking proposal and correction for the C1x
-(so in few kernel release ;-) )
+	#define IRQ_HANDLER_V3
 
-ciao
-	cate
+would be a good idea.
+
+	Jeff
+
+
