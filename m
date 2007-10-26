@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbXJZWK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbXJZWQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbXJZWK6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763510AbXJZWKq
+	id S1763510AbXJZWQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXJZWQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:10:46 -0400
-Received: from mail3.opus-i.net ([209.10.181.135]:42121 "EHLO
-	FPNYEXCFE02.opus-i.corp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763129AbXJZWKp (ORCPT
+	Fri, 26 Oct 2007 18:16:32 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:55957 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753584AbXJZWQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:10:45 -0400
-Message-ID: <472265E2.2060509@datallegro.com>
-Date: Fri, 26 Oct 2007 18:10:42 -0400
-From: Karl Schendel <kschendel@datallegro.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Fri, 26 Oct 2007 18:16:31 -0400
+Message-ID: <47226755.8090106@crispincowan.com>
+Date: Fri, 26 Oct 2007 15:16:53 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Leonid Ananiev <leonid.i.ananiev@linux.intel.com>
-Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
- write
-References: <47225835.4050309@datallegro.com> <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [AppArmor 00/45] AppArmor security module overview
+References: <20071026064024.243943043@suse.de>	<20071026073721.618b4778@laptopd505.fenrus.org>	<200710262244.57147.agruen@suse.de> <20071026141358.38342c0f@laptopd505.fenrus.org>
+In-Reply-To: <20071026141358.38342c0f@laptopd505.fenrus.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Oct 2007 22:10:43.0870 (UTC) FILETIME=[0D7133E0:01C8181D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Arjan van de Ven wrote:
+> My main concern for now is a description of what it tries to protect
+> against/in what cases you would expect to use it. THe reason for asking
+> this explicitly is simple: Until now the LSM discussions always ended
+> up in a nasty mixed up mess around disagreeing on the theoretical model
+> of what to protect against and the actual implementation of the threat
+> protection. THe only way I can think of to get out of this mess is to
+> have the submitter of the security model give a description of what his
+> protection model is (and unless it's silly, not argue about that), and
+> then only focus on how the code manages to achieve this model, to make
+> sure there's no big gaps in it, within its own goals/reference.
+>   
+I really, really like this proposal. It is essentially what I have
+always wanted.
 
-> .... So we may
-> actually end up doing some IO, but then returning the "wrong" error code
-> from the invalidate. Hmm?
->
+> On the first part (discussion of the model) I doubt we can get people
+> to agree, that's pretty much phylosophical... on the second part (how
+> well the code/design lives up to its own goals) the analysis can be
+> objective and technical.
+>   
+I will try to do that as soon as possible. While I will strive to be
+both clear and precise, achieving both is challenging. So, if someone
+discovers a mis-match between the description and the code, would a
+patch to the description be an acceptable resolution, if it did not
+render the model silly?
 
-A point.  In an all-seeing, all-caring universe, it would be the read
-hitting the cached page that couldn't be invalidated that would get
-the error, not the write.  I can't get too worked up over that, though.
+Crispin
 
-In any case, as you say, if the write worked it should report as such.
-Perhaps this equivalent but slightly cleaned-up patch instead?
+-- 
+Crispin Cowan, Ph.D.               http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
 
-Karl
-
---- linux-2.6.23.1-base/mm/filemap.c	2007-10-12 12:43:44.000000000 -0400
-+++ linux-2.6.23.1/mm/filemap.c	2007-10-26 18:00:00.000000000 -0400
-@@ -2194,21 +2194,17 @@ generic_file_direct_IO(int rw, struct ki
- 	}
-
- 	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
--	if (retval)
--		goto out;
-
- 	/*
- 	 * Finally, try again to invalidate clean pages which might have been
--	 * faulted in by get_user_pages() if the source of the write was an
--	 * mmap()ed region of the file we're writing.  That's a pretty crazy
--	 * thing to do, so we don't support it 100%.  If this invalidation
--	 * fails and we have -EIOCBQUEUED we ignore the failure.
-+	 * cached by non-direct readahead, or faulted in by get_user_pages()
-+	 * if the source of the write was an mmap'ed region of the file
-+	 * we're writing.  Either one is a pretty crazy thing to do,
-+	 * so we don't support it 100%.  If this invalidation
-+	 * fails, tough, the write still worked...
- 	 */
--	if (rw == WRITE && mapping->nrpages) {
--		int err = invalidate_inode_pages2_range(mapping,
--					      offset >> PAGE_CACHE_SHIFT, end);
--		if (err && retval >= 0)
--			retval = err;
-+	if (retval >= 0 && rw == WRITE && mapping->nrpages) {
-+		invalidate_inode_pages2_range(mapping, offset >> PAGE_CACHE_SHIFT, end);
- 	}
- out:
- 	return retval;
