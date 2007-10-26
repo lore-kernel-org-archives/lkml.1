@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763809AbXJZRRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbXJZRRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763809AbXJZRRU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbXJZRRA
+	id S1765588AbXJZRRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbXJZRRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:17:00 -0400
-Received: from ns3.mountaincable.net ([24.215.0.13]:53044 "EHLO
-	ns3.mountaincable.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbXJZRQ7 (ORCPT
+	Fri, 26 Oct 2007 13:17:25 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:48229 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752309AbXJZRRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:16:59 -0400
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-From: Ryan Lortie <desrt@desrt.ca>
-To: "Zephaniah E. Hull" <warp@aehallh.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20071026164441.GI26573@aehallh.com>
-References: <20070609084800.GR6362@aehallh.com>
-	 <d120d5000710231110u79ea11a8p38f1fc4654a7fac2@mail.gmail.com>
-	 <1193191094.32696.2.camel@moonpix.desrt.ca>
-	 <200710232333.08306.dmitry.torokhov@gmail.com>
-	 <20071024153508.GG26573@aehallh.com>
-	 <1193290654.15893.2.camel@moonpix.desrt.ca>
-	 <20071026164441.GI26573@aehallh.com>
+	Fri, 26 Oct 2007 13:17:24 -0400
+Subject: [PATCH] voyager: fix bogus conversion to per_cpu for boot_cpu_info
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: travis@sgi.com, clameter@sgi.com, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 26 Oct 2007 13:16:31 -0400
-Message-Id: <1193418991.7673.5.camel@moonpix.desrt.ca>
+Date: Fri, 26 Oct 2007 12:17:19 -0500
+Message-Id: <1193419039.3293.32.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-26-10 at 12:44 -0400, Zephaniah E. Hull wrote:
-> A 'filter' cares about a key or two, and might even want to remove it
-> from the stream, rfkill is a good example.
+There were two problems.  Firstly, someone forgot the struct keyword in
+front of cpuinfo_x86, so I take it this wasn't even compile checked.
+Secondly, the actual definition has this as a SHARED_ALIGNED, so the
+definitions mismatch.
 
-The patch introduces two different features that work nicely together
-but, by no means have to be used together.
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-1) set interested events
+---
 
-  By default, -all- events are delivered to an event device.  you only
-  get selective delivery when you explicitly use the 'set bits' call.
+James
 
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index 361ac51..6937143 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -29,14 +29,14 @@
+ #include <asm/arch_hooks.h>
+ 
+ /* TLB state -- visible externally, indexed physically */
+-DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate) ____cacheline_aligned = { &init_mm, 0 };
++DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = { &init_mm, 0 };
+ 
+ /* CPU IRQ affinity -- set to all ones initially */
+ static unsigned long cpu_irq_affinity[NR_CPUS] __cacheline_aligned = { [0 ... NR_CPUS-1]  = ~0UL };
+ 
+ /* per CPU data structure (for /proc/cpuinfo et al), visible externally
+  * indexed physically */
+-DEFINE_PER_CPU(cpuinfo_x86, cpu_info) __cacheline_aligned;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
+ EXPORT_PER_CPU_SYMBOL(cpu_info);
+ 
+ /* physical ID of the CPU used to boot the system */
 
-2) filter
-
-  Filter all events that have been delivered to the user from further
-  propagation.
-
-
-Notice that if you do not use feature #1 then you get all keystrokes
-delivered to you (unless someone with a higher priority than you did
-some filtering).  If you then use feature #2 then you filter everything
-(since everything is delivered to you).
-
-
-
-I really do think that this is good for your use case.  Your use of it
-would basically involve opening the event device and saying
-"ioctl(turn_filter_on);".  The default case is that all keys are
-delivered (and therefore blocked from anyone below you).
-
-
-
-Cheers
 
