@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXJZV6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764805AbXJZV7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbXJZV6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXJZV6J
+	id S1764805AbXJZV7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXJZV7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:58:09 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:53342 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbXJZV6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:58:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=QIIW6CVatFE0G3sQaoXDsldX++v2GdzIjYOsZvOWMRU6czU1X3c+lLG1N5zz4
-	cn9ZPswq9GvD49dg+vsQv/O5Q==
-Date: Fri, 26 Oct 2007 23:58:05 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rmk@arm.linux.org.uk, kernel@wantstofly.org, tony.luck@intel.com,
-       jwboyer@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
-       dmitry.torokhov@gmail.com, netdev@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org,
-       linux-wireless@vger.kernel.org, bryan.wu@analog.com, adaplas@gmail.com
-Subject: Re: [PATCH] Remove pointless casts from void pointers,
-Message-ID: <20071026215805.GD32372@xi.wantstofly.org>
-References: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 26 Oct 2007 17:59:04 -0400
+Received: from dvhart.com ([64.146.134.43]:48328 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbXJZV7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:59:03 -0400
+Message-ID: <47226325.4000404@mbligh.org>
+Date: Fri, 26 Oct 2007 14:59:01 -0700
+From: Martin Bligh <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, marcelo@kvack.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com, linux-mm@kvack.org
+Subject: Re: OOM notifications
+References: <20071018201531.GA5938@dmt>	<20071026140201.ae52757c.akpm@linux-foundation.org>	<472256AB.6060109@mbligh.org>	<20071026141112.18af0fa6.akpm@linux-foundation.org> <20071026173550.333d8eb4@bree.surriel.com>
+In-Reply-To: <20071026173550.333d8eb4@bree.surriel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 05:40:22AM -0400, Jeff Garzik wrote:
+Rik van Riel wrote:
+> On Fri, 26 Oct 2007 14:11:12 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> Sure, but in terms of high-level userspace interface, being able to
+>> select() on a group of priority buckets (spread across different
+>> nodes, zones and cgroups) seems a lot more flexible than any
+>> signal-based approach we could come up with.
+> 
+> Absolutely, the process needs to be able to just poll or
+> select on a file descriptor from the process main loop.
+> 
+> I am not convinced that the magic of NUMA memory distribution
+> and NUMA memory pressure should be visible to userspace.  Due
+> to the thundering herd problem we cannot wake up all of the
+> processes that select on the filedescriptor at the same time
+> anyway, so we can (later on) add NUMA magic to the process
+> selection logic in the kernel to only wake up processes on
+> the right NUMA nodes.
+> 
+> The initial patch probably does not need that.
 
->  arch/arm/mach-pxa/ssp.c                    |    2 +-
->  arch/arm/mach-s3c2410/usb-simtec.c         |    2 +-
->  arch/arm/plat-omap/mailbox.c               |    2 +-
+Depends if you're using cpusets or not, I think?
 
-FWIW
-
-Acked-by: Lennert Buytenhek <buytenh@wantstofly.org>
