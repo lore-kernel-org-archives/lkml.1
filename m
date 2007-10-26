@@ -1,96 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbXJZPSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbXJZPVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762828AbXJZPSZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 11:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760210AbXJZPSK
+	id S1761702AbXJZPVi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 11:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbXJZPVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:18:10 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:55793 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759173AbXJZPSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:18:08 -0400
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 26 Oct 2007 11:18:08 -0400
-Message-Id: <1193411888.5032.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 26 Oct 2007 11:21:32 -0400
+Received: from tristate.vision.ee ([194.204.30.144]:56642 "HELO mail.city.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752509AbXJZPVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 11:21:31 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 11:21:30 EDT
+Message-ID: <47220467.7000802@vision.ee>
+Date: Fri, 26 Oct 2007 18:14:47 +0300
+From: =?UTF-8?B?TGVuYXIgTMO1aG11cw==?= <lenar@vision.ee>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Richard Purdie <rpurdie@rpsys.net>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux machines dieing in swap storms
+References: <1193325641.5776.21.camel@localhost.localdomain>
+In-Reply-To: <1193325641.5776.21.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 17:28 -0700, Christoph Lameter wrote:
-> On Thu, 25 Oct 2007, David Rientjes wrote:
-> 
-> > The problem occurs when you add cpusets into the mix and permit the 
-> > allowed nodes to change without knowledge to the application.  Right now, 
-> > a simple remap is done so if the cardinality of the set of nodes 
-> > decreases, you're interleaving over a smaller number of nodes.  If the 
-> > cardinality increases, your interleaved nodemask isn't expanded.  That's 
-> > the problem that we're facing.  The remap itself is troublesome because it 
-> > doesn't take into account the user's desire for a custom nodemask to be 
-> > used anyway; it could remap an interleaved policy over several nodes that 
-> > will already be contended with one another.
-> 
-> Right. So I think we are fine if the application cannot setup boundaries 
-> for interleave.
-> 
-> 
-> > Normally, MPOL_INTERLEAVE is used to reduce bus contention to improve the 
-> > throughput of the application.  If you remap the number of nodes to 
-> > interleave over, which is currently how it's done when mems_allowed 
-> > changes, you could actually be increasing latency because you're 
-> > interleaving over the same bus.
-> 
-> Well you may hit some nodes more than others so a slight performance 
-> degradataion.
-> 
-> > This isn't a memory policy problem because all it does is effect a 
-> > specific policy over a set of nodes.  With my change, cpusets are required 
-> > to update the interleaved nodemask if the user specified that they desire 
-> > the feature with interleave_over_allowed.  Cpusets are, after all, the 
-> > ones that changed the mems_allowed in the first place and invalidated our 
-> > custom interleave policy.  We simply can't make inferences about what we 
-> > should do, so we allow the creator of the cpuset to specify it for us.  So 
-> > the proper place to modify an interleaved policy is in cpusets and not 
-> > mempolicy itself.
-> 
-> With that MPOL_INTERLEAVE would be context dependent and no longer 
-> needs translation. Lee had similar ideas. Lee: Could we make 
-> MPOL_INTERLEAVE generally cpuset context dependent?
-> 
+Hi,
 
-That's what my "cpuset-independent interleave" patch does.  David
-doesn't like the "null node mask" interface because it doesn't work with
-libnuma.  I plan to fix that, but I'm chasing other issues.  I should
-get back to the mempol work after today.
+It seems very similar to my case, where it is very easy to
+completely trash the computer in 30 seconds.
 
-What I like about the cpuset independent interleave is that the "policy
-remap" when cpusets are changed is a NO-OP--no need to change the
-policy.  Just as "preferred local" policy chooses the node where the
-allocation occurs, my cpuset independent interleave patch interleaves
-across the set of nodes available at the time of the allocation.  The
-application has to specifically ask for this behavior by the null/empty
-nodemask or the TBD libnuma API.  IMO, this is the only reasonable
-interleave policy for apps running in dynamic cpusets.
+Conf: core2 cpu, 2gb memory, 2gb swap, 64-bit os.
+Software: latest stable xorg, firefox2, latest gnash (all from gutsy)
 
-An aside:  if David et al [at google] are using cpusets on fake numa for
-resource management [I don't know this is the case, but saw some
-discussions way back that indicate it might be?], then maybe this
-becomes less of an issue when control groups [a.k.a. containers] and
-memory resource controls come to fruition?
+Go to site http://www.epl.ee/ and almost immeditately you loose
+control of your computer - mouse gets very jerky, clicks aren't registered,
+switching consoles doesn't work. If I'm quick enough, I can go and log
+on over ssh remotely and kill all gnashes. But some moments later even
+that is not possible. It just trashes hard drive.
 
-Lee
+Yes, one could set up different limits and what-so-ever ... but my point 
+is -
+it is tooo easy to kill your linux computer (or your friends server). 
+This should
+be changed.
+
+With best,
+Lenar
+
+Richard Purdie wrote:
+> I've got a problem I keep running into. My computers have buggy software
+> which can sometimes run out of control. Two specific examples:
+>
+> Evolution: Sometimes its memory usage decides to suddenly grow out of
+> control. It usually idles at around 300MB, you can watch it in top,
+> doubling, trebling and ending up going past the 1200MB mark. My system
+> has 1.5GB ram and you notice it swapping heavily past say 800MB.
+>
+> Spamassassin: If my mail server log files hit the 2GB file size limit of
+> the filesystem something strange happens and for whatever reason spamd
+> suddenly starts growing in memory usage until it uses up all available
+> system memory.
+>
+> Arguably both pieces of software are buggy, I accept that, fine. 
+>
+> In both machines in totally different circumstances what happens next is
+> bad. The systems swap more and more heavily trying to cope with these
+> out of control processes. Network interactivity stops. The swap storm
+> gets so bad you can't log onto the console any more. I've left machines
+> in this state for 1-2 hours and they don't come back. Watching the
+> console, the OOM killer does kick in but it never kills the problem
+> process (both spamd and evolution are long running processes that have
+> suddenly gone out of control). In then end, you have to hit the reset
+> switch :(. This happened to my desktop once again about 10 minutes ago
+> and its *extremely* frustrating. Sometimes I can catch and kill the
+> offending process but I shouldn't have to.
+>
+> This isn't a new problem. My mail server used to be running an ancient
+> 2.6.12 kernel and I upgraded it to 2.6.22.X in an effort to solve this
+> problem which no change. My desktop shows exactly the same kind of OOM
+> swap storm behaviour (2.6.20 based).
+>
+> I realise that tuning the OOM killer is a really tricky problem but
+> something needs improving as the current user experience is broken.
+>
+> I'm seriously tempted to add a "kill the process using the most memory"
+> key combination into SysRq which might let me save the desktop but won't
+> help with my remote server. I could also just disable swap I guess.
+>
+> Advice on solving this welcome preferably in mainline but I'll happily
+> hack my kernels with a workaround if need be.
+>
+> Cheers,
+>
+> Richard
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
