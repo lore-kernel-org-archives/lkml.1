@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764132AbXJZREh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXJZRFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764132AbXJZREh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbXJZREb
+	id S1759342AbXJZRFF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXJZREz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:04:31 -0400
-Received: from mga03.intel.com ([143.182.124.21]:12276 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755186AbXJZREa convert rfc822-to-8bit (ORCPT
+	Fri, 26 Oct 2007 13:04:55 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56961 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750849AbXJZREy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:04:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,334,1188802800"; 
-   d="scan'208";a="306127465"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] DMA: Fix broken device refcounting
-Date: Fri, 26 Oct 2007 09:59:41 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C034CC6C7@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <1193415162504-git-send-email-hskinnemoen@atmel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] DMA: Fix broken device refcounting
-Thread-Index: AcgX6xO6uG3w9lkWQU2JQWJBlHK/CQABg9Zw
-References: <1193415162504-git-send-email-hskinnemoen@atmel.com>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 26 Oct 2007 16:59:42.0368 (UTC) FILETIME=[9A51FA00:01C817F1]
+	Fri, 26 Oct 2007 13:04:54 -0400
+Date: Fri, 26 Oct 2007 10:04:51 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071026100451.c0742740.pj@sgi.com>
+In-Reply-To: <1193413054.5032.20.camel@localhost>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<20071025192945.82962eea.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
+	<20071025201455.acb4e72c.pj@sgi.com>
+	<alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+	<1193413054.5032.20.camel@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Haavard Skinnemoen [mailto:hskinnemoen@atmel.com] 
->
->When a DMA device is unregistered, its reference count is decremented
->twice for each channel: Once dma_class_dev_release() and once in
->dma_chan_cleanup(). This may result in the DMA device driver's
->remove() function completing before all channels have been cleaned
->up, causing lots of use-after-free fun.
->
->Fix it by incrementing the device's reference count twice for each
->channel during registration.
->
->Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
->---
->I'm not sure if this is the correct way to solve it, but it seems to
->work. The remove() function does not hang, which indicates that the
->device's reference count does drop all the way to zero on
->unregistration, which in turn indicates that it did actually drop
->_below_ zero before.
->
-> drivers/dma/dmaengine.c |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
->
->diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
->index 8248992..302eded 100644
->--- a/drivers/dma/dmaengine.c
->+++ b/drivers/dma/dmaengine.c
->@@ -397,6 +397,8 @@ int dma_async_device_register(struct 
->dma_device *device)
-> 			goto err_out;
-> 		}
-> 
->+		/* One for the channel, one of the class device */
->+		kref_get(&device->refcount);
-> 		kref_get(&device->refcount);
-> 		kref_init(&chan->refcount);
-> 		chan->slow_ref = 0;
->-- 
->1.5.2.5
->
+Lee wrote:
+> Paul:  what do you think about subsetting the cpuset.txt into a man page
+> or 2 that can be referenced by other man pages' See Also sections?
 
-As Dan said, we've been discussing this offline, and hadn't come to an
-agreement yet.  My version of the patch is the opposite of yours -
-instead of adding a kref_get(), I remove one of the kref_put() calls.
---
+Oh dear --- looking back in my work queue I have with my employer, I
+see I have a task that is now over a year old, still unfinished, to
+provide man pages for cpusets to Michael Kerrisk" <mtk-manpages@gmx.net>
 
-When a channel is removed from dmaengine, too many kref_put() calls
-are made and the device removal happens too soon, usually causing
-a panic.
+So, yes, I agree this would be a "good thing".  I just haven't gotten a
+round to it (http://www.quantumenterprises.co.uk/roundtuit/index.htm)
+yet.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
----
-
- drivers/dma/dmaengine.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 8248992..144a1b7 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -131,7 +131,6 @@ static void dma_async_device_cleanup(struct kref
-*kref);
- static void dma_class_dev_release(struct class_device *cd)
- {
- 	struct dma_chan *chan = container_of(cd, struct dma_chan,
-class_dev);
--	kref_put(&chan->device->refcount, dma_async_device_cleanup);
- }
- 
- static struct class dma_devclass = {
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
