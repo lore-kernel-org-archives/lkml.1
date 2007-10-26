@@ -1,54 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbXJZXWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764608AbXJZX0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765038AbXJZXWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXJZXWD
+	id S1764608AbXJZX0e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbXJZX0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:22:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54279 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXJZXWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:22:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: CSights <csights@fastmail.fm>
-Subject: Re: cannot "hibernate" if program being debugged in gdb is paused after SIGABRT in linux 2.6.23 (but can in 2.6.22.7)
-Date: Sat, 27 Oct 2007 01:38:15 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200710252103.27675.csights@fastmail.fm>
-In-Reply-To: <200710252103.27675.csights@fastmail.fm>
+	Fri, 26 Oct 2007 19:26:25 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59093 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751998AbXJZX0Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 19:26:24 -0400
+Date: Sat, 27 Oct 2007 01:26:53 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Greg KH <greg@kroah.com>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+	static interface)
+Message-ID: <20071026232653.GF30533@stusta.de>
+References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200710270138.15982.rjw@sisk.pl>
+In-Reply-To: <4721B77F.8070102@imap.cc>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 26 October 2007 03:03, CSights wrote:
-> Hi LKML,
-> 	My computer running kernel 2.6.23 does not "hibernate" (suspend to disk using 
-> the kernel's methods) with a program (named stringTest) running in gdb, but 
-> has received a SIGABRT.
-> 	The hibernate is successful when running kernel 2.6.22.7 !
-
-Certainly one of the freezer changes in 2.6.23 has caused that to happen ...
-
-> Here is the message from gdb:
+On Fri, Oct 26, 2007 at 11:46:39AM +0200, Tilman Schmidt wrote:
+> On Thu, 25 Oct 2007 19:56:47 -0700, Greg KH wrote:
+> > On Fri, Oct 26, 2007 at 01:09:14AM +0200, Tilman Schmidt wrote:
+> >> Am 25.10.2007 00:31 schrieb Adrian Bunk:
+> >> > Generally, the goal is to get external modules included into the kernel.
+> >> > [...] even though it might sound harsh breaking
+> >> > external modules and thereby making people aware that their code should 
+> >> > get into the kernel is IMHO a positive point.
+> >> 
+> >> This argument seems to start from the assumption that any externally
+> >> maintained kernel code *can* get into the kernel, which doesn't stand
+> >> up to  reality. Once you admit that there is code which, for very good
+> >> reasons, won't ever be accepted into the mainline kernel tree, what you
+> >> are saying amounts to: "Code that isn't fit to be included in the
+> >> mainline kernel isn't fit to exist at all."
+> > 
+> > What kind of code is not accepted into the mainline kernel tree for good
+> > reasons?
 > 
-> terminate called after throwing an instance of 'std::out_of_range'
->   what():  basic_string::substr
-> 
-> Program received signal SIGABRT, Aborted.
-> 0xb7fb6410 in __kernel_vsyscall ()
-> 
-> And the attached file is the portion of /var/log/syslog when the hibernate was 
-> attempted.
-> 
-> Let me know if there is anything else to send,
+> - proprietary code
 
-Well, a test program that triggers the SIGABRT under gdb would be useful.
+It's unclear whether distributing not GPL compatible modules is legal
+at all.
 
-Greetings,
-Rafael
+And they are definitely not "very good reasons" for doing anything in 
+the kernel.
+
+> - unmaintained code
+
+Unmaintained code in the kernel has a realistic chance of being usable 
+for 5 years.
+
+Unmaintained external code is quite likely to be unusable after
+at most one year.
+
+> - code conflicting with existing kernel structure or policy
+> - code in which the concerned subsystem maintainers see no benefit
+
+Let's fix the problems, not work around them.
+
+There is a conflict between getting code included and ensuring some 
+minimum quality of the kernel, but in many cases we could try better.
+
+And when there's a good reason for a kernel policy, then code that
+violates this policy is not a "very good reason" for anything.
+
+> - code which its author is unable and/or unwilling to convert to
+>   kernel coding standards
+> - code whose author is unable and/or unwilling to defend it on LKML
+>...
+
+That's their fault, and definitely not a "very good reason" for making 
+life easier for them.
+
+> Thanks,
+> Tilman
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
