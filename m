@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbXJZN1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbXJZNij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbXJZN1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 09:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXJZN1C
+	id S1758499AbXJZNij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 09:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXJZNi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 09:27:02 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58265 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752189AbXJZN1A (ORCPT
+	Fri, 26 Oct 2007 09:38:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:29656 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXJZNi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 09:27:00 -0400
-Date: Fri, 26 Oct 2007 15:26:53 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [announce] Updated PS3 Linux Distro Kit released (v1.5)
-Message-ID: <Pine.LNX.4.62.0710261520200.31650@pademelon.sonytel.be>
+	Fri, 26 Oct 2007 09:38:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jzGuWD0cRpeijM5X99tUo7SzfKIVISzJKuY2bvUFk+VMXCwuVNPih2dLfxPd+LAz+qAD/Cg2YjPaMpmwq7zOgrb/q8Zq1XE3jZk9SVLn7wXzxBxBsPs+aK3i52sHdRCPhVRf4Q8pCYU1YJWZCxGXLJr+K+7EMCwqVKdJdYVif4I=
+Message-ID: <d120d5000710260638i4f5d2780ied5bcaabebbaf137@mail.gmail.com>
+Date: Fri, 26 Oct 2007 09:38:23 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH] Remove pointless casts from void pointers,
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       rmk@arm.linux.org.uk, kernel@wantstofly.org, tony.luck@intel.com,
+       jwboyer@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+       netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-serial@vger.kernel.org, linux-wireless@vger.kernel.org,
+       bryan.wu@analog.com, adaplas@gmail.com
+In-Reply-To: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1860638441-1193405213=:31650"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 10/26/07, Jeff Garzik <jeff@garzik.org> wrote:
+>  drivers/input/touchscreen/h3600_ts_input.c |    4 ++--
 
----584337861-1860638441-1193405213=:31650
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Acked-by: Dmitry Torokhov <dtor@mail.ru>
 
-
-For those interested, an updated PS3 Linux Distributor's Starter Kit (v1.5) has
-been released.
-
-The CD-ROM iso images (171 MiB) can be found at:
-  - ftp://ftp.infradead.org/pub/Sony-PS3/CELL-Linux-CL_20071023-ADDON.iso
-  - http://ftp.uk.linux.org/pub/linux/Sony-PS3/CELL-Linux-CL_20071023-ADDON.iso
-
-Due to the unfortunate absence of Geoff, the files at
-http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ haven't been updated
-yet.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1860638441-1193405213=:31650--
+-- 
+Dmitry
