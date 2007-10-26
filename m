@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764171AbXJZUcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXJZUds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764171AbXJZUcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXJZUcN
+	id S1764339AbXJZUds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXJZUdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:32:13 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:38072 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbXJZUcN (ORCPT
+	Fri, 26 Oct 2007 16:33:40 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35856 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbXJZUdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:32:13 -0400
-Subject: Re: [PATCH 0/6] kernel-doc: add DOC: sections support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sam@ravnborg.org
-In-Reply-To: <20071026144609.GX19691@waste.org>
-References: <11932637282902@xenotime.net> <20071025172932.GN17536@waste.org>
-	 <20071025103611.f2ae216f.rdunlap@xenotime.net>
-	 <20071025192145.GQ19691@waste.org> <1193395697.4406.56.camel@johannes.berg>
-	 <20071026144609.GX19691@waste.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-AxunQG1DrjiqcxpQY4Xj"
-Date: Fri, 26 Oct 2007 22:32:31 +0200
-Message-Id: <1193430751.15686.3.camel@johannes.berg>
+	Fri, 26 Oct 2007 16:33:39 -0400
+Date: Fri, 26 Oct 2007 21:33:37 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: John Johansen <jjohansen@suse.de>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Tony Jones <tonyj@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: Re: [AppArmor 19/45] Add struct vfsmount parameters to vfs_rename()
+Message-ID: <20071026203337.GF8181@ftp.linux.org.uk>
+References: <20071026064024.243943043@suse.de> <20071026064049.534093497@suse.de> <20071026073749.GE8181@ftp.linux.org.uk> <20071026182352.GA32415@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026182352.GA32415@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 26, 2007 at 11:23:53AM -0700, John Johansen wrote:
 
---=-AxunQG1DrjiqcxpQY4Xj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> In the current code, both vfsmounts are always identical, and so one of
+> the two should go, agreed.
+> 
+> The thought behind passing both vfsmounts was that they could differ but
+> point to the same super_block, in which case renames would still be
+> possible at least from a filesystem point of view. The essential
+> restriction here is that both files must be on the same device; the vfs
+> restriction of not allowing cross-mount renames is arbitrary.
 
+It's called "access control".  Pathname-based one, BTW.  And yes, it's
+100% deliberate.
 
-> There are lots and lots of files that currently contain kerneldoc
-> comments that are unreferenced by docbook (and have been for years).
-> We should somehow sweep them all up into some sort of bucket
-> automatically.
+> Cross-mount renames are not allowed currently, and granted, they may not
+> be very useful, either.
 
-That'd be another thing, but yes, it'd be nice as well. Not something
-I'm aiming for right now though.
-
-johannes
-
---=-AxunQG1DrjiqcxpQY4Xj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARyJO3qVg1VMiehFYAQK+2hAAsie+8RmnZzFUlOSBuaoLXyefJpnAEKpX
-7wb8Xz63sHS5YpzPSG+RYLQEaMkKP6ZlfpUFkrlu8fCtat0psmaArwpQKuMwgZvu
-y5E5MjvVHoUCUSkY+gaYyF8iPwGjI5qdWrEsnZPwazQZOvoZzEU/R0R8y2gTZyvP
-SF/Ee/g60AIy6/6O7J3RNPmsaR9x4YLf9XMGfEHucwloiOZxvq8Rsx6GesqFeHMX
-vpNpOoVORElgJGnJuD9D8ZNeMTDMSmDnJbd9Otd/XBXfwRvHIndnOHq9Y6rOvIii
-fO1PkaEEuOR/yjgKOJNrhF0xXjylkErJH1lx2NqBpib4VQHfgQK58qJIqfehg6KZ
-Ucqiz3XVKCNdlGbvF01r75OoHuZVWL7f9Mvsy3aaN3w3cvktZULJY1Bp9lUtgScn
-nex1Uj7rO9MPAxgWmbk/9uSW2xgVjD8T6wCqkPumoHQDkQsjeCiqP7CjWlPKcdue
-neqOtRrpMOJmycexqsczx0fOS8ml5SP6QDkLesxeN1GrBVvabQVstc0Mjxk/m/Da
-XeRl2BC2ZHdHsfSKEviqx8XeHJuCqz0rK6Dz5uka1bNnCrzSiVivv+o5KNaxfcVu
-8btQxZMYBKCTPXCFOOqqZ/eEL7NUDXfuDFL3Zf0eHlNGdhAbfgKa4MoDZ5RSOSEm
-9UIcFH/YNJc=
-=w6qq
------END PGP SIGNATURE-----
-
---=-AxunQG1DrjiqcxpQY4Xj--
-
+<raised brows>
+Excuse me, but IIRC LSM was supposed to _add_ restrictions, not to remove
+existing security checks.
