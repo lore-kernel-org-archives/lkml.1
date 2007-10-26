@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765479AbXJZHRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763910AbXJZHS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765479AbXJZHRv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 03:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764773AbXJZHJL
+	id S1763910AbXJZHS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 03:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765273AbXJZHMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 03:09:11 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52863 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763398AbXJZHJI (ORCPT
+	Fri, 26 Oct 2007 03:12:54 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:36592 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765251AbXJZHMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 03:09:08 -0400
-Date: Fri, 26 Oct 2007 09:09:05 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <greg@kroah.com>
-cc: Tilman Schmidt <tilman@imap.cc>, Adrian Bunk <bunk@kernel.org>,
-       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-In-Reply-To: <20071026025647.GC21408@kroah.com>
-Message-ID: <Pine.LNX.4.64.0710260908290.25696@fbirervta.pbzchgretzou.qr>
-References: <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
- <20071022210956.31f7bbcf@laptopd505.fenrus.org> <20071023051642.GA3908@sequoia.sous-sol.org>
- <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org>
- <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de>
- <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de>
- <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 03:12:52 -0400
+Date: Fri, 26 Oct 2007 16:12:52 +0900 (JST)
+Message-Id: <20071026.161252.118133301.yoshfuji@linux-ipv6.org>
+To: k-keiichi@bx.jp.nec.com
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, apw@shadowen.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 2/2] add SubmittingPatches to Documentation/ja_JP
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <47218F5C.1040402@bx.jp.nec.com>
+References: <47218DBC.8070404@bx.jp.nec.com>
+	<47218F5C.1040402@bx.jp.nec.com>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-On Oct 25 2007 19:56, Greg KH wrote:
->
->I'm trying to compile a list of all known external modules and drivers
->and work to get them included in the main kernel tree to help prevent
->these kinds of things.  If you know of any that are not on the list at:
->	http://linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
->please feel free to add them, or email me with the needed information
->and I will add them to the list.
+Basically okay, but please refer to the original DCO
+document.
 
-Do I have to at least try to submit it to LKML first before it is
-even considered for the OOT wiki page? :-)
+Your mailer is broken.  You should include "charset" parameter
+in your multipart.  Maybe it is better to prepare a git repository,
+or attach it as a binary (application/octet-stream).
+
+--yoshfuji
+
+In article <47218F5C.1040402@bx.jp.nec.com> (at Fri, 26 Oct 2007 15:55:24 +0900), Keiichi KII <k-keiichi@bx.jp.nec.com> says:
+
+> From: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+> 
+> This patch adds SubmittingPatches translated into Japanese to 
+> Documentation/ja_JP directory.
+> 
+> I attach the patch because there is a possibility that MUA 
+> will change the character encoding sometimes.
+> 
+> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+> -- 
+> Keiichi KII
+> NEC Corporation OSS Platform Development Division
+> E-mail: k-keiichi@bx.jp.nec.com 
+> 
+> 
