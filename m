@@ -1,77 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764685AbXJZSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762017AbXJZSdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764685AbXJZSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbXJZSaW
+	id S1762017AbXJZSdW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbXJZSdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:30:22 -0400
-Received: from www.tglx.de ([62.245.132.106]:58723 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756141AbXJZSaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:30:21 -0400
-Date: Fri, 26 Oct 2007 20:30:00 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, James Bottomley <jejb@steeleye.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [Git pull] x86 bugfixes
-Message-ID: <alpine.LFD.0.9999.0710262010030.3186@localhost.localdomain>
+	Fri, 26 Oct 2007 14:33:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:5007 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754512AbXJZSdJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 14:33:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=IuFatMVSyIns2tjG5Mv9QZ4seezS3np6c+nTf29haIHypIYOqdfcwDv2ua1WuDkZOQWXqtJuX34DsI9j3LLAaIyc/PRpclzvVQV/IQInDYu0C4adYya7xkAnn7el562hvv/LuF+MMjgxwtEWGokqZUFxuYKdxTuzBFX+sUSOjZ8=
+Message-ID: <472232D3.6000807@gmail.com>
+Date: Fri, 26 Oct 2007 22:32:51 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.624-rc1 regression] lost battery information
+References: <200710262024.06012.arvidjaar@mail.ru> <200710262120.22536.arvidjaar@mail.ru> <47222DF3.3040208@gmail.com> <200710262215.42939.arvidjaar@mail.ru>
+In-Reply-To: <200710262215.42939.arvidjaar@mail.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------010400060204040008010500"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This is a multi-part message in MIME format.
+--------------010400060204040008010500
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-please pull x86 bugfixes from
+Andrey Borzenkov wrote:
+> On Friday 26 October 2007, Alexey Starikovskiy wrote:
+>> Andrey Borzenkov wrote:
+>>> On Friday 26 October 2007, Alexey Starikovskiy wrote:
+>>>> Andrey Borzenkov wrote:
+>>>>> I have lost battery in 2.6.24-rc1. Without CONFIG_ACPI_PROCFS I have
+>>>>> no /proc/acpi/battery and cannot test netlink interface because right
+>>>>> now there is no consumer of this.
+>>>> for /sysfs interface you need to enable power_supply driver.
+>>>> or you could apply this patch and power_supply will be selected by
+>>>> battery itself.
+>>> I already have power_supply module, battery depends on it and it is
+>>> autloaded. But I fail to see where I can get battery info in /sys
+>> Intent was to put into /sysfs same information:
+>> aystarik@samsung:~/client_conf$ ls /sys/class/power_supply/BAT1/
+>> alarm  charge_full  charge_full_design  charge_now  current_now  device 
+>> manufacturer  model_name  present  status  subsystem  technology  type 
+>> uevent  voltage_min_design  voltage_now
+>>
+> 
+> is it in -rc1 or can you point me to the patch (I'd rather avoid having to 
+> pull from different git trees). Thank you.
+No, it should be rc1.
+> 
+> And what about ACPI_PROCFS case? It still needs attention I believe.
+As you can see, there is info in /proc too:
+>> aystarik@samsung:~/client_conf$ cat /proc/acpi/battery/BAT1/*
+>> alarm:                   unsupported
+>> present:                 yes
+>> design capacity:         4300 mAh
+>> last full capacity:      4172 mAh
+>> battery technology:      rechargeable
+>> design voltage:          14800 mV
+>> design capacity warning: 208 mAh
+>> design capacity low:     41 mAh
+>> capacity granularity 1:  41 mAh
+>> capacity granularity 2:  41 mAh
+>> model number:            Bat1
+>> serial number:           001
+>> battery type:            LION
+>> OEM info:                Pacifi
+>> present:                 yes
+>> capacity state:          ok
+>> charging state:          charged
+>> present rate:            0 mA
+>> remaining capacity:      4172 mAh
+>> present voltage:         16518 mV
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-
-Thanks
-
-	tglx
+Your cat's "Bad address" means -EFAULT, according to "man errno".
+Please apply this patch to see what exactly failed...
 
 
-Thomas Gleixner (2):
-      Revert "i386: export i386 smp_call_function_mask() to modules"
-      x86: export smp_ops to allow modular build of KVM
+--------------010400060204040008010500
+Content-Type: text/x-diff;
+ name="x.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x.patch"
 
- arch/x86/kernel/smp_32.c |    8 +-------
- include/asm-x86/smp_32.h |    9 ++++++---
- 2 files changed, 7 insertions(+), 10 deletions(-)
-diff --git a/arch/x86/kernel/smp_32.c b/arch/x86/kernel/smp_32.c
-index f321153..fcaa026 100644
---- a/arch/x86/kernel/smp_32.c
-+++ b/arch/x86/kernel/smp_32.c
-@@ -708,10 +708,4 @@ struct smp_ops smp_ops = {
- 	.smp_send_reschedule = native_smp_send_reschedule,
- 	.smp_call_function_mask = native_smp_call_function_mask,
- };
--
--int smp_call_function_mask(cpumask_t mask, void (*func) (void *info),
--			   void *info, int wait)
--{
--	return smp_ops.smp_call_function_mask(mask, func, info, wait);
--}
--EXPORT_SYMBOL(smp_call_function_mask);
-+EXPORT_SYMBOL_GPL(smp_ops);
-diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
-index 7056d86..e10b7af 100644
---- a/include/asm-x86/smp_32.h
-+++ b/include/asm-x86/smp_32.h
-@@ -94,9 +94,12 @@ static inline void smp_send_reschedule(int cpu)
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 02a396d..55e9a8e 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -262,21 +262,29 @@ static int extract_package(struct acpi_battery *battery,
  {
- 	smp_ops.smp_send_reschedule(cpu);
- }
--extern int smp_call_function_mask(cpumask_t mask,
--				  void (*func) (void *info), void *info,
--				  int wait);
-+static inline int smp_call_function_mask(cpumask_t mask,
-+					 void (*func) (void *info), void *info,
-+					 int wait)
-+{
-+	return smp_ops.smp_call_function_mask(mask, func, info, wait);
-+}
- 
- void native_smp_prepare_boot_cpu(void);
- void native_smp_prepare_cpus(unsigned int max_cpus);
+ 	int i, *x;
+ 	union acpi_object *element;
+-	if (package->type != ACPI_TYPE_PACKAGE)
++	if (package->type != ACPI_TYPE_PACKAGE) {
++printk (KERN_ERR PREFIX "package->type = %x\n", package->type);
+ 		return -EFAULT;
++	}
+ 	for (i = 0; i < num; ++i) {
+-		if (package->package.count <= i)
++		if (package->package.count <= i) {
++printk (KERN_ERR PREFIX "package.count = %d, i = %d\n", package->package.count, i);
+ 			return -EFAULT;
++		}
+ 		element = &package->package.elements[i];
+ 		if (offsets[i].mode) {
+ 			if (element->type != ACPI_TYPE_STRING &&
+-			    element->type != ACPI_TYPE_BUFFER)
++			    element->type != ACPI_TYPE_BUFFER) {
++printk (KERN_ERR PREFIX "element[%d]->type = %x, expected string\n", i, element->type);
+ 				return -EFAULT;
++			}
+ 			strncpy((u8 *)battery + offsets[i].offset,
+ 				element->string.pointer, 32);
+ 		} else {
+-			if (element->type != ACPI_TYPE_INTEGER)
++			if (element->type != ACPI_TYPE_INTEGER) {
++printk (KERN_ERR PREFIX "element[%d]->type = %x, expected integer\n", i, element->type);
+ 				return -EFAULT;
++			}
+ 			x = (int *)((u8 *)battery + offsets[i].offset);
+ 			*x = element->integer.value;
+ 		}
+
+--------------010400060204040008010500--
