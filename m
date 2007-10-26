@@ -1,62 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761868AbXJZJmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXJZJnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761868AbXJZJmq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbXJZJlB
+	id S1760327AbXJZJnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbXJZJlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:41:01 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:60316 "EHLO havoc.gtf.org"
+	Fri, 26 Oct 2007 05:41:06 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:56313 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758668AbXJZJlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:41:00 -0400
+	id S1758749AbXJZJlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:41:01 -0400
 To: LKML <linux-kernel@vger.kernel.org>
-Message-Id: <bdce59bb00f2095c934e9931df2689e636673622.1193390975.git.jeff@garzik.org>
+Message-Id: <bdd7a2edf0951f98b9dde3e3465e4fd9263db79e.1193390975.git.jeff@garzik.org>
 In-Reply-To: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
 References: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
 From: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, samuel@sortiz.org, netdev@vger.kernel.org
-Subject: [PATCH] drivers/net/irda/au1k_ir: fix obvious irq handler bugs
-Date: Fri, 26 Oct 2007 05:40:29 -0400 (EDT)
+Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org
+Subject: [PATCH] SCSI/gdth: kill unneeded 'irq' argument
+Date: Fri, 26 Oct 2007 05:40:30 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-interrupt handlers return a return value these days.
-
-Also, kill always-true test and unneeded void* cast.
+Neither gdth_get_status() nor __gdth_interrupt() need their 'irq'
+argument, so remove it.
 
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- drivers/net/irda/au1k_ir.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+ drivers/scsi/gdth.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/irda/au1k_ir.c b/drivers/net/irda/au1k_ir.c
-index 4dbdfaa..a1e4508 100644
---- a/drivers/net/irda/au1k_ir.c
-+++ b/drivers/net/irda/au1k_ir.c
-@@ -627,19 +627,16 @@ static int au1k_irda_rx(struct net_device *dev)
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index b253b8c..65c21b1 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -141,7 +141,7 @@
+ static void gdth_delay(int milliseconds);
+ static void gdth_eval_mapping(ulong32 size, ulong32 *cyls, int *heads, int *secs);
+ static irqreturn_t gdth_interrupt(int irq, void *dev_id);
+-static irqreturn_t __gdth_interrupt(gdth_ha_str *ha, int irq,
++static irqreturn_t __gdth_interrupt(gdth_ha_str *ha,
+                                     int gdth_from_wait, int* pIndex);
+ static int gdth_sync_event(gdth_ha_str *ha, int service, unchar index,
+                                                                Scsi_Cmnd *scp);
+@@ -165,7 +165,6 @@ static int gdth_internal_cache_cmd(gdth_ha_str *ha, Scsi_Cmnd *scp);
+ static int gdth_fill_cache_cmd(gdth_ha_str *ha, Scsi_Cmnd *scp, ushort hdrive);
+ 
+ static void gdth_enable_int(gdth_ha_str *ha);
+-static unchar gdth_get_status(gdth_ha_str *ha, int irq);
+ static int gdth_test_busy(gdth_ha_str *ha);
+ static int gdth_get_cmd_index(gdth_ha_str *ha);
+ static void gdth_release_event(gdth_ha_str *ha);
+@@ -1334,14 +1333,12 @@ static void __init gdth_enable_int(gdth_ha_str *ha)
  }
  
- 
--void au1k_irda_interrupt(int irq, void *dev_id)
-+static irqreturn_t au1k_irda_interrupt(int dummy, void *dev_id)
+ /* return IStatus if interrupt was from this card else 0 */
+-static unchar gdth_get_status(gdth_ha_str *ha, int irq)
++static unchar gdth_get_status(gdth_ha_str *ha)
  {
--	struct net_device *dev = (struct net_device *) dev_id;
--
--	if (dev == NULL) {
--		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
--		return;
--	}
-+	struct net_device *dev = dev_id;
+     unchar IStatus = 0;
  
- 	writel(0, IR_INT_CLEAR); /* ack irda interrupts */
+-    TRACE(("gdth_get_status() irq %d ctr_count %d\n", irq, gdth_ctr_count));
++    TRACE(("gdth_get_status() irq %d ctr_count %d\n", ha->irq, gdth_ctr_count));
  
- 	au1k_irda_rx(dev);
- 	au1k_tx_ack(dev);
-+
-+	return IRQ_HANDLED;
+-        if (ha->irq != (unchar)irq)             /* check IRQ */
+-            return false;
+         if (ha->type == GDT_EISA)
+             IStatus = inb((ushort)ha->bmic + EDOORREG);
+         else if (ha->type == GDT_ISA)
+@@ -1523,7 +1520,7 @@ static int gdth_wait(gdth_ha_str *ha, int index, ulong32 time)
+         return 1;                               /* no wait required */
+ 
+     do {
+-        __gdth_interrupt(ha, (int)ha->irq, true, &wait_index);
++        __gdth_interrupt(ha, true, &wait_index);
+         if (wait_index == index) {
+             answer_found = TRUE;
+             break;
+@@ -3036,7 +3033,7 @@ static void gdth_clear_events(void)
+ 
+ /* SCSI interface functions */
+ 
+-static irqreturn_t __gdth_interrupt(gdth_ha_str *ha, int irq,
++static irqreturn_t __gdth_interrupt(gdth_ha_str *ha,
+                                     int gdth_from_wait, int* pIndex)
+ {
+     gdt6m_dpram_str __iomem *dp6m_ptr = NULL;
+@@ -3054,7 +3051,7 @@ static irqreturn_t __gdth_interrupt(gdth_ha_str *ha, int irq,
+     int act_int_coal = 0;       
+ #endif
+ 
+-    TRACE(("gdth_interrupt() IRQ %d\n",irq));
++    TRACE(("gdth_interrupt() IRQ %d\n", ha->irq));
+ 
+     /* if polling and not from gdth_wait() -> return */
+     if (gdth_polling) {
+@@ -3067,7 +3064,7 @@ static irqreturn_t __gdth_interrupt(gdth_ha_str *ha, int irq,
+         spin_lock_irqsave(&ha->smp_lock, flags);
+ 
+     /* search controller */
+-    if (0 == (IStatus = gdth_get_status(ha, irq))) {
++    if (0 == (IStatus = gdth_get_status(ha))) {
+         /* spurious interrupt */
+         if (!gdth_polling)
+             spin_unlock_irqrestore(&ha->smp_lock, flags);
+@@ -3294,9 +3291,9 @@ static irqreturn_t __gdth_interrupt(gdth_ha_str *ha, int irq,
+ 
+ static irqreturn_t gdth_interrupt(int irq, void *dev_id)
+ {
+-	gdth_ha_str *ha = (gdth_ha_str *)dev_id;
++	gdth_ha_str *ha = dev_id;
+ 
+-	return __gdth_interrupt(ha, irq, false, NULL);
++	return __gdth_interrupt(ha, false, NULL);
  }
  
- 
+ static int gdth_sync_event(gdth_ha_str *ha, int service, unchar index,
 -- 
 1.5.2.4
 
