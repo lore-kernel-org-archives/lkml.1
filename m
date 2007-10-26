@@ -1,1347 +1,430 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765211AbXJZHNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765075AbXJZHOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765211AbXJZHNi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 03:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762219AbXJZG7Z
+	id S1765075AbXJZHOH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 03:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXJZG73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:59:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37034 "EHLO mx2.suse.de"
+	Fri, 26 Oct 2007 02:59:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37038 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762186AbXJZG7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:59:17 -0400
+	id S1760744AbXJZG7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:59:21 -0400
 X-Mailbox-Line: From jjohansen@suse.de Thu Oct 25 23:40:52 2007
-Message-Id: <20071026064052.535304043@suse.de>
+Message-Id: <20071026064052.704759677@suse.de>
 References: <20071026064024.243943043@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 25 Oct 2007 23:41:04 -0700
+Date: Thu, 25 Oct 2007 23:41:05 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [AppArmor 40/45] AppArmor: all the rest
-Content-Disposition: inline; filename=apparmor-misc.diff
+       John Johansen <jjohansen@suse.de>, Jesse Michael <jmichael@suse.de>
+Subject: [AppArmor 41/45] add simple network toggles to apparmor
+Content-Disposition: inline; filename=apparmor-network.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All the things that didn't nicely fit in a category on their own: kbuild
-code, declararions and inline functions, /sys/kernel/security/apparmor
-filesystem for controlling apparmor from user space, profile list
-functions, locking documentation, /proc/$pid/task/$tid/attr/current
-access.
-
 Signed-off-by: John Johansen <jjohansen@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: Jesse Michael <jmichael@suse.de>
 
 ---
- security/apparmor/Kconfig      |    9 +
- security/apparmor/Makefile     |   13 +
- security/apparmor/apparmor.h   |  326 +++++++++++++++++++++++++++++++++++++++++
- security/apparmor/apparmorfs.c |  252 +++++++++++++++++++++++++++++++
- security/apparmor/inline.h     |  257 ++++++++++++++++++++++++++++++++
- security/apparmor/list.c       |  156 +++++++++++++++++++
- security/apparmor/locking.txt  |   68 ++++++++
- security/apparmor/procattr.c   |  194 ++++++++++++++++++++++++
- 8 files changed, 1275 insertions(+)
+ security/apparmor/Makefile           |    7 +
+ security/apparmor/apparmor.h         |    7 +
+ security/apparmor/lsm.c              |  147 ++++++++++++++++++++++++++++++++++-
+ security/apparmor/main.c             |   96 ++++++++++++++++++++++
+ security/apparmor/module_interface.c |   20 ++++
+ 5 files changed, 273 insertions(+), 4 deletions(-)
 
---- /dev/null
-+++ b/security/apparmor/Kconfig
-@@ -0,0 +1,9 @@
-+config SECURITY_APPARMOR
-+	tristate "AppArmor support"
-+	depends on SECURITY!=n
-+	help
-+	  This enables the AppArmor security module.
-+	  Required userspace tools (if they are not included in your
-+	  distribution) and further information may be found at
-+	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
-+	  If you are unsure how to answer this question, answer N.
---- /dev/null
+--- a/security/apparmor/Makefile
 +++ b/security/apparmor/Makefile
-@@ -0,0 +1,13 @@
-+# Makefile for AppArmor Linux Security Module
-+#
-+obj-$(CONFIG_SECURITY_APPARMOR) += apparmor.o
+@@ -8,6 +8,11 @@ apparmor-y := main.o list.o procattr.o l
+ quiet_cmd_make-caps = GEN     $@
+ cmd_make-caps = sed -n -e "/CAP_FS_MASK/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
+ 
+-$(obj)/main.o : $(obj)/capability_names.h
++quiet_cmd_make-af = GEN     $@
++cmd_make-af = sed -n -e "/AF_MAX/d" -e "/AF_LOCAL/d" -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
 +
-+apparmor-y := main.o list.o procattr.o lsm.o apparmorfs.o \
-+	      module_interface.o match.o
-+
-+quiet_cmd_make-caps = GEN     $@
-+cmd_make-caps = sed -n -e "/CAP_FS_MASK/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
-+
-+$(obj)/main.o : $(obj)/capability_names.h
-+$(obj)/capability_names.h : $(srctree)/include/linux/capability.h
-+	$(call cmd,make-caps)
---- /dev/null
++$(obj)/main.o : $(obj)/capability_names.h $(obj)/af_names.h
+ $(obj)/capability_names.h : $(srctree)/include/linux/capability.h
+ 	$(call cmd,make-caps)
++$(obj)/af_names.h : $(srctree)/include/linux/socket.h
++	$(call cmd,make-af)
+--- a/security/apparmor/apparmor.h
 +++ b/security/apparmor/apparmor.h
-@@ -0,0 +1,326 @@
-+/*
-+ *	Copyright (C) 1998-2007 Novell/SUSE
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation, version 2 of the
-+ *	License.
-+ *
-+ *	AppArmor internal prototypes
-+ */
-+
-+#ifndef __APPARMOR_H
-+#define __APPARMOR_H
-+
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/binfmts.h>
-+#include <linux/rcupdate.h>
-+
-+/*
-+ * We use MAY_READ, MAY_WRITE, MAY_EXEC, MAY_APPEND and the following flags
-+ * for profile permissions
-+ */
-+#define AA_MAY_LINK			0x0010
-+#define AA_MAY_LOCK			0x0020
-+#define AA_EXEC_MMAP			0x0040
-+#define AA_EXEC_UNSAFE			0x0080
-+#define AA_EXEC_MOD_0			0x0100
-+#define AA_EXEC_MOD_1			0x0200
-+#define AA_BASE_PERMS			(MAY_READ | MAY_WRITE | MAY_EXEC | \
-+					 MAY_APPEND | AA_MAY_LINK | \
-+					 AA_MAY_LOCK | AA_EXEC_MMAP | \
-+					 AA_EXEC_UNSAFE | AA_EXEC_MOD_0 | \
-+					 AA_EXEC_MOD_1)
-+#define AA_LINK_SUBSET_TEST		0x0020
-+
-+#define AA_EXEC_UNCONFINED		0
-+#define AA_EXEC_INHERIT			AA_EXEC_MOD_0
-+#define AA_EXEC_PROFILE			AA_EXEC_MOD_1
-+#define AA_EXEC_PIX			(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
-+
-+#define AA_EXEC_MODIFIERS		(AA_EXEC_MOD_0 | AA_EXEC_MOD_1)
-+
-+#define AA_USER_SHIFT			0
-+#define AA_GROUP_SHIFT			10
-+#define AA_OTHER_SHIFT			20
-+
-+#define AA_USER_PERMS			(AA_BASE_PERMS << AA_USER_SHIFT)
-+#define AA_GROUP_PERMS			(AA_BASE_PERMS << AA_GROUP_SHIFT)
-+#define AA_OTHER_PERMS			(AA_BASE_PERMS << AA_OTHER_SHIFT)
-+
-+#define AA_FILE_PERMS			(AA_USER_PERMS | AA_GROUP_PERMS | \
-+					 AA_OTHER_PERMS)
-+
-+#define AA_LINK_BITS			((AA_MAY_LINK << AA_USER_SHIFT) | \
-+					 (AA_MAY_LINK << AA_GROUP_SHIFT) | \
-+					 (AA_MAY_LINK << AA_OTHER_SHIFT))
-+
-+#define AA_USER_EXEC			(MAY_EXEC << AA_USER_SHIFT)
-+#define AA_GROUP_EXEC			(MAY_EXEC << AA_GROUP_SHIFT)
-+#define AA_OTHER_EXEC			(MAY_EXEC << AA_OTHER_SHIFT)
-+
-+#define AA_USER_EXEC_MODS		(AA_EXEC_MODIFIERS << AA_USER_SHIFT)
-+#define AA_GROUP_EXEC_MODS		(AA_EXEC_MODIFIERS << AA_GROUP_SHIFT)
-+#define AA_OTHER_EXEC_MODS		(AA_EXEC_MODIFIERS << AA_OTHER_SHIFT)
-+
-+#define AA_EXEC_BITS			(AA_USER_EXEC | AA_GROUP_EXEC | \
-+					 AA_OTHER_EXEC)
-+
-+#define AA_ALL_EXEC_MODS		(AA_USER_EXEC_MODS | \
-+					 AA_GROUP_EXEC_MODS | \
-+					 AA_OTHER_EXEC_MODS)
-+
-+/* shared permissions that are not duplicated in user:group:other */
-+#define AA_CHANGE_PROFILE		0x40000000
-+
-+#define AA_SHARED_PERMS			(AA_CHANGE_PROFILE)
-+
-+#define AA_VALID_PERM_MASK		(AA_FILE_PERMS | AA_SHARED_PERMS)
-+
-+#define AA_SECURE_EXEC_NEEDED		1
-+
-+/* Control parameters (0 or 1), settable thru module/boot flags or
-+ * via /sys/kernel/security/apparmor/control */
-+extern int apparmor_complain;
-+extern int apparmor_debug;
-+extern int apparmor_audit;
-+extern int apparmor_logsyscall;
-+extern unsigned int apparmor_path_max;
-+
-+#define PROFILE_COMPLAIN(_profile) \
-+	(apparmor_complain == 1 || ((_profile) && (_profile)->flags.complain))
-+
-+#define APPARMOR_COMPLAIN(_cxt) \
-+	(apparmor_complain == 1 || \
-+	 ((_cxt) && (_cxt)->profile && (_cxt)->profile->flags.complain))
-+
-+#define PROFILE_AUDIT(_profile) \
-+	(apparmor_audit == 1 || ((_profile) && (_profile)->flags.audit))
-+
-+#define APPARMOR_AUDIT(_cxt) \
-+	(apparmor_audit == 1 || \
-+	 ((_cxt) && (_cxt)->profile && (_cxt)->profile->flags.audit))
-+
-+/*
-+ * DEBUG remains global (no per profile flag) since it is mostly used in sysctl
-+ * which is not related to profile accesses.
-+ */
-+
-+#define AA_DEBUG(fmt, args...)						\
-+	do {								\
-+		if (apparmor_debug)					\
-+			printk(KERN_DEBUG "AppArmor: " fmt, ##args);	\
-+	} while (0)
-+
-+#define AA_ERROR(fmt, args...)	printk(KERN_ERR "AppArmor: " fmt, ##args)
-+
-+struct aa_profile;
-+
-+/* struct aa_namespace - namespace for a set of profiles
-+ * @name: the name of the namespace
-+ * @list: list the namespace is on
-+ * @profiles: list of profile in the namespace
-+ * @profile_count: the number of profiles in the namespace
-+ * @null_complain_profile: special profile used for learning in this namespace
-+ * @count: reference count on the namespace
-+ * @lock: lock for adding/removing profile to the namespace
-+ */
-+struct aa_namespace {
-+	char *name;
-+	struct list_head list;
-+	struct list_head profiles;
-+	int profile_count;
-+	struct aa_profile *null_complain_profile;
-+
-+	struct kref count;
-+	rwlock_t lock;
-+};
-+
-+/* struct aa_profile - basic confinement data
-+ * @name: the profiles name
-+ * @list: list this profile is on
-+ * @ns: namespace the profile is in
-+ * @file_rules: dfa containing the profiles file rules
-+ * @flags: flags controlling profile behavior
-+ * @isstale: flag indicating if profile is stale
-+ * @capabilities: capabilities granted by the process
-+ * @count: reference count of the profile
-+ *
-+ * The AppArmor profile contains the basic confinement data.  Each profile
-+ * has a name, and all nonstale profile are in a profile namespace.
-+ *
-+ * The task_contexts list and the isstale flag are protected by the
-+ * profile lock.
-+ *
-+ * If a task context is moved between two profiles, we first need to grab
-+ * both profile locks. lock_both_profiles() does that in a deadlock-safe
-+ * way.
-+ */
-+struct aa_profile {
-+	char *name;
-+	struct list_head list;
-+	struct aa_namespace *ns;
-+
-+	struct aa_dfa *file_rules;
-+	struct {
-+		int complain;
-+		int audit;
-+	} flags;
-+	int isstale;
-+
-+	kernel_cap_t capabilities;
-+	struct kref count;
-+	struct list_head task_contexts;
-+	spinlock_t lock;
-+	unsigned long int_flags;
-+};
-+
-+extern struct list_head profile_ns_list;
-+extern rwlock_t profile_ns_list_lock;
-+extern struct mutex aa_interface_lock;
-+
-+/**
-+ * struct aa_task_context - primary label for confined tasks
-+ * @profile: the current profile
-+ * @previous_profile: profile the task may return to
-+ * @cookie: magic value the task must know for returning to @previous_profile
-+ * @list: list this aa_task_context is on
-+ * @task: task that the aa_task_context confines
-+ * @rcu: rcu head used when freeing the aa_task_context
-+ * @caps_logged: caps that have previously generated log entries
-+ *
-+ * Contains the task's current profile (which could change due to
-+ * change_hat).  Plus the hat_magic needed during change_hat.
-+ */
-+struct aa_task_context {
-+	struct aa_profile *profile;
-+	struct aa_profile *previous_profile;
-+	u64 cookie;
-+	struct list_head list;
-+	struct task_struct *task;
-+	struct rcu_head rcu;
-+	kernel_cap_t caps_logged;
-+};
-+
-+extern struct aa_namespace *default_namespace;
-+
-+/* aa_audit - AppArmor auditing structure
-+ * Structure is populated by access control code and passed to aa_audit which
-+ * provides for a single point of logging.
-+ */
-+
-+struct aa_audit {
-+	const char *operation;
-+	gfp_t gfp_mask;
-+	const char *info;
-+	const char *name;
-+	const char *name2;
-+	const char *name3;
-+	int request_mask, denied_mask;
-+	struct iattr *iattr;
-+	pid_t task, parent;
-+	int error_code;
-+};
-+
-+/* Flags for the permission check functions */
-+#define AA_CHECK_FD	1  /* coming from a file descriptor */
-+#define AA_CHECK_DIR	2  /* file type is directory */
-+
-+/* lock subtypes so lockdep does not raise false dependencies */
-+enum aa_lock_class {
-+	aa_lock_normal,
-+	aa_lock_nested,
-+	aa_lock_task_release
-+};
-+
-+/* main.c */
-+extern int alloc_default_namespace(void);
-+extern void free_default_namespace(void);
-+extern int aa_audit_message(struct aa_profile *profile, struct aa_audit *sa,
-+			    int type);
-+void aa_audit_hint(struct aa_profile *profile, struct aa_audit *sa);
-+void aa_audit_status(struct aa_profile *profile, struct aa_audit *sa);
-+int aa_audit_reject(struct aa_profile *profile, struct aa_audit *sa);
-+extern int aa_audit_syscallreject(struct aa_profile *profile, gfp_t gfp,
-+				  const char *);
-+extern int aa_audit(struct aa_profile *profile, struct aa_audit *);
-+
-+extern int aa_attr(struct aa_profile *profile, struct dentry *dentry,
-+		   struct vfsmount *mnt, struct iattr *iattr);
-+extern int aa_perm_xattr(struct aa_profile *profile, const char *operation,
-+			 struct dentry *dentry, struct vfsmount *mnt,
-+			 int mask, int check);
-+extern int aa_capability(struct aa_task_context *cxt, int cap);
-+extern int aa_perm(struct aa_profile *profile, const char *operation,
-+		   struct dentry *dentry, struct vfsmount *mnt, int mask,
-+		   int check);
-+extern int aa_perm_dir(struct aa_profile *profile, const char *operation,
-+		       struct dentry *dentry, struct vfsmount *mnt,
-+		       int mask);
-+extern int aa_perm_path(struct aa_profile *, const char *operation,
-+			const char *name, int mask, uid_t, uid_t);
-+extern int aa_link(struct aa_profile *profile,
-+		   struct dentry *link, struct vfsmount *link_mnt,
-+		   struct dentry *target, struct vfsmount *target_mnt);
-+extern int aa_clone(struct task_struct *task);
-+extern int aa_register(struct linux_binprm *bprm);
-+extern void aa_release(struct task_struct *task);
-+extern int aa_change_hat(const char *id, u64 hat_magic);
-+extern int aa_change_profile(const char *ns_name, const char *name);
-+extern struct aa_profile *__aa_replace_profile(struct task_struct *task,
-+					       struct aa_profile *profile);
-+extern struct aa_task_context *lock_task_and_profiles(struct task_struct *task,
-+						      struct aa_profile *profile);
-+extern void unlock_task_and_profiles(struct task_struct *task,
-+				     struct aa_task_context *cxt,
-+				     struct aa_profile *profile);
-+extern void aa_change_task_context(struct task_struct *task,
-+				   struct aa_task_context *new_cxt,
-+				   struct aa_profile *profile, u64 cookie,
-+				   struct aa_profile *previous_profile);
-+extern int aa_may_ptrace(struct aa_task_context *cxt,
-+			 struct aa_profile *tracee);
-+
-+/* list.c */
-+extern struct aa_namespace *__aa_find_namespace(const char *name,
-+						struct list_head *list);
-+extern struct aa_profile *__aa_find_profile(const char *name,
-+					    struct list_head *list);
-+extern void aa_profile_ns_list_release(void);
-+
-+/* module_interface.c */
-+extern ssize_t aa_add_profile(void *, size_t);
-+extern ssize_t aa_replace_profile(void *, size_t);
-+extern ssize_t aa_remove_profile(char *, size_t);
-+extern struct aa_namespace *alloc_aa_namespace(char *name);
-+extern void free_aa_namespace(struct aa_namespace *ns);
-+extern void free_aa_namespace_kref(struct kref *kref);
-+extern struct aa_profile *alloc_aa_profile(void);
-+extern void free_aa_profile(struct aa_profile *profile);
-+extern void free_aa_profile_kref(struct kref *kref);
-+extern void aa_unconfine_tasks(struct aa_profile *profile);
-+
-+/* procattr.c */
-+extern int aa_getprocattr(struct aa_profile *profile, char **string,
-+			  unsigned *len);
-+extern int aa_setprocattr_changehat(char *args);
-+extern int aa_setprocattr_changeprofile(char *args);
-+extern int aa_setprocattr_setprofile(struct task_struct *task, char *args);
-+
-+/* apparmorfs.c */
-+extern int create_apparmorfs(void);
-+extern void destroy_apparmorfs(void);
-+
-+/* match.c */
-+extern struct aa_dfa *aa_match_alloc(void);
-+extern void aa_match_free(struct aa_dfa *dfa);
-+extern int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size);
-+extern int verify_dfa(struct aa_dfa *dfa);
-+extern unsigned int aa_dfa_match(struct aa_dfa *dfa, const char *str);
-+extern unsigned int aa_dfa_next_state(struct aa_dfa *dfa, unsigned int start,
-+				      const char *str);
-+extern unsigned int aa_dfa_null_transition(struct aa_dfa *dfa,
-+					   unsigned int start);
-+
-+#endif  /* __APPARMOR_H */
---- /dev/null
-+++ b/security/apparmor/apparmorfs.c
-@@ -0,0 +1,252 @@
-+/*
-+ *	Copyright (C) 1998-2007 Novell/SUSE
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation, version 2 of the
-+ *	License.
-+ *
-+ *	AppArmor filesystem (part of securityfs)
-+ */
-+
-+#include <linux/security.h>
-+#include <linux/vmalloc.h>
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+#include <asm/uaccess.h>
-+
-+#include "apparmor.h"
-+#include "inline.h"
-+
-+static char *aa_simple_write_to_buffer(const char __user *userbuf,
-+				       size_t alloc_size, size_t copy_size,
-+				       loff_t *pos, const char *operation)
+@@ -16,6 +16,8 @@
+ #include <linux/fs.h>
+ #include <linux/binfmts.h>
+ #include <linux/rcupdate.h>
++#include <linux/socket.h>
++#include <net/sock.h>
+ 
+ /*
+  * We use MAY_READ, MAY_WRITE, MAY_EXEC, MAY_APPEND and the following flags
+@@ -174,6 +176,7 @@ struct aa_profile {
+ 	struct list_head task_contexts;
+ 	spinlock_t lock;
+ 	unsigned long int_flags;
++	u16 network_families[AF_MAX];
+ };
+ 
+ extern struct list_head profile_ns_list;
+@@ -220,6 +223,7 @@ struct aa_audit {
+ 	int request_mask, denied_mask;
+ 	struct iattr *iattr;
+ 	pid_t task, parent;
++	int family, type, protocol;
+ 	int error_code;
+ };
+ 
+@@ -281,6 +285,9 @@ extern void aa_change_task_context(struc
+ 				   struct aa_profile *previous_profile);
+ extern int aa_may_ptrace(struct aa_task_context *cxt,
+ 			 struct aa_profile *tracee);
++extern int aa_net_perm(struct aa_profile *profile, char *operation,
++			int family, int type, int protocol);
++extern int aa_revalidate_sk(struct sock *sk, char *operation);
+ 
+ /* list.c */
+ extern struct aa_namespace *__aa_find_namespace(const char *name,
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -18,6 +18,7 @@
+ #include <linux/ctype.h>
+ #include <linux/sysctl.h>
+ #include <linux/audit.h>
++#include <net/sock.h>
+ 
+ #include "apparmor.h"
+ #include "inline.h"
+@@ -617,6 +618,133 @@ static void apparmor_task_free_security(
+ 	aa_release(task);
+ }
+ 
++static int apparmor_socket_create(int family, int type, int protocol, int kern)
 +{
 +	struct aa_profile *profile;
-+	char *data;
++	int error = 0;
 +
-+	if (*pos != 0) {
-+		/* only writes from pos 0, that is complete writes */
-+		data = ERR_PTR(-ESPIPE);
-+		goto out;
-+	}
++	if (kern)
++		return 0;
 +
-+	/*
-+	 * Don't allow confined processes to load/replace/remove profiles.
-+	 * No sane person would add rules allowing this to a profile
-+	 * but we enforce the restriction anyways.
-+	 */
 +	profile = aa_get_profile(current);
-+	if (profile) {
-+		struct aa_audit sa;
-+		memset(&sa, 0, sizeof(sa));
-+		sa.operation = operation;
-+		sa.gfp_mask = GFP_KERNEL;
-+		sa.error_code = -EACCES;
-+		data = ERR_PTR(aa_audit_reject(profile, &sa));
-+		aa_put_profile(profile);
-+		goto out;
-+	}
-+
-+	data = vmalloc(alloc_size);
-+	if (data == NULL) {
-+		data = ERR_PTR(-ENOMEM);
-+		goto out;
-+	}
-+
-+	if (copy_from_user(data, userbuf, copy_size)) {
-+		vfree(data);
-+		data = ERR_PTR(-EFAULT);
-+		goto out;
-+	}
-+
-+out:
-+	return data;
-+}
-+
-+/* apparmor/profiles */
-+extern struct seq_operations apparmorfs_profiles_op;
-+
-+static int aa_profiles_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &apparmorfs_profiles_op);
-+}
-+
-+
-+static int aa_profiles_release(struct inode *inode, struct file *file)
-+{
-+	return seq_release(inode, file);
-+}
-+
-+static struct file_operations apparmorfs_profiles_fops = {
-+	.open =		aa_profiles_open,
-+	.read =		seq_read,
-+	.llseek =	seq_lseek,
-+	.release =	aa_profiles_release,
-+};
-+
-+/* apparmor/matching */
-+static ssize_t aa_matching_read(struct file *file, char __user *buf,
-+			       size_t size, loff_t *ppos)
-+{
-+	const char *matching = "pattern=aadfa perms=rwxamlz user:group:other";
-+
-+	return simple_read_from_buffer(buf, size, ppos, matching,
-+				       strlen(matching));
-+}
-+
-+static struct file_operations apparmorfs_matching_fops = {
-+	.read = 	aa_matching_read,
-+};
-+
-+/* apparmor/.load */
-+static ssize_t aa_profile_load(struct file *f, const char __user *buf,
-+			       size_t size, loff_t *pos)
-+{
-+	char *data;
-+	ssize_t error;
-+
-+	data = aa_simple_write_to_buffer(buf, size, size, pos, "profile_load");
-+
-+	error = PTR_ERR(data);
-+	if (!IS_ERR(data)) {
-+		error = aa_add_profile(data, size);
-+		vfree(data);
-+	}
-+
-+	return error;
-+}
-+
-+
-+static struct file_operations apparmorfs_profile_load = {
-+	.write = aa_profile_load
-+};
-+
-+/* apparmor/.replace */
-+static ssize_t aa_profile_replace(struct file *f, const char __user *buf,
-+				  size_t size, loff_t *pos)
-+{
-+	char *data;
-+	ssize_t error;
-+
-+	data = aa_simple_write_to_buffer(buf, size, size, pos,
-+					 "profile_replace");
-+
-+	error = PTR_ERR(data);
-+	if (!IS_ERR(data)) {
-+		error = aa_replace_profile(data, size);
-+		vfree(data);
-+	}
-+
-+	return error;
-+}
-+
-+
-+static struct file_operations apparmorfs_profile_replace = {
-+	.write = aa_profile_replace
-+};
-+
-+/* apparmor/.remove */
-+static ssize_t aa_profile_remove(struct file *f, const char __user *buf,
-+				  size_t size, loff_t *pos)
-+{
-+	char *data;
-+	ssize_t error;
-+
-+	/*
-+	 * aa_remove_profile needs a null terminated string so 1 extra
-+	 * byte is allocated and the copied data is null terminated.
-+	 */
-+	data = aa_simple_write_to_buffer(buf, size + 1, size, pos,
-+					 "profile_remove");
-+
-+	error = PTR_ERR(data);
-+	if (!IS_ERR(data)) {
-+		data[size] = 0;
-+		error = aa_remove_profile(data, size);
-+		vfree(data);
-+	}
-+
-+	return error;
-+}
-+
-+static struct file_operations apparmorfs_profile_remove = {
-+	.write = aa_profile_remove
-+};
-+
-+static struct dentry *apparmor_dentry;
-+
-+static void aafs_remove(const char *name)
-+{
-+	struct dentry *dentry;
-+
-+	dentry = lookup_one_len(name, apparmor_dentry, strlen(name));
-+	if (!IS_ERR(dentry)) {
-+		securityfs_remove(dentry);
-+		dput(dentry);
-+	}
-+}
-+
-+static int aafs_create(const char *name, int mask, struct file_operations *fops)
-+{
-+	struct dentry *dentry;
-+
-+	dentry = securityfs_create_file(name, S_IFREG | mask, apparmor_dentry,
-+					NULL, fops);
-+
-+	return IS_ERR(dentry) ? PTR_ERR(dentry) : 0;
-+}
-+
-+void destroy_apparmorfs(void)
-+{
-+	if (apparmor_dentry) {
-+		aafs_remove(".remove");
-+		aafs_remove(".replace");
-+		aafs_remove(".load");
-+		aafs_remove("matching");
-+		aafs_remove("profiles");
-+		securityfs_remove(apparmor_dentry);
-+		apparmor_dentry = NULL;
-+	}
-+}
-+
-+int create_apparmorfs(void)
-+{
-+	int error;
-+
-+	if (apparmor_dentry) {
-+		AA_ERROR("%s: AppArmor securityfs already exists\n",
-+			__FUNCTION__);
-+		return -EEXIST;
-+	}
-+
-+	apparmor_dentry = securityfs_create_dir("apparmor", NULL);
-+	if (IS_ERR(apparmor_dentry)) {
-+		error = PTR_ERR(apparmor_dentry);
-+		apparmor_dentry = NULL;
-+ 		goto error;
-+	}
-+	error = aafs_create("profiles", 0440, &apparmorfs_profiles_fops);
-+	if (error)
-+		goto error;
-+	error = aafs_create("matching", 0444, &apparmorfs_matching_fops);
-+	if (error)
-+		goto error;
-+	error = aafs_create(".load", 0640, &apparmorfs_profile_load);
-+	if (error)
-+		goto error;
-+	error = aafs_create(".replace", 0640, &apparmorfs_profile_replace);
-+	if (error)
-+		goto error;
-+	error = aafs_create(".remove", 0640, &apparmorfs_profile_remove);
-+	if (error)
-+		goto error;
-+
-+	return 0;
-+
-+error:
-+	destroy_apparmorfs();
-+	AA_ERROR("Error creating AppArmor securityfs\n");
-+	return error;
-+}
-+
---- /dev/null
-+++ b/security/apparmor/inline.h
-@@ -0,0 +1,257 @@
-+/*
-+ *	Copyright (C) 1998-2007 Novell/SUSE
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation, version 2 of the
-+ *	License.
-+ */
-+
-+#ifndef __INLINE_H
-+#define __INLINE_H
-+
-+#include <linux/sched.h>
-+
-+#include "match.h"
-+
-+static inline int mediated_filesystem(struct inode *inode)
-+{
-+	return !(inode->i_sb->s_flags & MS_NOUSER);
-+}
-+
-+static inline struct aa_task_context *aa_task_context(struct task_struct *task)
-+{
-+	return (struct aa_task_context *) rcu_dereference(task->security);
-+}
-+
-+static inline struct aa_namespace *aa_get_namespace(struct aa_namespace *ns)
-+{
-+	if (ns)
-+		kref_get(&(ns->count));
-+
-+	return ns;
-+}
-+
-+static inline void aa_put_namespace(struct aa_namespace *ns)
-+{
-+	if (ns)
-+		kref_put(&ns->count, free_aa_namespace_kref);
-+}
-+
-+
-+static inline struct aa_namespace *aa_find_namespace(const char *name)
-+{
-+	struct aa_namespace *ns = NULL;
-+
-+	read_lock(&profile_ns_list_lock);
-+	ns = aa_get_namespace(__aa_find_namespace(name, &profile_ns_list));
-+	read_unlock(&profile_ns_list_lock);
-+
-+	return ns;
-+}
-+
-+/**
-+ * aa_dup_profile - increment refcount on profile @p
-+ * @p: profile
-+ */
-+static inline struct aa_profile *aa_dup_profile(struct aa_profile *p)
-+{
-+	if (p)
-+		kref_get(&(p->count));
-+
-+	return p;
-+}
-+
-+/**
-+ * aa_put_profile - decrement refcount on profile @p
-+ * @p: profile
-+ */
-+static inline void aa_put_profile(struct aa_profile *p)
-+{
-+	if (p)
-+		kref_put(&p->count, free_aa_profile_kref);
-+}
-+
-+static inline struct aa_profile *aa_get_profile(struct task_struct *task)
-+{
-+	struct aa_task_context *cxt;
-+	struct aa_profile *profile = NULL;
-+
-+	rcu_read_lock();
-+	cxt = aa_task_context(task);
-+	if (cxt) {
-+		profile = cxt->profile;
-+		aa_dup_profile(profile);
-+	}
-+	rcu_read_unlock();
-+
-+	return profile;
-+}
-+
-+static inline struct aa_profile *aa_find_profile(struct aa_namespace *ns,
-+						 const char *name)
-+{
-+	struct aa_profile *profile = NULL;
-+
-+	read_lock(&ns->lock);
-+	profile = aa_dup_profile(__aa_find_profile(name, &ns->profiles));
-+	read_unlock(&ns->lock);
-+
-+	return profile;
-+}
-+
-+static inline struct aa_task_context *aa_alloc_task_context(gfp_t flags)
-+{
-+	struct aa_task_context *cxt;
-+
-+	cxt = kzalloc(sizeof(*cxt), flags);
-+	if (cxt) {
-+		INIT_LIST_HEAD(&cxt->list);
-+		INIT_RCU_HEAD(&cxt->rcu);
-+	}
-+
-+	return cxt;
-+}
-+
-+static inline void aa_free_task_context(struct aa_task_context *cxt)
-+{
-+	if (cxt) {
-+		aa_put_profile(cxt->profile);
-+		aa_put_profile(cxt->previous_profile);
-+		kfree(cxt);
-+	}
-+}
-+
-+/**
-+ * lock_profile - lock a profile
-+ * @profile: the profile to lock
-+ *
-+ * While the profile is locked, local interrupts are disabled. This also
-+ * gives us RCU reader safety.
-+ */
-+static inline void lock_profile_nested(struct aa_profile *profile,
-+				       enum aa_lock_class lock_class)
-+{
-+	/*
-+	 * Lock the profile.
-+	 *
-+	 * Need to disable interrupts here because this lock is used in
-+	 * the task_free_security hook, which may run in RCU context.
-+	 */
 +	if (profile)
-+		spin_lock_irqsave_nested(&profile->lock, profile->int_flags,
-+					 lock_class);
++		error = aa_net_perm(profile, "socket_create", family,
++							type, protocol);
++	aa_put_profile(profile);
++
++	return error;
 +}
 +
-+static inline void lock_profile(struct aa_profile *profile)
++static int apparmor_socket_post_create(struct socket * sock, int family,
++					int type, int protocol, int kern)
 +{
-+	lock_profile_nested(profile, aa_lock_normal);
++	struct sock *sk = sock->sk;
++
++	if (kern)
++		return 0;
++
++	return aa_revalidate_sk(sk, "socket_post_create");
 +}
 +
-+/**
-+ * unlock_profile - unlock a profile
-+ * @profile: the profile to unlock
-+ */
-+static inline void unlock_profile(struct aa_profile *profile)
++static int apparmor_socket_bind(struct socket * sock,
++				struct sockaddr * address, int addrlen)
 +{
-+	/* Unlock the profile. */
-+	if (profile)
-+		spin_unlock_irqrestore(&profile->lock, profile->int_flags);
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_bind");
 +}
 +
-+/**
-+ * lock_both_profiles  -  lock two profiles in a deadlock-free way
-+ * @profile1:	profile to lock (may be NULL)
-+ * @profile2:	profile to lock (may be NULL)
-+ *
-+ * The order in which profiles are passed into lock_both_profiles() /
-+ * unlock_both_profiles() does not matter.
-+ * While the profile is locked, local interrupts are disabled. This also
-+ * gives us RCU reader safety.
-+ */
-+static inline void lock_both_profiles(struct aa_profile *profile1,
-+				      struct aa_profile *profile2)
++static int apparmor_socket_connect(struct socket * sock,
++					struct sockaddr * address, int addrlen)
 +{
-+	/*
-+	 * Lock the two profiles.
-+	 *
-+	 * We need to disable interrupts because the profile locks are
-+	 * used in the task_free_security hook, which may run in RCU
-+	 * context.
-+	 *
-+	 * Do not nest spin_lock_irqsave()/spin_unlock_irqresore():
-+	 * interrupts only need to be turned off once.
-+	 */
-+	if (!profile1 || profile1 == profile2) {
-+		if (profile2)
-+			spin_lock_irqsave_nested(&profile2->lock,
-+						 profile2->int_flags,
-+						 aa_lock_normal);
-+	} else if (profile1 > profile2) {
-+		/* profile1 cannot be NULL here. */
-+		spin_lock_irqsave_nested(&profile1->lock, profile1->int_flags,
-+					 aa_lock_normal);
-+		if (profile2)
-+			spin_lock_nested(&profile2->lock, aa_lock_nested);
++	struct sock *sk = sock->sk;
 +
-+	} else {
-+		/* profile2 cannot be NULL here. */
-+		spin_lock_irqsave_nested(&profile2->lock, profile2->int_flags,
-+					 aa_lock_normal);
-+		spin_lock_nested(&profile1->lock, aa_lock_nested);
-+	}
++	return aa_revalidate_sk(sk, "socket_connect");
 +}
 +
-+/**
-+ * unlock_both_profiles  -  unlock two profiles in a deadlock-free way
-+ * @profile1:	profile to unlock (may be NULL)
-+ * @profile2:	profile to unlock (may be NULL)
-+ *
-+ * The order in which profiles are passed into lock_both_profiles() /
-+ * unlock_both_profiles() does not matter.
-+ * While the profile is locked, local interrupts are disabled. This also
-+ * gives us RCU reader safety.
-+ */
-+static inline void unlock_both_profiles(struct aa_profile *profile1,
-+				        struct aa_profile *profile2)
++static int apparmor_socket_listen(struct socket * sock, int backlog)
 +{
-+	/* Unlock the two profiles. */
-+	if (!profile1 || profile1 == profile2) {
-+		if (profile2)
-+			spin_unlock_irqrestore(&profile2->lock,
-+					       profile2->int_flags);
-+	} else if (profile1 > profile2) {
-+		/* profile1 cannot be NULL here. */
-+		if (profile2)
-+			spin_unlock(&profile2->lock);
-+		spin_unlock_irqrestore(&profile1->lock, profile1->int_flags);
-+	} else {
-+		/* profile2 cannot be NULL here. */
-+		spin_unlock(&profile1->lock);
-+		spin_unlock_irqrestore(&profile2->lock, profile2->int_flags);
-+	}
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_listen");
 +}
 +
-+static inline unsigned int aa_match(struct aa_dfa *dfa, const char *pathname)
++static int apparmor_socket_accept(struct socket * sock, struct socket * newsock)
 +{
-+	        return dfa ? aa_dfa_match(dfa, pathname) : 0;
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_accept");
 +}
 +
-+static inline unsigned int aa_match_state(struct aa_dfa *dfa,
-+					  unsigned int start,
-+					  const char *pathname,
-+					  unsigned int *finish)
++static int apparmor_socket_sendmsg(struct socket * sock,
++					struct msghdr * msg, int size)
 +{
-+	unsigned int state;
-+	if (dfa) {
-+		state = aa_dfa_next_state(dfa, start, pathname);
-+		if (finish)
-+			*finish = state;
-+		return ACCEPT_TABLE(dfa)[state];
-+	}
-+	if (finish)
-+		*finish = 0;
-+	return 0;
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_sendmsg");
 +}
 +
-+#endif /* __INLINE_H__ */
---- /dev/null
-+++ b/security/apparmor/list.c
-@@ -0,0 +1,156 @@
-+/*
-+ *	Copyright (C) 1998-2007 Novell/SUSE
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation, version 2 of the
-+ *	License.
-+ *
-+ *	AppArmor Profile List Management
-+ */
-+
-+#include <linux/seq_file.h>
-+#include "apparmor.h"
-+#include "inline.h"
-+
-+/* list of profile namespaces and lock */
-+LIST_HEAD(profile_ns_list);
-+rwlock_t profile_ns_list_lock = RW_LOCK_UNLOCKED;
-+
-+/**
-+ * __aa_find_namespace  -  look up a profile namespace on the namespace list
-+ * @name: name of namespace to find
-+ * @head: list to search
-+ *
-+ * Returns a pointer to the namespace on the list, or NULL if no namespace
-+ * called @name exists. The caller must hold the profile_ns_list_lock.
-+ */
-+struct aa_namespace *__aa_find_namespace(const char *name,
-+				       struct list_head *head)
++static int apparmor_socket_recvmsg(struct socket * sock,
++				   struct msghdr * msg, int size, int flags)
 +{
-+	struct aa_namespace *ns;
++	struct sock *sk = sock->sk;
 +
-+	list_for_each_entry(ns, head, list) {
-+		if (!strcmp(ns->name, name))
-+			return ns;
-+	}
-+
-+	return NULL;
++	return aa_revalidate_sk(sk, "socket_recvmsg");
 +}
 +
-+/**
-+ * __aa_find_profile  -  look up a profile on the profile list
-+ * @name: name of profile to find
-+ * @head: list to search
-+ *
-+ * Returns a pointer to the profile on the list, or NULL if no profile
-+ * called @name exists. The caller must hold the profile_list_lock.
-+ */
-+struct aa_profile *__aa_find_profile(const char *name, struct list_head *head)
++static int apparmor_socket_getsockname(struct socket * sock)
 +{
-+	struct aa_profile *profile;
++	struct sock *sk = sock->sk;
 +
-+	list_for_each_entry(profile, head, list) {
-+		if (!strcmp(profile->name, name))
-+			return profile;
-+	}
-+
-+	return NULL;
++	return aa_revalidate_sk(sk, "socket_getsockname");
 +}
 +
-+static void aa_profile_list_release(struct list_head *head)
++static int apparmor_socket_getpeername(struct socket * sock)
 +{
-+	struct aa_profile *profile, *tmp;
-+	list_for_each_entry_safe(profile, tmp, head, list) {
-+		/* Remove the profile from each task context it is on. */
-+		lock_profile(profile);
-+		profile->isstale = 1;
-+		aa_unconfine_tasks(profile);
-+		list_del_init(&profile->list);
-+		unlock_profile(profile);
-+		aa_put_profile(profile);
-+	}
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getpeername");
 +}
 +
-+/**
-+ * aa_profilelist_release - Remove all profiles from profile_list
-+ */
-+void aa_profile_ns_list_release(void)
++static int apparmor_socket_getsockopt(struct socket * sock, int level,
++					int optname)
 +{
-+	struct aa_namespace *ns, *tmp;
++	struct sock *sk = sock->sk;
 +
-+	/* Remove and release all the profiles on namespace profile lists. */
-+	write_lock(&profile_ns_list_lock);
-+	list_for_each_entry_safe(ns, tmp, &profile_ns_list, list) {
-+		write_lock(&ns->lock);
-+		aa_profile_list_release(&ns->profiles);
-+		list_del_init(&ns->list);
-+		write_unlock(&ns->lock);
-+		aa_put_namespace(ns);
-+	}
-+	write_unlock(&profile_ns_list_lock);
++	return aa_revalidate_sk(sk, "socket_getsockopt");
 +}
 +
-+static void *p_start(struct seq_file *f, loff_t *pos)
++static int apparmor_socket_setsockopt(struct socket * sock, int level,
++					int optname)
 +{
-+	struct aa_namespace *ns;
-+	struct aa_profile *profile;
-+	loff_t l = *pos;
-+	read_lock(&profile_ns_list_lock);
-+	if (l--)
-+		return NULL;
-+	list_for_each_entry(ns, &profile_ns_list, list) {
-+		read_lock(&ns->lock);
-+		list_for_each_entry(profile, &ns->profiles, list)
-+			return profile;
-+		read_unlock(&ns->lock);
-+	}
-+	return NULL;
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_setsockopt");
 +}
 +
-+static void *p_next(struct seq_file *f, void *p, loff_t *pos)
++static int apparmor_socket_shutdown(struct socket * sock, int how)
 +{
-+	struct aa_profile *profile = (struct aa_profile *) p;
-+	struct list_head *lh = profile->list.next;
-+	struct aa_namespace *ns;
-+	(*pos)++;
-+	if (lh != &profile->ns->profiles)
-+		return list_entry(lh, struct aa_profile, list);
++	struct sock *sk = sock->sk;
 +
-+	lh = profile->ns->list.next;
-+	read_unlock(&profile->ns->lock);
-+	while (lh != &profile_ns_list) {
-+		ns = list_entry(lh, struct aa_namespace, list);
-+		read_lock(&ns->lock);
-+		list_for_each_entry(profile, &ns->profiles, list)
-+			return profile;
-+		read_unlock(&ns->lock);
-+		lh = ns->list.next;
-+	}
-+	return NULL;
++	return aa_revalidate_sk(sk, "socket_shutdown");
 +}
 +
-+static void p_stop(struct seq_file *f, void *v)
++static int apparmor_socket_getpeersec_stream(struct socket *sock,
++			char __user *optval, int __user *optlen, unsigned len)
 +{
-+	read_unlock(&profile_ns_list_lock);
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getpeersec_stream");
 +}
 +
-+static int seq_show_profile(struct seq_file *f, void *v)
++static int apparmor_socket_getpeersec_dgram(struct socket *sock,
++					struct sk_buff *skb, u32 *secid)
 +{
-+	struct aa_profile *profile = (struct aa_profile *)v;
-+	if (profile->ns == default_namespace)
-+	    seq_printf(f, "%s (%s)\n", profile->name,
-+		       PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
-+	else
-+	    seq_printf(f, "%s:%s (%s)\n", profile->ns->name, profile->name,
-+		       PROFILE_COMPLAIN(profile) ? "complain" : "enforce");
-+	return 0;
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getpeersec_dgram");
 +}
 +
-+/* Used in apparmorfs.c */
-+struct seq_operations apparmorfs_profiles_op = {
-+	.start =	p_start,
-+	.next =		p_next,
-+	.stop =		p_stop,
-+	.show =		seq_show_profile,
+ static int apparmor_getprocattr(struct task_struct *task, char *name,
+ 				char **value)
+ {
+@@ -717,9 +845,6 @@ struct security_operations apparmor_ops 
+ 	.capable =			apparmor_capable,
+ 	.syslog =			cap_syslog,
+ 
+-	.netlink_send =			cap_netlink_send,
+-	.netlink_recv =			cap_netlink_recv,
+-
+ 	.bprm_apply_creds =		cap_bprm_apply_creds,
+ 	.bprm_set_security =		apparmor_bprm_set_security,
+ 	.bprm_secureexec =		apparmor_bprm_secureexec,
+@@ -755,6 +880,22 @@ struct security_operations apparmor_ops 
+ 
+ 	.getprocattr =			apparmor_getprocattr,
+ 	.setprocattr =			apparmor_setprocattr,
++
++	.socket_create =		apparmor_socket_create,
++	.socket_post_create =		apparmor_socket_post_create,
++	.socket_bind =			apparmor_socket_bind,
++	.socket_connect =		apparmor_socket_connect,
++	.socket_listen =		apparmor_socket_listen,
++	.socket_accept =		apparmor_socket_accept,
++	.socket_sendmsg =		apparmor_socket_sendmsg,
++	.socket_recvmsg =		apparmor_socket_recvmsg,
++	.socket_getsockname =		apparmor_socket_getsockname,
++	.socket_getpeername =		apparmor_socket_getpeername,
++	.socket_getsockopt =		apparmor_socket_getsockopt,
++	.socket_setsockopt =		apparmor_socket_setsockopt,
++	.socket_shutdown =		apparmor_socket_shutdown,
++	.socket_getpeersec_stream =	apparmor_socket_getpeersec_stream,
++	.socket_getpeersec_dgram =	apparmor_socket_getpeersec_dgram,
+ };
+ 
+ static void info_message(const char *str)
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -14,6 +14,9 @@
+ #include <linux/audit.h>
+ #include <linux/mount.h>
+ #include <linux/ptrace.h>
++#include <linux/socket.h>
++#include <linux/net.h>
++#include <net/sock.h>
+ 
+ #include "apparmor.h"
+ 
+@@ -344,6 +347,24 @@ static void aa_audit_file_mask(struct au
+ 	audit_log_format(ab, " %s=\"%s:%s:%s\"", name, user, group, other);
+ }
+ 
++static const char *address_families[] = {
++#include "af_names.h"
 +};
---- /dev/null
-+++ b/security/apparmor/locking.txt
-@@ -0,0 +1,68 @@
-+Locking in AppArmor
-+===================
 +
-+Lock hierarchy:
++static const char *sock_types[] = {
++	"unknown(0)",
++	"stream",
++	"dgram",
++	"raw",
++	"rdm",
++	"seqpacket",
++	"dccp",
++	"unknown(7)",
++	"unknown(8)",
++	"unknown(9)",
++	"packet",
++};
 +
-+	aa_interface_lock
-+	  profile_list_lock
-+	    aa_profile->lock
-+	      task_lock()
+ /**
+  * aa_audit - Log an audit event to the audit subsystem
+  * @profile: profile to check against
+@@ -409,6 +430,24 @@ static int aa_audit_base(struct aa_profi
+ 		audit_log_untrustedstring(ab, sa->name2);
+ 	}
+ 
++	if (sa->family || sa->type) {
++		if (address_families[sa->family])
++			audit_log_format(ab, " family=\"%s\"",
++					 address_families[sa->family]);
++		else
++			audit_log_format(ab, " family=\"unknown(%d)\"",
++					 sa->family);
 +
++		if (sock_types[sa->type])
++			audit_log_format(ab, " sock_type=\"%s\"",
++					 sock_types[sa->type]);
++		else
++			audit_log_format(ab, " sock_type=\"unknown(%d)\"",
++					 sa->type);
 +
-+Which lock protects what?
-+
-+	/-----------------------+-------------------------------\
-+	| Variable		| Lock				|
-+	>-----------------------+-------------------------------<
-+	| profile_list		| profile_list_lock		|
-+	+-----------------------+-------------------------------+
-+	| aa_profile		| (reference count)		|
-+	+-----------------------+-------------------------------+
-+	| aa_profile->		| aa_profile->lock		|
-+	|   isstale,		|				|
-+	|   task_contexts	|				|
-+	+-----------------------+-------------------------------+
-+	| task_struct->security	| read: RCU			|
-+	|			| write: task_lock()		|
-+	+-----------------------+-------------------------------+
-+	| aa_profile->sub	| handle on the profile (list	|
-+	|			| is never modified)		|
-+	\-----------------------+-------------------------------/
-+
-+(Obviously, the list_heads embedded in data structures are always
-+protected with the lock that also protects the list.)
-+
-+When moving a task context from one profile to another, we grab both
-+profile locks with lock_both_profiles(). This ensures that both locks
-+are always taken in the same order, and so we won't deadlock.
-+
-+Since task_struct->security is RCU protected the aa_task_struct it
-+references is only guarenteed to exist for the rcu cycle.  Where
-+aa_task_context->profile is needed in blocking operations the
-+profile's reference count is incremented and the profile reference
-+is used.
-+
-+Profiles on profile_list are never stale: when a profile becomes stale,
-+it is removed from profile_list at the same time (under profile_list_lock
-+and aa_profile->lock).
-+
-+The aa_interface_lock is taken whenever user-space modifies the profile
-+list, and can sleep. This ensures that profile loading/replacement/removal
-+won't race with itself. We release the profile_list_lock as soon as
-+possible to avoid stalling exec during profile loading/replacement/removal.
-+
-+AppArmor uses lock subtyping to avoid false positives from lockdep.  The
-+profile lock is often taken nested, but it is guaranteed to be in a lock
-+safe order and not the same lock when done, so it is safe.
-+
-+A third lock type (aa_lock_task_release) is given to the profile lock
-+when it is taken in soft irq context during task release (aa_release).
-+This is to avoid a false positive between the task lock and the profile
-+lock.  In task context the profile lock wraps the task lock with irqs
-+off, but the kernel takes the task lock with irqs enabled.  This won't
-+result in a deadlock because for a deadlock to occur the kernel must
-+take dead task A's lock (irqs on), the rcu callback hook freeing
-+dead task A must be run and AppArmor must be changing the profile on
-+dead task A.  The kernel should not be taking a dead task's task_lock
-+at the same time the task is being freed by task rcu cleanup other wise
-+the task would not be out of its quiescent period.
---- /dev/null
-+++ b/security/apparmor/procattr.c
-@@ -0,0 +1,194 @@
-+/*
-+ *	Copyright (C) 1998-2007 Novell/SUSE
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License as
-+ *	published by the Free Software Foundation, version 2 of the
-+ *	License.
-+ *
-+ *	AppArmor /proc/pid/attr handling
-+ */
-+
-+#include "apparmor.h"
-+#include "inline.h"
-+
-+int aa_getprocattr(struct aa_profile *profile, char **string, unsigned *len)
-+{
-+	char *str;
-+
-+	if (profile) {
-+		const char *mode_str = PROFILE_COMPLAIN(profile) ?
-+			" (complain)" : " (enforce)";
-+		int mode_len, name_len, ns_len = 0;
-+
-+		mode_len = strlen(mode_str);
-+		name_len = strlen(profile->name);
-+		if (profile->ns != default_namespace)
-+			ns_len = strlen(profile->ns->name) + 1;
-+		*len = mode_len + ns_len + name_len + 1;
-+		str = kmalloc(*len, GFP_ATOMIC);
-+		if (!str)
-+			return -ENOMEM;
-+
-+		if (ns_len) {
-+			memcpy(str, profile->ns->name, ns_len - 1);
-+			str += ns_len - 1;
-+			*str++ = ':';
-+		}
-+		memcpy(str, profile->name, name_len);
-+		str += name_len;
-+		memcpy(str, mode_str, mode_len);
-+		str += mode_len;
-+		*str++ = '\n';
-+		str -= *len;
-+	} else {
-+		const char *unconfined_str = "unconfined\n";
-+
-+		*len = strlen(unconfined_str);
-+		str = kmalloc(*len, GFP_ATOMIC);
-+		if (!str)
-+			return -ENOMEM;
-+
-+		memcpy(str, unconfined_str, *len);
-+	}
-+	*string = str;
-+
-+	return 0;
-+}
-+
-+static char *split_token_from_name(const char *op, char *args, u64 *cookie)
-+{
-+	char *name;
-+
-+	*cookie = simple_strtoull(args, &name, 16);
-+	if ((name == args) || *name != '^') {
-+		AA_ERROR("%s: Invalid input '%s'", op, args);
-+		return ERR_PTR(-EINVAL);
++		audit_log_format(ab, " protocol=%d", sa->protocol);
 +	}
 +
-+	name++;  /* skip ^ */
-+	if (!*name)
-+		name = NULL;
-+	return name;
-+}
-+
-+int aa_setprocattr_changehat(char *args)
+ 	audit_log_format(ab, " pid=%d", current->pid);
+ 
+ 	if (profile) {
+@@ -730,6 +769,63 @@ int aa_link(struct aa_profile *profile,
+ 	return error;
+ }
+ 
++int aa_net_perm(struct aa_profile *profile, char *operation,
++		int family, int type, int protocol)
 +{
-+	char *hat;
-+	u64 cookie;
-+
-+	hat = split_token_from_name("change_hat", args, &cookie);
-+	if (IS_ERR(hat))
-+		return PTR_ERR(hat);
-+
-+	if (!hat && !cookie) {
-+		AA_ERROR("change_hat: Invalid input, NULL hat and NULL magic");
-+		return -EINVAL;
-+	}
-+
-+	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
-+		 __FUNCTION__, cookie, hat ? hat : NULL);
-+
-+	return aa_change_hat(hat, cookie);
-+}
-+
-+int aa_setprocattr_changeprofile(char *args)
-+{
-+	char *name = args, *ns_name = NULL;
-+
-+	if (name[0] != '/') {
-+		char *split = strchr(name, ':');
-+		if (split) {
-+			*split = 0;
-+			ns_name = name;
-+			name = split + 1;
-+		}
-+	}
-+
-+	return aa_change_profile(ns_name, name);
-+}
-+
-+int aa_setprocattr_setprofile(struct task_struct *task, char *args)
-+{
-+	struct aa_profile *old_profile, *new_profile;
-+	struct aa_namespace *ns;
 +	struct aa_audit sa;
-+	char *name, *ns_name = NULL;
++	int error = 0;
++	u16 family_mask;
++
++	if ((family < 0) || (family >= AF_MAX))
++		return -EINVAL;
++
++	if ((type < 0) || (type >= SOCK_MAX))
++		return -EINVAL;
++
++	/* unix domain and netlink sockets are handled by ipc */
++	if (family == AF_UNIX || family == AF_NETLINK)
++		return 0;
++
++	family_mask = profile->network_families[family];
++
++	error = (family_mask & (1 << type)) ? 0 : -EACCES;
 +
 +	memset(&sa, 0, sizeof(sa));
-+	sa.operation = "profile_set";
++	sa.operation = operation;
 +	sa.gfp_mask = GFP_KERNEL;
-+	sa.task = task->pid;
++	sa.family = family;
++	sa.type = type;
++	sa.protocol = protocol;
++	sa.error_code = error;
 +
-+	AA_DEBUG("%s: current %d\n",
-+		 __FUNCTION__, current->pid);
++	error = aa_audit(profile, &sa);
 +
-+	name = args;
-+	if (args[0] != '/') {
-+		char *split = strchr(args, ':');
-+		if (split) {
-+			*split = 0;
-+			ns_name = args;
-+			name = split + 1;
-+		}
-+	}
-+	if (ns_name)
-+		ns = aa_find_namespace(ns_name);
-+	else
-+		ns = aa_get_namespace(default_namespace);
-+	if (!ns) {
-+		sa.name = ns_name;
-+		sa.info = "unknown namespace";
-+		aa_audit_reject(NULL, &sa);
-+		aa_put_namespace(ns);
-+		return -EINVAL;
-+	}
-+
-+repeat:
-+	if (strcmp(name, "unconfined") == 0)
-+		new_profile = NULL;
-+	else {
-+		new_profile = aa_find_profile(ns, name);
-+		if (!new_profile) {
-+			sa.name = ns_name;
-+			sa.name2 = name;
-+			sa.info = "unknown profile";
-+			aa_audit_reject(NULL, &sa);
-+			aa_put_namespace(ns);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	old_profile = __aa_replace_profile(task, new_profile);
-+	if (IS_ERR(old_profile)) {
-+		int error;
-+
-+		aa_put_profile(new_profile);
-+		error = PTR_ERR(old_profile);
-+		if (error == -ESTALE)
-+			goto repeat;
-+		aa_put_namespace(ns);
-+		return error;
-+	}
-+
-+	if (new_profile) {
-+		sa.name = ns_name;
-+		sa.name2 = name;
-+		sa.name3 = old_profile ? old_profile->name :
-+			"unconfined";
-+		aa_audit_status(NULL, &sa);
-+	} else {
-+		if (old_profile) {
-+			sa.name = "unconfined";
-+			sa.name2 = old_profile->name;
-+			aa_audit_status(NULL, &sa);
-+		} else {
-+			sa.info = "task is unconfined";
-+			aa_audit_status(NULL, &sa);
-+		}
-+	}
-+	aa_put_namespace(ns);
-+	aa_put_profile(old_profile);
-+	aa_put_profile(new_profile);
-+	return 0;
++	return error;
 +}
++
++int aa_revalidate_sk(struct sock *sk, char *operation)
++{
++	struct aa_profile *profile;
++	int error = 0;
++
++	/* this is some debugging code to flush out the network hooks that
++	   that are called in interrupt context */
++	if (in_interrupt()) {
++		printk("AppArmor Debug: Hook being called from interrupt context\n");
++		dump_stack();
++		return 0;
++	}
++
++	profile = aa_get_profile(current);
++	if (profile)
++		error = aa_net_perm(profile, operation,
++				    sk->sk_family, sk->sk_type,
++				    sk->sk_protocol);
++	aa_put_profile(profile);
++
++	return error;
++}
++
+ /*******************************
+  * Global task related functions
+  *******************************/
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -283,6 +283,8 @@ static struct aa_profile *aa_unpack_prof
+ {
+ 	struct aa_profile *profile = NULL;
+ 	struct aa_audit sa;
++	size_t size = 0;
++	int i;
+ 
+ 	int error = -EPROTO;
+ 
+@@ -311,6 +313,24 @@ static struct aa_profile *aa_unpack_prof
+ 	if (!aa_is_u32(e, &(profile->capabilities), NULL))
+ 		goto fail;
+ 
++	size = aa_is_array(e, "net_allowed_af");
++	if (size) {
++		if (size > AF_MAX)
++			goto fail;
++
++		for (i = 0; i < size; i++) {
++			if (!aa_is_u16(e, &profile->network_families[i], NULL))
++				goto fail;
++		}
++		if (!aa_is_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		/* allow unix domain and netlink sockets they are handled
++		 * by IPC
++		 */
++	}
++	profile->network_families[AF_UNIX] = 0xffff;
++	profile->network_families[AF_NETLINK] = 0xffff;
++
+ 	/* get file rules */
+ 	profile->file_rules = aa_unpack_dfa(e);
+ 	if (IS_ERR(profile->file_rules)) {
 
 -- 
 
