@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761461AbXJZFDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbXJZFEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761461AbXJZFDg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 01:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXJZFDY
+	id S1762709AbXJZFEM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 01:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXJZFD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 01:03:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:23708 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbXJZFDX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 01:03:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aqaa/i5agvRBrNXHEg4uEYtXVau1h9OSCqB7rp5VlCvMVn5e8PbFGcz6xJbN3dc92CnG6msvmq7jj6SyAgiWFS5uFjbOj+/3HrMry06wJEQIFF3qHTFAyLtUsxNtpGrgV4kJ5etOq2AC9N/mCq6euY+tutbzvyaV07/ems9VfCc=
-Message-ID: <f9d2a5e10710252203n7ff40690j8d4822310826f9e8@mail.gmail.com>
-Date: Thu, 25 Oct 2007 22:03:21 -0700
-From: "Russ Dill" <russ.dill@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Better document profile=
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071025163743.7a3d8231.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 01:03:58 -0400
+Received: from 1wt.eu ([62.212.114.60]:3560 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbXJZFD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 01:03:57 -0400
+Date: Fri, 26 Oct 2007 06:57:55 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Andi Kleen <ak@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Is gcc thread-unsafe?
+Message-ID: <20071026045754.GX10199@1wt.eu>
+References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260116.10904.ak@suse.de> <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org> <200710260142.37902.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f9d2a5e10710162216s149c16a3j9bb63d60fdf1e782@mail.gmail.com>
-	 <20071025163743.7a3d8231.akpm@linux-foundation.org>
+In-Reply-To: <200710260142.37902.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 16 Oct 2007 22:16:47 -0700
-> "Russ Dill" <russ.dill@gmail.com> wrote:
->
-> > Be more explicit on what the step/bucket size accomplishes.
-> >
-> > Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
-> > ---
-> >  Documentation/kernel-parameters.txt |    5 ++++-
-> >  1 files changed, 4 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/Documentation/kernel-parameters.txt
-> > b/Documentation/kernel-parameters.txt
-> > index eb24799..3c6fd27 100644
-> > --- a/Documentation/kernel-parameters.txt
-> > +++ b/Documentation/kernel-parameters.txt
-> > @@ -1427,7 +1427,10 @@ and is between 256 and 4096 characters. It is
-> > defined in the file
->
-> Your email client is wordwrapping the patches.
+On Fri, Oct 26, 2007 at 01:42:37AM +0200, Andi Kleen wrote:
+> On Friday 26 October 2007 01:32:53 Linus Torvalds wrote:
+> > 
+> > On Fri, 26 Oct 2007, Andi Kleen wrote:
+> > > 
+> > > No it can't (at least not on x86) as I have explained in the rest of the mail 
+> > > you conveniently snipped.
+> > 
+> > I "conveniently snipped it" because it was pointless.
+> > 
+> > "adc" or "cmov" has nothing what-so-ever to do with it. If some routine 
+> > returns 0-vs-1 and gcc then turns "if (routine()) x++" into 
+> > "x+=routine()", what does that have to do with adc or cmov?
+> 
+> That is not what gcc did in that case. I don't think it tracks sets of values
+> over function calls (or even inside functions) at all.
+> 
+> The generated code was
+> 
+>           cmpl    $1, %eax                ; test res
+>           movl    acquires_count, %edx    ; load
+>           adcl    $0, %edx                ; maybe add 1
+>           movl    %edx, acquires_count    ; store
+> 
+> So it just added the result of a comparison into a variable
+> by (ab)using carry for this.
 
-Sorry, I had sent an updated email a couple minutes after this one
-without the wrapping.
+While this is OK in mono-threaded code, it introduces a race condition in
+multi-threaded code. The code above tried to acquire a lock, and eax was
+set to 1 if it succeeded. And whatever the result, all threads still
+happily modify the shared memory area (acquires_count). So the classical
+case where two threads perform the same operation at the same time ends
+up with a random value in acquires_count.
 
-> >                       Format: [schedule,]<number>
-> >                       Param: "schedule" - profile schedule points.
-> >                       Param: <number> - step/bucket size as a power of 2 for
-> > -                             statistical time based profiling.
-> > +                             statistical time based profiling. A value of
-> > +                             2 will provide a granularity of 4 bytes, a
-> > +                             value of 3 will provide a granularity of 8
-> > +                             bytes and so on.
-> >                       Param: "sleep" - profile D-state sleeping (millisecs)
->
-> Actually the prof_shift isn't in units of bytes: it is in units of
-> sizeof(unsigned long).
+> In theory such things can be done with CMOV too by redirecting
+> a store into a dummy variable to cancel it, but gcc doesn't
+> do that on its own.
 
+Even with a CMOV, it's the memory write which should not be performed
+if the lock was not acquired.
 
-I thought we just went through this?
+(...)
+> But for registers it's a fine optimization.
 
-extern char _text[], _stext[], _etext[];
-[...]
-prof_len = (_etext - _stext) >> prof_shift;
-prof_buffer = alloc_bootmem(prof_len*sizeof(atomic_t));
+100% agree.
 
-1MB kernel, 32 bit, prof_shift = 2, makes for 262144 profiling slots,
-a granularity of 4 bytes
-1MB kernel, 64 bit, prof_shift = 2, makes for 262144 profiling slots,
-a granularity of 4 bytes
+What would really be needed is an attribute around conditions to
+indicate whether they *may* be optimized or not. Something similar
+to the likely/unlikely we currently use, we could have something
+like __attribute__((unsafe_cond(cond))). I think that it could still
+optimize by default but let the user explicitly state that he is
+playing with thread-unsafe code. As you pointed out, you did not
+find any such mis-optimization in the kernel, which means that it
+does not hit too often. That's the reason why I'd let the user be
+careful.
 
-The only difference between the two being the sizeof(atomic_t), so
-that a 32 bit kernel would allocate a 1MB buffer, and a 64 bit kernel
-would allocate a 2MB buffer. I'm having nightmares about megawords
-again...
+Willy
 
-> So on a 64-bit kernel, prof_shift=2 will give a granularity of 8<<2 bytes
-> and on a 32-bit kernel, prof_shift=3 will give a granularity of 4<<3 bytes.
-
-now you are confusing me even more... by 8<<2 and 4<<3 do you mean 32
-bytes? Linus says the following in 0.98:
-
-# uncomment this if you want kernel profiling: the profile_shift is the
-# granularity of the profiling (5 = 32-byte granularity)
