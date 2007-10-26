@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbXJZJnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbXJZJoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762561AbXJZJnt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXJZJlT
+	id S1761562AbXJZJoM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760198AbXJZJnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:41:19 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:33767 "EHLO havoc.gtf.org"
+	Fri, 26 Oct 2007 05:43:01 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50634 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755899AbXJZJlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:41:17 -0400
-To: LKML <linux-kernel@vger.kernel.org>
-Message-Id: <e4e05275a817f3d6dcafccfa24adf940cfde0a8a.1193390975.git.jeff@garzik.org>
-In-Reply-To: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
-References: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
-From: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       dbrownell@users.sourceforge.net
-Subject: [PATCH] NETDRVR, USB: declance, lp486e, s3c2410_udc: minor irq handler cleanups
-Date: Fri, 26 Oct 2007 05:40:32 -0400 (EDT)
+	id S1760327AbXJZJm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:42:59 -0400
+In-Reply-To: <1193335168.7705.39.camel@heimdal.trondhjem.org>
+References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0CC518FE-47B0-4A32-B682-1CA5F7CBAC2F@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
+       chuck.lever@oracle.com
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: LTP ustat01 test fails on NFSROOT
+Date: Fri, 26 Oct 2007 04:42:28 -0500
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-declance:
-	- irq handlers do not take 'const int' as first arg
-	- add KERN_ prefix
 
-lp486e:
-	- neaten irq handler top of function formatting
-	- remove pointless void* casts
+On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
 
-s3c2410_udc:
-	- 'irq' argument is merely used in place of a constant;
-	  replace its usage with that constant.
+> Could you please try the following patch?
+>
+> Cheers
+>   Trond
+> --------------------------------- CUT HERE  
+> -----------------------------
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date: Thu, 25 Oct 2007 13:56:10 -0400
+> NFS: Fix the ustat() regression
+>
+> Since 2.6.18, the superblock sb->s_root has been a dummy dentry with a
+> dummy inode. This breaks ustat(), which actually uses sb->s_root in a
+> vfstat() call.
+>
+> Fix this by making the s_root a dummy alias to the directory inode  
+> that was
+> used when creating the superblock.
+>
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+>
+>  fs/nfs/getroot.c |   81 +++++++++++++++++ 
+> +------------------------------------
+>  1 files changed, 27 insertions(+), 54 deletions(-)
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/net/declance.c           |    6 +++---
- drivers/net/lp486e.c             |    9 ++++-----
- drivers/usb/gadget/s3c2410_udc.c |    4 ++--
- 3 files changed, 9 insertions(+), 10 deletions(-)
+Any reason not to send this to Linus as a bug fix for 2.6.24 (and  
+possibly stable)?
 
-diff --git a/drivers/net/declance.c b/drivers/net/declance.c
-index 00e0194..6b1e77c 100644
---- a/drivers/net/declance.c
-+++ b/drivers/net/declance.c
-@@ -719,15 +719,15 @@ out:
- 	spin_unlock(&lp->lock);
- }
- 
--static irqreturn_t lance_dma_merr_int(const int irq, void *dev_id)
-+static irqreturn_t lance_dma_merr_int(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
- 
--	printk("%s: DMA error\n", dev->name);
-+	printk(KERN_ERR "%s: DMA error\n", dev->name);
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t lance_interrupt(const int irq, void *dev_id)
-+static irqreturn_t lance_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
- 	struct lance_private *lp = netdev_priv(dev);
-diff --git a/drivers/net/lp486e.c b/drivers/net/lp486e.c
-index c5095ec..0eff1a0 100644
---- a/drivers/net/lp486e.c
-+++ b/drivers/net/lp486e.c
-@@ -1144,14 +1144,13 @@ i596_handle_CU_completion(struct net_device *dev,
- }
- 
- static irqreturn_t
--i596_interrupt (int irq, void *dev_instance) {
--	struct net_device *dev = (struct net_device *) dev_instance;
--	struct i596_private *lp;
-+i596_interrupt (int irq, void *dev_instance)
-+{
-+	struct net_device *dev = dev_instance;
-+	struct i596_private *lp = dev->priv;
- 	unsigned short status, ack_cmd = 0;
- 	int frames_in = 0;
- 
--	lp = (struct i596_private *) dev->priv;
--
- 	/*
- 	 * The 82596 examines the command, performs the required action,
- 	 * and then clears the SCB command word.
-diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
-index e3e90f8..1b07bc9 100644
---- a/drivers/usb/gadget/s3c2410_udc.c
-+++ b/drivers/usb/gadget/s3c2410_udc.c
-@@ -893,7 +893,7 @@ static void s3c2410_udc_handle_ep(struct s3c2410_ep *ep)
- /*
-  *	s3c2410_udc_irq - interrupt handler
-  */
--static irqreturn_t s3c2410_udc_irq(int irq, void *_dev)
-+static irqreturn_t s3c2410_udc_irq(int dummy, void *_dev)
- {
- 	struct s3c2410_udc *dev = _dev;
- 	int usb_status;
-@@ -1016,7 +1016,7 @@ static irqreturn_t s3c2410_udc_irq(int irq, void *_dev)
- 		}
- 	}
- 
--	dprintk(DEBUG_VERBOSE, "irq: %d s3c2410_udc_done.\n", irq);
-+	dprintk(DEBUG_VERBOSE, "irq: %d s3c2410_udc_done.\n", IRQ_USBD);
- 
- 	/* Restore old index */
- 	udc_write(idx, S3C2410_UDC_INDEX_REG);
--- 
-1.5.2.4
-
+- k
