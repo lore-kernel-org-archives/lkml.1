@@ -1,177 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbXJZGXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbXJZGiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbXJZGXo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 02:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXJZGXh
+	id S1753745AbXJZGiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 02:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXJZGiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:23:37 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:49205 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbXJZGXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:23:36 -0400
-Date: Fri, 26 Oct 2007 02:20:48 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mikael Starvik <mikael.starvik@axis.com>
-cc: linux-kernel@vger.kernel.org, Jesper Nilsson <Jesper.Nilsson@axis.com>
-Subject: Re: Upcomming CRIS patches
-In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C668052DE86C@exmail1.se.axis.com>
-Message-ID: <Pine.LNX.4.64.0710260217260.25424@localhost.localdomain>
-References: <BFECAF9E178F144FAEF2BF4CE739C668052DE86C@exmail1.se.axis.com>
+	Fri, 26 Oct 2007 02:38:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50553 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbXJZGiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:38:08 -0400
+Date: Fri, 26 Oct 2007 08:37:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Edward Hsu <edward_hsu@realtek.com.tw>, Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc1 fails with lockup - /sbin/ifconfig / inet_ioctl() /
+	dev_close() / rtl8169_down()
+Message-ID: <20071026063733.GA12426@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org> <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu> <1193241191.14314.8.camel@localhost> <20071024155521.GA16690@elte.hu> <1193242267.6914.6.camel@twins> <1193378269.17910.4.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193378269.17910.4.camel@localhost>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Mikael Starvik wrote:
 
-> Just a heads up that we will now finally start to submit CRIS
-> patches. The first patches will make CRIS compile in the official
-> tree. Further patches will then add functionality and correct bugs.
->
-> A new machine called Artpec-3 will also be added.
+* Romano Giannetti <romanol@upcomillas.es> wrote:
 
-just for the sheer heck of it, here's my current list of CRIS-related
-"dead" CONFIG variables you may or may not want to toss before
-committing to the main tree:
+> > Does this help?
+> 
+> I tried this, but although I have the D-state processes, I cannot see 
+> any debug trace now. Results are at:
+> 
+> http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_3/
+> 
+> Can I try anything more? This is quite a show-stopper for me... and 
+> before trying to bisect 11Mbyte of patches...
 
-	$ ../find_dead_configs.sh arch/cris
+hm, from your log it appears that lockdep did not find anything, still 
+the hang does trigger.
 
->>>>> ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:38:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:76:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:88:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:107:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:207:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:300:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:334:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:352:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:404:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:414:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/kgdb.c:384:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/kgdb.c:394:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/debugport.c:92:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/debugport.c:169:#elif !defined(CONFIG_ETRAXFS_SIM)
-arch/cris/arch-v32/kernel/Makefile:13:obj-$(CONFIG_ETRAXFS_SIM) += vcs_hook.o
-arch/cris/arch-v32/mm/init.c:68:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/mm/init.c:87:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/mm/init.c:93:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/drivers/axisflashmap.c:294:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/defconfig:71:# CONFIG_ETRAXFS_SIM is not set
-include/asm-cris/arch-v32/processor.h:26:#ifndef CONFIG_ETRAXFS_SIM
-include/asm-cris/arch-v32/page.h:14:#ifndef CONFIG_ETRAXFS_SIM
->>>>> ETRAX_KGB_PORT2
-arch/cris/arch-v32/kernel/irq.c:32:#elif defined(CONFIG_ETRAX_KGB_PORT2)
->>>>> ETRAX_RTC_READONLY
-arch/cris/arch-v32/drivers/pcf8563.c:98:#ifdef CONFIG_ETRAX_RTC_READONLY
-arch/cris/arch-v32/drivers/pcf8563.c:230:#ifdef CONFIG_ETRAX_RTC_READONLY
-arch/cris/arch-v32/drivers/pcf8563.c:286:#endif /* !CONFIG_ETRAX_RTC_READONLY */
-arch/cris/arch-v10/drivers/ds1302.c:308:#ifndef CONFIG_ETRAX_RTC_READONLY
-arch/cris/arch-v10/drivers/pcf8563.c:90:#ifdef CONFIG_ETRAX_RTC_READONLY
-arch/cris/arch-v10/drivers/pcf8563.c:219:#ifdef CONFIG_ETRAX_RTC_READONLY
-arch/cris/arch-v10/drivers/pcf8563.c:271:#endif /* !CONFIG_ETRAX_RTC_READONLY */
->>>>> JULIETTE
-arch/cris/mm/init.c:63: *  Only map segment 0xa as seg if CONFIG_JULIETTE
-arch/cris/arch-v10/kernel/head.S:557:#ifdef CONFIG_JULIETTE
-arch/cris/arch-v10/mm/init.c:74:#ifdef CONFIG_JULIETTE
-arch/cris/arch-v10/mm/init.c:95:#ifdef CONFIG_JULIETTE
-arch/cris/arch-v10/kernel/head.S:119: * * Removed G27 auto-setting when JULIETTE is chosen (need to make this
->>>>> MTD_AMDSTD
-arch/cris/arch-v32/drivers/axisflashmap.c:193:#ifdef CONFIG_MTD_AMDSTD
-arch/cris/arch-v10/drivers/axisflashmap.c:315:#ifdef CONFIG_MTD_AMDSTD
-arch/cris/arch-v10/defconfig:102:CONFIG_MTD_AMDSTD=y
-arch/cris/arch-v10/defconfig:148:CONFIG_MTD_AMDSTD=y
-arch/cris/defconfig:230:CONFIG_MTD_AMDSTD=y
-arch/cris/arch-v32/drivers/Kconfig:366:	select MTD_AMDSTD
-arch/cris/arch-v10/drivers/Kconfig:609:	select MTD_AMDSTD
+it's /sbin/ifconfig and inet_ioctl() / dev_close() / rtl8169_down() that 
+seems to be hanging. I've extracted the relevant backtrace below. I've 
+Cc:-ed people who might have a better idea about what's going on.
 
-	$ ../find_dead_configs.sh include/asm-cris/
+	Ingo
 
->>>>> ETRAX_ARCH_V32
-arch/cris/defconfig:73:# CONFIG_ETRAX_ARCH_V32 is not set
-arch/cris/Makefile:18:arch-$(CONFIG_ETRAX_ARCH_V32) := v32
-drivers/ide/cris/ide-cris.c:55:#ifdef CONFIG_ETRAX_ARCH_V32
-include/asm-cris/etraxgpio.h:37:#ifdef CONFIG_ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:3:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:8:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:16:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:24:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:32:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:40:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:48:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:56:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:120:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:128:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:135:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:144:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:151:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:162:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:171:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:181:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:190:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:204:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:212:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:226:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:234:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:248:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:256:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:270:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:278:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/Kconfig:292:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:3:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:58:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:361:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:378:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:421:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:430:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:448:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:466:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:589:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:601:        depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:616:	depends on ETRAX_ARCH_V32
-arch/cris/arch-v32/drivers/Kconfig:623:	depends on ETRAX_ARCH_V32
->>>>> ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:38:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:76:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:88:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:107:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:207:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:300:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:334:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:352:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:404:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/head.S:414:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/kgdb.c:384:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/kgdb.c:394:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/debugport.c:92:#ifdef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/kernel/debugport.c:169:#elif !defined(CONFIG_ETRAXFS_SIM)
-arch/cris/arch-v32/kernel/Makefile:13:obj-$(CONFIG_ETRAXFS_SIM) += vcs_hook.o
-arch/cris/arch-v32/mm/init.c:68:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/mm/init.c:87:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/mm/init.c:93:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/arch-v32/drivers/axisflashmap.c:294:#ifndef CONFIG_ETRAXFS_SIM
-arch/cris/defconfig:71:# CONFIG_ETRAXFS_SIM is not set
-include/asm-cris/arch-v32/processor.h:26:#ifndef CONFIG_ETRAXFS_SIM
-include/asm-cris/arch-v32/page.h:14:#ifndef CONFIG_ETRAXFS_SIM
->>>>> SHARE_SHLIB_CORE
-include/asm-cris/eshlibld.h:44:   Mainly depends on the config macro CONFIG_SHARE_SHLIB_CORE, but it is
-include/asm-cris/eshlibld.h:49:     && !defined(CONFIG_SHARE_SHLIB_CORE)
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+ ------------------>
+ ifconfig      S c0476f80     0  7226   7166
+        cbb67df0 00000046 c02f3f97 c0476f80 cbb67dc0 c01489d5 c2b81550 c2b8168c 
+        c1cf7b80 00000000 c30bd250 00000000 cbb67dd0 00000282 cbb67e00 c0476f80 
+        cbb67df0 c0132618 00004232 00000000 00000282 cbb67e00 00004232 f884e000 
+ Call Trace:
+  [schedule_timeout+72/192] schedule_timeout+0x48/0xc0
+  [schedule_timeout_interruptible+21/32] schedule_timeout_interruptible+0x15/0x20
+  [msleep_interruptible+39/64] msleep_interruptible+0x27/0x40
+  [<f88422f0>] rtl8169_down+0xb0/0xd0 [r8169]
+  [<f88424cf>] rtl8169_close+0x1f/0xb0 [r8169]
+  [dev_close+71/96] dev_close+0x47/0x60
+  [dev_change_flags+125/384] dev_change_flags+0x7d/0x180
+  [devinet_ioctl+1225/1632] devinet_ioctl+0x4c9/0x660
+  [inet_ioctl+107/144] inet_ioctl+0x6b/0x90
+  [sock_ioctl+208/544] sock_ioctl+0xd0/0x220
+  [do_ioctl+40/128] do_ioctl+0x28/0x80
+  [vfs_ioctl+87/640] vfs_ioctl+0x57/0x280
+  [sys_ioctl+57/96] sys_ioctl+0x39/0x60
+  [sysenter_past_esp+95/165] sysenter_past_esp+0x5f/0xa5
+  =======================
