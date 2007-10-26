@@ -1,126 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXJZVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXJZVfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765036AbXJZVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757909AbXJZVfO
+	id S932091AbXJZVfs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763194AbXJZVfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:35:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48745 "EHLO
+	Fri, 26 Oct 2007 17:35:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41911 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757745AbXJZVfM (ORCPT
+	by vger.kernel.org with ESMTP id S1759587AbXJZVfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:35:12 -0400
-Date: Fri, 26 Oct 2007 14:34:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Karl Schendel <kschendel@datallegro.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Leonid Ananiev <leonid.i.ananiev@linux.intel.com>
-Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
- write
-In-Reply-To: <47225835.4050309@datallegro.com>
-Message-ID: <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
-References: <47225835.4050309@datallegro.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 26 Oct 2007 17:35:37 -0400
+Date: Fri, 26 Oct 2007 14:35:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
+Message-Id: <20071026143525.b9218ed7.akpm@linux-foundation.org>
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>
+References: <20071019075443.GA6407@havoc.gtf.org>
+	<20071019075808.GH6407@havoc.gtf.org>
+	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 19 Oct 2007 09:00:23 -0400
+"Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
 
-Hmm. If I read this right, this bug seems to have been introduced by 
-commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate clean 
-pages before dio write") back in March.
+> ACK with comment ...
 
-Before that, we'd call invalidate_inode_pages2_range() unconditionally 
-after the call mapping->a_ops->direct_IO() if it was a write and there 
-were cached pages in the mapping (well, "unconditionally" in the sense 
-that it didn't depend on the return value of the ->direct_IO() call).
+Please don't top-post and then include 65 kbytes of unneeded goop.
 
-However, with both the old and the new code _and_ with your patch, the 
-return code - in case the invalidate failed - was corrupted. So we may 
-actually end up doing some IO, but then returning the "wrong" error code 
-from the invalidate. Hmm?
+> This API changed in 2.4.23 switching to irqreturn_t, and 2.6.19 dropping
+> the struct_pt_regs argument, this is yet another API change in the same
+> function. The last one came with no clues to differentiate except kernel
+> version (for those of us that are required to produce updated
+> back-ported driver modules once this patch becomes a legacy). I am
+> *praying* that this API change is clean across 2.6.24 and add my voice
+> to all to ACK this clearly!
+> 
 
-Somebody who cares about direct-IO and who - unlike me - doesn't think 
-it's a total and idiotic crock should think hard about this. I'm including 
-Karl's email, but also an alternate patch for consideration.
+That was a goofup.  I proposed that we should add a #define
+TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the patch,
+but it got lost.
 
-And maybe some day we can all agree that direct_IO is crap and should not 
-be done.
+I agree it would be a kind thing to do in this case.
 
-		Linus
-
---
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 5209e47..032371a 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2510,22 +2510,17 @@ generic_file_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
- 	}
- 
- 	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
--	if (retval)
-+	if (retval < 0)
- 		goto out;
- 
- 	/*
- 	 * Finally, try again to invalidate clean pages which might have been
- 	 * faulted in by get_user_pages() if the source of the write was an
- 	 * mmap()ed region of the file we're writing.  That's a pretty crazy
--	 * thing to do, so we don't support it 100%.  If this invalidation
--	 * fails and we have -EIOCBQUEUED we ignore the failure.
-+	 * thing to do, so we don't support it 100%.
- 	 */
--	if (rw == WRITE && mapping->nrpages) {
--		int err = invalidate_inode_pages2_range(mapping,
--					      offset >> PAGE_CACHE_SHIFT, end);
--		if (err && retval >= 0)
--			retval = err;
--	}
-+	if (rw == WRITE && mapping->nrpages)
-+		invalidate_inode_pages2_range(mapping, offset >> PAGE_CACHE_SHIFT, end);
- out:
- 	return retval;
- }
-
-On Fri, 26 Oct 2007, Karl Schendel wrote:
->
-> This patch fixes a race between direct IO writes and non-direct IO
-> reads on the same file.  The symptom is a stale file page seen by
-> any non-direct-IO reader, which persists until the page is invalidated
-> somehow (e.g. page rewritten again, or memory pressure, or reboot).
-> 
-> An improper return test caused direct-IO's after-write page invalidations
-> to be skipped.  If we're writing page N, and the reader is reading
-> page N-x for small x, and the read code decides to readahead, it's
-> not too hard to cause a race that leaves an old, stale copy of the
-> page in the page cache.  Retval is usually +nonzero after the
-> mapping->a_ops->direct_IO call!
-> 
-> Signed-off-by: Karl Schendel <kschendel@datallegro.com>
-> 
-> ---
-> 
-> By the way, I agree that the userland situation is stupid, and I'm
-> addressing that in the application (happens to be the Ingres DBMS).
-> However, the kernel shouldn't compound the stupidity.
-> 
-> I'll try to watch for replies, but it would be very useful to
-> cc me at kschendel@datallegro.com if any discussion is needed;
-> I'm not subscribed to lkml.
-> 
-> 
-> --- linux-2.6.23.1-base/mm/filemap.c	2007-10-12 12:43:44.000000000 -0400
-> +++ linux-2.6.23.1/mm/filemap.c	2007-10-26 16:12:08.000000000 -0400
-> @@ -2194,7 +2194,7 @@ generic_file_direct_IO(int rw, struct ki
->  	}
-> 
->  	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
-> -	if (retval)
-> +	if (retval < 0)
->  		goto out;
-> 
->  	/*
-> 
+Not that I ever want to see these patches again ;)
