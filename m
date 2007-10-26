@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbXJZPpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbXJZPtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbXJZPpP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 11:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbXJZPo6
+	id S1763462AbXJZPtl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 11:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbXJZPte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:44:58 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:51200 "EHLO atlrel8.hp.com"
+	Fri, 26 Oct 2007 11:49:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45960 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbXJZPo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:44:56 -0400
-Message-ID: <47220B66.5050002@hp.com>
-Date: Fri, 26 Oct 2007 11:44:38 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] [CRYPTO] users: Fix up scatterlist conversion errors
-References: <20071026145905.GA13850@gondor.apana.org.au> <E1IlQfN-0003cW-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1IlQfN-0003cW-00@gondolin.me.apana.org.au>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754011AbXJZPtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 11:49:33 -0400
+Date: Fri, 26 Oct 2007 11:49:09 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Martin Knoblauch <spamtrap@knobisoft.de>,
+       linux-kernel@vger.kernel.org, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.24-rc1: First impressions
+Message-ID: <20071026114909.5a6a5b4e@bree.surriel.com>
+In-Reply-To: <1193412540.27652.9.camel@twins>
+References: <796505.25770.qm@web32612.mail.mud.yahoo.com>
+	<20071026152221.GA26619@elte.hu>
+	<1193412540.27652.9.camel@twins>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> [CRYPTO] users: Fix up scatterlist conversion errors
-> 
-> This patch fixes the errors made in the users of the crypto layer during
-> the sg_init_table conversion.  It also adds a few conversions that were
-> missing altogether.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-> ---
-> 
->  drivers/crypto/padlock-sha.c          |    4 +-
->  drivers/md/dm-crypt.c                 |    2 -
->  drivers/net/ppp_mppe.c                |   10 ++++-
->  drivers/scsi/iscsi_tcp.c              |    5 +-
->  fs/ecryptfs/crypto.c                  |    2 +
->  net/ipv4/esp4.c                       |    7 ++-
->  net/ipv6/esp6.c                       |    8 +++-
->  net/rxrpc/rxkad.c                     |   66 +++++++++++++++++-----------------
->  net/sctp/auth.c                       |    3 -
->  net/sctp/sm_make_chunk.c              |    6 +--
->  net/sunrpc/auth_gss/gss_krb5_crypto.c |   34 +++++++++++++----
->  net/sunrpc/auth_gss/gss_spkm3_seal.c  |    2 -
->  net/sunrpc/xdr.c                      |    2 +
->  13 files changed, 93 insertions(+), 58 deletions(-)
-> 
+On Fri, 26 Oct 2007 17:29:00 +0200
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Ack SCTP pieces.  I had those queued up, but you got to it before me ;)
+> > wow, really nice results! Peter does know how to make stuff fast :)
+> > Now lets pick up some of Peter's other, previously discarded
+> > patches as well :-)
+> > 
+> > Such as the rewritten reclaim (clockpro) patches:
+> > 
+> >   http://programming.kicks-ass.net/kernel-patches/page-replace/
+> 
+> I think riel is taking over that stuff with his split vm and policies
+> per type.
 
-Thanks
--vlad
+I am.  Taking every single reference to a page into account simply
+won't scale to systems with 1TB of RAM.  This is why I am working
+on implementing:
 
+http://linux-mm.org/PageReplacementDesign
+
+At the moment I only have the basic "plumbing" of the split VM
+working and am fixing some bugs in that.  Expect a patch series
+with that soon, so you guys can review that code and tell me
+where to beat it into shape some more :)
+
+After that I will work on the policy bits, where we can really
+get performance benefits.  The patch series should be mergeable
+in smaller increments, so we can take things slowly if desired.
+
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
