@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbXJZPSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbXJZPSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757769AbXJZPSE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 11:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXJZPRx
+	id S1762828AbXJZPSZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 11:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760210AbXJZPSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:17:53 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:57209 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbXJZPRw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:17:52 -0400
-Date: Fri, 26 Oct 2007 11:17:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [PATCH] RT: Cache cpus_allowed weight for optimizing migration
-In-Reply-To: <1193410770.3959.8.camel@ghaskins-t60p.haskins.net>
-Message-ID: <Pine.LNX.4.58.0710261114270.3280@gandalf.stny.rr.com>
-References: 1193346777.7561.47.camel@ghaskins-t60p.haskins.net
- <20071026132440.5370.78235.stgit@novell1.haskins.net> 
- <Pine.LNX.4.58.0710261035310.18997@gandalf.stny.rr.com>
- <1193410770.3959.8.camel@ghaskins-t60p.haskins.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 11:18:10 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:55793 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759173AbXJZPSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 11:18:08 -0400
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 26 Oct 2007 11:18:08 -0400
+Message-Id: <1193411888.5032.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---
-On Fri, 26 Oct 2007, Gregory Haskins wrote:
+On Thu, 2007-10-25 at 17:28 -0700, Christoph Lameter wrote:
+> On Thu, 25 Oct 2007, David Rientjes wrote:
+> 
+> > The problem occurs when you add cpusets into the mix and permit the 
+> > allowed nodes to change without knowledge to the application.  Right now, 
+> > a simple remap is done so if the cardinality of the set of nodes 
+> > decreases, you're interleaving over a smaller number of nodes.  If the 
+> > cardinality increases, your interleaved nodemask isn't expanded.  That's 
+> > the problem that we're facing.  The remap itself is troublesome because it 
+> > doesn't take into account the user's desire for a custom nodemask to be 
+> > used anyway; it could remap an interleaved policy over several nodes that 
+> > will already be contended with one another.
+> 
+> Right. So I think we are fine if the application cannot setup boundaries 
+> for interleave.
+> 
+> 
+> > Normally, MPOL_INTERLEAVE is used to reduce bus contention to improve the 
+> > throughput of the application.  If you remap the number of nodes to 
+> > interleave over, which is currently how it's done when mems_allowed 
+> > changes, you could actually be increasing latency because you're 
+> > interleaving over the same bus.
+> 
+> Well you may hit some nodes more than others so a slight performance 
+> degradataion.
+> 
+> > This isn't a memory policy problem because all it does is effect a 
+> > specific policy over a set of nodes.  With my change, cpusets are required 
+> > to update the interleaved nodemask if the user specified that they desire 
+> > the feature with interleave_over_allowed.  Cpusets are, after all, the 
+> > ones that changed the mems_allowed in the first place and invalidated our 
+> > custom interleave policy.  We simply can't make inferences about what we 
+> > should do, so we allow the creator of the cpuset to specify it for us.  So 
+> > the proper place to modify an interleaved policy is in cpusets and not 
+> > mempolicy itself.
+> 
+> With that MPOL_INTERLEAVE would be context dependent and no longer 
+> needs translation. Lee had similar ideas. Lee: Could we make 
+> MPOL_INTERLEAVE generally cpuset context dependent?
+> 
 
-> On Fri, 2007-10-26 at 10:47 -0400, Steven Rostedt wrote:
-> > --
-> > On Fri, 26 Oct 2007, Gregory Haskins wrote:
-> >
-> > > This version has the feedback from Steve's review incorporated
-> > >
-> > > -----------------------------------------
-> > >
-> > > RT: Cache cpus_allowed weight for optimizing migration
-> > >
-> > > Some RT tasks (particularly kthreads) are bound to one specific CPU.
-> > > It is fairly common for one or more bound tasks to get queued up at the
-> > > same time.  Consider, for instance, softirq_timer and softirq_sched.  A
-> > > timer goes off in an ISR which schedules softirq_thread to run at RT50.
-> > > Then during the handling of the timer, the system determines that it's
-> > > time to smp-rebalance the system so it schedules softirq_sched to run
-> > > from within the softirq_timer kthread context. So we are in a situation
-> > > where we have two RT50 tasks queued, and the system will go into
-> > > rt-overload condition to request other CPUs for help.
-> > >
-> > > The problem is that these tasks cannot ever be pulled away since they
-> > > are already running on their one and only valid RQ.  However, the other
-> > > CPUs cannot determine that the tasks are unpullable without going
-> > > through expensive checks/locking.  Therefore the helping CPUS
-> >
-> > A little exageration there ;-)  We don't need to go through locking (at
-> > least my code doesn't), and the checks are not that expensive (could cause
-> > some unneeded cache bouncing though).
->
-> Well, its all relative.  Not going into overload to begin with, and
-> therefore not hitting the pull_rt_tasks() logic outright should be
-> faster than lockless scanning tricks ;)
->
-> But I digress.  I don't think the original code had your optimization,
-> so you are right:  It's perhaps a bit of an exaggeration in HEAD.  I'll
-> be less dramatic for the next drop ;)
->
+That's what my "cpuset-independent interleave" patch does.  David
+doesn't like the "null node mask" interface because it doesn't work with
+libnuma.  I plan to fix that, but I'm chasing other issues.  I should
+get back to the mempol work after today.
 
-I'll digress some more ;-)
+What I like about the cpuset independent interleave is that the "policy
+remap" when cpusets are changed is a NO-OP--no need to change the
+policy.  Just as "preferred local" policy chooses the node where the
+allocation occurs, my cpuset independent interleave patch interleaves
+across the set of nodes available at the time of the allocation.  The
+application has to specifically ask for this behavior by the null/empty
+nodemask or the TBD libnuma API.  IMO, this is the only reasonable
+interleave policy for apps running in dynamic cpusets.
 
-Actually, what I want to stress is that the greatest benefit of this patch
-is not removing the unneed checks to processes that can't migrate (it is a
-benefit though), but the real benefit that I'm looking forward to is the
-migrating of lower priority tasks that can migrate. And these tasks wont
-be affected by tasks that can't migrate.
+An aside:  if David et al [at google] are using cpusets on fake numa for
+resource management [I don't know this is the case, but saw some
+discussions way back that indicate it might be?], then maybe this
+becomes less of an issue when control groups [a.k.a. containers] and
+memory resource controls come to fruition?
 
-Looking forward to your next patch.
-
--- Steve
+Lee
 
