@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761460AbXJZAge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXJZAiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761460AbXJZAge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXJZAgQ
+	id S1760869AbXJZAiI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXJZAh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:36:16 -0400
-Received: from mail.tmr.com ([64.65.253.246]:57319 "EHLO gaimboi.tmr.com"
+	Thu, 25 Oct 2007 20:37:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51055 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753855AbXJZAgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:36:16 -0400
-Message-ID: <472138D3.8090203@tmr.com>
-Date: Thu, 25 Oct 2007 20:46:11 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: James Ausmus <james.ausmus@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Possible 2.6.23 regression - Disappearing disk space
-References: <b79f23070710241105n725e7a9dh78bb3747adc44437@mail.gmail.com>
-In-Reply-To: <b79f23070710241105n725e7a9dh78bb3747adc44437@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753242AbXJZAh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 20:37:56 -0400
+Date: Fri, 26 Oct 2007 01:37:53 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: device-mapper development <dm-devel@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] [PATCH] dm: noflush resizing (0/3)
+Message-ID: <20071026003753.GO10006@agk.fab.redhat.com>
+Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
+	linux-kernel@vger.kernel.org
+References: <471FB83D.4060307@ce.jp.nec.com> <20071025012456.GK10006@agk.fab.redhat.com> <4720A59A.8060001@ce.jp.nec.com> <20071025144833.GN10006@agk.fab.redhat.com> <4720E479.4020906@ce.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4720E479.4020906@ce.jp.nec.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Ausmus wrote:
-> Since updating my laptop to 2.6.23, occasionally all of my free disk
-> space on my root partition will just go away, with no files accounting
-> for the space, with no odd messages in dmesg or my syslog. If I
-> reboot, I immediately have the proper amount of free space again. Here
-> is the output of a du -sx * on /, and the output of the df command
-> when the problem is occuring, followed by the same info after a fresh
-> reboot (literally just did the command in the failed state, then
-> immediately rebooted and ran the same commands again) - any thoughts
-> as to what might be happening?
-> 
-Clearly some process is still using a deleted file. However, if it 
-doesn't happen with 2.6.22.x kernels, it would seem fall under the 
-category of regression, in the "used to work" sense. Before going 
-further you may want to be really sure that an older kernel doesn't do 
-this, so no one wastes time on a non-problem.
+On Thu, Oct 25, 2007 at 02:46:17PM -0400, Jun'ichi Nomura wrote:
+> So as far as I understand, the point is:
+>   1. it's preferable to resize inode after the resume, if possible
 
-Assuming the older kernel works fine, it's possible that some new 
-behavior of the kernel as causing a process to misbehave, and step one 
-is to use lsof and try to find the process. It's possible that "top" 
-might be useful, although whatever is using the disk space may just be 
-lurking.
+Not quite - I'm not expressing a preference yet.
 
+I'm saying the patches you presented were one option to resolve the
+problem, but it was not obvious to me they are the only option and I
+wanted to see a deeper analysis (keeping in mind the general direction
+I want the device-mapper code to be heading in).
+
+In other words, an analysis that draws out the conflict at the heart of
+this problem, and whether the problem we have with this locking is
+intrinsic to the current design or just a matter of implementation that
+can be fixed with some re-ordering or tweaks to the usage rules or types
+of the locks.
+
+Alasdair
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+agk@redhat.com
