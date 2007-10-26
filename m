@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbXJZQAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762331AbXJZQBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762859AbXJZQAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbXJZP7n
+	id S1762331AbXJZQBc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXJZQBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:59:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56985 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbXJZP7k (ORCPT
+	Fri, 26 Oct 2007 12:01:24 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:33773
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752244AbXJZQBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:59:40 -0400
-Date: Fri, 26 Oct 2007 08:54:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Tilman Schmidt <tilman@imap.cc>, Adrian Bunk <bunk@kernel.org>,
-       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-	static interface)
-Message-ID: <20071026155415.GE23016@kroah.com>
-References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <Pine.LNX.4.64.0710260908290.25696@fbirervta.pbzchgretzou.qr>
+	Fri, 26 Oct 2007 12:01:23 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 1/2] RT: cleanup some push-rt logic
+To: linux-rt-users@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+Date: Fri, 26 Oct 2007 11:46:20 -0400
+Message-ID: <20071026154620.6195.30586.stgit@novell1.haskins.net>
+In-Reply-To: <Pine.LNX.4.58.0710261114270.3280@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0710261114270.3280@gandalf.stny.rr.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710260908290.25696@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 09:09:05AM +0200, Jan Engelhardt wrote:
-> 
-> On Oct 25 2007 19:56, Greg KH wrote:
-> >
-> >I'm trying to compile a list of all known external modules and drivers
-> >and work to get them included in the main kernel tree to help prevent
-> >these kinds of things.  If you know of any that are not on the list at:
-> >	http://linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
-> >please feel free to add them, or email me with the needed information
-> >and I will add them to the list.
-> 
-> Do I have to at least try to submit it to LKML first before it is
-> even considered for the OOT wiki page? :-)
+Please fold into original -rt2 patches as appropriate
 
-No, you can go hide on your own, that's what the majority of projects on
-that page have done :)
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-But of course, it would be good for you to at least submit it and get
-feedback.  Or, if you don't want to do it, the linuxdriverproject
-developers would be glad to help you out...
+ kernel/sched_rt.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-thanks,
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 55da7d0..b59dc20 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -292,7 +292,6 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ {
+ 	struct rq *lowest_rq = NULL;
+ 	cpumask_t cpu_mask;
+-	int dst_cpu = -1;
+ 	int cpu;
+ 	int tries;
+ 
+@@ -311,14 +310,12 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ 			/* We look for lowest RT prio or non-rt CPU */
+ 			if (rq->rt.highest_prio >= MAX_RT_PRIO) {
+ 				lowest_rq = rq;
+-				dst_cpu = cpu;
+ 				break;
+ 			}
+ 
+ 			/* no locking for now */
+ 			if (rq->rt.highest_prio > task->prio &&
+ 			    (!lowest_rq || rq->rt.highest_prio > lowest_rq->rt.highest_prio)) {
+-				dst_cpu = cpu;
+ 				lowest_rq = rq;
+ 			}
+ 		}
+@@ -335,7 +332,7 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
+ 			 * Also make sure that it wasn't scheduled on its rq.
+ 			 */
+ 			if (unlikely(task_rq(task) != this_rq ||
+-				     !cpu_isset(dst_cpu, task->cpus_allowed) ||
++				     !cpu_isset(lowest_rq->cpu, task->cpus_allowed) ||
+ 				     task_running(this_rq, task) ||
+ 				     !task->se.on_rq)) {
+ 				spin_unlock(&lowest_rq->lock);
+@@ -365,7 +362,6 @@ static int push_rt_task(struct rq *this_rq)
+ {
+ 	struct task_struct *next_task;
+ 	struct rq *lowest_rq;
+-	int dst_cpu;
+ 	int ret = 0;
+ 	int paranoid = RT_MAX_TRIES;
+ 
+@@ -412,12 +408,10 @@ static int push_rt_task(struct rq *this_rq)
+ 		goto out;
+ 	}
+ 
+-	dst_cpu = lowest_rq->cpu;
+-
+ 	assert_spin_locked(&lowest_rq->lock);
+ 
+ 	deactivate_task(this_rq, next_task, 0);
+-	set_task_cpu(next_task, dst_cpu);
++	set_task_cpu(next_task, lowest_rq->cpu);
+ 	activate_task(lowest_rq, next_task, 0);
+ 
+ 	resched_task(lowest_rq->curr);
 
-greg k-h
