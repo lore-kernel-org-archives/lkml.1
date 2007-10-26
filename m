@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbXJZGj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbXJZGrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbXJZGj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 02:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXJZGjt
+	id S1753478AbXJZGrS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 02:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJZGrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:39:49 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:28981 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbXJZGjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:39:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KgmPWEdVVEmyQ2Ehv12yi3FQVuVehd5ZFd1QtfIy16Cav+j/vZC+H/n0GvlPiKx9uh/cbpj5s/Vibk6NXt4R/1o6/+20hONmGKoR8xclKzdTHElkxKFuNXE4XJwrr+uQiDHraSkGvx3A1ybGn6eZkFz+6YUGsvtVKbOUD8IGYhw=
-Message-ID: <86802c440710252339kcf5d46dh4602fff9ac8d3a66@mail.gmail.com>
-Date: Thu, 25 Oct 2007 23:39:47 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH 5/6] x86: move i386 and x86_64 Kconfig files to x86 directory
-Cc: "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-In-Reply-To: <20071026061425.GA19022@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 26 Oct 2007 02:47:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58236 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751038AbXJZGrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:47:09 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/Wni1ihrjWIgBKKu4KdqJTVERxotpOy+0oUflnQt
+	/LEaTOhEzUMJ2v
+Subject: Re: kernel 2.6.23 CFS problem?
+From: Mike Galbraith <efault@gmx.de>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: "Wang, Baojun" <wangbj@lzu.edu.cn>, linux-kernel@vger.kernel.org,
+       gentoo-user@lists.gentoo.org
+In-Reply-To: <20071026044502.GB2458@hacking>
+References: <200710261057.48179.wangbj@lzu.edu.cn>
+	 <20071026044502.GB2458@hacking>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 08:47:02 +0200
+Message-Id: <1193381222.10732.11.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071025195644.GA14501@uranus.ravnborg.org>
-	 <20071025200546.GF14501@uranus.ravnborg.org>
-	 <86802c440710251853w1b33ea66j13181664cb5a30a0@mail.gmail.com>
-	 <20071025194653.46d39a13.rdunlap@xenotime.net>
-	 <86802c440710252251v1ad07c12x22254c1b4ed3ceee@mail.gmail.com>
-	 <20071026061425.GA19022@uranus.ravnborg.org>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/25/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+On Fri, 2007-10-26 at 12:45 +0800, WANG Cong wrote:
+> On Fri, Oct 26, 2007 at 10:57:45AM +0800, Wang, Baojun wrote:
+> >hi, list
 > >
-> > but
-> > in git
+> >  I've upgraded my kernel from 2.6.22.9 to 2.6.23 when it was out, After that 
+> >I can't install ELDK 4.1 anymore (The one I installed was crashed), it always 
+> >stopped at preparing install package XXX (or YYY sometimes), I've waited for 
+> >a very long time(more than 1 hour), but it still the same. After I switch 
+> >back to kernel 2.6.22.9, everything is fine. Is there somebody have the some 
+> >problem like me?
 > >
-> > http://git.kernel.org/?p=linux/kernel/git/sam/x86.git;a=commitdiff;h=d013a27cb79a01b324f93adb275162c244cca2de
-> >
-> > doesn't include that removing..
->
-> That's the bug Kay noticed.
-> It should not have been removed so I fixedit and pushed out a new change.
-> Again - please see reply to Kay and read the [GIT PULL] mail.
+> 
+> What's your XXX or YYY?
+> 
+> What error messages did you get?
+> 
+> Why don't you try to update your glibc or something like that?
+> 
+> I am afraid it's off-topic here.
 
-Good. that compiles without problem on x86_64.
+Not necessarily so if kernel version indeed makes the difference between
+hung install and successful completion.
 
-BTW:
-why not using Kconfig.x86_32 instead of Kconfig.i386?
+Perhaps he has any tasks stuck in 'D' state?  If so, SysRq-t output for
+these would be a good thing to collect.  What leads him to suspect the
+process scheduler, etc.  More details are needed.
 
-YH
+(I went looking for this package, but there are several, and they're
+huge)
 
-YH
+	-Mike
+
