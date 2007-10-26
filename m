@@ -1,124 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbXJZGCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbXJZGEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbXJZGCf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 02:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbXJZGC1
+	id S1754221AbXJZGEX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 02:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXJZGEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 02:02:27 -0400
-Received: from xenotime.net ([66.160.160.81]:35991 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750803AbXJZGC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 02:02:26 -0400
-Date: Thu, 25 Oct 2007 23:02:22 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: [PATCH 5/6] x86: move i386 and x86_64 Kconfig files to x86
- directory
-Message-Id: <20071025230222.37e94749.rdunlap@xenotime.net>
-In-Reply-To: <86802c440710252251v1ad07c12x22254c1b4ed3ceee@mail.gmail.com>
-References: <20071025195644.GA14501@uranus.ravnborg.org>
-	<20071025200546.GF14501@uranus.ravnborg.org>
-	<86802c440710251853w1b33ea66j13181664cb5a30a0@mail.gmail.com>
-	<20071025194653.46d39a13.rdunlap@xenotime.net>
-	<86802c440710252251v1ad07c12x22254c1b4ed3ceee@mail.gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 26 Oct 2007 02:04:14 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47450 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751801AbXJZGEN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 02:04:13 -0400
+Date: Thu, 25 Oct 2007 23:04:09 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, ak@suse.de, clameter@sgi.com,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
+Message-Id: <20071025230409.81f20ed3.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 22:51:56 -0700 Yinghai Lu wrote:
+Hmmm ... another doubt crosses my mind, something perhaps along the
+lines of Christoph's earlier concerns of more interactions between
+cpusets and mempolicy.
 
-> On 10/25/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> > On Thu, 25 Oct 2007 18:53:18 -0700 Yinghai Lu wrote:
-> >
-> > > On 10/25/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > > From 6654a98eb8587f0538904c9bdb9aeaf9d577f182 Mon Sep 17 00:00:00 2001
-> > > > From: Sam Ravnborg <sam@ravnborg.org>
-> > > > Date: Thu, 25 Oct 2007 21:04:16 +0200
-> > > > Subject: [PATCH] x86: move i386 and x86_64 Kconfig files to x86 directory
-> > > >
-> > > > After a small change in kconfig Makefile we could
-> > > > move all x86 Kconfig files to x86 directory.
-> > > >
-> > > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > > > ---
-> > > >  arch/{i386 => x86}/Kconfig.cpu              |    0
-> > > >  arch/{i386 => x86}/Kconfig.debug            |    0
-> > > >  arch/{i386/Kconfig => x86/Kconfig.i386}     |    4 +-
-> > > >  arch/{x86_64/Kconfig => x86/Kconfig.x86_64} |    2 +-
-> > > >  arch/x86_64/Kconfig.debug                   |  119 ---------------------------
-> > > >  scripts/kconfig/Makefile                    |    7 ++-
-> > > >  6 files changed, 9 insertions(+), 123 deletions(-)
-> > > >  rename arch/{i386 => x86}/Kconfig.cpu (100%)
-> > > >  rename arch/{i386 => x86}/Kconfig.debug (100%)
-> > > >  rename arch/{i386/Kconfig => x86/Kconfig.i386} (99%)
-> > > >  rename arch/{x86_64/Kconfig => x86/Kconfig.x86_64} (99%) <------<
-> > > >  delete mode 100644 arch/x86_64/Kconfig.debug                    |
-> > >                                                                    |
-> > > arch/i386/Kconfig.debug will be arch/x86/Kconfig.debug             |
-> > >                                                                    |
-> > > in it, EARLY_PRINTK will depend on X86_32                          |
-> >                                                                      |
-> > but EARLY_PRINTK for x86_64 is here -------------------------------  ^
-> >
-> > so we didn't lose it.  However, they should live in the same place
-> > so that confusion like this does not continue.
-> >
-> > You can make a patch.  or I can.  or Sam can.  or someone else can...
-> 
-> in PATCH 3/5 that Sam sent out.
-> 
-> >From 16b853f53463e43bfce341965ac10a78a3755a14 Mon Sep 17 00:00:00 2001
-> From: Randy Dunlap <rdunlap@xenotime.net>
-> Date: Wed, 24 Oct 2007 15:50:43 -0700
-> Subject: [PATCH] x86: unification of i386 and x86_64 Kconfig.debug
-> 
-> Adding proper dependencies so the two Kconfig.debug files
-> are now identical.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/i386/Kconfig.debug             |   51 ++++++++++++++++++++++++++++-------
->  arch/x86_64/Kconfig                 |    4 ---
->  arch/{i386 => x86_64}/Kconfig.debug |   51 ++++++++++++++++++++++++++++-------
->  3 files changed, 82 insertions(+), 24 deletions(-)
->  copy arch/{i386 => x86_64}/Kconfig.debug (65%)
-> 
-> ...
-> diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-> index 308970a..1bc0268 100644
-> --- a/arch/x86_64/Kconfig
-> +++ b/arch/x86_64/Kconfig
-> @@ -97,10 +97,6 @@ config X86_CMPXCHG
->        bool
->        default y
-> 
-> -config EARLY_PRINTK
-> -       bool
-> -       default y
-> -
->  config GENERIC_ISA_DMA
->        bool
->        default y
-> 
-> but
-> in git
-> 
-> http://git.kernel.org/?p=linux/kernel/git/sam/x86.git;a=commitdiff;h=d013a27cb79a01b324f93adb275162c244cca2de
-> 
-> doesn't include that removing..
-> 
-> interesting.
+I'm figuring that when someone looks at the cpuset flag:
 
-Oh, OK.  We'll get it fixed (if it needs fixing).
+	memory_spread_user
 
----
-~Randy
+they will expect that turning it on will cause user space memory to be
+spread over the nodes of the cpuset.  Sure makes sense that it would
+mean that.
+
+But, for the most part, it doesn't.  Only tasks that have
+previously called set_mempolicy(MPOL_INTERLEAVE), and only
+after the 'mems' of the cpuset are subsequently changed,
+will have their user memory forced to be spread across the
+cpuset as a result of this flag setting.
+
+That's weird.  We really should not surprise users like that.
+
+This is a dangerous situation -- the obvious meaning of a flag
+is not what it means.
+
+Any chance, David, that you could have this flag mean:
+
+  	Spread user memory allocations over the cpuset,
+	period, anytime it is set, regardless of what
+	mempolicy calls the task has made and regardless
+	of whether or not or when the cpusets 'mems' were
+	last changed.
+
+In your previous reply, you wrote:
+> This option gives the most power to applications.
+
+Most power, or excessive confusion?  Straight forward consistency and
+simple predictability are far more important in almost all cases.  The
+usual exception is when you have a serious use case requiring
+something that can only be done in a more obscure fashion.
+
+There is always a price paid for supporting such complexities in an API
+however, the price being increased confusion, frustration, errors and
+bugs on the part of most users of the API.
+
+... Now most likely you will claim you have such a use case, and when
+I ask for it, I will be frustrated at the lack of compelling detail of
+what is going on in user space - what sorts of users, apps and systems
+involved.  Ok, no biggie.  If this goes down that path, then perhaps
+at least I need to reconsider the name:
+
+	memory_spread_user
+
+This is -not- like the other memory spread flags.  It only spreads user
+memory across the cpuset if previously, in order, (1) the task did
+set_mempolicy(MPOL_INTERLEAVE), then (2) someone modified the cpusets
+'mems'.  Perhaps the following ugly name better warns users of such
+odd behaviour:
+
+	memory_spread_mpol_interleave
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
