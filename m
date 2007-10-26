@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXJZATs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbXJZAUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbXJZATs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXJZATj
+	id S1758404AbXJZAUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXJZAU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:19:39 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60490 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751237AbXJZATi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:19:38 -0400
-Date: Fri, 26 Oct 2007 01:22:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mike Waychison <mikew@google.com>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
-Message-ID: <20071026012217.4cc30390@the-village.bc.nu>
-In-Reply-To: <20071025230758.945535769@crlf.corp.google.com>
-References: <20071025230758.945535769@crlf.corp.google.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 20:20:26 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:47223 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751684AbXJZAUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 20:20:25 -0400
+Message-ID: <472132C9.20903@oracle.com>
+Date: Thu, 25 Oct 2007 17:20:25 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/31] Add an ERR_CAST() macro to complement ERR_PTR and
+ co.	[try #5]
+References: <20071025163352.5057.59344.stgit@warthog.procyon.org.uk>	<20071025163357.5057.35399.stgit@warthog.procyon.org.uk>	<47212215.8080003@oracle.com> <aday7dqzrwh.fsf@cisco.com>
+In-Reply-To: <aday7dqzrwh.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 16:06:40 -0700
-Mike Waychison <mikew@google.com> wrote:
-
-> Remove the need for having CAP_SYS_RAWIO when doing a FIBMAP call on an open file descriptor.
+Roland Dreier wrote:
+>  > > +static inline void *ERR_CAST(const void *ptr)
+>  > > +{
+>  > > +	return (void *) ptr;
+>  > > +}
+>  > 
+>  > Just to nit, surely you don't need the cast inside the function.  The
+>  > casting happens at the call site between the argument and returned pointer.
 > 
-> It would be nice to allow users to have permission to see where their data is landing on disk, and there really isn't a good reason to keep them from getting at this information.
+> The way it's written you kinda do, since it takes a const void * and
+> returns a plain void *.
 
-Historically this was done because people felt it was more secure. It
-also allows you to make some deductions about other activities on the
-disk but thats probably only a concern for very very security crazed
-compartmentalised boxes
+Ah, right, I missed that.
 
-Also historically at least FIBMAP could be abused to crash the system.
-Now if you can verify that has been fixed I have no problem, but given
-that I can find no record of that being fixed it would be wise to audit
-it first and review Chris Evans and other reports about what occurs when
-FIBMAP is passed random block numbers.
-
-FIBMAP has another problem for this general use as well - it takes an int
-but the block number can now be bigger for very large files on 32bit.
-
-Alan
+- z
