@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbXJZU5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765162AbXJZU5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764332AbXJZU5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXJZU5G
+	id S1765162AbXJZU5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXJZU5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:57:06 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42298 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754901AbXJZU5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:57:04 -0400
-Subject: Re: [AppArmor 32/45] Enable LSM hooks to distinguish operations on
-	file descriptors from operations on pathnames
-From: Miklos Szeredi <mszeredi@suse.cz>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <200710262224.45773.agruen@suse.de>
-References: <20071026064024.243943043@suse.de>
-	 <20071026064051.393728475@suse.de> <1193398252.4721.7.camel@localhost>
-	 <200710262224.45773.agruen@suse.de>
-Content-Type: text/plain
-Date: Fri, 26 Oct 2007 22:58:11 +0200
-Message-Id: <1193432291.4721.27.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 16:57:42 -0400
+Received: from waste.org ([66.93.16.53]:59691 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754163AbXJZU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:57:41 -0400
+Date: Fri, 26 Oct 2007 15:57:14 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Message-ID: <20071026205714.GQ17536@waste.org>
+References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx> <200710261211.01423.rusty@rustcorp.com.au> <20071026115727.GR27248@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026115727.GR27248@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 22:24 +0200, Andreas Gruenbacher wrote:
-> On Friday 26 October 2007 13:30, Miklos Szeredi wrote:
-> > There's a slight problem (other than HCH not liking it) with this
-> > approach of passing the open file in iattr:  for special files, the
-> > struct file pointer makes no sense to the filesystem, since it is always
-> > opened by the generic functions.
+On Fri, Oct 26, 2007 at 05:57:27AM -0600, Matthew Wilcox wrote:
+> On Fri, Oct 26, 2007 at 12:11:01PM +1000, Rusty Russell wrote:
+> > 	This just seems like more optimization and complexity that we need.  Interfaces
+> > using vsnprintf don't seem like good candidates for optimization.
 > 
-> So what do you think where the inodes come from for syscalls like fchmod? Out 
-> of struct file, of course. But your f_op->getattr and f_op->setattr patches 
-> are meant for passing struct file down to filesystems anyway, so that 
-> completely contradicts what you are saying above.
+> That's a fair point, but I'm optimising for fewer trips into the
+> slab(/slub/slob) allocator, and thus having less of an impact on the
+> rest of the system.  Given that 'an alloc on every call' was one of the
+> complaints Matt had about my v1 stringbuf patch, I can't imagine he'll
+> be happy about this one either.
 
-For special files, f_op->fsetattr will be NULL, since
-init_special_inode() will set up i_fop that way.
+Well I expect once you start letting people easily build strings by
+concatenation, you'll very shortly afterwards have people using them
+in loops. And having hidden O(n^2) behavior in there is a little sad,
+even though n will tend to be small and well-bounded. If we can do
+something simple to avoid it, we should.
 
-So the filesystem's fsetattr() will only be called for regular files
-and/or directories, depending on how it sets up i_fop.
-
-With the ia_file thing, the filesystem would receive the struct file
-pointer in all cases.  So the posted patch would break AFS and FUSE,
-because they unconditionally use ia_file if available and don't check
-the file type.  They could check the file type, but still the interface
-would be ugly.
-
-> > So I think the correct solution (which was suggested by Trond and
-> > others) is to define an f_op->fsetattr() method, which interested
-> > filesystems can define.
-> 
-> That's nothing but a replacement for ATTR_FILE and iattr->ia_file. Except by 
-> removing the ATTR_FILE flag, LSMs will no longer get that information for 
-> distinguishing file descriptor operations from other operations.
-> 
-> AppArmor needs to know when notify_change is called on a file descriptor, but 
-> it doesn't care about the file descriptor itself. So any way of passing along 
-> that information will be fine.
-
-Ah, so if we kept ATTR_FILE and got rid of iattr_file, would that be OK
-for AppArmor? 
-
-Thanks,
-Miklos
-
+-- 
+Mathematics is the supreme nostalgia of our time.
