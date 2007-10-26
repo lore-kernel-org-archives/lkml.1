@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765331AbXJZRLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764264AbXJZRM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765331AbXJZRLP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbXJZRK5
+	id S1764264AbXJZRM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbXJZRMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:10:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:27519 "EHLO mga11.intel.com"
+	Fri, 26 Oct 2007 13:12:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35469 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755818AbXJZRK4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:10:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,334,1188802800"; 
-   d="scan'208";a="187592633"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1753578AbXJZRMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 13:12:20 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] DMA: Fix broken device refcounting
-Date: Fri, 26 Oct 2007 10:10:17 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C034CC702@orsmsx418.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] DMA: Fix broken device refcounting
-Thread-Index: AcgX6xO6uG3w9lkWQU2JQWJBlHK/CQABg9ZwAABqQLA=
-References: <1193415162504-git-send-email-hskinnemoen@atmel.com> 
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Nelson, Shannon" <shannon.nelson@intel.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 26 Oct 2007 17:10:18.0118 (UTC) FILETIME=[1541BA60:01C817F3]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18210.8170.598519.439148@zebedee.pink>
+Date: Fri, 26 Oct 2007 18:12:10 +0100
+From: Andrew Haley <aph@redhat.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Is gcc thread-unsafe?
+In-Reply-To: <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
+	<e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
+	<alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
+	<e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 22.0.93.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Nelson, Shannon 
->Sent: Friday, October 26, 2007 10:00 AM
->To: 'Haavard Skinnemoen'
->Cc: Williams, Dan J; linux-kernel@vger.kernel.org; 
->akpm@linux-foundation.org
->Subject: RE: [PATCH] DMA: Fix broken device refcounting
->
->--
->
->When a channel is removed from dmaengine, too many kref_put() calls
->are made and the device removal happens too soon, usually causing
->a panic.
->
->Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
->---
->
-> drivers/dma/dmaengine.c |    1 -
-> 1 files changed, 0 insertions(+), 1 deletions(-)
->
->diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
->index 8248992..144a1b7 100644
->--- a/drivers/dma/dmaengine.c
->+++ b/drivers/dma/dmaengine.c
->@@ -131,7 +131,6 @@ static void 
->dma_async_device_cleanup(struct kref *kref);
-> static void dma_class_dev_release(struct class_device *cd)
-> {
-> 	struct dma_chan *chan = container_of(cd, struct 
->dma_chan, class_dev);
->-	kref_put(&chan->device->refcount, dma_async_device_cleanup);
-> }
-> 
-> static struct class dma_devclass = {
+Bart Van Assche writes:
 
-Of course, to avoid compiler complaints, it might be better as something
-like:
+ > Andrew, do you know whether gcc currently contains any optimization
+ > that interchanges the order of accesses to non-volatile variables
+ > and function calls ?
 
-static void dma_class_dev_release(struct class_device *cd)
-{
--	struct dma_chan *chan = container_of(cd, struct dma_chan,
-class_dev);
--	kref_put(&chan->device->refcount, dma_async_device_cleanup);
-+	return;
-}
+It sure does.
 
-sln
+Andrew.
+
+-- 
+Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
+Registered in England and Wales No. 3798903
