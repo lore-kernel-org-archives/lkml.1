@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXJZQKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbXJZQM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764097AbXJZQKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbXJZQKG
+	id S1764108AbXJZQM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760957AbXJZQMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:10:06 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:58537 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753112AbXJZQKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:10:04 -0400
-Message-ID: <47221164.10200@ru.mvista.com>
-Date: Fri, 26 Oct 2007 20:10:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression: commit "ide: constify struct ide_port_info" causes
- breakage
-References: <20071026155648.GB4321@flint.arm.linux.org.uk>
-In-Reply-To: <20071026155648.GB4321@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 12:12:51 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:56362 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760264AbXJZQMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 12:12:50 -0400
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Shannon Nelson" <shannon.nelson@intel.com>
+Cc: "Dan Williams" <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] DMA: Fix broken device refcounting
+Date: Fri, 26 Oct 2007 18:12:42 +0200
+Message-Id: <1193415162504-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+When a DMA device is unregistered, its reference count is decremented
+twice for each channel: Once dma_class_dev_release() and once in
+dma_chan_cleanup(). This may result in the DMA device driver's
+remove() function completing before all channels have been cleaned
+up, causing lots of use-after-free fun.
 
-Russell King wrote:
+Fix it by incrementing the device's reference count twice for each
+channel during registration.
 
-> commit 8562043606430185cad26d085d46adcc7ad67fd1 is broken, causing:
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+I'm not sure if this is the correct way to solve it, but it seems to
+work. The remove() function does not hang, which indicates that the
+device's reference count does drop all the way to zero on
+unregistration, which in turn indicates that it did actually drop
+_below_ zero before.
 
->   CC      drivers/ide/pci/cmd64x.o
->   CC      drivers/ide/pci/hpt366.o
-> drivers/ide/pci/hpt366.c:1428: error: hpt366_chipsets causes a section type conflict
+ drivers/dma/dmaengine.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-> and therefore should be reverted.
-> 
-> The problem arises because hpt366 has other data marked with __devinitdata,
-> so the compiler tries to define the initdata section with read-write
-> attributes at one point, and read-only attributes when encountering the
-> const-but-devinitdata declaration:
-> 
-> static struct hpt_info hpt36x __devinitdata = {
-> static struct hpt_info hpt370 __devinitdata = {
-> static struct hpt_info hpt370a __devinitdata = {
-> ...
-> static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 8248992..302eded 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -397,6 +397,8 @@ int dma_async_device_register(struct dma_device *device)
+ 			goto err_out;
+ 		}
+ 
++		/* One for the channel, one of the class device */
++		kref_get(&device->refcount);
+ 		kref_get(&device->refcount);
+ 		kref_init(&chan->refcount);
+ 		chan->slow_ref = 0;
+-- 
+1.5.2.5
 
-> If we want ide_port_info to be read-only initdata, then we need
-> __devroinitdata and __roinitdata tags.
-
-    We can just convert cariables declared as 'struct hpt_info' to const too 
--- they are read-only templates.
-
-MBR, Sergei
