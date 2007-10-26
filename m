@@ -1,152 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764313AbXJZQlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765178AbXJZQlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764313AbXJZQlV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763955AbXJZQgp
+	id S1765178AbXJZQlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763971AbXJZQgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:36:45 -0400
-Received: from waste.org ([66.93.16.53]:56594 "EHLO cinder.waste.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755258AbXJZQgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:36:40 -0400
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-X-PatchBomber: http://selenic.com/scripts/mailpatches
-Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <1.430487409@selenic.com>
-Message-Id: <13.430487409@selenic.com>
-Subject: [PATCH 12/12] maps4: make page monitoring /proc file optional
-Date: Fri, 26 Oct 2007 11:36:38 -0500
+	Fri, 26 Oct 2007 12:36:46 -0400
+Received: from pat.uio.no ([129.240.10.15]:47876 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763626AbXJZQgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 12:36:41 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <1193410087.6914.34.camel@twins>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+	 <1191325226.13204.63.camel@twins>
+	 <200710022205.05295.nickpiggin@yahoo.com.au>
+	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
+	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 12:37:23 -0400
+Message-Id: <1193416643.7486.8.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.092)
+X-UiO-Scanned: 274FDB621CD868683F5A979EEFA82EB84FFBEBB6
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 433 total 4744925 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make /proc/ page monitoring configurable
 
-This puts the following files under an embedded config option:
+On Fri, 2007-10-26 at 16:48 +0200, Peter Zijlstra wrote:
 
-/proc/pid/clear_refs
-/proc/pid/smaps
-/proc/pid/pagemap
-/proc/kpagecount
-/proc/kpageflags
+> Miklos, Trond: could you suggest a better fmt for the bdi_init_fmt() for your
+> respective filesystems?
+<snip>
+> Index: linux-2.6-2/fs/nfs/client.c
+> ===================================================================
+> --- linux-2.6-2.orig/fs/nfs/client.c
+> +++ linux-2.6-2/fs/nfs/client.c
+> @@ -678,7 +678,7 @@ static int nfs_probe_fsinfo(struct nfs_s
+>  		goto out_error;
+>  
+>  	nfs_server_set_fsinfo(server, &fsinfo);
+> -	error = bdi_init(&server->backing_dev_info);
+> +	error = bdi_init_fmt(&server->backing_dev_info, "nfs-%s-%p", clp->cl_hostname, server);
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+In our debugging printks, we usually use the superblock->s_id, but that
+only gets initialised later.
 
-Index: l/fs/proc/base.c
-===================================================================
---- l.orig/fs/proc/base.c	2007-10-26 11:33:16.000000000 -0500
-+++ l/fs/proc/base.c	2007-10-26 11:34:47.000000000 -0500
-@@ -2027,7 +2027,7 @@ static const struct pid_entry tgid_base_
- 	LNK("exe",        exe),
- 	REG("mounts",     S_IRUGO, mounts),
- 	REG("mountstats", S_IRUSR, mountstats),
--#ifdef CONFIG_MMU
-+#ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",      S_IRUGO, smaps),
- 	REG("pagemap",    S_IRUSR, pagemap),
-@@ -2314,7 +2314,7 @@ static const struct pid_entry tid_base_s
- 	LNK("root",      root),
- 	LNK("exe",       exe),
- 	REG("mounts",    S_IRUGO, mounts),
--#ifdef CONFIG_MMU
-+#ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",     S_IRUGO, smaps),
- 	REG("pagemap",    S_IRUSR, pagemap),
-Index: l/fs/proc/proc_misc.c
-===================================================================
---- l.orig/fs/proc/proc_misc.c	2007-10-26 11:34:43.000000000 -0500
-+++ l/fs/proc/proc_misc.c	2007-10-26 11:34:47.000000000 -0500
-@@ -657,6 +657,7 @@ static const struct file_operations proc
- };
- #endif
- 
-+#ifdef CONFIG_PROC_PAGE_MONITOR
- #define KPMSIZE sizeof(u64)
- #define KPMMASK (KPMSIZE - 1)
- /* /proc/kpagecount - an array exposing page counts
-@@ -785,6 +786,7 @@ static struct file_operations proc_kpage
- 	.llseek = mem_lseek,
- 	.read = kpageflags_read,
- };
-+#endif /* CONFIG_PROC_PAGE_MONITOR */
- 
- struct proc_dir_entry *proc_root_kcore;
- 
-@@ -865,8 +867,10 @@ void __init proc_misc_init(void)
- 				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
- 	}
- #endif
-+#ifdef CONFIG_PROC_PAGE_MONITOR
- 	create_seq_entry("kpagecount", S_IRUSR, &proc_kpagecount_operations);
- 	create_seq_entry("kpageflags", S_IRUSR, &proc_kpageflags_operations);
-+#endif
- #ifdef CONFIG_PROC_VMCORE
- 	proc_vmcore = create_proc_entry("vmcore", S_IRUSR, NULL);
- 	if (proc_vmcore)
-Index: l/fs/proc/task_mmu.c
-===================================================================
---- l.orig/fs/proc/task_mmu.c	2007-10-26 11:34:33.000000000 -0500
-+++ l/fs/proc/task_mmu.c	2007-10-26 11:34:47.000000000 -0500
-@@ -338,6 +338,7 @@ const struct file_operations proc_maps_o
-  */
- #define PSS_SHIFT 12
- 
-+#ifdef CONFIG_PROC_PAGE_MONITOR
- struct mem_size_stats
- {
- 	struct vm_area_struct *vma;
-@@ -717,6 +718,7 @@ const struct file_operations proc_pagema
- 	.llseek		= mem_lseek, /* borrow this */
- 	.read		= pagemap_read,
- };
-+#endif /* CONFIG_PROC_PAGE_MONITOR */
- 
- #ifdef CONFIG_NUMA
- extern int show_numa_map(struct seq_file *m, void *v);
-Index: l/init/Kconfig
-===================================================================
---- l.orig/init/Kconfig	2007-10-26 11:19:35.000000000 -0500
-+++ l/init/Kconfig	2007-10-26 11:34:47.000000000 -0500
-@@ -571,6 +571,16 @@ config SLOB
- 
- endchoice
- 
-+config PROC_PAGE_MONITOR
-+ 	default y
-+	depends PROC_FS && MMU
-+	bool "Enable /proc page monitoring" if EMBEDDED
-+ 	help
-+	  Various /proc files exist to monitor process memory utilization:
-+	  /proc/pid/smaps, /proc/pid/clear_refs, /proc/pid/pagemap,
-+	  /proc/kpagecount, and /proc/kpageflags. Disabling these
-+          interfaces will reduce the size of the kernel by approximately 4kb.
-+
- endmenu		# General setup
- 
- config RT_MUTEXES
-Index: l/mm/Makefile
-===================================================================
---- l.orig/mm/Makefile	2007-10-26 11:20:01.000000000 -0500
-+++ l/mm/Makefile	2007-10-26 11:34:47.000000000 -0500
-@@ -5,7 +5,7 @@
- mmu-y			:= nommu.o
- mmu-$(CONFIG_MMU)	:= fremap.o highmem.o madvise.o memory.o mincore.o \
- 			   mlock.o mmap.o mprotect.o mremap.o msync.o rmap.o \
--			   vmalloc.o pagewalk.o
-+			   vmalloc.o
- 
- obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
- 			   page_alloc.o page-writeback.o pdflush.o \
-@@ -13,6 +13,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
- 			   $(mmu-y)
- 
-+obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
- obj-$(CONFIG_BOUNCE)	+= bounce.o
- obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
- obj-$(CONFIG_HUGETLBFS)	+= hugetlb.o
+I'd suggest passing the 'dev_name' from *_get_sb() into
+*_create_server().
+
+Cheers
+  Trond
+
