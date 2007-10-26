@@ -1,147 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbXJZTlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbXJZTmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbXJZTlf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXJZTl0
+	id S1761248AbXJZTmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXJZTms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:41:26 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51242 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbXJZTlZ (ORCPT
+	Fri, 26 Oct 2007 15:42:48 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:6462 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbXJZTmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:41:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
-References: <m1640t3has.fsf@ebiederm.dsl.xmission.com>
-	<alpine.LFD.0.999.0710261053030.30120@woody.linux-foundation.org>
-Date: Fri, 26 Oct 2007 13:35:43 -0600
-In-Reply-To: <alpine.LFD.0.999.0710261053030.30120@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Fri, 26 Oct 2007 10:55:24 -0700 (PDT)")
-Message-ID: <m1y7dpzn1s.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 15:42:47 -0400
+X-IronPort-AV: i="4.21,335,1188792000"; 
+   d="scan'208"; a="42521135:sNHT33134948"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [patch] remove support for un-needed _extratext section
+Date: Fri, 26 Oct 2007 15:43:56 -0400
+User-Agent: KMail/1.9.5
+Cc: "Jon Loeliger" <jdl@freescale.com>,
+       "David Woodhouse" <dwmw2@infradead.org>, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+References: <200710240836.13412.rgetz@blackfin.uclinux.org> <1193409099.16168.31.camel@shinybook.infradead.org> <4721FC6B.8010006@freescale.com>
+In-Reply-To: <4721FC6B.8010006@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710261543.57111.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 26 Oct 2007 19:42:45.0342 (UTC) FILETIME=[616D57E0:01C81808]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Robin Getz <rgetz@blackfin.uclinux.org>
 
-This is my trivial patch to swat innumerable little bugs
-with a single blow.
+when passing a zero address to kallsyms_lookup(), the kernel thought it was a
+valid kernel address, even if it is not. This is because is_ksym_addr() called 
+is_kernel_extratext() and checked against labels that don't exist on many 
+archs (which default as zero). Since PPC was the only kernel which defines 
+_extra_text, (in 2005), and no longer needs it, this patch removes _extra_text
+support.
 
-After some intensive review (my apologies for not having
-gotten to this sooner) what we have looks like a good
-base to build on with the current pid namespace code but
-it is not complete, and it is still much to simple to find
-issues where the kernel does the wrong thing outside of
-the initial pid namespace.
+ arch/ppc/kernel/vmlinux.lds.S  |    5 -----
+ include/asm-generic/sections.h |    2 --
+ kernel/kallsyms.c              |   11 +----------
+ scripts/kallsyms.c             |   12 +++---------
+ 4 files changed, 4 insertions(+), 26 deletions(-)
 
-Until the dust settles and we are certain we have the ABI and
-the implementation is as correct as humanly possible let's keep
-process ID namespaces behind CONFIG_EXPERIMENTAL. 
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+cc: David Woodhouse <dwmw2@infradead.org>
+cc: Jon Loeliger <jdl@freescale.com>
+cc: Paul Mackerras <paulus@samba.org>
 
-Allowing us the option of fixing any ABI or other bugs
-we find as long as they are minor.
+----
 
-Allowing users of the kernel to avoid those bugs simply
-by ensuring their kernel does not have support for multiple
-pid namespaces.
+For some history (provided by Jon):
+ http://ozlabs.org/pipermail/linuxppc-dev/2005-September/019734.html
+ http://ozlabs.org/pipermail/linuxppc-dev/2005-September/019736.html
+ http://ozlabs.org/pipermail/linuxppc-dev/2005-September/019751.html
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- include/linux/pid_namespace.h |   22 ++++++++++++++++++++++
- init/Kconfig                  |   12 ++++++++++++
- kernel/pid.c                  |    2 ++
- 3 files changed, 36 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index 0135c76..0227e68 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -29,6 +29,7 @@ struct pid_namespace {
- 
- extern struct pid_namespace init_pid_ns;
- 
-+#ifdef CONFIG_PID_NS
- static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
- {
- 	if (ns != &init_pid_ns)
-@@ -45,6 +46,27 @@ static inline void put_pid_ns(struct pid_namespace *ns)
- 		kref_put(&ns->kref, free_pid_ns);
+Index: kernel/kallsyms.c
+===================================================================
+--- kernel/kallsyms.c	(revision 3780)
++++ kernel/kallsyms.c	(working copy)
+@@ -48,14 +48,6 @@
+ 	return 0;
  }
  
-+#else /* !CONFIG_PID_NS */
-+#include <linux/err.h>
-+
-+static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
-+{
-+	return ns;
-+}
-+
-+static inline struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns)
-+{
-+	if (flags & CLONE_NEWPID)
-+		ns = ERR_PTR(-EINVAL);
-+	return ns;
-+}
-+
-+static inline void put_pid_ns(struct pid_namespace *ns)
-+{
-+}
-+
-+#endif /* CONFIG_PID_NS */
-+
- static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
+-static inline int is_kernel_extratext(unsigned long addr)
+-{
+-	if (addr >= (unsigned long)_sextratext
+-	    && addr <= (unsigned long)_eextratext)
+-		return 1;
+-	return 0;
+-}
+-
+ static inline int is_kernel_text(unsigned long addr)
  {
- 	return tsk->nsproxy->pid_ns;
-diff --git a/init/Kconfig b/init/Kconfig
-index 8b88d0b..72e37c0 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -215,6 +215,18 @@ config USER_NS
- 	  vservers, to use user namespaces to provide different
- 	  user info for different servers.  If unsure, say N.
+ 	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext)
+@@ -79,8 +71,7 @@
+ 	if (all_var)
+ 		return is_kernel(addr);
  
-+config PID_NS
-+	bool "PID Namespaces (EXPERIMENTAL)"
-+	default n
-+	depends on EXPERIMENTAL
-+	help
-+	  Suport process id namespaces.  This allows having multiple
-+	  process with the same pid as long as they are in different
-+	  pid namespaces.  This is a building block of containers.
-+
-+	  Unless you want to work with an experimental feature
-+	  say N here.
-+
- config AUDIT
- 	bool "Auditing support"
- 	depends on NET
-diff --git a/kernel/pid.c b/kernel/pid.c
-index d1db36b..f815455 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -537,6 +537,7 @@ err_alloc:
- 	return NULL;
+-	return is_kernel_text(addr) || is_kernel_inittext(addr) ||
+-		is_kernel_extratext(addr);
++	return is_kernel_text(addr) || is_kernel_inittext(addr);
  }
  
-+#ifdef CONFIG_PID_NS
- static struct pid_namespace *create_pid_namespace(int level)
- {
- 	struct pid_namespace *ns;
-@@ -621,6 +622,7 @@ void free_pid_ns(struct kref *kref)
- 	if (parent != NULL)
- 		put_pid_ns(parent);
- }
-+#endif /* CONFIG_PID_NS */
+ /* expand a compressed symbol data into the resulting uncompressed string,
+Index: include/asm-generic/sections.h
+===================================================================
+--- include/asm-generic/sections.h	(revision 3780)
++++ include/asm-generic/sections.h	(working copy)
+@@ -8,8 +8,6 @@
+ extern char __bss_start[], __bss_stop[];
+ extern char __init_begin[], __init_end[];
+ extern char _sinittext[], _einittext[];
+-extern char _sextratext[] __attribute__((weak));
+-extern char _eextratext[] __attribute__((weak));
+ extern char _end[];
+ extern char __per_cpu_start[], __per_cpu_end[];
+ extern char __kprobes_text_start[], __kprobes_text_end[];
+Index: scripts/kallsyms.c
+===================================================================
+--- scripts/kallsyms.c	(revision 3780)
++++ scripts/kallsyms.c	(working copy)
+@@ -45,7 +45,7 @@
  
- void zap_pid_ns_processes(struct pid_namespace *pid_ns)
- {
--- 
-1.5.3.rc6.17.g1911
-
+ static struct sym_entry *table;
+ static unsigned int table_size, table_cnt;
+-static unsigned long long _text, _stext, _etext, _sinittext, _einittext, _sextratext, _eextratext;
++static unsigned long long _text, _stext, _etext, _sinittext, _einittext;
+ static unsigned long long _stext_l1, _etext_l1;
+ static int all_symbols = 0;
+ static char symbol_prefix_char = '\0';
+@@ -104,10 +104,6 @@
+ 		_sinittext = s->addr;
+ 	else if (strcmp(sym, "_einittext") == 0)
+ 		_einittext = s->addr;
+-	else if (strcmp(sym, "_sextratext") == 0)
+-		_sextratext = s->addr;
+-	else if (strcmp(sym, "_eextratext") == 0)
+-		_eextratext = s->addr;
+ 	else if (strcmp(sym, "_stext_l1" ) == 0)
+ 		_stext_l1 = s->addr;
+ 	else if (strcmp(sym, "_etext_l1" ) == 0)
+@@ -175,18 +171,16 @@
+ 	if (!all_symbols) {
+ 		if ((s->addr < _stext || s->addr > _etext)
+ 		    && (s->addr < _sinittext || s->addr > _einittext)
+-		    && (s->addr < _sextratext || s->addr > _eextratext)
+ 		    && (s->addr < _stext_l1 || s->addr > _etext_l1))
+ 			return 0;
+ 		/* Corner case.  Discard any symbols with the same value as
+-		 * _etext _einittext or _eextratext; they can move between pass
++		 * _etext; they can move between pass
+ 		 * 1 and 2 when the kallsyms data are added.  If these symbols
+ 		 * move then they may get dropped in pass 2, which breaks the
+ 		 * kallsyms rules.
+ 		 */
+ 		if ((s->addr == _etext && strcmp((char*)s->sym + offset, "_etext")) ||
+-		    (s->addr == _einittext && strcmp((char*)s->sym + offset, "_einittext")) ||
+-		    (s->addr == _eextratext && strcmp((char*)s->sym + offset, "_eextratext")))
++		    (s->addr == _einittext && strcmp((char*)s->sym + offset, "_einittext")))
+ 			return 0;
+ 	}
+ 
+Index: arch/ppc/kernel/vmlinux.lds.S
+===================================================================
+--- arch/ppc/kernel/vmlinux.lds.S	(revision 3780)
++++ arch/ppc/kernel/vmlinux.lds.S	(working copy)
+@@ -144,11 +144,6 @@
+ 
+   . = ALIGN(4096);
+   __init_end = .;
+-
+-  . = ALIGN(4096);
+-  _sextratext = .;
+-  _eextratext = .;
+-
+   __bss_start = .;
+   .bss       :
+   {
