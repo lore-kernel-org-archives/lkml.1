@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbXJZM36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbXJZMcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbXJZM36 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 08:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbXJZM3q
+	id S1759238AbXJZMcY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 08:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXJZMcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 08:29:46 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4726 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbXJZM3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 08:29:44 -0400
-Date: Fri, 26 Oct 2007 08:24:47 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rmk@arm.linux.org.uk, kernel@wantstofly.org, tony.luck@intel.com,
-       jwboyer@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
-       dmitry.torokhov@gmail.com, netdev@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org,
-       linux-wireless@vger.kernel.org, bryan.wu@analog.com, adaplas@gmail.com
-Subject: Re: [PATCH] Remove pointless casts from void pointers,
-Message-ID: <20071026122447.GA23415@tuxdriver.com>
-References: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
+	Fri, 26 Oct 2007 08:32:16 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:53645 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbXJZMcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 08:32:15 -0400
+Date: Fri, 26 Oct 2007 13:30:42 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Jiri Kosina <jikos@jikos.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Sami Farin <safari-kernel@safari.iki.fi>,
+       Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] [RFC] brk randomization: compute RLIMIT_DATA properly
+ (was Re: x86: randomize brk() and RLIMIT_DATA)
+In-Reply-To: <Pine.LNX.4.64.0710261414030.18815@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0710261329450.27706@blonde.wat.veritas.com>
+References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
+ <20071025071324.2eac21d6@laptopd505.fenrus.org> <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
+ <20071025171942.pjff7jbpempfcuri@m.safari.iki.fi>
+ <Pine.LNX.4.64.0710261235270.18815@twin.jikos.cz>
+ <Pine.LNX.4.64.0710261247520.24322@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0710261414030.18815@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9799624f63e093aa915947aea8fb1b8a5df959a1.1193390973.git.jeff@garzik.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 05:40:22AM -0400, Jeff Garzik wrote:
-> mostly in and around irq handlers.
+On Fri, 26 Oct 2007, Jiri Kosina wrote:
+> On Fri, 26 Oct 2007, Hugh Dickins wrote:
 > 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
+> > > -	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+> > > +	if (rlim < RLIM_INFINITY && brk - mm->start_data -
+> > > +			(mm->start_brk - mm->end_data) > rlim)
+> > I find the order in that test mysterious.
+> 
+> I agree that the order you proposed is easier to understand on the first 
+> sight.
+> 
+> 
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> brk randomization: compute RLIMIT_DATA properly
+> 
+> In cases of heap area placed at randomly-generated offset from
+> mm->end_data (arch_randomize_brk()), we need to subtract the value of the
+> offset for setrlimit(RLIMIT_DATA) to work properly -- otherwise we count
+> the unoccupied memory between mm->end_data and mm->start_brk as occupied.
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
->  drivers/net/wireless/airo.c                |    5 +++--
->  drivers/net/wireless/hostap/hostap_hw.c    |    2 +-
->  drivers/net/wireless/libertas/if_cs.c      |    2 +-
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-ACK
-
--- 
-John W. Linville
-linville@tuxdriver.com
+> 
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index facc1a7..673ac7d 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -251,7 +251,8 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
+>  	 * not page aligned -Ram Gupta
+>  	 */
+>  	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> -	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+> +	if (rlim < RLIM_INFINITY && (brk - mm->start_brk) +
+> +			(mm->end_data - mm->start_data) > rlim)
+>  		goto out;
+>  
+>  	newbrk = PAGE_ALIGN(brk);
