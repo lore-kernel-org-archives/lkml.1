@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbXJZAcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbXJZAgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbXJZAcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXJZAcm
+	id S1760178AbXJZAgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXJZAgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:32:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37040 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752432AbXJZAcl (ORCPT
+	Thu, 25 Oct 2007 20:36:09 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56156 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbXJZAgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:32:41 -0400
-Date: Fri, 26 Oct 2007 01:35:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] ide: fix drive_is_ready() for non-PCI hosts and
- CONFIG_IDEPCI_SHARE_IRQ=y
-Message-ID: <20071026013517.0063e24a@the-village.bc.nu>
-In-Reply-To: <200710260230.52115.bzolnier@gmail.com>
-References: <200710260136.37333.bzolnier@gmail.com>
-	<20071026010515.260672b4@the-village.bc.nu>
-	<200710260230.52115.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Oct 2007 20:36:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=TQWRbMXtCMiZFdpWDXhdbLWXXG6ekGlrjIB87dugF0eunZK7sZaMZhphseTkPekmV
+	j4KPJ0ZJOiIG+U3TPkw6g==
+Message-ID: <47213668.50907@google.com>
+Date: Thu, 25 Oct 2007 17:35:52 -0700
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
+References: <20071025230758.945535769@crlf.corp.google.com> <20071026012217.4cc30390@the-village.bc.nu>
+In-Reply-To: <20071026012217.4cc30390@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 02:30:52 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-
-> On Friday 26 October 2007, Alan Cox wrote:
-> > On Fri, 26 Oct 2007 01:36:37 +0200
-> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > 
-> > > 
-> > > Need to check if the host is a PCI one before reading IDE_ALTSTATUS_REG.
-> > > 
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > 
-> > Umm why ? The altstatus register goes back to ST-506 and the original IBM
-> > XT hard disk controller card ?
+Alan Cox wrote:
+> On Thu, 25 Oct 2007 16:06:40 -0700
+> Mike Waychison <mikew@google.com> wrote:
 > 
-> Thought that there have to be some (non-obvious) reason behing the fact that
-> IDE_ALTSTATUS_REG reading was covered by #ifdef CONFIG_IDEPCI_SHARE_IRQ.
+>> Remove the need for having CAP_SYS_RAWIO when doing a FIBMAP call on an open file descriptor.
+>>
+>> It would be nice to allow users to have permission to see where their data is landing on disk, and there really isn't a good reason to keep them from getting at this information.
+> 
+> Historically this was done because people felt it was more secure. It
+> also allows you to make some deductions about other activities on the
+> disk but thats probably only a concern for very very security crazed
+> compartmentalised boxes
+> 
+> Also historically at least FIBMAP could be abused to crash the system.
+> Now if you can verify that has been fixed I have no problem, but given
+> that I can find no record of that being fixed it would be wise to audit
+> it first and review Chris Evans and other reports about what occurs when
+> FIBMAP is passed random block numbers.
+> 
+> FIBMAP has another problem for this general use as well - it takes an int
+> but the block number can now be bigger for very large files on 32bit.
+> 
+> Alan
 
-Only that reading altstatus is done to get the state without clearing the
-IRQ which a status read would do.
+I found Chris's comment about negative block numbers, I'll send a patch 
+out for that.
 
-Alan
+You mentioned back in 99 about racing with ftruncate.  Is it sufficient 
+to mutex_lock(i_mutex) and down_read(i_alloc_sem)?
+
+Mike Waychison
