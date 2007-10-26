@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbXJZLvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXJZL4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbXJZLvc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXJZLvZ
+	id S1757943AbXJZL4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXJZL4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:51:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54522 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751201AbXJZLvX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:51:23 -0400
-Date: Fri, 26 Oct 2007 12:53:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] ide: fix drive_is_ready() for non-PCI hosts and
- CONFIG_IDEPCI_SHARE_IRQ=y
-Message-ID: <20071026125355.7c4a3398@the-village.bc.nu>
-In-Reply-To: <472137E8.9020109@garzik.org>
-References: <200710260136.37333.bzolnier@gmail.com>
-	<20071026010515.260672b4@the-village.bc.nu>
-	<472137E8.9020109@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 07:56:25 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:29735 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751473AbXJZL4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 07:56:25 -0400
+Date: Fri, 26 Oct 2007 13:54:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-s390@vger.kernel.org
+Subject: Re: S390 change in sg_set_page() cause build failure
+Message-ID: <20071026115429.GH5155@kernel.dk>
+References: <20071026111945.GB21274@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026111945.GB21274@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 20:42:16 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> Alan Cox wrote:
-> > On Fri, 26 Oct 2007 01:36:37 +0200
-> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > 
-> >> Need to check if the host is a PCI one before reading IDE_ALTSTATUS_REG.
-> >>
-> >> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > 
-> > Umm why ? The altstatus register goes back to ST-506 and the original IBM
-> > XT hard disk controller card ?
+On Fri, Oct 26 2007, Kamalesh Babulal wrote:
+> Hi Jens,
 > 
-> I'm pretty sure there are at least a few controllers out there where the 
-> AltStatus/Control register block is simply non-existent.
+> The change in the sg_set_page() for the S390, cause the build failure
+> 
+> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_sg_list_alloc':
+> drivers/s390/scsi/zfcp_aux.c:572: error: too many arguments to function `zfcp_address_to_sg'
+> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_gid_pn_buffers_alloc':
+> drivers/s390/scsi/zfcp_aux.c:1524: error: too many arguments to function `zfcp_address_to_sg'
+> drivers/s390/scsi/zfcp_aux.c:1525: error: too many arguments to function `zfcp_address_to_sg'
+> make[2]: *** [drivers/s390/scsi/zfcp_aux.o] Error 1
+> make[1]: *** [drivers/s390/scsi] Error 2
+> make: *** [drivers/s390] Error 2
+> 
+> The commit 642f149031d70415d9318b919d50b71e4724adbd causes this build
+> failure, in the drivers/s390/scsi/zfcp_def.h include file, the function
+> zfcp_address_to_sg the len of the scatterlist missing.
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> --
+> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
+> index 0754542..acf2d22 100644
+> --- a/drivers/s390/scsi/zfcp_def.h
+> +++ b/drivers/s390/scsi/zfcp_def.h
+> @@ -70,9 +70,11 @@ zfcp_sg_to_address(struct scatterlist *list)
+>   * zfcp_address_to_sg - set up struct scatterlist from kernel address
+>   * @address: kernel address
+>   * @list: struct scatterlist
+> + * @list_size: size of the list - used for compatibility 
+>   */
+>  static inline void
+> -zfcp_address_to_sg(void *address, struct scatterlist *list)
+> +zfcp_address_to_sg(void *address, struct scatterlist *list,
+> +                   unsigned int list_size)
+>  {
+>  	sg_set_buf(list, address, 0);
+>  }
 
-One or two of the commode Amiga controllers did this. Makes error
-recovery rather interesting. The register itself is however present even
-on things like the WD10xx devices.
+That's not quite right, it should be:
 
-Alan
+diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
+index 0754542..e268f79 100644
+--- a/drivers/s390/scsi/zfcp_def.h
++++ b/drivers/s390/scsi/zfcp_def.h
+@@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
+  * zfcp_address_to_sg - set up struct scatterlist from kernel address
+  * @address: kernel address
+  * @list: struct scatterlist
++ * @size: buffer size
+  */
+ static inline void
+-zfcp_address_to_sg(void *address, struct scatterlist *list)
++zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
+ {
+-	sg_set_buf(list, address, 0);
++	sg_set_buf(list, address, size);
+ }
+ 
+ #define REQUEST_LIST_SIZE 128
+
+-- 
+Jens Axboe
+
