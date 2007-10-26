@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbXJZAET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbXJZAF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761002AbXJZAET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJZAEL
+	id S1762045AbXJZAF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXJZAFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:04:11 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:44419 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751293AbXJZAEK (ORCPT
+	Thu, 25 Oct 2007 20:05:14 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:38978 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXJZAFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:04:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BGru2PnkHrfbxRksuvwnkDYj0yTXww4LxlNBYkRjPXi/gK/B3HIvQ0qhJnAcBffFwfR4WpvbwLY5u8Pnac+n+fRiMww2GZlF9WF4KzoyOw6g5TGqirq64qaUOP5G8KnfmsWtM9XmwVO3eun/+/IC98reyiG1Pt2TYVgwiBsY+5o=  ;
-X-YMail-OSG: cAWjt7gVM1kJpU.1.kFe7HNadi14bG8G5esFFaxcmjtNTzn8lAYYbzDY6mBy7BM06bBjGXYD4w--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: Is gcc thread-unsafe?
-Date: Fri, 26 Oct 2007 09:57:28 +1000
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260943.44719.nickpiggin@yahoo.com.au> <200710260155.46339.ak@suse.de>
-In-Reply-To: <200710260155.46339.ak@suse.de>
+	Thu, 25 Oct 2007 20:05:12 -0400
+Date: Thu, 25 Oct 2007 20:03:56 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [PATCH 2/3] RT: Cache cpus_allowed weight for optimizing migration
+In-Reply-To: <1193346777.7561.47.camel@ghaskins-t60p.haskins.net>
+Message-ID: <Pine.LNX.4.58.0710251959140.8347@gandalf.stny.rr.com>
+References: <20071025144456.19876.94333.stgit@novell1.haskins.net> 
+ <20071025144628.19876.35583.stgit@novell1.haskins.net> 
+ <Pine.LNX.4.58.0710251131060.5639@gandalf.stny.rr.com> 
+ <1193338312.4021.53.camel@ghaskins-t60p.haskins.net> 
+ <Pine.LNX.4.58.0710251536190.5152@gandalf.stny.rr.com>
+ <1193346777.7561.47.camel@ghaskins-t60p.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710260957.28636.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007 09:55, Andi Kleen wrote:
-> > But we don't actually know what it is, and it could change with
-> > different architectures or versions of gcc. I think the sanest thing
-> > is for gcc to help us out here, seeing as there is this very well
-> > defined requirement that we want.
+
+--
+On Thu, 25 Oct 2007, Gregory Haskins wrote:
+> > > > >  /* Will lock the rq it finds */
+> > > > >  static struct rq *find_lock_lowest_rq(struct task_struct *task,
+> > > > >  				      struct rq *this_rq)
+> > > > > @@ -295,6 +334,28 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task,
+> > > > >  	int cpu;
+> > > > >  	int tries;
+> > > > >
+> > > > > + 	/*
+> > > > > + 	 * We can optimize if the hamming weight of the cpus_allowed mask
+> > > > > + 	 * is 1 because the task has nowhere to go but one CPU.  So don't
+> > > > > + 	 * waste the time trying to find the lowest RQ in this case.
+> > > > > + 	 */
+> > > >
+> > > > This code should be in the pick_next_highest_rt and not here.
+> > >
+> > > I disagree, but I admit it is not apparent at this level of the series
+> > > why.  The reason has to do with optimizing the wakeup path.  Unless I am
+> > > missing something, I think this placement is optimal, and that will
+> > > hopefully become apparent when you see the rest of my series.
 > >
-> > If you really still want the optimisation to occur,
+> > Then move the code there then. One can't be analyzing patches when code
+> > isn't apparent that determines changes.  Those changes need to be
+> > together.  Especially since they may not be applied.
 >
-> I don't think it makes sense for memory. It may may make sense for
-> registers.
+> The correctness of this particular change (IMO) is not predicated on the
+> later patches, otherwise I would have done just that.  It accomplishes
+> what I intended as is here in this patch.
 >
-> But given that my kernel doesn't seem to contain any instances
-> at all it's probably not too useful for it anyways.
->
-> So I wouldn't have a problem disabling it, but it would
-> be better if they fixed their heuristics to only apply it when
-> it makes sense.
+> Why do you think moving the logic to pick_next_highest is a better
+> design?  To be honest, I haven't really studied your new logic in
+> push_rt_tasks to understand why you might feel this way.  If you can
+> make the case that it is better in the other location then I agree with
+> you that we should move it there in this patch, and potentially adjust
+> it later.  Until then, I see no problem with it being here.
 
-That's what I mean -- disabling it for memory. I mean, I am just
-talking about the conditional => unconditional store to a shared
-variable optimisation.
+Ah, after reading the comment in your code, I might know where our
+miscommunication is from.  When you hit a task that can't migrate, you
+simply stop and don't bother looking for a lowest rq to place it on.
 
-So for example, adc, sbb, and cmov are all still fine when they
-are used for the right things. I don't want to turn them off
-because they really are quite useful.
+I'm saying to do one better. Put the code in the pick_next_highest_task_rt
+and _skip_ rt tasks with nr_cpus_allowed == 1. So we can then look to
+migrate another RT task that is lower in priority than a bounded RT task.
 
-As far as it being theoretical... I hope it is. But we should
-nip this in the "bud" (gcc 3.x does this too, sigh) before it
-causes problems for us (and any and all other threaded programs
-and libraries out there). And by that I mean ask them for a
-compiler option rather than start adding volatile.
+Does this clear up what I'm trying to say?
+
+BTW, stop looking for a lowest_rq isn't really an optimization here. Since
+we only look at cpus that are in the tasks cpu affinity mask and we skip
+the cpu that it currently is on. So we don't even take a lock in that
+case.
+
+-- Steve
 
