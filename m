@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763347AbXJZPhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbXJZPid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763347AbXJZPhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 11:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXJZPhL
+	id S1763578AbXJZPid (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 11:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXJZPi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:37:11 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37251 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754394AbXJZPhJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:37:09 -0400
-Message-ID: <4721FB30.1050601@linux.vnet.ibm.com>
-Date: Fri, 26 Oct 2007 20:05:28 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-s390@vger.kernel.org
-Subject: Re: S390 change in sg_set_page() cause build failure
-References: <20071026111945.GB21274@linux.vnet.ibm.com> <20071026115429.GH5155@kernel.dk>
-In-Reply-To: <20071026115429.GH5155@kernel.dk>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 26 Oct 2007 11:38:26 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:50250 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753334AbXJZPiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 11:38:25 -0400
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Paul Jackson <pj@sgi.com>, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+In-Reply-To: <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	 <20071025185506.8c373aa8.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	 <20071025192945.82962eea.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
+	 <20071025201455.acb4e72c.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 26 Oct 2007 11:37:34 -0400
+Message-Id: <1193413054.5032.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Oct 26 2007, Kamalesh Babulal wrote:
->> Hi Jens,
->>
->> The change in the sg_set_page() for the S390, cause the build failure
->>
->> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_sg_list_alloc':
->> drivers/s390/scsi/zfcp_aux.c:572: error: too many arguments to function `zfcp_address_to_sg'
->> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_gid_pn_buffers_alloc':
->> drivers/s390/scsi/zfcp_aux.c:1524: error: too many arguments to function `zfcp_address_to_sg'
->> drivers/s390/scsi/zfcp_aux.c:1525: error: too many arguments to function `zfcp_address_to_sg'
->> make[2]: *** [drivers/s390/scsi/zfcp_aux.o] Error 1
->> make[1]: *** [drivers/s390/scsi] Error 2
->> make: *** [drivers/s390] Error 2
->>
->> The commit 642f149031d70415d9318b919d50b71e4724adbd causes this build
->> failure, in the drivers/s390/scsi/zfcp_def.h include file, the function
->> zfcp_address_to_sg the len of the scatterlist missing.
->>
->> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
->> --
->> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
->> index 0754542..acf2d22 100644
->> --- a/drivers/s390/scsi/zfcp_def.h
->> +++ b/drivers/s390/scsi/zfcp_def.h
->> @@ -70,9 +70,11 @@ zfcp_sg_to_address(struct scatterlist *list)
->>   * zfcp_address_to_sg - set up struct scatterlist from kernel address
->>   * @address: kernel address
->>   * @list: struct scatterlist
->> + * @list_size: size of the list - used for compatibility 
->>   */
->>  static inline void
->> -zfcp_address_to_sg(void *address, struct scatterlist *list)
->> +zfcp_address_to_sg(void *address, struct scatterlist *list,
->> +                   unsigned int list_size)
->>  {
->>  	sg_set_buf(list, address, 0);
->>  }
+On Thu, 2007-10-25 at 20:58 -0700, David Rientjes wrote:
+> On Thu, 25 Oct 2007, Paul Jackson wrote:
 > 
-> That's not quite right, it should be:
+> > The user space man pages for set_mempolicy(2) are now even more
+> > behind the curve, by not mentioning that MPOL_INTERLEAVE's mask
+> > might mean nothing, if (1) in a cpuset marked memory_spread_user,
+> > (2) after the cpuset has changed 'mems'.
+> > 
 > 
-> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
-> index 0754542..e268f79 100644
-> --- a/drivers/s390/scsi/zfcp_def.h
-> +++ b/drivers/s390/scsi/zfcp_def.h
-> @@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
->   * zfcp_address_to_sg - set up struct scatterlist from kernel address
->   * @address: kernel address
->   * @list: struct scatterlist
-> + * @size: buffer size
->   */
->  static inline void
-> -zfcp_address_to_sg(void *address, struct scatterlist *list)
-> +zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
->  {
-> -	sg_set_buf(list, address, 0);
-> +	sg_set_buf(list, address, size);
->  }
+> Yeah.  They were already outdated in the sense that they did not specify 
+> that the interleave nodemask could change as a result of a cpuset mems 
+> change.
 > 
->  #define REQUEST_LIST_SIZE 128
-> 
-Hi Jens,
+> > I wonder if there is any way to fix that.  Who does the man pages
+> > for Linux system calls?
+> > 
 
-Thanks for fixing it.
+Michael Kerrisk, whom I've copied, does.  I recently sent in an update
+to all of the mempolicy man pages that describe the behavior as it
+currently exists.  [I need to send in an update for
+MPOL_F_MEMS_ALLOWED].
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+One of the things that has bothered me is that there are no cpuset man
+pages to reference from the mempolicy man pages.  [I know, we can and do
+refer to the kernel source Documentation, but that might not be
+available to everyone w/o some digging.  "See Also" refs typically point
+at other man pages...].  To get around this, I had to talk about "nodes
+allowed in the current context" or some such weasel-wording in my
+updates.
+
+Paul:  what do you think about subsetting the cpuset.txt into a man page
+or 2 that can be referenced by other man pages' See Also sections?
+
+> 
+<snip>
+> 
+> 		David
+
+Lee
+
