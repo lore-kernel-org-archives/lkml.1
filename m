@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbXJZAxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbXJZAyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbXJZAxz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbXJZAxr
+	id S1760935AbXJZAyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXJZAyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:53:47 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:25351 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752706AbXJZAxr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:53:47 -0400
-X-Greylist: delayed 1210 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 20:53:46 EDT
-Message-Id: <4720FD380200005A0002CCB1@mcclure.wal.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 25 Oct 2007 20:33:21 -0400
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <rostedt@goodmis.org>
-Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <dmitry.adamushko@gmail.com>,
-       <dvhltc@us.ibm.com>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 2/3] RT: Cache cpus_allowed weight for optimizing
-	migration
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 25 Oct 2007 20:54:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34238 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753205AbXJZAyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 20:54:36 -0400
+Message-ID: <47213AA6.6040909@garzik.org>
+Date: Thu, 25 Oct 2007 20:53:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Karsten Keil <kkeil@suse.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ISDN/capidrv: fix casting warning
+References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org> <42205df7291ce7109866f9dbb5d06e481337e776.1193299380.git.jeff@garzik.org> <20071025095111.GA22353@pingi.kke.suse.de>
+In-Reply-To: <20071025095111.GA22353@pingi.kke.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Steven Rostedt <rostedt@goodmis.org> 10/25/07 8:03 PM >>>
->
->> Why do you think moving the logic to pick_next_highest is a better
->> design?  To be honest, I haven't really studied your new logic in
->> push_rt_tasks to understand why you might feel this way.  If you can
->> make the case that it is better in the other location then I agree with
->> you that we should move it there in this patch, and potentially adjust
->> it later.  Until then, I see no problem with it being here.
->
->Ah, after reading the comment in your code, I might know where our
->miscommunication is from.  When you hit a task that can't migrate, you
->simply stop and don't bother looking for a lowest rq to place it on.
->
->I'm saying to do one better. Put the code in the pick_next_highest_task_rt
->and _skip_ rt tasks with nr_cpus_allowed == 1. So we can then look to
->migrate another RT task that is lower in priority than a bounded RT task.
->
->Does this clear up what I'm trying to say?
+Karsten Keil wrote:
+> On Thu, Oct 25, 2007 at 04:06:16AM -0400, Jeff Garzik wrote:
+>> drivers/isdn/capi/capidrv.c: In function 'if_sendbuf':
+>> drivers/isdn/capi/capidrv.c:1865: warning: cast from pointer to integer
+>> of different size
+>>
+>> We are passing a kernel pointer, skb->data, but the interface itself is
+>> limited to 32 bits.  A future changeset may want to mark this code
+>> 32-bit only, if it turns out cmsg->Data value truncation on 64-bit
+>> platforms is problematic in practice.
+>>
+> 
+> I think I should really add somewhere a comment for this issue.
+> This field is not used in practice in linux kernel (neither in 32 or
+> 64 bit), but should have some value, since a CAPI message trace will
+> display it.
+> The correct value in the 32 bit case is the address of the
+> data, in 64 bit it makes no sense, maybe we should use 0 here.
 
-Ah, yes.  That is quite brilliant, actually.  
+So noted...  I will make sure the next revision of the patch fulfills 
+all your wishes :)
 
->BTW, stop looking for a lowest_rq isn't really an optimization here. Since
->we only look at cpus that are in the tasks cpu affinity mask and we skip
->the cpu that it currently is on. So we don't even take a lock in that
->case.
-
-You are, of course, completely correct.  This patch historically was after cpupri, and this change is relevant in that case only.   Since cpupri doesnt have the nice property as yours where its limited to cpus_allowed, it helps to stop the search on that special case.  In the current alg, its just redundant .text and it should be removed.
+	Jeff
 
 
->and _skip_ rt tasks with nr_cpus_allowed == 1. So we can then look to
->migrate another RT task that is lower in priority than a bounded RT task.
->
->Does this clear up what I'm trying to say?
-
-Ah, yes.  That is quite brilliant, actually.  
-
->BTW, stop looking for a lowest_rq isn't really an optimization here. Since
->we only look at cpus that are in the tasks cpu affinity mask and we skip
->the cpu that it currently is on. So we don't even take a lock in that
->case.
-
-You are, of course, completely correct.  This patch historically was after cpupri.  This change is relevant in that case only since cpupri doesnt have the nice property as yours where its limited to cpus_allowed, it helps to stop the search on that special case.  In the current alg, its just redundant .text and it should be removed.
-
-I will make those changes and submit a new patch.
-
-Thanks for setting me straight!
--Greg
