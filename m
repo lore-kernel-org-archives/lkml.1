@@ -1,44 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbXJZJug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbXJZJxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762078AbXJZJug (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXJZJu3
+	id S1759537AbXJZJxx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXJZJxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:50:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49756
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751287AbXJZJu2 (ORCPT
+	Fri, 26 Oct 2007 05:53:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55196 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbXJZJxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:50:28 -0400
-Date: Fri, 26 Oct 2007 02:50:29 -0700 (PDT)
-Message-Id: <20071026.025029.00497274.davem@davemloft.net>
-To: rientjes@google.com
-Cc: adobriyan@sw.ru, torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] De-constify sched.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.0.9999.0710260235130.8261@chino.kir.corp.google.com>
-References: <20071026081721.GA6244@localhost.sw.ru>
-	<alpine.DEB.0.9999.0710260235130.8261@chino.kir.corp.google.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 26 Oct 2007 05:53:45 -0400
+Subject: Re: aim7 -30% regression in 2.6.24-rc1
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1193391787.3019.174.camel@ymzhang>
+References: <1193391787.3019.174.camel@ymzhang>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 11:53:42 +0200
+Message-Id: <1193392422.6914.25.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Rientjes <rientjes@google.com>
-Date: Fri, 26 Oct 2007 02:42:30 -0700 (PDT)
-
-> On Fri, 26 Oct 2007, Alexey Dobriyan wrote:
+On Fri, 2007-10-26 at 17:43 +0800, Zhang, Yanmin wrote:
+> I tested 2.6.24-rc1 on my x86_64 machine which has 2 quad-core processors.
 > 
-> > 2) There is no such thing as const task_struct. Anyone who think otherwise
-> >    deserves compiler warning.
-> > 
-> 
-> A 'const struct task_struct *' can be used as an annotation to mean that 
-> no member of the struct is modified through that pointer, so it's 
-> perfectly acceptable to qualify formals in that manner.
+> Comparing with 2.6.23, aim7 has about -30% regression. I did a bisect and found
+> patch http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b5869ce7f68b233ceb81465a7644be0d9a5f3dbb
+> caused the issue.
 
-But in one of the cases he un-const's the code does modify
-the object through the pointer.  At least that one should
-be reverted since the annotation is wrong.
+Bit weird that you point to a merge commit, and not an actual patch. Are
+you sure git bisect pointed at this one?
+
+
