@@ -1,79 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbXJZTeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbXJZTht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757764AbXJZTeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXJZTd5
+	id S1757036AbXJZTht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXJZThm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:33:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37945 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbXJZTd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:33:56 -0400
-Date: Fri, 26 Oct 2007 21:33:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: spamtrap@knobisoft.de, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, wfg@mail.ustc.edu.cn,
-       torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: 2.6.24-rc1: First impressions
-Message-ID: <20071026193339.GA21799@elte.hu>
-References: <796505.25770.qm@web32612.mail.mud.yahoo.com> <20071026152221.GA26619@elte.hu> <20071026122155.45ce72e7.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Fri, 26 Oct 2007 15:37:42 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:61850 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750815AbXJZThl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 15:37:41 -0400
+Date: Fri, 26 Oct 2007 15:37:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <ak@muc.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Adding TIF_TRACE_KERNEL to x86_64
+Message-ID: <20071026193738.GA1591@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071026122155.45ce72e7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:29:41 up 88 days, 19:48,  6 users,  load average: 0.95, 0.45, 0.44
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andi,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+I am trying to add a TIF_TRACE_KERNEL to each architectures to have a
+system-wide activation of syscall_trace. However, I get the following
+issue on x86_64 : a few processes segfault and others get a GPF when I
+enable the flag on all processes. I am starting to think that it might
+be caused by an incorrect top of stack when we return from a
+syscall/interrupt in these processes. It would happen if we get into the
+following race:
 
-> > > dd1 - copy 16 GB from /dev/zero to local FS
-> > > dd1-dir - same, but using O_DIRECT for output
-> > > dd2/dd2-dir - copy 2x7.6 GB in parallel from /dev/zero to local FS
-> > > dd3/dd3-dir - copy 3x5.2 GB in parallel from /dev/zero lo local FS
-> > > net1 - copy 5.2 GB from NFS3 share to local FS
-> > > mix3 - copy 3x5.2 GB from /dev/zero to local disk and two NFS3 shares
-> > > 
-> > >  I did the numbers for 2.6.19.2, 2.6.22.6 and 2.6.24-rc1. All units 
-> > >  are MB/sec.
-> > > 
-> > > test           2.6.19.2     2.6.22.6    2.6.24.-rc1
-> > > ----------------------------------------------------------------
-> > > dd1                  28           50             96
-> > > dd1-dir              88           88             86
-> > > dd2              2x16.5         2x11         2x44.5
-> > > dd2-dir            2x44         2x44           2x43
-> > > dd3               3x9.8        3x8.7           3x30
-> > > dd3-dir          3x29.5       3x29.5         3x28.5
-> > > net1              30-33        50-55          37-52
-> > > mix3              17/32        25/50          96/35 (disk/combined-network)
-> > 
-> > wow, really nice results!
-> 
-> Those changes seem suspiciously large to me.  I wonder if there's less 
-> physical IO happening during the timed run, and correspondingly more 
-> afterwards.
+1 - process A enters in a syscall, TIF_KERNEL_TRACE is cleared
+2 - we activate TIF_KERNEL_TRACE
+3 - process A returns from syscall (with wrong top of stack ?) -> segfault.
 
-so a final 'sync' should be added to the test too, and the time it takes 
-factored into the bandwidth numbers?
+Am I on the right track ?
 
-> > I think the MM should get out of deep-feature-freeze mode - there's 
-> > tons of room to improve :-/
->
-> Kidding.  We merge about 265 MM patches in 2.6.24-rc1:
->
->  482 files changed, 8071 insertions(+), 5142 deletions(-)
+Can this be a concern with TIF_SYSCALL_TRACE also ? (potential race in
+ptrace ?)
 
-impressive :)
+Thanks for you input,
 
-	Ingo
+Mathieu
+
+My x86_64 flags patch for 2.6.23.1 looks like this:
+
+---
+ include/asm-x86_64/thread_info.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/include/asm-x86_64/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86_64/thread_info.h	2007-07-30 18:46:16.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86_64/thread_info.h	2007-07-30 19:13:03.000000000 -0400
+@@ -107,6 +107,7 @@ static inline struct thread_info *stack_
+  * Warning: layout of LSW is hardcoded in entry.S
+  */
+ #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
++#define TIF_KERNEL_TRACE	1	/* kernel trace active */
+ #define TIF_SIGPENDING		2	/* signal pending */
+ #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
+ #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
+@@ -125,6 +126,7 @@ static inline struct thread_info *stack_
+ #define TIF_FREEZE		23	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
++#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+@@ -142,7 +144,7 @@ static inline struct thread_info *stack_
+ 
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK \
+-  (0x0000FFFF & ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SINGLESTEP|_TIF_SECCOMP))
++  (0x0000FFFF & ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_KERNEL_TRACE|_TIF_SINGLESTEP|_TIF_SECCOMP))
+ /* work to do on any return to user space */
+ #define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
+ 
+And the code to activate/deactivate the flags:
+
+---
+ include/linux/sched.h |    3 +++
+ kernel/fork.c         |    9 +++++++++
+ kernel/sched.c        |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 54 insertions(+)
+
+Index: linux-2.6-lttng/include/linux/sched.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/sched.h	2007-10-12 12:02:09.000000000 -0400
++++ linux-2.6-lttng/include/linux/sched.h	2007-10-12 12:11:23.000000000 -0400
+@@ -1953,6 +1953,9 @@ static inline void inc_syscw(struct task
+ }
+ #endif
+ 
++extern void clear_kernel_trace_flag_all_tasks(void);
++extern void set_kernel_trace_flag_all_tasks(void);
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+Index: linux-2.6-lttng/kernel/fork.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/fork.c	2007-10-12 12:02:18.000000000 -0400
++++ linux-2.6-lttng/kernel/fork.c	2007-10-12 12:11:23.000000000 -0400
+@@ -1241,6 +1241,15 @@ static struct task_struct *copy_process(
+ 			!cpu_online(task_cpu(p))))
+ 		set_task_cpu(p, smp_processor_id());
+ 
++	/*
++	 * The state of the parent's TIF_KTRACE flag may have changed
++	 * since it was copied in dup_task_struct() so we re-copy it here.
++	 */
++	if (test_thread_flag(TIF_KERNEL_TRACE))
++		set_tsk_thread_flag(p, TIF_KERNEL_TRACE);
++	else
++		clear_tsk_thread_flag(p, TIF_KERNEL_TRACE);
++
+ 	/* CLONE_PARENT re-uses the old parent */
+ 	if (clone_flags & (CLONE_PARENT|CLONE_THREAD))
+ 		p->real_parent = current->real_parent;
+Index: linux-2.6-lttng/kernel/sched.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/sched.c	2007-10-12 12:02:17.000000000 -0400
++++ linux-2.6-lttng/kernel/sched.c	2007-10-12 12:11:55.000000000 -0400
+@@ -7032,3 +7032,45 @@ struct cgroup_subsys cpu_cgroup_subsys =
+ };
+ 
+ #endif	/* CONFIG_FAIR_CGROUP_SCHED */
++
++/**
++ * clear_kernel_trace_flag_all_tasks - clears all TIF_KERNEL_TRACE thread flags.
++ *
++ * This function iterates on all threads in the system to clear their
++ * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
++ * tasklist_lock held in copy_process() makes sure that once we finish clearing
++ * the thread flags, all threads have their flags cleared.
++ */
++void clear_kernel_trace_flag_all_tasks(void)
++{
++	struct task_struct *p;
++	struct task_struct *t;
++
++	read_lock(&tasklist_lock);
++	do_each_thread(p, t) {
++		clear_tsk_thread_flag(t, TIF_KERNEL_TRACE);
++	} while_each_thread(p, t);
++	read_unlock(&tasklist_lock);
++}
++EXPORT_SYMBOL_GPL(clear_kernel_trace_flag_all_tasks);
++
++/**
++ * set_kernel_trace_flag_all_tasks - sets all TIF_KERNEL_TRACE thread flags.
++ *
++ * This function iterates on all threads in the system to set their
++ * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
++ * tasklist_lock held in copy_process() makes sure that once we finish setting
++ * the thread flags, all threads have their flags set.
++ */
++void set_kernel_trace_flag_all_tasks(void)
++{
++	struct task_struct *p;
++	struct task_struct *t;
++
++	read_lock(&tasklist_lock);
++	do_each_thread(p, t) {
++		set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
++	} while_each_thread(p, t);
++	read_unlock(&tasklist_lock);
++}
++EXPORT_SYMBOL_GPL(set_kernel_trace_flag_all_tasks);
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
