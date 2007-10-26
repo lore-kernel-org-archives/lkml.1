@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbXJZDmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXJZDyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763547AbXJZDmM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 23:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXJZDl6
+	id S1762113AbXJZDyd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 23:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJZDy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 23:41:58 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4554 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754108AbXJZDl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 23:41:57 -0400
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-From: Joe Perches <joe@perches.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Matthew Wilcox <matthew@wil.cx>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-In-Reply-To: <200710261211.01423.rusty@rustcorp.com.au>
-References: <20071024195847.GE27248@parisc-linux.org>
-	 <1193255992-14385-1-git-send-email-matthew@wil.cx>
-	 <200710261211.01423.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Thu, 25 Oct 2007 20:41:32 -0700
-Message-Id: <1193370092.26695.32.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Thu, 25 Oct 2007 23:54:26 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:37257 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750863AbXJZDyZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 23:54:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=eNhTkER685fOd/XQ85jLdKUezA1J3VjA+WqEBD9/b2tYg5YMbnA/xSWpplxDCNLeZlLTpzXMLCrEbMpmwKJdS5Sn7EQRmK41rxO4GFuD0w5WynymGPPwR9KE/3wki9h3Q3WbTK8AZ7jE0BtL+G2kmG5q3FLgRfYbWj9X/GbdjrE=  ;
+X-YMail-OSG: _ieUawwVM1l7u4XfxDCQGAcSUVPIX8iCmh_pvwDX3KDTa6SirAAdBAcYO6XPGB2CTbQMExCdbg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: benh@kernel.crashing.org
+Subject: Re: [interesting] smattering of possible memory ordering bugs
+Date: Fri, 26 Oct 2007 13:47:35 +1000
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, paulus@samba.org,
+       shaggy@austin.ibm.com, adaplas@gmail.com,
+       "Morton, Andrew" <akpm@linux-foundation.org>, xfs-masters@oss.sgi.com
+References: <200710261209.58519.nickpiggin@yahoo.com.au> <1193369717.7018.56.camel@pasglop>
+In-Reply-To: <1193369717.7018.56.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710261347.35545.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 12:11 +1000, Rusty Russell wrote:
-> On Thursday 25 October 2007 05:59:49 Matthew Wilcox wrote:
-> > Consecutive calls to printk are non-atomic, which leads to various
-> > implementations for accumulating strings which can be printed in one call.
-> > This is a generic string buffer which can also be used for non-printk
-> > purposes.
+On Friday 26 October 2007 13:35, Benjamin Herrenschmidt wrote:
 
-> This just seems like more optimization and complexity that we need.
-> Interfaces using vsnprintf don't seem like good candidates for
-> optimization.
+[acks]
 
-Perhaps just tie stringbuf to printk and make stringbuf->buf
-the same 1K size as the printk buffer?
+Thanks for those...
 
-no reallocs, no in-place out-of-memory handling
-normal kzalloc and kfree of stringbuf * or add sb_alloc & sb_free
+> > Index: linux-2.6/include/asm-powerpc/mmu_context.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/asm-powerpc/mmu_context.h
+> > +++ linux-2.6/include/asm-powerpc/mmu_context.h
+> > @@ -129,7 +129,7 @@ static inline void get_mmu_context(struc
+> >                 steal_context();
+> >  #endif
+> >         ctx = next_mmu_context;
+> > -       while (test_and_set_bit(ctx, context_map)) {
+> > +       while (test_and_set_bit_lock(ctx, context_map)) {
+> >                 ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1,
+> > ctx); if (ctx > LAST_CONTEXT)
+> >                         ctx = 0;
+> > @@ -158,7 +158,7 @@ static inline void destroy_context(struc
+> >  {
+> >         preempt_disable();
+> >         if (mm->context.id != NO_CONTEXT) {
+> > -               clear_bit(mm->context.id, context_map);
+> > +               clear_bit_unlock(mm->context.id, context_map);
+> >                 mm->context.id = NO_CONTEXT;
+> >  #ifdef FEW_CONTEXTS
+> >                 atomic_inc(&nr_free_contexts);
+>
+> I don't think the previous code was wrong... it's not a locked section
+> and we don't care about ordering previous stores. It's an allocation, it
+> should be fine. In general, bitmap allocators should be allright.
 
-struct stringbuf {
-	int len;
-	char buf[1024];
-}
-
-/**
- * sb_printf_append - append to a stringbuf
- * @sb: a pointer to the stringbuf
- * @fmt: printf-style format
- */
-void sb_printf_append(struct stringbuf *sb, const char *fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	sb->len += vscnprintf(&sb->buf[len], sizeof(sb->buf) - sb->len, fmt, args);
-	va_end(args);
-}
-EXPORT_SYMBOL(sb_printf_append);
+Well if it is just allocating an arbitrary _number_ out of a bitmap
+and nothing else (eg. like the pid allocator), then you don't need
+barriers.
 
 
+> Ignore the FEW_CONTEXTS stuff for now :-) At this point, it's UP only
+> and will be replaced sooner or later.
+
+OK. Then I agree, provided you're doing the correct synchronisation
+or flushing etc. when destroying a context (which presumably you are).
+
+I'll drop those bits then.
+
+Thanks,
+Nick
