@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbXJZJ31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXJZJ3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbXJZJ31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXJZJ3T
+	id S1758851AbXJZJ3l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbXJZJ3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:29:19 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1083 "EHLO kernel.dk"
+	Fri, 26 Oct 2007 05:29:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44424 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXJZJ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:29:18 -0400
-Date: Fri, 26 Oct 2007 11:27:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] panic after umount (biscted)
-Message-ID: <20071026092724.GC5155@kernel.dk>
-References: <20071026070110.GA8927@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071026070110.GA8927@Chamillionaire.breakpoint.cc>
+	id S1755299AbXJZJ3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:29:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,332,1188802800"; 
+   d="scan'208";a="305911813"
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+	runtime service support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.0.9999.0710261027260.3186@localhost.localdomain>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+	 <1193360591.23935.212.camel@caritas-dev.intel.com>
+	 <alpine.LFD.0.9999.0710261027260.3186@localhost.localdomain>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 26 Oct 2007 17:30:02 +0800
+Message-Id: <1193391002.23935.300.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 26 Oct 2007 09:27:12.0168 (UTC) FILETIME=[638A3A80:01C817B2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26 2007, Sebastian Siewior wrote:
-> After umount of 
-> /dev/md/1 on /mnt/sec type xfs (rw,nosuid,nodev,noatime,nodiratime)
+On Fri, 2007-10-26 at 10:48 +0200, Thomas Gleixner wrote:
+> > EFI uses the Windows x86_64 calling convention. The lin2win may be a
+> > more general naming convention that can be used for some other code (the
+> > NDISwrapper?) in the future. Do you agree?
 > 
-> I end up with [1] on v2.6.24-rc1. It worked fine with v2.6.23. Bisec
-> came to conclusion that 
-> 
-> |fd5d806266935179deda1502101624832eacd01f is first bad commit
-> |commit fd5d806266935179deda1502101624832eacd01f
-> |Author: Jens Axboe <jens.axboe@oracle.com>
-> |Date:   Tue Oct 16 11:05:02 2007 +0200
-> |
-> |    block: convert blkdev_issue_flush() to use empty barriers
-> |    
-> |    Then we can get rid of ->issue_flush_fn() and all the driver private
-> |    implementations of that.
-> |    
-> |    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> |
-> |:040000 040000 75f5c511fd785fa4c75b955f1818c382593a22ec adf460e288740ca9c0b5ab823dfc2ca04980f3d2 M      block
-> |:040000 040000 a972fe9a2433a00c79fd5ead584c482cd08b4b2c 0f4534094b63fe21c5cf8a6170736abe5c518c00 M      drivers
-> |:040000 040000 ba2a9f681826db89ba5192a7db7139baecde786a fc68a77a41d25c283f39f712216566e9b36d00fc M      include
-> 
-> is the bad boy here.
-> The last panic (with first bad commit) is [2] (there is almost no 
-> difference). My .config [3], lspci [4], bisec-log [5]. The md1 
-> raid is a
-> 
-> |Personalities : [raid1] 
-> |md1 : active raid1 sda2[1]
-> |      174843328 blocks [2/1] [_U]
-> |
-> 
-> I hope this was usefull. Now, I'm going to rebuild my raid now....
-> 
-> [1] http://download.breakpoint.cc/bug/bug_rc1.jpeg 166 KiB
-> [2] http://download.breakpoint.cc/bug/bug_last_commit.jpeg 217 KiB
-> [3] http://download.breakpoint.cc/bug/config.txt 27 KiB
-> [4] http://download.breakpoint.cc/bug/lspci.txt 2.3 KiB
-> [5] http://download.breakpoint.cc/bug/git-bisect-log.txt 2.3K
+> I agree not at all. I do not care whether the EFI creators smoked the
+> Windows-crackpipe or some other hallucinogen when they decided to use
+> this calling convention. We definitely do not want to think about
+> NDISwrapper or any other Windows related hackery in the kernel.
 
-Thanks a lot, a full report on this issue. Will get this fixed up asap.
+OK, I will change the name to something like lin2efi.
 
--- 
-Jens Axboe
+> I still do not understand why we need all this EFI hackery at all
+> aside of the possible usage for saving a crash dump on FLASH, which we
+> could do directly from the kernel as well.
 
+Ask every user to setup a crash dump environment is a bit difficult
+because some configuration like reserving memory, loading crash dump
+kernel must be done. But saving OOPS information in FLASH via EFI
+variable runtime service is quite simple, without configuration
+requirement. That is, there could be more bug report with OOPS
+information. I think this is useful.
+
+Best Regards,
+Huang Ying
