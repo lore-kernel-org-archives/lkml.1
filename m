@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbXJZWAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbXJZWAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765038AbXJZWAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXJZWAI
+	id S1753652AbXJZWAm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbXJZWAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:00:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38324 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbXJZWAH (ORCPT
+	Fri, 26 Oct 2007 18:00:14 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:34537 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbXJZWAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:00:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Kir Kolyshkin" <kir@swsoft.com>
-Cc: <containers@lists.osdl.org>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <torvalds@linux-foundation.org>,
-       kir@openvz.org
-Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
-References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
-Date: Fri, 26 Oct 2007 15:59:29 -0600
-In-Reply-To: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
-	(Kir Kolyshkin's message of "Fri, 26 Oct 2007 16:58:32 -0400")
-Message-ID: <m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 18:00:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=hRq/CIFX0FEoXm5lYiMgBexnMFOB4N8LGVY6ip1mLdedstQK2qixmQXqSXUW0r9uU
+	6VSUU893pUTaSCSIJMtew==
+Message-ID: <4722635D.901@google.com>
+Date: Fri, 26 Oct 2007 14:59:57 -0700
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jason Uhlenkott <jasonuhl@jasonuhl.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
+References: <20071025230758.945535769@crlf.corp.google.com> <20071026012217.4cc30390@the-village.bc.nu> <20071026215550.GA27037@aurum.uhlenkott.net>
+In-Reply-To: <20071026215550.GA27037@aurum.uhlenkott.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kir Kolyshkin" <kir@swsoft.com> writes:
+Jason Uhlenkott wrote:
+> On Fri, Oct 26, 2007 at 01:22:17 +0100, Alan Cox wrote:
+>> On Thu, 25 Oct 2007 16:06:40 -0700
+>> Mike Waychison <mikew@google.com> wrote:
+>>
+>>> Remove the need for having CAP_SYS_RAWIO when doing a FIBMAP call on an open file descriptor.
+>>>
+>>> It would be nice to allow users to have permission to see where their data is landing on disk, and there really isn't a good reason to keep them from getting at this information.
+>> Historically this was done because people felt it was more secure. It
+>> also allows you to make some deductions about other activities on the
+>> disk but thats probably only a concern for very very security crazed
+>> compartmentalised boxes
+>>
+>> Also historically at least FIBMAP could be abused to crash the system.
+>> Now if you can verify that has been fixed I have no problem, but given
+>> that I can find no record of that being fixed it would be wise to audit
+>> it first and review Chris Evans and other reports about what occurs when
+>> FIBMAP is passed random block numbers.
+>>
+>> FIBMAP has another problem for this general use as well - it takes an int
+>> but the block number can now be bigger for very large files on 32bit.
+> 
+> Additionally, ext3_bmap() has this to say about it:
+> 
+>         if (EXT3_I(inode)->i_state & EXT3_STATE_JDATA) {
+>                 /*
+>                  * This is a REALLY heavyweight approach, but the use of
+>                  * bmap on dirty files is expected to be extremely rare:
+>                  * only if we run lilo or swapon on a freshly made file
+>                  * do we expect this to happen.
+>                  *
+>                  * (bmap requires CAP_SYS_RAWIO so this does not
+>                  * represent an unprivileged user DOS attack --- we'd be
+>                  * in trouble if mortal users could trigger this path at
+>                  * will.)
 
-> Eric,
->
-> Could you please hold off the horses a bit and wait till Pavel Emelyanov
-> returns? It means next Monday; he's currently at a conference whose organisers
-> don't provide internet access.
+Hmm.  I don't know what the right approach to this is.  This seems to be 
+the same situation as the delayed allocation problem, no?
 
-When we decided to go top down (i.e. user interface first) instead of
-bottom up with the pid namespace implementation it was my
-understanding that we had agreed we would make the pid namespaces
-depend on CONFIG_EXPERIMENTAL so that we wouldn't be stuck forever
-supporting early ABI mistakes.
+What if we just returned 0?  Tools like lilo are already doing sync(), 
+would that cause the journal to get flushed explicitly anyway?
 
-So to my knowledge the conversation has already happened.  I believe
-something in the confusion of trying to use these options to shrink
-the kernel and the futility of that, caused whatever config options
-we had before to be dropped.
-
-Further I was happy to let Pavel and Suka work on this code because
-the appeared to know what they were doing and it freed me to do other
-things.  I don't think there are any mysteries in what we are trying
-to do that I need them to explain.
-
-> I feel it makes great sense to review/discuss patches first on containers@
-> first before submitting directly to lkml/Linus.
-
-My feel before starting to review the pid namespace patches was that
-the work was essentially done except a handful of minor details.  Upon
-closer examination, I found that not to be the case.  My rough fix
-queue had 25 or so patches as of last night to fix pid namespace
-issues.
-
-I have no confidence that we will fix all of the pid namespaces issues
-before 2.6.24-final.  I do think we can get most of them fixed.
-
-Given that most of the remaining issues are integration issues
-with the rest of the kernel having the code merged should make
-it much easier to see what is going on and actually fix things.
-So I am not in favor of reverting this code despite seeing numerous
-problems.
-
-> Speaking of this particular patch -- I don't understand how you fix
-> "innumerable little bugs" by providing stubs instead of real functions.
-> Sent from my BlackBerry; please reply to kir@openvz.org
-
-It doesn't fix the bugs it avoids them because there is no way to
-get to the them and trigger them.  So far I have yet to find a bug
-that is a problem with only a single pid namespace in the kernel.
-
-Since everyone agrees that there are at least some deficiencies in
-the current pid namespace I think this makes sense, to mark
-the code as EXPERIMENTAL and have a way for people who care to
-shut it off just so they don't have to worry about new issues.
-
-As far as how the config option is implemented I don't much care
-so long as I get the -EINVAL when I pass CLONE_NEWPID as root.
-
-Essentially this patch is part of a defense in depth against pid
-namespace problems hitting people.  This patch is my first line
-of defense.  Actually fixing all of the rest of the known bugs
-is the other line.
-
-Eric
+Mike Waychison
