@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbXJZTZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbXJZT0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbXJZTZq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJZTZj
+	id S1753477AbXJZT0I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760046AbXJZTZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:25:39 -0400
-Received: from main.gmane.org ([80.91.229.2]:52916 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbXJZTZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:25:39 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: Re: Check handling of kernel build output directory
-Date: Fri, 26 Oct 2007 21:25:14 +0200
-Message-ID: <ffteuq$n3b$1@ger.gmane.org>
-References: <fft89p$rko$1@ger.gmane.org> <20071026190500.GA23480@uranus.ravnborg.org>
+	Fri, 26 Oct 2007 15:25:53 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:52771 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761327AbXJZTZw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 15:25:52 -0400
+Date: Fri, 26 Oct 2007 15:25:49 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: [RFC PATCH 2/2] Add pagemap.h include to swap.h
+Message-ID: <20071026192549.GA9219@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p508c6db3.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-In-Reply-To: <20071026190500.GA23480@uranus.ravnborg.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So here you do not have a .config file in the directory: /usr/src/obj/linux/2.6.23.1/x86_64/adjusted
-> So you are told to create one using some of the available methods.
+Include linux/pagemap.h in linux/swap.h and remove the comment saying
+that it's not possible.
 
-The README contains the following description.
+---
+ include/linux/swap.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-"...
-	"make oldconfig"   Default all questions based on the contents of
-			   your existing ./.config file and asking about
-			   new config symbols.
-	"make silentoldconfig"
-			   Like above, but avoids cluttering the screen
-			   with questions already answered.
-..."
-
-I did not expect that there are more differences besides the "silence".
-
-
-> The suggested way to fix it is to run "make mrproper"
-
-I did that clean-up step.
-
-
-> but in your case you would then delete all the output files of your vendor supplied kernel.
-
-I hope not because I've setup symbolic links to point to the current release as far I know
-instead of the release "2.6.22.9-0.4-default" that I am using at the moment.
-
-
-> This is something internal make stuff that is irrelevant in this case.
-
-It is relevant in my case if I want to use different output directories for parallel
-builds from the same source directory.
-
-Regards,
-Markus
-
+Index: linux-2.6.17/include/linux/swap.h
+===================================================================
+--- linux-2.6.17.orig/include/linux/swap.h	2007-10-24 10:05:09.000000000 -0400
++++ linux-2.6.17/include/linux/swap.h	2007-10-25 22:59:29.000000000 -0400
+@@ -6,6 +6,7 @@
+ #include <linux/mmzone.h>
+ #include <linux/list.h>
+ #include <linux/sched.h>
++#include <linux/pagemap.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/page.h>
+@@ -282,8 +283,7 @@ static inline void disable_swap_token(vo
+ 
+ #define si_swapinfo(val) \
+ 	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
+-/* only sparc can not include linux/pagemap.h in this file
+- * so leave page_cache_release and release_pages undeclared... */
++
+ #define free_page_and_swap_cache(page) \
+ 	page_cache_release(page)
+ #define free_pages_and_swap_cache(pages, nr) \
