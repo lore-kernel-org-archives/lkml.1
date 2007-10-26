@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbXJZRZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbXJZRZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbXJZRZa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXJZRZT
+	id S1762663AbXJZRZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXJZRZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:25:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:39696 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbXJZRZR (ORCPT
+	Fri, 26 Oct 2007 13:25:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37497 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753785AbXJZRZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:25:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=e6XT9rNNPu+I93Kzjw09itAgyUYU7n84pLU6BDkndLCeobUOXVtWaF6SMKiLwLPJewPFEJqBFiYxx8KS4QJt9Ctis9Krx3zPE4pZ2pcD5Ru+tRsrh74tMKuw5fsYSnufM3OWsRPq4dxxNXXTERC4W/KcGnjfDoyVu3eFhZiKR8E=
-Message-ID: <877aabc40710261025v2f53423el6bb63fc2024a0ffd@mail.gmail.com>
-Date: Fri, 26 Oct 2007 22:55:15 +0530
-From: "Amit Shah" <amitshah@gmx.net>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: sysfs: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071026155058.GC23016@kroah.com>
+	Fri, 26 Oct 2007 13:25:45 -0400
+Date: Fri, 26 Oct 2007 10:25:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Haley <aph@redhat.com>
+cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Is gcc thread-unsafe?
+In-Reply-To: <18210.8170.598519.439148@zebedee.pink>
+Message-ID: <alpine.LFD.0.999.0710261020250.30120@woody.linux-foundation.org>
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
+ <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
+ <alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
+ <e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+ <18210.8170.598519.439148@zebedee.pink>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <877aabc40710260014v220ab804o5de5dbc36b870bd1@mail.gmail.com>
-	 <20071026155058.GC23016@kroah.com>
-X-Google-Sender-Auth: e3369af2555c8345
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/10/2007, Greg KH <greg@kroah.com> wrote:
-> On Fri, Oct 26, 2007 at 12:44:38PM +0530, Amit Shah wrote:
-> > On 2.6.24-rc1, I get this for all my eth interfaces:
-> >
-> > [  150.389821] sysfs: duplicate filename 'eth1_rename' can not be created
-> > [  150.389824] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
->
-> I sent out the patch below for comments, yet no one did :(
->
-> Can you try it out and let me know if it works for you or not?
 
-No, doesn't help.
 
--- 
-Amit Shah
-http://www.amitshah.net/
+On Fri, 26 Oct 2007, Andrew Haley wrote:
+>
+> Bart Van Assche writes:
+> 
+>  > Andrew, do you know whether gcc currently contains any optimization
+>  > that interchanges the order of accesses to non-volatile variables
+>  > and function calls ?
+> 
+> It sure does.
+
+Note that doing so is perfectly fine.
+
+But only for local variables that haven't had their addresses taken.
+
+The fact is, those kinds of variables really *are* special. They are 
+provably not accessible from any other context, and re-ordering them (or 
+doing anything AT ALL to them - the most basic and very important 
+optimization is caching them in registers, of course) is always purely an 
+internal compiler issue.
+
+But if gcc re-orders functions calls with *other* memory accesses, gcc is 
+totally broken. I doubt it does that. It would break on all but the most 
+trivial programs, and it would be a clear violation of even standard C.
+
+HOWEVER: the bug that started this thread isn't even "reordering 
+accesses", it's *adding* accesses that weren't there (and please don't mix 
+this up with "volatile", since volatile is a totally unrelated issue and 
+has nothing what-so-ever to do with anything).
+
+		Linus
