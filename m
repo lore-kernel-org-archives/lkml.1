@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXJZIjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbXJZItS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbXJZIjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 04:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXJZIjJ
+	id S1754922AbXJZItS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 04:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXJZItL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 04:39:09 -0400
-Received: from poesci.dolphinics.no ([81.175.23.36]:43669 "EHLO
-	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbXJZIjI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 04:39:08 -0400
-X-Greylist: delayed 1866 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 04:39:07 EDT
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Opteron box and 4Gb memory
-References: <20071025230904.03d5f46a@werewolf> <47211172.9070606@zytor.com>
-	<20071026004434.50c73dd3@werewolf>
-From: Arne Georg Gleditsch <argggh@dolphinics.no>
-Date: Fri, 26 Oct 2007 10:08:08 +0200
-In-Reply-To: <20071026004434.50c73dd3@werewolf> ("J.A. =?iso-8859-1?Q?Maga?=
- =?iso-8859-1?Q?ll=F3n=22's?= message of "Fri\, 26 Oct 2007 00\:44\:34
- +0200")
-Message-ID: <kjmsl3yuwlz.fsf@pelargir.dolphinics.no>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
+	Fri, 26 Oct 2007 04:49:11 -0400
+Received: from www.tglx.de ([62.245.132.106]:47171 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbXJZItJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 04:49:09 -0400
+Date: Fri, 26 Oct 2007 10:48:39 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Huang, Ying" <ying.huang@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+ runtime service support
+In-Reply-To: <1193360591.23935.212.camel@caritas-dev.intel.com>
+Message-ID: <alpine.LFD.0.9999.0710261027260.3186@localhost.localdomain>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>  <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain> <1193360591.23935.212.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"J.A. Magallón" <jamagallon@ono.com> writes:
-> Software Memory Hole
-> When "Enabled", allows software memory remapping around the memory
-> hole. Options are Enabled and Disabled.
->
-> Hardware Memory Hole
-> When "Enabled", allows software memory remapping around the memory
-> hole. Options are Enabled and Disabled. Note: this is only supported by
-> Rev E0 processors and above.
-> ( I have two Opteron 275 processors, no idea about revision)
+On Fri, 26 Oct 2007, Huang, Ying wrote:
 
-The configuration register used to to reclaim DRAM lost to an MMIO
-hole was introduced with revision E of the gen1 Opterons.  (This
-feature is supposed to work both in interleaved and non-interleaved
-mode.)  What does /proc/cpuinfo say?  (On both?)
+> On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
+> > > EFI runtime
+> > > services initialization are implemented in efi.c. Some x86_64
+> > > specifics are worth noting here. On x86_64, parameters passed to UEFI
+> > > firmware services need to follow the UEFI calling convention. For this
+> > > purpose, a set of functions named lin2win<x> (<x> is the number of
+> > > parameters) are implemented. EFI function calls are wrapped before
+> > > calling the firmware service.
+> > 
+> > Why needs this to be called lin2win? We do not call Windows, we call
+> > EFI services, so please use a naming convention which is related to
+> > the functionality of the code.
+> > 
+> > > + *
+> > > + *  Function calling ABI conversion from SYSV to Windows for x86_64
+> > 
+> > Again, these are wrappers to access EFI and not Windows.
+> 
+> EFI uses the Windows x86_64 calling convention. The lin2win may be a
+> more general naming convention that can be used for some other code (the
+> NDISwrapper?) in the future. Do you agree?
 
-(Still, even without this your BIOS should be able to map your memory
-so that you are able to use all 4G.  Provided you disable
-interleaving, I can't see that there's anything stopping the BIOS from
-mapping the memory from node 1 to 0-2G and the memory from node 2 to
-4-6G, leaving a 2G hole for MMIO and other junk.  Whether your BIOS
-actually supports this is another matter.)
+I agree not at all. I do not care whether the EFI creators smoked the
+Windows-crackpipe or some other hallucinogen when they decided to use
+this calling convention. We definitely do not want to think about
+NDISwrapper or any other Windows related hackery in the kernel.
 
--- 
-								Arne.
+I still do not understand why we need all this EFI hackery at all
+aside of the possible usage for saving a crash dump on FLASH, which we
+could do directly from the kernel as well.
+
+    tglx
