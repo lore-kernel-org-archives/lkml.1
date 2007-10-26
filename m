@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbXJZRnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXJZRoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762608AbXJZRnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXJZRnJ
+	id S1764284AbXJZRoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXJZRoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:43:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52792 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754055AbXJZRnI (ORCPT
+	Fri, 26 Oct 2007 13:44:13 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37184 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbXJZRoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:43:08 -0400
-Date: Fri, 26 Oct 2007 10:43:06 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: rientjes@google.com, akpm@linux-foundation.org, ak@suse.de,
-       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] cpusets: add memory_spread_user option
-Message-Id: <20071026104306.38f6f6ba.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710261038250.15270@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251913350.30400@chino.kir.corp.google.com>
-	<20071025230409.81f20ed3.pj@sgi.com>
-	<alpine.DEB.0.9999.0710260204590.8261@chino.kir.corp.google.com>
-	<20071026025634.0f32e1e2.pj@sgi.com>
-	<20071026101805.df3ebfda.pj@sgi.com>
-	<Pine.LNX.4.64.0710261038250.15270@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 13:44:12 -0400
+Date: Fri, 26 Oct 2007 19:44:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Message-ID: <20071026174409.GA1573@elf.ucw.cz>
+References: <Pine.LNX.4.64.0709101220001.24735@schroedinger.engr.sgi.com> <1189454145.21778.48.camel@twins> <Pine.LNX.4.64.0709101318160.25407@schroedinger.engr.sgi.com> <1189457286.21778.68.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1189457286.21778.68.camel@twins>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I really want cpuset relative nodemasks. Nodes need to reference
-> to available nodes. If you set all of them then it will use all available 
-> nodes and ignore the ones not allowed. If you just set the first two bits 
-> then it will use the first and second node of a cpuset.
+Hi!
 
-Exactly.  I think I am ending up with exactly this.
+> > > or
+> > > 
+> > >   - have a global reserve and selectively serves sockets
+> > >     (what I've been doing)
+> > 
+> > That is a scalability problem on large systems! Global means global 
+> > serialization, cacheline bouncing and possibly livelocks. If we get into 
+> > this global shortage then all cpus may end up taking the same locks 
+> > cycling thought the same allocation paths.
+> 
+> Dude, breathe, these boxens of yours will never swap over network simply
+> because you never configure swap. 
+> 
+> And, _no_, it does not necessarily mean global serialisation. By simply
+> saying there must be N pages available I say nothing about on which node
+> they should be available, and the way the watermarks work they will be
+> evenly distributed over the appropriate zones.
 
-I'm just getting there by a strange way of thinking
-(as usual ;).
+Agreed. Scalability of emergency swapping reserved is simply
+unimportant. Please, lets get swapping to _work_ first, then we can
+make it faster.
 
+No, I do not think we'll ever see a livelock on this.
+									Pavel
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
