@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbXJZU0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763932AbXJZU2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbXJZU0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJZUZy
+	id S1763932AbXJZU2v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJZU2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:25:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38130 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762237AbXJZUZx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:25:53 -0400
-Date: Fri, 26 Oct 2007 13:25:51 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Cc: Lee.Schermerhorn@hp.com, rientjes@google.com, clameter@sgi.com,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org,
-       mtk-manpages@gmx.net
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071026132551.3ca82d87.pj@sgi.com>
-In-Reply-To: <cfd18e0f0710261321n7e480e7bt963bce677927864a@mail.gmail.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<20071025192945.82962eea.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
-	<20071025201455.acb4e72c.pj@sgi.com>
-	<alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
-	<1193413054.5032.20.camel@localhost>
-	<20071026100451.c0742740.pj@sgi.com>
-	<cfd18e0f0710261321n7e480e7bt963bce677927864a@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 16:28:45 -0400
+Received: from waste.org ([66.93.16.53]:32796 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753474AbXJZU2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:28:44 -0400
+Date: Fri, 26 Oct 2007 15:28:31 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Benny Amorsen <benny+usenet@amorsen.dk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: IRQ off latency of printk is very high
+Message-ID: <20071026202831.GP17536@waste.org>
+References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org> <472129C3.6040405@am.sony.com> <20071026012342.GV19691@waste.org> <m3r6jighjl.fsf@ursa.amorsen.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3r6jighjl.fsf@ursa.amorsen.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael wrote:
-> PS Note my new addres for man-apges: mtk.manpages@gmail.com
+On Fri, Oct 26, 2007 at 02:57:18PM +0200, Benny Amorsen wrote:
+> >>>>> "MM" == Matt Mackall <mpm@selenic.com> writes:
+> 
+> MM> Well there are things we can do, yes, but I'd be worried that
+> MM> they've give up the deterministic behavior we rely on quite
+> MM> heavily for debugging. If event A happens before event B, we must
+> MM> see the message from A before the one from B, even if B happens in
+> MM> irq context.
+> 
+> MM> And if event B is a hard lock up, we'd also like to be sure the
+> MM> message for A actually gets out. If B happens in the interrupt
+> MM> that comes in when we re-enable them, that won't happen.
+> 
+> I can see the concerns, but right now it all leads to disabling serial
+> console for real-time servers. That is even less helpful for
+> debugging.
 
-Noted.
-
-> Is there anything I can do to assist?
-
-Got any spare round tuit's ;)?
+That's not clear. No data is often better than false or misleading
+data.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Mathematics is the supreme nostalgia of our time.
