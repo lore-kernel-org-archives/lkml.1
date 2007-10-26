@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXJZUds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbXJZUeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764339AbXJZUds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXJZUdk
+	id S1764710AbXJZUeA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764307AbXJZUdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:33:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35856 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbXJZUdj (ORCPT
+	Fri, 26 Oct 2007 16:33:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:60304 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761935AbXJZUdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:33:39 -0400
-Date: Fri, 26 Oct 2007 21:33:37 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: John Johansen <jjohansen@suse.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Tony Jones <tonyj@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 19/45] Add struct vfsmount parameters to vfs_rename()
-Message-ID: <20071026203337.GF8181@ftp.linux.org.uk>
-References: <20071026064024.243943043@suse.de> <20071026064049.534093497@suse.de> <20071026073749.GE8181@ftp.linux.org.uk> <20071026182352.GA32415@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 26 Oct 2007 16:33:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ljd8x21unZZKEDd6pyoWrBNPgAmkXhpzWCO3WezM6VTnkFNOy+gvTn2K5LFAllWjTl8V9X8xTClGHw4vu7ckl1wLKhMOkdQw6D8KRIWgugSspFysDXGfCAX+PYLwO8pxyl9Rt61QjY7bFtawDwUP1QGEph0inFX5aEAKUp82Ohk=
+Message-ID: <cfd18e0f0710261333x39ad5d1flfe043e6a5f50c39b@mail.gmail.com>
+Date: Fri, 26 Oct 2007 16:33:45 -0400
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Cc: Lee.Schermerhorn@hp.com, rientjes@google.com, clameter@sgi.com,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org,
+       mtk-manpages@gmx.net
+In-Reply-To: <20071026132551.3ca82d87.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071026182352.GA32415@suse.de>
-User-Agent: Mutt/1.4.1i
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	 <20071025192945.82962eea.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
+	 <20071025201455.acb4e72c.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+	 <1193413054.5032.20.camel@localhost>
+	 <20071026100451.c0742740.pj@sgi.com>
+	 <cfd18e0f0710261321n7e480e7bt963bce677927864a@mail.gmail.com>
+	 <20071026132551.3ca82d87.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 11:23:53AM -0700, John Johansen wrote:
+On 10/26/07, Paul Jackson <pj@sgi.com> wrote:
+> Michael wrote:
+> > PS Note my new addres for man-apges: mtk.manpages@gmail.com
+>
+> Noted.
+>
+> > Is there anything I can do to assist?
+>
+> Got any spare round tuit's ;)?
 
-> In the current code, both vfsmounts are always identical, and so one of
-> the two should go, agreed.
-> 
-> The thought behind passing both vfsmounts was that they could differ but
-> point to the same super_block, in which case renames would still be
-> possible at least from a filesystem point of view. The essential
-> restriction here is that both files must be on the same device; the vfs
-> restriction of not allowing cross-mount renames is arbitrary.
+I ran out quite some time ago unfortunately.
 
-It's called "access control".  Pathname-based one, BTW.  And yes, it's
-100% deliberate.
+Cheers,
 
-> Cross-mount renames are not allowed currently, and granted, they may not
-> be very useful, either.
-
-<raised brows>
-Excuse me, but IIRC LSM was supposed to _add_ restrictions, not to remove
-existing security checks.
+Michael
