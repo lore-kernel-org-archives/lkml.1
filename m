@@ -1,82 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXJZJdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbXJZJeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbXJZJdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXJZJde
+	id S1758979AbXJZJeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbXJZJeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:33:34 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:56860 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753633AbXJZJdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:33:33 -0400
-To: dgc@sgi.com
-CC: staubach@redhat.com, akpm@linux-foundation.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20071025235206.GA995458@sgi.com> (message from David Chinner on
-	Fri, 26 Oct 2007 09:52:06 +1000)
-Subject: Re: [PATCH] VFS: new fgetattr() file operation
-References: <E1Iketp-0005dr-00@dorka.pomaz.szeredi.hu> <471F4254.9040206@redhat.com> <E1IkgW1-0005i0-00@dorka.pomaz.szeredi.hu> <471F5EA2.8060203@redhat.com> <E1Iki8O-0005nu-00@dorka.pomaz.szeredi.hu> <20071025224235.GZ995458@sgi.com> <E1IlBqA-0006yj-00@dorka.pomaz.szeredi.hu> <20071025235206.GA995458@sgi.com>
-Message-Id: <E1IlLZi-0007Iv-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 26 Oct 2007 11:33:54 +0200
+	Fri, 26 Oct 2007 05:34:37 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:20542 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753467AbXJZJeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:34:36 -0400
+Date: Fri, 26 Oct 2007 11:32:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] panic after umount (biscted)
+Message-ID: <20071026093242.GD5155@kernel.dk>
+References: <20071026070110.GA8927@Chamillionaire.breakpoint.cc> <20071026092724.GC5155@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026092724.GC5155@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Oct 26, 2007 at 01:10:14AM +0200, Miklos Szeredi wrote:
-> > > On Wed, Oct 24, 2007 at 05:27:04PM +0200, Miklos Szeredi wrote:
-> > > > > >> Wouldn't you be better off by attempting to implement an "open
-> > > > > >> by ino" operation and an operation to get the generation count
-> > > > > >> for the file and then modifying the network protocol of interest
-> > > > > >> to use these as identifiers for the file to be manipulated?
-> > > > > >>     
-> > > > > >
-> > > > > > You mean an "open by inode" on the userspace API?  My guess, it
-> > > > > > wouldn't get very far.
-> > > > > 
-> > > > > This isn't a new idea and has been implemented on a variety of
-> > > > > different systems.
-> > > > 
-> > > > Like?
-> > > 
-> > > XFS.
-> > > 
-> > > 'man open_by_handle'
+On Fri, Oct 26 2007, Jens Axboe wrote:
+> On Fri, Oct 26 2007, Sebastian Siewior wrote:
+> > After umount of 
+> > /dev/md/1 on /mnt/sec type xfs (rw,nosuid,nodev,noatime,nodiratime)
 > > 
-> > Doesn't seem widely used, with 600 something google hits.
-> 
-> from the man page:
-> 
-> "They are intended  for  use  by a limited set of system utilities such
-> as backup programs."
-> 
-> It also gets used by HSMs and so it is current, tested and is not
-> going away....
-
-Sure.
-
-> > And in this
-> > old thread Linus is not entirely enthusiastic about the concept:
+> > I end up with [1] on v2.6.24-rc1. It worked fine with v2.6.23. Bisec
+> > came to conclusion that 
 > > 
-> >   http://lkml.org/lkml/1999/1/11/244
+> > |fd5d806266935179deda1502101624832eacd01f is first bad commit
+> > |commit fd5d806266935179deda1502101624832eacd01f
+> > |Author: Jens Axboe <jens.axboe@oracle.com>
+> > |Date:   Tue Oct 16 11:05:02 2007 +0200
+> > |
+> > |    block: convert blkdev_issue_flush() to use empty barriers
+> > |    
+> > |    Then we can get rid of ->issue_flush_fn() and all the driver private
+> > |    implementations of that.
+> > |    
+> > |    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > |
+> > |:040000 040000 75f5c511fd785fa4c75b955f1818c382593a22ec adf460e288740ca9c0b5ab823dfc2ca04980f3d2 M      block
+> > |:040000 040000 a972fe9a2433a00c79fd5ead584c482cd08b4b2c 0f4534094b63fe21c5cf8a6170736abe5c518c00 M      drivers
+> > |:040000 040000 ba2a9f681826db89ba5192a7db7139baecde786a fc68a77a41d25c283f39f712216566e9b36d00fc M      include
+> > 
+> > is the bad boy here.
+> > The last panic (with first bad commit) is [2] (there is almost no 
+> > difference). My .config [3], lspci [4], bisec-log [5]. The md1 
+> > raid is a
+> > 
+> > |Personalities : [raid1] 
+> > |md1 : active raid1 sda2[1]
+> > |      174843328 blocks [2/1] [_U]
+> > |
+> > 
+> > I hope this was usefull. Now, I'm going to rebuild my raid now....
+> > 
+> > [1] http://download.breakpoint.cc/bug/bug_rc1.jpeg 166 KiB
+> > [2] http://download.breakpoint.cc/bug/bug_last_commit.jpeg 217 KiB
+> > [3] http://download.breakpoint.cc/bug/config.txt 27 KiB
+> > [4] http://download.breakpoint.cc/bug/lspci.txt 2.3 KiB
+> > [5] http://download.breakpoint.cc/bug/git-bisect-log.txt 2.3K
 > 
-> That was "open by inode number", AFAICT. A handle is an opaque
-> blob that can be an arbitrary length defined by the filesystem.
-> You have to convert a fd or path to a handle first before you can
-> use it later, so any filesystem can implement it...
-> 
-> i.e. it is exactly what this (unanswered) post suggested:
-> 
-> http://lkml.org/lkml/1999/1/13/186
+> Thanks a lot, a full report on this issue. Will get this fixed up asap.
 
-Well, yeah, if a filesystem doesn't have a global index, the whole
-path could just be stuffed into the handle.
+Does this work?
 
-But there's not much point in that, is there?  And because the
-interface bypasses normal access checking on parent directories, it
-has security implications, making it not generally useful.
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 61fdaf0..cf47fcb 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1115,6 +1115,8 @@ static int scsi_init_io(struct scsi_cmnd *cmd)
+ 	 * kmapping pages)
+ 	 */
+ 	cmd->use_sg = req->nr_phys_segments;
++	if (!cmd->use_sg)
++		return 0;
+ 
+ 	/*
+ 	 * If sg table allocation fails, requeue request later.
+@@ -1191,7 +1193,7 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req)
+ 	if (req->bio) {
+ 		int ret;
+ 
+-		BUG_ON(!req->nr_phys_segments);
++		BUG_ON(!req->nr_phys_segments && req->bio->bi_size);
+ 
+ 		ret = scsi_init_io(cmd);
+ 		if (unlikely(ret))
 
-Specifically, it is not useful for the "unprivileged file server" case
-that Peter was suggesting.
+-- 
+Jens Axboe
 
-Miklos
