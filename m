@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbXJZJQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXJZJRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbXJZJQk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXJZJQd
+	id S1757308AbXJZJRb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbXJZJRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:16:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:32977 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752922AbXJZJQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:16:32 -0400
-Date: Fri, 26 Oct 2007 11:16:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Lothian <mike@fireburn.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Possibility of adding -march=native to x86
-In-Reply-To: <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
-Message-ID: <alpine.LFD.0.9999.0710261115130.3186@localhost.localdomain>
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+	Fri, 26 Oct 2007 05:17:23 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:4081 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbXJZJRW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:17:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ml/ChqMNnoqsxHMcogXO67uZwTLnnPzw+wc35xQO75o3IfsM6s3BpvHuY39WzHZfJ1W120YJPty/q0uhosj3pLFfoJSWloqp1BTHxHqnwSGOsLkwE7EbX+rrv2YIa2JNFFJgb8OZurGnjV89YjAzOTGxl6Uuco3L4zGgzzYANSQ=
+Message-ID: <fceeb6990710260217g6892c6d9vb31b2fbaff42000@mail.gmail.com>
+Date: Fri, 26 Oct 2007 11:17:21 +0200
+From: "Piero Ottuzzi" <lkmltimes@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: Upcomming CRIS patches
+Cc: linux-kernel@vger.kernel.org, "Jesper Nilsson" <Jesper.Nilsson@axis.com>,
+       "Mikael Starvik" <mikael.starvik@axis.com>
+In-Reply-To: <fceeb6990710260204o5ecab9abm944be41ee57acd6c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <BFECAF9E178F144FAEF2BF4CE739C6680547FAFA@exmail1.se.axis.com>
+	 <BFECAF9E178F144FAEF2BF4CE739C66804C4011D@exmail1.se.axis.com>
+	 <fceeb6990710260204o5ecab9abm944be41ee57acd6c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2007/10/26, Piero Ottuzzi <lkmltimes@gmail.com>:
+> 2007/10/26, Mikael Starvik <mikael.starvik@axis.com>:
+> > >Are there access to a cross-compile chain for i386 somewhere?
+> >
+> > Sure, that's the only way we do it (CRIS has typically too low performance
+> > and memory to compile anything although it has been shown that it is
+> > possible)
+> >
+> > You can find the compiler at
+> > http://www.axis.com/reg/login.php?oldurl=/products/dev_sdk/download_compiler
+> > .php.
+> > Unfortunately you have to register.
+> >
+>
+> Hi there,
+>
+> you can download the compiler without registration at [1].
+>
+> Bye
+> Piero
+> [1]http://www.axis.com/ftp/pub/axis/tools/cris/compiler-kit/
+>
 
-On Thu, 25 Oct 2007, Michael Lothian wrote:
+Or via ftp [ftp://ftp.axis.com/pub/axis/tools/cris/compiler-kit/] if you prefer.
 
-> Hi
-> 
-> I was wondering if it was possible to add -march=native support to the
-> processor options of the new x86 architecture if gcc 4.2 or greater is being
-> used.
-> 
-> I'm not suggesting this should be a default at all, merely an extra option
-> similar to selecting P4, Athlon or even -Os.
-> 
-> I've manually tried this flag at home with no ill effects.
+Bye
+Piero
 
-It works for your specific setup, but it will kill distro compiles as
-well as cross compiling.
-
-     tglx
+-- 
+LKML Times: The Linux Kernel Mailing List newspaper
+http://lkmltimes.brucalipto.org/
