@@ -1,113 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764357AbXJZRcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765195AbXJZRdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764357AbXJZRcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 13:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXJZRcB
+	id S1765195AbXJZRdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 13:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXJZRdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 13:32:01 -0400
-Received: from main.gmane.org ([80.91.229.2]:40601 "EHLO ciao.gmane.org"
+	Fri, 26 Oct 2007 13:33:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58348 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753500AbXJZRcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 13:32:00 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: Check handling of kernel build output directory
-Date: Fri, 26 Oct 2007 19:31:38 +0200
-Message-ID: <fft89p$rko$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p508c6db3.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1753500AbXJZRc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 13:32:59 -0400
+Date: Fri, 26 Oct 2007 19:32:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>, Joe Perches <joe@perches.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] De-constify sched.h
+Message-ID: <20071026173246.GA7117@elte.hu>
+References: <20071026081721.GA6244@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026081721.GA6244@localhost.sw.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Two ways are mentioned in the Makefile for the Linux kernel 2.6.31.1 to specify output
-diretories. The description of the environment variable "KBUILD_OUTPUT" is missing from
-the file "README".
+* Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-I am trying to generate all executable files for the current stable kernel release on my
-openSUSE 10.3 system.
+> Linus, please revert commit a8972ccf00b7184a743eb6cd9bc7f3443357910c aka
+> "sched: constify sched.h" or apply the following patch instead.
+> 
+> [PATCH] De-constify sched.h
 
-Sonne:/usr/src/linux # make mrproper
-Sonne:/usr/src/linux # cp -p /boot/config-2.6.23.1-0-adjusted .config
-[reactivate backup copy]
+firstly, thank you for not Cc:-ing me. I learned about this revert only 
+once it was done deal in Linus' tree. You objected to the patch 
+originally when it was submitted to lkml, and plausible arguments were 
+presented against your (bogus) objection:
 
-Sonne:/usr/src/linux # export KBUILD_OUTPUT=/usr/src/obj/linux/2.6.23.1/x86_64/adjusted
-Sonne:/usr/src/linux # make silentoldconfig
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -s arch/x86_64/Kconfig
-***
-*** You have not yet configured your kernel!
-*** (missing kernel .config file)
-***
-*** Please run some configurator (e.g. "make oldconfig" or
-*** "make menuconfig" or "make xconfig").
-***
-make[2]: *** [silentoldconfig] Error 1
-make[1]: *** [silentoldconfig] Error 2
-make: *** [silentoldconfig] Error 2
+   http://article.gmane.org/gmane.linux.kernel.janitors/14623
 
-Another try:
-Sonne:/usr/src/linux # make oldconfig
-[...]
-#
-# configuration written to .config
-#
-Sonne:/usr/src/linux # date && echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX && make -j4
-&& echo YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY && make -j4 modules_install install &&
-echo ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ && date
-Fri Oct 26 18:38:18 CEST 2007
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-scripts/kconfig/conf -s arch/x86_64/Kconfig
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86_64
-  Using /usr/src/linux-2.6.23.1 as source for kernel
-  /usr/src/linux-2.6.23.1 is not clean, please run 'make mrproper'
-  in the '/usr/src/linux-2.6.23.1' directory.
-make[1]: *** [prepare3] Error 1
-make: *** [_all] Error 2
-make: INTERNAL: Exiting with 5 jobserver tokens available; should be 4!
+in that thread, two months ago, you essentially conceded Jan 
+Engelhardt's argument by not replying to his points, so i kept Joe's 
+patch. And now you continue this "discussion" by asking for a revert and 
+not Cc:-ing me, Joe or Jan - which is quite sneaky.
 
-Does this error message correspond to the open issue that was described in the bug report
-"make randomly fails with interrupted system call on slower filesystems with parallel builds"?
-http://savannah.gnu.org/bugs/?14853
+> 1) Patch doesn't change any code here, so gcc is already smart enough
+>    to "feel" constness in such simple functions.
 
-When this happens, there is always one more token available than I've specified by the
-parameter "-j". If I ommit it, I get the following result.
+the const markers indeed had no real purpose in terms of code generation 
+(gcc can figure it out whether something is modified by an inline 
+function), but they had a documentation/intent purpose, and they are 
+plausible if a non-inlined function uses a const task struct in the 
+future. For example any of these functions could be un-inlined and could 
+use (internally) one of the remaining inlines - in that case code 
+generation gets better from the constifying as well. There are also a 
+good deal of helper functions around task struct which could be marked 
+with const.
 
-Sonne:/usr/src/linux # date && echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX && make &&
-echo YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY && make modules_install install && echo
-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ && date
-Fri Oct 26 19:17:18 CEST 2007
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  Using /usr/src/linux-2.6.23.1 as source for kernel
-  /usr/src/linux-2.6.23.1 is not clean, please run 'make mrproper'
-  in the '/usr/src/linux-2.6.23.1' directory.
-make[1]: *** [prepare3] Error 1
-make: *** [_all] Error 2
+we do have other inline functions in include/linux/*.h with 'const' 
+arguments, so marking arguments with const is not without precedent and 
+this was pointed out to you in the original discussion.
 
-The option to build into a specific output diretory is unusable on my system so far. Would
-you like to share any ideas to resolve this unpleasant situation?
+> 2) There is no such thing as const task_struct. Anyone who think
+>    otherwise deserves compiler warning.
 
-Regards,
-Markus
+-ENOPARSE. 'const struct task_struct *' says that the task struct is not 
+supposed to be modified within that (inline) function. That _does_ make 
+sense.
 
+so unless i'm missing something, your request for revert was pretty 
+rude, technically incorrect and you also tried to circumvent the normal 
+course of discussion. I have no strong feelings either way technically 
+(the patch is borderline - we dont actively pass around const 
+task_struct pointers at the moment - but we could start doing so, if we 
+had the constification), but i do have strong feelings against the kind 
+of behavior you showed here.
+
+	Ingo
