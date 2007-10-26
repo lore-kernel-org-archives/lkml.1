@@ -1,29 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXJZJOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbXJZJQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbXJZJOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbXJZJOQ
+	id S1755851AbXJZJQk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXJZJQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:14:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:65456 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbXJZJOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:14:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=tjgTTB59ZWlebdioImg946x+378ycgvmSObgOq/P++t2dNRDP8Oviw3z2ZFX9JUV7s785e8WYiLl5k6hXus/ZXvzlr7QvnQg81PPlu+m96yIIyt+1Ovhwodw8ELs2mTppDcbKeREDTt+i3+IsHJUjQ/lBPOsvbJprclHBjJulD8=
-Message-ID: <d87a754f0710260214v78d65192r3be1c72e1a0f82f6@mail.gmail.com>
-Date: Fri, 26 Oct 2007 14:44:14 +0530
-From: "Madhur Ahuja" <ahuja.madhur@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 
+	Fri, 26 Oct 2007 05:16:33 -0400
+Received: from www.tglx.de ([62.245.132.106]:32977 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbXJZJQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:16:32 -0400
+Date: Fri, 26 Oct 2007 11:16:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Lothian <mike@fireburn.co.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Possibility of adding -march=native to x86
+In-Reply-To: <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
+Message-ID: <alpine.LFD.0.9999.0710261115130.3186@localhost.localdomain>
+References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Thu, 25 Oct 2007, Michael Lothian wrote:
+
+> Hi
+> 
+> I was wondering if it was possible to add -march=native support to the
+> processor options of the new x86 architecture if gcc 4.2 or greater is being
+> used.
+> 
+> I'm not suggesting this should be a default at all, merely an extra option
+> similar to selecting P4, Athlon or even -Os.
+> 
+> I've manually tried this flag at home with no ill effects.
+
+It works for your specific setup, but it will kill distro compiles as
+well as cross compiling.
+
+     tglx
