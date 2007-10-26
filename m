@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760469AbXJZWlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751757AbXJZWmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760469AbXJZWlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbXJZWln
+	id S1751757AbXJZWmN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXJZWlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:41:43 -0400
-Received: from mail2.opus-i.net ([209.10.181.134]:38726 "EHLO
-	FPNYEXCFE01.opus-i.corp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750719AbXJZWln (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:41:43 -0400
-Message-ID: <47226D24.30802@datallegro.com>
-Date: Fri, 26 Oct 2007 18:41:40 -0400
-From: Karl Schendel <kschendel@datallegro.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Fri, 26 Oct 2007 18:41:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34620 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751038AbXJZWlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 18:41:44 -0400
+Message-ID: <47226D23.90604@garzik.org>
+Date: Fri, 26 Oct 2007 18:41:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Zach Brown <zach.brown@oracle.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
- write
-References: <47225835.4050309@datallegro.com> <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org> <47226A75.1020008@oracle.com>
-In-Reply-To: <47226A75.1020008@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       akpm@linux-foundation.org, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de
+Subject: Re: [PATCH v2] ISDN/capidrv: address two longstanding warnings
+References: <20071026164357.GA5898@pingi.kke.suse.de>
+In-Reply-To: <20071026164357.GA5898@pingi.kke.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Oct 2007 22:41:41.0943 (UTC) FILETIME=[60F0A470:01C81821]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zach Brown wrote:
-> Linus Torvalds wrote:
->> Hmm. If I read this right, this bug seems to have been introduced by 
->> commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate clean 
->> pages before dio write") back in March.
+Karsten Keil wrote:
+> * change #warning to a code comment
 > 
-> Agreed.  And it's a really dumb bug.  ->direct_io will almost always
-> return -EIOCBQUEUED for aio dio so it won't be invalidating for aio dio
-> writes.  (Notice that the testing in that commit mentions two racing
-> processes, I bet U$1M that I only tested sync dio :/)
+> * add comment and special ifdef'd 64-bit code for a situation where
+>   we must store a pointer into a CAPI field 'Data', which is fixed by
+>   the interface at 32 bits.
+> 
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> Acked-by: Karsten Keil <kkeil@suse.de>
 
-Well, actually, in this case both processes are doing sync IO.
-It's just that the writer is direct and the reader isn't, with
-the reader usually behind the writer but close enough that
-readahead crosses the writer reasonably often.  With the
-if (retval) test, we only invalidate if nothing got written
-at all!
+thanks!
 
-I hadn't even thought of aio directio.  Yeah, the invalidate
-should happen for -EIOCBQUEUED as well, I guess.
-
-The disparity in direct-io-ness on the part of the reader
-vs writer is a userland dum-dum, no question.  (That's
-getting fixed, too.)
-
-Karl
 
