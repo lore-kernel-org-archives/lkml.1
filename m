@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765553AbXJZWa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbXJZWcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765553AbXJZWa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbXJZWaN
+	id S1765513AbXJZWcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXJZWcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:30:13 -0400
-Received: from tetsuo.zabbo.net ([207.173.201.20]:39432 "EHLO tetsuo.zabbo.net"
+	Fri, 26 Oct 2007 18:32:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41398 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757190AbXJZWaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:30:12 -0400
-Message-ID: <47226A75.1020008@oracle.com>
-Date: Fri, 26 Oct 2007 15:30:13 -0700
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Karl Schendel <kschendel@datallegro.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Leonid Ananiev <leonid.i.ananiev@linux.intel.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
- write
-References: <47225835.4050309@datallegro.com> <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754195AbXJZWcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 18:32:03 -0400
+Date: Fri, 26 Oct 2007 18:30:58 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Martin Bligh <mbligh@mbligh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, marcelo@kvack.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com, linux-mm@kvack.org
+Subject: Re: OOM notifications
+Message-ID: <20071026183058.7cef4e1b@bree.surriel.com>
+In-Reply-To: <47226325.4000404@mbligh.org>
+References: <20071018201531.GA5938@dmt>
+	<20071026140201.ae52757c.akpm@linux-foundation.org>
+	<472256AB.6060109@mbligh.org>
+	<20071026141112.18af0fa6.akpm@linux-foundation.org>
+	<20071026173550.333d8eb4@bree.surriel.com>
+	<47226325.4000404@mbligh.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Hmm. If I read this right, this bug seems to have been introduced by 
-> commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate clean 
-> pages before dio write") back in March.
+On Fri, 26 Oct 2007 14:59:01 -0700
+Martin Bligh <mbligh@mbligh.org> wrote:
 
-Agreed.  And it's a really dumb bug.  ->direct_io will almost always
-return -EIOCBQUEUED for aio dio so it won't be invalidating for aio dio
-writes.  (Notice that the testing in that commit mentions two racing
-processes, I bet U$1M that I only tested sync dio :/)
+> Rik van Riel wrote:
+> > On Fri, 26 Oct 2007 14:11:12 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> >> Sure, but in terms of high-level userspace interface, being able to
+> >> select() on a group of priority buckets (spread across different
+> >> nodes, zones and cgroups) seems a lot more flexible than any
+> >> signal-based approach we could come up with.
+> > 
+> > Absolutely, the process needs to be able to just poll or
+> > select on a file descriptor from the process main loop.
+> > 
+> > I am not convinced that the magic of NUMA memory distribution
+> > and NUMA memory pressure should be visible to userspace.  Due
+> > to the thundering herd problem we cannot wake up all of the
+> > processes that select on the filedescriptor at the same time
+> > anyway, so we can (later on) add NUMA magic to the process
+> > selection logic in the kernel to only wake up processes on
+> > the right NUMA nodes.
+> > 
+> > The initial patch probably does not need that.
+> 
+> Depends if you're using cpusets or not, I think?
 
-I think that test should be changed to
+The kernel knows on which cpuset a process can run.
 
-  if (retval < 0 && retval != -EIOCBQUEUED)
-	goto out;
+The process itself may have been relocated to a different
+cpuset at runtime, without it even knowing.
 
+Because of that I think the magic of which process(es) to wake
+up when there is memory pressure in some NUMA node should
+live in the kernel.
 
-> However, with both the old and the new code _and_ with your patch, the 
-> return code - in case the invalidate failed - was corrupted. So we may 
-> actually end up doing some IO, but then returning the "wrong" error code 
-> from the invalidate. Hmm?
-
-If the invalidation fails then the app is left with stale data in the
-page cache and current data on disk.  The return code corruption you're
-referring to was intended to communicate this scary situation to the app
-with EIO.
-
-It sucks.  Does it suck more than returning success for the dio write
-when later buffered reads will return stale data?  I dunno.  What does
-the peanut gallery think?
-
-> And maybe some day we can all agree that direct_IO is crap and should not 
-> be done.
-
-Chris (Mason) and I certainly love the idea of getting rid of
-fs/direct-io.c.  Getting O_DIRECT working with the page-granular
-buffered locking rules while doing large IOs (and, as far as I know,
-potentially sector-granular) without noticeable performance regressions
-is a mess.
-
-- z
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
