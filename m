@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXJZL1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXJZL3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXJZL1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXJZL1H
+	id S1753250AbXJZL3p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXJZL3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:27:07 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:44709 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbXJZL1E (ORCPT
+	Fri, 26 Oct 2007 07:29:37 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41189 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750875AbXJZL3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:27:04 -0400
-X-Greylist: delayed 1547 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 07:27:03 EDT
-Date: Fri, 26 Oct 2007 13:00:52 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: Upcomming CRIS patches
-Message-ID: <20071026110052.GE30833@axis.com>
-References: <BFECAF9E178F144FAEF2BF4CE739C668052DE86C@exmail1.se.axis.com> <Pine.LNX.4.64.0710260217260.25424@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710260217260.25424@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 26 Oct 2007 07:29:36 -0400
+Date: Fri, 26 Oct 2007 12:31:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+ runtime service support
+Message-ID: <20071026123128.4fbe9568@the-village.bc.nu>
+In-Reply-To: <1193360591.23935.212.camel@caritas-dev.intel.com>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	<alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+	<1193360591.23935.212.camel@caritas-dev.intel.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 02:20:48AM -0400, Robert P. J. Day wrote:
-> just for the sheer heck of it, here's my current list of CRIS-related
-> "dead" CONFIG variables you may or may not want to toss before
-> committing to the main tree:
+On Fri, 26 Oct 2007 09:03:11 +0800
+"Huang, Ying" <ying.huang@intel.com> wrote:
+
+> On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
+> > > EFI runtime
+> > > services initialization are implemented in efi.c. Some x86_64
+> > > specifics are worth noting here. On x86_64, parameters passed to UEFI
+> > > firmware services need to follow the UEFI calling convention. For this
+> > > purpose, a set of functions named lin2win<x> (<x> is the number of
+> > > parameters) are implemented. EFI function calls are wrapped before
+> > > calling the firmware service.
+> > 
+> > Why needs this to be called lin2win? We do not call Windows, we call
+> > EFI services, so please use a naming convention which is related to
+> > the functionality of the code.
+> > 
+> > > + *
+> > > + *  Function calling ABI conversion from SYSV to Windows for x86_64
+> > 
+> > Again, these are wrappers to access EFI and not Windows.
 > 
-> 	$ ../find_dead_configs.sh arch/cris
-> [...]
+> EFI uses the Windows x86_64 calling convention. The lin2win may be a
+> more general naming convention that can be used for some other code (the
+> NDISwrapper?) in the future. Do you agree?
 
-Thanks! We'll clear those up in the process.
+The SYSV description is wrong as well. SYSV has no calling convention. I
+think you mean iABI or iBCS2 ?
 
-> rday
+Whats wrong with following the pattern of other calls like syscall(...)
+and just having eficall() ?
 
-Best regards,
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Alan.
