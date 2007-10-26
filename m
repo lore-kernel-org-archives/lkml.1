@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXJZVgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765975AbXJZVhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbXJZVgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759846AbXJZVgQ
+	id S1765975AbXJZVhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760488AbXJZVhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:36:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41279 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbXJZVgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:36:15 -0400
-Date: Fri, 26 Oct 2007 17:35:50 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Bligh <mbligh@mbligh.org>, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, drepper@redhat.com, linux-mm@kvack.org
-Subject: Re: OOM notifications
-Message-ID: <20071026173550.333d8eb4@bree.surriel.com>
-In-Reply-To: <20071026141112.18af0fa6.akpm@linux-foundation.org>
-References: <20071018201531.GA5938@dmt>
-	<20071026140201.ae52757c.akpm@linux-foundation.org>
-	<472256AB.6060109@mbligh.org>
-	<20071026141112.18af0fa6.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 17:37:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38966 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757909AbXJZVhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:37:42 -0400
+Date: Fri, 26 Oct 2007 14:37:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <1193433992.5032.102.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0710261436070.18899@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+  <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com> 
+ <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com> 
+ <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com> 
+ <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com> 
+ <20071025185506.8c373aa8.pj@sgi.com>  <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+  <1193412644.5032.13.camel@localhost>  <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+  <20071026120037.7b95a136.pj@sgi.com>  <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+  <1193433239.5032.95.camel@localhost>  <Pine.LNX.4.64.0710261415580.18139@schroedinger.engr.sgi.com>
+ <1193433992.5032.102.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 14:11:12 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, 26 Oct 2007, Lee Schermerhorn wrote:
 
-> Sure, but in terms of high-level userspace interface, being able to
-> select() on a group of priority buckets (spread across different
-> nodes, zones and cgroups) seems a lot more flexible than any
-> signal-based approach we could come up with.
+> > > Now, if we could replace the 'cpuset_mems_allowed' nodemask with a
+> > > pointer to something stable, it might be a win.
+> > 
+> > The memory policies are already shared and have refcounters for that 
+> > purpose.
+> 
+> I must have missed that in the code I'm reading :)
 
-Absolutely, the process needs to be able to just poll or
-select on a file descriptor from the process main loop.
-
-I am not convinced that the magic of NUMA memory distribution
-and NUMA memory pressure should be visible to userspace.  Due
-to the thundering herd problem we cannot wake up all of the
-processes that select on the filedescriptor at the same time
-anyway, so we can (later on) add NUMA magic to the process
-selection logic in the kernel to only wake up processes on
-the right NUMA nodes.
-
-The initial patch probably does not need that.
-
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+What is the benefit of having pointers to nodemasks? We likely would need 
+to have refcounts in those nodemasks too? So we duplicate a lot of 
+the characteristics of memory policies?
