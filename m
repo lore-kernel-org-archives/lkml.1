@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765256AbXJZVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbXJZVPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765256AbXJZVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXJZVOS
+	id S1765727AbXJZVPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbXJZVPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:14:18 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:43292 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754149AbXJZVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:14:17 -0400
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Paul Jackson <pj@sgi.com>, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	 <20071025185506.8c373aa8.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	 <1193412644.5032.13.camel@localhost>
-	 <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	 <20071026120037.7b95a136.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 26 Oct 2007 17:13:58 -0400
-Message-Id: <1193433239.5032.95.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 26 Oct 2007 17:15:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:22914 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753925AbXJZVPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:15:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=ZfZBoO7O/aaX0Gn9tD/3WiqUD/zciLRaLe19ldCosJMxflKwmvxH+qDHrL+7vpOKMfz+PpsTC0I3dUjdixqCksEk5BI8208hGS+4hFopyqZG5XYu5R+Ga8nv2ZbQTS3iFXAIDwzYcaW9lVHwLGBXOqifREZktLgUpS1LeT/bezc=
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [Rt2400-devel] [PATCH] rt2500usb - Don't claim 050d:705{0/a}
+Date: Fri, 26 Oct 2007 23:34:54 +0200
+User-Agent: KMail/1.9.7
+Cc: Adam Baker <linux@baker-net.org.uk>, rt2400-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-stuff@comcast.net
+References: <alpine.DEB.0.99.0710241909250.18618@parag-desktop> <200710262058.56188.linux@baker-net.org.uk> <adaejfhzlnh.fsf@cisco.com>
+In-Reply-To: <adaejfhzlnh.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710262334.54684.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 13:45 -0700, David Rientjes wrote:
-> On Fri, 26 Oct 2007, Paul Jackson wrote:
+On Friday 26 October 2007, Roland Dreier wrote:
+>  > The function that is returning ENODEV is the driver probe function. According 
+>  > to Documentation/DocBook/writing_usb_driver/ch03.html when that function is 
+>  > called 
+>  > 
+>  > "The driver now needs to verify that this device is actually one that it can 
+>  > accept. If so, it returns 0. If not, or if any error occurs during 
+>  > initialization, an errorcode (such as -ENOMEM or -ENODEV) is returned from 
+>  > the probe function."
+>  > 
+>  > It isn't a device the driver can accept so it returns -ENODEV
 > 
-> > Without at least this sort of change to MPOL_INTERLEAVE nodemasks,
-> > allowing either empty nodemasks (Lee's proposal) or extending them
-> > outside the current cpuset (what I'm cooking up now), there is no way
-> > for a task that is currently confined to a single node cpuset to say
-> > anything about how it wants be interleaved in the event that it is
-> > subsequently moved to a larger cpuset.  Currently, such a task is only
-> > allowed to pass exactly one particular nodemask to set_mempolicy
-> > MPOL_INTERLEAVE calls, with exactly the one bit corresponding to its
-> > current node.  No useful information can be passed via an API that only
-> > allows a single legal value.
-> > 
-> 
-> Well, passing a single node to set_mempolicy() for MPOL_INTERLEAVE doesn't 
-> make a whole lot of sense in the first place.  I prefer your solution of 
-> allowing set_mempolicy(MPOL_INTERLEAVE, NODE_MASK_ALL) to mean "interleave 
-> me over everything I'm allowed to access."  NODE_MASK_ALL would be stored 
-> in the struct mempolicy and used later on mpol_rebind_policy().
+> That's all true but irrelevant.  That error return isn't propagated
+> back to userspace when it runs modprobe (and in fact it *can't* be
+> sanely returned to userspace -- what do you do if the probe function
+> succeeds for two devices and fails for a third?).  So there's not
+> really any way for userspace to loop through a list of modules until
+> one succeeds.
 
-You don't need to save the entire mask--just note that NODE_MASK_ALL was
-passed--like with my internal MPOL_CONTEXT flag.  This would involve
-special casing NODE_MASK_ALL in the error checking, as currently
-set_mempolicy() complains loudly if you pass non-allowed nodes--see
-"contextualize_policy()".  [mbind() on the other hand, appears to allow
-any nodemask, even outside the cpuset.  guess we catch this during
-allocation.]  This is pretty much the spirit of my patch w/o the API
-change/extension [/improvement :)]
+We are mixing 2 things up I think.
 
-For some systems [not mine], the nodemasks can get quite large.  I have
-a patch, that I've tested  atop Mel Gorman's "onezonelist" patches that
-replaces the nodemasks embedded in struct mempolicy with pointers to
-dynamically allocated ones.  However, it's probably not much of a win,
-memorywise, if most of the uses are for interleave and bind
-policies--both of which would always need the nodemasks in addition to
-the pointers.
+We have module loading, which is called when the module is loaded and
+will register what PCI or USB devices it supports.
+And we have hardware probing, which results in the kernel calling the probe()
+function of the usb_driver or pci_driver structure.
 
-Now, if we could replace the 'cpuset_mems_allowed' nodemask with a
-pointer to something stable, it might be a win.
+The the return value of the module loading is not an issue, since indeed that is called
+while the hardware might not be present.
+The hardware probing _is_ called when the hardware is present, reason is simple,
+hotplugging detects the new card and checks all registered USB/PCI ID's for a driver
+that matches the device. If it matches the probe() function is called.
+And that is where the ENODEV error could be checked, if the driver decides that the
+plugged in device it was offere by the kernel is not a device it supports it needs
+to tell that to the kernel. In turn the kernel can continue looking into the registered
+USB/PCI ID lists to find a different driver that does support the hardware.
 
-Lee
-
-
+Ivo
