@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764608AbXJZWje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXJZWkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764608AbXJZWje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXJZWj1
+	id S1758981AbXJZWkq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXJZWkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:39:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:57259 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753477AbXJZWj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:39:26 -0400
-Date: Sat, 27 Oct 2007 00:37:37 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
-In-Reply-To: <47225F6C.5000708@ct.jp.nec.com>
-Message-ID: <alpine.LFD.0.9999.0710270035110.3186@localhost.localdomain>
-References: <47195763.1090803@ct.jp.nec.com> <20071024063434.GC4622@in.ibm.com> <471F72AD.8030902@ct.jp.nec.com> <4720D933.3080703@ct.jp.nec.com> <47225F6C.5000708@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 18:40:37 -0400
+Received: from adsl-67-117-79-109.dsl.sntc01.pacbell.net ([67.117.79.109]:4470
+	"EHLO aurum.uhlenkott.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbXJZWkg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 18:40:36 -0400
+Date: Fri, 26 Oct 2007 15:40:35 -0700
+From: Jason Uhlenkott <jasonuhl@jasonuhl.org>
+To: Mike Waychison <mikew@google.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/1] Drop CAP_SYS_RAWIO requirement for FIBMAP
+Message-ID: <20071026224035.GB27037@aurum.uhlenkott.net>
+References: <20071025230758.945535769@crlf.corp.google.com> <20071026012217.4cc30390@the-village.bc.nu> <20071026215550.GA27037@aurum.uhlenkott.net> <4722635D.901@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4722635D.901@google.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Hiroshi Shimamoto wrote:
-
-Added Venki to CC
-
-> > I'm now testing crash on 32bit, but there is an issue before
-> > applying the patches. My machine stopped at checking 'hlt'
-> > after kexec, showing below message.
-> > 
-> > CPU: Intel(R) Xeon(TM) CPU 3.80GHz stepping 0a
-> > Checking 'hlt' instruction...
-> > 
-> v2.6.23.1 works fine for 1st kernel.
-> > I'm investigating it..
+On Fri, Oct 26, 2007 at 14:59:57 -0700, Mike Waychison wrote:
+> Jason Uhlenkott wrote:
+> >Additionally, ext3_bmap() has this to say about it:
+> >
+> >        if (EXT3_I(inode)->i_state & EXT3_STATE_JDATA) {
+> >                /*
+> >                 * This is a REALLY heavyweight approach, but the use of
+> >                 * bmap on dirty files is expected to be extremely rare:
+> >                 * only if we run lilo or swapon on a freshly made file
+> >                 * do we expect this to happen.
+> >                 *
+> >                 * (bmap requires CAP_SYS_RAWIO so this does not
+> >                 * represent an unprivileged user DOS attack --- we'd be
+> >                 * in trouble if mortal users could trigger this path at
+> >                 * will.)
 > 
-> I found that the following patch makes my machine stopped.
-> bfe0c1cc6456bba1f4e3cc1fe29c0ea578ac763a
-> x86: HPET force enable for ICH5
-> 
-> It means that after applied this patch, HPET is enabled
-> automatically on 1st kernel and after crash/kexec the 2nd
-> kernel stopped at checking 'hlt'.
-> 
-> I also tested the latest kernel(2.6.24-rc1-gec3b67c1).
-> Boot parameter "nohpet" resolves this issue and kdump
-> works well on 32bit.
-> So I guess HPET affects this.
-> But I don't know why 64bit kernel with HPET is OK.
+> Hmm.  I don't know what the right approach to this is.  This seems to be 
+> the same situation as the delayed allocation problem, no?
 
-Hmm. Does the 64 bit code shutdown HPET and restore the IRQ routing to
-PIT and 32 bit is missing this ?
+Yup.
 
-    tglx
+> What if we just returned 0?  Tools like lilo are already doing sync(), 
+> would that cause the journal to get flushed explicitly anyway?
+
+Not sure, but I'd be pretty nervous about breaking any existing users
+which aren't explicitly syncing.
+
+Are you envisioning users who want to see where their data is landing
+for performance reasons?  It seems like such users are going to have
+sufficiently different desires from existing FIBMAP users (who need to
+know where everything is because they intend to fiddle with the raw
+device) that a different interface might be warranted.
