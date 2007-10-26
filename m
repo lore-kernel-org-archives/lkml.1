@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbXJZSTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764316AbXJZSTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbXJZSTh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXJZST3
+	id S1764316AbXJZSTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758427AbXJZSTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:19:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:64114 "EHLO
+	Fri, 26 Oct 2007 14:19:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:58939 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbXJZST2 (ORCPT
+	with ESMTP id S1756044AbXJZSTa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:19:28 -0400
-Subject: Re: [RFC] full suspend/resume support for i915 DRM driver
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Greg KH <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200710261112.19716.jbarnes@virtuousgeek.org>
-References: <200710181401.50470.jbarnes@virtuousgeek.org>
-	 <200710260957.15137.jbarnes@virtuousgeek.org>
-	 <3ae72650710261010p195e2228h91c9cb11829c2a77@mail.gmail.com>
-	 <200710261112.19716.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Fri, 26 Oct 2007 20:21:05 +0200
-Message-Id: <1193422865.2190.18.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/ohPzxteF/r46mBumQx+YZdT8851IxpVjoYKG
- /H+C3uovESSbVrJ5j5YJryTZqJZ5IhSwXpJOYXYNrtyE1rpI0C
- Z6KqZOxaRu7JAo74kjtKxJGzor3AbTu
+	Fri, 26 Oct 2007 14:19:30 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Fix CONFIG_SMP=n build break
+Date: Fri, 26 Oct 2007 20:19:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+References: <20071026165510.GA2323@lixom.net>
+In-Reply-To: <20071026165510.GA2323@lixom.net>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710262019.12094.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19a9FXDJKg0hCTvKtUcoexYHR1Ny+lUsZ3tVyz
+ h9UNoyW6eVasFC3VejXwmJ/+FQ+HAd+NITmSVXyg4v3XNO/sOW
+ Kh4pzMIrSoFE7xiBcR8Jg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 11:12 -0700, Jesse Barnes wrote:
-> On Friday, October 26, 2007 10:10 am Kay Sievers wrote:
-> > The conversion is already queued in Greg's tree, and in -mm:
-> > http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f
-> >=driver/drm-convert-from-class_device-to-device-in-drivers-char-drm.pa
-> >tch;h=f993183d1cb017f981cc2232d17930af40459bd8;hb=HEAD
-> 
-> Hm, I've done it slightly differently, by adding an actual device to the 
-> drm_device structure...  I'll post it once I've cleaned it up a little 
-> more.
+On Friday 26 October 2007, Olof Johansson wrote:
+> Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
+>
+> arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
+> arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to
+> `.iic_get_target_id' arch/powerpc/platforms/built-in.o: In function
+> `iic_init_IRQ':
+> arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to
+> `.iic_setup_cpu'
 
-Sure, as long as "struct class_device" is no longer used in the code,
-and you don't embed two "struct device" device structures in a single
-object, all should be fine.
-We plan to remove "struct class_device" soon from the kernel. :)
+Thanks for reporting this.
 
-Thanks,
-Kay
+> --- a/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+> +++ b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+> @@ -75,9 +75,11 @@ static u64 int_stat_get(struct spu *spu, int class)
+>  
+>  static void cpu_affinity_set(struct spu *spu, int cpu)
+>  {
+> +#ifdef CONFIG_SMP
+>         u64 target = iic_get_target_id(cpu);
+>         u64 route = target << 48 | target << 32 | target << 16;
+>         out_be64(&spu->priv1->int_route_RW, route);
+> +#endif
+>  }
 
+I think here it would be better to move iic_get_target_id out of
+CONFIG_SMP as well. We might want to kexec from an SMP kernel into
+a UP kernel, and in that case, cpu_affinity_set() should better
+reset the routing to CPU 0.
+
+	Arnd <><
