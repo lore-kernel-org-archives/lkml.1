@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbXJZQrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761496AbXJZQuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763663AbXJZQrm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXJZQre
+	id S1761496AbXJZQuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbXJZQt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:47:34 -0400
-Received: from lixom.net ([66.141.50.11]:40108 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754940AbXJZQre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:47:34 -0400
-Date: Fri, 26 Oct 2007 11:55:10 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: [PATCH] [POWERPC] Fix CONFIG_SMP=n build breaks
-Message-ID: <20071026165510.GA2323@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 26 Oct 2007 12:49:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50795 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754049AbXJZQt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 12:49:57 -0400
+Date: Fri, 26 Oct 2007 09:48:33 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, Francois Romieu <romieu@fr.zoreil.com>
+Cc: Romano Giannetti <romanol@upcomillas.es>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Edward Hsu <edward_hsu@realtek.com.tw>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc1 fails with lockup - /sbin/ifconfig / inet_ioctl() /
+ dev_close() / rtl8169_down()
+Message-ID: <20071026094833.539a69aa@freepuppy.rosehill>
+In-Reply-To: <20071026063733.GA12426@elte.hu>
+References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
+	<1193232344.32208.0.camel@localhost>
+	<20071024142759.GA13657@elte.hu>
+	<1193241191.14314.8.camel@localhost>
+	<20071024155521.GA16690@elte.hu>
+	<1193242267.6914.6.camel@twins>
+	<1193378269.17910.4.camel@localhost>
+	<20071026063733.GA12426@elte.hu>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
+On Fri, 26 Oct 2007 08:37:33 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
-arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
-arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
-arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
+> 
+> * Romano Giannetti <romanol@upcomillas.es> wrote:
+> 
+> > > Does this help?
+> > 
+> > I tried this, but although I have the D-state processes, I cannot see 
+> > any debug trace now. Results are at:
+> > 
+> > http://www.dea.icai.upcomillas.es/romano/linux/info/2624rc1_3/
+> > 
+> > Can I try anything more? This is quite a show-stopper for me... and 
+> > before trying to bisect 11Mbyte of patches...
+> 
+> hm, from your log it appears that lockdep did not find anything, still 
+> the hang does trigger.
+> 
+> it's /sbin/ifconfig and inet_ioctl() / dev_close() / rtl8169_down() that 
+> seems to be hanging. I've extracted the relevant backtrace below. I've 
+> Cc:-ed people who might have a better idea about what's going on.
+> 
+> 	Ingo
 
+Are you building with NAPI enabled or not. Looks like the following
+might help the non-napi case.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 151fd8b..222678f 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -158,6 +158,11 @@ static unsigned int iic_get_irq(void)
- 	return virq;
- }
- 
-+void iic_setup_cpu(void)
-+{
-+	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
-+}
-+
- #ifdef CONFIG_SMP
- 
- /* Use the highest interrupt priorities for IPI */
-@@ -166,11 +171,6 @@ static inline int iic_ipi_to_irq(int ipi)
- 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
- }
- 
--void iic_setup_cpu(void)
--{
--	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
--}
--
- void iic_cause_IPI(int cpu, int mesg)
+--- a/drivers/net/r8169.c	2007-10-24 21:38:43.000000000 -0700
++++ b/drivers/net/r8169.c	2007-10-26 09:46:07.000000000 -0700
+@@ -2989,13 +2989,16 @@ static void rtl8169_down(struct net_devi
  {
- 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
-diff --git a/arch/powerpc/platforms/cell/spu_priv1_mmio.c b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
-index 67fa724..e5e08ac 100644
---- a/arch/powerpc/platforms/cell/spu_priv1_mmio.c
-+++ b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
-@@ -75,9 +75,11 @@ static u64 int_stat_get(struct spu *spu, int class)
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+-	unsigned int poll_locked = 0;
+ 	unsigned int intrmask;
  
- static void cpu_affinity_set(struct spu *spu, int cpu)
- {
-+#ifdef CONFIG_SMP
- 	u64 target = iic_get_target_id(cpu);
- 	u64 route = target << 48 | target << 32 | target << 16;
- 	out_be64(&spu->priv1->int_route_RW, route);
+ 	rtl8169_delete_timer(dev);
+ 
+ 	netif_stop_queue(dev);
+ 
++#ifdef CONFIG_R8169_NAPI
++	napi_disable(&tp->napi);
 +#endif
- }
++
+ core_down:
+ 	spin_lock_irq(&tp->lock);
  
- static u64 mfc_dar_get(struct spu *spu)
+@@ -3009,11 +3012,6 @@ core_down:
+ 
+ 	synchronize_irq(dev->irq);
+ 
+-	if (!poll_locked) {
+-		napi_disable(&tp->napi);
+-		poll_locked++;
+-	}
+-
+ 	/* Give a racing hard_start_xmit a few cycles to complete. */
+ 	synchronize_sched();  /* FIXME: should this be synchronize_irq()? */
+ 
+
+
+
+
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
