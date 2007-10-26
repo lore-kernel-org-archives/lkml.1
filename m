@@ -1,71 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764156AbXJZQdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXJZQgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764156AbXJZQdK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 12:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXJZQc5
+	id S1764097AbXJZQgr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 12:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXJZQgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 12:32:57 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:59619 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754079AbXJZQc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 12:32:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=Ulc/2JrIM1TT9nkp6XUBjQmjtjJ+zjY0D6224HR5tyNBxuf2H0T0h2K+bYafHbjDbsdgJppvFYKcDxgUJudweVatc7lo9lOOHpfLnplKMf8ie9/ykdNIgfrGATyWaw7Q;
-Message-ID: <472216A5.8070908@simon.arlott.org.uk>
-Date: Fri, 26 Oct 2007 17:32:37 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Tilman Schmidt <tilman@imap.cc>, Adrian Bunk <bunk@kernel.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to	static
- interface)
-References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026155833.GF23016@kroah.com>
-In-Reply-To: <20071026155833.GF23016@kroah.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 12:36:32 -0400
+Received: from waste.org ([66.93.16.53]:56548 "EHLO cinder.waste.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751241AbXJZQgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 12:36:31 -0400
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+X-PatchBomber: http://selenic.com/scripts/mailpatches
+Cc: Dave Hansen <haveblue@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
+In-Reply-To: <1.430487409@selenic.com>
+Message-Id: <2.430487409@selenic.com>
+Subject: [PATCH 1/12] maps4: add proportional set size accounting in smaps
+Date: Fri, 26 Oct 2007 11:36:27 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/10/07 16:58, Greg KH wrote:
-> On Fri, Oct 26, 2007 at 11:46:39AM +0200, Tilman Schmidt wrote:
->> On Thu, 25 Oct 2007 19:56:47 -0700, Greg KH wrote:
->> > I'm trying to compile a list of all known external modules and drivers
->> > and work to get them included in the main kernel tree to help prevent
->> > these kinds of things.  If you know of any that are not on the list at:
->> > 	http://linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
->> > please feel free to add them, or email me with the needed information
->> > and I will add them to the list.
->> 
->> That's certainly helpful, but I still think there will always be
->> a number of external modules that cannot be merged right now or at
->> all, and deliberately making life difficult for out-of-tree code
->> maintainers in order to coerce them into submitting their code for
->> inclusion in the kernel will not work, it'll only create bad
->> feelings.
-> 
-> Do you have examples of proof of this?  Read
-> Documentation/stable_api_nonsense.txt for how we already make
-> out-of-tree code developer's lives hell :)
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 
-The change makes it much harder to develop in tree too. Also, this really 
-needs to be reverted and put in the feature removal schedule... unless 
-you intend to deliberately make all out of tree LSMs unusable with no 
-warning and no time to have them added to the kernel? We're already at 
-2.6.24-rc1.
+The "proportional set size" (PSS) of a process is the count of pages it has
+in memory, where each page is divided by the number of processes sharing
+it.  So if a process has 1000 pages all to itself, and 1000 shared with one
+other process, its PSS will be 1500.
 
--- 
-Simon Arlott
+               - lwn.net: "ELC: How much memory are applications really using?"
+
+The PSS proposed by Matt Mackall is a very nice metic for measuring an
+process's memory footprint.  So collect and export it via
+/proc/<pid>/smaps.
+
+Matt Mackall's pagemap/kpagemap and John Berthels's exmap can also do the
+job.  They are comprehensive tools.  But for PSS, let's do it in the simple
+way.
+
+Cc: John Berthels <jjberthels@gmail.com>
+Cc: Bernardo Innocenti <bernie@codewiz.org>
+Cc: Padraig Brady <P@draigBrady.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Hugh Dickins <hugh@veritas.com>
+---
+
+ fs/proc/task_mmu.c |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletion(-)
+
+Index: l/fs/proc/task_mmu.c
+===================================================================
+--- l.orig/fs/proc/task_mmu.c	2007-10-16 21:13:47.000000000 -0500
++++ l/fs/proc/task_mmu.c	2007-10-22 15:53:12.000000000 -0500
+@@ -114,6 +114,25 @@ static void pad_len_spaces(struct seq_fi
+ 	seq_printf(m, "%*c", len, ' ');
+ }
+ 
++/*
++ * Proportional Set Size(PSS): my share of RSS.
++ *
++ * PSS of a process is the count of pages it has in memory, where each
++ * page is divided by the number of processes sharing it.  So if a
++ * process has 1000 pages all to itself, and 1000 shared with one other
++ * process, its PSS will be 1500.
++ *
++ * To keep (accumulated) division errors low, we adopt a 64bit
++ * fixed-point pss counter to minimize division errors. So (pss >>
++ * PSS_SHIFT) would be the real byte count.
++ *
++ * A shift of 12 before division means (assuming 4K page size):
++ * 	- 1M 3-user-pages add up to 8KB errors;
++ * 	- supports mapcount up to 2^24, or 16M;
++ * 	- supports PSS up to 2^52 bytes, or 4PB.
++ */
++#define PSS_SHIFT 12
++
+ struct mem_size_stats
+ {
+ 	unsigned long resident;
+@@ -122,6 +141,7 @@ struct mem_size_stats
+ 	unsigned long private_clean;
+ 	unsigned long private_dirty;
+ 	unsigned long referenced;
++	u64 pss;
+ };
+ 
+ struct pmd_walker {
+@@ -195,6 +215,7 @@ static int show_map_internal(struct seq_
+ 		seq_printf(m,
+ 			   "Size:           %8lu kB\n"
+ 			   "Rss:            %8lu kB\n"
++			   "Pss:            %8lu kB\n"
+ 			   "Shared_Clean:   %8lu kB\n"
+ 			   "Shared_Dirty:   %8lu kB\n"
+ 			   "Private_Clean:  %8lu kB\n"
+@@ -202,6 +223,7 @@ static int show_map_internal(struct seq_
+ 			   "Referenced:     %8lu kB\n",
+ 			   (vma->vm_end - vma->vm_start) >> 10,
+ 			   mss->resident >> 10,
++			   (unsigned long)(mss.pss >> (10 + PSS_SHIFT)),
+ 			   mss->shared_clean  >> 10,
+ 			   mss->shared_dirty  >> 10,
+ 			   mss->private_clean >> 10,
+@@ -226,6 +248,7 @@ static void smaps_pte_range(struct vm_ar
+ 	pte_t *pte, ptent;
+ 	spinlock_t *ptl;
+ 	struct page *page;
++	int mapcount;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+@@ -242,16 +265,19 @@ static void smaps_pte_range(struct vm_ar
+ 		/* Accumulate the size in pages that have been accessed. */
+ 		if (pte_young(ptent) || PageReferenced(page))
+ 			mss->referenced += PAGE_SIZE;
+-		if (page_mapcount(page) >= 2) {
++		mapcount = page_mapcount(page);
++		if (mapcount >= 2) {
+ 			if (pte_dirty(ptent))
+ 				mss->shared_dirty += PAGE_SIZE;
+ 			else
+ 				mss->shared_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << PSS_SHIFT) / mapcount;
+ 		} else {
+ 			if (pte_dirty(ptent))
+ 				mss->private_dirty += PAGE_SIZE;
+ 			else
+ 				mss->private_clean += PAGE_SIZE;
++			mss->pss += (PAGE_SIZE << PSS_SHIFT);
+ 		}
+ 	}
+ 	pte_unmap_unlock(pte - 1, ptl);
