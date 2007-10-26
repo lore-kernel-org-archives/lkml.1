@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764849AbXJZSZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbXJZS0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764849AbXJZSZL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbXJZSY4
+	id S1765020AbXJZS0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbXJZS0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:24:56 -0400
-Received: from ns.suse.de ([195.135.220.2]:42514 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755108AbXJZSYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:24:55 -0400
-Date: Fri, 26 Oct 2007 11:26:05 -0700
-From: John Johansen <jjohansen@suse.de>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 35/45] Allow permission functions to tell between parent and leaf checks
-Message-ID: <20071026182605.GB32415@suse.de>
-References: <20071026064024.243943043@suse.de> <20071026064051.877606581@suse.de> <1193401943.11953.3.camel@moss-spartans.epoch.ncsc.mil>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VrqPEDrXMn8OVzN4"
-Content-Disposition: inline
-In-Reply-To: <1193401943.11953.3.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 26 Oct 2007 14:26:15 -0400
+Received: from mail2.racsa.co.cr ([196.40.31.26]:34228 "EHLO
+	barracuda6.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756198AbXJZS0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 14:26:13 -0400
+X-ASG-Debug-ID: 1193423162-5bc2000e0000-xx1T2L
+X-Barracuda-URL: http://172.16.1.15:8000/cgi-bin/mark.cgi
+Date: Fri, 26 Oct 2007 12:25:58 -0600 (CST)
+From: Joseph Parmelee <jparmele@wildbear.com>
+X-X-Sender: jparmele@bruno
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: Re: Old version of lilo fails to boot 2.6.23
+Subject: Re: Old version of lilo fails to boot 2.6.23
+In-reply-to: <4721194F.1040202@zytor.com>
+Message-id: <Pine.LNX.4.64.0710260131280.17830@bruno>
+References: <Pine.LNX.4.64.0710151600090.15578@bruno>
+ <20071025014746.96e5e776.akpm@linux-foundation.org>
+ <47211070.4090502@zytor.com> <4721194F.1040202@zytor.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Barracuda-Connect: UNKNOWN[172.16.7.13]
+X-Barracuda-Start-Time: 1193423162
+X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at racsa.co.cr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---VrqPEDrXMn8OVzN4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 26, 2007 at 08:32:23AM -0400, Stephen Smalley wrote:
-> On Thu, 2007-10-25 at 23:40 -0700, jjohansen@suse.de wrote:
-> > plain text document attachment (parent-permission.diff)
-> > Set the LOOKUP_CONTINUE flag when checking parent permissions. This all=
-ows
-> > permission functions to tell between parent and leaf checks.
-> >=20
-> > Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-> > Signed-off-by: John Johansen <jjohansen@suse.de>
-> >=20
-> > ---
-> >  fs/namei.c |    6 ++++++
-> >  1 file changed, 6 insertions(+)
-> >=20
-> > --- a/fs/namei.c
-> > +++ b/fs/namei.c
-> > @@ -1472,6 +1472,10 @@ static int may_delete(struct inode *dir,
-> >  	BUG_ON(victim->d_parent->d_inode !=3D dir);
-> >  	audit_inode_child(victim->d_name.name, victim, dir);
-> > =20
-> > +#if 0
-> > +	if (nd)
-> > +		nd->flags |=3D LOOKUP_CONTINUE;
-> > +#endif
->=20
-> #if 0?
->=20
-Oops, thanks I missed that one.
 
-regards
-john
+On Thu, 25 Oct 2007, H. Peter Anvin wrote:
 
---VrqPEDrXMn8OVzN4
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> H. Peter Anvin wrote:
+>> [Ancient LILO boot problem]
+>> 
+>> Joseph, could you try this patch on your ancient-LILO setup?
+>> 
+>
+> Actually, please try this one instead.
+>
+> 	-hpa
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQFHIjE9i/GH5xuqKCcRAiJBAJsGZNf973fNCEYcMbXzADKPyhlmlwCeIYoY
-OnOthvY9BZthzFEPYTKBgDk=
-=5E5F
------END PGP SIGNATURE-----
+This patch will work in my particular case, though it appears to violate the
+rules about getting too close to the EBDA (SP=0xB000 on entry).
 
---VrqPEDrXMn8OVzN4--
+The boot loader is responsible for loading the kernel loader at a suitable
+location in low memory, but I don't understand why the boot loader should be
+involved in setting the stack at all.  If we explicitly allocate the stack
+as part of the .data segment, why not just play it safe and in all cases
+fully set up the stack in header.S?  This insures that the stack pointer is
+not zero, is as low as possible to stay out of the EBDA, and that ss=ds;
+quite irrespective of what the boot loader does.
+
+What am I missing?
+
+
+Regards,
+
+Joseph
+
+
+Please CC me directly as I am no longer subscribed to the list.
