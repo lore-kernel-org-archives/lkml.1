@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbXJZEe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXJZEni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbXJZEe0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 00:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXJZEeT
+	id S1756076AbXJZEni (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 00:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXJZEna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 00:34:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43720 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750875AbXJZEeS (ORCPT
+	Fri, 26 Oct 2007 00:43:30 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:50999 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbXJZEna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 00:34:18 -0400
-Date: Thu, 25 Oct 2007 21:34:15 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
-       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071025213415.e08d85d5.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<20071025192945.82962eea.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
-	<20071025201455.acb4e72c.pj@sgi.com>
-	<alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Oct 2007 00:43:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uk2/3NBIs3vX+fWvx/vMHUt+sRQl+nPFpVJbEV464XikhuothIHEOFSMvhjBbPmzfy0OYvZqxAX6U6B3cR8CIYgxwcztD54STZwqT7VETsM68mihiDhYNBGykJePSSwztQqqiycxy+DOAzWWnxw6DdarO7dSGU1FphIHMSyTPuE=
+Message-ID: <a8e1da0710252143t18278e1eg5544d900df24ddc9@mail.gmail.com>
+Date: Fri, 26 Oct 2007 12:43:28 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [linux-usb-devel] usb+sysfs: duplicate filename 'bInterfaceNumber'
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Matthew Dharm" <mdharm-kernel@one-eyed-alien.net>, bbpetkov@yahoo.de,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>
+In-Reply-To: <20071026032809.GA21901@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071025090659.GA2847@darkstar.te-china.tietoenator.com>
+	 <20071025181156.GB10720@kroah.com>
+	 <a8e1da0710251901r56c27efdkc7ca729c0bac003d@mail.gmail.com>
+	 <20071026024201.GA21311@kroah.com>
+	 <a8e1da0710252011j16ef486fvcee7816ce628b2e@mail.gmail.com>
+	 <20071026032809.GA21901@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> I think that documenting the change in the man page as saying that
-> "the nodemask will include all allowed nodes if the mems_allowed
-> of a memory_spread_user cpuset is expanded" is better.
-
-Ok.  I'm inclined the other way, but not certain enough of my
-position to push the point any further.
-
-Good enough.
-
-> I've got a few fixes for my patchset queued so I'll resend it later
-
-Ok.  Good work - thanks.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+On 10/26/07, Greg KH <greg@kroah.com> wrote:
+> On Fri, Oct 26, 2007 at 11:11:22AM +0800, Dave Young wrote:
+> > On 10/26/07, Greg KH <greg@kroah.com> wrote:
+> > > > Anyway the sysfs_dirent_exist is useful for extern use, How about add
+> > > > and export this function? Greg, If you agree, I would send it as
+> > > > another patch.
+> > >
+> > > What would need that function?
+> > I think the function is needed sometimes except for files related to
+> > devices like usb and others that could be removed suddenly.
+>
+> Almost all types of devices can now be removed "suddenly" from a system.
+> Hm, I almost don't know of a type that can _not_ be removed anymore...
+>
+> But if you have a patch that needs this function, I'd be glad to
+> reconsider.
+Not yet,  anyway thank you very much :)
