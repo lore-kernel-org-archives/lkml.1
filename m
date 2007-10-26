@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765972AbXJZVR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765742AbXJZVSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765972AbXJZVR2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762224AbXJZVRT
+	id S1765742AbXJZVSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759234AbXJZVRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:17:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37666 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757408AbXJZVRT (ORCPT
+	Fri, 26 Oct 2007 17:17:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45522 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760177AbXJZVRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:17:19 -0400
-Date: Fri, 26 Oct 2007 14:17:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <1193433239.5032.95.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0710261415580.18139@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-  <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com> 
- <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com> 
- <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com> 
- <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com> 
- <20071025185506.8c373aa8.pj@sgi.com>  <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-  <1193412644.5032.13.camel@localhost>  <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-  <20071026120037.7b95a136.pj@sgi.com>  <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
- <1193433239.5032.95.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 17:17:52 -0400
+Date: Fri, 26 Oct 2007 14:13:58 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [AppArmor 00/45] AppArmor security module overview
+Message-ID: <20071026141358.38342c0f@laptopd505.fenrus.org>
+In-Reply-To: <200710262244.57147.agruen@suse.de>
+References: <20071026064024.243943043@suse.de>
+	<20071026073721.618b4778@laptopd505.fenrus.org>
+	<200710262244.57147.agruen@suse.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Lee Schermerhorn wrote:
+On Fri, 26 Oct 2007 22:44:56 +0200
+Andreas Gruenbacher <agruen@suse.de> wrote:
 
-> For some systems [not mine], the nodemasks can get quite large.  I have
-> a patch, that I've tested  atop Mel Gorman's "onezonelist" patches that
-> replaces the nodemasks embedded in struct mempolicy with pointers to
-> dynamically allocated ones.  However, it's probably not much of a win,
-> memorywise, if most of the uses are for interleave and bind
-> policies--both of which would always need the nodemasks in addition to
-> the pointers.
+> On Friday 26 October 2007 16:37, Arjan van de Ven wrote:
+> > In addition, I'd like to ask you to put a file in Documentation/
+> > somewhere that describes what AppArmor is intended security
+> > protection is (it's different from SELinux for sure for example);
+> > by having such a document for each LSM user, end users and distros
+> > can make a more informed decision which module suits their
+> > requirements... and it also makes it possible to look at the
+> > implementation to see if it has gaps to the intent, without getting
+> > into a pissing contest about which security model is better; but
+> > unless the security goals are explicitly described that's a trap
+> > that will keep coming back... so please spend some time on getting
+> > a good description going here..
 > 
-> Now, if we could replace the 'cpuset_mems_allowed' nodemask with a
-> pointer to something stable, it might be a win.
+> Hmm, I agree that it makes sense to give a short overview of each
+> LSM. A description of the AppArmor model and implementation can be
+> found in the directory that John referred to actually. I'm unsure how
+> much of that makes sense under Documentation/ -- what do you think? 
+> 
+>  http://forgeftp.novell.com/apparmor/LKML_Submission-Oct-07/techdoc.pdf
+> 
+> I guess actual end user information doesn't belong in the kernel
+> sources; that really seems wrong.
+> 
 
-The memory policies are already shared and have refcounters for that 
-purpose.
+My main concern for now is a description of what it tries to protect
+against/in what cases you would expect to use it. THe reason for asking
+this explicitly is simple: Until now the LSM discussions always ended
+up in a nasty mixed up mess around disagreeing on the theoretical model
+of what to protect against and the actual implementation of the threat
+protection. THe only way I can think of to get out of this mess is to
+have the submitter of the security model give a description of what his
+protection model is (and unless it's silly, not argue about that), and
+then only focus on how the code manages to achieve this model, to make
+sure there's no big gaps in it, within its own goals/reference.
+
+On the first part (discussion of the model) I doubt we can get people
+to agree, that's pretty much phylosophical... on the second part (how
+well the code/design lives up to its own goals) the analysis can be
+objective and technical.
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
