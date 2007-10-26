@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXJZDhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXJZDka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbXJZDhp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 23:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXJZDhg
+	id S1763526AbXJZDka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 23:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXJZDkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 23:37:36 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:42837 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750759AbXJZDhf (ORCPT
+	Thu, 25 Oct 2007 23:40:23 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43988
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbXJZDkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 23:37:35 -0400
-X-Greylist: delayed 1490 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Oct 2007 23:37:34 EDT
-Date: Fri, 26 Oct 2007 12:12:36 +0900 (JST)
-Message-Id: <20071026.121236.96687354.nemoto@toshiba-tops.co.jp>
-To: rmk+lkml@arm.linux.org.uk
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] serial: do not call ->pm() on initialization for
- console port
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20071025213644.GA30141@flint.arm.linux.org.uk>
-References: <20071026.010510.59032545.anemo@mba.ocn.ne.jp>
-	<20071025134044.58ca9d35.akpm@linux-foundation.org>
-	<20071025213644.GA30141@flint.arm.linux.org.uk>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Oct 2007 23:40:21 -0400
+Date: Thu, 25 Oct 2007 20:45:31 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ray Lee <ray-lk@madrabbit.org>, Chris Wright <chrisw@sous-sol.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <20071025232150.25d6e5bd@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0710252042250.21140@asgard.lang.hm>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com>
+ <20071025002356.GB3660@sequoia.sous-sol.org>
+ <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+ <20071025024131.6082e4a8@the-village.bc.nu>
+ <2c0942db0710251117k37c30b2ex5cc6d8cd8c9ea029@mail.gmail.com>
+ <20071025232150.25d6e5bd@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 13:40:44 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Now rc1 is released.  Any chances for this patch?
-> > If none, I should push other workaround to fix this issue on 2.6.24.
-> 
-> I don't know what patch you're referring to.  I don't appear to have
-> whatever-patch-this-is queued up anywhere?
+On Thu, 25 Oct 2007, Alan Cox wrote:
 
-Here is an original patch I proposed (http://lkml.org/lkml/2007/10/18/292)
+>>> There is a ton of evidence both in computing and outside of it which
+>>> shows that poor security can be very much worse than no security at all.
+>>
+>> (So, I take it that you *don't* lock your bike up, as poor security is
+>> worse than none?)
+>
+> On the contrary because I know it is not secure I would
+>
+> a) Insure it
 
-------------------------------------------------------
-Subject: serial: do not call ->pm() on initialization for console port
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+and the unsurance company would have a clause in the policy that wouldn't 
+cover you unless you used a lock, becouse they recognise that while it 
+wouldn't stop everyone there is a large group of potential thieves that it 
+would stop.
 
-If the port was already enabled as a serial console, there is no need
-to call pm callback to power it up.  This patch fixes serial console
-initialization on serial_txx9 driver.
+> b) Not waste vast amounts of money on a useless expensive lock
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 68aa4da..5a38076 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2326,7 +2326,6 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
- 	}
- 
- 	state->port = port;
--	state->pm_state = -1;
- 
- 	port->cons = drv->cons;
- 	port->info = state->info;
-@@ -2336,6 +2335,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
- 	 * initialised.
- 	 */
- 	if (!(uart_console(port) && (port->cons->flags & CON_ENABLED))) {
-+		state->pm_state = -1;
- 		spin_lock_init(&port->lock);
- 		lockdep_set_class(&port->lock, &port_lock_key);
- 	}
+who said the lock was expensive? and while you are not willing to spend 
+money on a lock you are willing to spend (much more) money on an insurance 
+policy.
 
-On Thu, 25 Oct 2007 22:36:44 +0100, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> "Further investigation" is quite a good indication that a patch needs to
-> be worked on, no?  In any case, I'm ill at the moment, so things are very
-> much on hold.
+David Lang
 
-OK, then I'd like to propose this alternative
-(http://lkml.org/lkml/2007/10/18/301).  This should be work regardless
-of the patch above.
-
-------------------------------------------------------
-Subject: serial: Fix serial_txx9 console initialization
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-
-Now serial_core calls ->pm() on initialization even if the port was
-used for console.  This behaviour breaks serial_txx9 console since The
-serial_txx9 driver initialize its port entirely on its ->pm() method
-if new state was 0.  This patch adds checking for oldstate value to
-fix this probelm.
-
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
-index 6846a6c..7ad2192 100644
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -657,7 +657,15 @@ static void
- serial_txx9_pm(struct uart_port *port, unsigned int state,
- 	      unsigned int oldstate)
- {
--	if (state == 0)
-+	/*
-+	 * If oldstate was -1 this is called from
-+	 * uart_configure_port().  In this case do not initialize the
-+	 * port now, because the port was already initialized (for
-+	 * non-console port) or should not be initialized here (for
-+	 * console port).  If we initialized the port here we lose
-+	 * serial console settings.
-+	 */
-+	if (state == 0 && oldstate != -1)
- 		serial_txx9_initialize(port);
- }
-
-
+> c) Make sure the bike looked not worth stealing
+> d) Take the saddle with me
+>
+> (or the software versions of that
+>
+> a) Keep backups
+> b) Not waste vast amounts of money on bogus security software
+> c) Keep the system looking uninteresting
+> d) Encrypt the data)
+>
+>> 'Inappropriate risks' nowadays is surfing the web and opening up mail
+>> attachments that claim to be movies of dancing bears. I'd argue that
+>> users have a reasonable expectation that these are things that should
+>> 'just work,' and be safe, much as normal humans have an expectation
+>> that their car isn't going to explode when they turn the ignition.
+>
+> Yes and its very clear from the things said by politicians that if the
+> computer software people don't do this soon, the legislators will make
+> very sure they do by stripping away all the techniques used to hide from
+> liability for failure.
+>
+>> Perfect is the enemy of good, or words to that effect, right? My point
+>> is that requiring perfection out of a security framework is a bar
+>> that's going to be awfully difficult to reach (and when it supposedly
+>> has been achieved, as in SELinux, mere mortals find it too troublesome
+>> to run with as it's far too difficult to configure). Security can and
+>> should be done in layers, and what one may miss, another may catch.
+>
+> Absolutely - but those layers should do whatever they do *right* and
+> really do it, whether they are complex whole system controls like SELinux
+> or simple network security tools.
+>
+> Alan
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
