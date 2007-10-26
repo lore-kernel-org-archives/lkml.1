@@ -1,118 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763936AbXJZHTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbXJZHcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763936AbXJZHTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 03:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765536AbXJZHRU
+	id S1755757AbXJZHcb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 03:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXJZHcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 03:17:20 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:3728 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765465AbXJZHRR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 03:17:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=DM6wIO38AFbw+CnDR2ZFUThSttWqHhyprJXfpLPJsFTQAgaoKcSXQUE2MyXetRSPGcKdS3vCx4sDV8gWcPHhRYIHKmvrfX8UJYE3IFE4LFvE3pwNSJjfzHiA+5Lg/NfJjSrahaM7GXrmn6QC4t/oXyopGB5jdWI/zhC4+3fy3qM=
-Message-ID: <877aabc40710260017s76d9df1cq5f0dec00920a6772@mail.gmail.com>
-Date: Fri, 26 Oct 2007 12:47:15 +0530
-From: "Amit Shah" <amitshah@gmx.net>
-To: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: sata_nv: MCP51: SWNCQ messages
+	Fri, 26 Oct 2007 03:32:23 -0400
+Received: from [202.201.0.146] ([202.201.0.146]:47104 "HELO eyou.net"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752344AbXJZHcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 03:32:21 -0400
+X-EYOU-SPAMVALUE: 0
+X-EYOU-DEALDRC: 
+Message-ID: <393446269.11911@eyou.net>
+X-EYOUMAIL-SMTPAUTH: wangbj@lzu.edu.cn
+From: "Wang, Baojun" <wangbj@lzu.edu.cn>
+Organization: dslab
+To: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: kernel 2.6.23 CFS problem?
+Date: Fri, 26 Oct 2007 15:32:20 +0800
+User-Agent: KMail/1.9.7
+References: <200710261057.48179.wangbj@lzu.edu.cn> <20071026044502.GB2458@hacking> <393381760.18886@lzu.edu.cn>
+In-Reply-To: <393381760.18886@lzu.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart7560291.IPLfLnFu3f";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: c6417b1333927991
+Message-Id: <200710261532.22265.wangbj@lzu.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is what I get even with your libata-dev tree, upstream-linus
-branch pulled on top of 2.6.24-rc1
+--nextPart7560291.IPLfLnFu3f
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_EgZIHFv48fbWKZR"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-[   22.427990] NFORCE-MCP51: IDE controller (0x10de:0x0265 rev 0xa1)
-at  PCI slot 0000:00:0d.0
-[   22.428006] NFORCE-MCP51: not 100% native mode: will probe irqs later
-[   22.428011] NFORCE-MCP51: 0000:00:0d.0 (rev a1) UDMA133 controller
-[   22.428016]     ide0: BM-DMA at 0xf400-0xf407, BIOS settings:
-hda:DMA, hdb:DMA
-[   22.428024]     ide1: BM-DMA at 0xf408-0xf40f, BIOS settings:
-hdc:DMA, hdd:DMA
-[   22.428030] Probing IDE interface ide0...
-[   22.440137] sd 1:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[   22.440148] sd 1:0:0:0: [sda] Write Protect is off
-[   22.440150] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[   22.440161] sd 1:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[   22.440197] sd 1:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[   22.440204] sd 1:0:0:0: [sda] Write Protect is off
-[   22.440206] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[   22.440216] sd 1:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[   22.440219]  sda:hda: HL-DT-ST DVDRAM GSA-H44N, ATAPI CD/DVD-ROM drive
-[   23.404042] hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-[   23.405095] hda: selected mode 0x44
-[   23.405573] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-[   23.408351] Probing IDE interface ide1...
-[   23.934284] hda: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB
-Cache, UDMA(66)
-[   23.934293] Uniform CD-ROM driver Revision: 3.20
-[   52.394470] ata2: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-[   52.394475] ata2: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
-[   52.394476]   dhfis 0x0 dmafis 0x1 sdbfis 0x0
-[   52.394479] ata2: ATA_REG 0x40 ERR_REG 0x0
-[   52.394480] ata2: tag : dhfis dmafis sdbfis sacitve
-[   52.394482] ata2: tag 0x0: 0 1 0 0
-[   52.394493] ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
-[   52.394498] ata2.00: cmd 60/08:00:00:00:00/00:00:00:00:00/40 tag 0
-cdb 0x0 data 4096 in
-[   52.394499]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[   52.394501] ata2.00: status: { DRDY }
-[   52.394508] ata2: hard resetting link
-[   52.849792] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[   52.971677] ata2.00: configured for UDMA/133
-[   52.971685] ata2: EH complete
-[   52.971749] sd 1:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[   52.971759] sd 1:0:0:0: [sda] Write Protect is off
-[   52.971760] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[   52.971773] sd 1:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[   82.926704] ata2: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-[   82.926736] ata2: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
-[   82.926737]   dhfis 0x0 dmafis 0x1 sdbfis 0x0
-[   82.926766] ata2: ATA_REG 0x40 ERR_REG 0x0
-[   82.926792] ata2: tag : dhfis dmafis sdbfis sacitve
-[   82.926819] ata2: tag 0x0: 0 1 0 0
-[   82.926854] ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
-[   82.926885] ata2.00: cmd 60/08:00:00:00:00/00:00:00:00:00/40 tag 0
-cdb 0x0 data 4096 in
-[   82.926887]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[   82.926918] ata2.00: status: { DRDY }
-[   82.926949] ata2: hard resetting link
-[   83.382022] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[   83.509315] ata2.00: configured for UDMA/133
-[   83.509324] ata2: EH complete
-[   83.509385] sd 1:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[   83.509395] sd 1:0:0:0: [sda] Write Protect is off
-[   83.509397] sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[   83.509409] sd 1:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[  113.463919] ata2: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-[  113.463949] ata2: SWNCQ:qc_active 0x1 defer_bits 0x0 last_issue_tag 0x0
-[  113.463950]   dhfis 0x0 dmafis 0x1 sdbfis 0x0
-[  113.463980] ata2: ATA_REG 0x40 ERR_REG 0x0
-[  113.464006] ata2: tag : dhfis dmafis sdbfis sacitve
-[  113.464033] ata2: tag 0x0: 0 1 0 0
-[  113.464065] ata2.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
-[  113.464097] ata2.00: cmd 60/08:00:00:00:00/00:00:00:00:00/40 tag 0
-cdb 0x0 data 4096 in
-[  113.464098]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[  113.464129] ata2.00: status: { DRDY }
+--Boundary-01=_EgZIHFv48fbWKZR
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+On Friday 26 October 2007 14:47:02, you wrote=EF=BC=9A
+> On Fri, 2007-10-26 at 12:45 +0800, WANG Cong wrote:
+> > On Fri, Oct 26, 2007 at 10:57:45AM +0800, Wang, Baojun wrote:
+> > >hi, list
+> > >
+> > >  I've upgraded my kernel from 2.6.22.9 to 2.6.23 when it was out, Aft=
+er
+> > > that I can't install ELDK 4.1 anymore (The one I installed was
+> > > crashed), it always stopped at preparing install package XXX (or YYY
+> > > sometimes), I've waited for a very long time(more than 1 hour), but it
+> > > still the same. After I switch back to kernel 2.6.22.9, everything is
+> > > fine. Is there somebody have the some problem like me?
+> >
+> > What's your XXX or YYY?
+In the attachment
+> > What error messages did you get?
+No error message, but the installation just "freeze", I've waited for more=
+=20
+than 1 hour, but still no progress, with 2.6.22.9 it was fine.
+> > Why don't you try to update your glibc or something like that?
+glibc is 2.6.1
+> > I am afraid it's off-topic here.
+>
+> Not necessarily so if kernel version indeed makes the difference between
+> hung install and successful completion.
+>
+> Perhaps he has any tasks stuck in 'D' state?  If so, SysRq-t output for
+> these would be a good thing to collect.  What leads him to suspect the
+> process scheduler, etc.  More details are needed.
+The task is S+ state, please see in the attachment tarball, SysRq-t output =
+has=20
+also been attached, I wish it would help. I doubt it's the CFS problem=20
+because it's first introduced into the 2.6.23 kernel.
+> (I went looking for this package, but there are several, and they're
+> huge)
+>
+> 	-Mike
 
--- 
-Amit Shah
-http://www.amitshah.net/
+Wang
+
+=2D-=20
+Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0Lanzhou University
+Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0http://dslab.lzu.edu.cn
+School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
+ngbj@lzu.edu.cn
+Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
+Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
+
+--Boundary-01=_EgZIHFv48fbWKZR
+Content-Type: application/x-tbz;
+  name="report.tar.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="report.tar.bz2"
+
+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
+9Gb6/CHKJH/xdyRThQkFfTRJwA==
+
+--Boundary-01=_EgZIHFv48fbWKZR--
+
+--nextPart7560291.IPLfLnFu3f
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHIZgEIuIOr7tpgg0RAj1rAKCiCLnbZ5Znah9F+oP+B+Hpf9NvvwCdEqdg
+P4t6/ZQnMOmj0W1MMK5r53U=
+=xAsU
+-----END PGP SIGNATURE-----
+
+--nextPart7560291.IPLfLnFu3f--
