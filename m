@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXJZM6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbXJZNLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbXJZM6i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 08:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758815AbXJZM6N
+	id S1757026AbXJZNLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 09:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXJZNL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 08:58:13 -0400
-Received: from cpc1-cmbg8-0-0-cust558.cmbg.cable.ntl.com ([82.6.106.47]:38241
-	"EHLO zebedee.littlepinkcloud.COM" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753880AbXJZM6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 08:58:11 -0400
-X-Greylist: delayed 3500 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 08:58:04 EDT
+	Fri, 26 Oct 2007 09:11:27 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:35703 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbXJZNL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 09:11:26 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: trenn@suse.de
+Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with ACPI Operation Region resources
+Date: Fri, 26 Oct 2007 07:09:19 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Jean Delvare <khali@linux-fr.org>
+References: <1193236319.4590.225.camel@queen.suse.de> <200710252159.11594.bjorn.helgaas@hp.com> <1193395520.4590.349.camel@queen.suse.de>
+In-Reply-To: <1193395520.4590.349.camel@queen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18209.54926.290448.957962@zebedee.pink>
-Date: Fri, 26 Oct 2007 12:59:10 +0100
-From: Andrew Haley <aph@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: davids@webmaster.com, "Torvalds, Linus" <torvalds@linux-foundation.org>,
-       "Kleen, Andi" <ak@suse.de>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <200710260922.54428.nickpiggin@yahoo.com.au>
-References: <MDEHLPKNGKAHNMBLJOLKMEEDHMAC.davids@webmaster.com>
-	<200710260922.54428.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 22.0.93.1
+Content-Disposition: inline
+Message-Id: <200710260709.20716.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin writes:
- > Can you retain cc list, please?
- > 
- > On Friday 26 October 2007 07:42, David Schwartz wrote:
+On Friday 26 October 2007 4:45:20 am Thomas Renninger wrote:
+> On Thu, 2007-10-25 at 21:59 -0600, Bjorn Helgaas wrote:
+> > On Thursday 25 October 2007 4:55:07 pm Thomas Renninger wrote:
 
- > > 	I asked a collection of knowledgeable people I know about the
- > > issue. The consensus is that the optimization is not permitted in
- > > POSIX code but that it is permitted in pure C code. The basic
- > > argument goes like this:
- > >
- > > 	To make POSIX-compliant code even possible, surely
- > > optimizations that add writes to variables must be
- > > prohibited. That is -- if POSIX prohibits writing to a variable
- > > in certain cases only the programmer can detect, then a
- > > POSIX-compliant compiler cannot write to a variable except where
- > > explicitly told to do so. Any optimization that *adds* a write to
- > > a variable that would not otherwise occur *must* be prohibited.
+> > > Also the BIOS developers seem to choose the regions in a very dump way
+> > > sometimes.
+> > > Just some imaginary values, but I saw similar (overlapping):
+> > >  - For a PNP device IO ports from 0x400-0x410 are reserved
+> > >  - A operation region is declared from 0x399-0x401
+> >
+> > If we know the resources the opregion can use, we can at least
+> > reserve the union of those used by the opregion and by other
+> > PNP devices.  A little messy to deal with overlapping areas, I
+> > agree, but it should still be possible by shrinking the region
+> > or allocating a port at a time or something.
+>
+> You mean merging them together to something like:
+>   0x400-0x410 pnp device
+>   0x399       ACPI Op region's name
+> This needs touching of kernel/resource.c and modification in a very ugly
+> way affecting all architectures...
 
-I don't think that POSIX is quite as explicit as that.  See
-http://www.hpl.hp.com/techreports/2004/HPL-2004-209.pdf
+Right, that's what I was thinking.  But I haven't tried it, so I'll
+take your word for it that it's ugly.
 
- > > 	Otherwise, it is literally impossible to comply with the POSIX
- > > requirement that concurrent modifications and reads to shared
- > > variables take place while holding a mutex.
- > 
- > Now all you have to do is tell this to the gcc developers ;)
+> Maybe the list set up by this patch set should be similarly exported
+> like /proc/ioports /proc/iomem
+> to where ever appropriate (maybe /sys/devices/system/acpi/opreg_io
+> and /sys/devices/system/acpi/opreg_mem?) to get a better overview what
+> kind of devices are served by the Op regions on different machines.
 
-We're listening, really.  It's unacceptable that gcc should break
-code.
+I want to try hard to avoid making ACPI a special case in this way.
+The current /proc/io{ports,mem} contains reservations for everything
+else.  I'd hate to have to look two places just because of ACPI.
 
-However, fixing it is hard.  The best plan is probably to implement
-(part of) the proposed standard memory model, and that requires
-careful consideration.  We could in theory simply disable this
-particular optimization, but that probably isn't a good idea on its
-own because other optimizations might well break other code in a
-similar way.  We need to have a very close look at the thread-safe
-memory model in order to determine where we do things that might
-break.
+> I think I worked on something else.
+> Do I get this right:
+> This one is to request all active resources of all ACPI devices that
+> export resources via _CRS/_SRS?
+> As this is currently done for the motherboard devices only by
+> pnp/system.c?
 
-An official standard containing this is still at least two years out.
+Right.  Actually my patch requests resources of all active PNP devices,
+not just ACPI.  Glad we didn't do overlapping work here :-)
 
-Andrew.
+> If you are interested I can try to fast cleanup and send you a
+> pre-version of all patches (but not before beginning of next week).
 
--- 
-Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
-Registered in England and Wales No. 3798903
+Thanks for the preview.  No hurry as far as I'm concerned.
+
+Bjorn
