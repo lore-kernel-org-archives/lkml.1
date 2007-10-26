@@ -1,71 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXJZL3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbXJZLaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbXJZL3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXJZL3h
+	id S1752095AbXJZLaH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJZL3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:29:37 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41189 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750875AbXJZL3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:29:36 -0400
-Date: Fri, 26 Oct 2007 12:31:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
- runtime service support
-Message-ID: <20071026123128.4fbe9568@the-village.bc.nu>
-In-Reply-To: <1193360591.23935.212.camel@caritas-dev.intel.com>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	<alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-	<1193360591.23935.212.camel@caritas-dev.intel.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 26 Oct 2007 07:29:53 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50447 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753551AbXJZL3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 07:29:51 -0400
+Subject: Re: [AppArmor 32/45] Enable LSM hooks to distinguish operations on
+	file descriptors from operations on pathnames
+From: Miklos Szeredi <mszeredi@suse.cz>
+To: jjohansen@suse.de
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>
+In-Reply-To: <20071026064051.393728475@suse.de>
+References: <20071026064024.243943043@suse.de>
+	 <20071026064051.393728475@suse.de>
+Content-Type: text/plain
+Date: Fri, 26 Oct 2007 13:30:52 +0200
+Message-Id: <1193398252.4721.7.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 09:03:11 +0800
-"Huang, Ying" <ying.huang@intel.com> wrote:
+On Thu, 2007-10-25 at 23:40 -0700, jjohansen@suse.de wrote:
+> plain text document attachment (file-handle-ops.diff)
+> Struct iattr already contains ia_file since commit cc4e69de from 
+> Miklos (which is related to commit befc649c). Use this to pass
+> struct file down the setattr hooks. This allows LSMs to distinguish
+> operations on file descriptors from operations on paths.
 
-> On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
-> > > EFI runtime
-> > > services initialization are implemented in efi.c. Some x86_64
-> > > specifics are worth noting here. On x86_64, parameters passed to UEFI
-> > > firmware services need to follow the UEFI calling convention. For this
-> > > purpose, a set of functions named lin2win<x> (<x> is the number of
-> > > parameters) are implemented. EFI function calls are wrapped before
-> > > calling the firmware service.
-> > 
-> > Why needs this to be called lin2win? We do not call Windows, we call
-> > EFI services, so please use a naming convention which is related to
-> > the functionality of the code.
-> > 
-> > > + *
-> > > + *  Function calling ABI conversion from SYSV to Windows for x86_64
-> > 
-> > Again, these are wrappers to access EFI and not Windows.
+There's a slight problem (other than HCH not liking it) with this
+approach of passing the open file in iattr:  for special files, the
+struct file pointer makes no sense to the filesystem, since it is always
+opened by the generic functions.
+
+This wasn't a problem with ftruncate(), because that one only works on
+regular files, but fchmod/fchown/futimes will work on special files as
+well, and the filesystem interpreting file->private_data could cause
+nasty bugs. 
+
+So I think the correct solution (which was suggested by Trond and
+others) is to define an f_op->fsetattr() method, which interested
+filesystems can define.
+
+Miklos
+
 > 
-> EFI uses the Windows x86_64 calling convention. The lin2win may be a
-> more general naming convention that can be used for some other code (the
-> NDISwrapper?) in the future. Do you agree?
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> Signed-off-by: John Johansen <jjohansen@suse.de>
+> Cc: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> ---
+>  fs/nfsd/vfs.c      |   12 +++++++-----
+>  fs/open.c          |   16 +++++++++++-----
+>  include/linux/fs.h |    3 +++
+>  3 files changed, 21 insertions(+), 10 deletions(-)
+> 
+> --- a/fs/nfsd/vfs.c
+> +++ b/fs/nfsd/vfs.c
+> @@ -413,7 +413,7 @@ static ssize_t nfsd_getxattr(struct dent
+>  {
+>  	ssize_t buflen;
+>  
+> -	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
+> +	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0, NULL);
+>  	if (buflen <= 0)
+>  		return buflen;
+>  
+> @@ -421,7 +421,7 @@ static ssize_t nfsd_getxattr(struct dent
+>  	if (!*buf)
+>  		return -ENOMEM;
+>  
+> -	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
+> +	return vfs_getxattr(dentry, mnt, key, *buf, buflen, NULL);
+>  }
+>  #endif
+>  
+> @@ -447,7 +447,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+>  		goto out;
+>  	}
+>  
+> -	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
+> +	error = vfs_setxattr(dentry, mnt, key, buf, len, 0, NULL);
+>  out:
+>  	kfree(buf);
+>  	return error;
+> @@ -2062,12 +2062,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+>  
+>  	mnt = fhp->fh_export->ex_mnt;
+>  	if (size)
+> -		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
+> +		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0,
+> +				     NULL);
+>  	else {
+>  		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+>  			error = 0;
+>  		else {
+> -			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
+> +			error = vfs_removexattr(fhp->fh_dentry, mnt, name,
+> +						NULL);
+>  			if (error == -ENODATA)
+>  				error = 0;
+>  		}
+> --- a/fs/open.c
+> +++ b/fs/open.c
+> @@ -594,6 +594,8 @@ asmlinkage long sys_fchmod(unsigned int 
+>  		mode = inode->i_mode;
+>  	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+>  	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+> +	newattrs.ia_valid |= ATTR_FILE;
+> +	newattrs.ia_file = file;
+>  	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+>  	mutex_unlock(&inode->i_mutex);
+>  
+> @@ -648,7 +650,7 @@ asmlinkage long sys_chmod(const char __u
+>  }
+>  
+>  static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
+> -			uid_t user, gid_t group)
+> +			uid_t user, gid_t group, struct file *file)
+>  {
+>  	struct inode * inode;
+>  	int error;
+> @@ -674,6 +676,10 @@ static int chown_common(struct dentry * 
+>  	if (!S_ISDIR(inode->i_mode))
+>  		newattrs.ia_valid |=
+>  			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
+> +	if (file) {
+> +		newattrs.ia_file = file;
+> +		newattrs.ia_valid |= ATTR_FILE;
+> +	}
+>  	mutex_lock(&inode->i_mutex);
+>  	error = notify_change(dentry, mnt, &newattrs);
+>  	mutex_unlock(&inode->i_mutex);
+> @@ -692,7 +698,7 @@ asmlinkage long sys_chown(const char __u
+>  	error = mnt_want_write(nd.mnt);
+>  	if (error)
+>  		goto out_release;
+> -	error = chown_common(nd.dentry, nd.mnt, user, group);
+> +	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+>  	mnt_drop_write(nd.mnt);
+>  out_release:
+>  	path_release(&nd);
+> @@ -717,7 +723,7 @@ asmlinkage long sys_fchownat(int dfd, co
+>  	error = mnt_want_write(nd.mnt);
+>  	if (error)
+>  		goto out_release;
+> -	error = chown_common(nd.dentry, nd.mnt, user, group);
+> +	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+>  	mnt_drop_write(nd.mnt);
+>  out_release:
+>  	path_release(&nd);
+> @@ -736,7 +742,7 @@ asmlinkage long sys_lchown(const char __
+>  	error = mnt_want_write(nd.mnt);
+>  	if (error)
+>  		goto out_release;
+> -	error = chown_common(nd.dentry, nd.mnt, user, group);
+> +	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+>  	mnt_drop_write(nd.mnt);
+>  out_release:
+>  	path_release(&nd);
+> @@ -760,7 +766,7 @@ asmlinkage long sys_fchown(unsigned int 
+>  		goto out_fput;
+>  	dentry = file->f_path.dentry;
+>  	audit_inode(NULL, dentry);
+> -	error = chown_common(dentry, file->f_path.mnt, user, group);
+> +	error = chown_common(dentry, file->f_path.mnt, user, group, file);
+>  	mnt_drop_write(file->f_vfsmnt);
+>  out_fput:
+>  	fput(file);
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -362,6 +362,9 @@ struct iattr {
+>  	 * Not an attribute, but an auxilary info for filesystems wanting to
+>  	 * implement an ftruncate() like method.  NOTE: filesystem should
+>  	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
+> +	 *
+> +	 * The LSM hooks also use this to distinguish operations on a file
+> +	 * descriptors from operations on pathnames.
+>  	 */
+>  	struct file	*ia_file;
+>  };
+> 
 
-The SYSV description is wrong as well. SYSV has no calling convention. I
-think you mean iABI or iBCS2 ?
-
-Whats wrong with following the pattern of other calls like syscall(...)
-and just having eficall() ?
-
-Alan.
