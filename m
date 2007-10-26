@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbXJZJYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbXJZJ31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbXJZJYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 05:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbXJZJYU
+	id S1757628AbXJZJ31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 05:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXJZJ3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 05:24:20 -0400
-Received: from namei.org ([69.55.235.186]:40488 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756499AbXJZJYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 05:24:19 -0400
-Date: Fri, 26 Oct 2007 19:24:03 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: John Johansen <jjohansen@suse.de>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 34/45] Factor out sysctl pathname code
-In-Reply-To: <20071026064051.683819583@suse.de>
-Message-ID: <Xine.LNX.4.64.0710261923300.27480@us.intercode.com.au>
-References: <20071026064024.243943043@suse.de> <20071026064051.683819583@suse.de>
+	Fri, 26 Oct 2007 05:29:19 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:1083 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110AbXJZJ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 05:29:18 -0400
+Date: Fri, 26 Oct 2007 11:27:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] panic after umount (biscted)
+Message-ID: <20071026092724.GC5155@kernel.dk>
+References: <20071026070110.GA8927@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026070110.GA8927@Chamillionaire.breakpoint.cc>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007, jjohansen@suse.de wrote:
-
-> Convert the selinux sysctl pathname computation code into a standalone
-> function.
+On Fri, Oct 26 2007, Sebastian Siewior wrote:
+> After umount of 
+> /dev/md/1 on /mnt/sec type xfs (rw,nosuid,nodev,noatime,nodiratime)
 > 
-> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-> Signed-off-by: John Johansen <jjohansen@suse.de>
+> I end up with [1] on v2.6.24-rc1. It worked fine with v2.6.23. Bisec
+> came to conclusion that 
+> 
+> |fd5d806266935179deda1502101624832eacd01f is first bad commit
+> |commit fd5d806266935179deda1502101624832eacd01f
+> |Author: Jens Axboe <jens.axboe@oracle.com>
+> |Date:   Tue Oct 16 11:05:02 2007 +0200
+> |
+> |    block: convert blkdev_issue_flush() to use empty barriers
+> |    
+> |    Then we can get rid of ->issue_flush_fn() and all the driver private
+> |    implementations of that.
+> |    
+> |    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> |
+> |:040000 040000 75f5c511fd785fa4c75b955f1818c382593a22ec adf460e288740ca9c0b5ab823dfc2ca04980f3d2 M      block
+> |:040000 040000 a972fe9a2433a00c79fd5ead584c482cd08b4b2c 0f4534094b63fe21c5cf8a6170736abe5c518c00 M      drivers
+> |:040000 040000 ba2a9f681826db89ba5192a7db7139baecde786a fc68a77a41d25c283f39f712216566e9b36d00fc M      include
+> 
+> is the bad boy here.
+> The last panic (with first bad commit) is [2] (there is almost no 
+> difference). My .config [3], lspci [4], bisec-log [5]. The md1 
+> raid is a
+> 
+> |Personalities : [raid1] 
+> |md1 : active raid1 sda2[1]
+> |      174843328 blocks [2/1] [_U]
+> |
+> 
+> I hope this was usefull. Now, I'm going to rebuild my raid now....
+> 
+> [1] http://download.breakpoint.cc/bug/bug_rc1.jpeg 166 KiB
+> [2] http://download.breakpoint.cc/bug/bug_last_commit.jpeg 217 KiB
+> [3] http://download.breakpoint.cc/bug/config.txt 27 KiB
+> [4] http://download.breakpoint.cc/bug/lspci.txt 2.3 KiB
+> [5] http://download.breakpoint.cc/bug/git-bisect-log.txt 2.3K
 
-Reviewed-by: James Morris <jmorris@namei.org>
-
-
+Thanks a lot, a full report on this issue. Will get this fixed up asap.
 
 -- 
-James Morris
-<jmorris@namei.org>
+Jens Axboe
+
