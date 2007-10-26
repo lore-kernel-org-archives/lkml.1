@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759039AbXJZOwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbXJZOyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759039AbXJZOwv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 10:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXJZOwo
+	id S1760855AbXJZOyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXJZOyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 10:52:44 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:34746 "EHLO
-	outbound5-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751941AbXJZOwn (ORCPT
+	Fri, 26 Oct 2007 10:54:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53832 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750702AbXJZOyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 10:52:43 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: [PATCH] [LXFB] Use the correct MSR number for panel support
-To: linux-fbdev-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, tibor.osztodi@bbraun.com,
-       linux-info@geode.amd.com
-Date: Fri, 26 Oct 2007 08:53:01 -0600
-Message-ID: <20071026145301.14168.19412.stgit@cosmic.amd.com>
-User-Agent: StGIT/0.13
+	Fri, 26 Oct 2007 10:54:12 -0400
+Date: Fri, 26 Oct 2007 07:52:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: [PATCH 09/10] Change table chaining layout
+In-Reply-To: <18209.29891.911465.715995@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.LFD.0.999.0710260742140.30120@woody.linux-foundation.org>
+References: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+ <471DCBB2.9020706@panasas.com> <alpine.LFD.0.999.0710230808260.30120@woody.linux-foundation.org>
+ <200710251840.02157.rusty@rustcorp.com.au>
+ <alpine.LFD.0.999.0710250834390.30120@woody.linux-foundation.org>
+ <18209.29891.911465.715995@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 26 Oct 2007 14:52:25.0595 (UTC)
- FILETIME=[D272E4B0:01C817DF]
-X-WSS-ID: 6B3F20A32IW283342-01-01
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jordan Crouse <jordan.crouse@amd.com>
-
-A relatively recent version of the Geode LX datasheet listed the wrong
-address for one of the MSRs that controls TFT panels, resulting in 
-breakage.  This patch corrects the MSR address.
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
----
-
- drivers/video/geode/lxfb.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
-index 6c227f9..ca13c48 100644
---- a/drivers/video/geode/lxfb.h
-+++ b/drivers/video/geode/lxfb.h
-@@ -33,7 +33,7 @@ void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
- 
- #define MSR_LX_GLD_CONFIG    0x48002001
- #define MSR_LX_GLCP_DOTPLL   0x4c000015
--#define MSR_LX_DF_PADSEL     0x48000011
-+#define MSR_LX_DF_PADSEL     0x48002011
- #define MSR_LX_DC_SPARE      0x80000011
- #define MSR_LX_DF_GLCONFIG   0x48002001
- 
 
 
+On Fri, 26 Oct 2007, Paul Mackerras wrote:
+>
+> Linus Torvalds writes:
+> 
+> > Nobody should *ever* walk the list to find the length. Does anybody really 
+> > do that? Yes, we pass the thing down, but do people *need* it?
+> 
+> Yes, I need it for devices that use the macintosh DBDMA
+> (descriptor-based DMA) hardware.  The DBDMA hardware reads an array of
+> descriptors from system RAM, so I need to allocate an array and fill
+> it in with DBDMA command blocks (and then dma-map it and point the
+> device at it).
 
+Yes, for allocation purposes you'd need the size ahead of time, agreed. 
+Otherwise you have to walk the list twice.
+
+> Maybe the drivers for devices that use DBDMA are now buggy.  Certainly
+> filling in the array of DBDMA command blocks involves walking the
+> list, but it would extremely useful to know how much to allocate
+> before we start filling them in.  So we at least need an upper bound
+> on the number of "real" entries, even if we don't have the exact
+> number.
+
+Hmm. Depending on where you do this, and if this is some block-layer 
+specific driver/code (rather than necessarily a generic SG thing), you do 
+have the req->nr_phys_segments thing which should be that for you (ie the 
+SG list may have _fewer_ requests in it in case some of those entries got 
+squashed together due to be contiguous).
+
+But yeah, I don't think it would be wrong at all to have a
+
+	struct scatterlist_head {
+		unsigned int entries;
+		unsigned int flags;	/* ? */
+		struct scatterlist *sg;
+	};
+
+which would be passed down at higher levels.
+
+		Linus
