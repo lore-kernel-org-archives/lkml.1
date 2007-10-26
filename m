@@ -1,160 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXJZSwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXJZSza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbXJZSwd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 14:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXJZSw1
+	id S1759369AbXJZSza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 14:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXJZSzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 14:52:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:43857 "EHLO mail.goop.org"
+	Fri, 26 Oct 2007 14:55:21 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47755 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750940AbXJZSw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 14:52:26 -0400
-Message-ID: <47223755.4030707@goop.org>
-Date: Fri, 26 Oct 2007 11:52:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752517AbXJZSzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 14:55:19 -0400
+Date: Fri, 26 Oct 2007 11:55:11 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mhoffman@lightlink.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: [PATCH] i5k_amb: Convert macros to C functions
+Message-ID: <20071026185511.GB7333@tree.beaverton.ibm.com>
+References: <20070716221429.GF2619@tree.beaverton.ibm.com> <20070730033840.GG31314@jupiter.solarsys.private> <20070730192606.GD2795@tree.beaverton.ibm.com> <200707302141.l6ULfAnT021069@e1.ny.us.ibm.com> <20070731183706.GG2795@tree.beaverton.ibm.com> <20071016125429.GG3731@jupiter.solarsys.private> <20071016230657.GA6408@tree.beaverton.ibm.com> <20071018131550.GA3526@jupiter.solarsys.private> <20071018202243.GF31309@tree.beaverton.ibm.com> <20071025161912.9e4ef550.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: Fix boot protocol KEEP_SEGMENTS check.
-References: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071025161912.9e4ef550.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> The kernel only ever supports 1 version of the boot protocol
-> so there is no need to check the boot protocol revision to
-> see if a feature is supported.
->
-> Both x86 and x86_64 support the same boot protocol so we need
-> to implement the KEEP_SEGMENTS on x86_64 as well.  It isn't
-> just paravirt bootloaders that could use this functionality.
->   
+akpm objected to some of the macros, so convert them into functions.
 
-Ack.  I was planning on sending this patch out today...
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-    J
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Vivek Goyal <vgoyal@in.ibm.com>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Cc: Zachary Amsden <zach@vmware.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/boot/compressed/head_32.S |   12 ++++--------
->  arch/x86/boot/compressed/head_64.S |    7 +++++++
->  arch/x86/kernel/asm-offsets_64.c   |   10 ++++++++++
->  3 files changed, 21 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/x86/boot/compressed/head_32.S b/arch/x86/boot/compressed/head_32.S
-> index a0ae2e7..036e635 100644
-> --- a/arch/x86/boot/compressed/head_32.S
-> +++ b/arch/x86/boot/compressed/head_32.S
-> @@ -33,24 +33,20 @@
->  	.globl startup_32
->  
->  startup_32:
-> -	/* check to see if KEEP_SEGMENTS flag is meaningful */
-> -	cmpw $0x207, BP_version(%esi)
-> -	jb 1f
-> -
-> +	cld
->  	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
->  	 * us to not reload segments */
->  	testb $(1<<6), BP_loadflags(%esi)
-> -	jnz 2f
-> +	jnz 1f
->  
-> -1:	cli
-> +	cli
->  	movl $(__BOOT_DS),%eax
->  	movl %eax,%ds
->  	movl %eax,%es
->  	movl %eax,%fs
->  	movl %eax,%gs
->  	movl %eax,%ss
-> -
-> -2:	cld
-> +1:
->  
->  /* Calculate the delta between where we were compiled to run
->   * at and where we were actually loaded at.  This can only be done
-> diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
-> index 4946764..1ccb38a 100644
-> --- a/arch/x86/boot/compressed/head_64.S
-> +++ b/arch/x86/boot/compressed/head_64.S
-> @@ -29,6 +29,7 @@
->  #include <asm/pgtable.h>
->  #include <asm/page.h>
->  #include <asm/msr.h>
-> +#include <asm/asm-offsets.h>
->  
->  .section ".text.head"
->  	.code32
-> @@ -36,11 +37,17 @@
->  
->  startup_32:
->  	cld
-> +	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
-> +	 * us to not reload segments */
-> +	testb $(1<<6), BP_loadflags(%esi)
-> +	jnz 1f
-> +
->  	cli
->  	movl	$(__KERNEL_DS), %eax
->  	movl	%eax, %ds
->  	movl	%eax, %es
->  	movl	%eax, %ss
-> +1:
->  
->  /* Calculate the delta between where we were compiled to run
->   * at and where we were actually loaded at.  This can only be done
-> diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
-> index 7e50bda..d1b6ed9 100644
-> --- a/arch/x86/kernel/asm-offsets_64.c
-> +++ b/arch/x86/kernel/asm-offsets_64.c
-> @@ -15,12 +15,16 @@
->  #include <asm/segment.h>
->  #include <asm/thread_info.h>
->  #include <asm/ia32.h>
-> +#include <asm/bootparam.h>
->  
->  #define DEFINE(sym, val) \
->          asm volatile("\n->" #sym " %0 " #val : : "i" (val))
->  
->  #define BLANK() asm volatile("\n->" : : )
->  
-> +#define OFFSET(sym, str, mem) \
-> +	DEFINE(sym, offsetof(struct str, mem))
-> +
->  #define __NO_STUBS 1
->  #undef __SYSCALL
->  #undef _ASM_X86_64_UNISTD_H_
-> @@ -109,5 +113,11 @@ int main(void)
->  	DEFINE(crypto_tfm_ctx_offset, offsetof(struct crypto_tfm, __crt_ctx));
->  	BLANK();
->  	DEFINE(__NR_syscall_max, sizeof(syscalls) - 1);
-> +
-> +	BLANK();
-> +	OFFSET(BP_scratch, boot_params, scratch);
-> +	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
-> +	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
-> +	OFFSET(BP_version, boot_params, hdr.version);
->  	return 0;
->  }
->   
+ drivers/hwmon/i5k_amb.c |   65 +++++++++++++++++++++++++++++++----------------
+ 1 files changed, 43 insertions(+), 22 deletions(-)
 
+diff --git a/drivers/hwmon/i5k_amb.c b/drivers/hwmon/i5k_amb.c
+index 7fdbe81..6ac5c6f 100644
+--- a/drivers/hwmon/i5k_amb.c
++++ b/drivers/hwmon/i5k_amb.c
+@@ -47,16 +47,35 @@
+ #define AMB_CONFIG_SIZE			2048
+ #define AMB_FUNC_3_OFFSET		768
+ 
+-#define AMB_REG_TEMP_STATUS(amb)	((amb) * AMB_CONFIG_SIZE + \
+-			AMB_FUNC_3_OFFSET + AMB_REG_TEMP_STATUS_ADDR)
+-#define AMB_REG_TEMP_MIN(amb)		((amb) * AMB_CONFIG_SIZE + \
+-			AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MIN_ADDR)
+-#define AMB_REG_TEMP_MID(amb)		((amb) * AMB_CONFIG_SIZE + \
+-			AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MID_ADDR)
+-#define AMB_REG_TEMP_MAX(amb)		((amb) * AMB_CONFIG_SIZE + \
+-			AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MAX_ADDR)
+-#define AMB_REG_TEMP(amb)		((amb) * AMB_CONFIG_SIZE + \
+-			AMB_FUNC_3_OFFSET + AMB_REG_TEMP_ADDR)
++static unsigned long amb_reg_temp_status(unsigned int amb)
++{
++	return AMB_FUNC_3_OFFSET + AMB_REG_TEMP_STATUS_ADDR +
++	       AMB_CONFIG_SIZE * amb;
++}
++
++static unsigned long amb_reg_temp_min(unsigned int amb)
++{
++	return AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MIN_ADDR +
++	       AMB_CONFIG_SIZE * amb;
++}
++
++static unsigned long amb_reg_temp_mid(unsigned int amb)
++{
++	return AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MID_ADDR +
++	       AMB_CONFIG_SIZE * amb;
++}
++
++static unsigned long amb_reg_temp_max(unsigned int amb)
++{
++	return AMB_FUNC_3_OFFSET + AMB_REG_TEMP_MAX_ADDR +
++	       AMB_CONFIG_SIZE * amb;
++}
++
++static unsigned long amb_reg_temp(unsigned int amb)
++{
++	return AMB_FUNC_3_OFFSET + AMB_REG_TEMP_ADDR +
++	       AMB_CONFIG_SIZE * amb;
++}
+ 
+ #define MAX_MEM_CHANNELS		4
+ #define MAX_AMBS_PER_CHANNEL		16
+@@ -72,8 +91,10 @@
+ #define REAL_MAX_AMBS_PER_CHANNEL	15
+ #define KNOBS_PER_AMB			5
+ 
+-#define AMB_NUM_FROM_REG(byte_num, bit_num)	((byte_num) * \
+-			MAX_AMBS_PER_CHANNEL) + (bit_num)
++static unsigned long amb_num_from_reg(unsigned int byte_num, unsigned int bit)
++{
++	return byte_num * MAX_AMBS_PER_CHANNEL + bit;
++}
+ 
+ #define AMB_SYSFS_NAME_LEN		16
+ struct i5k_device_attribute {
+@@ -121,8 +142,8 @@ static ssize_t show_amb_alarm(struct device *dev,
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct i5k_amb_data *data = dev_get_drvdata(dev);
+ 
+-	if (!(amb_read_byte(data, AMB_REG_TEMP_STATUS(attr->index)) & 0x20) &&
+-	     (amb_read_byte(data, AMB_REG_TEMP_STATUS(attr->index)) & 0x8))
++	if (!(amb_read_byte(data, amb_reg_temp_status(attr->index)) & 0x20) &&
++	     (amb_read_byte(data, amb_reg_temp_status(attr->index)) & 0x8))
+ 		return sprintf(buf, "1\n");
+ 	else
+ 		return sprintf(buf, "0\n");
+@@ -140,7 +161,7 @@ static ssize_t store_amb_min(struct device *dev,
+ 	if (temp > 255)
+ 		temp = 255;
+ 
+-	amb_write_byte(data, AMB_REG_TEMP_MIN(attr->index), temp);
++	amb_write_byte(data, amb_reg_temp_min(attr->index), temp);
+ 	return count;
+ }
+ 
+@@ -156,7 +177,7 @@ static ssize_t store_amb_mid(struct device *dev,
+ 	if (temp > 255)
+ 		temp = 255;
+ 
+-	amb_write_byte(data, AMB_REG_TEMP_MID(attr->index), temp);
++	amb_write_byte(data, amb_reg_temp_mid(attr->index), temp);
+ 	return count;
+ }
+ 
+@@ -172,7 +193,7 @@ static ssize_t store_amb_max(struct device *dev,
+ 	if (temp > 255)
+ 		temp = 255;
+ 
+-	amb_write_byte(data, AMB_REG_TEMP_MAX(attr->index), temp);
++	amb_write_byte(data, amb_reg_temp_max(attr->index), temp);
+ 	return count;
+ }
+ 
+@@ -183,7 +204,7 @@ static ssize_t show_amb_min(struct device *dev,
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct i5k_amb_data *data = dev_get_drvdata(dev);
+ 	return sprintf(buf, "%d\n",
+-		500 * amb_read_byte(data, AMB_REG_TEMP_MIN(attr->index)));
++		500 * amb_read_byte(data, amb_reg_temp_min(attr->index)));
+ }
+ 
+ static ssize_t show_amb_mid(struct device *dev,
+@@ -193,7 +214,7 @@ static ssize_t show_amb_mid(struct device *dev,
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct i5k_amb_data *data = dev_get_drvdata(dev);
+ 	return sprintf(buf, "%d\n",
+-		500 * amb_read_byte(data, AMB_REG_TEMP_MID(attr->index)));
++		500 * amb_read_byte(data, amb_reg_temp_mid(attr->index)));
+ }
+ 
+ static ssize_t show_amb_max(struct device *dev,
+@@ -203,7 +224,7 @@ static ssize_t show_amb_max(struct device *dev,
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct i5k_amb_data *data = dev_get_drvdata(dev);
+ 	return sprintf(buf, "%d\n",
+-		500 * amb_read_byte(data, AMB_REG_TEMP_MAX(attr->index)));
++		500 * amb_read_byte(data, amb_reg_temp_max(attr->index)));
+ }
+ 
+ static ssize_t show_amb_temp(struct device *dev,
+@@ -213,7 +234,7 @@ static ssize_t show_amb_temp(struct device *dev,
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct i5k_amb_data *data = dev_get_drvdata(dev);
+ 	return sprintf(buf, "%d\n",
+-		500 * amb_read_byte(data, AMB_REG_TEMP(attr->index)));
++		500 * amb_read_byte(data, amb_reg_temp(attr->index)));
+ }
+ 
+ static int __devinit i5k_amb_hwmon_init(struct platform_device *pdev)
+@@ -241,7 +262,7 @@ static int __devinit i5k_amb_hwmon_init(struct platform_device *pdev)
+ 		for (j = 0; j < REAL_MAX_AMBS_PER_CHANNEL; j++, c >>= 1) {
+ 			struct i5k_device_attribute *iattr;
+ 
+-			k = AMB_NUM_FROM_REG(i, j);
++			k = amb_num_from_reg(i, j);
+ 			if (!(c & 0x1))
+ 				continue;
+ 			d++;
