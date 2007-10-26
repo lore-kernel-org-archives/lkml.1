@@ -1,123 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbXJZUix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764668AbXJZUjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbXJZUix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXJZUiq
+	id S1764668AbXJZUjV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbXJZUjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:38:46 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43692 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbXJZUip (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:38:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH] pidns: Limit kill -1 and cap_set_all
-References: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>
-	<alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
-	<m1r6jhzmov.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Fri, 26 Oct 2007 14:37:48 -0600
-In-Reply-To: <m1r6jhzmov.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 26 Oct 2007 13:43:28 -0600")
-Message-ID: <m1k5p9zk6b.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 16:39:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:52801 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755608AbXJZUjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 16:39:09 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Bart Van Assche" <bart.vanassche@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Haley" <aph@redhat.com>
+Subject: Re: Is gcc thread-unsafe?
+From: Andi Kleen <andi@firstfloor.org>
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
+	<e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
+	<alpine.LFD.0.999.0710260814570.30120@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710260917500.30120@woody.linux-foundation.org>
+	<e2e108260710261007n118186b5geb3a48094638497f@mail.gmail.com>
+	<20071026190856.18510fc4@the-village.bc.nu>
+Date: Fri, 26 Oct 2007 22:39:07 +0200
+In-Reply-To: <20071026190856.18510fc4@the-village.bc.nu> (Alan Cox's message of "Fri\, 26 Oct 2007 19\:08\:56 +0100")
+Message-ID: <p73d4v1pq50.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+>
+> You can stop the compiler but not the CPU - and some processors will
+> certainly speculatively load across conditionals, reorder writes etc
 
-This patch implements task_in_pid_ns and uses it to limit cap_set_all
-and sys_kill(-1,) to only those tasks in the current pid namespace.
+The difference is that the CPU knows how to cancel most[1] side effects
+of these speculative accesses (e.g. by not issuing exceptions[2] etc.). 
 
-Without this we have a setup for a very nasty surprise.
+The compiler doesn't normally (except on some architectures with special support like IA64;
+but I'm not sure gcc supports it there) 
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- include/linux/pid_namespace.h |    2 ++
- kernel/capability.c           |    3 +++
- kernel/pid.c                  |   11 +++++++++++
- kernel/signal.c               |    5 ++++-
- 4 files changed, 20 insertions(+), 1 deletions(-)
+[1] In some it can't and we've had problems with that in the past. e.g. in
+a few cases speculative reads can be a problem. But we generally fix or
+workaround those cases in the code.
+[2] Modulo hardware bugs -- see the hall of shame in x86_64 fault.c
 
-diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index 0227e68..b454678 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -78,4 +78,6 @@ static inline struct task_struct *task_child_reaper(struct task_struct *tsk)
- 	return tsk->nsproxy->pid_ns->child_reaper;
- }
- 
-+extern int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns);
-+
- #endif /* _LINUX_PID_NS_H */
-diff --git a/kernel/capability.c b/kernel/capability.c
-index efbd9cd..a801016 100644
---- a/kernel/capability.c
-+++ b/kernel/capability.c
-@@ -125,6 +125,7 @@ static inline int cap_set_all(kernel_cap_t *effective,
- 			       kernel_cap_t *inheritable,
- 			       kernel_cap_t *permitted)
- {
-+     struct pid_namespace *pid_ns = current->nsproxy->pid_ns;
-      struct task_struct *g, *target;
-      int ret = -EPERM;
-      int found = 0;
-@@ -132,6 +133,8 @@ static inline int cap_set_all(kernel_cap_t *effective,
-      do_each_thread(g, target) {
-              if (target == current || is_container_init(target->group_leader))
-                      continue;
-+             if (!task_in_pid_ns(target, pid_ns))
-+		     continue;
-              found = 1;
- 	     if (security_capset_check(target, effective, inheritable,
- 						permitted))
-diff --git a/kernel/pid.c b/kernel/pid.c
-index f815455..1c332ca 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -430,6 +430,17 @@ struct pid *find_get_pid(pid_t nr)
- 	return pid;
- }
- 
-+static int pid_in_pid_ns(struct pid *pid, struct pid_namespace *ns)
-+{
-+	return pid && (ns->level <= pid->level) &&
-+		pid->numbers[ns->level].ns == ns;
-+}
-+
-+int task_in_pid_ns(struct task_struct *task, struct pid_namespace *ns)
-+{
-+	return pid_in_pid_ns(task_pid(task), ns);
-+}
-+
- pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
- {
- 	struct upid *upid;
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 1200630..8f5a31f 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1147,10 +1147,13 @@ static int kill_something_info(int sig, struct siginfo *info, int pid)
- 	} else if (pid == -1) {
- 		int retval = 0, count = 0;
- 		struct task_struct * p;
-+		struct pid_namespace *ns = current->nsproxy->pid_ns;
- 
- 		read_lock(&tasklist_lock);
- 		for_each_process(p) {
--			if (p->pid > 1 && !same_thread_group(p, current)) {
-+			if (!is_container_init(p) &&
-+			    !same_thread_group(p, current) &&
-+			    task_in_pid_ns(p, ns)) {
- 				int err = group_send_sig_info(sig, info, p);
- 				++count;
- 				if (err != -EPERM)
--- 
-1.5.3.rc6.17.g1911
-
+-Andi
