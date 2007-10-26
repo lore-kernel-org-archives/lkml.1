@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766003AbXJZXHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXJZXQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766003AbXJZXHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXJZXHj
+	id S1760592AbXJZXQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXJZXQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:07:39 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41347 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751211AbXJZXHi (ORCPT
+	Fri, 26 Oct 2007 19:16:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50126 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750779AbXJZXQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:07:38 -0400
-Date: Sat, 27 Oct 2007 01:08:07 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [2.6 patch] always export sysctl_{r,w}mem_max
-Message-ID: <20071026230807.GE30533@stusta.de>
+	Fri, 26 Oct 2007 19:16:11 -0400
+Date: Fri, 26 Oct 2007 16:14:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+cc: Karl Schendel <kschendel@datallegro.com>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Leonid Ananiev <leonid.i.ananiev@linux.intel.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
+ write
+In-Reply-To: <47227015.6060708@oracle.com>
+Message-ID: <alpine.LFD.0.999.0710261611511.30120@woody.linux-foundation.org>
+References: <47225835.4050309@datallegro.com>
+ <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
+ <47226A75.1020008@oracle.com> <alpine.LFD.0.999.0710261541410.30120@woody.linux-foundation.org>
+ <47227015.6060708@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error with CONFIG_SYSCTL=n:
 
-<--  snip  -->
 
-...
-ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
-ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
-ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
-make[2]: *** [__modpost] Error 1
+On Fri, 26 Oct 2007, Zach Brown wrote:
+> 
+> I can throw together a patch if you haven't already committed one by the
+> time you read this ;).
 
-<--  snip  -->
+I'm not touching that code except to send out possible patches for others 
+to test and comment on. I have no test-cases, nor any real interest in it. 
+So yeah, please send me a tested and thought-through patch.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+It sounded like Karl actually had a test-case to trigger this, but maybe 
+I'm confused (and it sounds a bit unlikely, since it should be hard to 
+trigger.. Although maybe you can trigger it by doing a direct_IO write 
+with the *source* being an mmap() of the file you're writing to, and 
+depending on the write itself re-populating the destination in the page 
+cache?)
 
----
-22ea6cd56e4fa844b0b1bbab2542f09eb6c9a5ab 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index febbcbc..ee1cc4f 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -2004,7 +2004,5 @@ EXPORT_SYMBOL(sock_wmalloc);
- EXPORT_SYMBOL(sock_i_uid);
- EXPORT_SYMBOL(sock_i_ino);
- EXPORT_SYMBOL(sysctl_optmem_max);
--#ifdef CONFIG_SYSCTL
- EXPORT_SYMBOL(sysctl_rmem_max);
- EXPORT_SYMBOL(sysctl_wmem_max);
--#endif
+Karl?
 
+		Linus
