@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXJZVsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXJZVtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763500AbXJZVsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXJZVsD
+	id S1765036AbXJZVtg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXJZVt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:48:03 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50160 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbXJZVsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:48:01 -0400
-Message-ID: <4722608E.3000405@garzik.org>
-Date: Fri, 26 Oct 2007 17:47:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com
-Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
-References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075808.GH6407@havoc.gtf.org>	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com> <20071026143525.b9218ed7.akpm@linux-foundation.org>
-In-Reply-To: <20071026143525.b9218ed7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Fri, 26 Oct 2007 17:49:28 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53222 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbXJZVt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 17:49:27 -0400
+Date: Fri, 26 Oct 2007 17:49:10 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC PATCH 0/2] Fix linux/swap.h build wart
+Message-ID: <20071026214910.GA11112@c2.user-mode-linux.org>
+References: <20071026192548.GA9174@c2.user-mode-linux.org> <617E1C2C70743745A92448908E030B2A02C9D4B6@scsmsx411.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <617E1C2C70743745A92448908E030B2A02C9D4B6@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> That was a goofup.  I proposed that we should add a #define
-> TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the patch,
-> but it got lost.
+On Fri, Oct 26, 2007 at 01:38:12PM -0700, Luck, Tony wrote:
+> Not fundamental reasons, but these patches break the ia64 build for most
+> configs with:
 > 
-> I agree it would be a kind thing to do in this case.
+> In file included from kernel/futex.c:59:
+> include/asm/futex.h: In function `futex_atomic_op_inuser':
+> include/asm/futex.h:62: error: implicit declaration of function `pagefault_disable'
+> include/asm/futex.h:86: error: implicit declaration of function `pagefault_enable'
+> make[1]: *** [kernel/futex.o] Error 1
+> 
+> Adding an include of <linux/uaccess.h> to kernel/futex.c is sufficient (but
+> not necessarily right) to unbreak this.
 
+Yeah, I've been changing <asm/uaccess.h> to <linux/uaccess.h> for
+these.  Looks like I'll need to make a pass over all the futex.h's.
 
-Yep, I was thinking that including
+> A few configs also fail with:
+> mm/migrate.c: In function `migrate_page_copy':
+> mm/migrate.c:359: error: implicit declaration of function `copy_highpage'
+> make[1]: *** [mm/migrate.o] Error 1
+> 
+> Making mm/migrate.c include <linux/highmem.h> fixes this one.
 
-	#define IRQ_HANDLER_V3
+Excellent, I hadn't yet figured out who used migrate.c.
 
-would be a good idea.
+				Jeff
 
-	Jeff
-
-
+-- 
+Work email - jdike at linux dot intel dot com
