@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbXJZAyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbXJZBAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbXJZAyo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 20:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXJZAyh
+	id S1758312AbXJZBAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 21:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXJZBAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 20:54:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34238 "EHLO mail.dvmed.net"
+	Thu, 25 Oct 2007 21:00:33 -0400
+Received: from mga11.intel.com ([192.55.52.93]:22272 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753205AbXJZAyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 20:54:36 -0400
-Message-ID: <47213AA6.6040909@garzik.org>
-Date: Thu, 25 Oct 2007 20:53:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Karsten Keil <kkeil@suse.de>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ISDN/capidrv: fix casting warning
-References: <a576b5944eb04a18d4df3dd27cd32e7f13601470.1193299380.git.jeff@garzik.org> <42205df7291ce7109866f9dbb5d06e481337e776.1193299380.git.jeff@garzik.org> <20071025095111.GA22353@pingi.kke.suse.de>
-In-Reply-To: <20071025095111.GA22353@pingi.kke.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752534AbXJZBAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 21:00:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
+   d="scan'208";a="358670954"
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+	runtime service support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Date: Fri, 26 Oct 2007 09:03:11 +0800
+Message-Id: <1193360591.23935.212.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 26 Oct 2007 01:00:21.0955 (UTC) FILETIME=[95A3F930:01C8176B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten Keil wrote:
-> On Thu, Oct 25, 2007 at 04:06:16AM -0400, Jeff Garzik wrote:
->> drivers/isdn/capi/capidrv.c: In function 'if_sendbuf':
->> drivers/isdn/capi/capidrv.c:1865: warning: cast from pointer to integer
->> of different size
->>
->> We are passing a kernel pointer, skb->data, but the interface itself is
->> limited to 32 bits.  A future changeset may want to mark this code
->> 32-bit only, if it turns out cmsg->Data value truncation on 64-bit
->> platforms is problematic in practice.
->>
+On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
+> > EFI runtime
+> > services initialization are implemented in efi.c. Some x86_64
+> > specifics are worth noting here. On x86_64, parameters passed to UEFI
+> > firmware services need to follow the UEFI calling convention. For this
+> > purpose, a set of functions named lin2win<x> (<x> is the number of
+> > parameters) are implemented. EFI function calls are wrapped before
+> > calling the firmware service.
 > 
-> I think I should really add somewhere a comment for this issue.
-> This field is not used in practice in linux kernel (neither in 32 or
-> 64 bit), but should have some value, since a CAPI message trace will
-> display it.
-> The correct value in the 32 bit case is the address of the
-> data, in 64 bit it makes no sense, maybe we should use 0 here.
+> Why needs this to be called lin2win? We do not call Windows, we call
+> EFI services, so please use a naming convention which is related to
+> the functionality of the code.
+> 
+> > + *
+> > + *  Function calling ABI conversion from SYSV to Windows for x86_64
+> 
+> Again, these are wrappers to access EFI and not Windows.
 
-So noted...  I will make sure the next revision of the patch fulfills 
-all your wishes :)
+EFI uses the Windows x86_64 calling convention. The lin2win may be a
+more general naming convention that can be used for some other code (the
+NDISwrapper?) in the future. Do you agree?
 
-	Jeff
-
-
+Best Regards,
+Huang Ying
