@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbXJZVnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbXJZVqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764190AbXJZVnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 17:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXJZVnL
+	id S1763040AbXJZVqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 17:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXJZVp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 17:43:11 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28210 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753539AbXJZVnK (ORCPT
+	Fri, 26 Oct 2007 17:45:57 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:41555 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbXJZVp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 17:43:10 -0400
-Message-ID: <47225F6C.5000708@ct.jp.nec.com>
-Date: Fri, 26 Oct 2007 14:43:08 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 26 Oct 2007 17:45:57 -0400
+Message-ID: <4722600A.4090903@cateee.net>
+Date: Fri, 26 Oct 2007 23:45:46 +0200
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-To: vgoyal@in.ibm.com, tglx@linutronix.de
-Cc: hbabu@us.ibm.com, linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
-References: <47195763.1090803@ct.jp.nec.com> <20071024063434.GC4622@in.ibm.com> <471F72AD.8030902@ct.jp.nec.com> <4720D933.3080703@ct.jp.nec.com>
-In-Reply-To: <4720D933.3080703@ct.jp.nec.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Is gcc thread-unsafe?
+References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com> <e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com> <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm now testing crash on 32bit, but there is an issue before
-> applying the patches. My machine stopped at checking 'hlt'
-> after kexec, showing below message.
-> 
-> CPU: Intel(R) Xeon(TM) CPU 3.80GHz stepping 0a
-> Checking 'hlt' instruction...
-> 
-> v2.6.23.1 works fine for 1st kernel.
-> I'm investigating it..
+Linus Torvalds wrote:
 
-I found that the following patch makes my machine stopped.
-bfe0c1cc6456bba1f4e3cc1fe29c0ea578ac763a
-x86: HPET force enable for ICH5
+> The gcc lists seem to often get to the point where people quote the 
+> standard, and that's that. In that environment, the paper standard (that 
+> hass *nothing* to do with reality) trumps any other argument. "What we do 
+> is _allowed_ by the standard" seems to be a good argument, even if it 
+> breaks real code and there is no sane way to avoid doing it.
 
-It means that after applied this patch, HPET is enabled
-automatically on 1st kernel and after crash/kexec the 2nd
-kernel stopped at checking 'hlt'.
+So we have the great opportunity to change the standard, then
+gcc will change ;-)
 
-I also tested the latest kernel(2.6.24-rc1-gec3b67c1).
-Boot parameter "nohpet" resolves this issue and kdump
-works well on 32bit.
-So I guess HPET affects this.
-But I don't know why 64bit kernel with HPET is OK.
+C is in pre-review phase, and it is taking proposal and correction for the C1x
+(so in few kernel release ;-) )
 
-Thanks
-Hiroshi Shimamoto
+ciao
+	cate
