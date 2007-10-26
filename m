@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbXJZCPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763467AbXJZCPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbXJZCPI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 22:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbXJZCOp
+	id S1763467AbXJZCPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 22:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761661AbXJZCOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 22:14:45 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49575 "EHLO
+	Thu, 25 Oct 2007 22:14:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:37122 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761274AbXJZCOn (ORCPT
+	with ESMTP id S1761391AbXJZCOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 22:14:43 -0400
+	Thu, 25 Oct 2007 22:14:45 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=EvjE1p0WI3zIttDDojHWS7HsDsBnL3I+IXgfrjxkQpj+fF5twqAK3PXFvFZLQ7Tvq
-	fXN+sQcvnFsSSDH9R3jOw==
-Date: Thu, 25 Oct 2007 19:14:31 -0700 (PDT)
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=CRyC30/PUCH4Rf2J7DOrs2Yi4dawMvo6QeyVWgGty+jnuRzPE6hUiXve1hfmgDB44
+	1KnpYTwvXihid7/eHAEEg==
+Date: Thu, 25 Oct 2007 19:14:30 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -23,59 +23,195 @@ cc: Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
        Christoph Lameter <clameter@sgi.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        linux-kernel@vger.kernel.org
-Subject: [patch 2/3] mempolicy: mpol_rebind_policy cleanup
-In-Reply-To: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.0.9999.0710251913130.30400@chino.kir.corp.google.com>
-References: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
+Subject: [patch 1/3] cpusets: extract mmarray loading from update_nodemask
+Message-ID: <alpine.DEB.0.9999.0710251912300.30400@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set the memory policy nodemask to the new nodemask on rebind only in one
-place.  The only memory policy that does not need an associated mpolmask
-is MPOL_DEFAULT.
+Extract a helper function from update_nodemask() to load an array of
+mm_struct pointers with references to each task's mm_struct that is
+currently attached to a given cpuset.
+
+This will be used later for other purposes where memory policies need to
+be rebound for each task attached to a cpuset.
 
 Cc: Andi Kleen <ak@suse.de>
+Cc: Paul Jackson <pj@sgi.com>
 Cc: Christoph Lameter <clameter@sgi.com>
 Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Signed-off-by: Paul Jackson <pj@sgi.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- mm/mempolicy.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ kernel/cpuset.c |  130 ++++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 81 insertions(+), 49 deletions(-)
 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1741,14 +1741,12 @@ static void mpol_rebind_policy(struct mempolicy *pol,
- 	case MPOL_INTERLEAVE:
- 		nodes_remap(tmp, pol->v.nodes, *mpolmask, *newmask);
- 		pol->v.nodes = tmp;
--		*mpolmask = *newmask;
- 		current->il_next = node_remap(current->il_next,
- 						*mpolmask, *newmask);
- 		break;
- 	case MPOL_PREFERRED:
- 		pol->v.preferred_node = node_remap(pol->v.preferred_node,
- 						*mpolmask, *newmask);
--		*mpolmask = *newmask;
- 		break;
- 	case MPOL_BIND: {
- 		nodemask_t nodes;
-@@ -1773,13 +1771,14 @@ static void mpol_rebind_policy(struct mempolicy *pol,
- 			kfree(pol->v.zonelist);
- 			pol->v.zonelist = zonelist;
- 		}
--		*mpolmask = *newmask;
- 		break;
- 	}
- 	default:
- 		BUG();
- 		break;
- 	}
-+	if (pol->policy != MPOL_DEFAULT)
-+		*mpolmask = *newmask;
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -702,6 +702,79 @@ done:
+ 	/* Don't kfree(doms) -- partition_sched_domains() does that. */
  }
  
- /*
++/*
++ * Loads mmarray with pointers to all the mm_struct's of tasks attached to
++ * cpuset cs.
++ *
++ * The reference count to each mm is incremented before loading it into the
++ * array, so put_cpuset_mm_array() must be called after this function to
++ * decrement each reference count and free the memory allocated for mmarray
++ * via this function.
++ */
++static struct mm_struct **get_cpuset_mm_array(const struct cpuset *cs,
++					      int *ntasks)
++{
++	struct mm_struct **mmarray;
++	struct task_struct *p;
++	struct cgroup_iter it;
++	int count;
++	int fudge;
++
++	*ntasks = 0;
++	fudge = 10;				/* spare mmarray[] slots */
++	fudge += cpus_weight(cs->cpus_allowed);	/* imagine one fork-bomb/cpu */
++	/*
++	 * Allocate mmarray[] to hold mm reference for each task in cpuset cs.
++	 * Can't kmalloc GFP_KERNEL while holding tasklist_lock.  We could use
++	 * GFP_ATOMIC, but with a few more lines of code, we can retry until
++	 * we get a big enough mmarray[] w/o using GFP_ATOMIC.
++	 */
++	while (1) {
++		count = cgroup_task_count(cs->css.cgroup);  /* guess */
++		count += fudge;
++		mmarray = kmalloc(count * sizeof(*mmarray), GFP_KERNEL);
++		if (!mmarray)
++			return NULL;
++		read_lock(&tasklist_lock);		/* block fork */
++		if (cgroup_task_count(cs->css.cgroup) <= count)
++			break;				/* got enough */
++		read_unlock(&tasklist_lock);		/* try again */
++		kfree(mmarray);
++	}
++
++	/* Load up mmarray[] with mm reference for each task in cpuset. */
++	cgroup_iter_start(cs->css.cgroup, &it);
++	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
++		struct mm_struct *mm;
++
++		if (*ntasks >= count) {
++			printk(KERN_WARNING
++				"Cpuset mempolicy rebind incomplete.\n");
++			break;
++		}
++		mm = get_task_mm(p);
++		if (!mm)
++			continue;
++		mmarray[(*ntasks)++] = mm;
++	}
++	cgroup_iter_end(cs->css.cgroup, &it);
++	read_unlock(&tasklist_lock);
++	return mmarray;
++}
++
++/*
++ * Decrements the reference count to each mm in mmarray and frees the memory
++ * allocated for mmarray.
++ *
++ * To be used in conjunction with get_cpuset_mm_array().
++ */
++static void put_cpuset_mm_array(struct mm_struct **mmarray, int ntasks)
++{
++	while (ntasks-- > 0)
++		mmput(mmarray[ntasks]);
++	kfree(mmarray);
++}
++
+ static inline int started_after_time(struct task_struct *t1,
+ 				     struct timespec *time,
+ 				     struct task_struct *t2)
+@@ -915,13 +988,10 @@ static int update_nodemask(struct cpuset *cs, char *buf)
+ {
+ 	struct cpuset trialcs;
+ 	nodemask_t oldmem;
+-	struct task_struct *p;
+ 	struct mm_struct **mmarray;
+-	int i, n, ntasks;
++	int i, n;
+ 	int migrate;
+-	int fudge;
+ 	int retval;
+-	struct cgroup_iter it;
+ 
+ 	/*
+ 	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
+@@ -963,50 +1033,12 @@ static int update_nodemask(struct cpuset *cs, char *buf)
+ 	mutex_unlock(&callback_mutex);
+ 
+ 	cpuset_being_rebound = cs;		/* causes mpol_copy() rebind */
+-
+-	fudge = 10;				/* spare mmarray[] slots */
+-	fudge += cpus_weight(cs->cpus_allowed);	/* imagine one fork-bomb/cpu */
+ 	retval = -ENOMEM;
+-
+-	/*
+-	 * Allocate mmarray[] to hold mm reference for each task
+-	 * in cpuset cs.  Can't kmalloc GFP_KERNEL while holding
+-	 * tasklist_lock.  We could use GFP_ATOMIC, but with a
+-	 * few more lines of code, we can retry until we get a big
+-	 * enough mmarray[] w/o using GFP_ATOMIC.
+-	 */
+-	while (1) {
+-		ntasks = cgroup_task_count(cs->css.cgroup);  /* guess */
+-		ntasks += fudge;
+-		mmarray = kmalloc(ntasks * sizeof(*mmarray), GFP_KERNEL);
+-		if (!mmarray)
+-			goto done;
+-		read_lock(&tasklist_lock);		/* block fork */
+-		if (cgroup_task_count(cs->css.cgroup) <= ntasks)
+-			break;				/* got enough */
+-		read_unlock(&tasklist_lock);		/* try again */
+-		kfree(mmarray);
+-	}
+-
+-	n = 0;
+-
+-	/* Load up mmarray[] with mm reference for each task in cpuset. */
+-	cgroup_iter_start(cs->css.cgroup, &it);
+-	while ((p = cgroup_iter_next(cs->css.cgroup, &it))) {
+-		struct mm_struct *mm;
+-
+-		if (n >= ntasks) {
+-			printk(KERN_WARNING
+-				"Cpuset mempolicy rebind incomplete.\n");
+-			break;
+-		}
+-		mm = get_task_mm(p);
+-		if (!mm)
+-			continue;
+-		mmarray[n++] = mm;
+-	}
+-	cgroup_iter_end(cs->css.cgroup, &it);
+-	read_unlock(&tasklist_lock);
++	mmarray = get_cpuset_mm_array(cs, &n);
++	if (!mmarray)
++		goto done;
++	if (!n)
++		goto done_success;
+ 
+ 	/*
+ 	 * Now that we've dropped the tasklist spinlock, we can
+@@ -1028,12 +1060,12 @@ static int update_nodemask(struct cpuset *cs, char *buf)
+ 		mpol_rebind_mm(mm, &cs->mems_allowed);
+ 		if (migrate)
+ 			cpuset_migrate_mm(mm, &oldmem, &cs->mems_allowed);
+-		mmput(mm);
+ 	}
+ 
+ 	/* We're done rebinding vma's to this cpusets new mems_allowed. */
+-	kfree(mmarray);
+ 	cpuset_being_rebound = NULL;
++done_success:
++	put_cpuset_mm_array(mmarray, n);
+ 	retval = 0;
+ done:
+ 	return retval;
