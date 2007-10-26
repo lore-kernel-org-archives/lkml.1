@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbXJZKmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbXJZKo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbXJZKmj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 06:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbXJZKmc
+	id S1752649AbXJZKo7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 06:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXJZKow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 06:42:32 -0400
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:4185 "EHLO
-	smtp2.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751141AbXJZKmb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 06:42:31 -0400
-Message-ID: <4721C44E.4000800@draigBrady.com>
-Date: Fri, 26 Oct 2007 11:41:18 +0100
-From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Fri, 26 Oct 2007 06:44:52 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:53870 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbXJZKov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 06:44:51 -0400
+Date: Fri, 26 Oct 2007 12:44:23 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Sami Farin <safari-kernel@safari.iki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>, Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH] [RFC] brk randomization: compute RLIMIT_DATA properly (was
+ Re: x86: randomize brk() and RLIMIT_DATA)
+In-Reply-To: <20071025171942.pjff7jbpempfcuri@m.safari.iki.fi>
+Message-ID: <Pine.LNX.4.64.0710261235270.18815@twin.jikos.cz>
+References: <20071025134124.wc44gdud7ixghfxv@m.safari.iki.fi>
+ <20071025071324.2eac21d6@laptopd505.fenrus.org> <Pine.LNX.4.64.0710251644460.12935@jikos.suse.cz>
+ <20071025171942.pjff7jbpempfcuri@m.safari.iki.fi>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Michael Lothian <mike@fireburn.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Possibility of adding -march=native to x86
-References: <0EC33A59AA72084CA28B83816B40929F02682BB3@REEDXCLSXM01V03.rbsres01.net> <fc94aae90710251133j4bada173h6298242ece586b61@mail.gmail.com> <20071025185022.GP30533@stusta.de> <fc94aae90710251209n74e2cffbj2e3cdd321f36da0d@mail.gmail.com> <20071025191723.GQ30533@stusta.de> <fc94aae90710251232m117421e7ref3e5a6270ff25d2@mail.gmail.com> <20071025195020.GS30533@stusta.de> <fc94aae90710251312w2eba46e8h5d4f8715ad0e91b6@mail.gmail.com> <20071025202031.GU30533@stusta.de>
-In-Reply-To: <20071025202031.GU30533@stusta.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 26 Oct 2007 10:43:32.0427 (UTC) FILETIME=[0D9649B0:01C817BD]
-X-CTCH-RefID: str=0001.0A0B0201.4721C400.00AF,ss=1,fgs=0
-X-MXUniqueID: 85f69452-ff80-48cc-bf6b-f928f8a58990
-X-MXSweep-Threat: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Oct 25, 2007 at 09:12:45PM +0100, Michael Lothian wrote:
->>> The MPENTIUM4 option does not only set -march=pentium4, it also enables
->>> several other options in arch/i386/Kconfig.cpu resulting in better
->>> performance.
->> How about an autodetect to set the right options here too using cpuid?
->>
->> With a warning of course that the code produced will be specifically
->> for the native cpu that it's compiled on.
-> 
-> If you don't know or can figure out yourself the CPU you have, you'd 
-> better not compile your own kernel...
+On Thu, 25 Oct 2007, Sami Farin wrote:
 
-There also is the added variable of what your version of gcc supports.
-The kernel gcc options would have to be the highest common factor.
-See also http://www.pixelbeat.org/scripts/gcccpuopt
+> > > > Would be neat if randomized brk and setrlimit(RLIMIT_DATA, ...)
+> > > > worked in a predictable way:
+> > > this isn't a valid case afaics; even on "traditional x86" (before we 
+> > > changed the address space layout, or even today if you have an 
+> > > unlimited stack rlimit) this isn't going to work. applications 
+> > > really shouldn't use (s)brk() but malloc(); you have to be able to 
+> > > fall back to mmap regardless of what you do.
+> > I tend to agree here with Arjan. However it probably would make no 
+> > harm to make at least a little bit consisten behavior of setrlimit(), 
+> > though it has a little use in such cases.
+> > Sami, does the patch below work for you?
+> Thanks, Jiri, now RLIMIT_DATA works as expected. Using only RLIMIT_AS to 
+> limit processes' memory usage is not very easy.  It includes also 
+> libraries mapped read-only, I have to check/modify the limits when I 
+> update/add libraries,...
 
-Pádraig.
+This patch is [RFC] as I am not sure whether it is worth it (see Arjan's 
+comment above).
+
+
+From: Jiri Kosina <jkosina@suse.cz>
+
+brk randomization: compute RLIMIT_DATA properly
+
+In cases of heap area placed at randomly-generated offset from 
+mm->end_data (arch_randomize_brk()), we need to subtract the value of the 
+offset for setrlimit(RLIMIT_DATA) to work properly -- otherwise we count 
+the unoccupied memory between mm->end_data and mm->start_brk as occupied.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index facc1a7..c7ade18 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -251,7 +251,8 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
+ 	 * not page aligned -Ram Gupta
+ 	 */
+ 	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+-	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
++	if (rlim < RLIM_INFINITY && brk - mm->start_data -
++			(mm->start_brk - mm->end_data) > rlim)
+ 		goto out;
+ 
+ 	newbrk = PAGE_ALIGN(brk);
