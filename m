@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761811AbXJZUYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763201AbXJZUZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761811AbXJZUYV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXJZUYM
+	id S1763201AbXJZUZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJZUZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:24:12 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:54541 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752077AbXJZUYL (ORCPT
+	Fri, 26 Oct 2007 16:25:07 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:13916 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753132AbXJZUZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:24:11 -0400
-Date: Fri, 26 Oct 2007 22:17:42 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Edward Hsu <edward_hsu@realtek.com.tw>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] r8169: don't call napi_disable if not doing NAPI
-Message-ID: <20071026201742.GA29246@electric-eye.fr.zoreil.com>
-References: <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu> <1193241191.14314.8.camel@localhost> <20071024155521.GA16690@elte.hu> <1193242267.6914.6.camel@twins> <1193378269.17910.4.camel@localhost> <20071026063733.GA12426@elte.hu> <20071026094833.539a69aa@freepuppy.rosehill> <20071026175613.GA18770@elte.hu> <20071026113305.57dea765@freepuppy.rosehill>
+	Fri, 26 Oct 2007 16:25:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=aggK3pUOevpXq5MsNZAIVxlTlQ9482IZbv48WQhdHTdvszetH8DtqdR6g11Takj4wGnjygdIrw4qFF9sd6iIZMFdc1XR9uy8YNiXHQH8MMNcd/8reJZ6swN9JKzsS3N3hJLcFOjmGnreAkDmJwGGwhCLYLBBPHIPywyvvvoe8CU=
+Message-ID: <877aabc40710261325p4d59ca4dwa00a559f84608f27@mail.gmail.com>
+Date: Sat, 27 Oct 2007 01:55:03 +0530
+From: "Amit Shah" <amitshah@gmx.net>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: sysfs: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071026191534.GA24596@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071026113305.57dea765@freepuppy.rosehill>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <877aabc40710260014v220ab804o5de5dbc36b870bd1@mail.gmail.com>
+	 <20071026155058.GC23016@kroah.com>
+	 <877aabc40710261025v2f53423el6bb63fc2024a0ffd@mail.gmail.com>
+	 <20071026191534.GA24596@kroah.com>
+X-Google-Sender-Auth: ef09982bfd124819
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@linux-foundation.org> :
-> Don't call napi_disable if not configured.
-> And make sure that any misuse of napi_xxx in future fails
-> with a compile error.
+On 27/10/2007, Greg KH <greg@kroah.com> wrote:
+> On Fri, Oct 26, 2007 at 10:55:15PM +0530, Amit Shah wrote:
+> > On 26/10/2007, Greg KH <greg@kroah.com> wrote:
+> > > On Fri, Oct 26, 2007 at 12:44:38PM +0530, Amit Shah wrote:
+> > > > On 2.6.24-rc1, I get this for all my eth interfaces:
+> > > >
+> > > > [  150.389821] sysfs: duplicate filename 'eth1_rename' can not be created
+> > > > [  150.389824] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > >
+> > > I sent out the patch below for comments, yet no one did :(
+> > >
+> > > Can you try it out and let me know if it works for you or not?
+> >
+> > No, doesn't help.
+>
+> Ugh, thanks.  There's got to be something else going on in the network
+> layer with this.
+>
+> I'll try to reproduce it on a different distro on a different box later
+> this afternoon...
 
-Disable napi polling early and remove the useless poll_locked logic.
+I'm using kubuntu 7.04 (feisty), if it helps.
 
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-
-Acked-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Amit.
 
 -- 
-Ueimor
+Amit Shah
+http://www.amitshah.net/
