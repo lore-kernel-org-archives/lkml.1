@@ -1,187 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXJZO3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbXJZOap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbXJZO3t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 10:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbXJZO3m
+	id S1756003AbXJZOap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 10:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbXJZOai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 10:29:42 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41855 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbXJZO3l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 10:29:41 -0400
-Message-ID: <47207E5E.80305@linux.vnet.ibm.com>
-Date: Thu, 25 Oct 2007 17:00:38 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kernel/taskstats.c: fix bogus nlmsg_free()
-References: <20071024162554.GC30533@stusta.de> <471F822A.2030904@linux.vnet.ibm.com> <20071024183457.GE30533@stusta.de>
-In-Reply-To: <20071024183457.GE30533@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 10:30:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42525 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbXJZOah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 10:30:37 -0400
+Date: Fri, 26 Oct 2007 10:28:10 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Roland McGrath <roland@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Denys Vlasenko <vda.linux@googlemail.com>, systemtap@sources.redhat.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20071026142810.GA14814@redhat.com>
+References: <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com> <20070921125819.GA13129@Krystal> <20070921133006.GF8964@redhat.com> <20070921133820.GD13129@Krystal> <20071015194120.GA22562@redhat.com> <20071015231209.GA18994@Krystal> <20071015235033.321E84D0389@magilla.localdomain> <20071025191722.GA6114@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071025191722.GA6114@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> I considered it more odd to read
-> 
-> 
->                 rc = cgroupstats_build(stats, file->f_dentry);
->                 if (rc < 0)
->                         goto err;
-> 
->                 fput_light(file, fput_needed);
->                 return send_reply(rep_skb, info->snd_pid);
-> err:
->                 fput_light(file, fput_needed);
-> 		nlmsg_free(rep_skb);
-> 
+Hi -
 
-I agree, but sometimes the alternative can be worse to read and
-understand
+On Thu, Oct 25, 2007 at 03:17:22PM -0400, Mathieu Desnoyers wrote:
+> [...]
+> Since gcc is required to build the systemtap probes on the development
+> marchine, I don't see why it would be much harder to also require prople
+> to install drawf ? Or maybe the "crash" tool ?
 
-> 
-> But that's just personal taste.
-> 
-> Anyway, duplicating the same fput_light() call two or three times isn't 
-> nice.
-> 
-> Originally I had the bigger patch below and considered it too big for 
-> only this fix, but now I think it might be appropriate.
-> 
-> If you ignore whitespace when diff'ing, then all it does is:
-> 
-> <--  snip  -->
-> 
-> @@ -398,7 +398,9 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
-> 
->  	fd = nla_get_u32(info->attrs[CGROUPSTATS_CMD_ATTR_FD]);
->  	file = fget_light(fd, &fput_needed);
-> -	if (file) {
-> +	if (!file)
-> +		return 0;
-> +
->  		size = nla_total_size(sizeof(struct cgroupstats));
-> 
->  		rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
-> @@ -412,17 +414,15 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
->  		memset(stats, 0, sizeof(*stats));
-> 
->  		rc = cgroupstats_build(stats, file->f_dentry);
-> -		if (rc < 0)
-> +	if (rc < 0) {
-> +		nlmsg_free(rep_skb);
->  			goto err;
-> -
-> -		fput_light(file, fput_needed);
-> -		return send_reply(rep_skb, info->snd_pid);
->  	}
-> 
-> +	rc = send_reply(rep_skb, info->snd_pid);
-> +
->  err:
-> -	if (file)
->  		fput_light(file, fput_needed);
-> -	nlmsg_free(rep_skb);
->  	return rc;
->  }
-> 
-> <--  snip  -->
-> 
-> 
-> Is this patch OK for you?
-> 
-> 
-> cu
-> Adrian
-> 
-> 
-> <--  snip  -->
-> 
-> 
-> We'd better not nlmsg_free on a pointer containing an undefined value
-> (and without having anything allocated).
-> 
-> Spotted by the Coverity checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  kernel/taskstats.c |   36 ++++++++++++++++++------------------
->  1 file changed, 18 insertions(+), 18 deletions(-)
-> 
-> eedd297ac36b5d92fc38b937677ba40dc6df1cd0 
-> diff --git a/kernel/taskstats.c b/kernel/taskstats.c
-> index 354e74b..07e86a8 100644
-> --- a/kernel/taskstats.c
-> +++ b/kernel/taskstats.c
-> @@ -398,31 +398,31 @@ static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
-> 
->  	fd = nla_get_u32(info->attrs[CGROUPSTATS_CMD_ATTR_FD]);
->  	file = fget_light(fd, &fput_needed);
-> -	if (file) {
-> -		size = nla_total_size(sizeof(struct cgroupstats));
-> +	if (!file)
-> +		return 0;
-> 
-> -		rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
-> -					size);
-> -		if (rc < 0)
-> -			goto err;
-> +	size = nla_total_size(sizeof(struct cgroupstats));
-> 
-> -		na = nla_reserve(rep_skb, CGROUPSTATS_TYPE_CGROUP_STATS,
-> -					sizeof(struct cgroupstats));
-> -		stats = nla_data(na);
-> -		memset(stats, 0, sizeof(*stats));
-> +	rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
-> +				size);
-> +	if (rc < 0)
-> +		goto err;
-> 
-> -		rc = cgroupstats_build(stats, file->f_dentry);
-> -		if (rc < 0)
-> -			goto err;
-> +	na = nla_reserve(rep_skb, CGROUPSTATS_TYPE_CGROUP_STATS,
-> +				sizeof(struct cgroupstats));
-> +	stats = nla_data(na);
-> +	memset(stats, 0, sizeof(*stats));
-> 
-> -		fput_light(file, fput_needed);
-> -		return send_reply(rep_skb, info->snd_pid);
-> +	rc = cgroupstats_build(stats, file->f_dentry);
-> +	if (rc < 0) {
-> +		nlmsg_free(rep_skb);
-> +		goto err;
->  	}
-> 
-> +	rc = send_reply(rep_skb, info->snd_pid);
-> +
->  err:
-> -	if (file)
-> -		fput_light(file, fput_needed);
-> -	nlmsg_free(rep_skb);
-> +	fput_light(file, fput_needed);
->  	return rc;
->  }
-> 
-> 
+The crash tool requires the dwarf data to work.  The dwarf data for an
+entire kernel (including all the modules) is on the order of hundreds
+of megabytes.  The symbol & marker list would be one thousandth the
+size.  You can see the deployment attractiveness of the latter.
 
-Looks good to me!
+> I guess you must already need to extract the symbols for your kprobes.
+> Do you use kallsyms for this? 
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm>
+Nope.  /proc/kallsyms is a another run-time-only source of data, and
+so is not applicable for off-line (ahead-of-time) mapping.
 
-Yet to be tested, I'll try and test it soon.
+> I would rather prefer not to implement superfluous built-time data
+> extraction in the kernel build system just to make userspace
+> simpler. [...]
+
+It is not superfluous, as it would solve a real distribution problem.
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+- FChE
