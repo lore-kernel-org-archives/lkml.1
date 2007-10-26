@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbXJZXjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765731AbXJZXjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbXJZXjQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbXJZXiq
+	id S1765731AbXJZXjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbXJZXir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:38:46 -0400
-Received: from mx3.palmsource.com ([12.7.175.31]:58109 "EHLO
+	Fri, 26 Oct 2007 19:38:47 -0400
+Received: from mx3.palmsource.com ([12.7.175.31]:58110 "EHLO
 	mx3.access-company.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757782AbXJZXin (ORCPT
+	with ESMTP id S1757910AbXJZXin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 26 Oct 2007 19:38:43 -0400
-X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 19:38:43 EDT
-Subject: [PATCH 2/2 ] Add support LZO in mkcramfs tool
+Subject: [PATCH 1/2 ] Add support LZO in cramfs
 From: vince kim <vince.kim@access-company.com>
 Reply-To: vince.kim@access-company.com
 To: Vince Kim <Vince.Kim@access-company.com>, linux-kernel@vger.kernel.org
@@ -19,73 +18,161 @@ Cc: "Richard Purdie [rpurdie"@openedhand.com
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: ACCESS-AMERICA
-Date: Fri, 26 Oct 2007 16:26:00 -0700
-Message-Id: <1193441160.17726.18.camel@vince-desktop>
+Date: Fri, 26 Oct 2007 16:25:53 -0700
+Message-Id: <1193441153.17726.17.camel@vince-desktop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 X-Proofpoint-Virus-Version: vendor=fsecure engine=4.65.5502:2.3.11,1.2.37,4.0.164 definitions=2007-10-26_10:2007-10-26,2007-10-26,2007-10-26 signatures=0
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0708230000 definitions=main-0710260095
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=2 spamscore=2 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0708230000 definitions=main-0710260095
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support LZO compression in mkcramfs tool, so it can
-generate a cramfs image compress with LZO.
-To compile mkcramfs with this patch, liblzo2-dev package must be
-installed.
+This is a kernel patch to add support LZO compression in cramfs. 
+I used LZO kernel library patch done by Richard Purdie
+[rpurdie@openedhand.com], and my cramfs patch requires his LZO library
+patch.
+Richard's LZO kernel library patch can be found at:
+http://lwn.net/Articles/238723/
 
-The patch is created against mkcramfs tool ver 1.1 which can be found
-at:
-http://sourceforge.net/projects/cramfs/
+This patch is generated against 2.6.23.
 
-I added command line option "-l" , so to create a cramfs image with LZO
-compression, "-l" must be specified at the command line. 
+We had some performance gain with cramfs using LZO compression, but the
+cramfs image size has been increased by around 10%.
+So, if performance is higher priority, you could try this patch.
 
-Of course, separate kernel patch is required to mount cramfs image
-compressed with LZO
-.
+I will post separate patch for mkcramfs tool to generate cramfs image
+using LZO compression.
+
 Thanks,
 
-Vince Kyong-jin Kim
+Vince Kyong-jin Kim [vince.kim@access-company.com]
 
-diff -Naur cramfs-1.1/GNUmakefile cramfs-1.1_lzo/GNUmakefile
---- cramfs-1.1 /GNUmakefile      2002-02-22 16:52:41.000000000 -0800
-+++ cramfs-1.1_lzo/GNUmakefile  2007-10-26 13:38:01.000000000 -0700
-@@ -1,12 +1,15 @@
-CC = gcc
-CFLAGS = -W -Wall -O2 -g
-CPPFLAGS = -I.
--LDLIBS = -lz 
-+LDLIBS = -lz -llzo2
-PROGS = mkcramfs cramfsck
-
-all: $(PROGS)
-
-+mkcramfs: lzo_compress.o
-+
-+
-distclean clean:
--       rm -f $(PROGS)
-+       rm -f $(PROGS) *.o
-
-.PHONY: all clean 
-diff -Naur cramfs-1.1/linux/cramfs_fs.h cramfs-1.1_lzo/linux/cramfs_fs.h
---- cramfs-1.1/linux/cramfs_fs.h        2002-02-20 00:03:32.000000000
--0800
-+++ cramfs-1.1_lzo/linux/cramfs_fs.h    2007-10-26 13:38:01.000000000
+ 
+diff -Naur linux-2.6.23/fs/cramfs/inode.c
+linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c
+--- linux-2.6.23/fs/cramfs/inode.c      2007-10-09 13:31:38.000000000
 -0700
-@@ -79,6 +79,7 @@
-#define CRAMFS_FLAG_HOLES              0x00000100      /* support for
++++ linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c    2007-10-26
+14:35:59.000000000 -0700
+@@ -31,6 +31,8 @@
+ static const struct inode_operations cramfs_dir_inode_operations;
+ static const struct file_operations cramfs_directory_operations;
+ static const struct address_space_operations cramfs_aops; 
++/* function pointer to uncompress block */
++static int (* cramfs_uncompress_block) (void *dst, int dstlen, void
+*src, int srclen);
+
+ static DEFINE_MUTEX(read_mutex);
+
+@@ -274,7 +276,17 @@
+                printk(KERN_ERR "cramfs: unsupported filesystem features
+\n"); 
+                goto out;
+        }
+-
++
++       /* check flag to see if LZO compression is used */
++       if (super.flags & CRAMFS_FLAG_LZO_COMPRESSION) {
++               cramfs_uncompress_block = &cramfs_uncompress_block_lzo; 
++               printk("cramfs: LZO compression\n");
++       }
++       else {
++               cramfs_uncompress_block = &cramfs_uncompress_block_zlib;
++               printk("cramfs: ZLIB compression\n"); 
++       }
++
+        /* Check that the root inode is in a sane state */
+        if (!S_ISDIR(super.root.mode)) {
+                printk(KERN_ERR "cramfs: root is not a directory\n");
+diff -Naur linux-2.6.23/fs/cramfs/uncompress.c
+linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c
+--- linux-2.6.23/fs/cramfs/uncompress.c 2007-10-09 13:31:38.000000000
+-0700
++++ linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c      2007-10-26
+14:19: 01.000000000 -0700
+@@ -20,12 +20,16 @@
+ #include <linux/vmalloc.h>
+ #include <linux/zlib.h>
+ #include <linux/cramfs_fs.h>
++#include <linux/lzo.h>
+
+ static z_stream stream;
+ static int initialized; 
+
+-/* Returns length of decompressed data. */
+-int cramfs_uncompress_block(void *dst, int dstlen, void *src, int
+srclen)
++/*
++ * uncompress with ZLIB
++ * Returns length of decompressed data.
++ */
++int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int
+srclen) 
+ {
+        int err;
+
+@@ -48,7 +52,26 @@
+        return stream.total_out;
+
+ err:
+-       printk("Error %d while decompressing!\n", err);
++       printk("ZLIB Error %d while decompressing!\n", err); 
++       printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
++       return 0;
++}
++
++/*
++ * uncompress with LZO
++ * Returns length of decompressed data.
++ */
++int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int
+srclen) 
++{
++       int err;
++
++       err = lzo1x_decompress_safe(src,srclen,dst,(unsigned int
+*)&dstlen);
++        if (err != LZO_E_OK)
++                goto err;
++        return dstlen;
++
++err:
++       printk("LZO Error %d while decompressing!\n", err);
+        printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
+        return 0;
+ }
+diff -Naur linux-2.6.23/fs/Kconfig linux-2.6.23_cramfs_lzo/fs/Kconfig 
+--- linux-2.6.23/fs/Kconfig     2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/fs/Kconfig  2007-10-26 14:19:01.000000000
+-0700
+@@ -1348,6 +1348,7 @@
+        tristate "Compressed ROM file system support (cramfs)" 
+        depends on BLOCK
+        select ZLIB_INFLATE
++       select LZO_DECOMPRESS
+        help
+          Saying Y here includes support for CramFs (Compressed ROM File
+          System).  CramFs is designed to be a simple, small, and
+compressed 
+diff -Naur linux-2.6.23/include/linux/cramfs_fs.h
+linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h
+--- linux-2.6.23/include/linux/cramfs_fs.h      2007-10-09
+13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h    2007-10-26
+14:19:01.000000000 -0700
+@@ -73,6 +73,7 @@
+ #define CRAMFS_FLAG_HOLES              0x00000100      /* support for
 holes */
-#define CRAMFS_FLAG_WRONG_SIGNATURE    0x00000200      /* reserved */
-#define CRAMFS_FLAG_SHIFTED_ROOT_OFFSET        0x00000400      /*
+ #define CRAMFS_FLAG_WRONG_SIGNATURE    0x00000200      /* reserved */
+ #define CRAMFS_FLAG_SHIFTED_ROOT_OFFSET        0x00000400      /*
 shifted root fs */ 
-+#define CRAMFS_FLAG_LZO_COMPRESSION     0x00000800     /* LZO
++#define CRAMFS_FLAG_LZO_COMPRESSION    0x00000800      /* LZO
 compression is used */
 
-/*
+ /*
   * Valid values in super.flags.  Currently we refuse to mount
-@@ -88,11 +89,17 @@
-#define CRAMFS_SUPPORTED_FLAGS ( 0x000000ff \ 
+@@ -82,11 +83,16 @@
+ #define CRAMFS_SUPPORTED_FLAGS ( 0x000000ff \ 
                                 | CRAMFS_FLAG_HOLES \
                                 | CRAMFS_FLAG_WRONG_SIGNATURE \
 -                               | CRAMFS_FLAG_SHIFTED_ROOT_OFFSET )
@@ -93,209 +180,27 @@ compression is used */
 +                               | CRAMFS_FLAG_LZO_COMPRESSION )
 +
 +/* function pointer for uncompress function */
-+int (* cramfs_uncompress_block) ();
 
-/* Uncompression interfaces to the underlying zlib */ 
+ /* Uncompression interfaces to the underlying zlib */
 -int cramfs_uncompress_block(void *dst, int dstlen, void *src, int
-srclen);
+srclen); 
 +int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int
 srclen);
-int cramfs_uncompress_init(void);
-int cramfs_uncompress_exit(void); 
+ int cramfs_uncompress_init(void);
+ void cramfs_uncompress_exit(void);
 
-+/* Uncompression interfaces to the underlying lzo */
++/* Uncompression interfaces to the underlying lzo */ 
 +int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int
 srclen);
-#endif
-diff -Naur cramfs-1.1/lzo_compress.c cramfs-1.1_lzo/lzo_compress.c 
---- cramfs-1.1/lzo_compress.c   1969-12-31 16:00:00.000000000 -0800
-+++ cramfs-1.1_lzo/lzo_compress.c       2007-10-26 13:58:38.000000000
--0700
-@@ -0,0 +1,54 @@
-+#include <stdio.h>
-+#include <stdint.h >
-+#include <asm/types.h>
-+#include <lzo/lzo1x.h>
-+
-+
-+extern void *lzo_mem;
-+extern void *lzo_compress_buf;
-+extern int page_size;
-+
-+int cramfs_lzo_cmpr(unsigned char *data_in, unsigned char *cpage_out, 
-+                         uint32_t sourcelen, uint32_t *dstlen)
-+{
-+       uint32_t compress_size;
-+       int ret;
-+
-+
-+       ret = lzo1x_999_compress(data_in, sourcelen, (void
-*)lzo_compress_buf, &compress_size, (void *)lzo_mem); 
-+
-+       if (ret != LZO_E_OK || compress_size > *dstlen )
-+               return -1;
-+
-+       memcpy(cpage_out, (void *)lzo_compress_buf, compress_size);
-+       *dstlen = compress_size;
-+
-+       return 0; 
-+
-+}
-+
-+int cramfs_lzo_init(void)
-+{
-+       lzo_mem = malloc(LZO1X_999_MEM_COMPRESS);
-+       if (!lzo_mem)
-+               return -1;
-+
-+       /* Worst case LZO compression size from their FAQ */ 
-+
-+       lzo_compress_buf = malloc(page_size + (page_size / 64) + 16 +
-3);
-+       if (!lzo_compress_buf) {
-+               free(lzo_mem);
-+               lzo_mem = NULL;
-+               return -1;
-+       }
-+
-+       return 0;
-+}
-+
-+void cramfs_lzo_exit(void)
-+{
-+       free(lzo_compress_buf);
-+       free(lzo_mem);
-+}
-+
-+
-diff -Naur cramfs-1.1/mkcramfs.c cramfs-1.1_lzo/mkcramfs.c 
---- cramfs-1.1/mkcramfs.c       2002-02-20 00:03:32.000000000 -0800
-+++ cramfs-1.1_lzo/mkcramfs.c   2007-10-26 13:57:15.000000000 -0700
-@@ -76,6 +76,11 @@
-static long total_blocks = 0, total_nodes = 1; /* pre-count the root
-node */ 
-static int image_length = 0;
+ #endif
 
-+/* For LZO compression */
-+void *lzo_mem = NULL;
-+void *lzo_compress_buf = NULL;
-+int page_size = PAGE_CACHE_SIZE;
-+
-/*
-  * If opt_holes is set, then mkcramfs can create explicit holes in the 
-  * data, which saves 26 bytes per hole (which is a lot smaller a
-@@ -91,6 +96,7 @@
-static int opt_holes = 0;
-static int opt_pad = 0;
-static int opt_verbose = 0;
-+static int opt_lzo = 0;
-static char *opt_image = NULL; 
-static char *opt_name = NULL;
 
-@@ -128,6 +134,7 @@
-                " -E         make all warnings errors (non-zero exit
-status)\n"
-                " -e edition set edition number (part of fsid)\n" 
-                " -i file    insert a file image into the filesystem
-(requires >= 2.4.0)\n"
-+               " -l         use LZO compression instead of ZLIB\n"
-                " -n name    set name of cramfs filesystem\n" 
-                " -p         pad by %d bytes for boot code\n"
-                " -s         sort directory entries (old option,
-ignored)\n"
-@@ -153,6 +160,10 @@
-        }
-        fprintf(stderr, "\n"); 
-        va_end(arg_ptr);
-+       if (lzo_compress_buf)
-+               free(lzo_compress_buf);
-+       if (lzo_mem)
-+               free(lzo_mem);
-        exit(status);
-}
 
-@@ -386,6 +397,8 @@
-                super->flags |= CRAMFS_FLAG_HOLES;
-        if (image_length > 0)
-                super->flags |= CRAMFS_FLAG_SHIFTED_ROOT_OFFSET;
-+       if (opt_lzo)
-+               super->flags |= CRAMFS_FLAG_LZO_COMPRESSION; 
-        super->size = size;
-        memcpy(super->signature, CRAMFS_SIGNATURE,
-sizeof(super->signature));
 
-@@ -595,9 +608,18 @@
-                        input = blksize;
-                size -= input; 
-                if (!(opt_holes && is_zero (uncompressed, input))) {
--                       err = compress2(base + curr, &len, uncompressed,
-input, Z_BEST_COMPRESSION);
--                       if (err != Z_OK) { 
--                               die(MKFS_ERROR, 0, "compression error: %
-s", zError(err));
-+                       if (opt_lzo) {
-+                               /* Use LZO compression */
-+                               err= cramfs_lzo_cmpr(uncompressed,base +
-curr,input, &len); 
-+                               if (err < 0)
-+                                       die(MKFS_ERROR, 0, "LZO
-compression error: %s");
-+                       }
-+                       else {
-+                               /* Use default ZLIB compression */ 
-+                               err = compress2(base + curr, &len,
-uncompressed, input, Z_BEST_COMPRESSION);
-+                               if (err != Z_OK) {
-+                                       die(MKFS_ERROR, 0, "compression
-error: %s", zError(err)); 
-+                               }
-                        }
-                        curr += len;
-                }
-@@ -699,7 +721,7 @@
-                progname = argv[0];
 
-        /* command line options */ 
--       while ((c = getopt(argc, argv, "hEe:i:n:psvz")) != EOF) {
-+       while ((c = getopt(argc, argv, "hEe:i:ln:psvz")) != EOF) {
-                switch (c) {
-                case 'h': 
-                        usage(MKFS_OK);
-@@ -720,6 +742,10 @@
-                        image_length = st.st_size; /* may be padded
-later */
-                        fslen_ub += (image_length + 3); /* 3 is for
-padding */ 
-                        break;
-+               case 'l':
-+                       opt_lzo = 1;
-+                       printf("LZO compression is used istead of ZLIB
-\n");
-+                       break; 
-                case 'n':
-                        opt_name = optarg;
-                        break;
-@@ -751,7 +777,11 @@
-        if (fd < 0) {
-                die(MKFS_USAGE, 1, "open failed: %s", outfile); 
-        }
--
-+       if (opt_lzo) {
-+
-+               if ( cramfs_lzo_init() < 0 )
-+                       die(MKFS_ERROR, 1, "cramfs_lzo_init failed");
-+       }
-        root_entry = calloc(1, sizeof(struct entry)); 
-        if (!root_entry) {
-                die(MKFS_ERROR, 1, "calloc failed");
-@@ -867,7 +897,8 @@
-        if (opt_errors &&
-            (warn_namelen||warn_skip||warn_size||warn_uid||warn_gid||
-warn_dev)) 
-                exit(MKFS_ERROR);
--
-+       if (opt_lzo)
-+               cramfs_lzo_exit();
-        exit(MKFS_OK);
-}
+
+
+
+
+
 
