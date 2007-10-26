@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbXJZUTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbXJZUVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbXJZUTM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 16:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXJZUS7
+	id S1759150AbXJZUVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 16:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXJZUVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 16:18:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60139 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbXJZUS6 (ORCPT
+	Fri, 26 Oct 2007 16:21:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:54378 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbXJZUVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 16:18:58 -0400
-Date: Fri, 26 Oct 2007 13:15:10 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: John Johansen <jjohansen@suse.de>
-Cc: jjohansen@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 00/45] AppArmor security module overview
-Message-ID: <20071026131510.52955c54@laptopd505.fenrus.org>
-In-Reply-To: <20071026183448.GC32415@suse.de>
-References: <20071026064024.243943043@suse.de>
-	<20071026073721.618b4778@laptopd505.fenrus.org>
-	<20071026183448.GC32415@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Oct 2007 16:21:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CcyI17liJWEYGyMi3dzT2XdDHETSXBWz7KlkIO4JT8aRVoAF3cfm4Fj97IU+D4iQSp91T2NBjLeJ7tvA7putHiGs20PH+sifgUvzIj0tCrS/9e7O41ekSUpQ7hRd/mWGYlDNZ/g+G+8VuITFjf6ZvAAGA4Wikc2qXK4gQeQWLS8=
+Message-ID: <cfd18e0f0710261321n7e480e7bt963bce677927864a@mail.gmail.com>
+Date: Fri, 26 Oct 2007 16:21:11 -0400
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Cc: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, rientjes@google.com,
+       clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
+       linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
+In-Reply-To: <20071026100451.c0742740.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	 <20071025185506.8c373aa8.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	 <20071025192945.82962eea.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710251937100.2989@chino.kir.corp.google.com>
+	 <20071025201455.acb4e72c.pj@sgi.com>
+	 <alpine.DEB.0.9999.0710252049590.18868@chino.kir.corp.google.com>
+	 <1193413054.5032.20.camel@localhost>
+	 <20071026100451.c0742740.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 11:34:48 -0700
-John Johansen <jjohansen@suse.de> wrote:
+On 10/26/07, Paul Jackson <pj@sgi.com> wrote:
+> Lee wrote:
+> > Paul:  what do you think about subsetting the cpuset.txt into a man page
+> > or 2 that can be referenced by other man pages' See Also sections?
+>
+> Oh dear --- looking back in my work queue I have with my employer, I
+> see I have a task that is now over a year old, still unfinished, to
+> provide man pages for cpusets to Michael Kerrisk" <mtk-manpages@gmx.net>
 
-> On Fri, Oct 26, 2007 at 07:37:21AM -0700, Arjan van de Ven wrote:
-> > On Thu, 25 Oct 2007 23:40:24 -0700
-> > jjohansen@suse.de wrote:
-> > 
-> > before going into the LSM / security side of things, I'd like to get
-> > the VFS guys to look at your VFS interaction code.
-> > 
-> yes, the vfs interaction definitely need their review.
-> 
-> > In addition, I'd like to ask you to put a file in Documentation/
-> > somewhere that describes what AppArmor is intended security
-> > protection is (it's different from SELinux for sure for example);
-> > by having such a document for each LSM user, end users and distros
-> > can make a more informed decision which module suits their
-> > requirements... and it also makes it possible to look at the
-> > implementation to see if it has gaps to the intent, without getting
-> > into a pissing contest about which security model is better; but
-> > unless the security goals are explicitly described that's a trap
-> > that will keep coming back... so please spend some time on getting
-> > a good description going here..
-> > 
-> yes this is needed and a good idea in general
-> 
+Yes, it would be great to have those pages.  Is there anything I can
+do to assist?
 
-would you mind posting your first stab at this to the list shortly,
-because without that it's nearly impossible to review your patchkit in
-a sensible way...
+Cheers,
+
+Michael
+
+PS Note my new addres for man-apges: mtk.manpages@gmail.com
