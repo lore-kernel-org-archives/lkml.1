@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbXJZC2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbXJZC36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbXJZC2o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 22:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJZC2g
+	id S1762574AbXJZC36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 22:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXJZC3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 22:28:36 -0400
-Received: from mga02.intel.com ([134.134.136.20]:61994 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbXJZC2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 22:28:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
-   d="scan'208";a="255883845"
-Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
-	runtime service support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, pjones@redhat.com
-In-Reply-To: <472118C7.3060909@zytor.com>
-References: <1193295473.23935.202.camel@caritas-dev.intel.com>
-	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
-	 <m1r6jj5e27.fsf@ebiederm.dsl.xmission.com>
-	 <20071025095639.22f6cad0@laptopd505.fenrus.org>
-	 <4720CCBC.1050700@zytor.com>	<m1y7dr3xha.fsf@ebiederm.dsl.xmission.com>
-	 <4720D797.1020903@zytor.com>	<m1tzof3wbk.fsf@ebiederm.dsl.xmission.com>
-	 <4720FE38.3050802@zytor.com> <m1lk9q4z17.fsf@ebiederm.dsl.xmission.com>
-	 <472118C7.3060909@zytor.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Oct 2007 10:31:19 +0800
-Message-Id: <1193365879.23935.263.camel@caritas-dev.intel.com>
+	Thu, 25 Oct 2007 22:29:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39307 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751221AbXJZC3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 22:29:50 -0400
+Date: Thu, 25 Oct 2007 19:29:45 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
+       Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071025192945.82962eea.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 26 Oct 2007 02:28:28.0961 (UTC) FILETIME=[E4F11110:01C81777]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-10-25 at 15:29 -0700, H. Peter Anvin wrote:
-> Eric W. Biederman wrote:
-> > "H. Peter Anvin" <hpa@zytor.com> writes:
-> > 
-> >> Eric W. Biederman wrote:
-> >>>> Ying claimed that GOP requires EFI runtime services.  Is that not true?
-> >>> None of the EFI framebuffer patches that I saw used EFI runtime services.
-> >>>
-> >> Ying, could you please clarify this situation?
-> >>
-> >> (Eric: do note that there are two EFI framebuffer standard, UGA and
-> >> GOP. Apparently UGA is obsolete and we have always been at war with GOP at the
-> >> moment.)
-> > 
-> > Peter please look back in your email archives to yesterday and
-> > see Ying's patch:
-> > 
-> > [PATCH 1/2 -v2 resend] x86_64 EFI boot support: EFI frame buffer driver
-> > 
-> > All of the data the GOP needs is acquired through the a query made
-> > by the bootloader and passed through screen info.
-> > 
-> 
-> Then I fully agree with your assessment.
+> Yes, when a task with MPOL_INTERLEAVE has its cpuset mems_allowed expanded 
+> to include more memory.  The task itself can't access all that memory with 
+> the memory policy of its choice.
 
-EFI framebuffer doesn't depend on EFI runtime service.
+That much I could have guessed (did guess, actually.)
 
-But EFI variable service depends on EFI runtime service, and most people
-think it is useful. It can be used to:
+Are you seeing this in a real world situation?  Can you describe the
+situation?  I don't mean just describing how it looks to this kernel
+code, but what is going on in the system, what sort of job mix or
+applications, what kind of users, ...  In short, a "use case", or brief
+approximation thereto.  See further:
 
-- Provide a standard method to communicate with BIOS, such as specifying
-the boot device or bootloader for the next boot.
-- Provide a standard method to write the OOPS information to flash.
+  http://en.wikipedia.org/wiki/Use_case
 
-To improve the reliability of OOPS information writing, the virtual mode
-of EFI should be used. And through mapping all memory area used by EFI
-to the same virtual address across kexec, EFI can work with kexec under
-virtual mode just like that of IA-64.
+I have no need of a full blown use case; just a three sentence
+mini-story should suffice.  But it should (if you can, without
+revealing proprietary knowledge) describe a situation you have
+actual need of addressing.
 
-So, I think the EFI runtime service is useful and it does not break
-anything. But the code duplication between efi_32.c and efi_64.c should
-be eliminated and I will work on this.
+> So my change allows those tasks that have already expressed the
+> desire to interleave their memory with MPOL_INTERLEAVE to always
+> use the full range of memory available that is dynamically changing
+> beneath them as a result of cpusets.
 
-Best Regards,
-Huang Ying
+Yup, that it does.  Note that it is a special case -- "the full range",
+not any application controlled specific subset thereof, short of
+reissuing set_mempolicy() calls anytime that the applications cpuset
+'mems' changes.
+
+> The only other way to support such a feature is through a modification to 
+> mempolicies themselves, which Lee has already proposed.  The problem with 
+> that is it requires mempolicy support for cpuset cases and modification to 
+> the set_mempolicy() API.
+
+Do you have a link to what Lee proposed?  I agree that a full general
+solution would seem to require a new or changed set_mempolicy API,
+which may well be more than we want to do, absent a more compelling
+"use case" requiring it than we have now.
+
+> I find it hard to believe that a single cpuset with a single
+> memory_spread_user boolean is going to include multiple tasks that
+> request interleaved mempolicies over differing nodes within the
+> cpuset's mems_allowed.  That, to me, is the special case.
+
+That may well be, to you.  To me, pretty much -all- uses of
+set_mempolicy() are special cases ;).  I have no way of telling
+whether or not there are users who would require multiple tasks
+in the same cpuset to have different interleave masks, but since
+the API clearly supports that (except when changing cpuset 'mems'
+settings mess things up), I have been presuming that somewhere in
+the universe, such users exist or might come to exist.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
