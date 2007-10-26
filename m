@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbXJYX5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763091AbXJZACn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762949AbXJYX5r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 19:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759004AbXJYX5k
+	id S1763091AbXJZACn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 20:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbXJZACe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 19:57:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58976 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758449AbXJYX5j (ORCPT
+	Thu, 25 Oct 2007 20:02:34 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44674 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753467AbXJZACd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 19:57:39 -0400
-Date: Thu, 25 Oct 2007 16:57:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <200710260142.37902.ak@suse.de>
-Message-ID: <alpine.LFD.0.999.0710251651550.30120@woody.linux-foundation.org>
-References: <200710251324.49888.nickpiggin@yahoo.com.au> <200710260116.10904.ak@suse.de>
- <alpine.LFD.0.999.0710251628440.30120@woody.linux-foundation.org>
- <200710260142.37902.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 25 Oct 2007 20:02:33 -0400
+Date: Fri, 26 Oct 2007 01:05:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ide: fix drive_is_ready() for non-PCI hosts and
+ CONFIG_IDEPCI_SHARE_IRQ=y
+Message-ID: <20071026010515.260672b4@the-village.bc.nu>
+In-Reply-To: <200710260136.37333.bzolnier@gmail.com>
+References: <200710260136.37333.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Oct 2007 01:36:37 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-
-On Fri, 26 Oct 2007, Andi Kleen wrote:
 > 
-> The conditional add/sub using carry trick is not generally bogus. 
-> But for registers it's a fine optimization.
+> Need to check if the host is a PCI one before reading IDE_ALTSTATUS_REG.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-For registers it's fine. For memory, it's a disaster. It's more than just 
-dirty cachelines and introducing race conditions, it's also about 
-protection and dirty pages.
-
-So even in user space, to even be correct in the first place, the compiler 
-would need to make sure that the variable is writable at all (or you might 
-take a SIGSEGV), but I guess that gcc just assumes it is, at least for 
-globals (or gcc could depend on seeing *other* writes that are done 
-unconditionally).
-
-More likely, the compiler people don't even care, because "the C standard 
-doesn't specify that behaviour" - ie things like write-protected memory or 
-garbage collection based on dirty/accessed bits are outside the scope of 
-what the language specifies. Much less things like pthreads or other 
-synchronization primitives in threads.
-
-			Linus
+Umm why ? The altstatus register goes back to ST-506 and the original IBM
+XT hard disk controller card ?
