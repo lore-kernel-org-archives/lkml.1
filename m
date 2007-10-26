@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXJZPev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763347AbXJZPhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763500AbXJZPev (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 11:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXJZPeo
+	id S1763347AbXJZPhY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 11:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXJZPhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 11:34:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49760 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752946AbXJZPen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 11:34:43 -0400
+	Fri, 26 Oct 2007 11:37:11 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37251 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754394AbXJZPhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 11:37:09 -0400
+Message-ID: <4721FB30.1050601@linux.vnet.ibm.com>
+Date: Fri, 26 Oct 2007 20:05:28 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-s390@vger.kernel.org
+Subject: Re: S390 change in sg_set_page() cause build failure
+References: <20071026111945.GB21274@linux.vnet.ibm.com> <20071026115429.GH5155@kernel.dk>
+In-Reply-To: <20071026115429.GH5155@kernel.dk>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18210.2314.57767.962503@zebedee.pink>
-Date: Fri, 26 Oct 2007 16:34:34 +0100
-From: Andrew Haley <aph@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is gcc thread-unsafe?
-In-Reply-To: <alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
-References: <e2e108260710260729x4603211cgb68d7434ce1e54e9@mail.gmail.com>
-	<e2e108260710260740k27210c4fu2f75d5fb31ccdccc@mail.gmail.com>
-	<alpine.LFD.0.999.0710260756260.30120@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 22.0.93.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
- 
- > So my basic worry about gcc is in fact none of the individual
- > technical problems themselves - those can be fixed. No, the problem
- > I've seen in gcc is that _some_ of the developers seem to be total
- > d*ckheads when it comes to "language definition", and seem to think
- > that it's more important to read the language spec like a lawyer
- > than it is to solve actual user problems.
+Jens Axboe wrote:
+> On Fri, Oct 26 2007, Kamalesh Babulal wrote:
+>> Hi Jens,
+>>
+>> The change in the sg_set_page() for the S390, cause the build failure
+>>
+>> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_sg_list_alloc':
+>> drivers/s390/scsi/zfcp_aux.c:572: error: too many arguments to function `zfcp_address_to_sg'
+>> drivers/s390/scsi/zfcp_aux.c: In function `zfcp_gid_pn_buffers_alloc':
+>> drivers/s390/scsi/zfcp_aux.c:1524: error: too many arguments to function `zfcp_address_to_sg'
+>> drivers/s390/scsi/zfcp_aux.c:1525: error: too many arguments to function `zfcp_address_to_sg'
+>> make[2]: *** [drivers/s390/scsi/zfcp_aux.o] Error 1
+>> make[1]: *** [drivers/s390/scsi] Error 2
+>> make: *** [drivers/s390] Error 2
+>>
+>> The commit 642f149031d70415d9318b919d50b71e4724adbd causes this build
+>> failure, in the drivers/s390/scsi/zfcp_def.h include file, the function
+>> zfcp_address_to_sg the len of the scatterlist missing.
+>>
+>> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+>> --
+>> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
+>> index 0754542..acf2d22 100644
+>> --- a/drivers/s390/scsi/zfcp_def.h
+>> +++ b/drivers/s390/scsi/zfcp_def.h
+>> @@ -70,9 +70,11 @@ zfcp_sg_to_address(struct scatterlist *list)
+>>   * zfcp_address_to_sg - set up struct scatterlist from kernel address
+>>   * @address: kernel address
+>>   * @list: struct scatterlist
+>> + * @list_size: size of the list - used for compatibility 
+>>   */
+>>  static inline void
+>> -zfcp_address_to_sg(void *address, struct scatterlist *list)
+>> +zfcp_address_to_sg(void *address, struct scatterlist *list,
+>> +                   unsigned int list_size)
+>>  {
+>>  	sg_set_buf(list, address, 0);
+>>  }
+> 
+> That's not quite right, it should be:
+> 
+> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
+> index 0754542..e268f79 100644
+> --- a/drivers/s390/scsi/zfcp_def.h
+> +++ b/drivers/s390/scsi/zfcp_def.h
+> @@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
+>   * zfcp_address_to_sg - set up struct scatterlist from kernel address
+>   * @address: kernel address
+>   * @list: struct scatterlist
+> + * @size: buffer size
+>   */
+>  static inline void
+> -zfcp_address_to_sg(void *address, struct scatterlist *list)
+> +zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
+>  {
+> -	sg_set_buf(list, address, 0);
+> +	sg_set_buf(list, address, size);
+>  }
+> 
+>  #define REQUEST_LIST_SIZE 128
+> 
+Hi Jens,
 
-Well, yeah.  I know what you mean.  However, at this moment, some gcc
-developers are trying really hard not to be total d*ckheads about this
-issue, but get gcc fixed.  Give us a chance.
-
-Andrew.
+Thanks for fixing it.
 
 -- 
-Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
-Registered in England and Wales No. 3798903
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
