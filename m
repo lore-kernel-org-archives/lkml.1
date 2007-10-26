@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbXJZTXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbXJZTXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761450AbXJZTXa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 15:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758208AbXJZTXL
+	id S1763454AbXJZTXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 15:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760714AbXJZTX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 15:23:11 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3305 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757678AbXJZTXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 15:23:09 -0400
-Date: Fri, 26 Oct 2007 21:23:06 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trenn@suse.de, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lenb@kernel.org
-Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with 
-  ACPI Operation Region resources
-Message-ID: <20071026212306.40b4a12d@hyperion.delvare>
-In-Reply-To: <20071025132410.7ae184a8.akpm@linux-foundation.org>
-References: <1193236319.4590.225.camel@queen.suse.de>
-	<20071024205723.458fab97.akpm@linux-foundation.org>
-	<20071025155135.019baca3@hyperion.delvare>
-	<20071025132410.7ae184a8.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 26 Oct 2007 15:23:29 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:38985 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760198AbXJZTX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 15:23:27 -0400
+Date: Fri, 26 Oct 2007 20:25:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc1: pata_acpi fails to activate DMA for DVD-ROM on ALi
+ M5229 secondary channel
+Message-ID: <20071026202559.01161aa9@the-village.bc.nu>
+In-Reply-To: <200710262130.03567.arvidjaar@mail.ru>
+References: <200710262130.03567.arvidjaar@mail.ru>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Fri, 26 Oct 2007 21:30:02 +0400
+Andrey Borzenkov <arvidjaar@mail.ru> wrote:
 
-On Thu, 25 Oct 2007 13:24:10 -0700, Andrew Morton wrote:
-> On Thu, 25 Oct 2007 15:51:35 +0200, Jean Delvare wrote:
-> > Thanks for picking these patches, having them in -mm for some time is
-> > exactly what we need. Let's see how many systems are affected by the
-> > resource conflicts and how we can fix them
-> 
-> No probs.  The main thing is to ensure that we have sufficient debug
-> support in that patch so that if a tester does report a problem, we (ie:
-> you ;) can resolve it on the first pass.  So feel free to make it really
-> noisy - we can always drop the debug stuff later on.
+> Running legacy IDE drivers apparently works in DMA mode for both:
 
-Well, I'm not exactly sure what we can do when people report conflicts,
-except telling them "don't do that". I guess each case will be
-different. We will have to ask reporters for their DSDT table, look at
-it and... do something. I'll need (much) help from the ACPI developers.
-At this point we are mainly trying to gather enough data to fully
-understand how big the problem is. Solutions will come later.
+Thanks - can you send me an lspci -vvxxx off list
 
-> Also, please try to avoid adding anythig which would disrupt that tester
-> from going on and testing all the other new code.  ie: try to fail
-> gracefully and fall back to the old behaviour.
-
-User will simply miss their SMBus controller or their hardware
-monitoring device, it wont prevent them from using their systems, but
-that should be enough to get them to report (I hope).
-
--- 
-Jean Delvare
+Alan
