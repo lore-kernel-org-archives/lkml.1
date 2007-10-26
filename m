@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbXJZWKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbXJZWK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760537AbXJZWKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 18:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbXJZWKg
+	id S1752842AbXJZWK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 18:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763510AbXJZWKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 18:10:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38082 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbXJZWKf (ORCPT
+	Fri, 26 Oct 2007 18:10:46 -0400
+Received: from mail3.opus-i.net ([209.10.181.135]:42121 "EHLO
+	FPNYEXCFE02.opus-i.corp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763129AbXJZWKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 18:10:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Kir Kolyshkin" <kir@openvz.org>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <oleg@tv-sign.ru>, <torvalds@linux-foundation.org>,
-       <containers@linux-foundation.org>
-Subject: Re: [Devel] [PATCH] pidns: Limit kill -1 and cap_set_all
-References: <CBC546DD07068244AEC110EFEDA58B72358940@excite.int.sw-soft.com>
-Date: Fri, 26 Oct 2007 16:10:04 -0600
-In-Reply-To: <CBC546DD07068244AEC110EFEDA58B72358940@excite.int.sw-soft.com>
-	(Kir Kolyshkin's message of "Fri, 26 Oct 2007 17:06:54 -0400")
-Message-ID: <m1myu5y1c3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 18:10:45 -0400
+Message-ID: <472265E2.2060509@datallegro.com>
+Date: Fri, 26 Oct 2007 18:10:42 -0400
+From: Karl Schendel <kschendel@datallegro.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Leonid Ananiev <leonid.i.ananiev@linux.intel.com>
+Subject: Re: [PATCH] Fix bad data from non-direct-io read after direct-io
+ write
+References: <47225835.4050309@datallegro.com> <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710261425240.30120@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Oct 2007 22:10:43.0870 (UTC) FILETIME=[0D7133E0:01C8181D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kir Kolyshkin" <kir@swsoft.com> writes:
+Linus Torvalds wrote:
 
-> Eric, this problem is a known one. Currently Pavel and Sukadev are working on a
-> appropriate signal management for namespaces.
+> .... So we may
+> actually end up doing some IO, but then returning the "wrong" error code
+> from the invalidate. Hmm?
+>
 
-I'm fairly certain that the signal issue you they are dealing with
-is how to keep children from killing the init of a pid namespace.
-At least that is what Suka mentioned when I asked him earlier,
-and that is the discussion I have at various times on the containers
-list.
+A point.  In an all-seeing, all-caring universe, it would be the read
+hitting the cached page that couldn't be invalidated that would get
+the error, not the write.  I can't get too worked up over that, though.
 
-This is a totally different issue.  This is keeping
-kill -1 in a child pid namespace from sending a signal to
-every process in the system.
+In any case, as you say, if the write worked it should report as such.
+Perhaps this equivalent but slightly cleaned-up patch instead?
 
-It is a bad bug and this patch is a complete fix for it.
-To my knowledge Pavel and Suka just overlooked this case.
+Karl
 
-> If you'd first sent this patch for discussion/review to containers@, you'd know
-> that the patch is very incomplete.
+--- linux-2.6.23.1-base/mm/filemap.c	2007-10-12 12:43:44.000000000 -0400
++++ linux-2.6.23.1/mm/filemap.c	2007-10-26 18:00:00.000000000 -0400
+@@ -2194,21 +2194,17 @@ generic_file_direct_IO(int rw, struct ki
+ 	}
 
-I explicitly asked Suka, Pavel, and Cedric how complete they thought 
-the pid namespace was before I started sending patches.  With
-Pavel at a conference it makes sense why he did not reply.
+ 	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
+-	if (retval)
+-		goto out;
 
-For the most part Suka and Cedric did not know about the issues
-that I have been finding and fixing.
-
-So since several of them have been fixable with trivial simple fixes
-and because we have passed -rc1 and it is now time for bug fixes
-and possibly a few cleanups.  I have been making bug fixes.
-
-Kir I am happy from feedback from people who can understand the code
-and patches.  But I am not going to hold up sending simple obviously
-correct fixes for discussion.
-
-Eric
-
+ 	/*
+ 	 * Finally, try again to invalidate clean pages which might have been
+-	 * faulted in by get_user_pages() if the source of the write was an
+-	 * mmap()ed region of the file we're writing.  That's a pretty crazy
+-	 * thing to do, so we don't support it 100%.  If this invalidation
+-	 * fails and we have -EIOCBQUEUED we ignore the failure.
++	 * cached by non-direct readahead, or faulted in by get_user_pages()
++	 * if the source of the write was an mmap'ed region of the file
++	 * we're writing.  Either one is a pretty crazy thing to do,
++	 * so we don't support it 100%.  If this invalidation
++	 * fails, tough, the write still worked...
+ 	 */
+-	if (rw == WRITE && mapping->nrpages) {
+-		int err = invalidate_inode_pages2_range(mapping,
+-					      offset >> PAGE_CACHE_SHIFT, end);
+-		if (err && retval >= 0)
+-			retval = err;
++	if (retval >= 0 && rw == WRITE && mapping->nrpages) {
++		invalidate_inode_pages2_range(mapping, offset >> PAGE_CACHE_SHIFT, end);
+ 	}
+ out:
+ 	return retval;
