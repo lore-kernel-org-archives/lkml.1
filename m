@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbXJZBOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbXJZBOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbXJZBOh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Oct 2007 21:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXJZBO2
+	id S1753035AbXJZBOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Oct 2007 21:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbXJZBOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Oct 2007 21:14:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10841 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbXJZBO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Oct 2007 21:14:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=VMfcrcW64DMYIcrHC72QwfHpWmx6sVR+3ELKPrxCECcYT2M2/E5g3a/uq9UJBNw8g
-	SDkSCCeSrdm5QLUMpufbw==
-Message-ID: <6599ad830710251814s39b05559wb782b9aeab40f828@mail.gmail.com>
-Date: Thu, 25 Oct 2007 18:14:19 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [RFC] cgroup simplify space stripping
-Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20071024173621.24359.1372.sendpatchset@jackhammer.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Oct 2007 21:14:33 -0400
+Received: from mga11.intel.com ([192.55.52.93]:55056 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500AbXJZBOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Oct 2007 21:14:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,330,1188802800"; 
+   d="scan'208";a="358712108"
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+	runtime service support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m1myu75drx.fsf@ebiederm.dsl.xmission.com>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	 <m1myu75drx.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071024173621.24359.1372.sendpatchset@jackhammer.engr.sgi.com>
+Date: Fri, 26 Oct 2007 09:17:14 +0800
+Message-Id: <1193361434.23935.226.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 26 Oct 2007 01:14:25.0790 (UTC) FILETIME=[8C9AF9E0:01C8176D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/07, Paul Jackson <pj@sgi.com> wrote:
-> From: Paul Jackson <pj@sgi.com>
->
-> Simplify the space stripping code in cgroup file write.
->
-> Signed-off-by: Paul Jackson <pj@sgi.com>
+On Thu, 2007-10-25 at 11:01 -0600, Eric W. Biederman wrote:
+> > +static efi_status_t __init phys_efi_set_virtual_address_map(
+> > +	unsigned long memory_map_size,
+> > +	unsigned long descriptor_size,
+> > +	u32 descriptor_version,
+> > +	efi_memory_desc_t *virtual_map)
+> > +{
+> > +	efi_status_t status;
+> > +
+> > +	efi_call_phys_prelog();
+> > +	status = lin2win4((void *)efi_phys.set_virtual_address_map,
+> > +			  (u64)memory_map_size, (u64)descriptor_size,
+> > +			  (u64)descriptor_version, (u64)virtual_map);
+> > +	efi_call_phys_epilog();
+> > +	return status;
+> > +}
+> 
+> So you still have this piece of code which makes a kernel using
+> efi not compatible with kexec.  But you are still supporting a physical
+> call mode for efi.  If you are going to do this can we please just
+> remove the hacks that make the EFI physical call mode early boot only
+> and just always use that mode.  Depending on weird call once functions
+> like efi_set_virtual_address_map makes me very uncomfortable.
 
-Acked-by: Paul Menage <menage@google.com>
+The kexec issue is solved as that of IA-64. The EFI runtime code and
+data memory area is mapped with identity mapping, so they will have same
+virtual address across kexec. The memory mapped IO memory area used by
+EFI runtime services is mapped with fixmap, so they will have same
+virtual address across kexec too. And the efi_set_virtual_address_map
+runtime service function will be skipped in the kexeced kernel (set to
+"nop" in /sbin/kexec). So the kexeced kernel can use the virtual mode of
+EFI from kernel bootstrap on.
 
->
-> ---
->
-> This patch applies after both:
->         Adrian Bunk's: [2.6 patch] kernel/cgroup.c: remove dead code
->         pj's: [PATCH] cgroup brace coding style fix
->
->  kernel/cgroup.c |   15 +++------------
->  1 file changed, 3 insertions(+), 12 deletions(-)
->
-> --- 2.6.23-mm1.orig/kernel/cgroup.c     2007-10-24 10:03:11.847801501 -0700
-> +++ 2.6.23-mm1/kernel/cgroup.c  2007-10-24 10:29:08.355032464 -0700
-> @@ -1327,6 +1327,7 @@ static ssize_t cgroup_common_file_write(
->                 goto out1;
->         }
->         buffer[nbytes] = 0;     /* nul-terminate */
-> +       strstrip(buffer);       /* strip -just- trailing whitespace */
->
->         mutex_lock(&cgroup_mutex);
->
-> @@ -1347,19 +1348,9 @@ static ssize_t cgroup_common_file_write(
->                         clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
->                 break;
->         case FILE_RELEASE_AGENT:
-> -       {
-> -               struct cgroupfs_root *root = cgrp->root;
-> -               /* Strip trailing newline */
-> -               if (nbytes && (buffer[nbytes-1] == '\n'))
-> -                       buffer[nbytes-1] = 0;
-> -               /* We never write anything other than '\0'
-> -                * into the last char of release_agent_path,
-> -                * so it always remains a NUL-terminated
-> -                * string */
-> -               strncpy(root->release_agent_path, buffer, nbytes);
-> -               root->release_agent_path[nbytes] = 0;
-> +               BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX);
-> +               strcpy(cgrp->root->release_agent_path, buffer);
->                 break;
-> -       }
->         default:
->                 retval = -EINVAL;
->                 goto out2;
->
-> --
->                           I won't rest till it's the best ...
->                           Programmer, Linux Scalability
->                           Paul Jackson <pj@sgi.com> 1.650.933.1373
->
+Best Regards,
+Huang Ying
