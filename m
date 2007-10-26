@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765152AbXJZXHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766003AbXJZXHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765152AbXJZXHX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbXJZXHF
+	id S1766003AbXJZXHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXJZXHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:07:05 -0400
-Received: from 70-56-216-30.albq.qwest.net ([70.56.216.30]:43039 "EHLO
-	moria.ionkov.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751545AbXJZXHD (ORCPT
+	Fri, 26 Oct 2007 19:07:39 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41347 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751211AbXJZXHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:07:03 -0400
-Date: Fri, 26 Oct 2007 17:07:01 -0600
-From: Latchesar Ionkov <lucho@ionkov.net>
-To: v9fs-developer@lists.sourceforge.net
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] 9p: add missing end-of-options record for trans_fd
-Message-ID: <20071026230701.GC23570@ionkov.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 26 Oct 2007 19:07:38 -0400
+Date: Sat, 27 Oct 2007 01:08:07 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [2.6 patch] always export sysctl_{r,w}mem_max
+Message-ID: <20071026230807.GE30533@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The list of options that the fd transport accepts is missing end-of-options
-marker. This patch adds it.
+This patch fixes the following build error with CONFIG_SYSCTL=n:
 
-Signed-off-by: Latchesar Ionkov <lucho@ionkov.net>
+<--  snip  -->
+
+...
+ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
+ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
+ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
+make[2]: *** [__modpost] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-commit 70ec0c7936c2516d128fdb1a32d749071b8846ec
-tree 8de5495f83b94096825f8bfe0767e4fcbaf36ef3
-parent 25ed88ed319e40fb6426e2aaefcc5f136aadd4ee
-author Latchesar Ionkov <lucho@ionkov.net> 1193438452 -0600
-committer Latchesar Ionkov <lucho@ionkov.net> 1193438452 -0600
+22ea6cd56e4fa844b0b1bbab2542f09eb6c9a5ab 
+diff --git a/net/core/sock.c b/net/core/sock.c
+index febbcbc..ee1cc4f 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -2004,7 +2004,5 @@ EXPORT_SYMBOL(sock_wmalloc);
+ EXPORT_SYMBOL(sock_i_uid);
+ EXPORT_SYMBOL(sock_i_ino);
+ EXPORT_SYMBOL(sysctl_optmem_max);
+-#ifdef CONFIG_SYSCTL
+ EXPORT_SYMBOL(sysctl_rmem_max);
+ EXPORT_SYMBOL(sysctl_wmem_max);
+-#endif
 
- net/9p/trans_fd.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
-index 30269a4..62332ed 100644
---- a/net/9p/trans_fd.c
-+++ b/net/9p/trans_fd.c
-@@ -62,13 +62,14 @@ struct p9_trans_fd {
- 
- enum {
- 	/* Options that take integer arguments */
--	Opt_port, Opt_rfdno, Opt_wfdno,
-+	Opt_port, Opt_rfdno, Opt_wfdno, Opt_err,
- };
- 
- static match_table_t tokens = {
- 	{Opt_port, "port=%u"},
- 	{Opt_rfdno, "rfdno=%u"},
- 	{Opt_wfdno, "wfdno=%u"},
-+	{Opt_err, NULL},
- };
- 
- /**
