@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761168AbXJZL5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbXJZL6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761168AbXJZL5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 07:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXJZL53
+	id S1760109AbXJZL6R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 07:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXJZL6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 07:57:29 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50260 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbXJZL52 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 07:57:28 -0400
-Date: Fri, 26 Oct 2007 05:57:27 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071026115727.GR27248@parisc-linux.org>
-References: <20071024195847.GE27248@parisc-linux.org> <1193255992-14385-1-git-send-email-matthew@wil.cx> <200710261211.01423.rusty@rustcorp.com.au>
+	Fri, 26 Oct 2007 07:58:00 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:29743 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753550AbXJZL57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 07:57:59 -0400
+Date: Fri, 26 Oct 2007 13:56:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: Re: [PATCH] x86: fix pci-gart failure handling
+Message-ID: <20071026115604.GI5155@kernel.dk>
+References: <20071026080814Z.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710261211.01423.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071026080814Z.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 12:11:01PM +1000, Rusty Russell wrote:
-> 	This just seems like more optimization and complexity that we need.  Interfaces
-> using vsnprintf don't seem like good candidates for optimization.
+On Fri, Oct 26 2007, FUJITA Tomonori wrote:
+> blk_rq_map_sg doesn't initialize sg->dma_address/length to zero
+> anymore. Some low level drivers reuse sg lists without initializing so
+> IOMMUs might get non-zero dma_address/length. If map_sg fails, we need
+> pass the number of the mapped entries to gart_unmap_sg.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-That's a fair point, but I'm optimising for fewer trips into the
-slab(/slub/slob) allocator, and thus having less of an impact on the
-rest of the system.  Given that 'an alloc on every call' was one of the
-complaints Matt had about my v1 stringbuf patch, I can't imagine he'll
-be happy about this one either.
-
-> How about this?  It's as simple as I could make it...
-
-Some very cute tricks in there; I particularly like passing a
-double-pointer to ...printf so that the caller doesn't have to check
-the return value.
-
-Ultimately, I don't particularly care what version of stringbuf gets
-merged, I just want something to make my dmesg non-ugly.  The fact that
-my stringbuf implementation looked so damn similar to half a dozen things
-that people had already invented elsewhere in the kernel made me think
-that this was a good interface because it could be used to replace their
-complex code too.
-
-If you want to see some really complex stringbuffer-esque code that needs
-replacing, take a look at pnp_info_buffer in drivers/pnp/interface.c ...
+Thanks Tomo, applied!
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jens Axboe
+
