@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbXJ0OBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbXJ0OH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbXJ0OBd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXJ0OB0
+	id S1754834AbXJ0OH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXJ0OHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:01:26 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:54238 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751560AbXJ0OBZ convert rfc822-to-8bit (ORCPT
+	Sat, 27 Oct 2007 10:07:49 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59063 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751645AbXJ0OHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:01:25 -0400
-Date: Sat, 27 Oct 2007 15:58:07 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "Shannon Nelson" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
-       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
-Message-ID: <20071027155807.73976b0a@siona>
-In-Reply-To: <e9c3a7c20710261002m1c5063bdqa040834c30d9ca8a@mail.gmail.com>
-References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
-	<e9c3a7c20710240855j7bf1f0a6qa1d11af3a12910e5@mail.gmail.com>
-	<20071024201616.02f87b20@siona>
-	<20071025113240.466b69ba@siona>
-	<e9c3a7c20710261002m1c5063bdqa040834c30d9ca8a@mail.gmail.com>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 27 Oct 2007 10:07:47 -0400
+X-Sasl-enc: 65I/76i4T8pr3bMQKDAoENXz5KI1fRPZFdVMTAz/EFBt 1193494066
+Message-ID: <4723462D.2010002@imap.cc>
+Date: Sat, 27 Oct 2007 16:07:41 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Adrian Bunk <bunk@kernel.org>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: eradicating out of tree modules (was: Linux Security *Module* Framework)
+References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026155833.GF23016@kroah.com>
+In-Reply-To: <20071026155833.GF23016@kroah.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 10:02:24 -0700
-"Dan Williams" <dan.j.williams@intel.com> wrote:
-> On 10/25/07, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> > static irqreturn_t iop_adma_err_handler(int irq, void *data)
-> > {
-> >         (...)
-> >
-> >         BUG();
-> > }
-> >
-> > That's a panic waiting to happen, isn't it?
+Greg KH schrieb:
+> On Fri, Oct 26, 2007 at 11:46:39AM +0200, Tilman Schmidt wrote:
+>> [...] I still think there will always be
+>> a number of external modules that cannot be merged right now or at
+>> all, and deliberately making life difficult for out-of-tree code
+>> maintainers in order to coerce them into submitting their code for
+>> inclusion in the kernel will not work, it'll only create bad
+>> feelings.
 > 
-> Yes, and it should have a comment, because for now this is deliberate.
->  This was primarily driven by the fact that MD has no way of
-> recovering from hardware errors during software-memcpy or
-> software-xor_blocks so there was no where to plug-in
-> accelerated-memcpy/xor error recovery.  I can foresee other clients
-> wanting to have this information reported but async_tx based clients
-> are supposed to be blissfully unaware of under the covers hardware
-> acceleration.
+> Do you have examples of proof of this?
 
-Yeah, it's a pretty serious bug if the DMA engine flags an error. But
-wouldn't it be better to BUG() in the context of the caller? That way,
-you won't necessarily bring down the whole system.
+No proof in the legal, mathematical or scientific sense of the
+term, but examples:
 
-> One idea is to pass an error-pointer as the parameter to callback
-> routines, but that would hamper the client's ability to recover the
-> context of the failure...
+- at least one talented kernel developer giving up his work,
+until then maintained out of tree, after submitting it for
+inclusion in the kernel and taking the ensuing fla^Wdiscussion
+on LKML (nothing extraordinary, just the usual lack of
+courtesy and respect) too much to heart
 
-It's probably a good idea to dump the descriptors at some point. I
-don't think the client has many options to deal with such failures
-other than reset something or kill something, but if the client gets
-notified, it at least has some chance of recovering.
+- the furious flames on LKML each time someone dares posting
+helpful information about getting non-GPL software working
+again with the newest kernel version, which will certainly
+never achieve inclusion of that software in the kernel but
+definitely create bad feelings on both sides (righteous
+indignation *is* a bad feeling in my book)
 
-Håvard
+>  Read Documentation/stable_api_nonsense.txt for how we already make
+> out-of-tree code developer's lives hell :)
+
+Oh yes, that one. A key piece of evidence. Yes, I've read it,
+though I sometimes wish I hadn't. Its very title supports my
+observation on the creation of bad feelings, and the actual
+text doesn't contradict it. (no ":)")
+
+T.
+
