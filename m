@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbXJ0OmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXJ0OnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbXJ0OmB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbXJ0Olx
+	id S1755175AbXJ0OnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXJ0OnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:41:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56102 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbXJ0Olw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:41:52 -0400
-Subject: Re: jffs2_init_acl_post() can return uninitialized variable
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: KaiGai Kohei <kaigai@ak.jp.nec.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20071027141842.GV30533@stusta.de>
-References: <20071027141842.GV30533@stusta.de>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 10:42:01 -0400
-Message-Id: <1193496121.2533.44.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 27 Oct 2007 10:43:00 -0400
+Received: from fallback.mail.ru ([194.67.57.14]:13123 "EHLO mx4.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751109AbXJ0Om7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 10:42:59 -0400
+Date: Sat, 27 Oct 2007 18:37:31 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, netdev@vger.kernel.org,
+       leoli@freescale.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ucc_geth: add support for netpoll
+Message-ID: <20071027143731.GA2616@zarina>
+Reply-To: cbou@mail.ru
+References: <20071011124842.GB13963@localhost.localdomain> <4723389F.7010109@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <4723389F.7010109@ru.mvista.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-27 at 16:18 +0200, Adrian Bunk wrote:
-> Commit cfc8dc6f6f69ede939e09c2af06a01adee577285 added the following 
-> function that can return the value of an uninitialized variable:
+On Sat, Oct 27, 2007 at 05:09:51PM +0400, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Anton Vorontsov wrote:
+> 
+> > This patch adds netpoll support for the QE UCC Gigabit Ethernet
+> > driver. The approach is very similar to the gianfar driver.
+> 
+>     It's rather contrarywise -- this is standard approach and gianfar with its 
+> 3 TSEC IRQs has a quite non-standard poll_controller() implementation.
 
-Thanks.
+Oh.. well, right -- gianfar a bit more comlex in that regard.
 
-Linus, please pull the fix from git://git.infradead.org/mtd-2.6.git
+> 
+> > Tested using netconsole.
+> 
+>     KGDBoE is considered a better test (I hope you've also tested with it).
 
-David Woodhouse (2):
-      [JFFS2] Prevent return of initialised variable in jffs2_init_acl_post()
-      [JFFS2] Update MAINTAINERS entry -- the jffs-dev list is dead
+At the time of posting it was tested using netconsole only, a few
+days later it's was tested using KGDBoE also. So, it works indeed.
 
- MAINTAINERS    |    4 ++--
- fs/jffs2/acl.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> > index 18a6f48..06807ce 100644
+> > --- a/drivers/net/ucc_geth.c
+> > +++ b/drivers/net/ucc_geth.c
+> > @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+> >  	return IRQ_HANDLED;
+> >  }
+> >  
+> > +#ifdef CONFIG_NET_POLL_CONTROLLER
+> > +/*
+> > + * Polling 'interrupt' - used by things like netconsole to send skbs
+> > + * without having to re-enable interrupts. It's not called while
+> > + * the interrupt routine is executing.
+> > + */
+> > +static void ucc_netpoll(struct net_device *dev)
+> > +{
+> > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
+> > +
+> > +	disable_irq(ugeth->ug_info->uf_info.irq);
+> > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
+> > +	enable_irq(ugeth->ug_info->uf_info.irq);
+> 
+>     Why not make it less complex (for a reader and gcc too :-) ?
 
+Yup, I'm agree here but it's too late. Again. ;-)
+
+This patch already accepted into the -mm (a week or so after the
+silence), so.. now I'd rather not bother Andrew with such really
+cosmetic changes. But if Jeff would directly apply modfied patch,
+I'll send it. ;-)
+
+
+Anyhow, I'm sincerely appreciate your comments.
+
+Thanks,
 
 -- 
-dwmw2
-
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
