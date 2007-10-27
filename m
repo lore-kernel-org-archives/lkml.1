@@ -1,56 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbXJ0Wrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbXJ0W6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752949AbXJ0Wrp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 18:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXJ0Wrh
+	id S1753138AbXJ0W6m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 18:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXJ0W6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 18:47:37 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:58722 "EHLO twin.jikos.cz"
+	Sat, 27 Oct 2007 18:58:32 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57045 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbXJ0Wrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 18:47:37 -0400
-Date: Sun, 28 Oct 2007 00:47:15 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Gabriel C <nix.or.die@googlemail.com>, a.zummo@towertech.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: BUG: lock held when returning to user space
-In-Reply-To: <1193498921.5648.68.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0710280043590.18815@twin.jikos.cz>
-References: <472348F6.6050100@googlemail.com>  <Pine.LNX.4.64.0710271707140.18815@twin.jikos.cz>
- <1193498921.5648.68.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751219AbXJ0W6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 18:58:31 -0400
+From: Maarten Bressers <mbres@gentoo.org>
+To: James.Bottomley@SteelEye.com
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: axboe@kernel.dk
+Cc: tasio@hierro.tasio.net
+Cc: dsd@gentoo.org
+Subject: Re: [PATCH RESEND] SCSI not showing tray status correctly
+Message-Id: <20071027225830.585C8657DB@smtp.gentoo.org>
+Date: Sat, 27 Oct 2007 22:58:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Peter Zijlstra wrote:
+> This patch is too simplistic.  ide-cd.c:ide_cdrom_drive_status() looks
+> to be a reasonable implementation.  However, the worry is that
+> GET_EVENT_NOTIFICATION is a MMC command; devices not conforming to MMC
+> won't support it.  In theory, they should just return ILLEGAL_REQUEST,
+> but USB devices have been known to crash when given commands they don't
+> understand.  How widely tested has this been (if it's been in Gentoo
+> since 2004, then it's probably widely tested enough)?
+>
+> James
+>
+This patch hasn't been tested at all, I'm sorry if I gave you that
+impression, it isn't in Gentoo's patches, it's just been brought to our
+attention in the bug I linked too.
 
-> > > [  592.752781] ================================================
-> > > [  592.753478] [ BUG: lock held when returning to user space! ]
-> > > [  592.753880] ------------------------------------------------
-> > > [  592.754262] hwclock/1452 is leaving the kernel with locks still held!
-> > > [  592.754655] 1 lock held by hwclock/1452:
-> > > [  592.755007]  #0:  (&rtc->char_lock){--..}, at: [<c02a7ebb>] rtc_dev_open+0x2e/0x7e                                        
-> > Yes, this is because rtc keeps a char_lock mutex locked as long as the 
-> > device is open, to avoid concurrent accessess.
-> I think, in this case, the lock is associated with a kernel object that
-> is properly cleaned up if the holding tasks gets a SIGKILL. But in
-> general I'd like to see this kind of thing go away.
+I created another patch, based on your recommendations, and with a lot of
+help from Daniel Drake (dsd@gentoo.org), that's included below. Some
+changes are made to test_unit_ready() to be able to pass the sense data
+to sr_drive_status(). Currently, sr_do_ioctl() swallows this data and
+makes its own interpretations of sense codes, which isn't what we want
+here.
 
-Yes, but the fact is that is really is invalid use of mutex -- because the 
-mutex owner could become seriously wrong after fork() or sending the 
-filedescriptor through unix socket ... this easily leads to broken 
-situation.
+Is this what you had in mind? Do you think the possible problems with
+USB drives that you mentioned will prevent this patch from going in? 
+The patch has only been compile tested right now, we can do some real
+testing later, for now I'd just like to get your feedback on it.
 
-This seems to have been introduced in e824290e5d ... Alessandro, could you 
-convert this to test_and_set_bit()/clear_bit() semantics instead of a 
-mutex please?
+Maarten
 
-Thanks,
+---
 
--- 
-Jiri Kosina
+--- a/drivers/scsi/sr_ioctl.c	2007-10-26 22:40:41.000000000 +0200
++++ b/drivers/scsi/sr_ioctl.c	2007-10-27 23:56:16.000000000 +0200
+@@ -275,16 +275,21 @@ int sr_do_ioctl(Scsi_CD *cd, struct pack
+ /* ---------------------------------------------------------------------- */
+ /* interface to cdrom.c                                                   */
+ 
+-static int test_unit_ready(Scsi_CD *cd)
++static int test_unit_ready(Scsi_CD *cd, struct request_sense *sense)
+ {
+-	struct packet_command cgc;
++	struct scsi_device *SDev = cd->device;
++	unsigned char cmd[CDROM_PACKET_SIZE] = { GPCMD_TEST_UNIT_READY };
++	int result;
+ 
+-	memset(&cgc, 0, sizeof(struct packet_command));
+-	cgc.cmd[0] = GPCMD_TEST_UNIT_READY;
+-	cgc.quiet = 1;
+-	cgc.data_direction = DMA_NONE;
+-	cgc.timeout = IOCTL_TIMEOUT;
+-	return sr_do_ioctl(cd, &cgc);
++	if (!scsi_block_when_processing_errors(SDev))
++		return -ENODEV;
++
++	memset(sense, 0, sizeof(*sense));
++	result = scsi_execute(SDev, cmd, DMA_NONE,
++			      NULL, 0, (char *)sense,
++			      IOCTL_TIMEOUT, IOCTL_RETRIES, 0);
++
++	return driver_byte(result);
+ }
+ 
+ int sr_tray_move(struct cdrom_device_info *cdi, int pos)
+@@ -310,14 +315,41 @@ int sr_lock_door(struct cdrom_device_inf
+ 
+ int sr_drive_status(struct cdrom_device_info *cdi, int slot)
+ {
++	struct request_sense sense;
++	struct media_event_desc med;
++
+ 	if (CDSL_CURRENT != slot) {
+ 		/* we have no changer support */
+ 		return -EINVAL;
+ 	}
+-	if (0 == test_unit_ready(cdi->handle))
++	if ((0 == test_unit_ready(cdi->handle, &sense)) || 
++	    sense.sense_key == UNIT_ATTENTION)
+ 		return CDS_DISC_OK;
+ 
+-	return CDS_TRAY_OPEN;
++	if (!cdrom_get_media_event(cdi, &med)) {
++		if (med.media_present)
++			return CDS_DISC_OK;
++		else if (med.door_open)
++			return CDS_TRAY_OPEN;
++		else
++			return CDS_NO_DISC;
++	}
++
++	if (sense.sense_key == NOT_READY && sense.asc == 0x04 && sense.ascq == 0x04)
++		return CDS_DISC_OK;
++
++	/*
++	 * If not using Mt Fuji extended media tray reports,
++	 * just return TRAY_OPEN since ATAPI doesn't provide
++	 * any other way to detect this...
++	 */
++	if (sense.sense_key == NOT_READY) {
++		if (sense.asc == 0x3a && sense.ascq == 1)
++			return CDS_NO_DISC;
++		else
++			return CDS_TRAY_OPEN;
++	}
++	return CDS_DRIVE_NOT_READY;
+ }
+ 
+ int sr_disk_status(struct cdrom_device_info *cdi)
