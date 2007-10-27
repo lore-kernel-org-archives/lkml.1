@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbXJ0TUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXJ0TVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756678AbXJ0TUw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 15:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbXJ0TUo
+	id S1757497AbXJ0TVW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXJ0TVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 15:20:44 -0400
-Received: from web36614.mail.mud.yahoo.com ([209.191.85.31]:22584 "HELO
-	web36614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751863AbXJ0TUn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 15:20:43 -0400
-X-YMail-OSG: _YWU9lkVM1kiIymSpkMU_sO.tZWKWRW8szOMObjvviffFEFgOVgdcDrvwHm5U3MMLqW6Ms6o4Q--
-X-RocketYMMF: rancidfat
-Date: Sat, 27 Oct 2007 12:20:42 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>, casey@schaufler-ca.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071027030010.GA5450@Ahmed>
+	Sat, 27 Oct 2007 15:21:02 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4507 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753377AbXJ0TVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 15:21:00 -0400
+Date: Sat, 27 Oct 2007 21:20:43 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: torvalds@osdl.org, akpm@osdl.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+In-Reply-To: <20071020235546.GB1825@martell.zuzino.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0710272114590.1818@scrub.home>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <750701.98310.qm@web36614.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+On Sun, 21 Oct 2007, Alexey Dobriyan wrote:
 
-> Hi Casey,
+> So far remedies were:
+> a) grep(1) -- obviously fragile. I tried at some point grepping for
+>    spin_lock_irqsave(), found quite a few, but it became booooring quickly.
+> b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
+>    brutally broke some arches, survived one commit before revert :^)
+>    Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
 > 
-> Casey <casey@schaufler-ca.com> wrote:
-> >
-> > This version is again aimed at addressing Al Viro's issues in
-> > smackfs. Ahmed Darwish has again contributed in the repair of the
-> > locking issues there. The move to 2.6.24 was also an important
-> > release incentive.
-> >
-> 
-> My patches mentiond above is not applied in this version. The same 
-> lock issues remain. Did you forget applying them ?
+> So it would be nice to have something more robust.
 
-The patch I sent out was one version older than the one I
-intended to send. If I can recover the #$%^&*( disk I should
-have an update that includes those fixes presently. If not it
-may take a day or two longer. You have not been forgotten.
-Thank you for your contribution.
+If it's just about the type checking, something like below should pretty 
+much do the same.
 
+> * irq_flags_t allows arch maintainers to eventually switch to something
+>   smaller than "unsigned long" if they want to.
 
-Casey Schaufler
-casey@schaufler-ca.com
+Considering how painful this conversion could be, the question is whether 
+this is really needed. Comments so far suggest some archs don't need all 
+of it, but does someone need more?
+
+bye, Roman
+
+---
+ include/linux/irqflags.h |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/include/linux/irqflags.h
+===================================================================
+--- linux-2.6.orig/include/linux/irqflags.h
++++ linux-2.6/include/linux/irqflags.h
+@@ -41,6 +41,10 @@
+ # define INIT_TRACE_IRQFLAGS
+ #endif
+ 
++static __always_inline void __irq_flags_check(unsigned long *flags)
++{
++}
++
+ #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+ 
+ #include <asm/irqflags.h>
+@@ -50,10 +54,11 @@
+ #define local_irq_disable() \
+ 	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
+ #define local_irq_save(flags) \
+-	do { raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
++	do { __irq_flags_check(&flags); raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
+ 
+ #define local_irq_restore(flags)				\
+ 	do {							\
++		__irq_flags_check(&flags);			\
+ 		if (raw_irqs_disabled_flags(flags)) {		\
+ 			raw_local_irq_restore(flags);		\
+ 			trace_hardirqs_off();			\
+@@ -69,8 +74,8 @@
+  */
+ # define raw_local_irq_disable()	local_irq_disable()
+ # define raw_local_irq_enable()		local_irq_enable()
+-# define raw_local_irq_save(flags)	local_irq_save(flags)
+-# define raw_local_irq_restore(flags)	local_irq_restore(flags)
++# define raw_local_irq_save(flags)	({ __irq_flags_check(&flags); local_irq_save(flags); })
++# define raw_local_irq_restore(flags)	({ __irq_flags_check(&flags); local_irq_restore(flags); })
+ #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+ 
+ #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
