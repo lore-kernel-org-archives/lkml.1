@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJ0VLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbXJ0VWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXJ0VLI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 17:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJ0VK4
+	id S1755320AbXJ0VWu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXJ0VWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 17:10:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:63248 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbXJ0VKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 17:10:55 -0400
-Subject: Re: fixing up DRM device model usage
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Greg KH <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, jbarnes@virtuousgeek.org
-In-Reply-To: <200710261431.48589.jesse.barnes@intel.com>
-References: <200710181401.50470.jbarnes@virtuousgeek.org>
-	 <200710261140.41016.jbarnes@virtuousgeek.org>
-	 <1193425738.2190.45.camel@lov.site>
-	 <200710261431.48589.jesse.barnes@intel.com>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 23:12:15 +0200
-Message-Id: <1193519535.5776.16.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+AGy3Fs5ggl4aogvHLC65lAkIk1Y9eRiJxfIM
- ABu///Qhj+EoCXV0W1CKOh1tPja8V5DtQATjd0AZ4wV89LtbBq
- AlURWdLFd7fzHmaw9LTQdpAT6eHHizl
+	Sat, 27 Oct 2007 17:22:42 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3013 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbXJ0VWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 17:22:41 -0400
+Date: Sat, 27 Oct 2007 23:22:31 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: torvalds@osdl.org, akpm@osdl.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+In-Reply-To: <20071027201429.GE9816@martell.zuzino.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0710272319550.1817@scrub.home>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
+ <Pine.LNX.4.64.0710272114590.1818@scrub.home> <20071027201429.GE9816@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 14:31 -0700, Jesse Barnes wrote:
-> On Friday, October 26, 2007 12:08 pm Kay Sievers wrote:
+Hi,
 
-> > The open coded: device_create_file(&dev->dev, &device_attrs[i])
-> > should probably replaced by passing the array to the class, and the
-> > core will do that for you.
+On Sun, 28 Oct 2007, Alexey Dobriyan wrote:
+
+> > If it's just about the type checking, something like below should pretty 
+> > much do the same.
 > 
-> You mean just set drm_class->dev_attrs = device_attrs?  I didn't see in
-> the core device model code where that would create the files...
+> It won't catch, the following if both variables are unsigned long:
+> 
+> 	spin_lock_irqsave(&lock, flags);
+> 		[stuff]
+> 	spin_unlock_irqrestore(&lock, foo->flags);
+> 
+> It won't catch "static unsigned long flags;". With sparse, we can
+> eventually mark type as "on-stack only".
 
-Yeah, it is in device_add_attrs() in drivers/base/core.c.
+It should be on the stack, but we have cases where a pointer to it is used 
+(e.g. lock_timer_base). How do you want to deal with this?
 
-Kay
-
+bye, Roman
