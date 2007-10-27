@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbXJ0PNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbXJ0POB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbXJ0PNR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 11:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXJ0PNF
+	id S1755585AbXJ0POB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 11:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbXJ0PNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 11:13:05 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:53054 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbXJ0PNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 11:13:04 -0400
-Date: Sat, 27 Oct 2007 17:12:41 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: a.zummo@towertech.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: BUG: lock held when returning to user space
-In-Reply-To: <472348F6.6050100@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0710271707140.18815@twin.jikos.cz>
-References: <472348F6.6050100@googlemail.com>
+	Sat, 27 Oct 2007 11:13:52 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:51927 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbXJ0PNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 11:13:51 -0400
+Date: Sat, 27 Oct 2007 16:09:47 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Jean Delvare <khali@linux-fr.org>
+Message-ID: <20071027150947.GA1568@srcf.ucam.org>
+References: <1193236319.4590.225.camel@queen.suse.de> <200710250906.23003.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710250906.23003.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH 0/5] Detect hwmon and i2c bus drivers interfering with ACPI Operation Region resources
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Gabriel C wrote:
+On Thu, Oct 25, 2007 at 09:06:22AM -0600, Bjorn Helgaas wrote:
 
-> I found that today in dmesg after booting current git ( 
-> ec3b67c11df42362ccda81261d62829042f223f0 ) :
-> ...
-> [  592.752777]
-> [  592.752781] ================================================
-> [  592.753478] [ BUG: lock held when returning to user space! ]
-> [  592.753880] ------------------------------------------------
-> [  592.754262] hwclock/1452 is leaving the kernel with locks still held!
-> [  592.754655] 1 lock held by hwclock/1452:
-> [  592.755007]  #0:  (&rtc->char_lock){--..}, at: [<c02a7ebb>] rtc_dev_open+0x2e/0x7e                                        
+> But we really *should* reserve things used by opregions, shouldn't
+> we?  After all, the whole point of resource reservation is to prevent
+> conflicts.
 
-Yes, this is because rtc keeps a char_lock mutex locked as long as the 
-device is open, to avoid concurrent accessess.
-
-It could be easily substituted by some counting -- setting and clearing 
-bit in struct rtc_device instead of using char_lock, but doing this just 
-to shut the lockdep off is questionable imho.
-
-Peter, what is the preferred way to annotate these kinds of locking for 
-lockdep to express that it is intended?
+Only if you're happy to lose functionality like IDE, sadly.
 
 -- 
-Jiri Kosina
+Matthew Garrett | mjg59@srcf.ucam.org
