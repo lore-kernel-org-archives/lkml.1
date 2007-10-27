@@ -1,80 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbXJ0VCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbXJ0VHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbXJ0VCc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 17:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXJ0VCY
+	id S1757990AbXJ0VHX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXJ0VHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 17:02:24 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:26138 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbXJ0VCW (ORCPT
+	Sat, 27 Oct 2007 17:07:10 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:61395 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbXJ0VHJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 17:02:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LQoVJijh+FddLZtLizT5aM0wcj3zZ1lOjgceIzQ4zMX2R6prIY6DMk69x+QjUI3iEcV49aPHYdN7fRlUP18f04f0e2u+5YXAOC2F+PMbTagdytWUgknfFT1U7T59eFH884s2g3VVKCfhemY1QM6ifJhAdUyC5KA5QEEC4mX2TuE=
-Message-ID: <524f69650710271402g65a9ec1cqcc7bc3a964097e39@mail.gmail.com>
-Date: Sat, 27 Oct 2007 16:02:21 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: Networked filesystems vs backing_dev_info
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "David Howells" <dhowells@redhat.com>, sfrench@samba.org,
-       jaharkes@cs.cmu.edu, "Andrew Morton" <akpm@linux-foundation.org>,
-       vandrove@vc.cvut.cz
-In-Reply-To: <1193477666.5648.61.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Oct 2007 17:07:09 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <20071027160203.GA5709@kroah.com>
+References: <1193410087.6914.34.camel@twins>
+	 <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins>
+	 <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins>
+	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
+	 <1193447889.5648.44.camel@lappy> <20071027024033.GB29039@kroah.com>
+	 <1193474399.27652.15.camel@twins>  <20071027160203.GA5709@kroah.com>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 23:08:37 +0200
+Message-Id: <1193519317.5776.14.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1193477666.5648.61.camel@lappy>
+X-Provags-ID: V01U2FsdGVkX197h9jCZwSnQsqjJ+yHv8dbF56YGGQrPjj19FX
+ kCDGtzskqJ2XCscJLBn6lQ3n1Yu4k+/Mo9565UBAJZoathYttT
+ zNY9hhKJJVbmkUDG1l/WagbXk7zmlWn
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/27/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> Hi,
->
-> I had me a little look at bdi usage in networked filesystems.
->
->  NFS, CIFS, (smbfs), AFS, CODA and NCP
->
-> And of those, NFS is the only one that I could find that creates
-> backing_dev_info structures. The rest seems to fall back to
-> default_backing_dev_info.
->
-> With my recent per bdi dirty limit patches the bdi has become more
-> important than it has been in the past. While falling back to the
-> default_backing_dev_info isn't wrong per-se, it isn't right either.
->
-> Could I implore the various maintainers to look into this issue for
-> their respective filesystem. I'll try and come up with some patches to
-> address this, but feel free to beat me to it.
+On Sat, 2007-10-27 at 09:02 -0700, Greg KH wrote:
+> On Sat, Oct 27, 2007 at 10:39:59AM +0200, Peter Zijlstra wrote:
+> > On Fri, 2007-10-26 at 19:40 -0700, Greg KH wrote:
+> > > On Sat, Oct 27, 2007 at 03:18:08AM +0200, Peter Zijlstra wrote:
+> > > > On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
+> > > > > This crashes and burns on bootup, but I'm too tired to figure out what I
+> > > > > did wrong... will give it another try tomorrow..
+> > > > 
+> > > > Ok, can't sleep.. took a look. I have several problems here.
+> > > > 
+> > > > The thing that makes it go *boom* is the __ATTR_NULL. Removing that
+> > > > makes it boot. Albeit it then warns me of multiple duplicate sysfs
+> > > > objects, all named "bdi".
 
-I would like to understand more about your patches to see what bdi
-values makes sense for CIFS and how to report possible congestion back
-to the page manager.   I had been thinking about setting bdi->ra_pages
-so that we do more sensible readahead and writebehind - better
-matching what is possible over the network and what the server
-prefers.    SMB/CIFS Servers typically allow a maximum of 50 requests
-in parallel at one time from one client (although this is adjustable
-for some). The CIFS client prefers to do writes 14 pages (an iovec of
-56K) at a time (although many servers can efficiently handle multiple
-of these 56K writes in parallel).  With minor changes CIFS could
-handle even larger writes (to just under 64K for Windows and just
-under 128K for Samba - the current CIFS Unix Extensions allow servers
-to negotiate much larger writes, but lacking a "receivepage"
-equivalent Samba does not currently support larger than 128K).
-Ideally, to improve large file copy utilization, I would like to see
-from 3-10 writes of 56K (or larger in the future) in parallel.   The
-read path is harder since we only do 16K reads to Windows and Samba -
-but we need to increase the number of these that are done in parallel
-on the same inode.  There is a large Google Summer of Code patch for
-this which needs more review.
+> > > I'll look at this and see what I can come up with.  Would you just like
+> > > a whole new patch, or one against this one?
+> > 
+> > Sorry for the grumpy note, I get that way at 3.30 am. Maybe I ought not
+> > have mailed :-/
+> > 
+> > This is the code I had at that time.
+> 
+> Ah, I see a few problems.  Here, try this version instead.  It's
+> compile-tested only, and should be a lot simpler.
+> 
+> Note, we still are not setting the parent to the new bdi structure
+> properly, so the devices will show up in /sys/devices/virtual/ instead
+> of in their proper location.  To do this, we need the parent of the
+> device, which I'm not so sure what it should be (block device?  block
+> device controller?)
 
+Assigning a parent device will only work with the upcoming conversion of
+the raw kobjects in the block subsystem to "struct device".
 
--- 
+A few comments to the patch:
+
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -8,6 +8,7 @@
+>  #include <linux/compiler.h>	/* for inline */
+>  #include <linux/types.h>	/* for size_t */
+>  #include <linux/stddef.h>	/* for NULL */
+> +#include <stdarg.h>
+>  
+>  #ifdef __cplusplus
+>  extern "C" {
+> @@ -111,6 +112,9 @@ extern void *kmemdup(const void *src, si
+>  extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+>  extern void argv_free(char **argv);
+>  
+> +char *kvprintf(const char *fmt, va_list args);
+> +char *kprintf(const char *fmt, ...);
+
+Why is that here? I don't think we need this when we use the existing:
+  kvasprintf(GFP_KERNEL, fmt, args)
+
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+
+> +
+> +static struct device_attribute bdi_dev_attrs[] = {
+> +	__ATTR(readahead, 0644, readahead_show, readahead_store),
+> +	__ATTR_RO(reclaimable),
+> +	__ATTR_RO(writeback),
+> +	__ATTR_RO(dirty),
+> +	__ATTR_RO(bdi_dirty),
+> +};
+
+Default attributes will need the NULL termination back (see below).
+
+> +static __init int bdi_class_init(void)
+> +{
+> +	bdi_class = class_create(THIS_MODULE, "bdi");
+> +	return 0;
+> +}
+> +
+> +__initcall(bdi_class_init);
+> +
+> +int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
+
+This function should accept a: "struct device *parent" and all callers
+just pass NULL until the block layer conversion gets merged.
+
+> +{
+> +	char *name;
+> +	va_list args;
+> +	int ret = -ENOMEM;
+> +	int i;
+> +
+> +	va_start(args, fmt);
+> +	name = kvprintf(fmt, args);
+
+kvasprintf(GFP_KERNEL, fmt, args);
+
+> +	va_end(args);
+> +
+> +	if (!name)
+> +		return -ENOMEM;
+> +
+> +	bdi->dev = device_create(bdi_class, NULL, MKDEV(0,0), name);
+
+The parent should be passed here.
+
+> +	for (i = 0; i < ARRAY_SIZE(bdi_dev_attrs); i++) {
+> +		ret = device_create_file(bdi->dev, &bdi_dev_attrs[i]);
+> +		if (ret)
+> +			break;
+> +	}
+> +	if (ret) {
+> +		while (--i >= 0)
+> +			device_remove_file(bdi->dev, &bdi_dev_attrs[i]);
+> +		device_unregister(bdi->dev);
+> +		bdi->dev = NULL;
+> +	}
+
+All this open-coded attribute stuff should go away and be replaced by:
+  bdi_class->dev_attrs = bdi_dev_attrs;
+Otherwise at event time the attributes are not created and stuff hooking
+into the events will not be able to set values. Also, the core will do
+proper add/remove and error handling then.
+
 Thanks,
+Kay
 
-Steve
