@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXJ0OO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbXJ0OSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbXJ0OO5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXJ0OOu
+	id S1753270AbXJ0OSX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXJ0OSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:14:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:50718 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbXJ0OOt (ORCPT
+	Sat, 27 Oct 2007 10:18:14 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56331 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750702AbXJ0OSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:14:49 -0400
-Message-ID: <472347D4.8070703@anagramm.de>
-Date: Sat, 27 Oct 2007 16:14:44 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 27 Oct 2007 10:18:13 -0400
+Date: Sat, 27 Oct 2007 16:18:33 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Alan Cox <alan@redhat.com>, bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] unexport ide_fix_driveid
+Message-ID: <20071027141833.GT30533@stusta.de>
 MIME-Version: 1.0
-To: Chris Holvenstot <cholvenstot@comcast.net>
-CC: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Major SATA / EXT3 Issue?
-References: <1193451712.6639.13.camel@localhost>
-In-Reply-To: <1193451712.6639.13.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19fzJppMjrIMbhy25Wr8QT33CPuyVtBUrMQNbz
- 9o6dlPDEoWPrd8RzfV6Yi+q5glYxM5Bqv09MFjV4guUpqD6x/5
- FJ3OwWzm2zSagfiLxldfA==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Holvenstot schrieb:
-> I am curious if anyone else has had major problems with SATA drives on
-> the current series of kernels.  I have (or rather had) two SATA drives
-> on my system - the first was a Maxtor MaxLine 500 and the second was a
-> Maxtor MaxLine 250.
-> [...]
+ide_fix_driveid can now be unexported.
 
-If harddisks get too hot they die pretty quickly.
-The current harddisks usually support SMART. Ask the disks what
-they think it's wrong:
-http://smartmontools.sourceforge.net/
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Then, check the disks with different hardware... I have seen
-several issues with bad cables and broken hardware.
+---
+627c730e21e5010a5bdb1f4f9968cfd5e0b4df2a 
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 9516883..d3c5672 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -403,9 +403,6 @@ void ide_fix_driveid (struct hd_driveid *id)
+ #endif
+ }
+ 
+-/* FIXME: exported for use by the USB storage (isd200.c) code only */
+-EXPORT_SYMBOL(ide_fix_driveid);
+-
+ void ide_fixstring (u8 *s, const int bytecount, const int byteswap)
+ {
+ 	u8 *p = s, *end = &s[bytecount & ~1]; /* bytecount must be even */
 
-If you think that the problem is kernel related, you can boot
-some other distro or change the kernel to see if this problem
-still persists. Please post the dmesg output if you are sure
-the problem is kernel related...
-
-Regards,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
