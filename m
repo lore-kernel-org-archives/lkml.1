@@ -1,117 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXJ0DIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbXJ0DJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXJ0DIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 23:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXJ0DIF
+	id S1752766AbXJ0DJt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 23:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXJ0DJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 23:08:05 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47468
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751099AbXJ0DIE (ORCPT
+	Fri, 26 Oct 2007 23:09:42 -0400
+Received: from ro-out-1112.google.com ([72.14.202.177]:44187 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbXJ0DJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 23:08:04 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/15] Update kerneldoc comments in drivers/scsi/scsicam.c
-Date: Fri, 26 Oct 2007 23:07:48 -0500
-User-Agent: KMail/1.9.6
+	Fri, 26 Oct 2007 23:09:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
+        b=mmKHVA6RGMvhhFiWEPhYW9iRZ4OpmCcTZrJfO7y+fUSnM54j/hi6CLghbVfhipwUZqYtvr8kLxMHcYzOSuBh0zVjcd3Ki8EA6GULyIs4oVz+pCtljT3qNu9eH/lcPaaQniZd1459nrnzx7PEb9yAoBjlLRWIeEtC4AMGoaCCn70=
+Date: Sat, 27 Oct 2007 11:04:55 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeff Dike <jdike@karaya.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Git Patch]arch/um/drivers/ubd_kern.c: a warning fix
+Message-ID: <20071027030455.GA2506@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710262307.48902.rob@landley.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
 
-Update kerneldoc comments in drivers/scsi/scsicam.c
+Fix an incompatible-pointer warning.
 
-Signed-off-by: Rob Landley <rob@landley.net>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
 ---
+ arch/um/drivers/ubd_kern.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/scsi/scsicam.c |   39 ++++++++++++++++++++++++++-------------
- 1 file changed, 26 insertions(+), 13 deletions(-)
-
-diff -r a868e8217782 drivers/scsi/scsicam.c
---- a/drivers/scsi/scsicam.c	Mon Oct 22 19:40:02 2007 -0700
-+++ b/drivers/scsi/scsicam.c	Fri Oct 26 22:44:43 2007 -0500
-@@ -24,6 +24,14 @@ static int setsize(unsigned long capacit
- static int setsize(unsigned long capacity, unsigned int *cyls, unsigned int *hds,
- 		   unsigned int *secs);
+diff --git a/arch/um/drivers/ubd_kern.c b/arch/um/drivers/ubd_kern.c
+index e184b44..7e6cdde 100644
+--- a/arch/um/drivers/ubd_kern.c
++++ b/arch/um/drivers/ubd_kern.c
+@@ -705,7 +705,7 @@ static int ubd_add(int n, char **error_out)
+ 	ubd_dev->size = ROUND_BLOCK(ubd_dev->size);
  
-+/**
-+ * scsi_bios_ptable - Read PC partition table out of first sector of device.
-+ * @dev: from this device
-+ *
-+ * Description: Reads the first sector from the device and returns %0x42 bytes
-+ *              starting at offset %0x1be.
-+ * Returns: partition table in kmalloc(GFP_KERNEL) memory, or NULL on error.
-+ */
- unsigned char *scsi_bios_ptable(struct block_device *dev)
- {
- 	unsigned char *res = kmalloc(66, GFP_KERNEL);
-@@ -43,15 +51,17 @@ unsigned char *scsi_bios_ptable(struct b
- }
- EXPORT_SYMBOL(scsi_bios_ptable);
+ 	INIT_LIST_HEAD(&ubd_dev->restart);
+-	sg_init_table(&ubd_dev->sg, MAX_SG);
++	sg_init_table(ubd_dev->sg, MAX_SG);
  
--/*
-- * Function : int scsicam_bios_param (struct block_device *bdev, ector_t capacity, int *ip)
-- *
-- * Purpose : to determine the BIOS mapping used for a drive in a 
-+/**
-+ * scsicam_bios_param - Determine geometry of a disk in cylinders/heads/sectors.
-+ * @bdev: which device
-+ * @capacity: size of the disk in sectors
-+ * @ip: return value: ip[0]=heads, ip[1]=sectors, ip[2]=cylinders
-+ *
-+ * Description : determine the BIOS mapping/geometry used for a drive in a 
-  *      SCSI-CAM system, storing the results in ip as required
-  *      by the HDIO_GETGEO ioctl().
-  *
-  * Returns : -1 on failure, 0 on success.
-- *
-  */
- 
- int scsicam_bios_param(struct block_device *bdev, sector_t capacity, int *ip)
-@@ -98,15 +108,18 @@ int scsicam_bios_param(struct block_devi
- }
- EXPORT_SYMBOL(scsicam_bios_param);
- 
--/*
-- * Function : static int scsi_partsize(unsigned char *buf, unsigned long 
-- *     capacity,unsigned int *cyls, unsigned int *hds, unsigned int *secs);
-- *
-- * Purpose : to determine the BIOS mapping used to create the partition
-+/**
-+ * scsi_partsize - Parse cylinders/heads/sectors from PC partition table
-+ * @buf: partition table, see scsi_bios_ptable()
-+ * @capacity: size of the disk in sectors
-+ * @cyls: put cylinders here
-+ * @hds: put heads here
-+ * @secs: put sectors here
-+ *
-+ * Description: determine the BIOS mapping/geometry used to create the partition
-  *      table, storing the results in *cyls, *hds, and *secs 
-  *
-- * Returns : -1 on failure, 0 on success.
-- *
-+ * Returns: -1 on failure, 0 on success.
-  */
- 
- int scsi_partsize(unsigned char *buf, unsigned long capacity,
-@@ -194,7 +207,7 @@ EXPORT_SYMBOL(scsi_partsize);
-  *
-  * WORKING                                                    X3T9.2
-  * DRAFT                                                        792D
-- *
-+ * see http://www.t10.org/ftp/t10/drafts/cam/cam-r12b.pdf
-  *
-  *                                                        Revision 6
-  *                                                         10-MAR-94
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+ 	err = -ENOMEM;
+ 	ubd_dev->queue = blk_init_queue(do_ubd_request, &ubd_dev->lock);
