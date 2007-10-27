@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753683AbXJ0Hsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXJ0HvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753683AbXJ0Hsn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 03:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXJ0Hsf
+	id S1753911AbXJ0HvI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 03:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXJ0Hux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 03:48:35 -0400
-Received: from flatline.sindominio.net ([82.144.4.26]:54104 "EHLO
-	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbXJ0Hse (ORCPT
+	Sat, 27 Oct 2007 03:50:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38076 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbXJ0Huw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 03:48:34 -0400
-Date: Sat, 27 Oct 2007 09:48:46 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: megaraidlinux@lsi.com, linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] MegaRAID SAS: Convert aen_mutex to the mutex API
-Message-ID: <20071027074846.GQ9824@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	megaraidlinux@lsi.com, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Sat, 27 Oct 2007 03:50:52 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, kir@swsoft.com, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       kir@openvz.org, Cedric Le Goater <clg@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
+References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
+	<m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>
+	<20071027002448.GH30533@stusta.de>
+	<m18x5puyw7.fsf@ebiederm.dsl.xmission.com>
+	<20071027020408.GO30533@stusta.de>
+	<20071026191845.fd0f75c8.akpm@linux-foundation.org>
+	<m18x5pte18.fsf@ebiederm.dsl.xmission.com>
+	<20071026214046.c61e248d.akpm@linux-foundation.org>
+Date: Sat, 27 Oct 2007 01:41:43 -0600
+In-Reply-To: <20071026214046.c61e248d.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 26 Oct 2007 21:40:46 -0700")
+Message-ID: <m1prz1rolk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MegaRAID SAS: Convert aen_mutex to the mutex API
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> Given that a lot of this development will hopefully happen over the next
+> two months, ...
 
---
+A lot.  Various pieces are a major effort in their own right.
+Improving the kthread API so it can be used universally and
+allow removal all of the kernel_thread users.
+Reducing to an absolute minimum usage of pid_t.
 
-index e3c5c52..3ad379f 100644
---- a/drivers/scsi/megaraid/megaraid_sas.c
-+++ b/drivers/scsi/megaraid/megaraid_sas.c
-@@ -31,6 +31,7 @@
- #include <linux/moduleparam.h>
- #include <linux/module.h>
- #include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/uio.h>
-@@ -2358,7 +2359,7 @@ megasas_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
- 
- 	spin_lock_init(&instance->cmd_pool_lock);
- 
--	sema_init(&instance->aen_mutex, 1);
-+	mutex_init(&instance->aen_mutex);
- 	sema_init(&instance->ioctl_sem, MEGASAS_INT_CMDS);
- 
- 	/*
-@@ -2874,10 +2875,10 @@ static int megasas_mgmt_ioctl_aen(struct file *file, unsigned long arg)
- 	if (!instance)
- 		return -ENODEV;
- 
--	down(&instance->aen_mutex);
-+	mutex_lock(&instance->aen_mutex);
- 	error = megasas_register_aen(instance, aen.seq_num,
- 				     aen.class_locale_word);
--	up(&instance->aen_mutex);
-+	mutex_unlock(&instance->aen_mutex);
- 	return error;
- }
- 
-diff --git a/drivers/scsi/megaraid/megaraid_sas.h b/drivers/scsi/megaraid/megaraid_sas.h
-index 4dffc91..08c74c9 100644
---- a/drivers/scsi/megaraid/megaraid_sas.h
-+++ b/drivers/scsi/megaraid/megaraid_sas.h
-@@ -1089,7 +1089,7 @@ struct megasas_instance {
- 	struct megasas_evt_detail *evt_detail;
- 	dma_addr_t evt_detail_h;
- 	struct megasas_cmd *aen_cmd;
--	struct semaphore aen_mutex;
-+	struct mutex aen_mutex;
- 	struct semaphore ioctl_sem;
- 
- 	struct Scsi_Host *host;
+I know several of the things with signal handling had Oleg
+scratching his head.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+There is enough development there I question if the code will even be
+canidates for merging into 2.6.24.
 
-    Tant qu'il y aura sur terre des hommes pour qui existe un concept
-    d' 'honneur national', la menace d'une nouvelle guerre subsistera.
-                              (B. Traven)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+I can imagine an -mm tree that has everything ready to go in
+the next two months.
+
+>> It hurts me to even ponder what thinking makes it that 
+>> CONFIG_EXPERIMENTAL isn't enough to keep a stable distro
+>> from shipping the code in their stable kernel, and locking us into
+>> trouble.
+>> 
+>> With that said.  I think I should just respin the patchset now and add
+>> the "depends on BROKEN".  
+>
+> it doesn't make sense to make it all dependent upon BROKEN now.  Better
+> would be to make it dependant upon CONFIG_SOMETHING_ELSE now, which depends
+> upon EXPERIMENTAL and which will, around -rc6, be changed to depend upon
+> BROKEN.
+
+So we now have my patch which makes it depend on CONFIG_PID_NS.  
+Which is what started this thread. 
+
+> If that makes sense.
+
+Yes.
+
+> It's all a bit unusual and complex, but this is an exceptional set of
+> features - let's hang in there.
+
+Sure.  One small step at a time.
+
+- Step One add a config option.
+
+Eric
+
