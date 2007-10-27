@@ -1,119 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbXJ0Qyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXJ0Q7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbXJ0Qyp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 12:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXJ0Qyh
+	id S1756833AbXJ0Q7W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 12:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJ0Q7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 12:54:37 -0400
-Received: from mx39.mail.ru ([194.67.23.35]:62534 "EHLO mx39.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbXJ0Qyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 12:54:36 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-acpi@vger.kernel.org
-Subject: [PATCH] 2.6.24-rc1: ensure "present" sysfs attribute even if battery is absent
-Date: Sat, 27 Oct 2007 20:54:30 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, cbou@mail.ru, dwmw2@infradead.org
+	Sat, 27 Oct 2007 12:59:14 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:58413 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754729AbXJ0Q7N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 12:59:13 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 27 Oct 2007 09:59:07 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Marc Lehmann <linux-kernel@tst.eu>
+cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: epoll design problems with common fork/exec patterns
+In-Reply-To: <20071027085125.GC12326@schmorp.de>
+Message-ID: <Pine.LNX.4.64.0710270950170.12127@alien.or.mcafeemobile.com>
+References: <20071027062236.GA12476@schmorp.de> <4722F575.8080204@cosmosbay.com>
+ <20071027085125.GC12326@schmorp.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7908304.Z9he3TsPEE";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710272054.31160.arvidjaar@mail.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7908304.Z9he3TsPEE
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_H12IHT5Jl25MIH1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, 27 Oct 2007, Marc Lehmann wrote:
 
---Boundary-01=_H12IHT5Jl25MIH1
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > Please provide some code to illustrate one exact problem you have.
+> 
+>    // assume there is an open epoll set that listens for events on fd 5
+>    if (fork () = 0)
+>      {
+>        close (5);
+>        // fd 5 is now removed from the epoll set of the parent.
+>        _exit (0);
+>      }
 
-I am not exactly sure about this one ... what other power_supply class driv=
-ers=20
-do? Should I fix HAL instead (but then, I do not know whether HAL is the on=
-ly=20
-application that is using this interface).
+Hmmm ... what? I assume you know that:
+
+1) A file descriptor is a userspace view/handle of a kernel object
+
+2) The kernel object has a use-count for as many file descriptors that 
+   have been handed out to userspace
+
+3) A close() decreases the internal counter by one
+
+4) The kernel object gets effectively closed when the internal counter 
+   goes to zero
+
+5) A fork() acts as a dup() on the file descriptors by hence bumping up 
+   its internal counter
+
+6) Epoll removes the file from the set, when the *kernel* object gets 
+   closed (internal use-count goes to zero)
+
+With that in mind, how can the code snippet above trigger a removal from 
+the epoll set?
 
 
---Boundary-01=_H12IHT5Jl25MIH1
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="2.6.24-rc1_battery_present_property"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
-	filename="2.6.24-rc1_battery_present_property"
 
-Subject: [PATCH] 2.6.24-rc1: ensure "present" sysfs attribute even if batte=
-ry is absent
-=46rom: Andrey Borzenkov <arvidjaar@mail.ru>
+- Davide
 
-Ensure that we always have "present" attribute in sysfs. This is compatible
-with procfs case where we had "present: no" if battery was not available.
 
-This fixes HAL battery detection where it does pretend battery is present
-but canot provide any value for it.
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
-=2D--
-
- drivers/acpi/battery.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 681e26b..6e67fcd 100644
-=2D-- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -187,6 +187,10 @@ static int acpi_battery_get_property(struct power_supp=
-ly *psy,
- 	return 0;
- }
-=20
-+static enum power_supply_property missing_battery_props[] =3D {
-+	POWER_SUPPLY_PROP_PRESENT,
-+};
-+
- static enum power_supply_property charge_battery_props[] =3D {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -389,8 +393,13 @@ static int acpi_battery_update(struct acpi_battery *ba=
-ttery)
- {
- 	int saved_present =3D acpi_battery_present(battery);
- 	int result =3D acpi_battery_get_status(battery);
-=2D	if (result || !acpi_battery_present(battery))
-+	if (result)
- 		return result;
-+	if (!acpi_battery_present(battery)) {
-+		battery->bat.properties =3D missing_battery_props;
-+		battery->bat.num_properties =3D ARRAY_SIZE(missing_battery_props);
-+		return result;
-+	}
- 	if (saved_present !=3D acpi_battery_present(battery) ||
- 	    !battery->update_time) {
- 		battery->update_time =3D 0;
-
---Boundary-01=_H12IHT5Jl25MIH1--
-
---nextPart7908304.Z9he3TsPEE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHI21HR6LMutpd94wRAgY6AKDA6PkJCBmJgwq3EYAk6owB43+LvwCgwvdX
-UhQT7Utx8QZ5IIp9cB7Q1L8=
-=crwy
------END PGP SIGNATURE-----
-
---nextPart7908304.Z9he3TsPEE--
