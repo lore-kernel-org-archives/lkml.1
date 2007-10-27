@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbXJ0PPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbXJ0PTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbXJ0PPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 11:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXJ0PPN
+	id S1755450AbXJ0PTh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 11:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXJ0PTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 11:15:13 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52544 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbXJ0PPM (ORCPT
+	Sat, 27 Oct 2007 11:19:30 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59866 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751588AbXJ0PT3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 11:15:12 -0400
-Date: Sat, 27 Oct 2007 17:15:11 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: perex@perex.cz, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: snd-rtctimer bugs ?
-In-Reply-To: <472353E8.4030107@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0710271713390.30465@fbirervta.pbzchgretzou.qr>
-References: <472353E8.4030107@googlemail.com>
+	Sat, 27 Oct 2007 11:19:29 -0400
+X-Sasl-enc: /dAMBNXBnVRoD+uPLZazU+xVa3BmNvb0VbV6IiJA8s+7 1193498368
+Message-ID: <472356FC.9090302@imap.cc>
+Date: Sat, 27 Oct 2007 17:19:24 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: sam@ravnborg.org
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.23-mm1] CONFIG_LOCALVERSION handling broken
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <471142A8.40307@imap.cc> <47169593.7060901@imap.cc>
+In-Reply-To: <47169593.7060901@imap.cc>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+/me wrote:
 
-On Oct 27 2007 17:06, Gabriel C wrote:
->
->sudo modprobe snd-rtctimer
->WARNING: Error inserting rtc (/lib/modules/2.6.24-rc1-gec3b67c1/kernel/drivers/char/rtc.ko): Input/output error
->FATAL: Error inserting snd_rtctimer (/lib/modules/2.6.24-rc1-gec3b67c1/kernel/sound/core/snd-rtctimer.ko): Unknown symbol in module, or unknown parameter (see dmesg)                                                                                     
->
->from dmesg :
->
->[ 4103.462367] rtc: I/O resource 70 is not free.
->[ 4103.477605] snd_rtctimer: Unknown symbol rtc_register
->[ 4103.477780] snd_rtctimer: Unknown symbol rtc_unregister
->[ 4103.477900] snd_rtctimer: Unknown symbol rtc_control
+> ts@xenon:~/kernel/linux-2.6.23-mm1-work> make include/config/kernel.release
+> ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.release
+> 2.6.23-mm1-testing
+> ts@xenon:~/kernel/linux-2.6.23-mm1-work> make
+> [...]
+> ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.release
+> 2.6.23-mm1
+[...]
+> I'll just skip this -mm release and wait for 2.6.24-rc1, hoping
+> it won't have the same problem.
 
-http://lkml.org/lkml/2007/1/5/153
+2.6.24-rc1 is fine, so the issue can be closed.
+
+T.
+
