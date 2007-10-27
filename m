@@ -1,134 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbXJ0TPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbXJ0TQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752133AbXJ0TPJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 15:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJ0TOt
+	id S1755753AbXJ0TQf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXJ0TQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 15:14:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17318 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753092AbXJ0TOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 15:14:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,337,1188802800"; 
-   d="scan'208";a="306714810"
-Subject: Re: [PATCH] DMA: Fix broken device refcounting
-From: Dan Williams <dan.j.williams@intel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-In-Reply-To: <20071027154947.6836a3d9@siona>
-References: <1193415162504-git-send-email-hskinnemoen@atmel.com>
-	 <1193416577.9353.5.camel@dwillia2-linux.ch.intel.com>
-	 <20071027154947.6836a3d9@siona>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 27 Oct 2007 12:12:37 -0700
-Message-Id: <1193512357.18911.6.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 8bit
+	Sat, 27 Oct 2007 15:16:28 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52561 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbXJ0TQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 15:16:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=L9XCx3aA1uC/E1ABM3CQ6f7cnCohs+XWD3h6uRCp3LLhnEev796HmmAJaOXb+4rvQ
+	YHXgMdmRl0ryj/U0pOlvQ==
+Date: Sat, 27 Oct 2007 12:16:12 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <alpine.DEB.0.9999.0710261136500.11674@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.0.9999.0710271212450.19199@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>  <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>  <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>  <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+  <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com> <1193411888.5032.9.camel@localhost> <alpine.DEB.0.9999.0710261136500.11674@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-27 at 06:49 -0700, Haavard Skinnemoen wrote:
-> On Fri, 26 Oct 2007 09:36:17 -0700
-> Dan Williams <dan.j.williams@intel.com> wrote:
+On Fri, 26 Oct 2007, David Rientjes wrote:
+
+> Hacking and requiring an updated version of libnuma to allow empty 
+> nodemasks to be passed is a poor solution; if mempolicy's are supposed to 
+> be independent from cpusets, then what semantics does an empty nodemask 
+> actually imply when using MPOL_INTERLEAVE?  To me, it means the entire 
+> set_mempolicy() should be a no-op, and that's exactly how mainline 
+> currently treats it _as_well_ as libnuma.  So justifying this change in 
+> the man page is respectible, but passing an empty nodemask just doesn't 
+> make sense.
 > 
-> > @@ -221,7 +220,6 @@ void dma_chan_cleanup(struct kref *kref)
-> >  {
-> >       struct dma_chan *chan = container_of(kref, struct dma_chan, refcount);
-> >       chan->device->device_free_chan_resources(chan);
-> > -     kref_put(&chan->device->refcount, dma_async_device_cleanup);
-> >  }
-> >  EXPORT_SYMBOL(dma_chan_cleanup);
-> 
-> While I can't see any problems with the rest of the patch, I think this
-> part is wrong for the same reasons removing the kref_put() from the
-> class device cleanup function is. I don't see any constraint that
-> guarantees that dma_chan_cleanup() will always be called before
-> dma_dev_release(), which means that "chan" may have been freed before
-> this function gets a chance to run. Please correct me if I'm wrong.
 
-Absolutely right, the driver, not dmaengine, frees the memory so there
-must be a per channel reference on the device to hold off the driver's
-remove routine.
-> 
-> Håvard
+Another reason that passing an empty nodemask to set_mempolicy() doesn't 
+make sense is that libnuma uses numa_set_interleave_mask(&numa_no_nodes)
+to disable interleaving completely.
 
-So how about this...
-
----snip---
-dmaengine: Fix broken device refcounting
-
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-
-When a DMA device is unregistered, its reference count is decremented
-twice for each channel: Once dma_class_dev_release() and once in
-dma_chan_cleanup(). This may result in the DMA device driver's
-remove() function completing before all channels have been cleaned
-up, causing lots of use-after-free fun.
-
-Fix it by incrementing the device's reference count twice for each
-channel during registration.
-
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-[dan.j.williams@intel.com: kill unnecessary client refcounting]
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
-
- drivers/dma/dmaengine.c |   17 ++++++-----------
- 1 files changed, 6 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 84257f7..ec7e871 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -186,10 +186,9 @@ static void dma_client_chan_alloc(struct dma_client *client)
- 				/* we are done once this client rejects
- 				 * an available resource
- 				 */
--				if (ack == DMA_ACK) {
-+				if (ack == DMA_ACK)
- 					dma_chan_get(chan);
--					kref_get(&device->refcount);
--				} else if (ack == DMA_NAK)
-+				else if (ack == DMA_NAK)
- 					return;
- 			}
- 		}
-@@ -276,11 +275,8 @@ static void dma_clients_notify_removed(struct dma_chan *chan)
- 		/* client was holding resources for this channel so
- 		 * free it
- 		 */
--		if (ack == DMA_ACK) {
-+		if (ack == DMA_ACK)
- 			dma_chan_put(chan);
--			kref_put(&chan->device->refcount,
--				dma_async_device_cleanup);
--		}
- 	}
- 
- 	mutex_unlock(&dma_list_mutex);
-@@ -320,11 +316,8 @@ void dma_async_client_unregister(struct dma_client *client)
- 			ack = client->event_callback(client, chan,
- 				DMA_RESOURCE_REMOVED);
- 
--			if (ack == DMA_ACK) {
-+			if (ack == DMA_ACK)
- 				dma_chan_put(chan);
--				kref_put(&chan->device->refcount,
--					dma_async_device_cleanup);
--			}
- 		}
- 
- 	list_del(&client->global_node);
-@@ -401,6 +394,8 @@ int dma_async_device_register(struct dma_device *device)
- 			goto err_out;
- 		}
- 
-+		/* One for the channel, one of the class device */
-+		kref_get(&device->refcount);
- 		kref_get(&device->refcount);
- 		kref_init(&chan->refcount);
- 		chan->slow_ref = 0;
+		David
