@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbXJ0SwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbXJ0TAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbXJ0SwW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 14:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXJ0SwO
+	id S1757044AbXJ0TAo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXJ0TAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 14:52:14 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:55224 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXJ0SwO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 14:52:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=tGOGsS9qZzmaisrQhT67ffQC9Vp5hyDpZgv3V688mm/BJPHmfhTJnEEXatmglQ2kteB5bgJXhDFRFjaocDNkom5GsnQH0LOj2C2mOSy7gVUbZtu4KcKmfY4IotUZDAAzBsd6k5MSmZqmu4MYJzVvdjDaW+Gzjk08aOvX6dhBc7U=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ide/arm/icside: fallout from commit 86f3a492bb09eee5745b93af35f2212179c251fd
-Date: Sat, 27 Oct 2007 20:58:37 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, rmk@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <20071027183923.GO8181@ftp.linux.org.uk>
-In-Reply-To: <20071027183923.GO8181@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Oct 2007 15:00:34 -0400
+Received: from colin.muc.de ([193.149.48.1]:3568 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbXJ0TAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 15:00:34 -0400
+Date: 27 Oct 2007 21:00:31 +0200
+Date: Sat, 27 Oct 2007 21:00:31 +0200
+From: Andi Kleen <ak@muc.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Adding TIF_TRACE_KERNEL to x86_64
+Message-ID: <20071027190031.GA97563@muc.de>
+References: <20071026193738.GA1591@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710272058.38211.bzolnier@gmail.com>
+In-Reply-To: <20071026193738.GA1591@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 October 2007, Al Viro wrote:
-> struct device doesn't have ->dma; it's in struct expansion_card where
-> that struct device is embedded into.
+On Fri, Oct 26, 2007 at 03:37:38PM -0400, Mathieu Desnoyers wrote:
+> 
+> 1 - process A enters in a syscall, TIF_KERNEL_TRACE is cleared
+> 2 - we activate TIF_KERNEL_TRACE
+> 3 - process A returns from syscall (with wrong top of stack ?) -> segfault.
+> 
+> Am I on the right track ?
 
-Yeah, your fix is obviously correct, thanks!
+Yes. The code was not designed to allow that. The syscall path
+has been optimized to go as fast as possible.
 
-Bart
+> 
+> Can this be a concern with TIF_SYSCALL_TRACE also ? (potential race in
+> ptrace ?)
+
+ptrace only changes state in stopped processes; and those are not hanging
+in syscalls. So no there is no race in a standard kernel.
+
+If you wanted to change it the right way would be probably to test
+for SYSCALL_TRACE too in the work flags and handle it there
+
+-Andi
+
