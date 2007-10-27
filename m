@@ -1,449 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXJ0IkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbXJ0ItV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbXJ0IkZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 04:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJ0IkN
+	id S1753828AbXJ0ItV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 04:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbXJ0ItN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 04:40:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58529 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbXJ0IkK (ORCPT
+	Sat, 27 Oct 2007 04:49:13 -0400
+Received: from doom.schmorp.de ([87.139.53.102]:45094 "EHLO doom.schmorp.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751616AbXJ0ItM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 04:40:10 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>
-In-Reply-To: <20071027024033.GB29039@kroah.com>
-References: <1191407872.5572.7.camel@lappy>
-	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
-	 <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins>
-	 <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins>
-	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
-	 <1193447889.5648.44.camel@lappy>  <20071027024033.GB29039@kroah.com>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 10:39:59 +0200
-Message-Id: <1193474399.27652.15.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Oct 2007 04:49:12 -0400
+Date: Sat, 27 Oct 2007 10:51:25 +0200
+From: Marc Lehmann <linux-kernel@tst.eu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: epoll design problems with common fork/exec patterns
+Message-ID: <20071027085125.GC12326@schmorp.de>
+Mail-Followup-To: Eric Dumazet <dada1@cosmosbay.com>,
+	linux-kernel@vger.kernel.org,
+	Davide Libenzi <davidel@xmailserver.org>
+References: <20071027062236.GA12476@schmorp.de> <4722F575.8080204@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4722F575.8080204@cosmosbay.com>
+X-PGP: "1024D/DA743396 1999-01-26 Marc Alexander Lehmann <schmorp@schmorp.de>
+       Key fingerprint = 475A FE9B D1D4 039E 01AC  C217 A1E8 0270 DA74 3396"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 19:40 -0700, Greg KH wrote:
-> On Sat, Oct 27, 2007 at 03:18:08AM +0200, Peter Zijlstra wrote:
-> > 
-> > On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
-> > > This crashes and burns on bootup, but I'm too tired to figure out what I
-> > > did wrong... will give it another try tomorrow..
-> > 
-> > Ok, can't sleep.. took a look. I have several problems here.
-> > 
-> > The thing that makes it go *boom* is the __ATTR_NULL. Removing that
-> > makes it boot. Albeit it then warns me of multiple duplicate sysfs
-> > objects, all named "bdi".
-> > 
-> > For some obscure reason this device interface insists on using the
-> > bus_id as name (?!), and further reduces usability by limiting that to
-> > 20 odd characters.
-> > 
-> > This makes it quite useless. I tried fudging around that limit by using
-> > device_rename and kobject_rename, but to no avail.
-> > 
-> > Really, it should not be this hard to use, trying to expose a handfull
-> > of simple integers to userspace should not take 8h+ and still not work.
-> > 
-> > Peter, who thinks sysfs is contorted mess beyond his skill. I'll stick
-> > to VM and scheduler code, that actually makes sense.
+On Sat, Oct 27, 2007 at 10:23:17AM +0200, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> >  In this case, the parent process works fine until the child closes fds,
+> >  after which the fds become unarmed in the parent too. This works as
 > 
-> Heh, that's funny :)
+> I have no idea what exact problem you have. 
+
+Well, I explained it rather succinctly, I think. If you tell me whats unclear
+I can explain...
+
+> But if the child closes some 
+> file descriptor that were 'cloned' at fork() time, this only decrements a 
+> refcount, and definitely should not close it for the 'parent'.
+
+It doesn't. It removes it from the epoll set, though, so the parent will not
+receive events for that fd anymore.
+
+> I have some apps that are happily using epoll() and fork()/exec() and have 
+
+The problem I described is fork/close/exec. close being the explicit
+syscall.
+
+> no problem at all. I usually use O_CLOEXEC so that all close() are done at 
+> exec() time without having to do it in a loop. epoll continues to work as 
+> expected in the parent process.
+
+This is because epoll doesn't behave like documented: It removes the fd
+from the parents epoll set only on an explicit close() syscall, not on an
+implicit close from exec.
+
+> >fd sets. This would explain the behaviour above. Unfortunately (or
+> >fortunately?) this is not what happens: when the fds are being closed by
+> >exec or exit, the fds do not get removed from the epoll set.
 > 
-> I'll look at this and see what I can come up with.  Would you just like
-> a whole new patch, or one against this one?
+> at exec() (granted CLOEXEC is asserted) or exit() time, only the refcount 
+> of each file is decremented. Only if their refcount becomes NULL, files are 
+> then removed from epoll set.
 
-Sorry for the grumpy note, I get that way at 3.30 am. Maybe I ought not
-have mailed :-/
+Yes. But thats obviously not the only way to close fds.
 
-This is the code I had at that time.
+> >Is epoll really designed to be so incompatible with the most commno fork
+> >patterns? Shouldn't epoll do refcounting, as is commonly done under
+> >Unix? As the fd space is not shared between rpocesses, why does epoll
+> >try? Shouldn't the epoll information be copied just like the fd table
+> >itself, memory, and other resources?
+> 
+> Too many questions here, showing lack of understanding.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- block/genhd.c               |    2 
- fs/fuse/inode.c             |    2 
- fs/nfs/client.c             |    2 
- include/linux/backing-dev.h |   21 ++++++
- include/linux/string.h      |    4 +
- include/linux/writeback.h   |    3 
- mm/backing-dev.c            |  144 ++++++++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c         |    2 
- mm/util.c                   |   42 ++++++++++++
- 9 files changed, 219 insertions(+), 3 deletions(-)
+You already said you don't the problem. No need to get insulting :(
 
-Index: linux-2.6-2/fs/fuse/inode.c
-===================================================================
---- linux-2.6-2.orig/fs/fuse/inode.c
-+++ linux-2.6-2/fs/fuse/inode.c
-@@ -467,7 +467,7 @@ static struct fuse_conn *new_conn(void)
- 		atomic_set(&fc->num_waiting, 0);
- 		fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
- 		fc->bdi.unplug_io_fn = default_unplug_io_fn;
--		err = bdi_init(&fc->bdi);
-+		err = bdi_init_fmt(&fc->bdi, "bdi-fuse-%llu", (unsigned long long)fc->id);
- 		if (err) {
- 			kfree(fc);
- 			fc = NULL;
-Index: linux-2.6-2/fs/nfs/client.c
-===================================================================
---- linux-2.6-2.orig/fs/nfs/client.c
-+++ linux-2.6-2/fs/nfs/client.c
-@@ -678,7 +678,7 @@ static int nfs_probe_fsinfo(struct nfs_s
- 		goto out_error;
- 
- 	nfs_server_set_fsinfo(server, &fsinfo);
--	error = bdi_init(&server->backing_dev_info);
-+	error = bdi_init_fmt(&server->backing_dev_info, "bdi-nfs-%s-%p", clp->cl_hostname, server);
- 	if (error)
- 		goto out_error;
- 
-Index: linux-2.6-2/include/linux/backing-dev.h
-===================================================================
---- linux-2.6-2.orig/include/linux/backing-dev.h
-+++ linux-2.6-2/include/linux/backing-dev.h
-@@ -11,6 +11,8 @@
- #include <linux/percpu_counter.h>
- #include <linux/log2.h>
- #include <linux/proportions.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
- #include <asm/atomic.h>
- 
- struct page;
-@@ -48,11 +50,30 @@ struct backing_dev_info {
- 
- 	struct prop_local_percpu completions;
- 	int dirty_exceeded;
-+
-+#ifdef CONFIG_SYSFS
-+	struct device kdev;
-+#endif
- };
- 
- int bdi_init(struct backing_dev_info *bdi);
- void bdi_destroy(struct backing_dev_info *bdi);
- 
-+int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...);
-+void bdi_unregister(struct backing_dev_info *bdi);
-+
-+#define bdi_init_fmt(bdi, fmt...)				\
-+	({							\
-+	 	int ret;					\
-+	 	ret = bdi_init(bdi);				\
-+	 	if (!ret) {					\
-+	 		ret = bdi_register(bdi, ##fmt);		\
-+	 		if (ret)				\
-+	 			bdi_destroy(bdi);		\
-+	 	}						\
-+	 	ret;						\
-+	 })
-+
- static inline void __add_bdi_stat(struct backing_dev_info *bdi,
- 		enum bdi_stat_item item, s64 amount)
- {
-Index: linux-2.6-2/include/linux/writeback.h
-===================================================================
---- linux-2.6-2.orig/include/linux/writeback.h
-+++ linux-2.6-2/include/linux/writeback.h
-@@ -113,6 +113,9 @@ struct file;
- int dirty_writeback_centisecs_handler(struct ctl_table *, int, struct file *,
- 				      void __user *, size_t *, loff_t *);
- 
-+void get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
-+		 struct backing_dev_info *bdi);
-+
- void page_writeback_init(void);
- void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
- 					unsigned long nr_pages_dirtied);
-Index: linux-2.6-2/mm/backing-dev.c
-===================================================================
---- linux-2.6-2.orig/mm/backing-dev.c
-+++ linux-2.6-2/mm/backing-dev.c
-@@ -4,12 +4,153 @@
- #include <linux/fs.h>
- #include <linux/sched.h>
- #include <linux/module.h>
-+#include <linux/writeback.h>
-+#include <linux/device.h>
-+
-+#ifdef CONFIG_SYSFS
-+
-+static void bdi_release(struct device *dev)
-+{
-+}
-+
-+static int bdi_uevent(struct device *dev, struct kobj_uevent_env *env)
-+{
-+	return 0;
-+}
-+
-+static struct class bdi_class = {
-+	.name = "bdi",
-+	.dev_release = bdi_release,
-+	.dev_uevent = bdi_uevent,
-+};
-+
-+static ssize_t readahead_store(struct device *dev,
-+			       struct device_attribute *attr,
-+			       const char *buf, size_t count)
-+{
-+	struct backing_dev_info *bdi =
-+		container_of(dev, struct backing_dev_info, kdev);
-+	char *end;
-+
-+	bdi->ra_pages = simple_strtoul(buf, &end, 10);
-+
-+	return end - buf;
-+}
-+
-+#define BDI_SHOW(name, expr)						\
-+static ssize_t name##_show(struct device *dev,				\
-+			   struct device_attribute *attr, char *page)	\
-+{									\
-+	struct backing_dev_info *bdi =					\
-+		container_of(dev, struct backing_dev_info, kdev);	\
-+									\
-+	return snprintf(page, PAGE_SIZE-1, "%lld\n", (long long)expr);	\
-+}
-+
-+BDI_SHOW(readahead, bdi->ra_pages)
-+
-+BDI_SHOW(reclaimable, bdi_stat(bdi, BDI_RECLAIMABLE))
-+BDI_SHOW(writeback, bdi_stat(bdi, BDI_WRITEBACK))
-+
-+static inline unsigned long get_dirty(struct backing_dev_info *bdi, int i)
-+{
-+	unsigned long thresh[3];
-+
-+	get_dirty_limits(&thresh[0], &thresh[1], &thresh[2], bdi);
-+
-+	return thresh[i];
-+}
-+
-+BDI_SHOW(dirty, get_dirty(bdi, 1))
-+BDI_SHOW(bdi_dirty, get_dirty(bdi, 2))
-+
-+static struct device_attribute bdi_dev_attrs[] = {
-+	__ATTR(readahead, 0644, readahead_show, readahead_store),
-+	__ATTR_RO(reclaimable),
-+	__ATTR_RO(writeback),
-+	__ATTR_RO(dirty),
-+	__ATTR_RO(bdi_dirty),
-+};
-+
-+static struct attribute *bdi_attributes[ARRAY_SIZE(bdi_dev_attrs) + 1];
-+
-+static struct attribute_group bdi_attribute_group = {
-+	.attrs = bdi_attributes,
-+};
-+
-+static struct attribute_group *bdi_attribute_groups[] = {
-+	&bdi_attribute_group,
-+	NULL,
-+};
-+
-+static __init int bdi_class_init(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(bdi_dev_attrs); i++)
-+		bdi_attributes[i] = &bdi_dev_attrs[i].attr;
-+
-+	return class_register(&bdi_class);
-+}
-+
-+__initcall(bdi_class_init);
-+
-+int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
-+{
-+	int ret;
-+
-+	bdi->kdev.class = &bdi_class;
-+	bdi->kdev.groups = bdi_attribute_groups;
-+	strcpy(bdi->kdev.bus_id, "bdi");
-+	ret = device_register(&bdi->kdev);
-+	if (!ret) {
-+		char *name;
-+		va_list args;
-+
-+		va_start(args, fmt);
-+		name = kvprintf(fmt, args);
-+		va_end(args);
-+
-+		if (!name) {
-+			device_unregister(&bdi->kdev);
-+			return -ENOMEM;
-+		}
-+
-+		ret = device_rename(&bdi->kdev, name);
-+		kfree(name);
-+
-+		if (!ret)
-+			device_unregister(&bdi->kdev);
-+	}
-+
-+	return ret;
-+}
-+
-+void bdi_unregister(struct backing_dev_info *bdi)
-+{
-+	device_unregister(&bdi->kdev);
-+}
-+#else
-+int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
-+{
-+	return 0;
-+}
-+
-+void bdi_unregister(struct backing_dev_info *bdi)
-+{
-+}
-+#endif
-+
-+EXPORT_SYMBOL(bdi_register);
-+EXPORT_SYMBOL(bdi_unregister);
- 
- int bdi_init(struct backing_dev_info *bdi)
- {
- 	int i, j;
- 	int err;
- 
-+	memset(bdi, 0, sizeof(*bdi));
-+
- 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
- 		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
- 		if (err)
-@@ -33,6 +174,8 @@ void bdi_destroy(struct backing_dev_info
- {
- 	int i;
- 
-+	bdi_unregister(bdi);
-+
- 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
- 		percpu_counter_destroy(&bdi->bdi_stat[i]);
- 
-@@ -90,3 +233,4 @@ long congestion_wait(int rw, long timeou
- }
- EXPORT_SYMBOL(congestion_wait);
- 
-+
-Index: linux-2.6-2/mm/page-writeback.c
-===================================================================
---- linux-2.6-2.orig/mm/page-writeback.c
-+++ linux-2.6-2/mm/page-writeback.c
-@@ -291,7 +291,7 @@ static unsigned long determine_dirtyable
- 	return x + 1;	/* Ensure that we never return 0 */
- }
- 
--static void
-+void
- get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
- 		 struct backing_dev_info *bdi)
- {
-Index: linux-2.6-2/block/genhd.c
-===================================================================
---- linux-2.6-2.orig/block/genhd.c
-+++ linux-2.6-2/block/genhd.c
-@@ -182,6 +182,7 @@ void add_disk(struct gendisk *disk)
- 			    disk->minors, NULL, exact_match, exact_lock, disk);
- 	register_disk(disk);
- 	blk_register_queue(disk);
-+	bdi_register(&disk->queue->backing_dev_info, "bdi-%s", disk->disk_name);
- }
- 
- EXPORT_SYMBOL(add_disk);
-@@ -190,6 +191,7 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
- void unlink_gendisk(struct gendisk *disk)
- {
- 	blk_unregister_queue(disk);
-+	bdi_unregister(&disk->queue->backing_dev_info);
- 	blk_unregister_region(MKDEV(disk->major, disk->first_minor),
- 			      disk->minors);
- }
-Index: linux-2.6-2/include/linux/string.h
-===================================================================
---- linux-2.6-2.orig/include/linux/string.h
-+++ linux-2.6-2/include/linux/string.h
-@@ -8,6 +8,7 @@
- #include <linux/compiler.h>	/* for inline */
- #include <linux/types.h>	/* for size_t */
- #include <linux/stddef.h>	/* for NULL */
-+#include <stdarg.h>
- 
- #ifdef __cplusplus
- extern "C" {
-@@ -111,6 +112,9 @@ extern void *kmemdup(const void *src, si
- extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
- extern void argv_free(char **argv);
- 
-+char *kvprintf(const char *fmt, va_list args);
-+char *kprintf(const char *fmt, ...);
-+
- #ifdef __cplusplus
- }
- #endif
-Index: linux-2.6-2/mm/util.c
-===================================================================
---- linux-2.6-2.orig/mm/util.c
-+++ linux-2.6-2/mm/util.c
-@@ -136,3 +136,45 @@ char *strndup_user(const char __user *s,
- 	return p;
- }
- EXPORT_SYMBOL(strndup_user);
-+
-+char *kvprintf(const char *fmt, va_list args)
-+{
-+	char c;
-+	char *buf;
-+	int need;
-+	int limit;
-+	va_list args1;
-+
-+	va_copy(args1, args);
-+	need = vsnprintf(&c, 1, fmt, args1);
-+	va_end(args1);
-+
-+	/* Allocate the new space and copy the string in */
-+	limit = need + 1;
-+	buf = kmalloc(limit, GFP_KERNEL);
-+	if (!buf)
-+		return NULL;
-+	need = vsnprintf(buf, limit, fmt, args);
-+
-+	/* something wrong with the string we copied? */
-+	if (need >= limit) {
-+		kfree(buf);
-+		return NULL;
-+	}
-+
-+	return buf;
-+}
-+EXPORT_SYMBOL(kvprintf);
-+
-+char *kprintf(const char *fmt, ...)
-+{
-+	char *buf;
-+	va_list args;
-+
-+	va_start(args, fmt);
-+	buf = kvprintf(fmt, args);
-+	va_end(args);
-+
-+	return buf;
-+}
-+EXPORT_SYMBOL(kprintf);
+> epoll definitly is not useless. It is used on major and critical apps.
+> You certainly missed something.
 
+Well, it behaves like documented, which is the problem. You admit you
+don't understand the problem or the documentation, so again, no need to
+insult me.
 
+> Please provide some code to illustrate one exact problem you have.
+
+   // assume there is an open epoll set that listens for events on fd 5
+   if (fork () = 0)
+     {
+       close (5);
+       // fd 5 is now removed from the epoll set of the parent.
+       _exit (0);
+     }
+
+-- 
+                The choice of a
+      -----==-     _GNU_
+      ----==-- _       generation     Marc Lehmann
+      ---==---(_)__  __ ____  __      pcg@goof.com
+      --==---/ / _ \/ // /\ \/ /      http://schmorp.de/
+      -=====/_/_//_/\_,_/ /_/\_\      XX11-RIPE
