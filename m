@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbXJ0B0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765459AbXJ0B2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763340AbXJ0B0W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 21:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXJ0B0P
+	id S1765459AbXJ0B2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 21:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbXJ0B2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 21:26:15 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53437 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751401AbXJ0B0O (ORCPT
+	Fri, 26 Oct 2007 21:28:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:36151 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbXJ0B2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 21:26:14 -0400
-Date: Fri, 26 Oct 2007 18:26:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: David Rientjes <rientjes@google.com>, Lee.Schermerhorn@hp.com,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <20071026180713.aeedfac2.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
- <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
- <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
- <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
- <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
- <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
- <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
- <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
- <20071026180713.aeedfac2.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Oct 2007 21:28:23 -0400
+Date: Fri, 26 Oct 2007 18:26:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] voyager: fix breakage caused by boot_params problem
+Message-Id: <20071026182609.ea703328.randy.dunlap@oracle.com>
+In-Reply-To: <1193419828.3293.35.camel@localhost.localdomain>
+References: <1193419828.3293.35.camel@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Paul Jackson wrote:
+On Fri, 26 Oct 2007 12:30:28 -0500 James Bottomley wrote:
 
-> Choice B lets the task calculate its mempolicy mask as if it owned
-> the entire system, and express whatever elaborate mempolicy placement
-> it might need, when blessed with enough memory nodes to matter.
-> The system would automatically scrunch that request down to whatever
-> is the current size and placement of the cpuset holding that task.
+> There was a missed conversion in the voyager architecture setup file
+> which this corrects.
 > 
-> Given a clean slate, I prefer Choice B.
+> Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-Yes. We should default to Choice B. Add an option MPOL_MF_RELATIVE to 
-enable that functionality? A new version of numactl can then enable
-that by default for newer applications.
+Oh.
+http://lkml.org/lkml/2007/10/22/180
+even cc-ed to you.
+
+> ---
+> 
+> James
+> 
+> diff --git a/include/asm-x86/mach-voyager/setup_arch.h b/include/asm-x86/mach-voyager/setup_arch.h
+> index 84d01ad..10debd2 100644
+> --- a/include/asm-x86/mach-voyager/setup_arch.h
+> +++ b/include/asm-x86/mach-voyager/setup_arch.h
+> @@ -1,5 +1,5 @@
+>  #include <asm/voyager.h>
+> -#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *)(PARAM+0x40))
+> +#define VOYAGER_BIOS_INFO ((struct voyager_bios_info *)(&boot_params.apm_bios_info))
+>  
+>  /* Hook to call BIOS initialisation function */
+
+
+---
+~Randy
