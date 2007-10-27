@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbXJ0Dmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbXJ0DsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbXJ0Dmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 23:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJ0Dml
+	id S1753979AbXJ0DsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 23:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXJ0DsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 23:42:41 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:37794 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbXJ0Dml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 23:42:41 -0400
-Date: Fri, 26 Oct 2007 23:42:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tcp v6: fix softnet build breakage
-Message-ID: <20071027034240.GA13016@havoc.gtf.org>
+	Fri, 26 Oct 2007 23:48:07 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34746 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbXJ0DsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 23:48:05 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, kir@swsoft.com, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       kir@openvz.org, Cedric Le Goater <clg@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
+References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
+	<m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>
+	<20071027002448.GH30533@stusta.de>
+	<m18x5puyw7.fsf@ebiederm.dsl.xmission.com>
+	<20071027020408.GO30533@stusta.de>
+	<20071026191845.fd0f75c8.akpm@linux-foundation.org>
+Date: Fri, 26 Oct 2007 21:46:59 -0600
+In-Reply-To: <20071026191845.fd0f75c8.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 26 Oct 2007 19:18:45 -0700")
+Message-ID: <m18x5pte18.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-net/ipv6/tcp_ipv6.c: In function 'tcp_v6_rcv':
-net/ipv6/tcp_ipv6.c:1736: error: implicit declaration of function
-'get_softnet_dma'
-net/ipv6/tcp_ipv6.c:1736: warning: assignment makes pointer from integer
-without a cast
+>> On Sat, 27 Oct 2007 04:04:08 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+>> > be happy to hear if someone has a better idea.
+>> 
+>> There is a difference between "complete the feature" and "early adopters 
+>> to start playing with the feature" on the one side, and making something 
+>> available in a released kernel on the other side.
+>> 
+>> For development and playing with it it can depend on BROKEN (perhaps 
+>> with the dependency removed through the first -rc kernels), but as soon 
+>> as it's available in a -final kernel the ABI is fixed.
+>> 
+>
+> Yes, if we're not 100% certain that the interfaces are correnct and unchanging
+> and that the implementation is solid, we should disable the feature at Kconfig
+> time.
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
+Reasonable.  So far things look good for a single pid namespace.  Multiple
+pid namespaces look iffy.
 
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 06fa4ba..8520802 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -59,6 +59,7 @@
- #include <net/snmp.h>
- #include <net/dsfield.h>
- #include <net/timewait_sock.h>
-+#include <net/netdma.h>
- 
- #include <asm/uaccess.h>
- 
+> The best option would be to fix things asap.  But assuming that option isn't
+> reasonable and/or safe, we can slip a `depends on BROKEN' into -rc6 then
+> resume development for 2.6.25.
+
+I think we can make a lot of progress but there is enough development
+yet to do to reach the target of correct and unchanging interfaces,
+with a solid interface.  That unless we achieve a breakthrough I
+don't see us achieving that target for 2.6.24.
+
+The outstanding issues I can think of off the top of my head:
+- signal handling for init on secondary pid namespaces.
+- Properly setting si_pid on signals that cross namespaces.
+- The kthread API conversion so we don't get kernel threads
+  trapped in pid namespaces and make them unfreeable.
+- At fork time I think we are doing a little bit too much work
+  in setting the session and the pgrp, and removing the controlling
+  tty.
+- AF_unix domain credential passing.
+- misc pid vs vpid sorting out (autofs autofs4, coda, arch specific
+  syscalls, others?)
+- Removal of task->pid, task->tgid, task->signal->__pgrp,
+  tsk->signal->__session or some other way to ensure that we have
+  touched and converted all of the kernel pid handling.
+- flock pid handling.
+
+It hurts me to even ponder what thinking makes it that 
+CONFIG_EXPERIMENTAL isn't enough to keep a stable distro
+from shipping the code in their stable kernel, and locking us into
+trouble.
+
+With that said.  I think I should just respin the patchset now and add
+the "depends on BROKEN".  
+
+The user namespace appears to need that treatment as well.
+
+The network namespace has so little there and it already depends
+on !SYSFS so I don't think we are going to run into any trouble
+with it.  Happily I managed to parse that problem differently,
+so I could slice of the parts of the networking stack that
+had not been converted.
+
+Eric
