@@ -1,36 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXJ0DV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbXJ0Dmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbXJ0DV4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 23:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXJ0DVr
+	id S1753418AbXJ0Dmu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 23:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJ0Dml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 23:21:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37282 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbXJ0DVq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 23:21:46 -0400
-Date: Sat, 27 Oct 2007 04:21:33 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [x86 patch] Fix UML init/do_mounts.h build failure
-Message-ID: <20071027032133.GK8181@ftp.linux.org.uk>
-References: <20071025113630.27728.12797.sendpatchset@balbir-laptop>
-Mime-Version: 1.0
+	Fri, 26 Oct 2007 23:42:41 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:37794 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751001AbXJ0Dml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 23:42:41 -0400
+Date: Fri, 26 Oct 2007 23:42:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tcp v6: fix softnet build breakage
+Message-ID: <20071027034240.GA13016@havoc.gtf.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071025113630.27728.12797.sendpatchset@balbir-laptop>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 25, 2007 at 05:06:30PM +0530, Balbir Singh wrote:
-> 
-> 
-> Fix stat.h to not use __i386__, but use BITS_PER_LONG. The UML architecture
-> in turn includes this file. This helps resolve one build failure in the
-> current UML code
 
-NACK
+net/ipv6/tcp_ipv6.c: In function 'tcp_v6_rcv':
+net/ipv6/tcp_ipv6.c:1736: error: implicit declaration of function
+'get_softnet_dma'
+net/ipv6/tcp_ipv6.c:1736: warning: assignment makes pointer from integer
+without a cast
+
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index 06fa4ba..8520802 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -59,6 +59,7 @@
+ #include <net/snmp.h>
+ #include <net/dsfield.h>
+ #include <net/timewait_sock.h>
++#include <net/netdma.h>
+ 
+ #include <asm/uaccess.h>
+ 
