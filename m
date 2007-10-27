@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXJ0TVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXJ0TWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbXJ0TVW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 15:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXJ0TVC
+	id S1756867AbXJ0TWz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbXJ0TWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 15:21:02 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4507 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753377AbXJ0TVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 15:21:00 -0400
-Date: Sat, 27 Oct 2007 21:20:43 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: torvalds@osdl.org, akpm@osdl.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
-In-Reply-To: <20071020235546.GB1825@martell.zuzino.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0710272114590.1818@scrub.home>
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
+	Sat, 27 Oct 2007 15:22:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:18986 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbXJ0TWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 15:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZVNGriKqV4sAp7vNuoUDWuMpQi6pPSN1UlFcX119UlzHy10Q9y6NKqQPgvu3X0oulIsMJnuslICuFBTEcWgJN+LM/OVsSn48KZ0qr26njax9XJgwbFpVIXmk7wctDkoh4bIcYeDfC5OvEv0qxRFWFyjsMvC+jF7FdY5cHx22OcI=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] QUESTION: How to fix race between .suspend routine and watchdog timer
+Date: Sat, 27 Oct 2007 21:19:44 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <Pine.LNX.4.44L0.0710271516570.30287-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0710271516570.30287-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710272119.44574.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sun, 21 Oct 2007, Alexey Dobriyan wrote:
-
-> So far remedies were:
-> a) grep(1) -- obviously fragile. I tried at some point grepping for
->    spin_lock_irqsave(), found quite a few, but it became booooring quickly.
-> b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
->    brutally broke some arches, survived one commit before revert :^)
->    Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
+On Saturday 27 October 2007 21:17:55 Alan Stern wrote:
+> On Fri, 26 Oct 2007, Maxim Levitsky wrote:
 > 
-> So it would be nice to have something more robust.
+> > > > Looking through the dmfe code, I noticed yet another possible race.
+> > > > A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
+> > > > Again I need to prevent it from running during the suspend/resume, but how?
+> > > > 
+> > > > I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
+> > > > race with already running timer.
+> > > > I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
+> > > > In dmfe case the timer does re-enable itself.
+> > > 
+> > > That comment isn't right.  del_timer_sync works perfectly well even if
+> > > the timer routine re-enables itself, provided it stops doing so after a
+> > > small number of iterations.
+> > Thanks for the info. but....
+> > Due to the "don't access the hardware, while powered-off" rule, I must know that the timer isn't running.
+> > and won't be.
+> > So what function to use (if possible) to be sure that the timer won't run anymore?
+> > (Taking in the account the fact that it re-enables itself)
+> 
+> Use del_timer_sync().  It guarantees that when it returns, the timer 
+> will be stopped and the timer routine will no longer be running on any 
+> CPU.
+> 
+Even if the timer re-enables itself, are you sure?
 
-If it's just about the type checking, something like below should pretty 
-much do the same.
+> Alan Stern
+> 
+> 
 
-> * irq_flags_t allows arch maintainers to eventually switch to something
->   smaller than "unsigned long" if they want to.
-
-Considering how painful this conversion could be, the question is whether 
-this is really needed. Comments so far suggest some archs don't need all 
-of it, but does someone need more?
-
-bye, Roman
-
----
- include/linux/irqflags.h |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/include/linux/irqflags.h
-===================================================================
---- linux-2.6.orig/include/linux/irqflags.h
-+++ linux-2.6/include/linux/irqflags.h
-@@ -41,6 +41,10 @@
- # define INIT_TRACE_IRQFLAGS
- #endif
- 
-+static __always_inline void __irq_flags_check(unsigned long *flags)
-+{
-+}
-+
- #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
- 
- #include <asm/irqflags.h>
-@@ -50,10 +54,11 @@
- #define local_irq_disable() \
- 	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
- #define local_irq_save(flags) \
--	do { raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
-+	do { __irq_flags_check(&flags); raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
- 
- #define local_irq_restore(flags)				\
- 	do {							\
-+		__irq_flags_check(&flags);			\
- 		if (raw_irqs_disabled_flags(flags)) {		\
- 			raw_local_irq_restore(flags);		\
- 			trace_hardirqs_off();			\
-@@ -69,8 +74,8 @@
-  */
- # define raw_local_irq_disable()	local_irq_disable()
- # define raw_local_irq_enable()		local_irq_enable()
--# define raw_local_irq_save(flags)	local_irq_save(flags)
--# define raw_local_irq_restore(flags)	local_irq_restore(flags)
-+# define raw_local_irq_save(flags)	({ __irq_flags_check(&flags); local_irq_save(flags); })
-+# define raw_local_irq_restore(flags)	({ __irq_flags_check(&flags); local_irq_restore(flags); })
- #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
- 
- #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+Best regards,
+	Maxim Levitsky
