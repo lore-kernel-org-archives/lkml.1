@@ -1,106 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbXJ0QG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbXJ0QIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756554AbXJ0QG4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 12:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXJ0QGs
+	id S1756701AbXJ0QIQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 12:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbXJ0QIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 12:06:48 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:52989 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860AbXJ0QGq (ORCPT
+	Sat, 27 Oct 2007 12:08:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56856 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbXJ0QIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 12:06:46 -0400
-Date: Sat, 27 Oct 2007 12:05:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Rui Nuno Capela <rncbc@rncbc.org>
-cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23-rt4 (was 2.6.23-rt1 trouble)
-In-Reply-To: <47234EA1.4050006@rncbc.org>
-Message-ID: <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com>
-References: <1192154640.15992.10.camel@localhost.localdomain>         
- <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org>
- <47234EA1.4050006@rncbc.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 27 Oct 2007 12:08:00 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <20071027160203.GA5709@kroah.com>
+References: <1193410087.6914.34.camel@twins>
+	 <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins>
+	 <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins>
+	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
+	 <1193447889.5648.44.camel@lappy> <20071027024033.GB29039@kroah.com>
+	 <1193474399.27652.15.camel@twins>  <20071027160203.GA5709@kroah.com>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 18:07:18 +0200
+Message-Id: <1193501238.5648.75.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---
 
-On Sat, 27 Oct 2007, Rui Nuno Capela wrote:
+On Sat, 2007-10-27 at 09:02 -0700, Greg KH wrote:
 
-> > On Mon, October 15, 2007 11:49, Rui Nuno Capela wrote:
-> >>
-> >> I am experiencing some highly annoying but intermitent freezing on a
-> >> pentium4 2.80G HT/SMT box, when doing normal desktop work with 2.6.23-rt1.
-> >>
-> >>
-> >> The same crippling behavior does not occur on a Core 2 Due T7200 2.0G
-> >> SMP, so I suspect it's something due specific to the SMT scheduling
-> >> support (Hyper-Threading). But can't tell for sure, obviously :)
-> >>
-> >
-> > I was wrong. After several trials the same behavior also occurs on the
-> > Core2 Duo T7200. It just took longer to show its nasty.
-> >
-> >
-> >> The symptoms are noticeable primarily as some X/GUI intermitent freezing,
-> >> sometimes only one application, then several and ultimately the whole X
-> >> desktop becomes completely unresponsive. It looks like scheduling
+> Ah, I see a few problems.  Here, try this version instead.  It's
+> compile-tested only, and should be a lot simpler.
+> 
+> Note, we still are not setting the parent to the new bdi structure
+> properly, so the devices will show up in /sys/devices/virtual/ instead
+> of in their proper location.  To do this, we need the parent of the
+> device, which I'm not so sure what it should be (block device?  block
+> device controller?)
 
-When things start to freeze, could you capture the output of a sysrq-t.
+The problem is that not every bdi has a sysfs represented parent, hence
+the class suggestion. For block devices it is indeed the block device
+itself, but for example the NFS client's server descriptor does not have
+a sysfs representation.
 
+> Let me know if this works better, I'm off to a kids birthday party for
+> the day, but will be around this evening...
 
-> >> problems. There is this hint that switching to a spare console terminal
-> >> (via Ctrl+Alt+Fn) might cause later recovery. But its just a question of
-> >> some more time for it just happens again and again, one after another,
-> >> several applications becoming temporarily frozen and just by luck the
-> >> system gets back to normal, probably due to some incidental shake-up :)
-> >> but there are other times that nothing seems to help with no alternative
-> >> to the power-reset switch.
-> >>
-> >> I could not find any evidence on dmesg or in the system logs, of any
-> >> apparent trouble. No BUGs, no oops, no panics, no nothing. It just
-> >> freezes, this and that, now and then. It just makes it all unworkable
-> >> and obviously subject to ditching.
-> >>
-> >> Again, this only happens on this P4/HT box. On a Core2 Duo laptop, with
-> >> same 2.6.23-rt1 with the very same kernel configuration, it does not show
-> >> any illness and is running quite fine.
-> >>
-> >
-> > False. It used to run fine, until the creeps happen first time :(
-> >
-> >
-> >> Remember one report I had about a similar freezing behavior? Now it's
-> >> happening the other way around: the core2 is OK, the pentium4 is KO.
-> >>
-> >
-> > Now it applies to all 2.6.23-rt1 images I could test upon.
-> >
-> >
-> >> One naive suspicion goes like the new rcu-preempt code is to blame, since
-> >> I don't remember having this or any other trouble with 2.6.23-rc8-rt1.
-> >>
-> >
-> > Not be sure anymore, but this seems to be still a valid assumption.
-> >
->
-> just to let you know that still the same trouble persists with 2.6.23.1-rt4
->
-> .config can be found here:
->    http://www.rncbc.org/datahub/config-2.6.23.1-rt4.0
->
+Hehe, do enjoy! Thanks.
 
-I have a P4HT laptop (unfortunately with no serial). I use it as one of my
-main machines, so it will suck for me when it freezes ;-). I'll take your
-config and try it out.
-
-I'll most likely do this on Monday since process Wife has the highest
-priority over the weekend ;-)
-
--- Steve
 
