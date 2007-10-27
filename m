@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXJ0SJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbXJ0SKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbXJ0SJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 14:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXJ0SJE
+	id S1754661AbXJ0SKi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 14:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXJ0SKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 14:09:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:60373 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbXJ0SJD (ORCPT
+	Sat, 27 Oct 2007 14:10:31 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:11153 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbXJ0SKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 14:09:03 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
-Date: Sat, 27 Oct 2007 20:08:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-References: <20071026165510.GA2323@lixom.net> <200710262019.12094.arnd@arndb.de> <20071027172851.GA11930@lixom.net>
-In-Reply-To: <20071027172851.GA11930@lixom.net>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 27 Oct 2007 14:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EkFUnR0GV7qtAq9VM2LgHPeUepYr2L/DLWFox410TJe3P56D4yTFc3Mbr1hq0q9tKpwqulCUojf+fQ7YrSSWjThGD9vWmPdMVQxVf3x6kSAJ1TwUyRqGYiWjnGv8MQiX4g79d5RfsP67OYWn/dxJZR1fxw6El7blq5eTV3Zlnrc=
+Message-ID: <e9c3a7c20710271110s4c8c2654qc11ecf2054eb0492@mail.gmail.com>
+Date: Sat, 27 Oct 2007 11:10:29 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] DMA: Correct invalid assumptions in the Kconfig text
+Cc: "Shannon Nelson" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
+       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20071027155807.73976b0a@siona>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710272008.35334.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX186Ql/N9Wb+fJHtCKnE1CgzhmQYzG8AmsTYrh/
- Eqkizd/5qU96Dx9SlTX8ijZ1rXZZm1Sp43hlQ+eZ43UIyItJjR
- OzfSwBV98aLdLaTd2FtZA==
+References: <1193218705-16685-1-git-send-email-hskinnemoen@atmel.com>
+	 <e9c3a7c20710240855j7bf1f0a6qa1d11af3a12910e5@mail.gmail.com>
+	 <20071024201616.02f87b20@siona> <20071025113240.466b69ba@siona>
+	 <e9c3a7c20710261002m1c5063bdqa040834c30d9ca8a@mail.gmail.com>
+	 <20071027155807.73976b0a@siona>
+X-Google-Sender-Auth: 62b0aec256084f0c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 October 2007, Olof Johansson wrote:
-> Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
-> 
-> arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
-> arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
-> arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
-> arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
+On 10/27/07, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+>
+> Yeah, it's a pretty serious bug if the DMA engine flags an error. But
+> wouldn't it be better to BUG() in the context of the caller? That way,
+> you won't necessarily bring down the whole system.
+>
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+I see your point...  We could track the caller's task_struct in
+dma_async_tx_descriptor, and deliver a SIGBUS in the case of an error.
+ It limits the client's recovery options, but at least the damaged is
+localized to the correct process.  I need to go read up on what this
+would imply for kernel threads like raid5d...
