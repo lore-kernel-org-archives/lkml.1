@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761781AbXJ0AM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765704AbXJ0AN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761781AbXJ0AM4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXJ0AMt
+	id S1765704AbXJ0AN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 20:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXJ0ANs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:12:49 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55760 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbXJ0AMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:12:48 -0400
-Message-ID: <47228278.8070505@garzik.org>
-Date: Fri, 26 Oct 2007 20:12:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 26 Oct 2007 20:13:48 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:20510 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbXJ0ANr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 20:13:47 -0400
+Message-ID: <472282B9.4090209@ct.jp.nec.com>
+Date: Fri, 26 Oct 2007 17:13:45 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
-References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075808.GH6407@havoc.gtf.org>	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>	<20071026143525.b9218ed7.akpm@linux-foundation.org>	<4722608E.3000405@garzik.org> <20071026165035.33383e36@laptopd505.fenrus.org>
-In-Reply-To: <20071026165035.33383e36@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org,
+       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
+References: <47195763.1090803@ct.jp.nec.com> <20071024063434.GC4622@in.ibm.com> <471F72AD.8030902@ct.jp.nec.com> <4720D933.3080703@ct.jp.nec.com> <47225F6C.5000708@ct.jp.nec.com> <alpine.LFD.0.9999.0710270035110.3186@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710270035110.3186@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Fri, 26 Oct 2007 17:47:58 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+Thomas Gleixner wrote:
+> On Fri, 26 Oct 2007, Hiroshi Shimamoto wrote:
 > 
->> Andrew Morton wrote:
->>> That was a goofup.  I proposed that we should add a #define
->>> TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the
->>> patch, but it got lost.
+> Added Venki to CC
+> 
+>>> I'm now testing crash on 32bit, but there is an issue before
+>>> applying the patches. My machine stopped at checking 'hlt'
+>>> after kexec, showing below message.
 >>>
->>> I agree it would be a kind thing to do in this case.
+>>> CPU: Intel(R) Xeon(TM) CPU 3.80GHz stepping 0a
+>>> Checking 'hlt' instruction...
+>>>
+>> v2.6.23.1 works fine for 1st kernel.
+>>> I'm investigating it..
+>> I found that the following patch makes my machine stopped.
+>> bfe0c1cc6456bba1f4e3cc1fe29c0ea578ac763a
+>> x86: HPET force enable for ICH5
+>>
+>> It means that after applied this patch, HPET is enabled
+>> automatically on 1st kernel and after crash/kexec the 2nd
+>> kernel stopped at checking 'hlt'.
+>>
+>> I also tested the latest kernel(2.6.24-rc1-gec3b67c1).
+>> Boot parameter "nohpet" resolves this issue and kdump
+>> works well on 32bit.
+>> So I guess HPET affects this.
+>> But I don't know why 64bit kernel with HPET is OK.
 > 
->>
->> Yep, I was thinking that including
->>
->> 	#define IRQ_HANDLER_V3
->>
->> would be a good idea.
->>
-> 
-> it sets a certain precedent though.... we don't do this for the 500
-> other API changes we do each release (see stable-api-nonsense)... so
-> this one is mostly arbitrary picked out
+> Hmm. Does the 64 bit code shutdown HPET and restore the IRQ routing to
+> PIT and 32 bit is missing this ?
 
-We do for include/linux/netdevice.h, see HAVE_xxx -- and we should do it 
-because the last irq handler change was a pain for backports, and this 
-makes life easier for the backporters.  irq handling is probably far 
-more global than any other kernel API except kmalloc()
+Sorry, I'm not sure how I can get these informations.
+Can you please tell me what I should do?
+I'll continue to dig the issue.
 
-	Jeff
+I also have the following message.
+..MP-BIOS bug: 8254 timer not connected to IO-APIC
+Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
+
+It appeared only on 64bit and the 2nd kernel without
+boot parameter noapic.
 
 
-
+Thanks
+Hiroshi Shimamoto
