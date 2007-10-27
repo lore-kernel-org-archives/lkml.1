@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbXJ0Qsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbXJ0Qt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbXJ0Qsn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 12:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXJ0Qsf
+	id S1756711AbXJ0Qt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 12:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbXJ0QtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 12:48:35 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40071 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbXJ0Qsf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 12:48:35 -0400
-Date: Sat, 27 Oct 2007 10:48:32 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071027164832.GW27248@parisc-linux.org>
-References: <20071024195847.GE27248@parisc-linux.org> <200710261211.01423.rusty@rustcorp.com.au> <84144f020710270447m6f77848fl1f0c43312d172309@mail.gmail.com> <200710272250.16323.rusty@rustcorp.com.au> <84144f020710270934j54153c8bibb2d1fb48abd8dca@mail.gmail.com>
+	Sat, 27 Oct 2007 12:49:18 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:20598 "EHLO mx34.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbXJ0QtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 12:49:17 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2.624-rc1 regression] lost battery information
+Date: Sat, 27 Oct 2007 20:49:10 +0400
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frans Pop <elendil@planet.nl>
+References: <200710262024.06012.arvidjaar@mail.ru> <200710271855.52866.arvidjaar@mail.ru> <47235727.30808@gmail.com>
+In-Reply-To: <47235727.30808@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020710270934j54153c8bibb2d1fb48abd8dca@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart2516943.8kO8jsetPJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710272049.11969.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 07:34:47PM +0300, Pekka Enberg wrote:
-> On 10/27/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > On Saturday 27 October 2007 21:47:09 Pekka Enberg wrote:
-> > > Why don't we just return -ENOMEM here just like all other APIs in the
-> > > kernel?
-> > I think Willy did it because this is for printk.  It makes more sense than
-> > everyone opencoding an -ENOMEM handler, which will have to be replaced by
-> > some mildly amusing string like "I want to printk but I have no memory!".
-> > Next think you know 70% of the kernel will be bad limericks as everyone tries
-> > to one-up each other.
-> 
-> My point was, of course, that the caller gets to decide what to do on
-> OOM. For the most part, you probably want to ignore it but for things
-> like pseudo filesystems where you generate a human-readable string,
-> returning -ENOMEM from read(2) is preferable.
+--nextPart2516943.8kO8jsetPJ
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-That was why I had an sb_error() as part of the API so a caller who
-cared could check, and a caller who didn't care would never know --
-they'd just print the out-of-memory string and continue happily.
+On Saturday 27 October 2007, Alexey Starikovskiy wrote:
+> As you wish... :) Please check the attached patch.
+>
 
-It's not hard to add an sb_error to Rusty's rewrite.  It looks something
-like:
+Not sure why you need to reimplement acpi_extract_package, but ...
 
-static inline int sb_error(struct stringbuf *sb)
-{
-	if (sb == sb_enomem_string)
-		return -ENOMEM;
-	return 0;
-}
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--nextPart2516943.8kO8jsetPJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHI2wHR6LMutpd94wRAprvAJ4wX4OVrjqYEfqEyJJpc+ZksinWlgCeL8Ly
+GnV7/diYr7hk8BJTInEmxuI=
+=u/P7
+-----END PGP SIGNATURE-----
+
+--nextPart2516943.8kO8jsetPJ--
