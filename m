@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbXJ0Clz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbXJ0CmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbXJ0Clz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 22:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbXJ0Clr
+	id S1754812AbXJ0CmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 22:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXJ0CmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 22:41:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48745 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751812AbXJ0Clr (ORCPT
+	Fri, 26 Oct 2007 22:42:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49045 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304AbXJ0Cl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 22:41:47 -0400
-Date: Fri, 26 Oct 2007 19:41:44 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071026194144.6042316a.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 22:41:59 -0400
+Date: Fri, 26 Oct 2007 19:40:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+Message-ID: <20071027024033.GB29039@kroah.com>
+References: <1191407872.5572.7.camel@lappy> <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins> <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins> <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins> <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy> <1193447889.5648.44.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193447889.5648.44.camel@lappy>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> Yes. We should default to Choice B. Add an option MPOL_MF_RELATIVE to 
-> enable that functionality? A new version of numactl can then enable
-> that by default for newer applications.
+On Sat, Oct 27, 2007 at 03:18:08AM +0200, Peter Zijlstra wrote:
+> 
+> On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
+> > This crashes and burns on bootup, but I'm too tired to figure out what I
+> > did wrong... will give it another try tomorrow..
+> 
+> Ok, can't sleep.. took a look. I have several problems here.
+> 
+> The thing that makes it go *boom* is the __ATTR_NULL. Removing that
+> makes it boot. Albeit it then warns me of multiple duplicate sysfs
+> objects, all named "bdi".
+> 
+> For some obscure reason this device interface insists on using the
+> bus_id as name (?!), and further reduces usability by limiting that to
+> 20 odd characters.
+> 
+> This makes it quite useless. I tried fudging around that limit by using
+> device_rename and kobject_rename, but to no avail.
+> 
+> Really, it should not be this hard to use, trying to expose a handfull
+> of simple integers to userspace should not take 8h+ and still not work.
+> 
+> Peter, who thinks sysfs is contorted mess beyond his skill. I'll stick
+> to VM and scheduler code, that actually makes sense.
 
-I'm confused.  If B is the default, then we don't need a flag to
-enable it, rather we need a flag to go back to the old choice A.
+Heh, that's funny :)
 
-So are you saying that:
- 1) Choice A remains the default for the kernel unless
-    MPOL_MF_RELATIVE is added, or
- 2) that the new default for the kernel is Choice B,
-    unless MPOL_MF_RELATIVE is specified, asking to
-    revert to the original Choice A behaviour?
+I'll look at this and see what I can come up with.  Would you just like
+a whole new patch, or one against this one?
 
-Perhaps, either way, whatever compatibility flag we have should be
-something that can be forced on an application from the outside,
-perhaps as a per-system mode flag in /sys, or a per-cpuset mode flag,
-or a per-task operation, by what mechanism is not clear.
+thanks,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+greg k-h
