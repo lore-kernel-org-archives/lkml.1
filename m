@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbXJ0GAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXJ0GGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbXJ0GAv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 02:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbXJ0GAl
+	id S1753797AbXJ0GGU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 02:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXJ0GGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 02:00:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53920 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751728AbXJ0GAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 02:00:40 -0400
-Date: Fri, 26 Oct 2007 22:59:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, spamtrap@knobisoft.de,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       wfg@mail.ustc.edu.cn, torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: 2.6.24-rc1: First impressions
-Message-Id: <20071026225951.db374baf.akpm@linux-foundation.org>
-In-Reply-To: <20071026224657.11dcf950@laptopd505.fenrus.org>
-References: <796505.25770.qm@web32612.mail.mud.yahoo.com>
-	<20071026152221.GA26619@elte.hu>
-	<20071026122155.45ce72e7.akpm@linux-foundation.org>
-	<20071026224657.11dcf950@laptopd505.fenrus.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 27 Oct 2007 02:06:09 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38756 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751506AbXJ0GGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 02:06:08 -0400
+Message-ID: <4722D516.8020902@linux.vnet.ibm.com>
+Date: Sat, 27 Oct 2007 11:35:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Jeff Dike <jdike@addtoit.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [x86 patch] Fix UML signal.h build errors
+References: <20071025130022.8720.77346.sendpatchset@balbir-laptop> <20071025150541.GB5968@c2.user-mode-linux.org> <4720B6E8.4090003@linux.vnet.ibm.com> <20071027031309.GI8181@ftp.linux.org.uk>
+In-Reply-To: <20071027031309.GI8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 22:46:57 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> > > > dd1 - copy 16 GB from /dev/zero to local FS
-> > > > dd1-dir - same, but using O_DIRECT for output
-> > > > dd2/dd2-dir - copy 2x7.6 GB in parallel from /dev/zero to local FS
-> > > > dd3/dd3-dir - copy 3x5.2 GB in parallel from /dev/zero lo local FS
-> > > > net1 - copy 5.2 GB from NFS3 share to local FS
-> > > > mix3 - copy 3x5.2 GB from /dev/zero to local disk and two NFS3
-> > > > shares
-> > > > 
-> > > >  I did the numbers for 2.6.19.2, 2.6.22.6 and 2.6.24-rc1. All
-> > > > units are MB/sec.
-> > > > 
-> > > > test           2.6.19.2     2.6.22.6    2.6.24.-rc1
-> > > > ----------------------------------------------------------------
-> > > > dd1                  28           50             96
-> > > > dd1-dir              88           88             86
-> > > > dd2              2x16.5         2x11         2x44.5
-> > > > dd2-dir            2x44         2x44           2x43
-> > > > dd3               3x9.8        3x8.7           3x30
-> > > > dd3-dir          3x29.5       3x29.5         3x28.5
-> > > > net1              30-33        50-55          37-52
-> > > > mix3              17/32        25/50          96/35
-> > > > (disk/combined-network)
-> > > 
-> > > wow, really nice results!
-> > 
-> > Those changes seem suspiciously large to me.  I wonder if there's less
-> > physical IO happening during the timed run, and correspondingly more
-> > afterwards.
-> > 
+Al Viro wrote:
+> On Thu, Oct 25, 2007 at 09:01:52PM +0530, Balbir Singh wrote:
 > 
-> another option... this is ext2.. didn't the ext2 reservation stuff get
-> merged into -rc1? for ext3 that gave a 4x or so speed boost (much
-> better sequential allocation pattern)
+>> Thats nice, I wonder why I missed them searching on lkml in my gmail box
+>> :(
+>>
+>> Is __arch_um__ the right thing to do or BITS_PER_LONG == 32? I prefer
+>> BITS_PER_LONG == 32 over #if defined(__i386__) || defined(__arch__um__).
+>> I guess its a matter of personal preference.
+> 
+> Huh?
+> 
+> a) we really shouldn't mess with compiler defines (i.e. we should not
+> undef __i386__ or __x86_64__)
 > 
 
-Yes, one would expect that to make a large difference in dd2/dd2-dir and
-dd3/dd3-dir - but only on SMP.  On UP there's not enough concurrency in the
-fs block allocator for any damage to occur.
+I agree
 
-Reservations won't affect dd1 though, and that went faster too.
+> b) I'd rather have __arch_um__ mentioned explicitly in 3 places where
+> we do care about difference between i386 and uml/i386 than have certain
+> to be forgotten rules for places like include/asm-x86
+> 
+> c) if you look at those places, you'll see
+> 	* drivers/char/mem.c::uncached_access().  Really per-architecture
+> and I wonder if it might be include/asm-* fodder...
+> 	* kernel/signal.c debugging printks.  Should die or be sanitized, IMO.
+> 	* raid6 algorithms.  Hell knows - immediate reason why we don't do
+> those on uml is the lack of kernel_fpu_begin()/kernel_fpu_end() (and
+> boot_cpu_has(), but that's easier to add).  Do we care to implement that
+> stuff?
+> 
+
+I suspect that list might grow and anybody writing i386 or x86_64 code
+will need to double check if the code will work under __arch_um__.
+Probably worth documenting somewhere.
+
+> That's _all_.  Nothing else has to care.
+> 
+
+:-)
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
