@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbXJ0Jns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbXJ0Jo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbXJ0Jns (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 05:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXJ0Jnk
+	id S1754815AbXJ0Jo1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 05:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXJ0JoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 05:43:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59105 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751109AbXJ0Jnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 05:43:39 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+DoGF+fJ+DOMjren7F/xwwCo78V8TMogYbhAl1zr
-	/Mku4epemQVSb0
-Subject: Re: [2.6.23-rt3] NMI watchdog trace of deadlock
-From: Mike Galbraith <efault@gmx.de>
+	Sat, 27 Oct 2007 05:44:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50856 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbXJ0JoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 05:44:18 -0400
+Date: Sat, 27 Oct 2007 11:44:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+Cc: Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.23-rt3] NMI watchdog trace of deadlock
+Message-ID: <20071027094407.GA12047@elte.hu>
+References: <1193245634.20679.8.camel@localhost.localdomain> <1193462494.25330.7.camel@Homer.simpson.net> <200710271915.42363.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <200710271915.42363.nickpiggin@yahoo.com.au>
-References: <1193245634.20679.8.camel@localhost.localdomain>
-	 <1193462494.25330.7.camel@Homer.simpson.net>
-	 <200710271915.42363.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 11:43:36 +0200
-Message-Id: <1193478216.7496.26.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-27 at 19:15 +1000, Nick Piggin wrote:
-> On Saturday 27 October 2007 15:21, Mike Galbraith wrote:
-> > Greetings,
-> >
-> > For quite a while now, RT kernels have been locking up on me
-> > occasionally while my back is turned.  Yesterday, the little bugger
-> > finally pounced while my serial console box was up and waiting.
-> >
-> > [10138.162953] WARNING: at arch/i386/kernel/smp.c:581
-> > native_smp_call_function_mask() [10138.170583]  [<c01051da>]
-> > show_trace_log_lvl+0x1a/0x30
+
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
 > > [10138.175796]  [<c0105de3>] show_trace+0x12/0x14
 > > [10138.180291]  [<c0105dfb>] dump_stack+0x16/0x18
 > > [10138.184769]  [<c011609f>] native_smp_call_function_mask+0x138/0x13d
@@ -61,16 +56,14 @@ On Sat, 2007-10-27 at 19:15 +1000, Nick Piggin wrote:
 > > [10138.250727]  [<c0366d83>] ide_intr+0x93/0x1e0
 > > [10138.255125]  [<c015afb4>] handle_IRQ_event+0x5c/0xc9
 > 
-> Looks like ntfs is kmap()ing from interrupt context. Should
-> be using kmap_atomic instead, I think.
-> 
-> But the ntfs code I have seems to do just that...
+> Looks like ntfs is kmap()ing from interrupt context. Should be using 
+> kmap_atomic instead, I think.
 
-The ntfs code does use kmap_atomic(), bit RT turns that into a wrapper
-for kmap().  I fed it a local_irq_enable(), and am waiting for it to
-tell me why that was stoopid ;-)
+it's not atomic interrupt context but irq thread context - and -rt 
+remaps kmap_atomic() to kmap() internally.
 
-	thanks,
+the problem seems to be what Mike's patch works around: fiddling with 
+irq flags in the ntfs code. That fiddling seems quite unnecessary at 
+first sight.
 
-	-Mike
-
+	Ingo
