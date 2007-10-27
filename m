@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbXJ0Kor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXJ0Kqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbXJ0Kor (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 06:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbXJ0Koi
+	id S1753907AbXJ0Kqk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 06:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXJ0Kqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 06:44:38 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:58258 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751148AbXJ0Koh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 06:44:37 -0400
-Date: Sat, 27 Oct 2007 12:44:36 +0200
-From: Sebastian Siewior <lkml@ml.breakpoint.cc>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] panic after umount (biscted)
-Message-ID: <20071027104436.GA19482@Chamillionaire.breakpoint.cc>
-References: <20071026070110.GA8927@Chamillionaire.breakpoint.cc> <20071026092724.GC5155@kernel.dk> <20071026093242.GD5155@kernel.dk> <20071026113524.GA10130@Chamillionaire.breakpoint.cc> <20071026114230.GG5155@kernel.dk>
+	Sat, 27 Oct 2007 06:46:33 -0400
+Received: from doom.schmorp.de ([87.139.53.102]:47600 "EHLO doom.schmorp.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751414AbXJ0Kqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 06:46:32 -0400
+Date: Sat, 27 Oct 2007 12:46:28 +0200
+From: Marc Lehmann <schmorp@schmorp.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Marc Lehmann <linux-kernel@tst.eu>, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: epoll design problems with common fork/exec patterns
+Message-ID: <20071027104627.GA26748@schmorp.de>
+Mail-Followup-To: Eric Dumazet <dada1@cosmosbay.com>,
+	Marc Lehmann <linux-kernel@tst.eu>, linux-kernel@vger.kernel.org,
+	Davide Libenzi <davidel@xmailserver.org>
+References: <20071027062236.GA12476@schmorp.de> <4722F575.8080204@cosmosbay.com> <20071027085125.GC12326@schmorp.de> <47230351.8040100@cosmosbay.com> <20071027093424.GA31329@schmorp.de> <472311B8.5080408@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071026114230.GG5155@kernel.dk>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <472311B8.5080408@cosmosbay.com>
+X-PGP: "1024D/DA743396 1999-01-26 Marc Alexander Lehmann <schmorp@schmorp.de>
+       Key fingerprint = 475A FE9B D1D4 039E 01AC  C217 A1E8 0270 DA74 3396"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe | 2007-10-26 13:42:30 [+0200]:
-
->> [2] http://download.breakpoint.cc/bug/bug_rc1_patch_reboot.jpeg 171 KiB
->
->Ah, second BUG() for same issue. Try this one. This?
->
->diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
->index 61fdaf0..57fde7b 100644
->--- a/drivers/scsi/scsi_lib.c
->+++ b/drivers/scsi/scsi_lib.c
->@@ -1115,6 +1115,8 @@ static int scsi_init_io(struct scsi_cmnd *cmd)
-> 	 * kmapping pages)
-> 	 */
-> 	cmd->use_sg = req->nr_phys_segments;
->+	if (!cmd->use_sg)
->+		return 0;
+On Sat, Oct 27, 2007 at 12:23:52PM +0200, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> >    Q6     Will the close of an fd cause it to be removed from all epoll 
+> >    sets automatically?
+> >    A6     Yes.
 > 
-> 	/*
-> 	 * If sg table allocation fails, requeue request later.
->@@ -1191,7 +1193,7 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req)
-> 	if (req->bio) {
-> 		int ret;
+> Answer : epoll documentation cannot explain the full semantic of file 
+
+epoll documentation easily can. there is nothig keeping it from it. don't
+make silly arguments like that.
+
+> Or should, since you had problems
+
+You are again implying I lakc understanding. That is, however, not true.
+I don't see the point in being insulted by you, so I won'T continue
+talking to you :(
+
+> The 'close' of a file is not close(fd) :)
+
+Good that you understand that.
+
+That is one of my problems, as the manpage talks about closing of the fd,
+but there are multiple ways to do that, and some are not handled the same
+way.
+
+> epoll has to deal with files, but documentation is a User side 
+> documentation, so has to use 'file descriptors'.
+
+There is obviously no need for documentation to do that, contrary to your
+claim. The manpages for e.g. dup or the official sus manpages manage to
+document it (mostly) correctly, so your claim that documentation must use
+file descriptors when the underlying file structure is meant is disproven.
+
+> fork() is acting sort of dup() , as it increases all file refcounts.
 > 
->-		BUG_ON(!req->nr_phys_segments);
->+		BUG_ON(!req->nr_phys_segments && req->bio->bi_size);
-> 
-> 		ret = scsi_init_io(cmd);
-> 		if (unlikely(ret))
->@@ -1236,9 +1238,10 @@ int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req)
-> 	if (ret != BLKPREP_OK)
-> 		return ret;
-> 	/*
->-	 * Filesystem requests must transfer data.
->+	 * Filesystem requests must transfer data, unless it's an empty
->+	 * barrier.
-> 	 */
->-	BUG_ON(!req->nr_phys_segments);
->+	BUG_ON(!req->nr_phys_segments && !bio_empty_barrier(req->bio));
-> 
-> 	cmd = scsi_get_cmd_from_req(sdev, req);
-> 	if (unlikely(!cmd))
->
+> You have problems about close()/dup()/fork()/... file descriptors semantic, 
+> which is handled by a layer independent from epoll stuff.
 
-I'm afraid you did not make it to the next level. I hope you have
-another man :). [1] shows the result. I double checked it, it seems to
-be the same bug() with the second patch.
+No, I have no problem with dup at all.
 
-[1] http://download.breakpoint.cc/bug/bug_patch2.jpeg 134 KiB
+I have a problem with explicitlx closing file descriptors in the child will
+stop events for those files to be reported in the parent.
 
->Jens Axboe
+I am sorry, but I epxlained this very clearly a number of times, but for some
+reason, apart from accusing me to not understanding files and file
+descritpors or (clear enough) documentation, you ignore that and instead
+hammer on other problems.
 
-Sebastian
+To me, it seems you are not the one who understands.
+
+-- 
+                The choice of a       Deliantra, the free code+content MORPG
+      -----==-     _GNU_              http://www.deliantra.net
+      ----==-- _       generation
+      ---==---(_)__  __ ____  __      Marc Lehmann
+      --==---/ / _ \/ // /\ \/ /      pcg@goof.com
+      -=====/_/_//_/\_,_/ /_/\_\
