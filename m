@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbXJ0Ruo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbXJ0Ru5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756225AbXJ0Ruo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 13:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXJ0Rue
+	id S1757387AbXJ0Ru5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 13:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXJ0Ruj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 13:50:34 -0400
-Received: from mx30.mail.ru ([194.67.23.238]:34611 "EHLO mx30.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbXJ0Rud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 13:50:33 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [PATCH] 2.6.24-rc1: ensure "present" sysfs attribute even if battery is absent
-Date: Sat, 27 Oct 2007 21:50:23 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, cbou@mail.ru,
-       dwmw2@infradead.org
-References: <200710272054.31160.arvidjaar@mail.ru> <47237255.9020001@gmail.com>
-In-Reply-To: <47237255.9020001@gmail.com>
+	Sat, 27 Oct 2007 13:50:39 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:59981 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbXJ0Rui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 13:50:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=xaLB9M7fW6LSWDNaAOWHavbsynsuiSiVLaBM8COggA/1h8urGuF/k2OBo64U5jyiy
+	xvk+n9q1ESxx8FonrOCwA==
+Date: Sat, 27 Oct 2007 10:50:22 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <20071026194144.6042316a.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com> <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com> <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+ <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com> <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com> <20071026120037.7b95a136.pj@sgi.com>
+ <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com> <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com> <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+ <20071026180713.aeedfac2.pj@sgi.com> <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com> <20071026194144.6042316a.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2041006.NJPUItLnxL";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710272150.29596.arvidjaar@mail.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2041006.NJPUItLnxL
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 26 Oct 2007, Paul Jackson wrote:
 
-On Saturday 27 October 2007, Alexey Starikovskiy wrote:
-> Andrey Borzenkov wrote:
-> > I am not exactly sure about this one ... what other power_supply class
-> > drivers do? Should I fix HAL instead (but then, I do not know whether H=
-AL
-> > is the only application that is using this interface).
->
-> Hm, do you need separate set of properties for that? You could register
-> either of existing two, and read function will not allow read of anything
-> but "present". IMHO, this is what other modules do (/drivers/power)
+> > Yes. We should default to Choice B. Add an option MPOL_MF_RELATIVE to 
+> > enable that functionality? A new version of numactl can then enable
+> > that by default for newer applications.
+> 
+> I'm confused.  If B is the default, then we don't need a flag to
+> enable it, rather we need a flag to go back to the old choice A.
+> 
 
-Do they have different set of properties depending on underlying hardware t=
-hat=20
-you can't query unless hardware is present? I'd rather avoid adding fake=20
-attributes; but I do not actually care so which one do you prefer? :)
+I think there's a mixup in the flag name there, but I actually would 
+recommend against any flag to effect Choice A.  It's simply going to be 
+too complex to describe and is going to be a headache to code and support.  
 
-> One remaining trick here, you need to call unregister/register for
-> power_supply if you change attributes -- so please check if your patched
-> driver survives insertion of the battery.
->
+The MPOL_PREFERRED behavior when constrained by cpusets was previously, to 
+my knowledge, undocumented; you're in the position to make the behavior do 
+what you want it to do and then release documentation so we'll finally 
+have a complete and unambiguous API for it.  Right now it should be 
+considered undefined and thus you are free to implement it as you choose.  
+Then all callers of set_mempolicy(MPOL_PREFERRED) will standardize on that 
+and not have to worry about the machine's 
+mpol_preferred_relative_to_cpuset setting.
 
+Then, any task that is attached to a cpuset and expecting the fourth node 
+in their set_mempolicy(MPOL_PREFERRED) call to mean system node 3 if 
+it's in the cpuset's mems_allowed will be broken.  If you want that, 
+you'll need your task to be attached to a cpuset with at least mems 0-3; 
+programmers will pick that up quickly enough if it's clearly documented.
+I think Choice B is correct and makes more sense in terms of the semantics 
+and at least allows mempolicies and cpusets to play nicely together 
+without a bidirectional dependency on one another.
 
-Neither does your code (nor kpowersave :) ) Remove battery and set of=20
-attributes is "stuck" instead of being reset to only fixed set of power=20
-device attributes (basically "info"). The only call to power_supply_registe=
-r=20
-is in acpi_battery_add and as far as I can tell this is executed on adding=
-=20
-*slot* not when content of this slot changes.
-
-
---nextPart2041006.NJPUItLnxL
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHI3pgR6LMutpd94wRAtIzAJ4yo6xJI86eGK1Ytfh/FiY2FRdPWQCfeQEG
-BKm4uhgCg8MyTZrK4zYc/kY=
-=neDZ
------END PGP SIGNATURE-----
-
---nextPart2041006.NJPUItLnxL--
+		David
