@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXJ0HvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXJ0Hvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbXJ0HvI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 03:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXJ0Hux
+	id S1753317AbXJ0Hvk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 03:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJ0Hv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 03:50:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38076 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbXJ0Huw (ORCPT
+	Sat, 27 Oct 2007 03:51:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38549
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752093AbXJ0Hv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 03:50:52 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, kir@swsoft.com, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       kir@openvz.org, Cedric Le Goater <clg@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take 2)
-References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>
-	<m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>
-	<20071027002448.GH30533@stusta.de>
-	<m18x5puyw7.fsf@ebiederm.dsl.xmission.com>
-	<20071027020408.GO30533@stusta.de>
-	<20071026191845.fd0f75c8.akpm@linux-foundation.org>
-	<m18x5pte18.fsf@ebiederm.dsl.xmission.com>
-	<20071026214046.c61e248d.akpm@linux-foundation.org>
-Date: Sat, 27 Oct 2007 01:41:43 -0600
-In-Reply-To: <20071026214046.c61e248d.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 26 Oct 2007 21:40:46 -0700")
-Message-ID: <m1prz1rolk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 27 Oct 2007 03:51:28 -0400
+Date: Sat, 27 Oct 2007 00:51:30 -0700 (PDT)
+Message-Id: <20071027.005130.156717130.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] [CRYPTO] tcrypt: Move sg_init_table out of timing
+ loops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1IlQfM-0003cO-00@gondolin.me.apana.org.au>
+References: <20071026145905.GA13850@gondor.apana.org.au>
+	<E1IlQfM-0003cO-00@gondolin.me.apana.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 26 Oct 2007 23:00:04 +0800
 
-> Given that a lot of this development will hopefully happen over the next
-> two months, ...
+> [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+> 
+> This patch moves the sg_init_table out of the timing loops for hash
+> algorithms so that it doesn't impact on the speed test results.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-A lot.  Various pieces are a major effort in their own right.
-Improving the kthread API so it can be used universally and
-allow removal all of the kernel_thread users.
-Reducing to an absolute minimum usage of pid_t.
-
-I know several of the things with signal handling had Oleg
-scratching his head.
-
-There is enough development there I question if the code will even be
-canidates for merging into 2.6.24.
-
-I can imagine an -mm tree that has everything ready to go in
-the next two months.
-
->> It hurts me to even ponder what thinking makes it that 
->> CONFIG_EXPERIMENTAL isn't enough to keep a stable distro
->> from shipping the code in their stable kernel, and locking us into
->> trouble.
->> 
->> With that said.  I think I should just respin the patchset now and add
->> the "depends on BROKEN".  
->
-> it doesn't make sense to make it all dependent upon BROKEN now.  Better
-> would be to make it dependant upon CONFIG_SOMETHING_ELSE now, which depends
-> upon EXPERIMENTAL and which will, around -rc6, be changed to depend upon
-> BROKEN.
-
-So we now have my patch which makes it depend on CONFIG_PID_NS.  
-Which is what started this thread. 
-
-> If that makes sense.
-
-Yes.
-
-> It's all a bit unusual and complex, but this is an exceptional set of
-> features - let's hang in there.
-
-Sure.  One small step at a time.
-
-- Step One add a config option.
-
-Eric
-
+Applied, thanks!
