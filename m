@@ -1,40 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbXJ0P2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbXJ0PaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756278AbXJ0P2T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 11:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXJ0P2I
+	id S1756409AbXJ0PaG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 11:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbXJ0P3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 11:28:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40748 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673AbXJ0P2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 11:28:06 -0400
-Date: Sat, 27 Oct 2007 11:27:44 -0400
-From: Alan Cox <alan@redhat.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Alan Cox <alan@redhat.com>, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] unexport ide_fix_driveid
-Message-ID: <20071027152744.GA3113@devserv.devel.redhat.com>
-References: <20071027141833.GT30533@stusta.de>
+	Sat, 27 Oct 2007 11:29:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54161 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313AbXJ0P3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 11:29:55 -0400
+Subject: Re: BUG: lock held when returning to user space
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Gabriel C <nix.or.die@googlemail.com>, a.zummo@towertech.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0710271707140.18815@twin.jikos.cz>
+References: <472348F6.6050100@googlemail.com>
+	 <Pine.LNX.4.64.0710271707140.18815@twin.jikos.cz>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 17:28:41 +0200
+Message-Id: <1193498921.5648.68.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071027141833.GT30533@stusta.de>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 04:18:33PM +0200, Adrian Bunk wrote:
-> ide_fix_driveid can now be unexported.
+
+On Sat, 2007-10-27 at 17:12 +0200, Jiri Kosina wrote:
+> On Sat, 27 Oct 2007, Gabriel C wrote:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > I found that today in dmesg after booting current git ( 
+> > ec3b67c11df42362ccda81261d62829042f223f0 ) :
+> > ...
+> > [  592.752777]
+> > [  592.752781] ================================================
+> > [  592.753478] [ BUG: lock held when returning to user space! ]
+> > [  592.753880] ------------------------------------------------
+> > [  592.754262] hwclock/1452 is leaving the kernel with locks still held!
+> > [  592.754655] 1 lock held by hwclock/1452:
+> > [  592.755007]  #0:  (&rtc->char_lock){--..}, at: [<c02a7ebb>] rtc_dev_open+0x2e/0x7e                                        
+> 
+> Yes, this is because rtc keeps a char_lock mutex locked as long as the 
+> device is open, to avoid concurrent accessess.
+> 
+> It could be easily substituted by some counting -- setting and clearing 
+> bit in struct rtc_device instead of using char_lock, but doing this just 
+> to shut the lockdep off is questionable imho.
+> 
+> Peter, what is the preferred way to annotate these kinds of locking for 
+> lockdep to express that it is intended?
 
-Acked-by: Alan Cox <alan@redhat.com>
+Not sure, I'd not thought that anyone would actually want to do this.
+I'm also not sure how I stand on this, I'd prefer to say: don't do this!
 
---
-	"Where small clearances exist, controls are required to
-	 prevent these clearances becoming negative"
-			- How a standards body describes "not crashing"
+I think, in this case, the lock is associated with a kernel object that
+is properly cleaned up if the holding tasks gets a SIGKILL. But in
+general I'd like to see this kind of thing go away.
+
+Now I could probably come up with an annotation to hide it, but what do
+other people think, Ingo, Linus, Andrew, do we want to keep kernel locks
+held over userspace?
+
+
 
