@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbXJ0MAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXJ0MHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbXJ0MAd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 08:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXJ0MAZ
+	id S1754819AbXJ0MHz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 08:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXJ0MHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 08:00:25 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:50375 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752124AbXJ0MAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 08:00:24 -0400
-Date: Sat, 27 Oct 2007 14:00:17 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Roopesh <roopesh@cyberspace.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MMC: CRC Errors with 2GB cards
-Message-ID: <20071027140017.41e9d67f@poseidon.drzeus.cx>
-In-Reply-To: <20071019161700.GA19254@grex.cyberspace.org>
-References: <20071019161700.GA19254@grex.cyberspace.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 27 Oct 2007 08:07:47 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:41885 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbXJ0MHr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 08:07:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=QiBJorBnTDSnrkxXZJfEAOAf1zlkvVdJtFa2mekHxVq1DgpxANvhfT3R0I2CM/xiM+lJAm5yygdHz8OSq7SIg4rH4+viWLBzZhx/KD40jxDWLJObL/n7/saWfOxAwXPunK2fxmyOEuUWtYh0/PkednGq3DQvtaa3PbV0FeGaHxQ=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
+Date: Sat, 27 Oct 2007 14:05:32 +0200
+User-Agent: KMail/1.9.6
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710271405.32908.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roopesh,
+Hi,
 
-I'm terribly sorry I haven't replied sooner. I put your message on my todo list, figuring I could get to it within a day or two, but as you noticed, that didn't quite happen. :/
+Recently I noticed that my system resumes just after suspend to disk.
 
-On Fri, 19 Oct 2007 12:17:00 -0400
-Roopesh <roopesh@cyberspace.org> wrote:
+I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
 
->  Hi, 
-> 
->  I am seeing a lot of CRC errors happening with CMD25 on a couple 
->  of Transcend 2GB cards (specifiation version 1.1).  However, if 
->  I apply the following patch, I see no errors being reported
-> 
+Note:
 
-Ok, so the card is mishandling the state bits a bit. We should be able to work around that.
+This happens only if I enable WOL using /proc/acpi/wakeup
+(echo "ILAN" > /proc/acpi/wakeup)
 
-> @@ -310,8 +311,8 @@
->  					       req->rq_disk->disk_name, err);
->  					goto cmd_err;
->  				}
-> -			} while (!(cmd.resp[0] & R1_READY_FOR_DATA));
-> -
-> +			} while (!(R1_CURRENT_STATE(cmd.resp[0]) == 4)); 
-> +			
->  #if 0
+and have 
+"ACPI-Hibernate-erroneously-disabled-Suspend-wakeup" applied, since otherwise
+all wake-up sources are disabled in S4.
 
-This might trade us one problem for another. Could you try the following:
 
-} while (!(cmd.resp[0] & R1_READY_FOR_DATA) || (R1_CURRENT_STATE(cmd.resp[0]) == 7));
+Clearly the above commit confuses the BIOS.
+Using latest -git with the above patch reverted makes everything work again fine.
 
-This should also work for cards that mishandle the state field, and if the card jumps to
-some odd state for some reason.
-
-> 
->  I am just wondering if I have set of broken cards.  Any pointers 
->  in this regard?
-> 
-
-You do. But don't be too alarmed, that is unfortunately the norm. :/
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Best regards,
+	Maxim Levitsky
