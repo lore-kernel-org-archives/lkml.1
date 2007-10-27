@@ -1,82 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbXJ0VXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbXJ0Val@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbXJ0VXK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 17:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXJ0VWn
+	id S1755383AbXJ0Val (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXJ0Vab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 17:22:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51757 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750749AbXJ0VWm (ORCPT
+	Sat, 27 Oct 2007 17:30:31 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:47955 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751511AbXJ0Vaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 17:22:42 -0400
-Date: Sat, 27 Oct 2007 14:22:39 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Lee.Schermerhorn@hp.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071027142239.0ded1e42.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.9999.0710262134180.24687@chino.kir.corp.google.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<alpine.DEB.0.9999.0710262134180.24687@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sat, 27 Oct 2007 17:30:30 -0400
+Subject: Re: Networked filesystems vs backing_dev_info
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Steve French <smfrench@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, sfrench@samba.org,
+       jaharkes@cs.cmu.edu, Andrew Morton <akpm@linux-foundation.org>,
+       vandrove@vc.cvut.cz
+In-Reply-To: <524f69650710271402g65a9ec1cqcc7bc3a964097e39@mail.gmail.com>
+References: <1193477666.5648.61.camel@lappy>
+	 <524f69650710271402g65a9ec1cqcc7bc3a964097e39@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ejXzy2nRMorkPk2KvdHr"
+Date: Sat, 27 Oct 2007 23:30:25 +0200
+Message-Id: <1193520625.27652.30.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> I prefer Choice B because it does not force mempolicies to have any 
-> dependence on cpusets with regard to what nodemask is passed.
 
-Yes, well said.
+--=-ejXzy2nRMorkPk2KvdHr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> It would be very good to store the passed nodemask to set_mempolicy in 
-> struct mempolicy, 
+On Sat, 2007-10-27 at 16:02 -0500, Steve French wrote:
+> On 10/27/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > Hi,
+> >
+> > I had me a little look at bdi usage in networked filesystems.
+> >
+> >  NFS, CIFS, (smbfs), AFS, CODA and NCP
+> >
+> > And of those, NFS is the only one that I could find that creates
+> > backing_dev_info structures. The rest seems to fall back to
+> > default_backing_dev_info.
+> >
+> > With my recent per bdi dirty limit patches the bdi has become more
+> > important than it has been in the past. While falling back to the
+> > default_backing_dev_info isn't wrong per-se, it isn't right either.
+> >
+> > Could I implore the various maintainers to look into this issue for
+> > their respective filesystem. I'll try and come up with some patches to
+> > address this, but feel free to beat me to it.
+>=20
+> I would like to understand more about your patches to see what bdi
+> values makes sense for CIFS and how to report possible congestion back
+> to the page manager.=20
 
-Yes - that's what I'm intending to do.
+So, what my recent patches do is carve up the total writeback cache
+size, or dirty page limit as we call it, proportionally to a BDIs
+writeout speed. So a fast device gets more than a slow device, but will
+not starve it.
 
-> If the cpuset has fewer than four nodes, the behavior 
-> should be undefined (probably implemented to just cycle the set of 
-> mems_allowed until you reach the fourth entry).
+However, for this to work, each device, or remote backing store in the
+case of networked filesystems, need to have a BDI.
 
-I do intend to implement it as you suggest.  See the lib/bitmap.c
-routines bitmap_remap() and bitmap_bitremap(), and the nodemask
-wrappers for these, nodes_remap() and node_remap().  They will
-define the cycling, or I sometimes call it folding.
+>   I had been thinking about setting bdi->ra_pages
+> so that we do more sensible readahead and writebehind - better
+> matching what is possible over the network and what the server
+> prefers. =20
 
-I would have tended to make this folding a defined part of the API,
-though I will grant that the possibility of being lazy and forgetting
-to document it seems attractive (less to document ;).
+Well, you'd first have to create backing_dev_info instances before
+setting that value :-)
 
-> That [running in a cpuset with fewer nodes than used in a memory policy
-> mask] is the result of constraining a task to a cpuset that obviously
-> wants access to more nodes -- it's a userspace mistake and abusing
-> cpusets so that the task does not get what it expects.
+>   SMB/CIFS Servers typically allow a maximum of 50 requests
+> in parallel at one time from one client (although this is adjustable
+> for some).
 
-Nah - I wouldn't put it that way.  It's no mistake or abuse.  It's just
-one more example of a kernel making too few resources look sufficient
-by sharing, multiplexing and virtualizing them.  That's what kernels do.
+That seems like a perfect point to set congestion.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+So in short, stick a struct backing_dev_info into whatever represents a
+client, initialize it using bdi_init(), destroy using bdi_destroy().
+
+Mark it congested once you have 50 (or more) outstanding requests, clear
+congestion when you drop below 50.
+
+and you should be set.
+
+
+--=-ejXzy2nRMorkPk2KvdHr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHI63xXA2jU0ANEf4RAm1HAJ9As7hCKXXSFOiD3ZanT/jdHyd7kQCbBy++
+klTaneEvly5Q0zaBZPHaFwk=
+=wUi5
+-----END PGP SIGNATURE-----
+
+--=-ejXzy2nRMorkPk2KvdHr--
+
