@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXJ0MHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXJ0MTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXJ0MHz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 08:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXJ0MHr
+	id S1754659AbXJ0MTj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 08:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXJ0MTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 08:07:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:41885 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbXJ0MHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 08:07:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QiBJorBnTDSnrkxXZJfEAOAf1zlkvVdJtFa2mekHxVq1DgpxANvhfT3R0I2CM/xiM+lJAm5yygdHz8OSq7SIg4rH4+viWLBzZhx/KD40jxDWLJObL/n7/saWfOxAwXPunK2fxmyOEuUWtYh0/PkednGq3DQvtaa3PbV0FeGaHxQ=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
-Date: Sat, 27 Oct 2007 14:05:32 +0200
-User-Agent: KMail/1.9.6
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Oct 2007 08:19:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49884 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752259AbXJ0MTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 08:19:31 -0400
+Date: Sat, 27 Oct 2007 14:21:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Markus Elfring <Markus.Elfring@web.de>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: Check handling of kernel build output directory
+Message-ID: <20071027122107.GA30805@uranus.ravnborg.org>
+References: <fft89p$rko$1@ger.gmane.org> <19f34abd0710261036m65fd0d3bjace68c860a29023b@mail.gmail.com> <fftcal$dim$1@ger.gmane.org> <fftdpt$iqf$1@ger.gmane.org> <Pine.LNX.4.64.0710271332440.30465@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710271405.32908.maximlevitsky@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0710271332440.30465@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Oct 27, 2007 at 01:32:54PM +0200, Jan Engelhardt wrote:
+> 
+> On Oct 26 2007 21:05, Markus Elfring wrote:
+> >>> Aren't you supposed to use O= as described by "make help"?
+> >> 
+> >> I expect that both ways should work. I find it easier to use the environment variable
+> >> "KBUILD_OUTPUT" because the command line parameter does not need to be repeated on each
+> >> make invocation.
+> >
+> >A wording correction:
+> >I expect that both ways should work. I find it easier to use the environment variable
+> >"KBUILD_OUTPUT" because it does not need to be repeated on each make invocation like it
+> >must happen with the command line parameter "O=".
+> 
+> So why not just...
+> 	export O=/foo/bar
 
-Recently I noticed that my system resumes just after suspend to disk.
+When introducing the make O=...
+I was a bit anal about where the definition of O came from so you will see
+that in the top-level Makefile we check if O= is defined at the commandline:
 
-I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
+ifdef O
+  ifeq ("$(origin O)", "command line")
+    KBUILD_OUTPUT := $(O)
+  endif
+endif
 
-Note:
+"O" is just too vague to be picked up from the environment.
 
-This happens only if I enable WOL using /proc/acpi/wakeup
-(echo "ILAN" > /proc/acpi/wakeup)
-
-and have 
-"ACPI-Hibernate-erroneously-disabled-Suspend-wakeup" applied, since otherwise
-all wake-up sources are disabled in S4.
-
-
-Clearly the above commit confuses the BIOS.
-Using latest -git with the above patch reverted makes everything work again fine.
-
-Best regards,
-	Maxim Levitsky
+	Sam
