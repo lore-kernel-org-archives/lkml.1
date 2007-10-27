@@ -1,102 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbXJ0RVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXJ0RcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbXJ0RVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 13:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXJ0RVI
+	id S1756897AbXJ0RcT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 13:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbXJ0RcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 13:21:08 -0400
-Received: from lixom.net ([66.141.50.11]:39064 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbXJ0RVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 13:21:07 -0400
-Date: Sat, 27 Oct 2007 12:28:51 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
-Message-ID: <20071027172851.GA11930@lixom.net>
-References: <20071026165510.GA2323@lixom.net> <200710262019.12094.arnd@arndb.de>
+	Sat, 27 Oct 2007 13:32:11 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33099 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753689AbXJ0RcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 13:32:09 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <472375D5.5080107@s5r6.in-berlin.de>
+Date: Sat, 27 Oct 2007 19:31:01 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710262019.12094.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Adrian Bunk <bunk@kernel.org>, Greg KH <greg@kroah.com>,
+       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: eradicating out of tree modules
+References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026232653.GF30533@stusta.de> <47234F73.3040809@imap.cc>
+In-Reply-To: <47234F73.3040809@imap.cc>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
+Tilman Schmidt wrote about:
+> breaking interfaces they rely on for no other "very good
+> reason" than to discourage out-of-tree development?
 
-arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
-arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
-arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
-arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
----
-
-On Fri, Oct 26, 2007 at 08:19:10PM +0200, Arnd Bergmann wrote:
-
-> I think here it would be better to move iic_get_target_id out of
-> CONFIG_SMP as well. We might want to kexec from an SMP kernel into
-> a UP kernel, and in that case, cpu_affinity_set() should better
-> reset the routing to CPU 0.
-
-Makes sense. New patch.
-
-
--Olof
-
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 151fd8b..04f74f9 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -158,6 +158,18 @@ static unsigned int iic_get_irq(void)
- 	return virq;
- }
- 
-+void iic_setup_cpu(void)
-+{
-+	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
-+}
-+
-+u8 iic_get_target_id(int cpu)
-+{
-+	return per_cpu(iic, cpu).target_id;
-+}
-+
-+EXPORT_SYMBOL_GPL(iic_get_target_id);
-+
- #ifdef CONFIG_SMP
- 
- /* Use the highest interrupt priorities for IPI */
-@@ -166,29 +178,17 @@ static inline int iic_ipi_to_irq(int ipi)
- 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
- }
- 
--void iic_setup_cpu(void)
--{
--	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
--}
--
- void iic_cause_IPI(int cpu, int mesg)
- {
- 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
- }
- 
--u8 iic_get_target_id(int cpu)
--{
--	return per_cpu(iic, cpu).target_id;
--}
--EXPORT_SYMBOL_GPL(iic_get_target_id);
--
- struct irq_host *iic_get_irq_host(int node)
- {
- 	return iic_host;
- }
- EXPORT_SYMBOL_GPL(iic_get_irq_host);
- 
--
- static irqreturn_t iic_ipi_action(int irq, void *dev_id)
- {
- 	int ipi = (int)(long)dev_id;
+How often did this happen yet?
+-- 
+Stefan Richter
+-=====-=-=== =-=- ==-==
+http://arcgraph.de/sr/
