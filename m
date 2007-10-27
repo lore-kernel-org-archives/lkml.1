@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXJ0Cu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXJ0DGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752820AbXJ0Cu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 22:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXJ0Cut
+	id S1752587AbXJ0DGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 23:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbXJ0DGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 22:50:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52445 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750796AbXJ0Cus (ORCPT
+	Fri, 26 Oct 2007 23:06:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45244 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbXJ0DGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 22:50:48 -0400
-Date: Fri, 26 Oct 2007 19:50:48 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <20071026194144.6042316a.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
- <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
- <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
- <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
- <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
- <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
- <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
- <20071026180713.aeedfac2.pj@sgi.com> <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
- <20071026194144.6042316a.pj@sgi.com>
+	Fri, 26 Oct 2007 23:06:06 -0400
+Date: Fri, 26 Oct 2007 19:41:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Robert Hancock <hancockr@shaw.ca>, akpm@linux-foundation.org, ak@suse.de,
+       rajesh.shah@intel.com, torvalds@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+Message-ID: <20071027024140.GC29039@kroah.com>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <200710251622.36773.jbarnes@virtuousgeek.org> <20071026025407.GA21408@kroah.com> <200710260959.46811.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710260959.46811.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Paul Jackson wrote:
-
-> Christoph wrote:
-> > Yes. We should default to Choice B. Add an option MPOL_MF_RELATIVE to 
-> > enable that functionality? A new version of numactl can then enable
-> > that by default for newer applications.
+On Fri, Oct 26, 2007 at 09:59:45AM -0700, Jesse Barnes wrote:
+> On Thursday, October 25, 2007 7:54 pm Greg KH wrote:
+> > On Thu, Oct 25, 2007 at 04:22:35PM -0700, Jesse Barnes wrote:
+> > > I think Greg doesn't like it, even though we don't have an
+> > > alternative at this point...
+> >
+> > Yes, I didn't like it, Ivan didn't like it, and I got reports that it
+> > wasn't even needed at all once you upgraded your BIOS to the latest
+> > version.
+> >
+> > So, is this still needed?  And if so, can you try to implement what
+> > Ivan suggested to do here instead?
 > 
-> I'm confused.  If B is the default, then we don't need a flag to
-> enable it, rather we need a flag to go back to the old choice A.
+> Yes, it's still needed.  Auke rescinded his "BIOS upgrade makes it work" 
+> message, so something like this is still necessary.
 
-Dont we need it for numactl to preserve backward compatibility? numactl 
-can set that flag by default for newer software. We likely need a new 
-major release of numactl.
- 
-> Perhaps, either way, whatever compatibility flag we have should be
-> something that can be forced on an application from the outside,
-> perhaps as a per-system mode flag in /sys, or a per-cpuset mode flag,
-> or a per-task operation, by what mechanism is not clear.
+He did?  Ugh, I can't keep these all straight, sorry.
 
-libnuma can take of that. But we need to have that flag for numactl to be 
-backward compatible.
+Can someone just send what they think is still needed, and explain why
+Ivan will not object to it?  :)
 
+thanks,
+
+greg k-h
