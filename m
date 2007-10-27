@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXJ0GGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbXJ0GGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbXJ0GGU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 02:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXJ0GGJ
+	id S1752050AbXJ0GGe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 02:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXJ0GGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 02:06:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38756 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbXJ0GGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 02:06:08 -0400
-Message-ID: <4722D516.8020902@linux.vnet.ibm.com>
-Date: Sat, 27 Oct 2007 11:35:10 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Jeff Dike <jdike@addtoit.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [x86 patch] Fix UML signal.h build errors
-References: <20071025130022.8720.77346.sendpatchset@balbir-laptop> <20071025150541.GB5968@c2.user-mode-linux.org> <4720B6E8.4090003@linux.vnet.ibm.com> <20071027031309.GI8181@ftp.linux.org.uk>
-In-Reply-To: <20071027031309.GI8181@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Oct 2007 02:06:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:58080 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753507AbXJ0GGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 02:06:19 -0400
+Subject: Re: linux-2.6.23-git3: Many sysfs-related warnings in dmesg
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071027023612.GC28858@suse.de>
+References: <47221E6F.1090607@lwfinger.net>
+	 <1193422064.2190.6.camel@lov.site>  <20071027023612.GC28858@suse.de>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 08:08:14 +0200
+Message-Id: <1193465294.2190.51.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+7jrNik10qbuTiRMdyYMssYyMKrXIF0PrD3hf
+ cuwOdvbYNpaxjLUsAg4Pcrr0BAe4YiDBvyrMEkRww6g/00APiR
+ 3Cb760L7asmN+TGf8fzMHLuoQgj0ige
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Thu, Oct 25, 2007 at 09:01:52PM +0530, Balbir Singh wrote:
-> 
->> Thats nice, I wonder why I missed them searching on lkml in my gmail box
->> :(
->>
->> Is __arch_um__ the right thing to do or BITS_PER_LONG == 32? I prefer
->> BITS_PER_LONG == 32 over #if defined(__i386__) || defined(__arch__um__).
->> I guess its a matter of personal preference.
-> 
-> Huh?
-> 
-> a) we really shouldn't mess with compiler defines (i.e. we should not
-> undef __i386__ or __x86_64__)
-> 
+On Fri, 2007-10-26 at 19:36 -0700, Greg KH wrote:
+> On Fri, Oct 26, 2007 at 08:07:44PM +0200, Kay Sievers wrote:
+> > On Fri, 2007-10-26 at 12:05 -0500, Larry Finger wrote:
+> > > On my openSUSE 10.3 x86_64 system running v2.6.24-rc1-281-g22d2aa1,
+> > > I get the sysfs rename messages.
+> > 
+> > Care to try this? Seems like a silly bug in the core if
+> > SYSFS_DEPRECATED=y. That's why we didn't catch this earlier, sorry.
 
-I agree
-
-> b) I'd rather have __arch_um__ mentioned explicitly in 3 places where
-> we do care about difference between i386 and uml/i386 than have certain
-> to be forgotten rules for places like include/asm-x86
+> > From: Kay Sievers <kay.sievers@vrfy.org>
+> > Subject: Driver Core: fix bug in device_rename() for SYSFS_DEPRECATED=y
+> > 
 > 
-> c) if you look at those places, you'll see
-> 	* drivers/char/mem.c::uncached_access().  Really per-architecture
-> and I wonder if it might be include/asm-* fodder...
-> 	* kernel/signal.c debugging printks.  Should die or be sanitized, IMO.
-> 	* raid6 algorithms.  Hell knows - immediate reason why we don't do
-> those on uml is the lack of kernel_fpu_begin()/kernel_fpu_end() (and
-> boot_cpu_has(), but that's easier to add).  Do we care to implement that
-> stuff?
-> 
+> Do you have some more information for the change log here?  Are we just
+> not unwinding from errors properly?
 
-I suspect that list might grow and anybody writing i386 or x86_64 code
-will need to double check if the code will work under __arch_um__.
-Probably worth documenting somewhere.
+The code just shouldn't run if class devices are real directories, it's
+an update for the symlink in the class directory. Nobody noticed that as
+long as the creation of sysfs files silently failed, and we both missed
+it before the merge, because we don't run SYSFS_DEPRECATED=y.
 
-> That's _all_.  Nothing else has to care.
-> 
+Kay
 
-:-)
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
