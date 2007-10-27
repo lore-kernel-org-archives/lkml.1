@@ -1,43 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbXJ0Ah7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbXJ0BG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762784AbXJ0Ah7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXJ0Ahw
+	id S1761009AbXJ0BG3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 21:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXJ0BGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:37:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52085 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbXJ0Ahv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:37:51 -0400
-Message-ID: <4722885B.7050307@garzik.org>
-Date: Fri, 26 Oct 2007 20:37:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 26 Oct 2007 21:06:21 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33033 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752189AbXJ0BGU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 21:06:20 -0400
+Date: Sat, 27 Oct 2007 03:06:41 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] move more stuff into compiler-gcc.h
+Message-ID: <20071027010641.GM30533@stusta.de>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
-References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075808.GH6407@havoc.gtf.org>	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>	<20071026143525.b9218ed7.akpm@linux-foundation.org>	<4722608E.3000405@garzik.org>	<20071026165035.33383e36@laptopd505.fenrus.org>	<47228278.8070505@garzik.org> <20071026171606.4e242f49@laptopd505.fenrus.org>
-In-Reply-To: <20071026171606.4e242f49@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> the other serious question is.. how is IRQ_HANDLER_V3 different from a
-> #ifdef VERSION >= 2.6.24 .....
-> it's not really ;)
+Stuff that is unconditional in both compiler-gcc3.h and compiler-gcc4.h 
+belongs into compiler-gcc.h.
 
-Note my mention of backport -- kernel version isn't relevant when the 
-various enterprise distros have random featuresets under random kernel 
-versions.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-	Jeff
+---
+
+ include/linux/compiler-gcc.h  |    8 ++++++++
+ include/linux/compiler-gcc3.h |    8 --------
+ include/linux/compiler-gcc4.h |    7 -------
+ 3 files changed, 8 insertions(+), 15 deletions(-)
+
+commit 13893bca73ac361f0c1c937f83b30ed9c2f8f64a
+Author: Adrian Bunk <bunk@kernel.org>
+Date:   Fri Oct 26 03:50:51 2007 +0200
+
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index fe23792..d224fc2 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -31,6 +31,7 @@
+ #define inline		inline		__attribute__((always_inline))
+ #define __inline__	__inline__	__attribute__((always_inline))
+ #define __inline	__inline	__attribute__((always_inline))
++#define __always_inline	inline		__attribute__((always_inline))
+ #define __deprecated			__attribute__((deprecated))
+ #define __packed			__attribute__((packed))
+ #define __weak				__attribute__((weak))
+@@ -53,3 +54,10 @@
+ #define  noinline			__attribute__((noinline))
+ #define __attribute_const__		__attribute__((__const__))
+ #define __maybe_unused			__attribute__((unused))
++
++
++/*
++ * A trick to suppress uninitialized variable warning without generating any
++ * code
++ */
++#define uninitialized_var(x) x = x
+diff --git a/include/linux/compiler-gcc3.h b/include/linux/compiler-gcc3.h
+index 2d8c0f4..812bb89 100644
+--- a/include/linux/compiler-gcc3.h
++++ b/include/linux/compiler-gcc3.h
+@@ -16,11 +16,3 @@
+ #if __GNUC_MINOR__ >= 4
+ #define __must_check		__attribute__((warn_unused_result))
+ #endif
+-
+-/*
+- * A trick to suppress uninitialized variable warning without generating any
+- * code
+- */
+-#define uninitialized_var(x) x = x
+-
+-#define __always_inline		inline __attribute__((always_inline))
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index ee7ca5d..4e01891 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -18,13 +18,6 @@
+ #define __attribute_used__	__used			/* deprecated */
+ #define __must_check 		__attribute__((warn_unused_result))
+ #define __compiler_offsetof(a,b) __builtin_offsetof(a,b)
+-#define __always_inline		inline __attribute__((always_inline))
+-
+-/*
+- * A trick to suppress uninitialized variable warning without generating any
+- * code
+- */
+-#define uninitialized_var(x) x = x
+ 
+ #if !(__GNUC__ == 4 && __GNUC_MINOR__ < 3)
+ /* Mark functions as cold. gcc will assume any path leading to a call
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
