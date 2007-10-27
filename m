@@ -1,95 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXJ0OpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbXJ0Ord@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbXJ0OpS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXJ0OpG
+	id S1755725AbXJ0Ord (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXJ0OrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:45:06 -0400
-Received: from smtp4.netcabo.pt ([212.113.174.31]:59195 "EHLO
-	exch01smtp09.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750892AbXJ0OpE (ORCPT
+	Sat, 27 Oct 2007 10:47:24 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35583 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751251AbXJ0OrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:45:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAJnrIkdViqaH/2dsb2JhbAAMkDw
-Message-ID: <47234EA1.4050006@rncbc.org>
-Date: Sat, 27 Oct 2007 15:43:45 +0100
-From: Rui Nuno Capela <rncbc@rncbc.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 27 Oct 2007 10:47:22 -0400
+X-Sasl-enc: Oz635+Ban9jRzdAHChvC2BQ3sotGO5rfAxHTh9jAesj8 1193496441
+Message-ID: <47234F73.3040809@imap.cc>
+Date: Sat, 27 Oct 2007 16:47:15 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23-rt4 (was 2.6.23-rt1 trouble)
-References: <1192154640.15992.10.camel@localhost.localdomain>          <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org>
-In-Reply-To: <471648B8.1030007@rncbc.org>
-X-Enigmail-Version: 0.95.3
+To: Adrian Bunk <bunk@kernel.org>
+CC: Greg KH <greg@kroah.com>, Simon Arlott <simon@fire.lp0.eu>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: eradicating out of tree modules (was: : Linux Security *Module* Framework)
+References: <20071023051642.GA3908@sequoia.sous-sol.org> <471E9260.6000704@goop.org> <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026232653.GF30533@stusta.de>
+In-Reply-To: <20071026232653.GF30533@stusta.de>
+X-Enigmail-Version: 0.95.1
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Oct 2007 14:45:02.0526 (UTC) FILETIME=[F4C5ADE0:01C818A7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, October 15, 2007 11:49, Rui Nuno Capela wrote:
->>
->> I am experiencing some highly annoying but intermitent freezing on a
->> pentium4 2.80G HT/SMT box, when doing normal desktop work with 2.6.23-rt1.
->>
->>
->> The same crippling behavior does not occur on a Core 2 Due T7200 2.0G
->> SMP, so I suspect it's something due specific to the SMT scheduling
->> support (Hyper-Threading). But can't tell for sure, obviously :)
->>
+Adrian Bunk schrieb:
+> On Fri, Oct 26, 2007 at 11:46:39AM +0200, Tilman Schmidt wrote:
+>> On Thu, 25 Oct 2007 19:56:47 -0700, Greg KH wrote:
+>>> On Fri, Oct 26, 2007 at 01:09:14AM +0200, Tilman Schmidt wrote:
+>>>> [...] Once you admit that there is code which, for very good
+>>>> reasons, won't ever be accepted into the mainline kernel tree, what you
+>>>> are saying amounts to: "Code that isn't fit to be included in the
+>>>> mainline kernel isn't fit to exist at all."
+>>> What kind of code is not accepted into the mainline kernel tree for good
+>>> reasons?
+>> - proprietary code
 > 
-> I was wrong. After several trials the same behavior also occurs on the
-> Core2 Duo T7200. It just took longer to show its nasty.
-> 
-> 
->> The symptoms are noticeable primarily as some X/GUI intermitent freezing,
->> sometimes only one application, then several and ultimately the whole X 
->> desktop becomes completely unresponsive. It looks like scheduling 
->> problems. There is this hint that switching to a spare console terminal 
->> (via Ctrl+Alt+Fn) might cause later recovery. But its just a question of
->> some more time for it just happens again and again, one after another, 
->> several applications becoming temporarily frozen and just by luck the 
->> system gets back to normal, probably due to some incidental shake-up :) 
->> but there are other times that nothing seems to help with no alternative 
->> to the power-reset switch.
->>
->> I could not find any evidence on dmesg or in the system logs, of any
->> apparent trouble. No BUGs, no oops, no panics, no nothing. It just
->> freezes, this and that, now and then. It just makes it all unworkable
->> and obviously subject to ditching.
->>
->> Again, this only happens on this P4/HT box. On a Core2 Duo laptop, with
->> same 2.6.23-rt1 with the very same kernel configuration, it does not show 
->> any illness and is running quite fine.
->>
-> 
-> False. It used to run fine, until the creeps happen first time :(
-> 
-> 
->> Remember one report I had about a similar freezing behavior? Now it's
->> happening the other way around: the core2 is OK, the pentium4 is KO.
->>
-> 
-> Now it applies to all 2.6.23-rt1 images I could test upon.
-> 
-> 
->> One naive suspicion goes like the new rcu-preempt code is to blame, since
->> I don't remember having this or any other trouble with 2.6.23-rc8-rt1.
->>
-> 
-> Not be sure anymore, but this seems to be still a valid assumption.
-> 
+> It's unclear whether distributing not GPL compatible modules is legal
+> at all.
 
-just to let you know that still the same trouble persists with 2.6.23.1-rt4
+We're neither talking about distribution nor legal aspects, but
+about existence. But anyway, you seem to agree with me that there
+are very good reasons for not including these in the kernel.
 
-.config can be found here:
-   http://www.rncbc.org/datahub/config-2.6.23.1-rt4.0
+> And they are definitely not "very good reasons" for doing anything in 
+> the kernel.
 
+There is a big difference between "not doing anything to help"
+and "actively doing something to make life difficult for". The
+former is undoubtedly legitimate. It's the latter we're
+discussing here.
 
-cheers.
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+>> - unmaintained code
+> 
+> Unmaintained code in the kernel has a realistic chance of being usable 
+> for 5 years.
+> 
+> Unmaintained external code is quite likely to be unusable after
+> at most one year.
+
+Then why is "being unmaintained" being toted as an argument
+*against* inclusion in the kernel?
+
+>> - code conflicting with existing kernel structure or policy
+>> - code in which the concerned subsystem maintainers see no benefit
+> 
+> Let's fix the problems, not work around them.
+
+That's certainly better, but not always possible. Do you
+agree with me that if it isn't, then that's a very good
+reason for not including that code in the kernel?
+
+> There is a conflict between getting code included and ensuring some 
+> minimum quality of the kernel, but in many cases we could try better.
+
+Correct. Again, you appear to agree with my statement that
+for some code there are very good reasons not to include it
+in the kernel.
+
+> And when there's a good reason for a kernel policy, then code that
+> violates this policy is not a "very good reason" for anything.
+
+>> - code which its author is unable and/or unwilling to convert to
+>>   kernel coding standards
+>> - code whose author is unable and/or unwilling to defend it on LKML
+>> ...
+> 
+> That's their fault, and definitely not a "very good reason" for making 
+> life easier for them.
+
+Putting aside the fruitless question of whose fault it is,
+is it a "very good reason" for actively making life more
+difficult for them than it is already, eg. by gratuitiously
+breaking interfaces they rely on for no other "very good
+reason" than to discourage out-of-tree development? In other
+words, do you think it benefits the Linux community if you
+discourage those programmers you've already scared away from
+submitting their code to the kernel from continuing their
+work off-tree, too? In summary, do you think the world would
+be a better place if all the existing out-of-tree modules
+just ceased to exist, without any replacement?
+
+T.
