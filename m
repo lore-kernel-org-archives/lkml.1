@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbXJ0W7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbXJ0XCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbXJ0W7P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 18:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXJ0W65
+	id S1753432AbXJ0XCQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 19:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXJ0XB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 18:58:57 -0400
-Received: from phunq.net ([64.81.85.152]:56211 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751290AbXJ0W6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 18:58:55 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Date: Sat, 27 Oct 2007 15:58:36 -0700
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-References: <Pine.LNX.4.64.0709101220001.24735@schroedinger.engr.sgi.com> <20071026174409.GA1573@elf.ucw.cz> <Pine.LNX.4.64.0710261052530.15895@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710261052530.15895@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710271558.37514.phillips@phunq.net>
+	Sat, 27 Oct 2007 19:01:58 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36519 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbXJ0XB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 19:01:56 -0400
+Date: Sat, 27 Oct 2007 19:01:20 -0400
+Message-Id: <200710272301.l9RN1K40022960@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: Re: [PATCH 1/9] Unionfs: security convert lsm into a static interface fix 
+In-reply-to: Your message of "Tue, 23 Oct 2007 10:07:39 BST."
+             <20071023090739.GA19758@infradead.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 October 2007 10:55, Christoph Lameter wrote:
-> On Fri, 26 Oct 2007, Pavel Machek wrote:
-> > > And, _no_, it does not necessarily mean global serialisation. By
-> > > simply saying there must be N pages available I say nothing about
-> > > on which node they should be available, and the way the
-> > > watermarks work they will be evenly distributed over the
-> > > appropriate zones.
-> >
-> > Agreed. Scalability of emergency swapping reserved is simply
-> > unimportant. Please, lets get swapping to _work_ first, then we can
-> > make it faster.
->
-> Global reserve means that any cpuset that runs out of memory may
-> exhaust the global reserve and thereby impact the rest of the system.
-> The emergencies that are currently localized to a subset of the
-> system and may lead to the failure of a job may now become global and
-> lead to the failure of all jobs running on it.
+In message <20071023090739.GA19758@infradead.org>, Christoph Hellwig writes:
+> On Mon, Oct 22, 2007 at 08:48:04PM -0400, Erez Zadok wrote:
+> > Why?  Are you concerned that the security policy may change after a module
+> > is loaded?
+> 
+> No, it's a matter of proper layering.  We generally don't want modules
+> like stackabke filesystems to call directly into methods but rather use
+> proper highlevel VFS helpers to isolate them from details and possible
+> changes.  The move to out of line security_ helpers just put this on the
+> radard.
 
-If it does, it is a bug in the reserve accounting.  That said, I still 
-agree with you that per-node reserve is a desirable goal for numa.  I 
-would just like to be clear that it is not necessary, even for numa, 
-just nice.  By all means somebody should be hacking on a numa feature 
-for per-node emergency reserves, but as far as fixing the immediate, 
-serious kernel block IO deadlocks goes, it does not matter.
+OK, I'll be shortly posting a couple of patches to fs/ioctl.c.
 
-Pavel, I do not agree that efficiency is unimportant on the 
-under-pressure path.  I do not even like to call that the "emergency" 
-path, because under heavy load it is normal for a machine to spend a 
-significant fraction of its time in that state.  However, the 
-efficiency goal there does not need to be quite the same as normal 
-mode.
+> > I can probably get rid of having unionfs call security_inode_permission,
+> > by calling permission() myself and carefully post-process its return
+> > code (unionfs needs to "ignore" EROFS initially, to allow copyup to take
+> > place).
+> 
+> Sounds fine.
 
-To illustrate, I would expect to see something like 95% of normal block 
-IO performance on a numa machine in the case that "emergency" (aka 
-memalloc memory) is allocated globally instead of locally, thus paying 
-a (modest compared to the disk transfer itself) penalty for transfer of 
-disk data over the numa interconnect.  95% of normal throughput on the 
-block IO path is not a problem: if the machine spends 5% of its time on 
-the "emergency" (aka memalloc) path, then overall efficiency will be 
-95% * 95% = 99.75%.
+I was able to test this idea and it works fine.  Now unionfs calls
+permission(), post-processes the return value, and I don't need my own
+modified version of permission() in unionfs.  This saved me ~50 LoC and
+reduced stack pressure a little.
 
-Moral of this story: let's get the memory recursion fixes done in the 
-most obviously correct way and not get distracted by illusory 
-efficiency requirements for numa, that do not have a big bottom line 
-impact.
+> > But security_file_ioctl doesn't have any existing helper I can call.  I
+> > can introduce a trivial vfs_security_file_ioctl wrapper to
+> > security_file_ioctl, but what about the already existing *19* exported
+> > security_* functions in security/security.c?  Do you want to see simple
+> > wrappers for all of them?  It seems redundant to add a one-line wrapper
+> > around an already one-line function around security_ops->XXX.  Plus,
+> > some of the existing exported security_* functions are file-system
+> > related, others are networking, etc.  So we'll need wrappers whose names
+> > are prefixed appropriately: vfs_*, net_*, etc.
+> 
+> The fix for security_file_ioctl is probably to either not do it at all
+> or move it the call to security_file_ioctl into vfs_ioctl and get it by
+> using that helper.  I suspect most other security_ exports should be
+> avoided similarly.
 
-I'm glad to see everybody still interested in these problems.  Though we 
-have been a little quiet on this issue over here for a while, it does 
-not mean that progress has stopped.  In fact, we are testing our 
-solutions more heavily than ever, and getting closer to a solution that 
-not only works solidly, but that should enable mass deletion of the 
-whole creaky notion of dirty page limits in favor of nice, tight 
-per-device control of in flight write traffic as I have described 
-previously.
+Christoph, I looked more closely at that and the selinux code.  Only
+sys_ioctl calls security_file_ioctl.  And security_file_ioctl performs all
+sorts of checks that mostly have to do with the currently running task or
+the open file.  The running task is still the same, whether filesystem
+stacking is involved or not.  Also, the unionfs-level struct file is
+logically the same file at the lower level: they refer to the same object,
+just at two layers.  I can't see any reason why unionfs_ioctl should have to
+call security_file_ioctl(lower_file) the way sys_ioctl does: that check is
+already done well before the file system's ->ioctl is invoked.  I also don't
+see how it would ever be possible that sys_ioctl will succeed in its call to
+security_file_ioctl(upper_file), but unionfs will fail the same security
+check on the lower file.
 
-Regards,
+So I commented out unionfs's call to security_file_ioctl(lower_file) and
+tested it on a bunch of things, including an selinux-enabled livecd.
+Everything seemed to work just fine, so I'll be sending some patches to that
+effect, and we can drop the -mm patch which exports security_file_ioctl().
+BTW, ecryptfs doesn't call security_file_ioctl().
 
-Daniel
+Cheers,
+Erez.
