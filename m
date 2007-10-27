@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbXJ0KfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbXJ0KoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbXJ0KfZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 06:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXJ0KfJ
+	id S1752885AbXJ0KoT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 06:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXJ0KoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 06:35:09 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:60829 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbXJ0KfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 06:35:07 -0400
-Date: Sat, 27 Oct 2007 14:34:59 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Sat, 27 Oct 2007 06:44:12 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2089 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbXJ0KoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 06:44:11 -0400
+Date: Sat, 27 Oct 2007 11:43:28 +0100
+From: Andy Whitcroft <apw@shadowen.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [0/3] Distributed storage. Mirror algo extension for automatic recovery.
-Message-ID: <20071027103459.GA14698@2ka.mipt.ru>
-References: <20071018191741.GA848@2ka.mipt.ru> <20071026135538.d22125a2.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Cc: Randy Dunlap <rdunlap@xenotime.net>, tglx@linutronix.de,
+       nickpiggin@yahoo.com.au, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH v2] bitops kernel-doc: inline instead of macro
+Message-ID: <20071027104328.GA5529@shadowen.org>
+References: <20071023220959.a359d57d.rdunlap@xenotime.net> <200710241800.19764.nickpiggin@yahoo.com.au> <20071025093159.3ea69d03.rdunlap@xenotime.net> <alpine.LFD.0.9999.0710251840530.3186@localhost.localdomain> <20071025095540.827d4333.rdunlap@xenotime.net> <20071025134814.caced2e3.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071026135538.d22125a2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071025134814.caced2e3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+On Thu, Oct 25, 2007 at 01:48:14PM -0700, Andrew Morton wrote:
 
-On Fri, Oct 26, 2007 at 01:55:38PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > I'm pleased to announce sixth release of the distributed storage
-> > subsystem, which allows to form a storage on top of remote and local
-> > nodes, which in turn can be exported to another storage as a node to
-> > form tree-like storages.
-> 
-> I went back and re-read last month's discussion and I'm not seeing any
-> reason why we shouldn't start thinking about merging this.
-> 
-> How close is it to that stage?  A peek at your development blog indicates
-> that things are still changing at a moderate rate?
+> Andy, I thought we were going to whine about __inline__ and __inline, too?
 
-I completed storage layer development itself, the only remaining todo item
-is to implement new redundancy algorithm, but I did not see major demand
-on that, so it will stay for now with low priority.
+Hmmm, I don't remember that coming up, but I'll add it to the todo.  I
+am assuming plain 'inline' is preferred over both of these -- yell if
+you meant something else.
 
-I will use DST as a transport layer for distributed filesystem, and
-probably that will require additional features, I have no clean design so
-far, but right now I have nothing in the pipe to commit to DST.
-
-
--- 
-	Evgeniy Polyakov
+-apw
