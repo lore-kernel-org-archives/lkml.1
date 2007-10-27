@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbXJ0XLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbXJ0XLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbXJ0XLe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 19:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXJ0XLH
+	id S1752719AbXJ0XLt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 19:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbXJ0XLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 19:11:07 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36953 "EHLO
+	Sat, 27 Oct 2007 19:11:11 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36954 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbXJ0XLF (ORCPT
+	with ESMTP id S1752017AbXJ0XLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 27 Oct 2007 19:11:05 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 2/3] VFS: swap do_ioctl and vfs_ioctl names
-Date: Sat, 27 Oct 2007 19:10:44 -0400
-Message-Id: <11935266453628-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 1/3] VFS: apply coding standards to fs/ioctl.c
+Date: Sat, 27 Oct 2007 19:10:43 -0400
+Message-Id: <11935266451616-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11935266454097-git-send-email-ezk@cs.sunysb.edu>
@@ -24,115 +24,222 @@ References: <11935266454097-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename old vfs_ioctl to do_ioctl, because the comment above it clearly
-indicates that it is an internal function not to be exported to modules;
-therefore it should have a more traditional do_XXX name.  The new do_ioctl
-is exported in fs.h but not to modules.
-
-Rename the old do_ioctl to vfs_ioctl because the names vfs_XXX should
-preferably be reserved to callable VFS functions which modules may call,
-as many other vfs_XXX functions already do.  Export the new vfs_ioctl to
-modules so others can use it (including Unionfs and eCryptfs).
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/compat_ioctl.c  |    2 +-
- fs/ioctl.c         |   18 ++++++++++--------
- include/linux/fs.h |    3 ++-
- 3 files changed, 13 insertions(+), 10 deletions(-)
+ fs/ioctl.c |  164 +++++++++++++++++++++++++++++++-----------------------------
+ 1 files changed, 84 insertions(+), 80 deletions(-)
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index a4284cc..a1604ce 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -2972,7 +2972,7 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
- 	}
- 
-  do_ioctl:
--	error = vfs_ioctl(filp, fd, cmd, arg);
-+	error = do_ioctl(filp, fd, cmd, arg);
-  out_fput:
- 	fput_light(filp, fput_needed);
-  out:
 diff --git a/fs/ioctl.c b/fs/ioctl.c
-index 652cacf..00abbbf 100644
+index c2a773e..652cacf 100644
 --- a/fs/ioctl.c
 +++ b/fs/ioctl.c
-@@ -16,8 +16,9 @@
+@@ -12,8 +12,8 @@
+ #include <linux/fs.h>
+ #include <linux/security.h>
+ #include <linux/module.h>
++#include <linux/uaccess.h>
  
+-#include <asm/uaccess.h>
  #include <asm/ioctls.h>
  
--static long do_ioctl(struct file *filp, unsigned int cmd,
--		unsigned long arg)
-+/* vfs_ioctl can be called by other file systems or modules */
-+long vfs_ioctl(struct file *filp, unsigned int cmd,
-+	       unsigned long arg)
+ static long do_ioctl(struct file *filp, unsigned int cmd,
+@@ -45,31 +45,31 @@ static int file_ioctl(struct file *filp, unsigned int cmd,
  {
- 	int error = -ENOTTY;
+ 	int error;
+ 	int block;
+-	struct inode * inode = filp->f_path.dentry->d_inode;
++	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	int __user *p = (int __user *)arg;
  
-@@ -39,6 +40,7 @@ static long do_ioctl(struct file *filp, unsigned int cmd,
-  out:
- 	return error;
- }
-+EXPORT_SYMBOL(vfs_ioctl);
- 
- static int file_ioctl(struct file *filp, unsigned int cmd,
- 		unsigned long arg)
-@@ -72,18 +74,18 @@ static int file_ioctl(struct file *filp, unsigned int cmd,
- 		return put_user(i_size_read(inode) - filp->f_pos, p);
+ 	switch (cmd) {
+-		case FIBMAP:
+-		{
+-			struct address_space *mapping = filp->f_mapping;
+-			int res;
+-			/* do we support this mess? */
+-			if (!mapping->a_ops->bmap)
+-				return -EINVAL;
+-			if (!capable(CAP_SYS_RAWIO))
+-				return -EPERM;
+-			if ((error = get_user(block, p)) != 0)
+-				return error;
+-
+-			lock_kernel();
+-			res = mapping->a_ops->bmap(mapping, block);
+-			unlock_kernel();
+-			return put_user(res, p);
+-		}
+-		case FIGETBSZ:
+-			return put_user(inode->i_sb->s_blocksize, p);
+-		case FIONREAD:
+-			return put_user(i_size_read(inode) - filp->f_pos, p);
++	case FIBMAP:
++	{
++		struct address_space *mapping = filp->f_mapping;
++		int res;
++		/* do we support this mess? */
++		if (!mapping->a_ops->bmap)
++			return -EINVAL;
++		if (!capable(CAP_SYS_RAWIO))
++			return -EPERM;
++		error = get_user(block, p);
++		if (error)
++			return error;
++		lock_kernel();
++		res = mapping->a_ops->bmap(mapping, block);
++		unlock_kernel();
++		return put_user(res, p);
++	}
++	case FIGETBSZ:
++		return put_user(inode->i_sb->s_blocksize, p);
++	case FIONREAD:
++		return put_user(i_size_read(inode) - filp->f_pos, p);
  	}
  
--	return do_ioctl(filp, cmd, arg);
-+	return vfs_ioctl(filp, cmd, arg);
- }
- 
- /*
-  * When you add any new common ioctls to the switches above and below
-  * please update compat_sys_ioctl() too.
-  *
-- * vfs_ioctl() is not for drivers and not intended to be EXPORT_SYMBOL()'d.
-+ * do_ioctl() is not for drivers and not intended to be EXPORT_SYMBOL()'d.
+ 	return do_ioctl(filp, cmd, arg);
+@@ -82,81 +82,85 @@ static int file_ioctl(struct file *filp, unsigned int cmd,
+  * vfs_ioctl() is not for drivers and not intended to be EXPORT_SYMBOL()'d.
   * It's just a simple helper for sys_ioctl and compat_sys_ioctl.
   */
--int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
--	      unsigned long arg)
-+int do_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
-+	     unsigned long arg)
+-int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd, unsigned long arg)
++int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
++	      unsigned long arg)
  {
  	unsigned int flag;
  	int on, error = 0;
-@@ -152,7 +154,7 @@ int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
- 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
- 			error = file_ioctl(filp, cmd, arg);
- 		else
--			error = do_ioctl(filp, cmd, arg);
-+			error = vfs_ioctl(filp, cmd, arg);
- 		break;
+ 
+ 	switch (cmd) {
+-		case FIOCLEX:
+-			set_close_on_exec(fd, 1);
+-			break;
++	case FIOCLEX:
++		set_close_on_exec(fd, 1);
++		break;
+ 
+-		case FIONCLEX:
+-			set_close_on_exec(fd, 0);
+-			break;
++	case FIONCLEX:
++		set_close_on_exec(fd, 0);
++		break;
+ 
+-		case FIONBIO:
+-			if ((error = get_user(on, (int __user *)arg)) != 0)
+-				break;
+-			flag = O_NONBLOCK;
++	case FIONBIO:
++		error = get_user(on, (int __user *)arg);
++		if (error)
++			break;
++		flag = O_NONBLOCK;
+ #ifdef __sparc__
+-			/* SunOS compatibility item. */
+-			if(O_NONBLOCK != O_NDELAY)
+-				flag |= O_NDELAY;
++		/* SunOS compatibility item. */
++		if (O_NONBLOCK != O_NDELAY)
++			flag |= O_NDELAY;
+ #endif
+-			if (on)
+-				filp->f_flags |= flag;
+-			else
+-				filp->f_flags &= ~flag;
++		if (on)
++			filp->f_flags |= flag;
++		else
++			filp->f_flags &= ~flag;
++		break;
++
++	case FIOASYNC:
++		error = get_user(on, (int __user *)arg);
++		if (error)
+ 			break;
+-
+-		case FIOASYNC:
+-			if ((error = get_user(on, (int __user *)arg)) != 0)
+-				break;
+-			flag = on ? FASYNC : 0;
+-
+-			/* Did FASYNC state change ? */
+-			if ((flag ^ filp->f_flags) & FASYNC) {
+-				if (filp->f_op && filp->f_op->fasync) {
+-					lock_kernel();
+-					error = filp->f_op->fasync(fd, filp, on);
+-					unlock_kernel();
+-				}
+-				else error = -ENOTTY;
+-			}
+-			if (error != 0)
+-				break;
+-
+-			if (on)
+-				filp->f_flags |= FASYNC;
+-			else
+-				filp->f_flags &= ~FASYNC;
+-			break;
+-
+-		case FIOQSIZE:
+-			if (S_ISDIR(filp->f_path.dentry->d_inode->i_mode) ||
+-			    S_ISREG(filp->f_path.dentry->d_inode->i_mode) ||
+-			    S_ISLNK(filp->f_path.dentry->d_inode->i_mode)) {
+-				loff_t res = inode_get_bytes(filp->f_path.dentry->d_inode);
+-				error = copy_to_user((loff_t __user *)arg, &res, sizeof(res)) ? -EFAULT : 0;
+-			}
+-			else
++		flag = on ? FASYNC : 0;
++
++		/* Did FASYNC state change ? */
++		if ((flag ^ filp->f_flags) & FASYNC) {
++			if (filp->f_op && filp->f_op->fasync) {
++				lock_kernel();
++				error = filp->f_op->fasync(fd, filp, on);
++				unlock_kernel();
++			} else
+ 				error = -ENOTTY;
++		}
++		if (error != 0)
+ 			break;
+-		default:
+-			if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
+-				error = file_ioctl(filp, cmd, arg);
+-			else
+-				error = do_ioctl(filp, cmd, arg);
+-			break;
++
++		if (on)
++			filp->f_flags |= FASYNC;
++		else
++			filp->f_flags &= ~FASYNC;
++		break;
++
++	case FIOQSIZE:
++		if (S_ISDIR(filp->f_path.dentry->d_inode->i_mode) ||
++		    S_ISREG(filp->f_path.dentry->d_inode->i_mode) ||
++		    S_ISLNK(filp->f_path.dentry->d_inode->i_mode)) {
++			loff_t res =
++				inode_get_bytes(filp->f_path.dentry->d_inode);
++			error = copy_to_user((loff_t __user *)arg, &res,
++					     sizeof(res)) ? -EFAULT : 0;
++		} else
++			error = -ENOTTY;
++		break;
++	default:
++		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
++			error = file_ioctl(filp, cmd, arg);
++		else
++			error = do_ioctl(filp, cmd, arg);
++		break;
  	}
  	return error;
-@@ -172,7 +174,7 @@ asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
- 	if (error)
- 		goto out_fput;
+ }
  
--	error = vfs_ioctl(filp, fd, cmd, arg);
-+	error = do_ioctl(filp, fd, cmd, arg);
-  out_fput:
- 	fput_light(filp, fput_needed);
-  out:
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..c0c5d36 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1924,7 +1924,8 @@ extern int vfs_stat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_lstat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_fstat(unsigned int, struct kstat *);
+ asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
+ {
+-	struct file * filp;
++	struct file *filp;
+ 	int error = -EBADF;
+ 	int fput_needed;
  
--extern int vfs_ioctl(struct file *, unsigned int, unsigned int, unsigned long);
-+extern long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
-+extern int do_ioctl(struct file *, unsigned int, unsigned int, unsigned long);
- 
- extern void get_filesystem(struct file_system_type *fs);
- extern void put_filesystem(struct file_system_type *fs);
 -- 
 1.5.2.2
 
