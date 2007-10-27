@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXJ0Q7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbXJ0RAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbXJ0Q7W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 12:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJ0Q7O
+	id S1757074AbXJ0RAS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 13:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXJ0RAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 12:59:14 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:58413 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729AbXJ0Q7N (ORCPT
+	Sat, 27 Oct 2007 13:00:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:17082 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbXJ0RAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 12:59:13 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 27 Oct 2007 09:59:07 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Marc Lehmann <linux-kernel@tst.eu>
-cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll design problems with common fork/exec patterns
-In-Reply-To: <20071027085125.GC12326@schmorp.de>
-Message-ID: <Pine.LNX.4.64.0710270950170.12127@alien.or.mcafeemobile.com>
-References: <20071027062236.GA12476@schmorp.de> <4722F575.8080204@cosmosbay.com>
- <20071027085125.GC12326@schmorp.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 27 Oct 2007 13:00:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=FwXV0Hqrt/dTJz5vtHX9grlRFri3tw8tX0CLV3bRZoUZfifPUwRxfhRt22leXqODrqc93Y8tY9PkKgkaoMRhb25LkvJUxhB6cstgPuWC14/R7mH98n2tzhs5X3aQQ/uSZY8mA2zlb0ILzhkhbzxjyBPvbXtyQI0jbv1E3kHD3xY=
+Message-ID: <47236E79.3060707@gmail.com>
+Date: Sat, 27 Oct 2007 20:59:37 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frans Pop <elendil@planet.nl>
+Subject: Re: [2.624-rc1 regression] lost battery information
+References: <200710262024.06012.arvidjaar@mail.ru> <200710271855.52866.arvidjaar@mail.ru> <47235727.30808@gmail.com> <200710272049.11969.arvidjaar@mail.ru>
+In-Reply-To: <200710272049.11969.arvidjaar@mail.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Marc Lehmann wrote:
-
-> > Please provide some code to illustrate one exact problem you have.
+Andrey Borzenkov wrote:
+> On Saturday 27 October 2007, Alexey Starikovskiy wrote:
+>> As you wish... :) Please check the attached patch.
+>>
 > 
->    // assume there is an open epoll set that listens for events on fd 5
->    if (fork () = 0)
->      {
->        close (5);
->        // fd 5 is now removed from the epoll set of the parent.
->        _exit (0);
->      }
-
-Hmmm ... what? I assume you know that:
-
-1) A file descriptor is a userspace view/handle of a kernel object
-
-2) The kernel object has a use-count for as many file descriptors that 
-   have been handed out to userspace
-
-3) A close() decreases the internal counter by one
-
-4) The kernel object gets effectively closed when the internal counter 
-   goes to zero
-
-5) A fork() acts as a dup() on the file descriptors by hence bumping up 
-   its internal counter
-
-6) Epoll removes the file from the set, when the *kernel* object gets 
-   closed (internal use-count goes to zero)
-
-With that in mind, how can the code snippet above trigger a removal from 
-the epoll set?
-
-
-
-- Davide
-
+> Not sure why you need to reimplement acpi_extract_package, but ...
+Take a look on memory allocations around it... :)
+> 
+> Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
 
