@@ -1,99 +1,449 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbXJ0Ihc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXJ0IkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbXJ0Ihc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 04:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJ0IhG
+	id S1753997AbXJ0IkZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 04:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJ0IkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 04:37:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47720 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751639AbXJ0IhA (ORCPT
+	Sat, 27 Oct 2007 04:40:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58529 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbXJ0IkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 04:37:00 -0400
-Date: Sat, 27 Oct 2007 01:36:56 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071027013656.4ffadb87.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710262303410.30785@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-	<20071026194144.6042316a.pj@sgi.com>
-	<Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
-	<20071026221624.cec512da.pj@sgi.com>
-	<Pine.LNX.4.64.0710262303410.30785@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sat, 27 Oct 2007 04:40:10 -0400
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <20071027024033.GB29039@kroah.com>
+References: <1191407872.5572.7.camel@lappy>
+	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
+	 <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins>
+	 <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins>
+	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
+	 <1193447889.5648.44.camel@lappy>  <20071027024033.GB29039@kroah.com>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 10:39:59 +0200
+Message-Id: <1193474399.27652.15.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Are you saying:
-> >  1) The kernel continues to default to Choice A, unless
-> >     the flag enables Choice B, or
-> >  2) The kernel defaults to the new Choice B, unless the
-> >     flag reverts to the old Choice A?
+On Fri, 2007-10-26 at 19:40 -0700, Greg KH wrote:
+> On Sat, Oct 27, 2007 at 03:18:08AM +0200, Peter Zijlstra wrote:
+> > 
+> > On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
+> > > This crashes and burns on bootup, but I'm too tired to figure out what I
+> > > did wrong... will give it another try tomorrow..
+> > 
+> > Ok, can't sleep.. took a look. I have several problems here.
+> > 
+> > The thing that makes it go *boom* is the __ATTR_NULL. Removing that
+> > makes it boot. Albeit it then warns me of multiple duplicate sysfs
+> > objects, all named "bdi".
+> > 
+> > For some obscure reason this device interface insists on using the
+> > bus_id as name (?!), and further reduces usability by limiting that to
+> > 20 odd characters.
+> > 
+> > This makes it quite useless. I tried fudging around that limit by using
+> > device_rename and kobject_rename, but to no avail.
+> > 
+> > Really, it should not be this hard to use, trying to expose a handfull
+> > of simple integers to userspace should not take 8h+ and still not work.
+> > 
+> > Peter, who thinks sysfs is contorted mess beyond his skill. I'll stick
+> > to VM and scheduler code, that actually makes sense.
 > 
-> If 2) is keeping the API semantics then 2.
-
-No .. (1) keeps the same API semantics.
-
-
-> Let everything be as it is today unless
-> numactl sets the new.
-> ...
-> Tough. The API needs to remain stable. 
-
-Good - that I understand.  Your position is clear now.
-
-You have chosen (1) above, which keeps Choice A as the default.
-
-
-Before I leave this part, there is one more thing I kinda really need,
-if you could, Christoph.  Could you describe in your own words what you
-think Choices A and B mean?  We seem to be having trouble communicating,
-and hence there is some risk right now that we don't mean the same thing
-by this new "Choice B".
-
-===
-
-Now ... onto the matter of permanent API warts:
-
-> > I wonder if there might be some way to avoid that permanent ugly wart
-> > on each and every set/get mempolicy system call forever afterward.
+> Heh, that's funny :)
 > 
-> Hmmm.. The alternative is to add new set/get mempolicy functions.
+> I'll look at this and see what I can come up with.  Would you just like
+> a whole new patch, or one against this one?
 
-Other alternatives include a per-system, per-cpuset or per-process
-flag, in addition to the per-system call flag you suggested earlier
-(MPOL_MF_RELATIVE), or whatever you mean by "new set/get mempolicy
-functions" ... could you elaborate on that one?
+Sorry for the grumpy note, I get that way at 3.30 am. Maybe I ought not
+have mailed :-/
 
-So ... the question becomes this:
+This is the code I had at that time.
 
-  How do we migrate to Choice B, without leaving both Choices
-  permanently supported, and an ugly mode flag selecting the
-  non-default Choice, while not breaking API's too abruptly?
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ block/genhd.c               |    2 
+ fs/fuse/inode.c             |    2 
+ fs/nfs/client.c             |    2 
+ include/linux/backing-dev.h |   21 ++++++
+ include/linux/string.h      |    4 +
+ include/linux/writeback.h   |    3 
+ mm/backing-dev.c            |  144 ++++++++++++++++++++++++++++++++++++++++++++
+ mm/page-writeback.c         |    2 
+ mm/util.c                   |   42 ++++++++++++
+ 9 files changed, 219 insertions(+), 3 deletions(-)
 
-Thanks.
+Index: linux-2.6-2/fs/fuse/inode.c
+===================================================================
+--- linux-2.6-2.orig/fs/fuse/inode.c
++++ linux-2.6-2/fs/fuse/inode.c
+@@ -467,7 +467,7 @@ static struct fuse_conn *new_conn(void)
+ 		atomic_set(&fc->num_waiting, 0);
+ 		fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+ 		fc->bdi.unplug_io_fn = default_unplug_io_fn;
+-		err = bdi_init(&fc->bdi);
++		err = bdi_init_fmt(&fc->bdi, "bdi-fuse-%llu", (unsigned long long)fc->id);
+ 		if (err) {
+ 			kfree(fc);
+ 			fc = NULL;
+Index: linux-2.6-2/fs/nfs/client.c
+===================================================================
+--- linux-2.6-2.orig/fs/nfs/client.c
++++ linux-2.6-2/fs/nfs/client.c
+@@ -678,7 +678,7 @@ static int nfs_probe_fsinfo(struct nfs_s
+ 		goto out_error;
+ 
+ 	nfs_server_set_fsinfo(server, &fsinfo);
+-	error = bdi_init(&server->backing_dev_info);
++	error = bdi_init_fmt(&server->backing_dev_info, "bdi-nfs-%s-%p", clp->cl_hostname, server);
+ 	if (error)
+ 		goto out_error;
+ 
+Index: linux-2.6-2/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/backing-dev.h
++++ linux-2.6-2/include/linux/backing-dev.h
+@@ -11,6 +11,8 @@
+ #include <linux/percpu_counter.h>
+ #include <linux/log2.h>
+ #include <linux/proportions.h>
++#include <linux/kernel.h>
++#include <linux/device.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -48,11 +50,30 @@ struct backing_dev_info {
+ 
+ 	struct prop_local_percpu completions;
+ 	int dirty_exceeded;
++
++#ifdef CONFIG_SYSFS
++	struct device kdev;
++#endif
+ };
+ 
+ int bdi_init(struct backing_dev_info *bdi);
+ void bdi_destroy(struct backing_dev_info *bdi);
+ 
++int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...);
++void bdi_unregister(struct backing_dev_info *bdi);
++
++#define bdi_init_fmt(bdi, fmt...)				\
++	({							\
++	 	int ret;					\
++	 	ret = bdi_init(bdi);				\
++	 	if (!ret) {					\
++	 		ret = bdi_register(bdi, ##fmt);		\
++	 		if (ret)				\
++	 			bdi_destroy(bdi);		\
++	 	}						\
++	 	ret;						\
++	 })
++
+ static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+ 		enum bdi_stat_item item, s64 amount)
+ {
+Index: linux-2.6-2/include/linux/writeback.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/writeback.h
++++ linux-2.6-2/include/linux/writeback.h
+@@ -113,6 +113,9 @@ struct file;
+ int dirty_writeback_centisecs_handler(struct ctl_table *, int, struct file *,
+ 				      void __user *, size_t *, loff_t *);
+ 
++void get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
++		 struct backing_dev_info *bdi);
++
+ void page_writeback_init(void);
+ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 					unsigned long nr_pages_dirtied);
+Index: linux-2.6-2/mm/backing-dev.c
+===================================================================
+--- linux-2.6-2.orig/mm/backing-dev.c
++++ linux-2.6-2/mm/backing-dev.c
+@@ -4,12 +4,153 @@
+ #include <linux/fs.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
++#include <linux/writeback.h>
++#include <linux/device.h>
++
++#ifdef CONFIG_SYSFS
++
++static void bdi_release(struct device *dev)
++{
++}
++
++static int bdi_uevent(struct device *dev, struct kobj_uevent_env *env)
++{
++	return 0;
++}
++
++static struct class bdi_class = {
++	.name = "bdi",
++	.dev_release = bdi_release,
++	.dev_uevent = bdi_uevent,
++};
++
++static ssize_t readahead_store(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	struct backing_dev_info *bdi =
++		container_of(dev, struct backing_dev_info, kdev);
++	char *end;
++
++	bdi->ra_pages = simple_strtoul(buf, &end, 10);
++
++	return end - buf;
++}
++
++#define BDI_SHOW(name, expr)						\
++static ssize_t name##_show(struct device *dev,				\
++			   struct device_attribute *attr, char *page)	\
++{									\
++	struct backing_dev_info *bdi =					\
++		container_of(dev, struct backing_dev_info, kdev);	\
++									\
++	return snprintf(page, PAGE_SIZE-1, "%lld\n", (long long)expr);	\
++}
++
++BDI_SHOW(readahead, bdi->ra_pages)
++
++BDI_SHOW(reclaimable, bdi_stat(bdi, BDI_RECLAIMABLE))
++BDI_SHOW(writeback, bdi_stat(bdi, BDI_WRITEBACK))
++
++static inline unsigned long get_dirty(struct backing_dev_info *bdi, int i)
++{
++	unsigned long thresh[3];
++
++	get_dirty_limits(&thresh[0], &thresh[1], &thresh[2], bdi);
++
++	return thresh[i];
++}
++
++BDI_SHOW(dirty, get_dirty(bdi, 1))
++BDI_SHOW(bdi_dirty, get_dirty(bdi, 2))
++
++static struct device_attribute bdi_dev_attrs[] = {
++	__ATTR(readahead, 0644, readahead_show, readahead_store),
++	__ATTR_RO(reclaimable),
++	__ATTR_RO(writeback),
++	__ATTR_RO(dirty),
++	__ATTR_RO(bdi_dirty),
++};
++
++static struct attribute *bdi_attributes[ARRAY_SIZE(bdi_dev_attrs) + 1];
++
++static struct attribute_group bdi_attribute_group = {
++	.attrs = bdi_attributes,
++};
++
++static struct attribute_group *bdi_attribute_groups[] = {
++	&bdi_attribute_group,
++	NULL,
++};
++
++static __init int bdi_class_init(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(bdi_dev_attrs); i++)
++		bdi_attributes[i] = &bdi_dev_attrs[i].attr;
++
++	return class_register(&bdi_class);
++}
++
++__initcall(bdi_class_init);
++
++int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
++{
++	int ret;
++
++	bdi->kdev.class = &bdi_class;
++	bdi->kdev.groups = bdi_attribute_groups;
++	strcpy(bdi->kdev.bus_id, "bdi");
++	ret = device_register(&bdi->kdev);
++	if (!ret) {
++		char *name;
++		va_list args;
++
++		va_start(args, fmt);
++		name = kvprintf(fmt, args);
++		va_end(args);
++
++		if (!name) {
++			device_unregister(&bdi->kdev);
++			return -ENOMEM;
++		}
++
++		ret = device_rename(&bdi->kdev, name);
++		kfree(name);
++
++		if (!ret)
++			device_unregister(&bdi->kdev);
++	}
++
++	return ret;
++}
++
++void bdi_unregister(struct backing_dev_info *bdi)
++{
++	device_unregister(&bdi->kdev);
++}
++#else
++int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
++{
++	return 0;
++}
++
++void bdi_unregister(struct backing_dev_info *bdi)
++{
++}
++#endif
++
++EXPORT_SYMBOL(bdi_register);
++EXPORT_SYMBOL(bdi_unregister);
+ 
+ int bdi_init(struct backing_dev_info *bdi)
+ {
+ 	int i, j;
+ 	int err;
+ 
++	memset(bdi, 0, sizeof(*bdi));
++
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+ 		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
+ 		if (err)
+@@ -33,6 +174,8 @@ void bdi_destroy(struct backing_dev_info
+ {
+ 	int i;
+ 
++	bdi_unregister(bdi);
++
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
+ 		percpu_counter_destroy(&bdi->bdi_stat[i]);
+ 
+@@ -90,3 +233,4 @@ long congestion_wait(int rw, long timeou
+ }
+ EXPORT_SYMBOL(congestion_wait);
+ 
++
+Index: linux-2.6-2/mm/page-writeback.c
+===================================================================
+--- linux-2.6-2.orig/mm/page-writeback.c
++++ linux-2.6-2/mm/page-writeback.c
+@@ -291,7 +291,7 @@ static unsigned long determine_dirtyable
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
+-static void
++void
+ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 		 struct backing_dev_info *bdi)
+ {
+Index: linux-2.6-2/block/genhd.c
+===================================================================
+--- linux-2.6-2.orig/block/genhd.c
++++ linux-2.6-2/block/genhd.c
+@@ -182,6 +182,7 @@ void add_disk(struct gendisk *disk)
+ 			    disk->minors, NULL, exact_match, exact_lock, disk);
+ 	register_disk(disk);
+ 	blk_register_queue(disk);
++	bdi_register(&disk->queue->backing_dev_info, "bdi-%s", disk->disk_name);
+ }
+ 
+ EXPORT_SYMBOL(add_disk);
+@@ -190,6 +191,7 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
+ void unlink_gendisk(struct gendisk *disk)
+ {
+ 	blk_unregister_queue(disk);
++	bdi_unregister(&disk->queue->backing_dev_info);
+ 	blk_unregister_region(MKDEV(disk->major, disk->first_minor),
+ 			      disk->minors);
+ }
+Index: linux-2.6-2/include/linux/string.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/string.h
++++ linux-2.6-2/include/linux/string.h
+@@ -8,6 +8,7 @@
+ #include <linux/compiler.h>	/* for inline */
+ #include <linux/types.h>	/* for size_t */
+ #include <linux/stddef.h>	/* for NULL */
++#include <stdarg.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -111,6 +112,9 @@ extern void *kmemdup(const void *src, si
+ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+ extern void argv_free(char **argv);
+ 
++char *kvprintf(const char *fmt, va_list args);
++char *kprintf(const char *fmt, ...);
++
+ #ifdef __cplusplus
+ }
+ #endif
+Index: linux-2.6-2/mm/util.c
+===================================================================
+--- linux-2.6-2.orig/mm/util.c
++++ linux-2.6-2/mm/util.c
+@@ -136,3 +136,45 @@ char *strndup_user(const char __user *s,
+ 	return p;
+ }
+ EXPORT_SYMBOL(strndup_user);
++
++char *kvprintf(const char *fmt, va_list args)
++{
++	char c;
++	char *buf;
++	int need;
++	int limit;
++	va_list args1;
++
++	va_copy(args1, args);
++	need = vsnprintf(&c, 1, fmt, args1);
++	va_end(args1);
++
++	/* Allocate the new space and copy the string in */
++	limit = need + 1;
++	buf = kmalloc(limit, GFP_KERNEL);
++	if (!buf)
++		return NULL;
++	need = vsnprintf(buf, limit, fmt, args);
++
++	/* something wrong with the string we copied? */
++	if (need >= limit) {
++		kfree(buf);
++		return NULL;
++	}
++
++	return buf;
++}
++EXPORT_SYMBOL(kvprintf);
++
++char *kprintf(const char *fmt, ...)
++{
++	char *buf;
++	va_list args;
++
++	va_start(args, fmt);
++	buf = kvprintf(fmt, args);
++	va_end(args);
++
++	return buf;
++}
++EXPORT_SYMBOL(kprintf);
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+
