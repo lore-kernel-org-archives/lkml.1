@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbXJ0AC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764559AbXJ0AFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762875AbXJ0AC1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXJ0ACT
+	id S1764559AbXJ0AFP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 20:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbXJ0AE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:02:19 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:24222 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbXJ0ACT (ORCPT
+	Fri, 26 Oct 2007 20:04:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50191 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbXJ0AE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:02:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VAivX0bFlgj5oUStNDB0fE0Znn+5WOabR7wyJSwEGCrr+h8aHMC+qfXfy0x7QHPkIwpH1JgfpGhkrcamFcM8A5W3MjnqhLcx4i8PpXcQjZAaGUgiGliO9WlHS+XhXcQwezR+4bOnMJVtBiK666u2nUq41KhApK//9tDgMjpsHBs=
-Message-ID: <524f69650710261702u5ff24c25qa2597dca70df24f0@mail.gmail.com>
-Date: Fri, 26 Oct 2007 19:02:17 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: "CIFS VFS: server not responding" with some client/server combinations
+	Fri, 26 Oct 2007 20:04:57 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Miller <davem@davemloft.net>
+Cc: rick.jones2@hp.com, bunk@kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
+References: <20071026230807.GE30533@stusta.de>
+	<m1zly5wjie.fsf@ebiederm.dsl.xmission.com> <472278E3.4000909@hp.com>
+	<20071026.163958.171785530.davem@davemloft.net>
+Date: Fri, 26 Oct 2007 18:04:22 -0600
+In-Reply-To: <20071026.163958.171785530.davem@davemloft.net> (David Miller's
+	message of "Fri, 26 Oct 2007 16:39:58 -0700 (PDT)")
+Message-ID: <m1d4v1whh5.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> often I get "CIFS VFS: server not responding".
-> together with "CIFS VFS: No response for cmd 50 mid xxx" The xxx number
-> seems to vary.   The problem seems to be triggered by any operation
-> which touches lots of  files quickly. E.g.
-> by copying source file directories onto or from it or simply by find.
+David Miller <davem@davemloft.net> writes:
+
+> From: Rick Jones <rick.jones2@hp.com>
+> Date: Fri, 26 Oct 2007 16:31:47 -0700
 >
-> Copying single larger files (I generated a 100MB file with dd) don't seems
-> to hurt.
+>> Eric W. Biederman wrote:
+>> > Adrian Bunk <bunk@kernel.org> writes:
+>> > 
+>> > 
+>> >>This patch fixes the following build error with CONFIG_SYSCTL=n:
+>> >>
+>> >><--  snip  -->
+>> >>
+>> >>...
+>> >>ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
+>> >>ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
+>> >>ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
+>> >>make[2]: *** [__modpost] Error 1
+>> > 
+>> > 
+>> > I was going to ask if allowing drivers to increase rmem_max
+>> > is something that we want to do.  Apparently the road runner
+>> > driver has been doing this since the 2.6.12-rc1 when the
+>> > git repository starts so this probably isn't a latent bug.
+>> 
+>> Although it does rather sound like a driver writer yanking the rope from the 
+>> hand's of the sysadmin and hanging him with it rather than letting the
+> sysadmin
+>> do it himself.  I've seen other drivers' README's suggesting larger mem's but
+>> not their sources doing it.
 >
-> Interestinly -- this is where the really strange part comes -- it seems to
-> work on the client which has debian Etch
+> I really don't think what the roadrunner driver is doing is
+> correct at all.
+>
+> I also think what DLM is doing is wrong too.
+>
+> If DLM really wants minimum, it can use SO_SNDBUFFORCE and
+> SO_RCVBUFFORCE socket options and use whatever limits it
+> likes.
+>
+> But even this is questionable.
+>
+> I'll put in Adrian's patch to fix the build as a first
+> priority, but in the long term this cruft has gotta go.
 
-There are a couple of common ways to attack this kind of problem,
-to identify if the server is hanging up or the client or network stack is
-losing the response.    There were some (now fixed) bugs in
-cifs_demultiplex_thread (whose frequency should have been very rare, but
-seemed to be more common on some distros) which could cause
-responses to be discarded by the client.
+As it stands this is a very old build bug.  I believe those
+symbols have always been exported inside of #ifdef CONFIG_SYSCTL.
 
-I typically would run a wireshark trace so I could look at whether the
-server really did respond (you can look at the mid to correlate the
-trace with the dmesg log warning).  There is another way to see
-if the server is getting slow (but not so slow that the client
-is giving up) - by turning on CONFIG_CIFS_STATS2 (CIFS "Extended Statistics"
-in menuconfig) in which case "slow" (longer than 1 second) responses are
-logged.   This can show problems with the server response long before we
-reach the catastrophic more than 20 second delays you may be seeing.
+So if this is really something we want to stop doing we should
+be able to take a few extra moments remove the code from the
+two problem drivers, and remove the exports.
 
-You may want to build the current cifs backport of the most recent
-fixes for cifs.ko (source at
-http://pserver.samba.org/samba/ftp/cifs-cvs/cifs-1.50c.tar.gz) to see
-if the problem is problem was on the client and is already fixed.
-There is one additional EAGAIN handling problem in cifs_demultiplex
-which is in mainline but not in the cifs backport yet which will be in
-cifs 1.51 (which should be out later in the month).
+It didn't look like any of the other users could possibly be
+modular.
+
+Eric
 
 
--- 
-Thanks,
 
-Steve
+
