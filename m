@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbXJ0P0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbXJ0P2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbXJ0P0f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 11:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXJ0P02
+	id S1756278AbXJ0P2T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 11:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXJ0P2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 11:26:28 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58510 "EHLO pasmtpA.tele.dk"
+	Sat, 27 Oct 2007 11:28:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40748 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751313AbXJ0P01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 11:26:27 -0400
-Date: Sat, 27 Oct 2007 17:28:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.23-mm1] CONFIG_LOCALVERSION handling broken
-Message-ID: <20071027152801.GA31881@uranus.ravnborg.org>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org> <471142A8.40307@imap.cc> <47169593.7060901@imap.cc> <472356FC.9090302@imap.cc>
+	id S1752673AbXJ0P2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 11:28:06 -0400
+Date: Sat, 27 Oct 2007 11:27:44 -0400
+From: Alan Cox <alan@redhat.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Cox <alan@redhat.com>, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] unexport ide_fix_driveid
+Message-ID: <20071027152744.GA3113@devserv.devel.redhat.com>
+References: <20071027141833.GT30533@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <472356FC.9090302@imap.cc>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071027141833.GT30533@stusta.de>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 05:19:24PM +0200, Tilman Schmidt wrote:
-> /me wrote:
+On Sat, Oct 27, 2007 at 04:18:33PM +0200, Adrian Bunk wrote:
+> ide_fix_driveid can now be unexported.
 > 
-> > ts@xenon:~/kernel/linux-2.6.23-mm1-work> make include/config/kernel.release
-> > ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.release
-> > 2.6.23-mm1-testing
-> > ts@xenon:~/kernel/linux-2.6.23-mm1-work> make
-> > [...]
-> > ts@xenon:~/kernel/linux-2.6.23-mm1-work> cat include/config/kernel.release
-> > 2.6.23-mm1
-> [...]
-> > I'll just skip this -mm release and wait for 2.6.24-rc1, hoping
-> > it won't have the same problem.
-> 
-> 2.6.24-rc1 is fine, so the issue can be closed.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Thanks for reporting back,
+Acked-by: Alan Cox <alan@redhat.com>
 
-	Sam
+--
+	"Where small clearances exist, controls are required to
+	 prevent these clearances becoming negative"
+			- How a standards body describes "not crashing"
+
