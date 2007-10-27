@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbXJ0RRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbXJ0RVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757178AbXJ0RRh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 13:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJ0RRa
+	id S1756850AbXJ0RVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 13:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXJ0RVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 13:17:30 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:35011 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbXJ0RRa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 13:17:30 -0400
-Date: Sat, 27 Oct 2007 13:14:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] SG: set names for numeric constants
-In-Reply-To: <20071027170228.GA7257@cvg>
-Message-ID: <Pine.LNX.4.64.0710271312190.9802@localhost.localdomain>
-References: <20071027170228.GA7257@cvg>
+	Sat, 27 Oct 2007 13:21:08 -0400
+Received: from lixom.net ([66.141.50.11]:39064 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753591AbXJ0RVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 13:21:07 -0400
+Date: Sat, 27 Oct 2007 12:28:51 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
+Message-ID: <20071027172851.GA11930@lixom.net>
+References: <20071026165510.GA2323@lixom.net> <200710262019.12094.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710262019.12094.arnd@arndb.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Cyrill Gorcunov wrote:
+Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
 
->
-> This patch defines names for numeric constants that
-> used in scatter list for more convenient code reading.
->
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-...
-> @@ -73,7 +76,7 @@ static inline void sg_set_page(struct scatterlist *sg, struct page *page,
->  	sg->length = len;
->  }
->
-> -#define sg_page(sg)	((struct page *) ((sg)->page_link & ~0x3))
-> +#define sg_page(sg)	((struct page *) ((sg)->page_link & ~SG_MASK))
->
-> -#define sg_is_chain(sg)		((sg)->page_link & 0x01)
-> -#define sg_is_last(sg)		((sg)->page_link & 0x02)
-> +#define sg_is_chain(sg)		((sg)->page_link & SG_CHAIN)
-> +#define sg_is_last(sg)		((sg)->page_link & SG_LAST)
->  #define sg_chain_ptr(sg)	\
-> -	((struct scatterlist *) ((sg)->page_link & ~0x03))
-> +	((struct scatterlist *) ((sg)->page_link & ~SG_MASK))
+arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
+arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
+arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
+arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
 
-while you're at it, could you move all those macros to the top of the
-file, rather than leaving them scattered across the first 100 lines or
-so?  it would just make them easier to find when you're perusing the
-code.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+---
 
-http://crashcourse.ca
-========================================================================
+On Fri, Oct 26, 2007 at 08:19:10PM +0200, Arnd Bergmann wrote:
+
+> I think here it would be better to move iic_get_target_id out of
+> CONFIG_SMP as well. We might want to kexec from an SMP kernel into
+> a UP kernel, and in that case, cpu_affinity_set() should better
+> reset the routing to CPU 0.
+
+Makes sense. New patch.
+
+
+-Olof
+
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 151fd8b..04f74f9 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -158,6 +158,18 @@ static unsigned int iic_get_irq(void)
+ 	return virq;
+ }
+ 
++void iic_setup_cpu(void)
++{
++	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++}
++
++u8 iic_get_target_id(int cpu)
++{
++	return per_cpu(iic, cpu).target_id;
++}
++
++EXPORT_SYMBOL_GPL(iic_get_target_id);
++
+ #ifdef CONFIG_SMP
+ 
+ /* Use the highest interrupt priorities for IPI */
+@@ -166,29 +178,17 @@ static inline int iic_ipi_to_irq(int ipi)
+ 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
+ }
+ 
+-void iic_setup_cpu(void)
+-{
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
+-}
+-
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+ 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
+ }
+ 
+-u8 iic_get_target_id(int cpu)
+-{
+-	return per_cpu(iic, cpu).target_id;
+-}
+-EXPORT_SYMBOL_GPL(iic_get_target_id);
+-
+ struct irq_host *iic_get_irq_host(int node)
+ {
+ 	return iic_host;
+ }
+ EXPORT_SYMBOL_GPL(iic_get_irq_host);
+ 
+-
+ static irqreturn_t iic_ipi_action(int irq, void *dev_id)
+ {
+ 	int ipi = (int)(long)dev_id;
