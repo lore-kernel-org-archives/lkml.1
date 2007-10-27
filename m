@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbXJ0SfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbXJ0Sjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbXJ0SfM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 14:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbXJ0SfA
+	id S1757037AbXJ0Sjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 14:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbXJ0Sj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 14:35:00 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:36804 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbXJ0Se7 (ORCPT
+	Sat, 27 Oct 2007 14:39:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48246 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbXJ0Sj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 14:34:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=upctmUOo4fZRVurbtbiJSpRTlP65+wL19aaf+Pr3qNOLoHAHw/hEVpWwQlCYhj3VnmBCGFkgOLNKnCzyt7LDyr3/bCGmCY9klRtqrz2Y3aH+HBGgsCRmKswK6XqFL6DI89bUOBAWDsbEJ+9+edSpi0pjrDBkbRr69qCzIfHyhVo=
-Date: Sat, 27 Oct 2007 22:34:53 +0400
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.24-rc1 sysctl table check failed on PowerMac
-Message-ID: <20071027183453.GB9816@martell.zuzino.mipt.ru>
-References: <200710271757.l9RHvcY9021751@harpo.it.uu.se>
-MIME-Version: 1.0
+	Sat, 27 Oct 2007 14:39:27 -0400
+Date: Sat, 27 Oct 2007 19:39:23 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: bzolnier@gmail.com, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: [PATCH] ide/arm/icside: fallout from commit 86f3a492bb09eee5745b93af35f2212179c251fd
+Message-ID: <20071027183923.GO8181@ftp.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200710271757.l9RHvcY9021751@harpo.it.uu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 07:57:38PM +0200, Mikael Pettersson wrote:
-> Booting 2.6.24-rc1 on my PowerMac the kernel now spits
-> out a sysctl warning early in the boot sequence:
-> 
-> --- dmesg-2.6.23
-> +++ dmesg-2.6.24-rc1
-> ...
->  IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
->  TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
->  TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
->  TCP: Hash tables configured (established 131072 bind 65536)
->  TCP reno registered
-> +sysctl table check failed: /kernel .1 Writable sysctl directory
+struct device doesn't have ->dma; it's in struct expansion_card where
+that struct device is embedded into.
 
-[PATCH] powerpc: fix sysctl whining re kernel.powersave-nap
-
-kernel was marked with 0755. Everywhere else it's 0555.
-
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
-
- arch/powerpc/kernel/idle.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -122,7 +122,7 @@ static ctl_table powersave_nap_sysctl_root[] = {
- 	{
- 		.ctl_name	= CTL_KERN,
- 		.procname	= "kernel",
--		.mode		= 0755,
-+		.mode		= 0555,
- 		.child		= powersave_nap_ctl_table,
- 	},
- 	{}
+diff --git a/drivers/ide/arm/icside.c b/drivers/ide/arm/icside.c
+index 410a0d1..93f71fc 100644
+--- a/drivers/ide/arm/icside.c
++++ b/drivers/ide/arm/icside.c
+@@ -316,13 +316,13 @@ static int icside_dma_end(ide_drive_t *drive)
+ 
+ 	drive->waiting_for_dma = 0;
+ 
+-	disable_dma(state->dev->dma);
++	disable_dma(ECARD_DEV(state->dev)->dma);
+ 
+ 	/* Teardown mappings after DMA has completed. */
+ 	dma_unmap_sg(state->dev, hwif->sg_table, hwif->sg_nents,
+ 		     hwif->sg_dma_direction);
+ 
+-	return get_dma_residue(state->dev->dma) != 0;
++	return get_dma_residue(ECARD_DEV(state->dev)->dma) != 0;
+ }
+ 
+ static void icside_dma_start(ide_drive_t *drive)
+@@ -331,8 +331,8 @@ static void icside_dma_start(ide_drive_t *drive)
+ 	struct icside_state *state = hwif->hwif_data;
+ 
+ 	/* We can not enable DMA on both channels simultaneously. */
+-	BUG_ON(dma_channel_active(state->dev->dma));
+-	enable_dma(state->dev->dma);
++	BUG_ON(dma_channel_active(ECARD_DEV(state->dev)->dma));
++	enable_dma(ECARD_DEV(state->dev)->dma);
+ }
+ 
+ static int icside_dma_setup(ide_drive_t *drive)
+@@ -350,7 +350,7 @@ static int icside_dma_setup(ide_drive_t *drive)
+ 	/*
+ 	 * We can not enable DMA on both channels.
+ 	 */
+-	BUG_ON(dma_channel_active(state->dev->dma));
++	BUG_ON(dma_channel_active(ECARD_DEV(state->dev)->dma));
+ 
+ 	icside_build_sglist(drive, rq);
+ 
+@@ -367,14 +367,14 @@ static int icside_dma_setup(ide_drive_t *drive)
+ 	/*
+ 	 * Select the correct timing for this drive.
+ 	 */
+-	set_dma_speed(state->dev->dma, drive->drive_data);
++	set_dma_speed(ECARD_DEV(state->dev)->dma, drive->drive_data);
+ 
+ 	/*
+ 	 * Tell the DMA engine about the SG table and
+ 	 * data direction.
+ 	 */
+-	set_dma_sg(state->dev->dma, hwif->sg_table, hwif->sg_nents);
+-	set_dma_mode(state->dev->dma, dma_mode);
++	set_dma_sg(ECARD_DEV(state->dev)->dma, hwif->sg_table, hwif->sg_nents);
++	set_dma_mode(ECARD_DEV(state->dev)->dma, dma_mode);
+ 
+ 	drive->waiting_for_dma = 1;
+ 
