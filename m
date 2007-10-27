@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbXJ1SGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbXJ1SMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145AbXJ1SGT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 14:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXJ1SGE
+	id S1756145AbXJ1SMG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 14:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXJ1SLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 14:06:04 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:54975 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbXJ1SGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 14:06:03 -0400
-Date: Sun, 28 Oct 2007 14:05:16 -0400
-Message-Id: <200710281805.l9SI5GoF015442@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, viro@ftp.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/3] VFS: apply coding standards to fs/ioctl.c 
-In-reply-to: Your message of "Sun, 28 Oct 2007 14:12:22 -0000."
-             <20071028141222.GA29323@infradead.org> 
-X-MailKey: Erez_Zadok
+	Sun, 28 Oct 2007 14:11:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4528 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751150AbXJ1SLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 14:11:53 -0400
+Date: Sat, 27 Oct 2007 18:22:30 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+Message-ID: <20071027182229.GC4159@ucw.cz>
+References: <20071025002356.GB3660@sequoia.sous-sol.org> <183239.5113.qm@web36604.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <183239.5113.qm@web36604.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20071028141222.GA29323@infradead.org>, Christoph Hellwig writes:
-> Nice, I always hated these double-indented switch statements.
-> 
-> > +	case FIBMAP:
-> > +	{
-> > +		struct address_space *mapping = filp->f_mapping;
-> > +		int res;
-> > +		/* do we support this mess? */
-> > +		if (!mapping->a_ops->bmap)
-> > +			return -EINVAL;
-> > +		if (!capable(CAP_SYS_RAWIO))
-> > +			return -EPERM;
-> > +		error = get_user(block, p);
-> > +		if (error)
-> > +			return error;
-> > +		lock_kernel();
-> > +		res = mapping->a_ops->bmap(mapping, block);
-> > +		unlock_kernel();
-> > +		return put_user(res, p);
-> 
-> While you're at it, it's probably worth splitting this out into
-> a small helper function.
+Hi!
 
-Sure.  I assume you mean an internal function to encapsulate the entire case
-statement's code, one for each of the FIO* cases.
+> but require unreasonable interface changes. As people who care
+> about security (y'all who are only from the LKML are excused) it
+> is our obligation to look beyond the preconceived notions of what
+> is and isn't secure. Security is subjective. It's how you feel
+> about it.
 
-Erez.
+<sarcasm>Hmm. So lets add automagic security module. It magically fixes
+security holes, and you can feel good about it.</sarcasm>
+
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
