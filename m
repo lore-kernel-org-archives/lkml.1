@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbXJ0WYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbXJ0W0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbXJ0WYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 18:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbXJ0WYM
+	id S1752774AbXJ0W0y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 18:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXJ0W0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 18:24:12 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3528 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750895AbXJ0WYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 18:24:11 -0400
-Date: Sat, 27 Oct 2007 18:24:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: linux-kernel@vger.kernel.org, <netdev@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] QUESTION: How to fix race between .suspend routine
- and watchdog timer
-In-Reply-To: <200710272119.44574.maximlevitsky@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0710271820240.2321-100000@netrider.rowland.org>
+	Sat, 27 Oct 2007 18:26:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:39635 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750948AbXJ0W0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 18:26:46 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: Re: [PATCH] select PARAVIRT when PARAVIRT_GUEST on
+Date: Sun, 28 Oct 2007 08:27:02 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, zach@vmware.com, jeremy@goop.org,
+       chrisw@sous-sol.org, akpm@linux-foundation.org
+References: <11934940321103-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11934940321103-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710280927.03400.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Maxim Levitsky wrote:
+On Sunday 28 October 2007 00:07:12 Glauber de Oliveira Costa wrote:
+> Commit d3d1c4bdf16bd154d9f27f34fca28edca90465eb introduces a new config
+> knob that, according to its changelog, should select CONFIG_PARAVIRT.
 
-> > Use del_timer_sync().  It guarantees that when it returns, the timer 
-> > will be stopped and the timer routine will no longer be running on any 
-> > CPU.
-> > 
-> Even if the timer re-enables itself, are you sure?
+Hi Glauber,
 
-Last time I looked at the source code, that's what it did.  I'll look
-again...  Yep, it still does.  It checks to see if the timer routine is
-currently running; if so then it waits a little while and tries again.
+	PARAVIRT is now selected by the options which need it.  Merely turning on the 
+menu "does not add any kernel code" as promised in the text...
 
-Alan Stern
-
+Rusty.
