@@ -1,95 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbXJ0IbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbXJ0Ihc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbXJ0IbR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 04:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXJ0IbH
+	id S1753716AbXJ0Ihc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 04:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJ0IhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 04:31:07 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:34739 "EHLO mx28.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbXJ0IbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 04:31:05 -0400
-Date: Sat, 27 Oct 2007 12:30:11 +0400
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       satyam@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 106/327] ufs: Fix mount check in ufs_fill_super()
-Message-ID: <20071027083011.GA21273@rain>
-Mail-Followup-To: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	satyam@infradead.org, linux-kernel@vger.kernel.org
-References: <200710170626.l9H6QrYD006747@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710170626.l9H6QrYD006747@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 27 Oct 2007 04:37:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47720 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751639AbXJ0IhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 04:37:00 -0400
+Date: Sat, 27 Oct 2007 01:36:56 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071027013656.4ffadb87.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710262303410.30785@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<1193412644.5032.13.camel@localhost>
+	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+	<20071026120037.7b95a136.pj@sgi.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<20071026180713.aeedfac2.pj@sgi.com>
+	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+	<20071026194144.6042316a.pj@sgi.com>
+	<Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
+	<20071026221624.cec512da.pj@sgi.com>
+	<Pine.LNX.4.64.0710262303410.30785@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 11:26:53PM -0700, akpm@linux-foundation.org wrote:
-> From: Satyam Sharma <satyam@infradead.org>
+> > Are you saying:
+> >  1) The kernel continues to default to Choice A, unless
+> >     the flag enables Choice B, or
+> >  2) The kernel defaults to the new Choice B, unless the
+> >     flag reverts to the old Choice A?
 > 
-> The current code skips the check to verify whether the filesystem was
-> previously cleanly unmounted, if (flags & UFS_ST_MASK) == UFS_ST_44BSD or
-> UFS_ST_OLD.  This looks like an inadvertent bug that slipped in due to
-> parantheses in the compound conditional to me, especially given that
-> ufs_get_fs_state() handles the UFS_ST_44BSD case perfectly well.  So, let's
-> fix the compound condition appropriately.
+> If 2) is keeping the API semantics then 2.
+
+No .. (1) keeps the same API semantics.
+
+
+> Let everything be as it is today unless
+> numactl sets the new.
+> ...
+> Tough. The API needs to remain stable. 
+
+Good - that I understand.  Your position is clear now.
+
+You have chosen (1) above, which keeps Choice A as the default.
+
+
+Before I leave this part, there is one more thing I kinda really need,
+if you could, Christoph.  Could you describe in your own words what you
+think Choices A and B mean?  We seem to be having trouble communicating,
+and hence there is some risk right now that we don't mean the same thing
+by this new "Choice B".
+
+===
+
+Now ... onto the matter of permanent API warts:
+
+> > I wonder if there might be some way to avoid that permanent ugly wart
+> > on each and every set/get mempolicy system call forever afterward.
 > 
+> Hmmm.. The alternative is to add new set/get mempolicy functions.
 
-I wonder on what type of UFS do you test this patch?
-NetBSD and FreeBSD do not use "fs_state", they use "fs_clean" flag,
-only Solaris does check like this: fs_state + fs_time == FSOK.
+Other alternatives include a per-system, per-cpuset or per-process
+flag, in addition to the per-system call flag you suggested earlier
+(MPOL_MF_RELATIVE), or whatever you mean by "new set/get mempolicy
+functions" ... could you elaborate on that one?
 
-That's why parentheses was like that.
+So ... the question becomes this:
 
-At now with linux-2.6.24-rc1-git1, I get: fs need fsck,
-but NetBSD's fsck says that's all ok.
+  How do we migrate to Choice B, without leaving both Choices
+  permanently supported, and an ugly mode flag selecting the
+  non-default Choice, while not breaking API's too abruptly?
 
-I suggest revert this patch.
-
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
-> Cc: Evgeniy Dushistov <dushistov@mail.ru>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  fs/ufs/super.c |   15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
-> 
-> diff -puN fs/ufs/super.c~ufs-fix-sun-state-fix-mount-check-in-ufs_fill_super fs/ufs/super.c
-> --- a/fs/ufs/super.c~ufs-fix-sun-state-fix-mount-check-in-ufs_fill_super
-> +++ a/fs/ufs/super.c
-> @@ -933,19 +933,20 @@ magic_found:
->  		goto again;
->  	}
->  
-> -	sbi->s_flags = flags;/*after that line some functions use s_flags*/
-> +	/* Set sbi->s_flags here, used by ufs_get_fs_state() below */
-> +	sbi->s_flags = flags;
->  	ufs_print_super_stuff(sb, usb1, usb2, usb3);
->  
->  	/*
->  	 * Check, if file system was correctly unmounted.
->  	 * If not, make it read only.
->  	 */
-> -	if (((flags & UFS_ST_MASK) == UFS_ST_44BSD) ||
-> -	  ((flags & UFS_ST_MASK) == UFS_ST_OLD) ||
-> -	  (((flags & UFS_ST_MASK) == UFS_ST_SUN || 
-> -	    (flags & UFS_ST_MASK) == UFS_ST_SUNOS ||
-> -	  (flags & UFS_ST_MASK) == UFS_ST_SUNx86) && 
-> -	  (ufs_get_fs_state(sb, usb1, usb3) == (UFS_FSOK - fs32_to_cpu(sb, usb1->fs_time))))) {
-> +	if ((((flags & UFS_ST_MASK) == UFS_ST_44BSD)	||
-> +	     ((flags & UFS_ST_MASK) == UFS_ST_OLD)	||
-> +	     ((flags & UFS_ST_MASK) == UFS_ST_SUN)	||
-> +	     ((flags & UFS_ST_MASK) == UFS_ST_SUNOS)	||
-> +	     ((flags & UFS_ST_MASK) == UFS_ST_SUNx86))	&&
-> +	    (ufs_get_fs_state(sb, usb1, usb3) == (UFS_FSOK - fs32_to_cpu(sb, usb1->fs_time)))) {
->  		switch(usb1->fs_clean) {
->  		case UFS_FSCLEAN:
->  			UFSD("fs is clean\n");
-> _
+Thanks.
 
 -- 
-/Evgeniy
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
