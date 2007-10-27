@@ -1,73 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbXJ0LrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbXJ0LvC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbXJ0LrT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 07:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXJ0LrL
+	id S1754888AbXJ0LvC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 07:51:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXJ0Luy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 07:47:11 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:55901 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbXJ0LrK (ORCPT
+	Sat, 27 Oct 2007 07:50:54 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:56130 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbXJ0Lux (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 07:47:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=pp1bKeaqkB22tAg1wZTnaQOM1ijSTJ7dy5YuB3z5GFI4T6E3KzkiheRylRxtjJi8psG41336txEVVZaa6LHYydLArEtxY7JYrDkb7HfQW88ZM9MD9L6Gu61nWsWUuQJfPMFKAMLFolpKEBKbYRQAmJT9n4hQmTLIoumkIIFJy1A=
-Message-ID: <84144f020710270447m6f77848fl1f0c43312d172309@mail.gmail.com>
-Date: Sat, 27 Oct 2007 14:47:09 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Cc: "Matthew Wilcox" <matthew@wil.cx>, "Linus Torvalds" <torvalds@osdl.org>,
-       "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Matthew Wilcox" <willy@linux.intel.com>
-In-Reply-To: <200710261211.01423.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071024195847.GE27248@parisc-linux.org>
-	 <1193255992-14385-1-git-send-email-matthew@wil.cx>
-	 <200710261211.01423.rusty@rustcorp.com.au>
-X-Google-Sender-Auth: 5a2742ac25eec7b4
+	Sat, 27 Oct 2007 07:50:53 -0400
+Date: Sat, 27 Oct 2007 13:50:47 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20071027114508.4218.29756.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] kernel: Convert to generic boolean-functions
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
 
-On 10/26/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
->        This just seems like more optimization and complexity that we need.  Interfaces
-> using vsnprintf don't seem like good candidates for optimization.
->
-> How about this?  It's as simple as I could make it...
+---
 
-FWIW I like this patch better.
-
-On 10/26/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> +void sb_printf_append(struct stringbuf **sb, gfp_t gfp, const char *fmt, ...)
-> +{
-> +       unsigned int fmtlen, len;
-> +       va_list args;
-> +       struct stringbuf *oldsb = *sb;
-> +
-> +       if (oldsb->buf == enomem_string)
-> +               return;
-> +
-> +       va_start(args, fmt);
-> +       fmtlen = vsnprintf(NULL, 0, fmt, args);
-> +       va_end(args);
-> +
-> +       len = oldsb ? strlen(oldsb->buf) : 0;
-> +       *sb = krealloc(oldsb, len + fmtlen + 1, gfp);
-> +       if (!*sb) {
-> +               kfree(oldsb);
-> +               *sb = (struct stringbuf *)enomem_string;
-
-Why don't we just return -ENOMEM here just like all other APIs in the
-kernel? And I wonder if it makes more sense to store gfp_flags in
-struct stringbuf and always use that? I mean, why would you want to
-sometimes do GFP_ATOMIC and GFP_KERNEL allocations for the same
-buffer?
-
-                                  Pekka
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 6cd8c44..70f4dc9 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -175,7 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
+ 				   unsigned int cpu,
+ 				   size_t consumed);
+ extern void relay_reset(struct rchan *chan);
+-extern int relay_buf_full(struct rchan_buf *buf);
++extern bool relay_buf_full(struct rchan_buf *buf);
+ 
+ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+ 				  size_t length);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 917aba1..1c36103 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -357,16 +357,16 @@ static int save_image(struct swap_map_handle *handle,
+ /**
+  *	enough_swap - Make sure we have enough swap to save the image.
+  *
+- *	Returns TRUE or FALSE after checking the total amount of swap
++ *	Returns 'true' or 'false' after checking the total amount of swap
+  *	space avaiable from the resume partition.
+  */
+ 
+-static int enough_swap(unsigned int nr_pages)
++static bool enough_swap(unsigned int nr_pages)
+ {
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 
+ 	pr_debug("swsusp: free swap pages: %u\n", free_swap);
+-	return free_swap > nr_pages + PAGES_FOR_IO;
++	return free_swap > (nr_pages + PAGES_FOR_IO);
+ }
+ 
+ /**
+diff --git a/kernel/profile.c b/kernel/profile.c
+index 631b75c..fca98ba 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -125,11 +125,11 @@ void profile_task_exit(struct task_struct * task)
+ 	blocking_notifier_call_chain(&task_exit_notifier, 0, task);
+ }
+  
+-int profile_handoff_task(struct task_struct * task)
++bool profile_handoff_task(struct task_struct * task)
+ {
+ 	int ret;
+ 	ret = atomic_notifier_call_chain(&task_free_notifier, 0, task);
+-	return (ret == NOTIFY_OK) ? 1 : 0;
++	return ret == NOTIFY_OK;
+ }
+ 
+ void profile_munmap(unsigned long addr)
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 61134eb..d0f940e 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -221,23 +221,23 @@ static void relay_remove_buf(struct kref *kref)
+  *	relay_buf_empty - boolean, is the channel buffer empty?
+  *	@buf: channel buffer
+  *
+- *	Returns 1 if the buffer is empty, 0 otherwise.
++ *	Returns 'true' if the buffer is empty, 'false' otherwise.
+  */
+-static int relay_buf_empty(struct rchan_buf *buf)
++static bool relay_buf_empty(struct rchan_buf *buf)
+ {
+-	return (buf->subbufs_produced - buf->subbufs_consumed) ? 0 : 1;
++	return (buf->subbufs_produced - buf->subbufs_consumed) == 0;
+ }
+ 
+ /**
+  *	relay_buf_full - boolean, is the channel buffer full?
+  *	@buf: channel buffer
+  *
+- *	Returns 1 if the buffer is full, 0 otherwise.
++ *	Returns 'true' if the buffer is full, 'false' otherwise.
+  */
+-int relay_buf_full(struct rchan_buf *buf)
++bool relay_buf_full(struct rchan_buf *buf)
+ {
+ 	size_t ready = buf->subbufs_produced - buf->subbufs_consumed;
+-	return (ready >= buf->chan->n_subbufs) ? 1 : 0;
++	return ready >= buf->chan->n_subbufs;
+ }
+ EXPORT_SYMBOL_GPL(relay_buf_full);
+ 
