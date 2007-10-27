@@ -1,136 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbXJ0HWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbXJ0HXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbXJ0HWV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 03:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbXJ0HWN
+	id S1753313AbXJ0HXK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 03:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXJ0HW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 03:22:13 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52530 "EHLO pasmtpB.tele.dk"
+	Sat, 27 Oct 2007 03:22:56 -0400
+Received: from mx7.mail.ru ([194.67.23.27]:31604 "EHLO mx7.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbXJ0HWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 03:22:12 -0400
-Date: Sat, 27 Oct 2007 09:23:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Check handling of kernel build output directory
-Message-ID: <20071027072348.GA28566@uranus.ravnborg.org>
-References: <fft89p$rko$1@ger.gmane.org> <20071026190500.GA23480@uranus.ravnborg.org> <ffteuq$n3b$1@ger.gmane.org> <20071026194727.GA23871@uranus.ravnborg.org> <ffuh39$d7b$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ffuh39$d7b$1@ger.gmane.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1751390AbXJ0HWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 03:22:55 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2.624-rc1 regression] lost battery information
+Date: Sat, 27 Oct 2007 11:22:48 +0400
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frans Pop <elendil@planet.nl>
+References: <200710262024.06012.arvidjaar@mail.ru> <200710262215.42939.arvidjaar@mail.ru> <472232D3.6000807@gmail.com>
+In-Reply-To: <472232D3.6000807@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1970502.B9mSWZi2Iv";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710271122.49344.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus.
+--nextPart1970502.B9mSWZi2Iv
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Please do not edit cc: and to: - it is easy to miss out a mail on lkml.
-
-On Sat, Oct 27, 2007 at 07:07:55AM +0200, Markus Elfring wrote:
-> > You did it in your output directory I assume.
-> 
-> No.
-> 
-> 
-> > kbuild complains that the source directory is not clean - which
-> > is what you need to clean up.
-> 
-> I am looking for the real reasons for the occuring error messages. Let us look at another
-> test example ...
-> 
-> Sonne:~ # ls -ld /usr/src/linux
-> lrwxrwxrwx 1 root root 23 Oct 13 10:11 /usr/src/linux -> /usr/src/linux-2.6.23.1
-> Sonne:~ # cd /usr/src/linux-2.6.23.1
-> Sonne:/usr/src/linux-2.6.23.1 # unset KBUILD_OUTPUT && make mrproper && cp -p
-> /boot/config-2.6.23.1-0-adjusted .config && export
-> KBUILD_OUTPUT=/usr/src/obj/linux/2.6.23.1/x86_64/adjusted && rm -rf $KBUILD_OUTPUT/*
->   CLEAN   .config
-> Sonne:/usr/src/linux-2.6.23.1 # make oldconfig && date && echo
-> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX && make -j2 && echo
-> YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY && make -j2 modules_install install && echo
-> ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ && date
->   HOSTCC  scripts/basic/fixdep
->   HOSTCC  scripts/basic/docproc
->   GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
->   HOSTCC  scripts/kconfig/conf.o
->   HOSTCC  scripts/kconfig/kxgettext.o
->   SHIPPED scripts/kconfig/zconf.tab.c
->   SHIPPED scripts/kconfig/lex.zconf.c
->   SHIPPED scripts/kconfig/zconf.hash.c
->   HOSTCC  scripts/kconfig/zconf.tab.o
->   HOSTLD  scripts/kconfig/conf
-> scripts/kconfig/conf -o arch/x86_64/Kconfig
-> *
-> * Linux Kernel Configuration
-> *
-> *
-> * General setup
-> *
-> [...]
-> #
-> # configuration written to .config
-> #
-> Sat Oct 27 06:43:24 CEST 2007
-> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
->   GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-> scripts/kconfig/conf -s arch/x86_64/Kconfig
->   GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-
->From the above we can see that two make's are running in parallel here
-where only one should run.
-I have seen this before but only in cases where you specified several targets
-on the make commandline - which you do not do in the make invocation.
-Just to check it you could do a:
-$(warning CMD=$(MAKECMDFLAGS)) around the place where SUBARCH is assigned in the
-top-level Makefile.
-
-Does the issue by any chance go away if you refrain from the
-command && command && command && command && command && command
-way of doing things?
-
-The shell _shall_ serialize it - but..
+On Friday 26 October 2007, Alexey Starikovskiy wrote:
+>
+> Your cat's "Bad address" means -EFAULT, according to "man errno".
+> Please apply this patch to see what exactly failed...
 
 
 
->   CHK     include/linux/version.h
->   UPD     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86_64
->   Using /usr/src/linux-2.6.23.1 as source for kernel
->   /usr/src/linux-2.6.23.1 is not clean, please run 'make mrproper'
->   in the '/usr/src/linux-2.6.23.1' directory.
-> make[1]: *** [prepare3] Error 1
-> make: *** [_all] Error 2
-> make: INTERNAL: Exiting with 3 jobserver tokens available; should be 2!
-> 
-> 
-> Which files are not clean in my situation after the command "make mrproper" was executed
-> at the beginning?
-If you look at the top-level Makefile you will see:
+[ 1191.471572] ACPI: element[12]->type =3D 1, expected string
+[ 1196.640065] ACPI: element[12]->type =3D 1, expected string
+[ 1199.479773] ACPI: element[12]->type =3D 1, expected string
+[ 1199.745435] ACPI: element[12]->type =3D 1, expected string
 
-        @echo '  Using $(srctree) as source for kernel'
-        $(Q)if [ -f $(srctree)/.config -o -d $(srctree)/include/config ]; then \
-                echo "  $(srctree) is not clean, please run 'make mrproper'";\
-                echo "  in the '$(srctree)' directory.";\
-                /bin/false; \
-        fi;
+it is "OEM type". For reference here is _BIF from my DSDT:
 
-So you either a .config file or the config directory. Older kernels also tested
-that the asm symlink in include/ was not present.
-You should check that all these indeed are gone when you do "make mrproper" - you
-can have been hit by a privilige issue too. But that should not be the case if
-you copied the full tree to another place (and of course did not use cp -a).
-You did this - yes? And the result?
+             Method (_BIF, 0, NotSerialized)
+            {
+                Name (BUFF, Package (0x0D) {})
+                Store (0x00, Index (BUFF, 0x00))
+                Store (\_SB.MEM.BDV2, Local2)
+                Multiply (\_SB.MEM.BDC2, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x01))
+                Multiply (\_SB.MEM.BLF2, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x02))
+                Store (\_SB.MEM.BTC2, Index (BUFF, 0x03))
+                Store (\_SB.MEM.BDV2, Index (BUFF, 0x04))
+                Multiply (\_SB.MEM.BCW2, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x05))
+                Multiply (\_SB.MEM.BCL2, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x06))
+                Multiply (\_SB.MEM.BG12, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x07))
+                Multiply (\_SB.MEM.BG22, Local2, Local0)
+                Divide (Local0, 0x03E8, Local1, Local0)
+                Store (Local0, Index (BUFF, 0x08))
+                Store (\_SB.MEM.BMN2, Index (BUFF, 0x09))
+                Store (\_SB.MEM.BSN2, Index (BUFF, 0x0A))
+                Store (\_SB.MEM.BTP2, Index (BUFF, 0x0B))
+                Store (\_SB.MEM.BOI2, Index (BUFF, 0x0C))
+                Return (BUFF)
+            }
 
-> 
-> Which results do you or other software developers get by such test runs on kernel releases
-> since "2.6.22.9-0.4-default" like it is published by SUSE now?
-> ( I can build the current Linux kernel into my source directory successfully.)
-If you now say this is a SUSE specific problem then I suggest asking SUSE for help.
-At least I have not built a distribution kernel the last year or more - and I
-do not follow what kind of patches they apply.
+This is behaviour change. Previous battery.c used generic acpi_extract_pack=
+age=20
+which allowed (allows) for object of type integer when string is requested:
 
-	Sam
+                case ACPI_TYPE_INTEGER:
+                        switch (format_string[i]) {
+                        case 'N':
+                                size_required +=3D sizeof(acpi_integer);
+                                tail_offset +=3D sizeof(acpi_integer);
+                                break;
+                        case 'S':
+                                size_required +=3D
+                                    sizeof(char *) + sizeof(acpi_integer) +
+                                    sizeof(char);
+                                tail_offset +=3D sizeof(char *);
+                                break;
+
+while current battery.c:extract_package fails:
+
+                if (offsets[i].mode) {
+                        if (element->type !=3D ACPI_TYPE_STRING &&
+                            element->type !=3D ACPI_TYPE_BUFFER) {
+printk (KERN_ERR PREFIX "element[%d]->type =3D %x, expected string\n", i,=20
+element->type);
+                                return -EFAULT;
+                        }
+
+well, while it could be BIOS fault this happily worked before ... This is=20
+obviously also the reason why I do not have anything in /sys
+
+=46ans, could you check whether you have the same issue using test patch?
+
+--nextPart1970502.B9mSWZi2Iv
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHIudJR6LMutpd94wRAs+qAKC04Chs8JYmvMShNAAdAfA9KIPz4QCgkdM9
+v7xEP1YCbcj+sESVuHqX4Ls=
+=P3uC
+-----END PGP SIGNATURE-----
+
+--nextPart1970502.B9mSWZi2Iv--
