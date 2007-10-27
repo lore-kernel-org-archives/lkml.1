@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbXJ0SBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbXJ0SIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbXJ0SBS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 14:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbXJ0SBJ
+	id S1752175AbXJ0SIr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 14:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXJ0SIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 14:01:09 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:32819 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbXJ0SBI (ORCPT
+	Sat, 27 Oct 2007 14:08:40 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:53521 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750719AbXJ0SIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 14:01:08 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 27 Oct 2007 11:01:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Willy Tarreau <w@1wt.eu>
-cc: Marc Lehmann <linux-kernel@tst.eu>, Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll design problems with common fork/exec patterns
-In-Reply-To: <20071027173828.GY10199@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0710271055160.12127@alien.or.mcafeemobile.com>
-References: <20071027062236.GA12476@schmorp.de> <4722F575.8080204@cosmosbay.com>
- <20071027085125.GC12326@schmorp.de> <Pine.LNX.4.64.0710270950170.12127@alien.or.mcafeemobile.com>
- <20071027173828.GY10199@1wt.eu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 27 Oct 2007 14:08:39 -0400
+Date: Sat, 27 Oct 2007 14:08:37 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Andi Kleen <ak@muc.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix x86_64 TIF_SYSCALL_TRACE race in entry.S
+Message-ID: <20071027180837.GA18134@Krystal>
+References: <20071026193738.GA1591@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071026193738.GA1591@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:02:48 up 89 days, 18:21,  2 users,  load average: 0.61, 0.54, 0.39
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Willy Tarreau wrote:
+Fix x86_64 TIF_SYSCALL_TRACE race in entry.S
 
-> On Sat, Oct 27, 2007 at 09:59:07AM -0700, Davide Libenzi wrote:
-> > On Sat, 27 Oct 2007, Marc Lehmann wrote:
-> > 
-> > > > Please provide some code to illustrate one exact problem you have.
-> > > 
-> > >    // assume there is an open epoll set that listens for events on fd 5
-> > >    if (fork () = 0)
-> > >      {
-> > >        close (5);
-> > >        // fd 5 is now removed from the epoll set of the parent.
-> > >        _exit (0);
-> > >      }
-> > 
-> > Hmmm ... what? I assume you know that:
-> > 
-> > 1) A file descriptor is a userspace view/handle of a kernel object
-> > 
-> > 2) The kernel object has a use-count for as many file descriptors that 
-> >    have been handed out to userspace
-> > 
-> > 3) A close() decreases the internal counter by one
-> > 
-> > 4) The kernel object gets effectively closed when the internal counter 
-> >    goes to zero
-> > 
-> > 5) A fork() acts as a dup() on the file descriptors by hence bumping up 
-> >    its internal counter
-> > 
-> > 6) Epoll removes the file from the set, when the *kernel* object gets 
-> >    closed (internal use-count goes to zero)
-> > 
-> > With that in mind, how can the code snippet above trigger a removal from 
-> > the epoll set?
-> 
-> Davide,
-> 
-> from what I understand, Marc is not asking for the code above to remove
-> the fd from the epoll set, but he's in fact complaining that he *observed*
-> that the fd was removed from the epoll set in the *parent* process when
-> the child closes it, which is of course not expected at all. As strange
-> as it looks like, this might need investigation. It is possible that there
-> is some strange bug somewhere in some kernel versions.
+When the flag is inactive upon syscall entry and concurrently activated before
+exit, we seem to reach a state where the top of stack is incorrect upon return
+to user space.
 
-That would be *really* strange, since epoll hooks in __fput() in order to 
-perform proper cleanup. This means that, in the case above, the file will 
-be really closed in the parent too. That, I think, would trigger way more 
-serious problems in userspace.
+Fix this by fixing the top of stack and jumping to int_ret_from_sys_call if we
+detect that thread flags has been modified.
 
+We make sure that the thread flag read is coherent between our new test and the ALLWORK_MASK test by first saving it in a register used for both comparisons.
 
+It applies on top of 2.6.23-mm1 or 2.6.23.1. If you think the
+implementation is correct, I'll port it to 2.6.24-rc1.
 
-> Marc, I think that if you indicate the last kernel version on which you
-> observed this and provide a very short and easy reproducer, it would
-> help everyone investigating this. Basically something which reports "OK"
-> or "KO".
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <ak@muc.de>
+---
+ arch/x86_64/kernel/entry.S |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-Of course. That'd be great.
-
-
-
-- Davide
-
-
+Index: linux-2.6-lttng/arch/x86_64/kernel/entry.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/kernel/entry.S	2007-10-27 14:01:12.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/kernel/entry.S	2007-10-27 14:01:28.000000000 -0400
+@@ -245,9 +245,11 @@ ret_from_sys_call:
+ 	/* edi:	flagmask */
+ sysret_check:		
+ 	GET_THREAD_INFO(%rcx)
++	movl threadinfo_flags(%rcx),%edx
++	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),%edx
++	jnz ret_from_sys_call_trace
+ 	cli
+ 	TRACE_IRQS_OFF
+-	movl threadinfo_flags(%rcx),%edx
+ 	andl %edi,%edx
+ 	jnz  sysret_careful 
+ 	CFI_REMEMBER_STATE
+@@ -278,6 +280,14 @@ sysret_careful:
+ 	CFI_ADJUST_CFA_OFFSET -8
+ 	jmp sysret_check
+ 
++ret_from_sys_call_trace:
++	SAVE_REST
++	FIXUP_TOP_OF_STACK %rdi
++	movq %rsp,%rdi
++	LOAD_ARGS ARGOFFSET  /* reload args from stack in case ptrace changed it */
++	RESTORE_REST
++	jmp int_ret_from_sys_call
++
+ 	/* Handle a signal */ 
+ sysret_signal:
+ 	TRACE_IRQS_ON
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
