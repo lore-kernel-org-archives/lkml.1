@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbXJ0N2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXJ0Ni5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755051AbXJ0N2X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 09:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXJ0N2Q
+	id S1755221AbXJ0Ni5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 09:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbXJ0Niu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 09:28:16 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:63259 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752079AbXJ0N2Q convert rfc822-to-8bit (ORCPT
+	Sat, 27 Oct 2007 09:38:50 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:48434 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752453AbXJ0Nit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 09:28:16 -0400
-Date: Sat, 27 Oct 2007 15:28:16 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Shannon Nelson <shannon.nelson@intel.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       shannon.nelson@intel.com, greg@kroah.com, dan.j.williams@intel.com
-Subject: Re: [PATCH] DMAENGINE: too many kref_put calls
-Message-ID: <20071027152816.2d447c70@siona>
-In-Reply-To: <20071026235648.5737.45405.stgit@localhost.localdomain>
-References: <20071026235648.5737.45405.stgit@localhost.localdomain>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	Sat, 27 Oct 2007 09:38:49 -0400
+Subject: Re: [PATCH] voyager: fix breakage caused by boot_params problem
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071026182609.ea703328.randy.dunlap@oracle.com>
+References: <1193419828.3293.35.camel@localhost.localdomain>
+	 <20071026182609.ea703328.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 08:38:45 -0500
+Message-Id: <1193492325.15612.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007 16:56:48 -0700
-Shannon Nelson <shannon.nelson@intel.com> wrote:
+On Fri, 2007-10-26 at 18:26 -0700, Randy Dunlap wrote:
+> On Fri, 26 Oct 2007 12:30:28 -0500 James Bottomley wrote:
+> 
+> > There was a missed conversion in the voyager architecture setup file
+> > which this corrects.
+> > 
+> > Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> 
+> Oh.
+> http://lkml.org/lkml/2007/10/22/180
+> even cc-ed to you.
 
-> @@ -134,8 +134,7 @@ static void dma_async_device_cleanup(struct kref
-> *kref); 
->  static void dma_dev_release(struct device *dev)
->  {
-> -	struct dma_chan *chan = to_dma_chan(dev);
-> -	kref_put(&chan->device->refcount, dma_async_device_cleanup);
-> +	return;
->  }
+Gosh, sorry about that.
 
-Hmm...what prevents dma_chan_cleanup() from being called while someone
-still holds a reference to the "class" device? This will allow the
-module removal to proceed, the device to be freed, and things will blow
-up...
+I actually marked it to be added too.  Unfortunately, my usual MO is to
+get voyager working with the first -rc and then see what the other
+updates were ... in this case, I duplicated what you'd already done.
 
-I think my patch is better. By taking two references, the order in
-which the cleanup functions are called doesn't matter -- both have to
-complete before the module removal is allowed to proceed.
+James
 
-Håvard
+
