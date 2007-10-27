@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXJZXn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbXJZXqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbXJZXn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 19:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJZXj6
+	id S932341AbXJZXqU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 19:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbXJZXqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 19:39:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59860
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932147AbXJZXj5 (ORCPT
+	Fri, 26 Oct 2007 19:46:13 -0400
+Received: from outland.allotrope.com.au ([206.251.255.246]:52966 "EHLO
+	Outland.Allotrope.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbXJZXqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 19:39:57 -0400
-Date: Fri, 26 Oct 2007 16:39:58 -0700 (PDT)
-Message-Id: <20071026.163958.171785530.davem@davemloft.net>
-To: rick.jones2@hp.com
-Cc: ebiederm@xmission.com, bunk@kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <472278E3.4000909@hp.com>
-References: <20071026230807.GE30533@stusta.de>
-	<m1zly5wjie.fsf@ebiederm.dsl.xmission.com>
-	<472278E3.4000909@hp.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 19:46:12 -0400
+X-Greylist: delayed 1633 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Oct 2007 19:46:12 EDT
+Message-ID: <52990.58.172.210.17.1193526927.squirrel@webmail.allotrope.com.au>
+Date: Sun, 28 Oct 2007 10:15:27 +1100 (EST)
+Subject: An additional entry to the pnp_dev_table for the serial driver 
+     against 2.6.21.4
+From: "Damian Jurd" <dnj@Allotrope.com.au>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6-7.el4.centos4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rick Jones <rick.jones2@hp.com>
-Date: Fri, 26 Oct 2007 16:31:47 -0700
+All,
 
-> Eric W. Biederman wrote:
-> > Adrian Bunk <bunk@kernel.org> writes:
-> > 
-> > 
-> >>This patch fixes the following build error with CONFIG_SYSCTL=n:
-> >>
-> >><--  snip  -->
-> >>
-> >>...
-> >>ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
-> >>ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
-> >>ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
-> >>make[2]: *** [__modpost] Error 1
-> > 
-> > 
-> > I was going to ask if allowing drivers to increase rmem_max
-> > is something that we want to do.  Apparently the road runner
-> > driver has been doing this since the 2.6.12-rc1 when the
-> > git repository starts so this probably isn't a latent bug.
-> 
-> Although it does rather sound like a driver writer yanking the rope from the 
-> hand's of the sysadmin and hanging him with it rather than letting the sysadmin 
-> do it himself.  I've seen other drivers' README's suggesting larger mem's but 
-> not their sources doing it.
+The following is an extra entry to enable the touch screen on the new LG
+C1 EXPRESS DUAL machine.
 
-I really don't think what the roadrunner driver is doing is
-correct at all.
+Thanks,
+D.
 
-I also think what DLM is doing is wrong too.
+diff -uprN -X linux-2.6.21.4__vanilla/Documentation/dontdiff
+linux-2.6.21.4__vanilla/drivers/serial/8250_pnp.c
+linux-2.6.21.4__C1-PB11A3/drivers/serial/8250_pnp.c
+--- linux-2.6.21.4__vanilla/drivers/serial/8250_pnp.c   2007-06-08
+07:27:31.000000000 +1000
++++ linux-2.6.21.4__C1-PB11A3/drivers/serial/8250_pnp.c 2007-06-10
+10:53:31.000000000 +1000
+@@ -343,6 +343,8 @@ static const struct pnp_device_id pnp_de
+        /* Fujitsu Wacom Tablet PC devices */
+        {       "FUJ02E5",              0       },
+        {       "FUJ02E6",              0       },
++       /* LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a FUJ02E6
+in disguise) */
++       {       "LTS0001",              0       },
+        /* Rockwell's (PORALiNK) 33600 INT PNP */
+        {       "WCI0003",              0       },
+        /* Unkown PnP modems */
 
-If DLM really wants minimum, it can use SO_SNDBUFFORCE and
-SO_RCVBUFFORCE socket options and use whatever limits it
-likes.
 
-But even this is questionable.
-
-I'll put in Adrian's patch to fix the build as a first
-priority, but in the long term this cruft has gotta go.
