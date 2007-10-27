@@ -1,40 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbXJ0UUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbXJ0UW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757859AbXJ0UUT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 16:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXJ0UUF
+	id S1757937AbXJ0UW1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 16:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXJ0UWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 16:20:05 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56355 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbXJ0UUD (ORCPT
+	Sat, 27 Oct 2007 16:22:19 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43925 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbXJ0UWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 16:20:03 -0400
-Date: Sat, 27 Oct 2007 21:20:02 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] duplicate initializer in sound/pci/hda/patch_realtek.c
-Message-ID: <20071027202002.GT8181@ftp.linux.org.uk>
+	Sat, 27 Oct 2007 16:22:19 -0400
+Date: Sat, 27 Oct 2007 21:17:00 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
+Message-ID: <20071027201700.GC22235@flint.arm.linux.org.uk>
+References: <20071027184404.GQ8181@ftp.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20071027184404.GQ8181@ftp.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 27, 2007 at 07:44:04PM +0100, Al Viro wrote:
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
+> index 21ba571..2d09fef 100644
+> --- a/drivers/scsi/arm/scsi.h
+> +++ b/drivers/scsi/arm/scsi.h
+> @@ -39,7 +39,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
+>  		SCp->buffer++;
+>  		SCp->buffers_residual--;
+>  		SCp->ptr = (char *)
+> -			 (page_address(SCp->buffer->page) +
+> +			 (page_address(sg_page(SCp->buffer)) +
+>  			  SCp->buffer->offset);
+>  		SCp->this_residual = SCp->buffer->length;
+>  	} else {
+> @@ -77,7 +77,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
+>  		SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
+>  		SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
+>  		SCpnt->SCp.ptr = (char *)
+> -			 (page_address(SCpnt->SCp.buffer->page) +
+> +			 (page_address(sg_page(SCpnt->SCp.buffer)) +
+>  			  SCpnt->SCp.buffer->offset);
+>  		SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
+>  		SCpnt->SCp.phase = SCpnt->request_bufflen;
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
-index d9f78c8..1c50278 100644
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -9299,7 +9299,6 @@ static struct alc_config_preset alc268_presets[] = {
- 		.num_channel_mode = ARRAY_SIZE(alc268_modes),
- 		.channel_mode = alc268_modes,
- 		.input_mux = &alc268_capture_source,
--		.input_mux = &alc268_capture_source,
- 		.unsol_event = alc268_toshiba_unsol_event,
- 		.init_hook = alc268_toshiba_automute,
- 	},
+FYI, here's what I have queued (cut'n'pasted so probably won't apply):
+
+diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
+index 21ba571..bb6550e 100644
+--- a/drivers/scsi/arm/scsi.h
++++ b/drivers/scsi/arm/scsi.h
+@@ -38,9 +38,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
+        if (ret) {
+                SCp->buffer++;
+                SCp->buffers_residual--;
+-               SCp->ptr = (char *)
+-                        (page_address(SCp->buffer->page) +
+-                         SCp->buffer->offset);
++               SCp->ptr = sg_virt(SCp->buffer);
+                SCp->this_residual = SCp->buffer->length;
+        } else {
+                SCp->ptr = NULL;
+@@ -76,9 +74,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
+
+                SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
+                SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
+-               SCpnt->SCp.ptr = (char *)
+-                        (page_address(SCpnt->SCp.buffer->page) +
+-                         SCpnt->SCp.buffer->offset);
++               SCpnt->SCp.ptr = sg_virt(SCpnt->SCp.buffer);
+                SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
+                SCpnt->SCp.phase = SCpnt->request_bufflen;
+
+
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
