@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbXJ0Qip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbXJ0Qsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbXJ0Qip (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 12:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXJ0Qij
+	id S1755972AbXJ0Qsn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 12:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXJ0Qsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 12:38:39 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:56166 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbXJ0Qii (ORCPT
+	Sat, 27 Oct 2007 12:48:35 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40071 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbXJ0Qsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 12:38:38 -0400
-Date: Sat, 27 Oct 2007 12:35:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sg_next() for struct scatterlist is confusing
-In-Reply-To: <20071027183130.0215e355@siona>
-Message-ID: <Pine.LNX.4.64.0710271234280.3409@localhost.localdomain>
-References: <Pine.LNX.4.64.0710270734210.24293@localhost.localdomain>
- <20071027183130.0215e355@siona>
+	Sat, 27 Oct 2007 12:48:35 -0400
+Date: Sat, 27 Oct 2007 10:48:32 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Message-ID: <20071027164832.GW27248@parisc-linux.org>
+References: <20071024195847.GE27248@parisc-linux.org> <200710261211.01423.rusty@rustcorp.com.au> <84144f020710270447m6f77848fl1f0c43312d172309@mail.gmail.com> <200710272250.16323.rusty@rustcorp.com.au> <84144f020710270934j54153c8bibb2d1fb48abd8dca@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020710270934j54153c8bibb2d1fb48abd8dca@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007, Haavard Skinnemoen wrote:
+On Sat, Oct 27, 2007 at 07:34:47PM +0300, Pekka Enberg wrote:
+> On 10/27/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > On Saturday 27 October 2007 21:47:09 Pekka Enberg wrote:
+> > > Why don't we just return -ENOMEM here just like all other APIs in the
+> > > kernel?
+> > I think Willy did it because this is for printk.  It makes more sense than
+> > everyone opencoding an -ENOMEM handler, which will have to be replaced by
+> > some mildly amusing string like "I want to printk but I have no memory!".
+> > Next think you know 70% of the kernel will be bad limericks as everyone tries
+> > to one-up each other.
+> 
+> My point was, of course, that the caller gets to decide what to do on
+> OOM. For the most part, you probably want to ignore it but for things
+> like pseudo filesystems where you generate a human-readable string,
+> returning -ENOMEM from read(2) is preferable.
 
-> On Sat, 27 Oct 2007 07:39:40 -0400 (EDT)
-> "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
->
-> >   note how the comment says that the next entry will "usually" be
-> > sg+1, "but" not if it's actually a pointer.
-> >
-> >   however, as i read the code above, sg is *always* incremented before
-> > that testing.  is that correct?  am i just misreading something?  or
-> > could the comment have been a bit clearer?
->
-> If it increments sg and finds a "chain" entry, it will follow it to
-> the next sg array instead of just returning it. Which makes sense
-> because the chain entry itself isn't a valid entry in the sg list.
+That was why I had an sb_error() as part of the API so a caller who
+cared could check, and a caller who didn't care would never know --
+they'd just print the out-of-memory string and continue happily.
 
-yes, i finally twigged on that after a few more minutes.  it, of
-course, makes sense, but it sure doesn't match the comment that's at
-the top of that file.
+It's not hard to add an sb_error to Rusty's rewrite.  It looks something
+like:
 
-rday
+static inline int sb_error(struct stringbuf *sb)
+{
+	if (sb == sb_enomem_string)
+		return -ENOMEM;
+	return 0;
+}
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
