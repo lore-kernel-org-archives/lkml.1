@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbXJ0Xlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbXJ0Xrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbXJ0Xlj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 19:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXJ0Xlc
+	id S1753539AbXJ0Xrj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 19:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbXJ0Xra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 19:41:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23626 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbXJ0Xlb (ORCPT
+	Sat, 27 Oct 2007 19:47:30 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48410 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbXJ0Xr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 19:41:31 -0400
-Date: Sat, 27 Oct 2007 16:39:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Johannes Stezenbach <js@linuxtv.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
- CONFIG_VIDEO_SAA7146_VV=y
-Message-Id: <20071027163932.e0a0522b.randy.dunlap@oracle.com>
-In-Reply-To: <20071027213057.GA15211@linuxtv.org>
-References: <20071026073736.GA24172@elte.hu>
-	<20071027213057.GA15211@linuxtv.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 27 Oct 2007 19:47:29 -0400
+Date: Sun, 28 Oct 2007 00:47:19 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: casey@schaufler-ca.com, akpm@osdl.org, torvalds@osdl.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20071027234719.GU8181@ftp.linux.org.uk>
+References: <4720118C.5020906@schaufler-ca.com> <20071027090112.GA5460@Ahmed>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071027090112.GA5460@Ahmed>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007 23:30:57 +0200 Johannes Stezenbach wrote:
-
-> On Fri, Oct 26, 2007, Ingo Molnar wrote:
-> > 
-> > the attached config (generated via make randconfig) fails to build due 
-> > to the combination of these config entries:
-> > 
-> >   CONFIG_VIDEO_DEV=m
-> >   CONFIG_VIDEO_SAA7146_VV=y
-> > 
-> > i found no obvious Kconfig way to force VIDEO_SAA7146_VV to be modular 
-> > when VIDEO_DEV is modular - is there a good solution for this?
+On Sat, Oct 27, 2007 at 11:01:12AM +0200, Ahmed S. Darwish wrote:
+> The problem here (As discussed in private mails) is that the for loop 
+> assumes that the beginning of given user-space buffer is the beginning
+> of a rule. This leads to situations where the rule becomes "ecret 20",
+> or "cret 20" instead of "Secret 20". Big input buffers/files leads 
+> smack to recieve a rule like "Secret 20" in fragmented chunks like:
 > 
-> According to http://lkml.org/lkml/2007/10/21/226 :
+> write("<lots of rules before ours>\nSec", ..)
+> write("r", 1, ..)
+> write("et 20\n<remaing rules after ours>", ..)
 > 
-> config VIDEO_SAA7146_VV
-> 	tristate
-> 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
-> 	select VIDEOBUF_DMA_SG
-> 	select VIDEO_SAA7146
-> 
-> (untested)
+> Parsing a rule in such tough conditions in _kernel space_ is very
+> hard. I began to feel that it will be much easier if we do the parsing 
+> in a userspace utility and let smack accept only small buffers (80 char). 
 
-Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
-has too many "select"s involved, but select doesn't follow the dependency
-chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
+For crying out louf, all it takes is a finite state machine...  BTW, folks,
+your parser *and* input language suck.  Really.  Silently allowing noise
+is Dumb(tm).
 
-	select is evil.... select will by brute force set a symbol
-	equal to 'y' without visiting the dependencies. So abusing
-	select you are able to select a symbol FOO even if FOO depends
-	on BAR that is not set.
+Please, write the grammar down and _follow_ _it_.  AFAICS, trimming the
+crap ("we have a number, skip everything until '/', whatever noise we
+have there doesn't matter") leads to something like
 
+text: (whitespace line? \n)*
+whitespace: [ \t]*
+line: label whitespace number whitespace (/ whitespace set whitespace)?
+set: number (whitespace , whitespace number)*
+label: [!-.0-~]{1,23}
+number: [0-9]+
 
----
-~Randy
+and even that might be too liberal.  For fsck sake, all you need is to
+keep a struct that would contain
+	* state
+	* (partial) number
+	* list of smack_known, with the first element being the partial one.
+	* number of characters already seen in label (label itself stored
+in the list head ->smk_known)
+and that's it - just have a switch by ->state to handle the next character.
+Allocate that struct in ->open(), modify in ->write(), apply the entire thing
+at once in ->release().
+
+Come on, people, this is ridiculous - why bother reinventing the wheels for
+the stuff that belongs to exercises halfway through any self-respecting
+introductory textbook?  Scary parser, my arse...
