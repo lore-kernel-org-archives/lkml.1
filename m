@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXJ0VHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXJ0VLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbXJ0VHl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 17:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbXJ0VHY
+	id S1758234AbXJ0VLI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXJ0VK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 17:07:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39161 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757975AbXJ0VHW (ORCPT
+	Sat, 27 Oct 2007 17:10:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63248 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbXJ0VKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 17:07:22 -0400
-Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, torvalds@osdl.org, akpm@osdl.org,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20071027201429.GE9816@martell.zuzino.mipt.ru>
-References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
-	 <Pine.LNX.4.64.0710272114590.1818@scrub.home>
-	 <20071027201429.GE9816@martell.zuzino.mipt.ru>
+	Sat, 27 Oct 2007 17:10:55 -0400
+Subject: Re: fixing up DRM device model usage
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Greg KH <gregkh@suse.de>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, jbarnes@virtuousgeek.org
+In-Reply-To: <200710261431.48589.jesse.barnes@intel.com>
+References: <200710181401.50470.jbarnes@virtuousgeek.org>
+	 <200710261140.41016.jbarnes@virtuousgeek.org>
+	 <1193425738.2190.45.camel@lov.site>
+	 <200710261431.48589.jesse.barnes@intel.com>
 Content-Type: text/plain
-Date: Sat, 27 Oct 2007 23:07:13 +0200
-Message-Id: <1193519234.27652.21.camel@twins>
+Date: Sat, 27 Oct 2007 23:12:15 +0200
+Message-Id: <1193519535.5776.16.camel@lov.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+AGy3Fs5ggl4aogvHLC65lAkIk1Y9eRiJxfIM
+ ABu///Qhj+EoCXV0W1CKOh1tPja8V5DtQATjd0AZ4wV89LtbBq
+ AlURWdLFd7fzHmaw9LTQdpAT6eHHizl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-10-28 at 00:14 +0400, Alexey Dobriyan wrote:
-> On Sat, Oct 27, 2007 at 09:20:43PM +0200, Roman Zippel wrote:
-> > On Sun, 21 Oct 2007, Alexey Dobriyan wrote:
-> > 
-> > > So far remedies were:
-> > > a) grep(1) -- obviously fragile. I tried at some point grepping for
-> > >    spin_lock_irqsave(), found quite a few, but it became booooring quickly.
-> > > b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
-> > >    brutally broke some arches, survived one commit before revert :^)
-> > >    Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
-> > > 
-> > > So it would be nice to have something more robust.
-> > 
-> > If it's just about the type checking, something like below should pretty 
-> > much do the same.
-> 
-> It won't catch, the following if both variables are unsigned long:
-> 
-> 	spin_lock_irqsave(&lock, flags);
-> 		[stuff]
-> 	spin_unlock_irqrestore(&lock, foo->flags);
-> 
-> It won't catch "static unsigned long flags;". With sparse, we can
-> eventually mark type as "on-stack only".
+On Fri, 2007-10-26 at 14:31 -0700, Jesse Barnes wrote:
+> On Friday, October 26, 2007 12:08 pm Kay Sievers wrote:
 
-> > +static __always_inline void __irq_flags_check(unsigned long *flags)
-> > +{
-+	BUILD_BUG_ON(!__builtin_stack_addr(flags));
-> > +}
-> > +
+> > The open coded: device_create_file(&dev->dev, &device_attrs[i])
+> > should probably replaced by passing the array to the class, and the
+> > core will do that for you.
+> 
+> You mean just set drm_class->dev_attrs = device_attrs?  I didn't see in
+> the core device model code where that would create the files...
 
-obviously gcc doesn't (yet) support that __builtin function, but you
-could make it work for sparse and define a dummy for gcc.
+Yeah, it is in device_add_attrs() in drivers/base/core.c.
+
+Kay
 
