@@ -1,165 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbXJ0VHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXJ0VHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbXJ0VHX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 17:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXJ0VHK
+	id S1755434AbXJ0VHl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbXJ0VHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 17:07:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:61395 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbXJ0VHJ (ORCPT
+	Sat, 27 Oct 2007 17:07:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39161 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757975AbXJ0VHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 17:07:09 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <greg@kroah.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>
-In-Reply-To: <20071027160203.GA5709@kroah.com>
-References: <1193410087.6914.34.camel@twins>
-	 <1193411451.2431.13.camel@lov.site> <1193412147.27652.2.camel@twins>
-	 <1193412788.2431.22.camel@lov.site> <1193412836.27652.11.camel@twins>
-	 <1193414147.2431.35.camel@lov.site> <1193429066.5648.35.camel@lappy>
-	 <1193447889.5648.44.camel@lappy> <20071027024033.GB29039@kroah.com>
-	 <1193474399.27652.15.camel@twins>  <20071027160203.GA5709@kroah.com>
+	Sat, 27 Oct 2007 17:07:22 -0400
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Roman Zippel <zippel@linux-m68k.org>, torvalds@osdl.org, akpm@osdl.org,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20071027201429.GE9816@martell.zuzino.mipt.ru>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru>
+	 <Pine.LNX.4.64.0710272114590.1818@scrub.home>
+	 <20071027201429.GE9816@martell.zuzino.mipt.ru>
 Content-Type: text/plain
-Date: Sat, 27 Oct 2007 23:08:37 +0200
-Message-Id: <1193519317.5776.14.camel@lov.site>
+Date: Sat, 27 Oct 2007 23:07:13 +0200
+Message-Id: <1193519234.27652.21.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX197h9jCZwSnQsqjJ+yHv8dbF56YGGQrPjj19FX
- kCDGtzskqJ2XCscJLBn6lQ3n1Yu4k+/Mo9565UBAJZoathYttT
- zNY9hhKJJVbmkUDG1l/WagbXk7zmlWn
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-10-27 at 09:02 -0700, Greg KH wrote:
-> On Sat, Oct 27, 2007 at 10:39:59AM +0200, Peter Zijlstra wrote:
-> > On Fri, 2007-10-26 at 19:40 -0700, Greg KH wrote:
-> > > On Sat, Oct 27, 2007 at 03:18:08AM +0200, Peter Zijlstra wrote:
-> > > > On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
-> > > > > This crashes and burns on bootup, but I'm too tired to figure out what I
-> > > > > did wrong... will give it another try tomorrow..
-> > > > 
-> > > > Ok, can't sleep.. took a look. I have several problems here.
-> > > > 
-> > > > The thing that makes it go *boom* is the __ATTR_NULL. Removing that
-> > > > makes it boot. Albeit it then warns me of multiple duplicate sysfs
-> > > > objects, all named "bdi".
-
-> > > I'll look at this and see what I can come up with.  Would you just like
-> > > a whole new patch, or one against this one?
+On Sun, 2007-10-28 at 00:14 +0400, Alexey Dobriyan wrote:
+> On Sat, Oct 27, 2007 at 09:20:43PM +0200, Roman Zippel wrote:
+> > On Sun, 21 Oct 2007, Alexey Dobriyan wrote:
 > > 
-> > Sorry for the grumpy note, I get that way at 3.30 am. Maybe I ought not
-> > have mailed :-/
+> > > So far remedies were:
+> > > a) grep(1) -- obviously fragile. I tried at some point grepping for
+> > >    spin_lock_irqsave(), found quite a few, but it became booooring quickly.
+> > > b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
+> > >    brutally broke some arches, survived one commit before revert :^)
+> > >    Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
+> > > 
+> > > So it would be nice to have something more robust.
 > > 
-> > This is the code I had at that time.
+> > If it's just about the type checking, something like below should pretty 
+> > much do the same.
 > 
-> Ah, I see a few problems.  Here, try this version instead.  It's
-> compile-tested only, and should be a lot simpler.
+> It won't catch, the following if both variables are unsigned long:
 > 
-> Note, we still are not setting the parent to the new bdi structure
-> properly, so the devices will show up in /sys/devices/virtual/ instead
-> of in their proper location.  To do this, we need the parent of the
-> device, which I'm not so sure what it should be (block device?  block
-> device controller?)
+> 	spin_lock_irqsave(&lock, flags);
+> 		[stuff]
+> 	spin_unlock_irqrestore(&lock, foo->flags);
+> 
+> It won't catch "static unsigned long flags;". With sparse, we can
+> eventually mark type as "on-stack only".
 
-Assigning a parent device will only work with the upcoming conversion of
-the raw kobjects in the block subsystem to "struct device".
+> > +static __always_inline void __irq_flags_check(unsigned long *flags)
+> > +{
++	BUILD_BUG_ON(!__builtin_stack_addr(flags));
+> > +}
+> > +
 
-A few comments to the patch:
-
-> --- a/include/linux/string.h
-> +++ b/include/linux/string.h
-> @@ -8,6 +8,7 @@
->  #include <linux/compiler.h>	/* for inline */
->  #include <linux/types.h>	/* for size_t */
->  #include <linux/stddef.h>	/* for NULL */
-> +#include <stdarg.h>
->  
->  #ifdef __cplusplus
->  extern "C" {
-> @@ -111,6 +112,9 @@ extern void *kmemdup(const void *src, si
->  extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
->  extern void argv_free(char **argv);
->  
-> +char *kvprintf(const char *fmt, va_list args);
-> +char *kprintf(const char *fmt, ...);
-
-Why is that here? I don't think we need this when we use the existing:
-  kvasprintf(GFP_KERNEL, fmt, args)
-
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-
-> +
-> +static struct device_attribute bdi_dev_attrs[] = {
-> +	__ATTR(readahead, 0644, readahead_show, readahead_store),
-> +	__ATTR_RO(reclaimable),
-> +	__ATTR_RO(writeback),
-> +	__ATTR_RO(dirty),
-> +	__ATTR_RO(bdi_dirty),
-> +};
-
-Default attributes will need the NULL termination back (see below).
-
-> +static __init int bdi_class_init(void)
-> +{
-> +	bdi_class = class_create(THIS_MODULE, "bdi");
-> +	return 0;
-> +}
-> +
-> +__initcall(bdi_class_init);
-> +
-> +int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
-
-This function should accept a: "struct device *parent" and all callers
-just pass NULL until the block layer conversion gets merged.
-
-> +{
-> +	char *name;
-> +	va_list args;
-> +	int ret = -ENOMEM;
-> +	int i;
-> +
-> +	va_start(args, fmt);
-> +	name = kvprintf(fmt, args);
-
-kvasprintf(GFP_KERNEL, fmt, args);
-
-> +	va_end(args);
-> +
-> +	if (!name)
-> +		return -ENOMEM;
-> +
-> +	bdi->dev = device_create(bdi_class, NULL, MKDEV(0,0), name);
-
-The parent should be passed here.
-
-> +	for (i = 0; i < ARRAY_SIZE(bdi_dev_attrs); i++) {
-> +		ret = device_create_file(bdi->dev, &bdi_dev_attrs[i]);
-> +		if (ret)
-> +			break;
-> +	}
-> +	if (ret) {
-> +		while (--i >= 0)
-> +			device_remove_file(bdi->dev, &bdi_dev_attrs[i]);
-> +		device_unregister(bdi->dev);
-> +		bdi->dev = NULL;
-> +	}
-
-All this open-coded attribute stuff should go away and be replaced by:
-  bdi_class->dev_attrs = bdi_dev_attrs;
-Otherwise at event time the attributes are not created and stuff hooking
-into the events will not be able to set values. Also, the core will do
-proper add/remove and error handling then.
-
-Thanks,
-Kay
+obviously gcc doesn't (yet) support that __builtin function, but you
+could make it work for sparse and define a dummy for gcc.
 
