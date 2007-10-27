@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764268AbXJ0BTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbXJ0B0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764268AbXJ0BTq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 21:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXJ0BTj
+	id S1763340AbXJ0B0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 21:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXJ0B0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 21:19:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42484 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbXJ0BTi (ORCPT
+	Fri, 26 Oct 2007 21:26:15 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53437 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751401AbXJ0B0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 21:19:38 -0400
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Miklos Szeredi <miklos@szeredi.hu>
-In-Reply-To: <1193429066.5648.35.camel@lappy>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
-	 <1191325226.13204.63.camel@twins>
-	 <200710022205.05295.nickpiggin@yahoo.com.au>
-	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
-	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
-	 <1193411451.2431.13.camel@lov.site>  <1193412147.27652.2.camel@twins>
-	 <1193412788.2431.22.camel@lov.site>  <1193412836.27652.11.camel@twins>
-	 <1193414147.2431.35.camel@lov.site>  <1193429066.5648.35.camel@lappy>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 03:18:08 +0200
-Message-Id: <1193447889.5648.44.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 21:26:14 -0400
+Date: Fri, 26 Oct 2007 18:26:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Jackson <pj@sgi.com>
+cc: David Rientjes <rientjes@google.com>, Lee.Schermerhorn@hp.com,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <20071026180713.aeedfac2.pj@sgi.com>
+Message-ID: <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+ <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+ <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+ <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+ <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+ <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+ <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+ <20071026180713.aeedfac2.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Oct 2007, Paul Jackson wrote:
 
-On Fri, 2007-10-26 at 22:04 +0200, Peter Zijlstra wrote:
-> This crashes and burns on bootup, but I'm too tired to figure out what I
-> did wrong... will give it another try tomorrow..
+> Choice B lets the task calculate its mempolicy mask as if it owned
+> the entire system, and express whatever elaborate mempolicy placement
+> it might need, when blessed with enough memory nodes to matter.
+> The system would automatically scrunch that request down to whatever
+> is the current size and placement of the cpuset holding that task.
+> 
+> Given a clean slate, I prefer Choice B.
 
-Ok, can't sleep.. took a look. I have several problems here.
-
-The thing that makes it go *boom* is the __ATTR_NULL. Removing that
-makes it boot. Albeit it then warns me of multiple duplicate sysfs
-objects, all named "bdi".
-
-For some obscure reason this device interface insists on using the
-bus_id as name (?!), and further reduces usability by limiting that to
-20 odd characters.
-
-This makes it quite useless. I tried fudging around that limit by using
-device_rename and kobject_rename, but to no avail.
-
-Really, it should not be this hard to use, trying to expose a handfull
-of simple integers to userspace should not take 8h+ and still not work.
-
-Peter, who thinks sysfs is contorted mess beyond his skill. I'll stick
-to VM and scheduler code, that actually makes sense.
-
+Yes. We should default to Choice B. Add an option MPOL_MF_RELATIVE to 
+enable that functionality? A new version of numactl can then enable
+that by default for newer applications.
