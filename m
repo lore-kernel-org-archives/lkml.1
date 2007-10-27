@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbXJ0OTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbXJ0OTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752120AbXJ0OTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXJ0OSy
+	id S1755922AbXJ0OTk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXJ0OT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:18:54 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56341 "EHLO
+	Sat, 27 Oct 2007 10:19:28 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57346 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755946AbXJ0OSx (ORCPT
+	with ESMTP id S1755859AbXJ0OTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:18:53 -0400
-Date: Sat, 27 Oct 2007 16:19:14 +0200
+	Sat, 27 Oct 2007 10:19:25 -0400
+Date: Sat, 27 Oct 2007 16:19:46 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
+To: adaplas@gmail.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] kprobe_exceptions_notify(): fix NULL dereference
-Message-ID: <20071027141914.GW30533@stusta.de>
+Subject: [2.6 patch] video/sis/: fix negative array index
+Message-ID: <20071027141946.GX30533@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,108 +23,46 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes later NULL dereferences spotted by the Coverity 
-checker.
+This patch fixes the possible usage of a negative value as an array 
+index spotted by the Coverity checker.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-BTW: The avr32 and s390 versions of kprobe_exceptions_notify() are
-     not touched since they don't contain this check.
+ drivers/video/sis/sis_main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- arch/ia64/kernel/kprobes.c    |    2 +-
- arch/powerpc/kernel/kprobes.c |    2 +-
- arch/sparc64/kernel/kprobes.c |    2 +-
- arch/x86/kernel/kprobes_32.c  |    2 +-
- arch/x86/kernel/kprobes_64.c  |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
-
-b6f1241ee20dd22210f48b4100bc5055315f3808 
-diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
-index 5fd65d8..3663dfb 100644
---- a/arch/ia64/kernel/kprobes.c
-+++ b/arch/ia64/kernel/kprobes.c
-@@ -886,11 +886,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
- {
- 	struct die_args *args = (struct die_args *)data;
- 	int ret = NOTIFY_DONE;
+9f63bf8c543710521e885b09d88271d1a308b158 
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index bc7d236..37bd24b 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -1245,24 +1245,25 @@ sisfb_do_set_var(struct fb_var_screeninfo *var, int isactive, struct fb_info *in
+ 		ivideo->sisfb_mode_idx++;
+ 	}
  
--	if (args->regs && user_mode(args->regs))
-+	if (args->regs || user_mode(args->regs))
- 		return ret;
+ 	if(found_mode) {
+ 		ivideo->sisfb_mode_idx = sisfb_validate_mode(ivideo,
+ 				ivideo->sisfb_mode_idx, ivideo->currentvbflags);
+-		ivideo->mode_no = sisbios_mode[ivideo->sisfb_mode_idx].mode_no[ivideo->mni];
+ 	} else {
+ 		ivideo->sisfb_mode_idx = -1;
+ 	}
  
- 	switch(val) {
- 	case DIE_BREAK:
- 		/* err is break number from ia64_bad_break() */
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 5338e48..913f9cd 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -474,11 +474,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
- {
- 	struct die_args *args = (struct die_args *)data;
- 	int ret = NOTIFY_DONE;
+        	if(ivideo->sisfb_mode_idx < 0) {
+ 		printk(KERN_ERR "sisfb: Mode %dx%dx%d not supported\n", var->xres,
+ 		       var->yres, var->bits_per_pixel);
+ 		ivideo->sisfb_mode_idx = old_mode;
+ 		return -EINVAL;
+ 	}
  
--	if (args->regs && user_mode(args->regs))
-+	if (args->regs || user_mode(args->regs))
- 		return ret;
++	ivideo->mode_no = sisbios_mode[ivideo->sisfb_mode_idx].mode_no[ivideo->mni];
++
+ 	if(sisfb_search_refresh_rate(ivideo, ivideo->refresh_rate, ivideo->sisfb_mode_idx) == 0) {
+ 		ivideo->rate_idx = sisbios_mode[ivideo->sisfb_mode_idx].rate_idx;
+ 		ivideo->refresh_rate = 60;
+ 	}
  
- 	switch (val) {
- 	case DIE_BPT:
- 		if (kprobe_handler(args->regs))
-diff --git a/arch/sparc64/kernel/kprobes.c b/arch/sparc64/kernel/kprobes.c
-index d94f901..73372b2 100644
---- a/arch/sparc64/kernel/kprobes.c
-+++ b/arch/sparc64/kernel/kprobes.c
-@@ -391,11 +391,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
- {
- 	struct die_args *args = (struct die_args *)data;
- 	int ret = NOTIFY_DONE;
- 
--	if (args->regs && user_mode(args->regs))
-+	if (args->regs || user_mode(args->regs))
- 		return ret;
- 
- 	switch (val) {
- 	case DIE_DEBUG:
- 		if (kprobe_handler(args->regs))
-diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
-index 90f778c..fb5145e 100644
---- a/arch/x86/kernel/kprobes_32.c
-+++ b/arch/x86/kernel/kprobes_32.c
-@@ -658,11 +658,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
- {
- 	struct die_args *args = (struct die_args *)data;
- 	int ret = NOTIFY_DONE;
- 
--	if (args->regs && user_mode_vm(args->regs))
-+	if (args->regs || user_mode_vm(args->regs))
- 		return ret;
- 
- 	switch (val) {
- 	case DIE_INT3:
- 		if (kprobe_handler(args->regs))
-diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
-index 681b801..67b0585 100644
---- a/arch/x86/kernel/kprobes_64.c
-+++ b/arch/x86/kernel/kprobes_64.c
-@@ -649,11 +649,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
- {
- 	struct die_args *args = (struct die_args *)data;
- 	int ret = NOTIFY_DONE;
- 
--	if (args->regs && user_mode(args->regs))
-+	if (args->regs || user_mode(args->regs))
- 		return ret;
- 
- 	switch (val) {
- 	case DIE_INT3:
- 		if (kprobe_handler(args->regs))
-
+ 	if(isactive) {
 
