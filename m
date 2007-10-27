@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbXJ0TSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbXJ0TUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756375AbXJ0TSN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 15:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbXJ0TR4
+	id S1756678AbXJ0TUw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbXJ0TUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 15:17:56 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3112 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751954AbXJ0TR4 (ORCPT
+	Sat, 27 Oct 2007 15:20:44 -0400
+Received: from web36614.mail.mud.yahoo.com ([209.191.85.31]:22584 "HELO
+	web36614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751863AbXJ0TUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 15:17:56 -0400
-Date: Sat, 27 Oct 2007 15:17:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: linux-kernel@vger.kernel.org, <netdev@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] QUESTION: How to fix race between .suspend routine
- and watchdog timer
-In-Reply-To: <200710261348.42748.maximlevitsky@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0710271516570.30287-100000@netrider.rowland.org>
+	Sat, 27 Oct 2007 15:20:43 -0400
+X-YMail-OSG: _YWU9lkVM1kiIymSpkMU_sO.tZWKWRW8szOMObjvviffFEFgOVgdcDrvwHm5U3MMLqW6Ms6o4Q--
+X-RocketYMMF: rancidfat
+Date: Sat, 27 Oct 2007 12:20:42 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>, casey@schaufler-ca.com
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071027030010.GA5450@Ahmed>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <750701.98310.qm@web36614.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Oct 2007, Maxim Levitsky wrote:
 
-> > > Looking through the dmfe code, I noticed yet another possible race.
-> > > A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
-> > > Again I need to prevent it from running during the suspend/resume, but how?
-> > > 
-> > > I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
-> > > race with already running timer.
-> > > I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
-> > > In dmfe case the timer does re-enable itself.
-> > 
-> > That comment isn't right.  del_timer_sync works perfectly well even if
-> > the timer routine re-enables itself, provided it stops doing so after a
-> > small number of iterations.
-> Thanks for the info. but....
-> Due to the "don't access the hardware, while powered-off" rule, I must know that the timer isn't running.
-> and won't be.
-> So what function to use (if possible) to be sure that the timer won't run anymore?
-> (Taking in the account the fact that it re-enables itself)
+--- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
 
-Use del_timer_sync().  It guarantees that when it returns, the timer 
-will be stopped and the timer routine will no longer be running on any 
-CPU.
+> Hi Casey,
+> 
+> Casey <casey@schaufler-ca.com> wrote:
+> >
+> > This version is again aimed at addressing Al Viro's issues in
+> > smackfs. Ahmed Darwish has again contributed in the repair of the
+> > locking issues there. The move to 2.6.24 was also an important
+> > release incentive.
+> >
+> 
+> My patches mentiond above is not applied in this version. The same 
+> lock issues remain. Did you forget applying them ?
 
-Alan Stern
+The patch I sent out was one version older than the one I
+intended to send. If I can recover the #$%^&*( disk I should
+have an update that includes those fixes presently. If not it
+may take a day or two longer. You have not been forgotten.
+Thank you for your contribution.
 
+
+Casey Schaufler
+casey@schaufler-ca.com
