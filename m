@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbXJ0OWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbXJ0O3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbXJ0OWE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbXJ0OVv
+	id S1755724AbXJ0O3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXJ0O3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:21:51 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57350 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755533AbXJ0OVu (ORCPT
+	Sat, 27 Oct 2007 10:29:43 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:45658 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbXJ0O3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:21:50 -0400
-Date: Sat, 27 Oct 2007 16:22:11 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] OSS msnd: fix array overflows
-Message-ID: <20071027142211.GZ30533@stusta.de>
+	Sat, 27 Oct 2007 10:29:42 -0400
+Date: Sat, 27 Oct 2007 10:29:16 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mike Galbraith <efault@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.23-rt3] NMI watchdog trace of deadlock
+In-Reply-To: <1193480269.8374.3.camel@Homer.simpson.net>
+Message-ID: <Pine.LNX.4.58.0710271028480.28295@gandalf.stny.rr.com>
+References: <1193245634.20679.8.camel@localhost.localdomain> 
+ <1193462494.25330.7.camel@Homer.simpson.net>  <200710271915.42363.nickpiggin@yahoo.com.au>
+  <20071027094407.GA12047@elte.hu> <1193480269.8374.3.camel@Homer.simpson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes array overflows in the OSS msnd driver spotted by the 
-Coverity checker.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+--
+On Sat, 27 Oct 2007, Mike Galbraith wrote:
+>
+> Hm.  Looking at the change to mm/bounce.c, perhaps I should do this
+> instead?
+>
+> --- ./fs/ntfs/aops.c.org	2007-10-27 10:16:40.000000000 +0200
+> +++ ./fs/ntfs/aops.c	2007-10-27 12:11:07.000000000 +0200
+> @@ -139,13 +139,13 @@ static void ntfs_end_buffer_async_read(s
+>  		recs = PAGE_CACHE_SIZE / rec_size;
+>  		/* Should have been verified before we got here... */
+>  		BUG_ON(!recs);
+> -		local_irq_save(flags);
+> +		local_irq_save_nort(flags);
+>  		kaddr = kmap_atomic(page, KM_BIO_SRC_IRQ);
+>  		for (i = 0; i < recs; i++)
+>  			post_read_mst_fixup((NTFS_RECORD*)(kaddr +
+>  					i * rec_size), rec_size);
+>  		kunmap_atomic(kaddr, KM_BIO_SRC_IRQ);
+> -		local_irq_restore(flags);
+> +		local_irq_restore_nort(flags);
+>  		flush_dcache_page(page);
+>  		if (likely(page_uptodate && !PageError(page)))
+>  			SetPageUptodate(page);
+>
 
----
-97463a59dfb9ccb915d3b615225c98cb3e310c0a 
-diff --git a/sound/oss/msnd.h b/sound/oss/msnd.h
-index 05cf786..d0ca582 100644
---- a/sound/oss/msnd.h
-+++ b/sound/oss/msnd.h
-@@ -233,8 +233,8 @@ typedef struct multisound_dev {
- 	spinlock_t lock;
- 	int nresets;
- 	unsigned long recsrc;
--	int left_levels[16];
--	int right_levels[16];
-+	int left_levels[32];
-+	int right_levels[32];
- 	int mixer_mod_count;
- 	int calibrate_signal;
- 	int play_sample_size, play_sample_rate, play_channels;
+Thanks, applied.
+
+-- Steve
 
