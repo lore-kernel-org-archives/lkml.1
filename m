@@ -1,131 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbXJ0UHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbXJ0UOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbXJ0UHs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 16:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXJ0UHj
+	id S1757571AbXJ0UOt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 16:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXJ0UOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 16:07:39 -0400
-Received: from smtp3.netcabo.pt ([212.113.174.30]:17840 "EHLO
-	exch01smtp11.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750894AbXJ0UHi (ORCPT
+	Sat, 27 Oct 2007 16:14:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:13820 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXJ0UOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 16:07:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAEI3I0dViqaH/2dsb2JhbAAMkDw
-Message-ID: <47239A37.8000401@rncbc.org>
-Date: Sat, 27 Oct 2007 21:06:15 +0100
-From: Rui Nuno Capela <rncbc@rncbc.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 27 Oct 2007 16:14:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=sIYzPbaoIyNRl/nEJqk56OnjQg1qQMhu5wexXjuPFvN9Xg2hwBRADpD7Tj0o/30kgYRW9SfoONBKI79A6W2Jcm9g+jElyObOCJuiri+FifGrDctOKvNPrRwiMASrA/XeixNozNf4PMIXq6j7HH/FkBHmrS7cPr06SY3UO/N/J6M=
+Date: Sun, 28 Oct 2007 00:14:29 +0400
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: torvalds@osdl.org, akpm@osdl.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+Message-ID: <20071027201429.GE9816@martell.zuzino.mipt.ru>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0710272114590.1818@scrub.home>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23-rt4 (was 2.6.23-rt1 trouble)
-References: <1192154640.15992.10.camel@localhost.localdomain>          <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org> <47234EA1.4050006@rncbc.org> <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Oct 2007 20:07:35.0852 (UTC) FILETIME=[0440DEC0:01C818D5]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710272114590.1818@scrub.home>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> --
+On Sat, Oct 27, 2007 at 09:20:43PM +0200, Roman Zippel wrote:
+> On Sun, 21 Oct 2007, Alexey Dobriyan wrote:
 > 
-> On Sat, 27 Oct 2007, Rui Nuno Capela wrote:
+> > So far remedies were:
+> > a) grep(1) -- obviously fragile. I tried at some point grepping for
+> >    spin_lock_irqsave(), found quite a few, but it became booooring quickly.
+> > b) BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long)) -- was tried,
+> >    brutally broke some arches, survived one commit before revert :^)
+> >    Doesn't work on i386 where sizeof(unsigned int) == sizeof(unsigned long).
+> > 
+> > So it would be nice to have something more robust.
 > 
->>> On Mon, October 15, 2007 11:49, Rui Nuno Capela wrote:
->>>> I am experiencing some highly annoying but intermitent freezing on a
->>>> pentium4 2.80G HT/SMT box, when doing normal desktop work with 2.6.23-rt1.
->>>>
->>>>
->>>> The same crippling behavior does not occur on a Core 2 Due T7200 2.0G
->>>> SMP, so I suspect it's something due specific to the SMT scheduling
->>>> support (Hyper-Threading). But can't tell for sure, obviously :)
->>>>
->>> I was wrong. After several trials the same behavior also occurs on the
->>> Core2 Duo T7200. It just took longer to show its nasty.
->>>
->>>
->>>> The symptoms are noticeable primarily as some X/GUI intermitent freezing,
->>>> sometimes only one application, then several and ultimately the whole X
->>>> desktop becomes completely unresponsive. It looks like scheduling
+> If it's just about the type checking, something like below should pretty 
+> much do the same.
+
+It won't catch, the following if both variables are unsigned long:
+
+	spin_lock_irqsave(&lock, flags);
+		[stuff]
+	spin_unlock_irqrestore(&lock, foo->flags);
+
+It won't catch "static unsigned long flags;". With sparse, we can
+eventually mark type as "on-stack only".
+
+> > * irq_flags_t allows arch maintainers to eventually switch to something
+> >   smaller than "unsigned long" if they want to.
 > 
-> When things start to freeze, could you capture the output of a sysrq-t.
-> 
+> Considering how painful this conversion could be, the question is whether 
+> this is really needed.
 
-yes, you can find a complete serial console capture here, where it holds
-the final SysRq-T output:
-  http://www.rncbc.org/datahub/console-2.6.23.1-rt4.1-1.log
+In the long run, I believe, this is needed. We want more bugs to be
+found automatically, so we can have more time for non-trivial bugs.
 
-the corresponding .config is also there:
-  http://www.rncbc.org/datahub/config-2.6.23.1-rt4.1
+> Comments so far suggest some archs don't need all 
+> of it, but does someone need more?
 
-the reason this is a new kernel build, following a shot in the dark from
-nick mainsbridge, which let out the ntfs module build (CONFIG_NTFS_FS is
-not set) suggesting that would mitigate similar freezes.
+I don't know.
 
-in deed the general feel is that it seems to run longer and less prone
-to those incidents, but that is just a gut feeling, nothing more.
-
-hope this be any useful.
-
-> 
->>>> problems. There is this hint that switching to a spare console terminal
->>>> (via Ctrl+Alt+Fn) might cause later recovery. But its just a question of
->>>> some more time for it just happens again and again, one after another,
->>>> several applications becoming temporarily frozen and just by luck the
->>>> system gets back to normal, probably due to some incidental shake-up :)
->>>> but there are other times that nothing seems to help with no alternative
->>>> to the power-reset switch.
->>>>
->>>> I could not find any evidence on dmesg or in the system logs, of any
->>>> apparent trouble. No BUGs, no oops, no panics, no nothing. It just
->>>> freezes, this and that, now and then. It just makes it all unworkable
->>>> and obviously subject to ditching.
->>>>
->>>> Again, this only happens on this P4/HT box. On a Core2 Duo laptop, with
->>>> same 2.6.23-rt1 with the very same kernel configuration, it does not show
->>>> any illness and is running quite fine.
->>>>
->>> False. It used to run fine, until the creeps happen first time :(
->>>
->>>
->>>> Remember one report I had about a similar freezing behavior? Now it's
->>>> happening the other way around: the core2 is OK, the pentium4 is KO.
->>>>
->>> Now it applies to all 2.6.23-rt1 images I could test upon.
->>>
->>>
->>>> One naive suspicion goes like the new rcu-preempt code is to blame, since
->>>> I don't remember having this or any other trouble with 2.6.23-rc8-rt1.
->>>>
->>> Not be sure anymore, but this seems to be still a valid assumption.
->>>
->> just to let you know that still the same trouble persists with 2.6.23.1-rt4
->>
->> .config can be found here:
->>    http://www.rncbc.org/datahub/config-2.6.23.1-rt4.0
->>
-> 
-> I have a P4HT laptop (unfortunately with no serial). I use it as one of my
-> main machines, so it will suck for me when it freezes ;-). I'll take your
-> config and try it out.
-> 
-> I'll most likely do this on Monday since process Wife has the highest
-> priority over the weekend ;-)
-> 
-
-that is also true here :)
-
-otoh, as reported before, the freezes are not exclusive to P4HT, which
-is the main box I'm been reporting here (the one which has a good old
-serial port anyway), but also applies to my other laptop, an core2 duo
-t7200.
-
-bye
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+> --- linux-2.6.orig/include/linux/irqflags.h
+> +++ linux-2.6/include/linux/irqflags.h
+> @@ -41,6 +41,10 @@
+>  # define INIT_TRACE_IRQFLAGS
+>  #endif
+>  
+> +static __always_inline void __irq_flags_check(unsigned long *flags)
+> +{
+> +}
+> +
+>  #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+>  
+>  #include <asm/irqflags.h>
+> @@ -50,10 +54,11 @@
+>  #define local_irq_disable() \
+>  	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
+>  #define local_irq_save(flags) \
+> -	do { raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
+> +	do { __irq_flags_check(&flags); raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
+>  
+>  #define local_irq_restore(flags)				\
+>  	do {							\
+> +		__irq_flags_check(&flags);			\
+>  		if (raw_irqs_disabled_flags(flags)) {		\
+>  			raw_local_irq_restore(flags);		\
+>  			trace_hardirqs_off();			\
+> @@ -69,8 +74,8 @@
+>   */
+>  # define raw_local_irq_disable()	local_irq_disable()
+>  # define raw_local_irq_enable()		local_irq_enable()
+> -# define raw_local_irq_save(flags)	local_irq_save(flags)
+> -# define raw_local_irq_restore(flags)	local_irq_restore(flags)
+> +# define raw_local_irq_save(flags)	({ __irq_flags_check(&flags); local_irq_save(flags); })
+> +# define raw_local_irq_restore(flags)	({ __irq_flags_check(&flags); local_irq_restore(flags); })
+>  #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+>  
+>  #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
