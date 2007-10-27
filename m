@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbXJ0Ldh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbXJ0Les@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbXJ0Ldh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 07:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXJ0Ld2
+	id S1754144AbXJ0Les (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 07:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXJ0Lek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 07:33:28 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43544 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbXJ0Ld1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 07:33:27 -0400
-Date: Sat, 27 Oct 2007 13:33:26 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Markus Elfring <Markus.Elfring@web.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Check handling of kernel build output directory
-In-Reply-To: <fft89p$rko$1@ger.gmane.org>
-Message-ID: <Pine.LNX.4.64.0710271333150.30465@fbirervta.pbzchgretzou.qr>
-References: <fft89p$rko$1@ger.gmane.org>
+	Sat, 27 Oct 2007 07:34:40 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21689 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752006AbXJ0Lek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 07:34:40 -0400
+Date: Sat, 27 Oct 2007 13:34:36 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       Philip Langdale <philipl@overt.org>
+Subject: Re: [PATCH] compat_ioctl: fix block device compat ioctl regression
+Message-ID: <20071027113435.GG8875@kernel.dk>
+References: <47221F91.60401@overt.org> <200710270051.38748.arnd@arndb.de> <47228A9E.80505@overt.org> <200710271138.06456.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710271138.06456.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 27 2007, Arnd Bergmann wrote:
+> From: Philip Langdale <philipl@overt.org>
+> The conversion of handlers to compat_blkdev_ioctl accidentally
+> disabled handling of most ioctl numbers on block devices because
+> of a typo. Fix the one line to enable it all again.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> 
+> Mea Culpa. This should have been found by my testing, as it's clear
+> that most of my big patch never worked at all. Sorry for causing
+> problems for everyone involved here.
+> 
+> I'm attributing the patch to Philip, as he's the one who pointed
+> out to me what the fix is.
 
-On Oct 26 2007 19:31, Markus Elfring wrote:
->
->Two ways are mentioned in the Makefile for the Linux kernel 2.6.31.1 to specify output
->diretories. The description of the environment variable "KBUILD_OUTPUT" is missing from
->the file "README".
->
->I am trying to generate all executable files for the current stable kernel release on my
->openSUSE 10.3 system.
->
->Sonne:/usr/src/linux # make mrproper
->Sonne:/usr/src/linux # cp -p /boot/config-2.6.23.1-0-adjusted .config
->[reactivate backup copy]
+Oops, added for swift inclusion.
 
-.config should be copied to the output directory.
+-- 
+Jens Axboe
 
->Sonne:/usr/src/linux # export KBUILD_OUTPUT=/usr/src/obj/linux/2.6.23.1/x86_64/adjusted
