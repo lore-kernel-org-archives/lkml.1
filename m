@@ -1,92 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXJ0OnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXJ0OpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbXJ0OnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXJ0OnA
+	id S1755340AbXJ0OpS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXJ0OpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:43:00 -0400
-Received: from fallback.mail.ru ([194.67.57.14]:13123 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751109AbXJ0Om7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:42:59 -0400
-Date: Sat, 27 Oct 2007 18:37:31 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, netdev@vger.kernel.org,
-       leoli@freescale.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ucc_geth: add support for netpoll
-Message-ID: <20071027143731.GA2616@zarina>
-Reply-To: cbou@mail.ru
-References: <20071011124842.GB13963@localhost.localdomain> <4723389F.7010109@ru.mvista.com>
+	Sat, 27 Oct 2007 10:45:06 -0400
+Received: from smtp4.netcabo.pt ([212.113.174.31]:59195 "EHLO
+	exch01smtp09.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750892AbXJ0OpE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 10:45:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAJnrIkdViqaH/2dsb2JhbAAMkDw
+Message-ID: <47234EA1.4050006@rncbc.org>
+Date: Sat, 27 Oct 2007 15:43:45 +0100
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <4723389F.7010109@ru.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: 2.6.23-rt4 (was 2.6.23-rt1 trouble)
+References: <1192154640.15992.10.camel@localhost.localdomain>          <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org>
+In-Reply-To: <471648B8.1030007@rncbc.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Oct 2007 14:45:02.0526 (UTC) FILETIME=[F4C5ADE0:01C818A7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 05:09:51PM +0400, Sergei Shtylyov wrote:
-> Hello.
+> On Mon, October 15, 2007 11:49, Rui Nuno Capela wrote:
+>>
+>> I am experiencing some highly annoying but intermitent freezing on a
+>> pentium4 2.80G HT/SMT box, when doing normal desktop work with 2.6.23-rt1.
+>>
+>>
+>> The same crippling behavior does not occur on a Core 2 Due T7200 2.0G
+>> SMP, so I suspect it's something due specific to the SMT scheduling
+>> support (Hyper-Threading). But can't tell for sure, obviously :)
+>>
 > 
-> Anton Vorontsov wrote:
+> I was wrong. After several trials the same behavior also occurs on the
+> Core2 Duo T7200. It just took longer to show its nasty.
 > 
-> > This patch adds netpoll support for the QE UCC Gigabit Ethernet
-> > driver. The approach is very similar to the gianfar driver.
 > 
->     It's rather contrarywise -- this is standard approach and gianfar with its 
-> 3 TSEC IRQs has a quite non-standard poll_controller() implementation.
-
-Oh.. well, right -- gianfar a bit more comlex in that regard.
-
+>> The symptoms are noticeable primarily as some X/GUI intermitent freezing,
+>> sometimes only one application, then several and ultimately the whole X 
+>> desktop becomes completely unresponsive. It looks like scheduling 
+>> problems. There is this hint that switching to a spare console terminal 
+>> (via Ctrl+Alt+Fn) might cause later recovery. But its just a question of
+>> some more time for it just happens again and again, one after another, 
+>> several applications becoming temporarily frozen and just by luck the 
+>> system gets back to normal, probably due to some incidental shake-up :) 
+>> but there are other times that nothing seems to help with no alternative 
+>> to the power-reset switch.
+>>
+>> I could not find any evidence on dmesg or in the system logs, of any
+>> apparent trouble. No BUGs, no oops, no panics, no nothing. It just
+>> freezes, this and that, now and then. It just makes it all unworkable
+>> and obviously subject to ditching.
+>>
+>> Again, this only happens on this P4/HT box. On a Core2 Duo laptop, with
+>> same 2.6.23-rt1 with the very same kernel configuration, it does not show 
+>> any illness and is running quite fine.
+>>
 > 
-> > Tested using netconsole.
+> False. It used to run fine, until the creeps happen first time :(
 > 
->     KGDBoE is considered a better test (I hope you've also tested with it).
-
-At the time of posting it was tested using netconsole only, a few
-days later it's was tested using KGDBoE also. So, it works indeed.
-
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> > index 18a6f48..06807ce 100644
-> > --- a/drivers/net/ucc_geth.c
-> > +++ b/drivers/net/ucc_geth.c
-> > @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > +#ifdef CONFIG_NET_POLL_CONTROLLER
-> > +/*
-> > + * Polling 'interrupt' - used by things like netconsole to send skbs
-> > + * without having to re-enable interrupts. It's not called while
-> > + * the interrupt routine is executing.
-> > + */
-> > +static void ucc_netpoll(struct net_device *dev)
-> > +{
-> > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
-> > +
-> > +	disable_irq(ugeth->ug_info->uf_info.irq);
-> > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
-> > +	enable_irq(ugeth->ug_info->uf_info.irq);
 > 
->     Why not make it less complex (for a reader and gcc too :-) ?
+>> Remember one report I had about a similar freezing behavior? Now it's
+>> happening the other way around: the core2 is OK, the pentium4 is KO.
+>>
+> 
+> Now it applies to all 2.6.23-rt1 images I could test upon.
+> 
+> 
+>> One naive suspicion goes like the new rcu-preempt code is to blame, since
+>> I don't remember having this or any other trouble with 2.6.23-rc8-rt1.
+>>
+> 
+> Not be sure anymore, but this seems to be still a valid assumption.
+> 
 
-Yup, I'm agree here but it's too late. Again. ;-)
+just to let you know that still the same trouble persists with 2.6.23.1-rt4
 
-This patch already accepted into the -mm (a week or so after the
-silence), so.. now I'd rather not bother Andrew with such really
-cosmetic changes. But if Jeff would directly apply modfied patch,
-I'll send it. ;-)
+.config can be found here:
+   http://www.rncbc.org/datahub/config-2.6.23.1-rt4.0
 
 
-Anyhow, I'm sincerely appreciate your comments.
-
-Thanks,
-
+cheers.
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
