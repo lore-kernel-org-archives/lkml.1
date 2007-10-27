@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbXJ0UW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbXJ0UZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbXJ0UW1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 16:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXJ0UWT
+	id S1757978AbXJ0UZJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 16:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXJ0UY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 16:22:19 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43925 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbXJ0UWT (ORCPT
+	Sat, 27 Oct 2007 16:24:58 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:11459 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbXJ0UY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 16:22:19 -0400
-Date: Sat, 27 Oct 2007 21:17:00 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
-Message-ID: <20071027201700.GC22235@flint.arm.linux.org.uk>
-References: <20071027184404.GQ8181@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Sat, 27 Oct 2007 16:24:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=O4cwraLBXYj3pcW+OOEo0fZnVBdo5nUJRNXvQHbSSk97bh0nvdlmZWx19/w4SqeytubixyY42xofaeiT8PBiZ8bsXTGk04DTvELRqUMKKiILZT/SW4DuEWohsxQqnRYlLYmojSx1npW34A8bCVtcx7NOYVhI1mtsn3eKPyTh7to=
+Date: Sun, 28 Oct 2007 00:24:49 +0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] irq_flags_t: intro and core annotations
+Message-ID: <20071027202449.GF9816@martell.zuzino.mipt.ru>
+References: <20071020235546.GB1825@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0710251734190.17781@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071027184404.GQ8181@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0710251734190.17781@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 07:44:04PM +0100, Al Viro wrote:
+On Thu, Oct 25, 2007 at 05:40:03PM +0200, Jan Engelhardt wrote:
+> On Oct 21 2007, Alexey Dobriyan wrote:
+> >
+> >One of type of bugs steadily being fought is the following one:
+> >
+> >	unsigned int flags;
+> >	spin_lock_irqsave(&lock, flags);
+> >
+> >where "flags" should be "unsigned long". Here is far from complete list 
+> >of commits fixing such bugs:
+> >
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
-> diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-> index 21ba571..2d09fef 100644
-> --- a/drivers/scsi/arm/scsi.h
-> +++ b/drivers/scsi/arm/scsi.h
-> @@ -39,7 +39,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
->  		SCp->buffer++;
->  		SCp->buffers_residual--;
->  		SCp->ptr = (char *)
-> -			 (page_address(SCp->buffer->page) +
-> +			 (page_address(sg_page(SCp->buffer)) +
->  			  SCp->buffer->offset);
->  		SCp->this_residual = SCp->buffer->length;
->  	} else {
-> @@ -77,7 +77,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
->  		SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
->  		SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
->  		SCpnt->SCp.ptr = (char *)
-> -			 (page_address(SCpnt->SCp.buffer->page) +
-> +			 (page_address(sg_page(SCpnt->SCp.buffer)) +
->  			  SCpnt->SCp.buffer->offset);
->  		SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
->  		SCpnt->SCp.phase = SCpnt->request_bufflen;
+> How about making spin_lock_irqsave actually take a pointer to flags? 
 
-FYI, here's what I have queued (cut'n'pasted so probably won't apply):
+How would you do it without flag day?
 
-diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-index 21ba571..bb6550e 100644
---- a/drivers/scsi/arm/scsi.h
-+++ b/drivers/scsi/arm/scsi.h
-@@ -38,9 +38,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
-        if (ret) {
-                SCp->buffer++;
-                SCp->buffers_residual--;
--               SCp->ptr = (char *)
--                        (page_address(SCp->buffer->page) +
--                         SCp->buffer->offset);
-+               SCp->ptr = sg_virt(SCp->buffer);
-                SCp->this_residual = SCp->buffer->length;
-        } else {
-                SCp->ptr = NULL;
-@@ -76,9 +74,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
+> (Which would be the logical choice if it were a function and not a 
+> macro...) That would flag up all violations ("without cast to different 
+> pointer" or so) while usually not breaking compilation.
+> 
+> Of course, irq_flags_t is probably the best long-term solution if one 
+> wants to hide a struct. (Even then perhaps, use a pointer instead?)
 
-                SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
-                SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
--               SCpnt->SCp.ptr = (char *)
--                        (page_address(SCpnt->SCp.buffer->page) +
--                         SCpnt->SCp.buffer->offset);
-+               SCpnt->SCp.ptr = sg_virt(SCpnt->SCp.buffer);
-                SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
-                SCpnt->SCp.phase = SCpnt->request_bufflen;
+IIRC, Christoph mentioned:
 
+	irq_flags_t flags;
 
+	flags = spin_lock_irqXXX(&lock);
+	spin_unlock_irqYYY(&lock, flags);
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+where XXX and YYY are still to be found good names :^) It's also a solution
+without flag day and with more sane lock part -- "how flags are modified
+if they are passed by value?"
+
+I start to like this proposal but I can't come up with good names.
