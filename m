@@ -1,59 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbXJ0OxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbXJ0O4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbXJ0OxR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXJ0OxD
+	id S1756003AbXJ0O4O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXJ0Oz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:53:03 -0400
-Received: from ro-out-1112.google.com ([72.14.202.183]:25447 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbXJ0OxA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:53:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=V5QaeDCN04BPuZTnyZ+EFV+c49xWpi01fKKFgZjKO2hqvrOGT5awAFGSjwMySksm2iyF+Mlhsgl2b/ardS7Nipz5n+G8OvEgFBSh12EhUVfGjvalFLRrI8aBJTUvTy4tKK1q+nDYP7y71bZAFVCSTnFMOud8C13sc0GKT/azIIA=
-Date: Sat, 27 Oct 2007 22:47:45 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: KaiGai Kohei <kaigai@ak.jp.nec.com>, David Woodhouse <dwmw2@infradead.org>,
-       jffs-dev@axis.com, linux-kernel@vger.kernel.org
-Subject: [Git Patch]fs/jffs2/acl.c: Fix a may-be-uninitialized return value
-Message-ID: <20071027144745.GF2506@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20071027141842.GV30533@stusta.de>
+	Sat, 27 Oct 2007 10:55:58 -0400
+Received: from mx39.mail.ru ([194.67.23.35]:56656 "EHLO mx39.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbXJ0Oz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 10:55:56 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2.624-rc1 regression] lost battery information
+Date: Sat, 27 Oct 2007 18:55:48 +0400
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frans Pop <elendil@planet.nl>
+References: <200710262024.06012.arvidjaar@mail.ru> <200710271122.49344.arvidjaar@mail.ru> <4723410E.1010208@gmail.com>
+In-Reply-To: <4723410E.1010208@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071027141842.GV30533@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: multipart/signed;
+  boundary="nextPart13127267.zRGSiVNXa0";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710271855.52866.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart13127267.zRGSiVNXa0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Fix a may-be-uninitialized return value.
+On Saturday 27 October 2007, Alexey Starikovskiy wrote:
+> Andrey,
+> Please try the attached patch. I choose to do snprintf() instead of direct
+> copy, as your previous message showed empty OEM type.
+>
 
-Found-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Not quite. Now I get
 
----
- fs/jffs2/acl.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+OEM info:                0
 
-diff --git a/fs/jffs2/acl.c b/fs/jffs2/acl.c
-index 9728614..5b14062 100644
---- a/fs/jffs2/acl.c
-+++ b/fs/jffs2/acl.c
-@@ -358,7 +358,7 @@ int jffs2_init_acl_pre(struct inode *dir_i, struct inode *inode, int *i_mode)
- int jffs2_init_acl_post(struct inode *inode)
- {
- 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
--	int rc;
-+	int rc = 0;
- 
- 	if (f->i_acl_default) {
- 		rc = __jffs2_set_acl(inode, JFFS2_XPREFIX_ACL_DEFAULT, f->i_acl_default);
+while before I got empty string. If I read acpi_extract_package correctly, =
+it=20
+actually interpreted integer as string without any conversion. Which in thi=
+s=20
+case obviously gave us empty string (integer being 0). I'd prefer to remain=
+=20
+compatible.
 
--- 
-May the Source Be With You.
+also
+
+{pts/1}% cat /sys/class/power_supply/BAT1/manufacturer
+0
+
+which is rather weird manufacturer name :)
+
+> Thanks,
+> Alex.
+>
+> Andrey Borzenkov wrote:
+> > On Friday 26 October 2007, Alexey Starikovskiy wrote:
+> >> Your cat's "Bad address" means -EFAULT, according to "man errno".
+> >> Please apply this patch to see what exactly failed...
+> >
+> > [ 1191.471572] ACPI: element[12]->type =3D 1, expected string
+> > [ 1196.640065] ACPI: element[12]->type =3D 1, expected string
+> > [ 1199.479773] ACPI: element[12]->type =3D 1, expected string
+> > [ 1199.745435] ACPI: element[12]->type =3D 1, expected string
+> >
+> > it is "OEM type". For reference here is _BIF from my DSDT:
+> >
+> >              Method (_BIF, 0, NotSerialized)
+> >             {
+> >                 Name (BUFF, Package (0x0D) {})
+> >                 Store (0x00, Index (BUFF, 0x00))
+> >                 Store (\_SB.MEM.BDV2, Local2)
+> >                 Multiply (\_SB.MEM.BDC2, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x01))
+> >                 Multiply (\_SB.MEM.BLF2, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x02))
+> >                 Store (\_SB.MEM.BTC2, Index (BUFF, 0x03))
+> >                 Store (\_SB.MEM.BDV2, Index (BUFF, 0x04))
+> >                 Multiply (\_SB.MEM.BCW2, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x05))
+> >                 Multiply (\_SB.MEM.BCL2, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x06))
+> >                 Multiply (\_SB.MEM.BG12, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x07))
+> >                 Multiply (\_SB.MEM.BG22, Local2, Local0)
+> >                 Divide (Local0, 0x03E8, Local1, Local0)
+> >                 Store (Local0, Index (BUFF, 0x08))
+> >                 Store (\_SB.MEM.BMN2, Index (BUFF, 0x09))
+> >                 Store (\_SB.MEM.BSN2, Index (BUFF, 0x0A))
+> >                 Store (\_SB.MEM.BTP2, Index (BUFF, 0x0B))
+> >                 Store (\_SB.MEM.BOI2, Index (BUFF, 0x0C))
+> >                 Return (BUFF)
+> >             }
+> >
+> > This is behaviour change. Previous battery.c used generic
+> > acpi_extract_package which allowed (allows) for object of type integer
+> > when string is requested:
+> >
+> >                 case ACPI_TYPE_INTEGER:
+> >                         switch (format_string[i]) {
+> >                         case 'N':
+> >                                 size_required +=3D sizeof(acpi_integer);
+> >                                 tail_offset +=3D sizeof(acpi_integer);
+> >                                 break;
+> >                         case 'S':
+> >                                 size_required +=3D
+> >                                     sizeof(char *) + sizeof(acpi_intege=
+r)
+> > + sizeof(char);
+> >                                 tail_offset +=3D sizeof(char *);
+> >                                 break;
+> >
+> > while current battery.c:extract_package fails:
+> >
+> >                 if (offsets[i].mode) {
+> >                         if (element->type !=3D ACPI_TYPE_STRING &&
+> >                             element->type !=3D ACPI_TYPE_BUFFER) {
+> > printk (KERN_ERR PREFIX "element[%d]->type =3D %x, expected string\n", =
+i,
+> > element->type);
+> >                                 return -EFAULT;
+> >                         }
+> >
+> > well, while it could be BIOS fault this happily worked before ... This =
+is
+> > obviously also the reason why I do not have anything in /sys
+> >
+> > Fans, could you check whether you have the same issue using test patch?
+
+
+
+--nextPart13127267.zRGSiVNXa0
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHI1F1R6LMutpd94wRAnbXAKCnMZwKGgROr13DlyjKiMoAKamAcQCfeG8c
+rECGurTVV/6CcXk4gyaXupM=
+=buEx
+-----END PGP SIGNATURE-----
+
+--nextPart13127267.zRGSiVNXa0--
