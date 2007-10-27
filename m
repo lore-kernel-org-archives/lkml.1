@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbXJ0TEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbXJ0TFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbXJ0TEU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 15:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbXJ0TEM
+	id S1755514AbXJ0TFR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 15:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXJ0TFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 15:04:12 -0400
-Received: from main.gmane.org ([80.91.229.2]:33573 "EHLO ciao.gmane.org"
+	Sat, 27 Oct 2007 15:05:03 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33135 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbXJ0TEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 15:04:12 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: 2.6.24-rc1: First impressions
-Date: Sat, 27 Oct 2007 15:14:19 -0400
-Message-ID: <47238E0B.2010601@tmr.com>
-References: <796505.25770.qm@web32612.mail.mud.yahoo.com>	<20071026152221.GA26619@elte.hu>	<20071026122155.45ce72e7.akpm@linux-foundation.org>	<20071026193339.GA21799@elte.hu> <20071026124252.aba97af4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Ingo Molnar <mingo@elte.hu>, spamtrap@knobisoft.de,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       wfg@mail.ustc.edu.cn, torvalds@linux-foundation.org, riel@redhat.com
-X-Gmane-NNTP-Posting-Host: pool-70-109-100-63.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <20071026124252.aba97af4.akpm@linux-foundation.org>
+	id S1751800AbXJ0TFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 15:05:01 -0400
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix x86_64 TIF_SYSCALL_TRACE race in entry.S
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071026193738.GA1591@Krystal> <20071027180837.GA18134@Krystal>
+Date: Sat, 27 Oct 2007 21:04:57 +0200
+In-Reply-To: <20071027180837.GA18134@Krystal> (Mathieu Desnoyers's message of "Sat\, 27 Oct 2007 14\:08\:37 -0400")
+Message-ID: <p73sl3wnzty.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 26 Oct 2007 21:33:40 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> * Andrew Morton <akpm@linux-foundation.org> wrote:
->>
+Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
 
->> so a final 'sync' should be added to the test too, and the time it takes 
->> factored into the bandwidth numbers?
-> 
-> That's one way of doing it.  Or just run the test for a "long" time.  ie:
-> much longer than (total-memory / disk-bandwidth).  Probably the latter
-> will give a more accurate result, but it can get boring.
-> 
-Longer might be less inaccurate, but without flushing the last data you 
-really don't get best accuracy, you just reduce the error. Clearly doing 
-fdatasync() is best, since other i/o caused by sync() can skew the results.
+> We make sure that the thread flag read is coherent between our new test and the ALLWORK_MASK test by first saving it in a register used for both comparisons.
+>
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+That doesn't make sense. If someone is setting those asynchronously you 
+can always race.
+
+You should really just stop the process like ptrace does before changing
+such things.
+
+-Andi
 
