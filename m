@@ -1,158 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbXJ0O4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbXJ0O6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbXJ0O4O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 10:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXJ0Oz6
+	id S1756151AbXJ0O6d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 10:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbXJ0O6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 10:55:58 -0400
-Received: from mx39.mail.ru ([194.67.23.35]:56656 "EHLO mx39.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbXJ0Oz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 10:55:56 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.624-rc1 regression] lost battery information
-Date: Sat, 27 Oct 2007 18:55:48 +0400
-User-Agent: KMail/1.9.7
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frans Pop <elendil@planet.nl>
-References: <200710262024.06012.arvidjaar@mail.ru> <200710271122.49344.arvidjaar@mail.ru> <4723410E.1010208@gmail.com>
-In-Reply-To: <4723410E.1010208@gmail.com>
+	Sat, 27 Oct 2007 10:58:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:32449 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbXJ0O6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 10:58:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=ji+Pf2988jpU+eVFx/hL4VLfBGmrJZaBuyGr27DbCDIKQIM9mwGg6CzzP7aTBqKa9/78qrO7MMmuX5ivth+R3SbAg/c9MB5oEgxs/U7YcOrBEiKr+pz5AdUULX5lv+vXHB2Cvanz1/QdJaLikCKuwVbso9PhMmVqErarYFT6eTo=
+Date: Sat, 27 Oct 2007 05:00:10 +0200
+To: casey@schaufler-ca.com
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
+Message-ID: <20071027030010.GA5450@Ahmed>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart13127267.zRGSiVNXa0";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200710271855.52866.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4720118C.5020906@schaufler-ca.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart13127267.zRGSiVNXa0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Casey,
 
-On Saturday 27 October 2007, Alexey Starikovskiy wrote:
-> Andrey,
-> Please try the attached patch. I choose to do snprintf() instead of direct
-> copy, as your previous message showed empty OEM type.
+Casey <casey@schaufler-ca.com> wrote:
+>
+> This version is again aimed at addressing Al Viro's issues in
+> smackfs. Ahmed Darwish has again contributed in the repair of the
+> locking issues there. The move to 2.6.24 was also an important
+> release incentive.
 >
 
-Not quite. Now I get
+My patches mentiond above is not applied in this version. The same 
+lock issues remain. Did you forget applying them ? In that case, 
+here're the same patches again (on ver8):
 
-OEM info:                0
+==> 1:
+cipso_seq_show should not be passed smack labels with no cipso
+mapping. Omit non-cipso mapped labels in cipso_seq_start and 
+BUG in case cipso_seq_show was passed a non-cipso label.
 
-while before I got empty string. If I read acpi_extract_package correctly, =
-it=20
-actually interpreted integer as string without any conversion. Which in thi=
-s=20
-case obviously gave us empty string (integer being 0). I'd prefer to remain=
-=20
-compatible.
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.coM>
+---
 
-also
+smackv8-omit-noncipso-in-seq-start.patch
 
-{pts/1}% cat /sys/class/power_supply/BAT1/manufacturer
-0
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 55ba2dc..b061cd0 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -297,14 +297,22 @@ void smk_cipso_doi(void)
+ 
+ /*
+  * Seq_file read operations for /smack/cipso
++ *
++ * Omit labels with no associated cipso values from being
++ * displayed in seq_show()
+  */
+ 
+ static void *cipso_seq_start(struct seq_file *s, loff_t *pos)
+ {
++	struct smack_known *skp = smack_known;
++
+ 	if (*pos >= smack_cipso_count)
+ 		return NULL;
+ 
+-	return smack_known;
++	while (skp && !skp->smk_cipso)
++		skp = skp->smk_next;
++
++	return skp;
+ }
+ 
+ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
+@@ -313,9 +321,6 @@ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
+ 
+ 	(*pos)++;
+ 
+-	/*
+-	 * Omit labels with no associated cipso value
+-	 */
+ 	while (skp && !skp->smk_cipso)
+ 		skp = skp->smk_next;
+ 
+@@ -336,12 +341,11 @@ static int cipso_seq_show(struct seq_file *s, void *v)
+ 	int i;
+ 	unsigned char m;
+ 
+-	if (scp == NULL)
+-		return 0;
++	BUG_ON(!scp);
++	cbp = scp->smk_catset;
+ 
+ 	seq_printf(s, "%s %3d", (char *)&skp->smk_known, scp->smk_level);
+ 
+-	cbp = scp->smk_catset;
+ 	for (i = 0; i < SMK_LABELLEN; i++)
+ 		for (m = 0x80; m != 0; m >>= 1) {
+ 			if (m & cbp[i]) {
 
-which is rather weird manufacturer name :)
+==> 2:
 
-> Thanks,
-> Alex.
->
-> Andrey Borzenkov wrote:
-> > On Friday 26 October 2007, Alexey Starikovskiy wrote:
-> >> Your cat's "Bad address" means -EFAULT, according to "man errno".
-> >> Please apply this patch to see what exactly failed...
-> >
-> > [ 1191.471572] ACPI: element[12]->type =3D 1, expected string
-> > [ 1196.640065] ACPI: element[12]->type =3D 1, expected string
-> > [ 1199.479773] ACPI: element[12]->type =3D 1, expected string
-> > [ 1199.745435] ACPI: element[12]->type =3D 1, expected string
-> >
-> > it is "OEM type". For reference here is _BIF from my DSDT:
-> >
-> >              Method (_BIF, 0, NotSerialized)
-> >             {
-> >                 Name (BUFF, Package (0x0D) {})
-> >                 Store (0x00, Index (BUFF, 0x00))
-> >                 Store (\_SB.MEM.BDV2, Local2)
-> >                 Multiply (\_SB.MEM.BDC2, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x01))
-> >                 Multiply (\_SB.MEM.BLF2, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x02))
-> >                 Store (\_SB.MEM.BTC2, Index (BUFF, 0x03))
-> >                 Store (\_SB.MEM.BDV2, Index (BUFF, 0x04))
-> >                 Multiply (\_SB.MEM.BCW2, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x05))
-> >                 Multiply (\_SB.MEM.BCL2, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x06))
-> >                 Multiply (\_SB.MEM.BG12, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x07))
-> >                 Multiply (\_SB.MEM.BG22, Local2, Local0)
-> >                 Divide (Local0, 0x03E8, Local1, Local0)
-> >                 Store (Local0, Index (BUFF, 0x08))
-> >                 Store (\_SB.MEM.BMN2, Index (BUFF, 0x09))
-> >                 Store (\_SB.MEM.BSN2, Index (BUFF, 0x0A))
-> >                 Store (\_SB.MEM.BTP2, Index (BUFF, 0x0B))
-> >                 Store (\_SB.MEM.BOI2, Index (BUFF, 0x0C))
-> >                 Return (BUFF)
-> >             }
-> >
-> > This is behaviour change. Previous battery.c used generic
-> > acpi_extract_package which allowed (allows) for object of type integer
-> > when string is requested:
-> >
-> >                 case ACPI_TYPE_INTEGER:
-> >                         switch (format_string[i]) {
-> >                         case 'N':
-> >                                 size_required +=3D sizeof(acpi_integer);
-> >                                 tail_offset +=3D sizeof(acpi_integer);
-> >                                 break;
-> >                         case 'S':
-> >                                 size_required +=3D
-> >                                     sizeof(char *) + sizeof(acpi_intege=
-r)
-> > + sizeof(char);
-> >                                 tail_offset +=3D sizeof(char *);
-> >                                 break;
-> >
-> > while current battery.c:extract_package fails:
-> >
-> >                 if (offsets[i].mode) {
-> >                         if (element->type !=3D ACPI_TYPE_STRING &&
-> >                             element->type !=3D ACPI_TYPE_BUFFER) {
-> > printk (KERN_ERR PREFIX "element[%d]->type =3D %x, expected string\n", =
-i,
-> > element->type);
-> >                                 return -EFAULT;
-> >                         }
-> >
-> > well, while it could be BIOS fault this happily worked before ... This =
-is
-> > obviously also the reason why I do not have anything in /sys
-> >
-> > Fans, could you check whether you have the same issue using test patch?
+Avoid racy use of smack_{list,cipso}_count in traversing lists.
+Simple smack_list and smack_known lockless list traversal is all 
+what's needed.
 
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
+smackv8-lockless-read.patch
 
---nextPart13127267.zRGSiVNXa0
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index b061cd0..e343827 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -63,16 +63,17 @@ int smack_cipso_direct = SMACK_CIPSO_DIRECT_DEFAULT;
+ 
+ static int smk_cipso_doi_value = SMACK_CIPSO_DOI_DEFAULT;
+ static int smack_list_count;
+-static int smack_cipso_count;
+ struct smk_list_entry *smack_list;
+ 
++#define SEQ_READ_FINISHED	1
++
+ /*
+  * Seq_file read operations for /smack/load
+  */
+ 
+ static void *load_seq_start(struct seq_file *s, loff_t *pos)
+ {
+-	if (*pos >= smack_list_count)
++	if (*pos == SEQ_READ_FINISHED)
+ 		return NULL;
+ 
+ 	return smack_list;
+@@ -80,8 +81,12 @@ static void *load_seq_start(struct seq_file *s, loff_t *pos)
+ 
+ static void *load_seq_next(struct seq_file *s, void *v, loff_t *pos)
+ {
+-	(*pos)++;
+-	return ((struct smk_list_entry *) v)->smk_next;
++	struct smk_list_entry *skp = ((struct smk_list_entry *) v)->smk_next;
++
++	if (!skp)
++		*pos = SEQ_READ_FINISHED;
++
++	return skp;
+ }
+ 
+ static int load_seq_show(struct seq_file *s, void *v)
+@@ -306,7 +311,7 @@ static void *cipso_seq_start(struct seq_file *s, loff_t *pos)
+ {
+ 	struct smack_known *skp = smack_known;
+ 
+-	if (*pos >= smack_cipso_count)
++	if (*pos == SEQ_READ_FINISHED)
+ 		return NULL;
+ 
+ 	while (skp && !skp->smk_cipso)
+@@ -319,11 +324,12 @@ static void *cipso_seq_next(struct seq_file *s, void *v, loff_t *pos)
+ {
+ 	struct smack_known *skp = ((struct smack_known *) v)->smk_next;
+ 
+-	(*pos)++;
+-
+ 	while (skp && !skp->smk_cipso)
+ 		skp = skp->smk_next;
+ 
++	if (!skp)
++		*pos = SEQ_READ_FINISHED;
++
+ 	return skp;
+ }
+ 
+@@ -488,7 +494,6 @@ static ssize_t smk_write_cipso(struct file *file, const char __user *buf,
+ 				rc = -ENOMEM;
+ 				break;
+ 			}
+-			++smack_cipso_count;
+ 		} else
+ 			scp = NULL;
+ 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHI1F1R6LMutpd94wRAnbXAKCnMZwKGgROr13DlyjKiMoAKamAcQCfeG8c
-rECGurTVV/6CcXk4gyaXupM=
-=buEx
------END PGP SIGNATURE-----
-
---nextPart13127267.zRGSiVNXa0--
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
