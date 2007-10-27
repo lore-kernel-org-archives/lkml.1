@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXJ0ARJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbXJ0ATu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbXJ0ARJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbXJ0AQm
+	id S1765977AbXJ0ATu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 20:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbXJ0ATm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:16:42 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:40736 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753652AbXJ0AQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:16:40 -0400
-To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <a683fcd0b1196c41a80f57c896cc443b99d78497.1193444039.git.jeff@garzik.org>
-In-Reply-To: <0f3b5fb60a45528af12178ba6c857af33ae048b1.1193444039.git.jeff@garzik.org>
-References: <0f3b5fb60a45528af12178ba6c857af33ae048b1.1193444039.git.jeff@garzik.org>
-From: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org
-Subject: [PATCH 2/2] SCSI/NCR5380: minor irq handler cleanups
-Date: Fri, 26 Oct 2007 20:16:40 -0400 (EDT)
+	Fri, 26 Oct 2007 20:19:42 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:11963 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbXJ0ATl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 20:19:41 -0400
+Date: Sat, 27 Oct 2007 02:19:38 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] iommu-PMEN_REG boot up support
+Message-ID: <20071027001938.GB10215@rhun.ibm.com>
+References: <20071026181849.GA25256@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071026181849.GA25256@linux.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* remove unnecessary cast
+On Fri, Oct 26, 2007 at 11:18:49AM -0700, Mark Gross wrote:
 
-* remove unnecessary use of 'irq' function arg
+> The following patch clears the portect memory region enable bit at
+> boot time by default.  It also provides a kernel parrameter for
+> disabling this behavior and leave the PMEN_REG untouched if so
+> wanted.
+> 
+> If the boot loader or platform has protected memory regions enabled
+> at boot time it could prevent DMA's from happening as drivers are
+> loaded and used.
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/scsi/NCR5380.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+What's the value of adding a command line option for this? Under what
+circumstances would we want to not clear this bit?
 
-diff --git a/drivers/scsi/NCR5380.c b/drivers/scsi/NCR5380.c
-index 2597209..31787d8 100644
---- a/drivers/scsi/NCR5380.c
-+++ b/drivers/scsi/NCR5380.c
-@@ -1157,16 +1157,17 @@ static void NCR5380_main(struct work_struct *work)
-  *	Locks: takes the needed instance locks
-  */
- 
--static irqreturn_t NCR5380_intr(int irq, void *dev_id) 
-+static irqreturn_t NCR5380_intr(int dummy, void *dev_id) 
- {
- 	NCR5380_local_declare();
--	struct Scsi_Host *instance = (struct Scsi_Host *)dev_id;
-+	struct Scsi_Host *instance = dev_id;
- 	struct NCR5380_hostdata *hostdata = (struct NCR5380_hostdata *) instance->hostdata;
- 	int done;
- 	unsigned char basr;
- 	unsigned long flags;
- 
--	dprintk(NDEBUG_INTR, ("scsi : NCR5380 irq %d triggered\n", irq));
-+	dprintk(NDEBUG_INTR, ("scsi : NCR5380 irq %d triggered\n",
-+		instance->irq));
- 
- 	do {
- 		done = 1;
+> +		} else if (!strncmp(str, "no_epm_clear", 12)) {
+> +			printk(KERN_INFO
+> +				"Intel-IOMMU: subress clearing of Enable "
+> +				"Protected Memory bit\n");
+> +			clear_pmen_epm = 0;
+
+`suppress', I assume. Rest looks fine, if the configuration option is
+really needed.
+
+Cheers,
+Muli
 -- 
-1.5.2.4
+SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
+http://www.haifa.il.ibm.com/Workshops/systor2007/
 
+Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
