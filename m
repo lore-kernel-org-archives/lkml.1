@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764559AbXJ0AFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761781AbXJ0AM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764559AbXJ0AFP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbXJ0AE6
+	id S1761781AbXJ0AM4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 20:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXJ0AMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:04:58 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50191 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbXJ0AE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:04:57 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Cc: rick.jones2@hp.com, bunk@kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] always export sysctl_{r,w}mem_max
-References: <20071026230807.GE30533@stusta.de>
-	<m1zly5wjie.fsf@ebiederm.dsl.xmission.com> <472278E3.4000909@hp.com>
-	<20071026.163958.171785530.davem@davemloft.net>
-Date: Fri, 26 Oct 2007 18:04:22 -0600
-In-Reply-To: <20071026.163958.171785530.davem@davemloft.net> (David Miller's
-	message of "Fri, 26 Oct 2007 16:39:58 -0700 (PDT)")
-Message-ID: <m1d4v1whh5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 26 Oct 2007 20:12:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55760 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751640AbXJ0AMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 20:12:48 -0400
+Message-ID: <47228278.8070505@garzik.org>
+Date: Fri, 26 Oct 2007 20:12:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH 7/9] irq-remove: scsi driver trivial
+References: <20071019075443.GA6407@havoc.gtf.org>	<20071019075808.GH6407@havoc.gtf.org>	<AE4F746F2AECFC4DA4AADD66A1DFEF01F3D54D@otce2k301.adaptec.com>	<20071026143525.b9218ed7.akpm@linux-foundation.org>	<4722608E.3000405@garzik.org> <20071026165035.33383e36@laptopd505.fenrus.org>
+In-Reply-To: <20071026165035.33383e36@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+Arjan van de Ven wrote:
+> On Fri, 26 Oct 2007 17:47:58 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>> Andrew Morton wrote:
+>>> That was a goofup.  I proposed that we should add a #define
+>>> TWO_ARG_IRQ_HANDLERS (or whatever) and I think I actually wrote the
+>>> patch, but it got lost.
+>>>
+>>> I agree it would be a kind thing to do in this case.
+> 
+>>
+>> Yep, I was thinking that including
+>>
+>> 	#define IRQ_HANDLER_V3
+>>
+>> would be a good idea.
+>>
+> 
+> it sets a certain precedent though.... we don't do this for the 500
+> other API changes we do each release (see stable-api-nonsense)... so
+> this one is mostly arbitrary picked out
 
-> From: Rick Jones <rick.jones2@hp.com>
-> Date: Fri, 26 Oct 2007 16:31:47 -0700
->
->> Eric W. Biederman wrote:
->> > Adrian Bunk <bunk@kernel.org> writes:
->> > 
->> > 
->> >>This patch fixes the following build error with CONFIG_SYSCTL=n:
->> >>
->> >><--  snip  -->
->> >>
->> >>...
->> >>ERROR: "sysctl_rmem_max" [fs/dlm/dlm.ko] undefined!
->> >>ERROR: "sysctl_wmem_max" [drivers/net/rrunner.ko] undefined!
->> >>ERROR: "sysctl_rmem_max" [drivers/net/rrunner.ko] undefined!
->> >>make[2]: *** [__modpost] Error 1
->> > 
->> > 
->> > I was going to ask if allowing drivers to increase rmem_max
->> > is something that we want to do.  Apparently the road runner
->> > driver has been doing this since the 2.6.12-rc1 when the
->> > git repository starts so this probably isn't a latent bug.
->> 
->> Although it does rather sound like a driver writer yanking the rope from the 
->> hand's of the sysadmin and hanging him with it rather than letting the
-> sysadmin
->> do it himself.  I've seen other drivers' README's suggesting larger mem's but
->> not their sources doing it.
->
-> I really don't think what the roadrunner driver is doing is
-> correct at all.
->
-> I also think what DLM is doing is wrong too.
->
-> If DLM really wants minimum, it can use SO_SNDBUFFORCE and
-> SO_RCVBUFFORCE socket options and use whatever limits it
-> likes.
->
-> But even this is questionable.
->
-> I'll put in Adrian's patch to fix the build as a first
-> priority, but in the long term this cruft has gotta go.
+We do for include/linux/netdevice.h, see HAVE_xxx -- and we should do it 
+because the last irq handler change was a pain for backports, and this 
+makes life easier for the backporters.  irq handling is probably far 
+more global than any other kernel API except kmalloc()
 
-As it stands this is a very old build bug.  I believe those
-symbols have always been exported inside of #ifdef CONFIG_SYSCTL.
-
-So if this is really something we want to stop doing we should
-be able to take a few extra moments remove the code from the
-two problem drivers, and remove the exports.
-
-It didn't look like any of the other users could possibly be
-modular.
-
-Eric
-
+	Jeff
 
 
 
