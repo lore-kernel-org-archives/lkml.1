@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXJ0FIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXJ0FQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbXJ0FIV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 01:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbXJ0FIM
+	id S1752841AbXJ0FQe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 01:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXJ0FQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 01:08:12 -0400
-Received: from main.gmane.org ([80.91.229.2]:51359 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbXJ0FIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 01:08:10 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: Re: Check handling of kernel build output directory
-Date: Sat, 27 Oct 2007 07:07:55 +0200
-Message-ID: <ffuh39$d7b$1@ger.gmane.org>
-References: <fft89p$rko$1@ger.gmane.org> <20071026190500.GA23480@uranus.ravnborg.org> <ffteuq$n3b$1@ger.gmane.org> <20071026194727.GA23871@uranus.ravnborg.org>
+	Sat, 27 Oct 2007 01:16:27 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55417 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751223AbXJ0FQ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 01:16:26 -0400
+Date: Fri, 26 Oct 2007 22:16:24 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071026221624.cec512da.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<1193412644.5032.13.camel@localhost>
+	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+	<20071026120037.7b95a136.pj@sgi.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<20071026180713.aeedfac2.pj@sgi.com>
+	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+	<20071026194144.6042316a.pj@sgi.com>
+	<Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p508c7005.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-In-Reply-To: <20071026194727.GA23871@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You did it in your output directory I assume.
+I'm still confused, Christoph.
 
-No.
+Are you saying:
+ 1) The kernel continues to default to Choice A, unless
+    the flag enables Choice B, or
+ 2) The kernel defaults to the new Choice B, unless the
+    flag reverts to the old Choice A?
 
+Alternative (2) breaks libnuma and hence numactl until it is changed
+to use the flag, or changed to use choice B (in which case it wouldn't
+need the flag.)
 
-> kbuild complains that the source directory is not clean - which
-> is what you need to clean up.
+So I guess you mean alternative (1) above, since you seem to be taking
+the position that we can't break compatibility here.
 
-I am looking for the real reasons for the occuring error messages. Let us look at another
-test example ...
+But I could quote statements from you that seem to clearly state the
+exact opposite.
 
-Sonne:~ # ls -ld /usr/src/linux
-lrwxrwxrwx 1 root root 23 Oct 13 10:11 /usr/src/linux -> /usr/src/linux-2.6.23.1
-Sonne:~ # cd /usr/src/linux-2.6.23.1
-Sonne:/usr/src/linux-2.6.23.1 # unset KBUILD_OUTPUT && make mrproper && cp -p
-/boot/config-2.6.23.1-0-adjusted .config && export
-KBUILD_OUTPUT=/usr/src/obj/linux/2.6.23.1/x86_64/adjusted && rm -rf $KBUILD_OUTPUT/*
-  CLEAN   .config
-Sonne:/usr/src/linux-2.6.23.1 # make oldconfig && date && echo
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX && make -j2 && echo
-YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY && make -j2 modules_install install && echo
-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ && date
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -o arch/x86_64/Kconfig
-*
-* Linux Kernel Configuration
-*
-*
-* General setup
-*
-[...]
-#
-# configuration written to .config
-#
-Sat Oct 27 06:43:24 CEST 2007
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-scripts/kconfig/conf -s arch/x86_64/Kconfig
-  GEN     /usr/src/obj/linux/2.6.23.1/x86_64/adjusted/Makefile
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86_64
-  Using /usr/src/linux-2.6.23.1 as source for kernel
-  /usr/src/linux-2.6.23.1 is not clean, please run 'make mrproper'
-  in the '/usr/src/linux-2.6.23.1' directory.
-make[1]: *** [prepare3] Error 1
-make: *** [_all] Error 2
-make: INTERNAL: Exiting with 3 jobserver tokens available; should be 2!
+So I remain confused.
 
+Actually, alternative (1) is kinda ugly.  It leaves a permanent wart
+on the set_mempolicy API -- two different variants to what the node
+numbers and node masks mean, depending on whether this MPOL_MF_RELATIVE
+is set on each call.  We'll have to ship out an extra serving of brain
+food for most folks looking at this to have much chance that they will
+confidently understand the difference between the two options selected
+by this flag.
 
-Which files are not clean in my situation after the command "make mrproper" was executed
-at the beginning?
+I wonder if there might be some way to avoid that permanent ugly wart
+on each and every set/get mempolicy system call forever afterward.
 
-Which results do you or other software developers get by such test runs on kernel releases
-since "2.6.22.9-0.4-default" like it is published by SUSE now?
-( I can build the current Linux kernel into my source directory successfully.)
+Please try to double check your next reply, Christoph.  I'm beginning
+to worry that we might be failing to communicate clearly.  Thanks.
 
-Regards,
-Markus
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
