@@ -1,74 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765704AbXJ0AN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764247AbXJ0AQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765704AbXJ0AN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Oct 2007 20:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXJ0ANs
+	id S1764247AbXJ0AQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Oct 2007 20:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXJ0AQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Oct 2007 20:13:48 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:20510 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbXJ0ANr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Oct 2007 20:13:47 -0400
-Message-ID: <472282B9.4090209@ct.jp.nec.com>
-Date: Fri, 26 Oct 2007 17:13:45 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 0/3] x86: unify crash_32/64.c
-References: <47195763.1090803@ct.jp.nec.com> <20071024063434.GC4622@in.ibm.com> <471F72AD.8030902@ct.jp.nec.com> <4720D933.3080703@ct.jp.nec.com> <47225F6C.5000708@ct.jp.nec.com> <alpine.LFD.0.9999.0710270035110.3186@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710270035110.3186@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Oct 2007 20:16:41 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:59160 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753472AbXJ0AQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Oct 2007 20:16:39 -0400
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <0f3b5fb60a45528af12178ba6c857af33ae048b1.1193444039.git.jeff@garzik.org>
+From: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@linux-foundation.org
+Subject: [PATCH 1/2] SCSI: fix bugs and canonicalize NCR5380_intr drivers
+Date: Fri, 26 Oct 2007 20:16:38 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Fri, 26 Oct 2007, Hiroshi Shimamoto wrote:
-> 
-> Added Venki to CC
-> 
->>> I'm now testing crash on 32bit, but there is an issue before
->>> applying the patches. My machine stopped at checking 'hlt'
->>> after kexec, showing below message.
->>>
->>> CPU: Intel(R) Xeon(TM) CPU 3.80GHz stepping 0a
->>> Checking 'hlt' instruction...
->>>
->> v2.6.23.1 works fine for 1st kernel.
->>> I'm investigating it..
->> I found that the following patch makes my machine stopped.
->> bfe0c1cc6456bba1f4e3cc1fe29c0ea578ac763a
->> x86: HPET force enable for ICH5
->>
->> It means that after applied this patch, HPET is enabled
->> automatically on 1st kernel and after crash/kexec the 2nd
->> kernel stopped at checking 'hlt'.
->>
->> I also tested the latest kernel(2.6.24-rc1-gec3b67c1).
->> Boot parameter "nohpet" resolves this issue and kdump
->> works well on 32bit.
->> So I guess HPET affects this.
->> But I don't know why 64bit kernel with HPET is OK.
-> 
-> Hmm. Does the 64 bit code shutdown HPET and restore the IRQ routing to
-> PIT and 32 bit is missing this ?
+* Bug fix:  Make sure request_irq() and free_irq() are called
+  with the same dev_id pointer argument.
 
-Sorry, I'm not sure how I can get these informations.
-Can you please tell me what I should do?
-I'll continue to dig the issue.
+* Bug fix:  always pass 'irq' and 'dev_id' (aka 'dummy')
+  arguments to NCE5380_intr() when calling it manully.  For some drivers
+  this doesn't matter, depending on whose copy of NCR5380_intr() is
+  being used.
 
-I also have the following message.
-..MP-BIOS bug: 8254 timer not connected to IO-APIC
-Kernel panic - not syncing: IO-APIC + timer doesn't work! Try using the 'noapic' kernel parameter
+* Bug fix:  always pass Scsi_Host* to NCR5380_intr().  Most
+  get this right, but some pass NULL or some other random/ignored
+  value.  For some drivers this doesn't matter, depending on whose copy
+  of NCR5380_intr() is being used.
 
-It appeared only on 64bit and the 2nd kernel without
-boot parameter noapic.
+* Wrap long request_irq() lines
 
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+ drivers/scsi/atari_scsi.c    |   10 +++++-----
+ drivers/scsi/dtc.c           |    5 +++--
+ drivers/scsi/g_NCR5380.c     |    5 +++--
+ drivers/scsi/mac_scsi.c      |    4 ++--
+ drivers/scsi/pas16.c         |    5 +++--
+ drivers/scsi/sun3_scsi.c     |    4 ++--
+ drivers/scsi/sun3_scsi_vme.c |    4 ++--
+ drivers/scsi/t128.c          |    5 +++--
+ 8 files changed, 23 insertions(+), 19 deletions(-)
 
-Thanks
-Hiroshi Shimamoto
+diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
+index 6f8403b..f5732d8 100644
+--- a/drivers/scsi/atari_scsi.c
++++ b/drivers/scsi/atari_scsi.c
+@@ -393,7 +393,7 @@ static irqreturn_t scsi_tt_intr(int irq, void *dummy)
+ 
+ #endif /* REAL_DMA */
+ 
+-	NCR5380_intr(0, 0);
++	NCR5380_intr(irq, dummy);
+ 
+ #if 0
+ 	/* To be sure the int is not masked */
+@@ -458,7 +458,7 @@ static irqreturn_t scsi_falcon_intr(int irq, void *dummy)
+ 
+ #endif /* REAL_DMA */
+ 
+-	NCR5380_intr(0, 0);
++	NCR5380_intr(irq, dummy);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -684,7 +684,7 @@ int atari_scsi_detect(struct scsi_host_template *host)
+ 		 * interrupt after having cleared the pending flag for the DMA
+ 		 * interrupt. */
+ 		if (request_irq(IRQ_TT_MFP_SCSI, scsi_tt_intr, IRQ_TYPE_SLOW,
+-				 "SCSI NCR5380", scsi_tt_intr)) {
++				 "SCSI NCR5380", instance)) {
+ 			printk(KERN_ERR "atari_scsi_detect: cannot allocate irq %d, aborting",IRQ_TT_MFP_SCSI);
+ 			scsi_unregister(atari_scsi_host);
+ 			atari_stram_free(atari_dma_buffer);
+@@ -701,7 +701,7 @@ int atari_scsi_detect(struct scsi_host_template *host)
+ 					 IRQ_TYPE_PRIO, "Hades DMA emulator",
+ 					 hades_dma_emulator)) {
+ 				printk(KERN_ERR "atari_scsi_detect: cannot allocate irq %d, aborting (MACH_IS_HADES)",IRQ_AUTO_2);
+-				free_irq(IRQ_TT_MFP_SCSI, scsi_tt_intr);
++				free_irq(IRQ_TT_MFP_SCSI, instance);
+ 				scsi_unregister(atari_scsi_host);
+ 				atari_stram_free(atari_dma_buffer);
+ 				atari_dma_buffer = 0;
+@@ -761,7 +761,7 @@ int atari_scsi_detect(struct scsi_host_template *host)
+ int atari_scsi_release(struct Scsi_Host *sh)
+ {
+ 	if (IS_A_TT())
+-		free_irq(IRQ_TT_MFP_SCSI, scsi_tt_intr);
++		free_irq(IRQ_TT_MFP_SCSI, sh);
+ 	if (atari_dma_buffer)
+ 		atari_stram_free(atari_dma_buffer);
+ 	return 1;
+diff --git a/drivers/scsi/dtc.c b/drivers/scsi/dtc.c
+index 2596165..c2677ba 100644
+--- a/drivers/scsi/dtc.c
++++ b/drivers/scsi/dtc.c
+@@ -277,7 +277,8 @@ found:
+ 		/* With interrupts enabled, it will sometimes hang when doing heavy
+ 		 * reads. So better not enable them until I finger it out. */
+ 		if (instance->irq != SCSI_IRQ_NONE)
+-			if (request_irq(instance->irq, dtc_intr, IRQF_DISABLED, "dtc", instance)) {
++			if (request_irq(instance->irq, dtc_intr, IRQF_DISABLED,
++					"dtc", instance)) {
+ 				printk(KERN_ERR "scsi%d : IRQ%d not free, interrupts disabled\n", instance->host_no, instance->irq);
+ 				instance->irq = SCSI_IRQ_NONE;
+ 			}
+@@ -459,7 +460,7 @@ static int dtc_release(struct Scsi_Host *shost)
+ 	NCR5380_local_declare();
+ 	NCR5380_setup(shost);
+ 	if (shost->irq)
+-		free_irq(shost->irq, NULL);
++		free_irq(shost->irq, shost);
+ 	NCR5380_exit(shost);
+ 	if (shost->io_port && shost->n_io_port)
+ 		release_region(shost->io_port, shost->n_io_port);
+diff --git a/drivers/scsi/g_NCR5380.c b/drivers/scsi/g_NCR5380.c
+index 607336f..75585a5 100644
+--- a/drivers/scsi/g_NCR5380.c
++++ b/drivers/scsi/g_NCR5380.c
+@@ -460,7 +460,8 @@ int __init generic_NCR5380_detect(struct scsi_host_template * tpnt)
+ 			instance->irq = NCR5380_probe_irq(instance, 0xffff);
+ 
+ 		if (instance->irq != SCSI_IRQ_NONE)
+-			if (request_irq(instance->irq, generic_NCR5380_intr, IRQF_DISABLED, "NCR5380", instance)) {
++			if (request_irq(instance->irq, generic_NCR5380_intr,
++					IRQF_DISABLED, "NCR5380", instance)) {
+ 				printk(KERN_WARNING "scsi%d : IRQ%d not free, interrupts disabled\n", instance->host_no, instance->irq);
+ 				instance->irq = SCSI_IRQ_NONE;
+ 			}
+@@ -513,7 +514,7 @@ int generic_NCR5380_release_resources(struct Scsi_Host *instance)
+ 	NCR5380_setup(instance);
+ 	
+ 	if (instance->irq != SCSI_IRQ_NONE)
+-		free_irq(instance->irq, NULL);
++		free_irq(instance->irq, instance);
+ 	NCR5380_exit(instance);
+ 
+ #ifndef CONFIG_SCSI_G_NCR5380_MEM
+diff --git a/drivers/scsi/mac_scsi.c b/drivers/scsi/mac_scsi.c
+index abe2bda..81d1f3f 100644
+--- a/drivers/scsi/mac_scsi.c
++++ b/drivers/scsi/mac_scsi.c
+@@ -303,7 +303,7 @@ int macscsi_detect(struct scsi_host_template * tpnt)
+ 
+     if (instance->irq != SCSI_IRQ_NONE)
+ 	if (request_irq(instance->irq, NCR5380_intr, IRQ_FLG_SLOW, 
+-		"ncr5380", instance)) {
++			"ncr5380", instance)) {
+ 	    printk(KERN_WARNING "scsi%d: IRQ%d not free, interrupts disabled\n",
+ 		   instance->host_no, instance->irq);
+ 	    instance->irq = SCSI_IRQ_NONE;
+@@ -326,7 +326,7 @@ int macscsi_detect(struct scsi_host_template * tpnt)
+ int macscsi_release (struct Scsi_Host *shpnt)
+ {
+ 	if (shpnt->irq != SCSI_IRQ_NONE)
+-		free_irq (shpnt->irq, NCR5380_intr);
++		free_irq (shpnt->irq, shpnt);
+ 	NCR5380_exit(shpnt);
+ 
+ 	return 0;
+diff --git a/drivers/scsi/pas16.c b/drivers/scsi/pas16.c
+index ee59656..f2018b4 100644
+--- a/drivers/scsi/pas16.c
++++ b/drivers/scsi/pas16.c
+@@ -453,7 +453,8 @@ int __init pas16_detect(struct scsi_host_template * tpnt)
+ 	    instance->irq = NCR5380_probe_irq(instance, PAS16_IRQS);
+ 
+ 	if (instance->irq != SCSI_IRQ_NONE) 
+-	    if (request_irq(instance->irq, pas16_intr, IRQF_DISABLED, "pas16", instance)) {
++	    if (request_irq(instance->irq, pas16_intr, IRQF_DISABLED,
++			    "pas16", instance)) {
+ 		printk("scsi%d : IRQ%d not free, interrupts disabled\n", 
+ 		    instance->host_no, instance->irq);
+ 		instance->irq = SCSI_IRQ_NONE;
+@@ -604,7 +605,7 @@ static inline int NCR5380_pwrite (struct Scsi_Host *instance, unsigned char *src
+ static int pas16_release(struct Scsi_Host *shost)
+ {
+ 	if (shost->irq)
+-		free_irq(shost->irq, NULL);
++		free_irq(shost->irq, shost);
+ 	NCR5380_exit(shost);
+ 	if (shost->dma_channel != 0xff)
+ 		free_dma(shost->dma_channel);
+diff --git a/drivers/scsi/sun3_scsi.c b/drivers/scsi/sun3_scsi.c
+index 5e46d84..320b2a8 100644
+--- a/drivers/scsi/sun3_scsi.c
++++ b/drivers/scsi/sun3_scsi.c
+@@ -268,7 +268,7 @@ int sun3scsi_detect(struct scsi_host_template * tpnt)
+         ((struct NCR5380_hostdata *)instance->hostdata)->ctrl = 0;
+ 
+ 	if (request_irq(instance->irq, scsi_sun3_intr,
+-			     0, "Sun3SCSI-5380", NULL)) {
++			     0, "Sun3SCSI-5380", instance)) {
+ #ifndef REAL_DMA
+ 		printk("scsi%d: IRQ%d not free, interrupts disabled\n",
+ 		       instance->host_no, instance->irq);
+@@ -310,7 +310,7 @@ int sun3scsi_detect(struct scsi_host_template * tpnt)
+ int sun3scsi_release (struct Scsi_Host *shpnt)
+ {
+ 	if (shpnt->irq != SCSI_IRQ_NONE)
+-		free_irq (shpnt->irq, NULL);
++		free_irq (shpnt->irq, shpnt);
+ 
+ 	iounmap((void *)sun3_scsi_regp);
+ 
+diff --git a/drivers/scsi/sun3_scsi_vme.c b/drivers/scsi/sun3_scsi_vme.c
+index 7cb4a31..5af057e 100644
+--- a/drivers/scsi/sun3_scsi_vme.c
++++ b/drivers/scsi/sun3_scsi_vme.c
+@@ -230,7 +230,7 @@ static int sun3scsi_detect(struct scsi_host_template * tpnt)
+         ((struct NCR5380_hostdata *)instance->hostdata)->ctrl = 0;
+ 
+ 	if (request_irq(instance->irq, scsi_sun3_intr,
+-			     0, "Sun3SCSI-5380VME", NULL)) {
++			0, "Sun3SCSI-5380VME", instance)) {
+ #ifndef REAL_DMA
+ 		printk("scsi%d: IRQ%d not free, interrupts disabled\n",
+ 		       instance->host_no, instance->irq);
+@@ -279,7 +279,7 @@ static int sun3scsi_detect(struct scsi_host_template * tpnt)
+ int sun3scsi_release (struct Scsi_Host *shpnt)
+ {
+ 	if (shpnt->irq != SCSI_IRQ_NONE)
+-		free_irq (shpnt->irq, NULL);
++		free_irq (shpnt->irq, shpnt);
+ 
+ 	iounmap((void *)sun3_scsi_regp);
+ 
+diff --git a/drivers/scsi/t128.c b/drivers/scsi/t128.c
+index 248d60b..371a325 100644
+--- a/drivers/scsi/t128.c
++++ b/drivers/scsi/t128.c
+@@ -259,7 +259,8 @@ found:
+ 	    instance->irq = NCR5380_probe_irq(instance, T128_IRQS);
+ 
+ 	if (instance->irq != SCSI_IRQ_NONE) 
+-	    if (request_irq(instance->irq, t128_intr, IRQF_DISABLED, "t128", instance)) {
++	    if (request_irq(instance->irq, t128_intr, IRQF_DISABLED, "t128",
++	    		    instance)) {
+ 		printk("scsi%d : IRQ%d not free, interrupts disabled\n", 
+ 		    instance->host_no, instance->irq);
+ 		instance->irq = SCSI_IRQ_NONE;
+@@ -295,7 +296,7 @@ static int t128_release(struct Scsi_Host *shost)
+ 	NCR5380_local_declare();
+ 	NCR5380_setup(shost);
+ 	if (shost->irq)
+-		free_irq(shost->irq, NULL);
++		free_irq(shost->irq, shost);
+ 	NCR5380_exit(shost);
+ 	if (shost->io_port && shost->n_io_port)
+ 		release_region(shost->io_port, shost->n_io_port);
+-- 
+1.5.2.4
+
