@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbXJ0U7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbXJ0VAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbXJ0U7m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 16:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXJ0U7d
+	id S1758123AbXJ0VAP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 17:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbXJ0U75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 16:59:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:42134 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbXJ0U7c (ORCPT
+	Sat, 27 Oct 2007 16:59:57 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48239 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753236AbXJ0U74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 16:59:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=rglYQMtCcj7ATzE5aL3/DRU0+vH3NnXsyCFX0ItSxlFSI1QmCx6PanXZFKtZCzDFq9r5blVwOHSsyZQpEas403laHOBvXVauPl60yn+taq3BpZfPg8gLt7gI9TSNd/fF5ToaU9apsAJwzUe0a13F/7CTEloO6aewYzr05AwrjA4=
-Date: Sat, 27 Oct 2007 11:01:12 +0200
-To: casey@schaufler-ca.com
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
-Message-ID: <20071027090112.GA5460@Ahmed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4720118C.5020906@schaufler-ca.com>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Sat, 27 Oct 2007 16:59:56 -0400
+Date: Sat, 27 Oct 2007 13:59:52 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071027135952.2e8fb323.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710271044410.524@schroedinger.engr.sgi.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<1193412644.5032.13.camel@localhost>
+	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+	<20071026120037.7b95a136.pj@sgi.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<20071026180713.aeedfac2.pj@sgi.com>
+	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+	<20071026194144.6042316a.pj@sgi.com>
+	<Pine.LNX.4.64.0710261949360.30293@schroedinger.engr.sgi.com>
+	<20071026221624.cec512da.pj@sgi.com>
+	<Pine.LNX.4.64.0710262303410.30785@schroedinger.engr.sgi.com>
+	<20071027013656.4ffadb87.pj@sgi.com>
+	<Pine.LNX.4.64.0710271044410.524@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/**
-> + * smk_write_cipso - write() for /smack/cipso
-> + * @filp: file pointer, not actually used
-> + * @buf: where to get the data from
-> + * @count: bytes sent
-> + * @ppos: where to start
-> + *
-> + * Returns number of bytes written or error code, as appropriate
-> + */
-> +static ssize_t smk_write_cipso(struct file *file, const char __user *buf,
-> +			       size_t count, loff_t *ppos)
-> +{
+> > You have chosen (1) above, which keeps Choice A as the default.
+> 
+> There can be different defaults for the user space API via libnuma that 
+> are indepdent from the kernel API which needs to remain stable. The kernel 
+> API can be extended but not changed.
 
-[...]
+Yes - the user level code can have different defaults too.
 
-> +
-> +	/*
-> +	 * Only allow one writer at a time. Writes should be
-> +	 * quite rare and small in any case.
-> +	 */
-> +	mutex_lock(&smack_cipso_lock);
-> +
-> +	*(data + count) = '\0';
-> +
-> +	for (eolp = strchr(data, '\n'), linep = data;
-> +		eolp != NULL && rc >= 0;
-> +		linep = eolp + 1, eolp = strchr(linep, '\n')) {
-> +
+I was discussing what should be the default kernel API.
 
-The problem here (As discussed in private mails) is that the for loop 
-assumes that the beginning of given user-space buffer is the beginning
-of a rule. This leads to situations where the rule becomes "ecret 20",
-or "cret 20" instead of "Secret 20". Big input buffers/files leads 
-smack to recieve a rule like "Secret 20" in fragmented chunks like:
+> None of those [alternatives] sound appealing.  Multiple processes may run
+> in one cpuset.
 
-write("<lots of rules before ours>\nSec", ..)
-write("r", 1, ..)
-write("et 20\n<remaing rules after ours>", ..)
+Well, that would justify keeping this choice per-task.  I tend to
+agree with that.
 
-Parsing a rule in such tough conditions in _kernel space_ is very
-hard. I began to feel that it will be much easier if we do the parsing 
-in a userspace utility and let smack accept only small buffers (80 char). 
+But that doesn't justify having to specify it on each system call.
 
-i.e. A user space utility that takes a big input file like
-exit 10/3,7,4
-exit 10/3,7,4
-exit 10/3,7,4
-<100 times>
+In another reply David recommends against supporting Choice A at all.
+I'm inclined to agree with him.  I'll reply there, with more thoughts.
 
-And transform it to 100 small write() calls. By this way we can return
--EINVAL if write()'s count field > 80, or if input contains no \n or
-more than one.
+But if we did support Choice A, as a backwards compatible alternative
+to Choice B, I'd suggest a per-task mode, not per-system call mode.
+This would reduce the impact on the API of the ugly, unobvious, modal
+flag needed to select the optional, non kernel default, Choice B
+semantics.
 
-Any Ideas ?. 
-
-Casey, I can begin modifying cipso_write() and writing this small 
-user-space utility now if you agree on this.
-
-Regards,
+I still have low confidence that you (Christoph) and I have the same
+understanding of what these Choice A and B are.  Hopefully you can
+address that, perhaps by briefly describing these choices in your words.
 
 -- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
