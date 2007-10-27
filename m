@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbXJ0W0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbXJ0Wkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbXJ0W0y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 18:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXJ0W0r
+	id S1752601AbXJ0Wkk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 18:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXJ0Wka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 18:26:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:39635 "EHLO ozlabs.org"
+	Sat, 27 Oct 2007 18:40:30 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1745 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbXJ0W0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 18:26:46 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] select PARAVIRT when PARAVIRT_GUEST on
-Date: Sun, 28 Oct 2007 08:27:02 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, zach@vmware.com, jeremy@goop.org,
-       chrisw@sous-sol.org, akpm@linux-foundation.org
-References: <11934940321103-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11934940321103-git-send-email-gcosta@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1751075AbXJ0Wk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Oct 2007 18:40:29 -0400
+Subject: Re: [PATCH] proc_fs.h redux
+From: Joe Perches <joe@perches.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, torvalds@osdl.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20071027194758.GD9816@martell.zuzino.mipt.ru>
+References: <20071027194758.GD9816@martell.zuzino.mipt.ru>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 15:40:04 -0700
+Message-Id: <1193524804.26695.103.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710280927.03400.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 October 2007 00:07:12 Glauber de Oliveira Costa wrote:
-> Commit d3d1c4bdf16bd154d9f27f34fca28edca90465eb introduces a new config
-> knob that, according to its changelog, should select CONFIG_PARAVIRT.
+On Sat, 2007-10-27 at 23:47 +0400, Alexey Dobriyan wrote:
+> Remove proc_fs.h from headers that doesn't really need it.
 
-Hi Glauber,
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/errno.h>
+>  #include <linux/sched.h>
+>  #include <linux/kernel.h>
+> +#include <linux/fs.h>
 
-	PARAVIRT is now selected by the options which need it.  Merely turning on the 
-menu "does not add any kernel code" as promised in the text...
+Your code doesn't match your patch description.
 
-Rusty.
+You've got new includes of:
+
+<linux/fs.h>
+<linux/proc_fs.h>
+<linux/err.h>
+<linux/kref.h>
+
+and forward declarations of
+
+struct proc_dir_entry;
+struct file_operations;
+
+As a general rule, I think it better to use includes
+than use naked forward declarations.
+
+
