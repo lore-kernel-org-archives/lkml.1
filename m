@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbXJ1PyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXJ1QCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbXJ1PyN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 11:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXJ1Px4
+	id S1753882AbXJ1QCS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXJ1QCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 11:53:56 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49092 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbXJ1Pxz (ORCPT
+	Sun, 28 Oct 2007 12:02:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54996 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbXJ1QCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 11:53:55 -0400
-Date: Sun, 28 Oct 2007 09:53:54 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] scsi/seagate.c: remove dead code
-Message-ID: <20071028155354.GJ27248@parisc-linux.org>
-References: <20071028155142.GB7227@stusta.de>
+	Sun, 28 Oct 2007 12:02:01 -0400
+Date: Sun, 28 Oct 2007 17:02:00 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Markus Elfring <Markus.Elfring@web.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Check dependencies for modules "dm-snapshot" and "sd_mod" in
+ kernel 2.6.23.1
+In-Reply-To: <fg2b7g$1hj$1@ger.gmane.org>
+Message-ID: <Pine.LNX.4.64.0710281700360.30465@fbirervta.pbzchgretzou.qr>
+References: <fg2b7g$1hj$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071028155142.GB7227@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 04:51:42PM +0100, Adrian Bunk wrote:
-> This patch removes obviously dead code.
->  				case LINKED_WRONG:
->  					WRITE_DATA (ABORT);
->  					linked_connected = 0;
->  					reselect = CAN_RECONNECT;
->  					goto connect_loop;
-> -					DPRINTK (PHASE_MSGOUT | DEBUG_LINKED, "scsi%d : sent ABORT message to cancel incorrect I_T_L nexus.\n", hostno);
->  #endif					/* LINKED */
-> -					DPRINTK (DEBUG_LINKED, "correct\n");
->  				default:
 
-Surely the 'goto' should just be moved two lines down?
+On Oct 28 2007 16:52, Markus Elfring wrote:
+>Hello,
+>
+>I get the following output from the command "make install" after the source
+>files were successfully compiled for my personal configuration.
+>
+>if [ -r System.map -a -x /sbin/depmod ]; then /sbin/depmod -ae -F System.map
+>2.6.23.1-default; fi
+>sh /usr/src/linux-2.6.23.1/arch/i386/boot/install.sh 2.6.23.1-default
+>arch/x86_64/boot/bzImage System.map "/boot"
+>
+>Kernel image:   /boot/vmlinuz-2.6.23.1-default
+>Initrd image:   /boot/initrd-2.6.23.1-default
+>Root device:    /dev/system/root (mounted on / as ext3)
+>Resume device:  /dev/sdb5
+>WARNING Cannot determine dependencies of kernel module 'dm-snapshot'.
+>        Does it exist? If it does, try depmod -a. Continuing without dm-snapshot.
+>WARNING Cannot determine dependencies of kernel module 'sd_mod'.
+>        Does it exist? If it does, try depmod -a. Continuing without sd_mod.
+>Kernel Modules: processor thermal libata pata_amd sata_nv sata_sil24 fan jbd mbcache ext3
+>dm-mod edd usbcore ohci-hcd uhci-hcd ehci-hcd hid usbhid linear
+>Features:       keyboard-blink dm block usb lvm2 resume.userspace resume.kernel
+>Bootsplash:     SuSE (1024x768)
+>20893 blocks
+>
+>Is anything wrong here with the executable generation for these modules?
+>Are there any open issues with dependency management for (LVM) snapshots and SCSI devices?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+Perhaps your personal configuration is missing the
+modules SUSE 10.3 requires. I'd use one of their rpms anyway.
