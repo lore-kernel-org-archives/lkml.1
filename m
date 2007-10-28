@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbXJ1DHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXJ1D3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751985AbXJ1DHA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 23:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXJ1DGx
+	id S1752126AbXJ1D3k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 23:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXJ1D3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 23:06:53 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:29366 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbXJ1DGw (ORCPT
+	Sat, 27 Oct 2007 23:29:33 -0400
+Received: from ro-out-1112.google.com ([72.14.202.176]:38245 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbXJ1D3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 23:06:52 -0400
-X-IronPort-AV: E=Sophos;i="4.21,338,1188802800"; 
-   d="scan'208";a="243410542"
-To: joncglenn <joncglenn@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Mapping PCI memory to user-space
-X-Message-Flag: Warning: May contain useful information
-References: <13380086.post@talk.nabble.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 27 Oct 2007 20:06:49 -0700
-In-Reply-To: <13380086.post@talk.nabble.com> (joncglenn@hotmail.com's message of "Sat, 27 Oct 2007 18:39:00 -0700 (PDT)")
-Message-ID: <adaejfgx7hy.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Sat, 27 Oct 2007 23:29:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
+        b=rzzy/M1s2W0u7oX4MX0Q4c0GvxMXtegB+PZp3OT/FNB5YlxOF13OIjYuccQHPTvDw6M3MJaFZcsxKkNDkozDE9lpcmR2sp9p2bps688Zevpwddj4usFBxgeRaaCvey7JY5db901YMCeykd4vy6hxwSQVZ6uaraxv6odpyL8cfZE=
+Date: Sun, 28 Oct 2007 11:24:41 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net,
+       sam@ravnborg.org
+Subject: UML building failed in current Linus-tree
+Message-ID: <20071028032441.GB2502@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Oct 2007 03:06:50.0235 (UTC) FILETIME=[956F1CB0:01C8190F]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I am writing a driver to map a PCI board memory space (pcibar2) into a
- > user-space vma via 'mmap'.  What is the relationship between the address
- > returned from ioremap and the type of address needed in the
- > 'io_remap_page_range' or 'remap_pfn_range' functions?  How about the
- > following? (I am developing under RHEL4 and a 2.6.9 kernel)
 
-There is no relationship between the address returned from ioremap and
-what you pass into io_remap_page_range().  ioremap gives you a kernel
-virtual address for the PCI address you remap.  io_remap_page_range()
-creates a userspace mapping in the same way, and you should pass in
-the PCI address exactly the same way you pass in the PCI address into
-ioremap.  io_remap_pfn_range() takes a PFN ("page frame number"),
-which is basically the PCI address you want to map divided by
-PAGE_SIZE.  The main reason for using PFNs is that they allow you to
-map addresses above 4G even if sizeof long is only 4.
+Hi, Jeff, Sam!
 
-In your code:
+I just pulled from Linus-tree, and got the following error when building uml.
 
- >      dev.pcibar2 = ioremap_nocache(resource,size);
- >      dev.region_start = dev.pcibar2 + offset;     // RAM is at some offset from base
+$ make defconfig ARCH=um
+/home/wangcong/projects/linux-2.6/arch/um/Makefile-i386:32: /home/wangcong/projects/linux-2.6/arch/i386/Makefile.cpu: No such file or directory
+make: *** No rule to make target `/home/wangcong/projects/linux-2.6/arch/i386/Makefile.cpu'.  Stop.
 
-This gives you a kernel mapping that you can use with readl(),
-writel() etc to access the PCI memory from the kernel.
+Is this a known problem? Yesterday's Linus-tree was fine.
 
-To map to userspace, this:
+Regards.
 
- >   if (io_remap_page_range(vma, phyaddr, vma->vm_start, vsize, vma->vm_page_prot))
-
-should use phyaddr as you have it here:
-
- >   // phyaddr   = physical address of PCI memory area
-
-This is just wrong:
-
- >   unsigned long phy            = __pa(dev->region_start + off);
-
-__pa() doesn't work on addresses returned from ioremap.  Just use the
-same resource address you passed into ioremap.
-
- - R.
+-- 
+May the Source Be With You.
