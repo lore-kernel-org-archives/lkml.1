@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXJ1QWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbXJ1Q3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbXJ1QWh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 12:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXJ1QWa
+	id S1754707AbXJ1Q3v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXJ1Q3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 12:22:30 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35820 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXJ1QW3 (ORCPT
+	Sun, 28 Oct 2007 12:29:43 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:23795 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbXJ1Q3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 12:22:29 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4724B71A.7020201@s5r6.in-berlin.de>
-Date: Sun, 28 Oct 2007 17:21:46 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: krh@redhat.com, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] ieee1394_transactions.c: remove dead code
-References: <20071028155132.GA7227@stusta.de>
-In-Reply-To: <20071028155132.GA7227@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Oct 2007 12:29:42 -0400
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Oct 2007 12:29:42 EDT
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=nqXMuPvcVi1yv4LOqpJkDZgX6rU3GdPfKQrwoOvZtoAHwIpHYipaT8ew+gPG7ro5Ihn/tJ3/H6oTdbsvOrTea/FMrIy+qBZdmQFhUGQPiucNUtzwKulHOtdPDBadAWiu;
+X-IronPort-AV: E=Sophos;i="4.21,339,1188795600"; 
+   d="scan'208";a="402189651"
+Date: Sun, 28 Oct 2007 11:19:55 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: jack@antonello.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Dell laptop backlight driver
+Message-ID: <20071028161955.GF23359@auslistsprd01.us.dell.com>
+References: <4724B4F5.80004@antonello.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4724B4F5.80004@antonello.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This patch removes dead code spotted by the Intel C Compiler.
+On Sun, Oct 28, 2007 at 05:12:37PM +0100, jack@antonello.org wrote:
+> Hello,
+> this driver implements backlight control on Dell laptops
+> which use SMI  for changing brightness levels.
+> 
+> The driver is INCOMPLETE since it is unable to probe some required 
+> parameters
+> in order to perform backlight control. Such parameters are found in a Dell
+> proprietary DMI table which should be parsed. For now external tools may be
+> used to find these parameters by hand. So if you intend to try this out,
+> FIRST write your laptop model parameters correctly inside the source code
+> as explained in Documentation/dell-laptop.txt.
+> 
+> Parts of this driver may also be used to provide additional functionalities
+> similarly to the drivers/misc/*-laptop.c drivers.
 
-Committed to linux1394-2.6.git, thanks.
+Why is this better done in the kernel rather than in userspace with
+libsmbios as you've noted?
+
 -- 
-Stefan Richter
--=====-=-=== =-=- ===--
-http://arcgraph.de/sr/
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
