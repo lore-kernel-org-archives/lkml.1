@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbXJ1WIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXJ1WKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752852AbXJ1WIi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 18:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXJ1WI3
+	id S1753312AbXJ1WKi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 18:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbXJ1WKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 18:08:29 -0400
-Received: from mail8.dotsterhost.com ([66.11.233.1]:40055 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750949AbXJ1WI2 (ORCPT
+	Sun, 28 Oct 2007 18:10:30 -0400
+Received: from mailgw2.3essentials.com ([66.179.153.59]:1617 "EHLO
+	mailgw2.3essentials.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbXJ1WK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 18:08:28 -0400
-Message-ID: <47250878.6040506@crispincowan.com>
-Date: Sun, 28 Oct 2007 15:08:56 -0700
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 28 Oct 2007 18:10:29 -0400
+Message-ID: <472508B1.4000809@antonello.org>
+Date: Sun, 28 Oct 2007 23:09:53 +0100
+From: jack@antonello.org
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ray Lee <ray-lk@madrabbit.org>, Chris Wright <chrisw@sous-sol.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
-       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Giacomo Catenazzi <cate@debian.org>
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-References: <20071024223124.GI30533@stusta.de>	<446110.89443.qm@web36608.mail.mud.yahoo.com>	<20071025002356.GB3660@sequoia.sous-sol.org>	<2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com> <20071025024131.6082e4a8@the-village.bc.nu>
-In-Reply-To: <20071025024131.6082e4a8@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: "lists@antonello.org" <lists@antonello.org>,
+       Samuel Tardieu <sam@rfc1149.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight dimmer
+References: <4724B48D.6090405@antonello.org>	<87y7dndxm3.fsf@willow.rfc1149.net>	<4724FF8F.30306@antonello.org> <20071028143445.4617efd8@laptopd505.fenrus.org>
+In-Reply-To: <20071028143445.4617efd8@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> The idea that poor security is worse than no security is fallacious,
->> and not backed up by common experience.
->>     
-> There is a ton of evidence both in computing and outside of it which
-> shows that poor security can be very much worse than no security at all.
-> In particular stuff which makes users think they are secure but is
-> worthless is very dangerous indeed.
->
-> When you know that security is limited you act appropriately, when you
-> believe security is good but it is not you take inappropriate risks and
-> get badly burned.
->   
-The "bad security is worse than no security" idea comes exactly from
-what Alan says above: it happens when the security is not as good as you
-think it is, and so you don't take adequate precautions.
+Arjan van de Ven wrote:
+> On Sun, 28 Oct 2007 22:30:55 +0100
+> "lists@antonello.org" <lists@antonello.org> wrote:
+> 
+>> Ok,
+>>   now checkpatch.pl only complains about a missing signed-off-by.
+>> Is this ok for review?
+> 
+> 
+> hi,
+> 
+> when going over your patch.. is there a reason you introduce yet
+> another timeout infrastructure? Is there something wrong with the
+> existing ones that maybe should be fixed instead?
+> Either way.. please put justification for such new mechanism in the
+> patch changelog....
+> 
+> Greetings,
+>    Arjan van de Ven
+> 
 
-Using the ongoing bicycle lock example, the discovery a few years ago
-that a certain model of Kryptonite bike lock could be picked with a
-simple pen made the security on this otherwise very sturdy lock become
-abruptly very weak http://www.wired.com/culture/lifestyle/news/2004/09/64987
+hi,
 
-Conversely, the case can also be made that "weak security is better than
-no security". It is better to secure your bike with a $10 lock than no
-lock. If someone insists on only "high" security bike locks that cost
-$1000 and weigh 30 lbs, then most people will choose to not lock their
-bikes, or skip biking all together.
+i don't think there are similar infrastructures. This timeout is
+not quite a timer.
 
-IMHO, much of the criticism leveled at proposed LSMs has been of the
-latter kind, or worse. That the security of the proposed LSM does not
-meet some particular use case does not make it "bad", it makes it not
-for that use case.
+The timeout starts counting when timeout_touch() is first called. At
+this point the start() function is executed in non-atomic context.
+Then either it is reset if timeout_touch() is called in time (and
+thus starts to count again). Else it triggers, and executes the
+trigger() function in non-atomic context and it stays idle unless
+timeout_touch() is called again.
 
-To reject an LSM for providing "bad" security, IMHO you should have to
-show how it is possible to subvert the self-stated goals of that LSM.
-Complaints that the LSM fails to meet some goal outside of its stated
-purpose is irrelevant. Conjecture that it probably can be violated
-because of $contrivance is just so much FUD.
+The non-atomic context is needed to use backlight.c mutexes and
+that is enabled with the use of workqueues.
 
-Exception: it is valid to say that the self-stated goal is too narrow to
-be useful. But IMHO that bar of "too narrow" should be very, very low.
-Defenses against specific modes of attack would be a fine thing to build
-up in the library of LSMs, especially if we got a decent stacking module
-so that they could be composed.
+I don't mean to add some new infrastructure to the base kernel, but
+it seemed a general functionality to me. In fact it may also be fully
+included in backlight.c. Since backlight.h is in include/linux, i was
+forced to put timeout.h in include/linux also. But this is just
+a temporary fix.
 
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
+jacopo
 
