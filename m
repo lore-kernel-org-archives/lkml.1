@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbXJ1WyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXJ1W4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbXJ1WyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 18:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbXJ1WyI
+	id S1755904AbXJ1W4S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 18:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXJ1W4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 18:54:08 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52469 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbXJ1WyH (ORCPT
+	Sun, 28 Oct 2007 18:56:03 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38615 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444AbXJ1W4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 18:54:07 -0400
-Date: Sun, 28 Oct 2007 22:53:25 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, svs1957@gmail.com,
-       bgat@billgatliff.com, linux-kernel@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [Bugme-new] [Bug 9217] New: CONFIG_CMDLINE doesn't pass to kernel
-Message-ID: <20071028225325.GB12752@flint.arm.linux.org.uk>
-References: <bug-9217-10286@http.bugzilla.kernel.org/> <20071024195717.0de6a248.akpm@linux-foundation.org> <47200F05.2050305@billgatliff.com> <20071025122303.GB7543@xi.wantstofly.org> <1193319816.6167.45.camel@localhost.localdomain> <20071025130250.cd759e90.akpm@linux-foundation.org> <1193349292.17244.1.camel@localhost.localdomain> <1193611607.7401.9.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Sun, 28 Oct 2007 18:56:01 -0400
+Date: Sun, 28 Oct 2007 16:55:59 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+Message-ID: <20071028225559.GD32359@parisc-linux.org>
+References: <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org> <20071028182732.GK27248@parisc-linux.org> <20071028184052.49abd092@the-village.bc.nu> <20071028201101.GA32359@parisc-linux.org> <1193608230.7561.11.camel@heimdal.trondhjem.org> <20071028224157.GC32359@parisc-linux.org> <20071028224833.66dc4243@the-village.bc.nu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1193611607.7401.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20071028224833.66dc4243@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 10:46:47PM +0000, Richard Purdie wrote:
-> On Thu, 2007-10-25 at 22:54 +0100, Richard Purdie wrote:
-> > On Thu, 2007-10-25 at 13:02 -0700, Andrew Morton wrote:
-> > > It was in the inital report, at
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=9217 :
-> >
-> > This is the commandline they wanted to use, not the one that was
-> > actually used. The one that was used should appear on the console, on
-> > the serial console if they have the lead or in dmesg when the device
-> > boots. We know it probably contained root=/dev/mtdblock2 but thats it.
+On Sun, Oct 28, 2007 at 10:48:33PM +0000, Alan Cox wrote:
+> > Bzzt.  You get a false deadlock with multiple threads like so:
 > > 
-> > I'd like to confirm which commandline is appearing since if we know
-> > which one it is we might stand a chance of knowing where it came from,
-> > until then this is just a guessing game.
+> > Thread A of task B takes lock 1
+> > Thread C of task D takes lock 2
+> > Thread C of task D blocks on lock 1
+> > Thread E of task B blocks on lock 2
 > 
-> There was a followup in the bugzilla:
-> 
-> > I use u-boot to boot kernel.
-> > When kernel >=2.6.23 boot it use u-boot default bootparam:
-> > console=ttyS0,115200 console=tty1 root=/dev/mtdblock2 rootfstype=jffs2
-> > Now I try to change it in u-boot source.
-> >
-> > kernel 2.6.22.9 change default u-boot boot params to what I set in
-> > CONFIG_CMDLINE But 2.6.23 and later doesn't
-> 
-> So its not the standard bootloader, its one which passes an ATAG
-> commandline and 2.6.23 onwards uses an ATAG commandline if present
-> over the compiled in commandline.
+> The spec and SYSV certainly ignore threading in this situation and you
+> know that perfectly well (or did in 2004)
 
-That statement is misleading.  The kernel has _always_ used the command
-line passed from the boot loader in preference to the built-in command
-line.
-
-The thing that's changed is that the kernel how honors the value passed
-from the boot loader in R2 to find out where the ATAG list is - as
-documented since 2002 that it will eventually do.  That's 5 years
-of warning.
+The discussion petered out (or that mailing list archive lost articles
+from the thread) without any kind of resolution, or indeed interest.
+What is your suggestion for handling this problem?  As it is now, the
+kernel 'detects' deadlock where there is none, which doesn't seem
+allowed by SuSv3 either.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
