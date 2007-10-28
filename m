@@ -1,119 +1,601 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbXJ1PYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbXJ1P0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbXJ1PYj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 11:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXJ1PYb
+	id S1754465AbXJ1P0j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 11:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXJ1P0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 11:24:31 -0400
-Received: from iucha.net ([209.98.146.184]:37916 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbXJ1PYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 11:24:30 -0400
-Date: Sun, 28 Oct 2007 10:24:29 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
-Message-ID: <20071028152428.GJ7918@iucha.net>
+	Sun, 28 Oct 2007 11:26:31 -0400
+Received: from mailgw2.3essentials.com ([66.179.153.59]:4193 "EHLO
+	mailgw2.3essentials.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbXJ1P0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 11:26:30 -0400
+X-Greylist: delayed 900 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Oct 2007 11:26:30 EDT
+Message-ID: <4724B48D.6090405@antonello.org>
+Date: Sun, 28 Oct 2007 17:10:53 +0100
+From: jack@antonello.org
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="q7oacCJraRPxsh4K"
-Content-Disposition: inline
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: linux-kernel@vger.kernel.org
+CC: rpurdie@rpsys.net
+Subject: [PATCH] backlight dimmer
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---q7oacCJraRPxsh4K
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 Hello,
+ this patch implements a macbook like backlight dimmer on top of 
+backlight.c.
 
-For a week or two I started noticing that some time after I'm logged
-in, my keyboard input becomes a bit staggering, there is a small delay
-between the keypress and the actual character appearing in the
-terminal.  This is on a AMD Athlon x2 4200+ with 2 GB RAM and just a
-gnome-terminal open.  The machine is as idle as possible - monitored
-via the system monitor applet.  I could not get any hard data on it,
-until now.
+The dimmer is entirely in kernelspace and is suitable for an embedded 
+context in order to avoid the overhead of a daemon controlling the 
+backlight. Implementing this functionality in userspace has other 
+advantages and is a perfectly reasonable alternative, so this patch is
+not the definitive solution.
 
-After I logged off from GNOME, I switched to the text console and ran
-top, with the option of showing one CPU stats line for each CPU.  Lo
-and behold, one core is 100% idle, and the other one is 25% idle and
-75% waiting.  Periodically, a pdflush process in 'D' state raises to
-the top.  I did a 'echo t > /proc/sysrequest-trigger' and this is what
-is says for the two pdflush processes:
+activate dimmer:
+echo 1 > /sys/devices/virtual/backlight/*/dimmer_control
 
-   [ 3687.824424] pdflush       S ffff8100057ffef8     0   247      2
-   [ 3687.824427]  ffff8100057ffed0 0000000000000046 ffff8100057ffe70 fffff=
-fff8022a96c
-   [ 3687.824431]  ffff8100057fc000 ffff810003040770 ffff8100057fc208 00000=
-00000000297
-   [ 3687.824434]  ffff8100057ffe90 ffff810002c1ba10 ffff8100057ffed0 fffff=
-fff8022b9d2
-   [ 3687.824438] Call Trace:
-   [ 3687.824440]  [<ffffffff8022a96c>] enqueue_task_fair+0x21/0x34
-   [ 3687.824444]  [<ffffffff8022b9d2>] set_user_nice+0x110/0x12c
-   [ 3687.824448]  [<ffffffff80267165>] pdflush+0x0/0x1c3
-   [ 3687.824451]  [<ffffffff80267234>] pdflush+0xcf/0x1c3
-   [ 3687.824455]  [<ffffffff80245876>] kthread+0x49/0x77
-   [ 3687.824458]  [<ffffffff8020c598>] child_rip+0xa/0x12
-   [ 3687.824463]  [<ffffffff8024582d>] kthread+0x0/0x77
-   [ 3687.824466]  [<ffffffff8020c58e>] child_rip+0x0/0x12
-   [ 3687.824468]=20
-   [ 3687.824470] pdflush       D ffffffff805787c0     0   248      2
-   [ 3687.824473]  ffff810006001d90 0000000000000046 0000000000000000 00000=
-00000000286
-   [ 3687.824476]  ffff8100057fc770 ffff810003062000 ffff8100057fc978 00000=
-00106001da0
-   [ 3687.824480]  0000000000000003 ffffffff8023b1b2 0000000000000000 00000=
-00000000000
-   [ 3687.824483] Call Trace:
-   [ 3687.824488]  [<ffffffff8023b1b2>] __mod_timer+0xb8/0xca
-   [ 3687.824492]  [<ffffffff8055c87a>] schedule_timeout+0x8d/0xb4
-   [ 3687.824496]  [<ffffffff8023ad6c>] process_timeout+0x0/0xb
-   [ 3687.824499]  [<ffffffff8055c79a>] io_schedule_timeout+0x28/0x33
-   [ 3687.824503]  [<ffffffff8026bb24>] congestion_wait+0x6b/0x87
-   [ 3687.824506]  [<ffffffff80245983>] autoremove_wake_function+0x0/0x38
-   [ 3687.824510]  [<ffffffff8029e684>] writeback_inodes+0xcd/0xd5
-   [ 3687.824514]  [<ffffffff80266dc4>] wb_kupdate+0xbb/0x10d
-   [ 3687.824518]  [<ffffffff80267165>] pdflush+0x0/0x1c3
-   [ 3687.824520]  [<ffffffff8026727d>] pdflush+0x118/0x1c3
-   [ 3687.824523]  [<ffffffff80266d09>] wb_kupdate+0x0/0x10d
-   [ 3687.824527]  [<ffffffff80245876>] kthread+0x49/0x77
-   [ 3687.824530]  [<ffffffff8020c598>] child_rip+0xa/0x12
-   [ 3687.824535]  [<ffffffff8024582d>] kthread+0x0/0x77
-   [ 3687.824538]  [<ffffffff8020c58e>] child_rip+0x0/0x12
-   [ 3687.824540]=20
+other attributes (britness levels & timeout):
+/sys/devices/virtual/backlight/*/dimmer_high_level
+/sys/devices/virtual/backlight/*/dimmer_low_level
+/sys/devices/virtual/backlight/*/dimmer_timeout
 
-What could cause this?  I use NFS4 to automount the home directories
-=66rom a Solaris10 server, and this box found a few bugs in the NFS4
-code (fixed in the 2.6.22 kernel).
+regards,
+jacopo antonello
 
-I'll try running with 2.6.23 again for a few days, to see if I get the
-pdflush stuck.  Any other ideas?
 
-florin
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
+******************************* diff follows
+--- linux-2.6.23.1/include/linux/backlight.h	2007-10-12 18:43:44.000000000 +0200
++++ b/include/linux/backlight.h	2007-10-28 13:45:21.000000000 +0100
+@@ -11,6 +11,7 @@
+#include <linux/device.h>
+#include <linux/mutex.h>
+#include <linux/notifier.h>
++#include <linux/timeout.h>
 
---q7oacCJraRPxsh4K
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+/* Notes on locking:
+ *
+@@ -70,6 +71,12 @@ struct backlight_device {
+	/* The framebuffer notifier block */
+	struct notifier_block fb_notif;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
++  /* dimmer stuff */
++  struct timeout *timeout;
++  struct input_handler *input_handler;
++  unsigned short dimmer_low_level;
++  unsigned short dimmer_high_level;
++
+	struct device dev;
+};
 
-iD8DBQFHJKmsND0rFCN2b1sRAthsAJ0dc2sGHF7hs1tRDZpua2t29dtaWwCgpAbB
-5ce/N+VTYve4j94tXMYG4L8=
-=so8S
------END PGP SIGNATURE-----
+--- linux-2.6.23.1/drivers/video/backlight/Makefile	2007-10-12 18:43:44.000000000 +0200
++++ b/drivers/video/backlight/Makefile	2007-10-28 13:45:21.000000000 +0100
+@@ -1,7 +1,7 @@
+# Backlight & LCD drivers
 
---q7oacCJraRPxsh4K--
+obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
+-obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
++obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o timeout.o
+obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
+obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
+obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
+--- linux-2.6.23.1/include/linux/timeout.h	1970-01-01 01:00:00.000000000 +0100
++++ b/include/linux/timeout.h	2007-10-28 13:45:21.000000000 +0100
+@@ -0,0 +1,66 @@
++/*
++ *  timeout.h - simple timeout
++ *
++ *
++ *  Copyright (C) 2007 Jacopo Antonello <jack@antonello.org>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ *  02110-1301, USA.
++ */
++
++#ifndef _TIMEOUT_H_
++#define _TIMEOUT_H_
++
++#include <linux/workqueue.h>
++#include <linux/mutex.h>
++#include <linux/spinlock.h>
++
++enum timeout_state {
++  TIMEOUT_RUNNING,
++  TIMEOUT_TRIGGERED,
++  TIMEOUT_FINILIZED
++};
++
++struct timeout {
++  struct mutex lock;
++  spinlock_t latest_lock;
++  struct delayed_work trigger_worker;
++  struct work_struct start_worker;
++  unsigned long latest;
++  enum timeout_state state;
++
++  unsigned long duration; /* client defined duration */
++  unsigned long data; /* client data */
++  void (*trigger)(unsigned long); /* client function */
++  void (*start)(unsigned long); /* client function */
++};
++
++extern void timeout_touch(struct timeout *timeout);
++
++extern void timeout_init(struct timeout *timeout);
++
++extern void timeout_kill(struct timeout *timeout);
++
++static inline int timeout_sec2jiffies(int secs)
++{
++    return secs * HZ;
++}
++
++static inline int timeout_jif2sec(unsigned long jif)
++{
++    return jif / HZ;
++}
++
++#endif
+--- linux-2.6.23.1/drivers/video/backlight/timeout.c	1970-01-01 01:00:00.000000000 +0100
++++ b/drivers/video/backlight/timeout.c	2007-10-28 13:45:21.000000000 +0100
+@@ -0,0 +1,143 @@
++/*
++ *  timeout.c - simple timeout
++ *
++ *
++ *  Copyright (C) 2007 Jacopo Antonello <jack@antonello.org>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ *  02110-1301, USA.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/jiffies.h>
++#include <linux/timeout.h>
++
++
++/* atomic context helpers for timeout->latest */
++static inline unsigned long read_latest(struct timeout *timeout)
++{
++  unsigned long ret;
++  spin_lock(&timeout->latest_lock);
++  ret = timeout->latest;
++  spin_unlock(&timeout->latest_lock);
++  return ret;
++}
++
++static inline unsigned long elapsed(struct timeout *timeout)
++{
++  unsigned long elapsed;
++  spin_lock(&timeout->latest_lock);
++  elapsed = jiffies - timeout->latest;
++  spin_unlock(&timeout->latest_lock);
++  return elapsed;
++}
++
++static inline void touch_latest(struct timeout *timeout)
++{
++  spin_lock(&timeout->latest_lock);
++  timeout->latest = jiffies;
++  spin_unlock(&timeout->latest_lock);
++}
++
++/* non-atomic context */
++static void trigger_worker_function(struct work_struct *work)
++{
++  struct timeout *timeout = container_of(work, struct timeout, trigger_worker.work);
++
++  mutex_lock(&timeout->lock);
++
++  /* flag to kill worker */
++  if (timeout->state != TIMEOUT_RUNNING)
++    goto exit;
++
++  /* TODO beware of jiffies calculations! use helpers */
++  if ( elapsed(timeout) >= timeout->duration ) {
++    /*
++    printk(KERN_DEBUG "tigger_worker_function() -> timeout->trigger() (elapsed: %f) \n",
++        (elapsed(timeout) / (float) (HZ)));
++        */
++    printk(KERN_DEBUG "tigger_worker_function() -> timeout->trigger() (elapsed: %ld ms) \n",
++        (elapsed(timeout) * 1000 / (HZ)));
++    timeout->state = TIMEOUT_TRIGGERED;
++    timeout->trigger(timeout->data);
++  }
++  else {
++    unsigned long new_delay = ( read_latest(timeout) - jiffies ) + timeout->duration;
++    /*
++    printk(KERN_DEBUG "tigger_worker_function() -> schedule_delayed_work() (new_delay: %ld %f)\n",
++        new_delay, new_delay / (float) (HZ));
++        */
++    printk(KERN_DEBUG "tigger_worker_function() -> schedule_delayed_work() (new_delay: %ld jif %ld ms)\n",
++        new_delay, new_delay * 1000 / (HZ));
++    schedule_delayed_work(&timeout->trigger_worker,
++/*        ( jiffies - read_latest(timeout) ) + timeout->duration ); */
++        new_delay );
++
++  }
++
++  exit:
++    mutex_unlock(&timeout->lock);
++}
++
++/* non-atomic context */
++static void start_worker_function(struct work_struct *work)
++{
++  struct timeout *timeout = container_of(work, struct timeout, start_worker);
++
++  printk(KERN_DEBUG "start_worker_function() -> timeout->start()\n");
++  timeout->start(timeout->data);
++  schedule_delayed_work(&timeout->trigger_worker, timeout->duration);
++}
++
++/* atomic context touch */
++void timeout_touch(struct timeout *timeout)
++{
++  touch_latest(timeout);
++
++  if (timeout->state == TIMEOUT_TRIGGERED &&
++      mutex_trylock(&timeout->lock)) {
++
++    if (timeout->state == TIMEOUT_TRIGGERED) {
++      timeout->state = TIMEOUT_RUNNING;
++      schedule_work(&timeout->start_worker);
++    }
++
++    mutex_unlock(&timeout->lock);
++  }
++}
++EXPORT_SYMBOL(timeout_touch);
++
++void timeout_init(struct timeout *timeout)
++{
++  mutex_init(&timeout->lock);
++  spin_lock_init(&timeout->latest_lock);
++  INIT_DELAYED_WORK(&timeout->trigger_worker, trigger_worker_function);
++  INIT_WORK(&timeout->start_worker, start_worker_function);
++  timeout->state = TIMEOUT_TRIGGERED;
++}
++EXPORT_SYMBOL(timeout_init);
++
++void timeout_kill(struct timeout *timeout)
++{
++  mutex_lock(&timeout->lock);
++  if (timeout->state == TIMEOUT_RUNNING)
++    cancel_delayed_work_sync(&timeout->trigger_worker);
++
++  flush_scheduled_work();
++  timeout->state = TIMEOUT_FINILIZED;
++  mutex_unlock(&timeout->lock);
++}
++EXPORT_SYMBOL(timeout_kill);
+--- linux-2.6.23.1/drivers/video/backlight/backlight.c	2007-10-12 18:43:44.000000000 +0200
++++ b/drivers/video/backlight/backlight.c	2007-10-28 13:45:21.000000000 +0100
+@@ -8,7 +8,8 @@
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/device.h>
+-#include <linux/backlight.h>
++#include <linux/input.h>
++#include <linux/backlight.h> 
+#include <linux/notifier.h>
+#include <linux/ctype.h>
+#include <linux/err.h>
+@@ -172,6 +173,267 @@ static void bl_device_release(struct dev
+	kfree(bd);
+}
+
++/*
++ * ---------------------------------------------------
++ *           backlight dimmer
++ * --------------------------------------------------
++ */
++
++static const struct input_device_id idi_dimmer[] = {
++  {
++    .flags = INPUT_DEVICE_ID_MATCH_EVBIT,
++    .evbit = { BIT(EV_KEY) },
++  }, /* key event */
++  {
++    .flags = INPUT_DEVICE_ID_MATCH_RELBIT,
++    .relbit = { BIT(REL_X) | BIT(REL_Y) | BIT(REL_WHEEL) },
++  },  /* rel axes */
++  {
++    .flags = INPUT_DEVICE_ID_MATCH_ABSBIT,
++    .absbit = { BIT(ABS_X) | BIT(ABS_Y) },
++  },  /* abs axes */
++  { }
++};
++
++static void handler_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
++{
++  struct backlight_device *dev = (struct backlight_device *)handle->private;
++
++  switch(type) {
++    case EV_KEY:
++    case EV_REL:
++      timeout_touch(dev->timeout);
++  }
++}
++
++static void dimmer_start(unsigned long data)
++{
++	struct backlight_device *bd = (struct backlight_device *)data;
++
++  printk(KERN_DEBUG "SWITCH TO HIGH\n");
++  bd->props.brightness = bd->dimmer_high_level;
++  backlight_update_status(bd);
++}
++
++static void dimmer_trigger(unsigned long data)
++{
++	struct backlight_device *bd = (struct backlight_device *)data;
++
++  printk(KERN_DEBUG "SWITCH TO LOW\n");
++  bd->props.brightness = bd->dimmer_low_level;
++  backlight_update_status(bd);
++}
++
++static int handler_connect(struct input_handler *handler, struct input_dev *dev,
++    const struct input_device_id *id)
++{
++  int error = 0;
++  struct input_handle *handle;
++
++
++  handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
++  if (!handle)
++    return -ENOMEM;
++
++  handle->handler = handler;
++  handle->dev = dev;
++  handle->name = "backlight";
++  handle->private = handler->private;
++
++  error = input_register_handle(handle);
++  if (error)
++    goto err_free_handle;
++
++  error = input_open_device(handle);
++  if (error)
++    goto err_unregister_handle;
++
++  return 0;
++
++  err_unregister_handle:
++    input_unregister_handle(handle);
++  err_free_handle:
++    kfree(handle);
++  return error;
++}
++
++static void handler_disconnect(struct input_handle *handle)
++{
++  input_close_device(handle);
++  input_unregister_handle(handle);
++  kfree(handle);
++}
++
++static int enable_dimmer(struct backlight_device *dev)
++{
++  printk(KERN_DEBUG "enable_dimmer()...\n");
++  dev->input_handler = kzalloc(sizeof(struct input_handler), GFP_KERNEL);
++  if (!dev->input_handler)
++    return -ENOMEM;
++
++  if (!dev->dimmer_low_level)
++    dev->dimmer_low_level = dev->props.max_brightness/2;
++  if (!dev->dimmer_high_level)
++    dev->dimmer_high_level = dev->props.max_brightness;
++
++  dev->input_handler->event = handler_event;
++  dev->input_handler->connect = handler_connect;
++  dev->input_handler->disconnect = handler_disconnect;
++  dev->input_handler->name = "backlight";
++  dev->input_handler->id_table = idi_dimmer;
++  dev->input_handler->private = dev;
++
++  dev->timeout = kzalloc(sizeof(struct timeout), GFP_KERNEL);
++  if (!dev->timeout)
++    goto free_handler;
++
++  timeout_init(dev->timeout);
++  dev->timeout->duration = timeout_sec2jiffies(5);
++  dev->timeout->data = (unsigned long)dev;
++  dev->timeout->trigger = dimmer_trigger;
++  dev->timeout->start = dimmer_start;
++
++  if (!input_register_handler(dev->input_handler))
++    return 0; /* success */
++  /* else go on & cleanup */
++
++  free_handler:
++    kfree(dev->input_handler);
++    dev->input_handler=NULL;
++    return -ENOMEM;
++}
++
++static void disable_dimmer(struct backlight_device *dev)
++{
++  if (!dev->input_handler)
++    return;
++
++  input_unregister_handler(dev->input_handler);
++  timeout_kill(dev->timeout);
++  kfree(dev->input_handler);
++  kfree(dev->timeout);
++  dev->input_handler = NULL;
++  dev->timeout = NULL;
++  printk(KERN_DEBUG "disable_dimmer()\n");
++}
++
++/* show */
++static ssize_t show_dimmer_control(struct device *dev,
++    struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  return snprintf(buf, PAGE_SIZE, "%d\n",
++      (bd->input_handler != NULL));
++}
++
++static ssize_t show_dimmer_timeout(struct device *dev,
++    struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  if (bd->timeout)
++    return snprintf(buf, PAGE_SIZE, "%d\n",
++        timeout_jif2sec(bd->timeout->duration));
++  else
++    return 0;
++}
++
++static ssize_t show_dimmer_low_level(struct device *dev,
++    struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  return snprintf(buf, PAGE_SIZE, "%d\n",
++      bd->dimmer_low_level);
++}
++
++static ssize_t show_dimmer_high_level(struct device *dev,
++    struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  return snprintf(buf, PAGE_SIZE, "%d\n",
++      bd->dimmer_high_level);
++}
++
++/* store */
++static ssize_t store_dimmer_control(struct device *dev,
++    struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  char *endp;
++  int control = simple_strtoul(buf, &endp, 0);
++
++	mutex_lock(&bd->ops_lock);
++  if (control == 1 && !bd->input_handler)
++    enable_dimmer(bd);
++  else if (control == 0 && bd->input_handler)
++    disable_dimmer(bd);
++  mutex_unlock(&bd->ops_lock);
++
++	return count;
++}
++
++static ssize_t store_dimmer_timeout(struct device *dev,
++    struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  char *endp;
++  int timeout = simple_strtoul(buf, &endp, 0);
++
++  if (timeout <= 0 || timeout >= 60*30)
++    return -ENXIO;
++
++	mutex_lock(&bd->ops_lock);
++  if (!bd->timeout) {
++	  mutex_unlock(&bd->ops_lock);
++    return -ENXIO;
++  }
++  bd->timeout->duration = timeout_sec2jiffies(timeout);
++	mutex_unlock(&bd->ops_lock);
++
++  return count;
++}
++
++static ssize_t store_dimmer_low_level(struct device *dev,
++    struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  char *endp;
++  int low = simple_strtoul(buf, &endp, 0);
++
++  if (low < 0 || low > bd->props.max_brightness)
++    return -ENXIO;
++
++	mutex_lock(&bd->ops_lock);
++  bd->dimmer_low_level = low;
++	mutex_unlock(&bd->ops_lock);
++
++  return count;
++}
++
++static ssize_t store_dimmer_high_level(struct device *dev,
++    struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++  char *endp;
++  int high = simple_strtoul(buf, &endp, 0);
++
++  if (high < 0 || high > bd->props.max_brightness)
++    return -ENXIO;
++
++	mutex_lock(&bd->ops_lock);
++  bd->dimmer_high_level = high;
++	mutex_unlock(&bd->ops_lock);
++
++  return count;
++}
++
+static struct device_attribute bl_device_attributes[] = {
+	__ATTR(bl_power, 0644, backlight_show_power, backlight_store_power),
+	__ATTR(brightness, 0644, backlight_show_brightness,
+@@ -179,6 +441,10 @@ static struct device_attribute bl_device
+	__ATTR(actual_brightness, 0444, backlight_show_actual_brightness,
+		     NULL),
+	__ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),
++	__ATTR(dimmer_control, 0666, show_dimmer_control, store_dimmer_control),
++	__ATTR(dimmer_timeout, 0666, show_dimmer_timeout, store_dimmer_timeout),
++	__ATTR(dimmer_low_level, 0666, show_dimmer_low_level, store_dimmer_low_level),
++	__ATTR(dimmer_high_level, 0666, show_dimmer_high_level, store_dimmer_high_level),
+	__ATTR_NULL,
+};
+
+@@ -259,6 +525,7 @@ void backlight_device_unregister(struct 
+#endif
+	mutex_lock(&bd->ops_lock);
+	bd->ops = NULL;
++  disable_dimmer(bd);
+	mutex_unlock(&bd->ops_lock);
+
+	backlight_unregister_fb(bd);
+
+
+
