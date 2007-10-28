@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbXJ1SM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbXJ1SMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbXJ1SM1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 14:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXJ1SL4
+	id S1752891AbXJ1SMn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 14:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbXJ1SL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 14:11:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4533 "EHLO spitz.ucw.cz"
+	Sun, 28 Oct 2007 14:11:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4531 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752096AbXJ1SLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 14:11:55 -0400
-Date: Sat, 27 Oct 2007 07:31:40 +0000
+	id S1752650AbXJ1SL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 14:11:56 -0400
+Date: Sun, 28 Oct 2007 18:07:07 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
-Message-ID: <20071027073140.GB6043@ucw.cz>
-References: <1193173966-3550-1-git-send-email-matthew@wil.cx>
+To: Rik van Riel <riel@surriel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071028180707.GA6111@ucw.cz>
+References: <20071014190128.6e3cdb44@bree.surriel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1193173966-3550-1-git-send-email-matthew@wil.cx>
+In-Reply-To: <20071014190128.6e3cdb44@bree.surriel.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-10-23 17:12:43, Matthew Wilcox wrote:
-> Consecutive calls to printk are non-atomic, which leads to various
-> implementations for accumulating strings which can be printed in one call.
-> This is a generic string buffer which can also be used for non-printk
-> purposes.  There is no sb_scanf implementation yet as I haven't identified
-> a user for it.
+Hi!
 
-GFP_ATOMIC alloca5tion there is bad news. It can randomly fail.....
-without good method of handling that in caller.
-							Pavel
-> +/*
-> + * Convert the stringbuf to a string.  It is the caller's responsibility
-> + * to free the string.  The stringbuf is then ready to be reused.
-> + */
-> +static inline char *sb_to_string(struct stringbuf *sb)
-> +{
-> +	char *s = sb->s;
-> +	if (sb_error(sb))
-> +		s = kstrdup(s, GFP_ATOMIC);
-> +	sb_init(sb);
-> +	return s;
-> +}
+> - Are large enough to qualify as a student project, luckily there is
+>   flexibility here since we get inquiries for anything from 6 week
+>   projects to 6 month projects.
+> 
+> If you have ideas on what projects would be useful, please add them
+> to this page (or email me):
 
+Hard stuff:
+
+* network character device -- similar to nbd, but for char devices.
+  either figure out how to forward ioctls(), or implement
+  usb-over-network, or...
+
+* openMosix -- they seem to have userspace solution, but not GPLed.
+
+* compression for ext4. Its about time someone did it right. Special
+  bonus if you can do it in a way that it does not slow down. If cpu
+  is free, compress, if it is busy, just write it straight to disk.
 							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
