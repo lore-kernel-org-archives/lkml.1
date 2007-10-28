@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXJ1RrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXJ1RsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbXJ1RrV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 13:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXJ1RrL
+	id S1756694AbXJ1RsV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 13:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXJ1RsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 13:47:11 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:43680 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbXJ1RrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 13:47:10 -0400
-Date: Sun, 28 Oct 2007 13:47:09 -0400
-To: "George G. Davis" <gdavis@mvista.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Fix hang in posix_locks_deadlock()
-Message-ID: <20071028174709.GC16905@fieldses.org>
-References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org>
+	Sun, 28 Oct 2007 13:48:07 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:62061 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbXJ1RsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 13:48:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K2RISwaHCZOK/D/9ULFgdn3kul3ipicOUqJ9xVKu52jJg3kyrZ5UJKn5lEz1cuViS0AWsd9/2urKI/lWLcxwolaYtTLEiuccI2Ftko+Hd3OVodH9IBa9ur0kabQ49cwvT0PxHOrFTm1glx4eSyR0b1kpurwp9wFzP/DaEHcFPyg=
+Message-ID: <64bb37e0710281048x589ab063o8a32294e30488979@mail.gmail.com>
+Date: Sun, 28 Oct 2007 19:48:03 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [RFC: 2.6 patch] remove the USB_STORAGE_ONETOUCH driver
+Cc: "Nick Sillik" <n.sillik@temple.edu>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <20071028155212.GC7227@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071026224707.GO13033@fieldses.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+References: <20071028155212.GC7227@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 06:47:08PM -0400, J. Bruce Fields wrote:
-> Hm.  After another look: assume we have four tasks, t1, t2, t3, and t4.
-> Assume t1 and t2 share the same current->files (so they're the same
-> "owner" for the purpose of posix_same_owner()).  Assume:
-> 
-> 	t1 is waiting on a conflicting lock held by t3.
-> 	t2 is waiting on a conflicting lock held by t4.
-> 
-> Now suppose t4 requests a lock that conflicts with a lock held by t1 and
-> t2.  The list_for_each_entry() above will search for a task with t1 or
-> t2 as owner, which is waiting on a lock.  If it finds t1 first, the loop
-> won't be noticed, so t4 will be put to sleep.  Now we have a loop; t3
-> can release its lock (it no longer matters), and we'll have
-> 
-> 	t2 waiting on a conflicting lock held by t4, and
-> 	t4 waiting on a conflicting lock held by t2.
-> 
-> If a new task t5 then requests a lock conflicting with the one held by
-> t2, then the above function will go into an infinite loop.  I think.
-> 
-> Consider the directed graph with each vertex representing the set of all
-> tasks sharing the same file table, and each edge representing the
-> relationship "a task at this vertex is waiting on a lock held by a task
-> on another vertex".  The existance of multiple tasks with the same file
-> table means that we can no longer assume that each vertex has outdegree
-> at most one, so we have to switch to an algorithm that works on an
-> arbitrary directed graph.  That sounds painful.
-> 
-> Am I right about that, and about the example above?  It'd be interesting
-> to code it up just to make sure.
-> 
-> If so, one can imagine various bandaids, but maybe we should just rip
-> out the deadlock detection completely.... It's hard to imagine it being
-> really useful anyway.
+On 10/28/07, Adrian Bunk <bunk@kernel.org> wrote:
+> Nearly two years ago, USB_STORAGE_ONETOUCH got a dependency on !PM.
+> Considering that this also implies that the driver is not available
+> e.g. when ACPI is enabled in the kernel that's not far from a dependency
+> on BROKEN.
+>
+> This patch therefore removes this driver.
 
-OK, well I cooked up a similar example, which was kind of fun, and
-verified that I can indeed lock up the kernel this way.
+Hmm...
 
-The only way this can happen, though, is if you already have deadlocked
-threads--that is to say, two threads that are each waiting on posix file
-locks held by the other.  (Or a similar cycle of length more than 2.) So
-hopefully your application is doing some other kind of deadlock
-detection (e.g. by killing threads that block for too long); otherwise
-it already has a bug.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=c9d00fc148b210aa8cf388d6e1eac187a0e855a6
+-> Adds !PM because suspend was broken (17.11.2005)
 
---b.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7931e1c6f8007d5fef8a0bb2dc71bd97315eeae9
+-> Adds suspend support, but fails to remove the !PM (5.12.2005)
+
+So it looks like that !PM is false.
+
+I have the following device:
+Bus 001 Device 005: ID 1058:0400 Western Digital Technologies, Inc.
+Bus 001 Device 004: ID 1058:0600 Western Digital Technologies, Inc.
+Bus 001 Device 003: ID 1058:0500 Western Digital Technologies, Inc.
+aka Western Digital Media Center
+This firewire+usb hdd enclosure also has three buttons.
+But it looks like that uses another driver:
+hiddev0hidraw1: USB HID v1.10 Device [Western Digital External HDD] on
+usb-0000:00:02.1-5.2
+
+Otherwise I would be willing to try to test this, if someone would
+tell me how to check that the second commit did fix the suspend
+problem.
+
+Torsten
