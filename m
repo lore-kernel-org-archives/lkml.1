@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXJ1J0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbXJ1JeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbXJ1J0w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 05:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbXJ1J0n
+	id S1753058AbXJ1JeT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 05:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXJ1JeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 05:26:43 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53070 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbXJ1J0l (ORCPT
+	Sun, 28 Oct 2007 05:34:08 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:39128 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbXJ1JeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 05:26:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4724557C.6000408@s5r6.in-berlin.de>
-Date: Sun, 28 Oct 2007 10:25:16 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sun, 28 Oct 2007 05:34:07 -0400
+Message-ID: <47245784.10209@cosmosbay.com>
+Date: Sun, 28 Oct 2007 10:33:56 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Tilman Schmidt <tilman@imap.cc>, Greg KH <greg@kroah.com>,
-       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: eradicating out of tree modules
-References: <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026232653.GF30533@stusta.de> <47234F73.3040809@imap.cc> <20071028005555.GC23339@stusta.de>
-In-Reply-To: <20071028005555.GC23339@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: davids@webmaster.com
+CC: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: epoll design problems with common fork/exec patterns
+References: <MDEHLPKNGKAHNMBLJOLKIEEDHNAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEEDHNAC.davids@webmaster.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 28 Oct 2007 10:34:05 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sat, Oct 27, 2007 at 04:47:15PM +0200, Tilman Schmidt wrote:
->> There is a big difference between "not doing anything to help"
->> and "actively doing something to make life difficult for". The
->> former is undoubtedly legitimate. It's the latter we're
->> discussing here.
+David Schwartz a écrit :
+>> 6) Epoll removes the file from the set, when the *kernel* object gets
+>>    closed (internal use-count goes to zero)
+>>
+>> With that in mind, how can the code snippet above trigger a removal from
+>> the epoll set?
 > 
-> Justifying anything with code with not GPL compatible licences has zero 
-> relevance here.
+> 	I don't see how that can be. Suppose I add fd 8 to an epoll set. Suppose fd
+> 5 is a dup of fd 8. Now, I close fd 8. How can fd 8 remain in my epoll set,
+> since there no longer is an fd 8? Events on files registered for epoll
+> notification are reported by descriptor, so the set membership has to be
+> associated (as reflected into userspace) with the descriptor, not the file.
+
+Events are not necessarly reported "by descriptors". epoll uses an opaque 
+field provided by the user.
+
+It's up to the user to properly chose a tag that will makes sense if the user 
+app is playing dup()/close() games for example.
+
+typedef union epoll_data
+{
+   void *ptr;
+   int fd;
+   uint32_t u32;
+   uint64_t u64;
+} epoll_data_t;
+
+
+It's true some applications are using 'fd' field from epoll_data_t, but in 
+this case they should not play dup()/close() games that could change the 
+meaning of their 'epoll tags'. They would better use 'ptr/u64' for example to 
+map the event to an application object. In this object they might find the 
+correct handle (fd) to communicate with the kernel for a given 'file'. This 
+handle could then be remapped to another handle using dup()/fcntl()/close()...
+
+
 > 
-> And there's value in making life harder for such modules with 
-> questionable legality. As an example,
-[...]
+> 	For example, consider:
+> 
+> 	1) Process creates an epoll set, the set gets fd 4.
+> 
+> 	2) Process creates a socket, it gets fd 5.
+> 
+> 	3) The process adds fd 5 to set 4.
+> 
+> 	4) The process forks.
+> 
+> 	5) The child inherits the epoll set but not the socket.
+> 
+> 	Here the kernel cannot quite do the right thing. Ideally, the parent would
+> still have fd 5 in its version of the epoll set. After all, it has not
+> closed fd 5. However, the child *cannot* see fd 5 in its version of the
+> epoll set since it has no fd 5. An event reported for fd 5 would be
+> nonsense.
 
-You two are hypothesizing.
+Yes, it would be nonsense that the child still tries to get events from the 
+epoll set while he cannot possibly use the socket. If you use 'ptr' field to 
+retrieve an object, this object probably would have no meaning in the child 
+anyway, especially after an exec() syscall.
 
-  - We (most of us) change APIs to improve the kernel.
+That kind of user error can also happens with select()/poll(), if you do for 
+example :
 
-  - We (most of us) contribute to the kernel as a program for people to
-    run, not as a library for other projects to develop different or
-    extended kernels¹ on top of it.
+FD_ZERO(&fdset);
+FD_SET(fd, &fdset);
+select(fd+1,&fdset, NULL, NULL, NULL);
+newfd = dup(fd);
+close(fd);
+for (i = 0 ; i < maxfd ; i++)
+if (FD_ISSET(i, &fdset))
+     read(i, ...)
 
-Actually, by providing the code under GPL, full read access to the SCM
-for everybody, and public development mailinglists, we make life for
-external projects who do their own drivers and kernels as easy as these
-unconnected projects could wish for.²
 
------
-¹) Even distributors of Linux kernel packages are encouraged to stay
-close to mainline and to feed their changes into mainline, IOW to take
-part in the Linux kernel project.
-
-²) Of course if such projects chose to become part of the Linux kernel
-project, they would get to enjoy additional bonuses as outlined at the
-end of stable_api_nonsense.txt.  Sure, becoming part of the project
-involves to cooperate, and not everybody wants or can afford to do so.
--- 
-Stefan Richter
--=====-=-=== =-=- ===--
-http://arcgraph.de/sr/
