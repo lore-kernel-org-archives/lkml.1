@@ -1,112 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbXJ1PtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbXJ1Pv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbXJ1PtS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 11:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXJ1PtG
+	id S1754595AbXJ1Pv3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 11:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbXJ1PvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 11:49:06 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:36372 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbXJ1PtE (ORCPT
+	Sun, 28 Oct 2007 11:51:21 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59995 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751240AbXJ1PvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 11:49:04 -0400
-Date: Sun, 28 Oct 2007 23:11:45 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Optimize i8259 code a bit.
-Message-ID: <20071028231145.GA9515@linux-mips.org>
+	Sun, 28 Oct 2007 11:51:20 -0400
+Date: Sun, 28 Oct 2007 16:51:32 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: krh@redhat.com, stefanr@s5r6.in-berlin.de
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] ieee1394_transactions.c: remove dead code
+Message-ID: <20071028155132.GA7227@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The timer code always calls the clock_event_device set_net_event and
-set_mode methods with interrupts disabled, so no need to use
-spin_lock_irqsave / spin_unlock_irqrestore for those.
+This patch removes dead code spotted by the Intel C Compiler.
 
- arch/mips/kernel/i8253.c |   12 ++++--------
- arch/x86/kernel/i8253.c  |   12 ++++--------
- 2 files changed, 8 insertions(+), 16 deletions(-)
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-diff --git a/arch/mips/kernel/i8253.c b/arch/mips/kernel/i8253.c
-index 5d9830d..1b54674 100644
---- a/arch/mips/kernel/i8253.c
-+++ b/arch/mips/kernel/i8253.c
-@@ -23,9 +23,7 @@ static DEFINE_SPINLOCK(i8253_lock);
- static void init_pit_timer(enum clock_event_mode mode,
- 			   struct clock_event_device *evt)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&i8253_lock, flags);
-+	spin_lock(&i8253_lock);
- 
- 	switch(mode) {
- 	case CLOCK_EVT_MODE_PERIODIC:
-@@ -54,7 +52,7 @@ static void init_pit_timer(enum clock_event_mode mode,
- 		/* Nothing to do here */
- 		break;
- 	}
--	spin_unlock_irqrestore(&i8253_lock, flags);
-+	spin_unlock(&i8253_lock);
- }
- 
- /*
-@@ -64,12 +62,10 @@ static void init_pit_timer(enum clock_event_mode mode,
+---
+
+ drivers/ieee1394/ieee1394_transactions.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+0df395c3e17cd6ac7176707a33580a1836db8bdf 
+diff --git a/drivers/ieee1394/ieee1394_transactions.c b/drivers/ieee1394/ieee1394_transactions.c
+index c39c70a..6779893 100644
+--- a/drivers/ieee1394/ieee1394_transactions.c
++++ b/drivers/ieee1394/ieee1394_transactions.c
+@@ -208,108 +208,106 @@ void hpsb_free_tlabel(struct hpsb_packet *packet)
+ /**
+  * hpsb_packet_success - Make sense of the ack and reply codes
+  *
+  * Make sense of the ack and reply codes and return more convenient error codes:
+  * 0 = success.  -%EBUSY = node is busy, try again.  -%EAGAIN = error which can
+  * probably resolved by retry.  -%EREMOTEIO = node suffers from an internal
+  * error.  -%EACCES = this transaction is not allowed on requested address.
+  * -%EINVAL = invalid address at node.
   */
- static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
+ int hpsb_packet_success(struct hpsb_packet *packet)
  {
--	unsigned long flags;
--
--	spin_lock_irqsave(&i8253_lock, flags);
-+	spin_lock(&i8253_lock);
- 	outb_p(delta & 0xff , PIT_CH0);	/* LSB */
- 	outb(delta >> 8 , PIT_CH0);	/* MSB */
--	spin_unlock_irqrestore(&i8253_lock, flags);
-+	spin_unlock(&i8253_lock);
+ 	switch (packet->ack_code) {
+ 	case ACK_PENDING:
+ 		switch ((packet->header[1] >> 12) & 0xf) {
+ 		case RCODE_COMPLETE:
+ 			return 0;
+ 		case RCODE_CONFLICT_ERROR:
+ 			return -EAGAIN;
+ 		case RCODE_DATA_ERROR:
+ 			return -EREMOTEIO;
+ 		case RCODE_TYPE_ERROR:
+ 			return -EACCES;
+ 		case RCODE_ADDRESS_ERROR:
+ 			return -EINVAL;
+ 		default:
+ 			HPSB_ERR("received reserved rcode %d from node %d",
+ 				 (packet->header[1] >> 12) & 0xf,
+ 				 packet->node_id);
+ 			return -EAGAIN;
+ 		}
+-		BUG();
  
- 	return 0;
- }
-diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
-index a42c807..5246515 100644
---- a/arch/x86/kernel/i8253.c
-+++ b/arch/x86/kernel/i8253.c
-@@ -31,9 +31,7 @@ struct clock_event_device *global_clock_event;
- static void init_pit_timer(enum clock_event_mode mode,
- 			   struct clock_event_device *evt)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&i8253_lock, flags);
-+	spin_lock(&i8253_lock);
+ 	case ACK_BUSY_X:
+ 	case ACK_BUSY_A:
+ 	case ACK_BUSY_B:
+ 		return -EBUSY;
  
- 	switch(mode) {
- 	case CLOCK_EVT_MODE_PERIODIC:
-@@ -62,7 +60,7 @@ static void init_pit_timer(enum clock_event_mode mode,
- 		/* Nothing to do here */
- 		break;
+ 	case ACK_TYPE_ERROR:
+ 		return -EACCES;
+ 
+ 	case ACK_COMPLETE:
+ 		if (packet->tcode == TCODE_WRITEQ
+ 		    || packet->tcode == TCODE_WRITEB) {
+ 			return 0;
+ 		} else {
+ 			HPSB_ERR("impossible ack_complete from node %d "
+ 				 "(tcode %d)", packet->node_id, packet->tcode);
+ 			return -EAGAIN;
+ 		}
+ 
+ 	case ACK_DATA_ERROR:
+ 		if (packet->tcode == TCODE_WRITEB
+ 		    || packet->tcode == TCODE_LOCK_REQUEST) {
+ 			return -EAGAIN;
+ 		} else {
+ 			HPSB_ERR("impossible ack_data_error from node %d "
+ 				 "(tcode %d)", packet->node_id, packet->tcode);
+ 			return -EAGAIN;
+ 		}
+ 
+ 	case ACK_ADDRESS_ERROR:
+ 		return -EINVAL;
+ 
+ 	case ACK_TARDY:
+ 	case ACK_CONFLICT_ERROR:
+ 	case ACKX_NONE:
+ 	case ACKX_SEND_ERROR:
+ 	case ACKX_ABORTED:
+ 	case ACKX_TIMEOUT:
+ 		/* error while sending */
+ 		return -EAGAIN;
+ 
+ 	default:
+ 		HPSB_ERR("got invalid ack %d from node %d (tcode %d)",
+ 			 packet->ack_code, packet->node_id, packet->tcode);
+ 		return -EAGAIN;
  	}
--	spin_unlock_irqrestore(&i8253_lock, flags);
-+	spin_unlock(&i8253_lock);
+-	BUG();
  }
  
- /*
-@@ -72,12 +70,10 @@ static void init_pit_timer(enum clock_event_mode mode,
-  */
- static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
+ struct hpsb_packet *hpsb_make_readpacket(struct hpsb_host *host, nodeid_t node,
+ 					 u64 addr, size_t length)
  {
--	unsigned long flags;
--
--	spin_lock_irqsave(&i8253_lock, flags);
-+	spin_lock(&i8253_lock);
- 	outb_p(delta & 0xff , PIT_CH0);	/* LSB */
- 	outb(delta >> 8 , PIT_CH0);	/* MSB */
--	spin_unlock_irqrestore(&i8253_lock, flags);
-+	spin_unlock(&i8253_lock);
+ 	struct hpsb_packet *packet;
  
- 	return 0;
+ 	if (length == 0)
+ 		return NULL;
+ 
+ 	packet = hpsb_alloc_packet(length);
+ 	if (!packet)
+ 		return NULL;
+ 
+ 	packet->host = host;
+ 	packet->node_id = node;
+ 
+ 	if (hpsb_get_tlabel(packet)) {
+ 		hpsb_free_packet(packet);
+ 		return NULL;
+ 	}
+ 
+ 	if (length == 4)
+ 		fill_async_readquad(packet, addr);
+ 	else
+ 		fill_async_readblock(packet, addr, length);
+ 
+ 	return packet;
  }
+ 
+
