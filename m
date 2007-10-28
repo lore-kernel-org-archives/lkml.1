@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbXJ1SjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbXJ1Sje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbXJ1SjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 14:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXJ1SjH
+	id S1756811AbXJ1Sje (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 14:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXJ1SjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 14:39:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58722 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751101AbXJ1SjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 14:39:05 -0400
-Date: Sun, 28 Oct 2007 18:40:52 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
-Message-ID: <20071028184052.49abd092@the-village.bc.nu>
-In-Reply-To: <20071028182732.GK27248@parisc-linux.org>
-References: <20071017185157.GC3785@mvista.com>
-	<20071018185759.GU3785@mvista.com>
-	<20071026170750.GC13033@fieldses.org>
-	<20071026224707.GO13033@fieldses.org>
-	<20071028173136.GA16905@fieldses.org>
-	<20071028174321.GB16905@fieldses.org>
-	<20071028182732.GK27248@parisc-linux.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Oct 2007 14:39:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60042 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752430AbXJ1SjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 14:39:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: PCMCIA insert on resume
+Date: Sun, 28 Oct 2007 19:55:52 +0100
+User-Agent: KMail/1.9.5
+Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+References: <20071024143444.GF9748@enneenne.com> <20071027074556.GC6043@ucw.cz>
+In-Reply-To: <20071027074556.GC6043@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710281955.52798.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 12:27:32 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Sun, Oct 28, 2007 at 01:43:21PM -0400, J. Bruce Fields wrote:
-> > We currently attempt to return -EDEALK to blocking fcntl() file locking
-> > requests that would create a cycle in the graph of tasks waiting on
-> > locks.
-> > 
-> > This is inefficient: in the general case it requires us determining
-> > whether we're adding a cycle to an arbitrary directed acyclic graph.
-> > And this calculation has to be performed while holding a lock (currently
-> > the BKL) that prevents that graph from changing.
-> > 
-> > It has historically been a source of bugs; most recently it was noticed
-> > that it could loop indefinitely while holding the BKL.
+On Saturday, 27 October 2007 09:45, Pavel Machek wrote:
+> Hi!
 > 
-> It can also return -EDEADLK spuriously.  So yeah, just kill it.
+> > I don't understand why, on resume, the function socket_resume() (in
+> > drivers/pcmcia/cs.c) do:
+> > 
+> >        if (!(skt->state & SOCKET_PRESENT)) {
+> >                skt->state &= ~SOCKET_SUSPEND;
+> >                return socket_insert(skt);
+> >        }
+> > 
+> > This cause a powered off socket before suspend to be powered on during
+> > resume.
+> > 
+> > To avoid such (erroneous?) behaviour I propose this patch:
+> > 
+> > diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
+> > index 729e37d..d69de74 100644
+> > --- a/drivers/pcmcia/cs.c
+> > +++ b/drivers/pcmcia/cs.c
+> > @@ -562,10 +562,8 @@ static int socket_resume(struct pcmcia_socket *skt)
+> >         skt->ops->init(skt);
+> >         skt->ops->set_socket(skt, &skt->socket);
+> >  
+> > -       if (!(skt->state & SOCKET_PRESENT)) {
+> > -               skt->state &= ~SOCKET_SUSPEND;
+> > -               return socket_insert(skt);
+> > -       }
+> > +       if (!(skt->state & SOCKET_PRESENT))
+> > +               goto resume_exit;
+> >  
+> >         ret = socket_setup(skt, SS_COMA, resume_delay);
+> >         if (ret == CS_SUCCESS) {
+> > @@ -599,6 +597,7 @@ static int socket_resume(struct pcmcia_socket *skt)
+> >                 socket_shutdown(skt);
+> >         }
+> >  
+> > +resume_exit:
+> >         skt->state &= ~SOCKET_SUSPEND;
+> >  
+> >         return CS_SUCCESS;
+> > 
+> > With this patch if the socket was powered down before the suspend, at
+> > resume time it's not powered on and you need a "pccardctl insert" to
+> > activate the socket.
+> 
+> Seems okay to me, but I do not know much about pcmcia. Add
+> signed-off-by, changelog at the beggining, cc me, rafael and akpm... ?
 
-NAK. This is an ABI change. It was also comprehensively rejected before
-because
+Actually, there are some objections wrt this patch from Russell King.
 
-- EDEADLK behaviour is ABI
-- EDEADLK behaviour is required by SuSv3
-- We have no idea what applications may rely on this behaviour.
-
-and also SuSv3 is required by LSB
-
-See the thread
-	http://osdir.com/ml/file-systems/2004-06/msg00017.html
-
-so we need to fix the bugs - the lock usage and the looping. At that
-point it merely becomes a performance concern to those who use it, which
-is the proper behaviour. If you want a faster non-checking one use
-flock(), or add another flag that is a Linux "don't check for deadlock"
-
-Alan
+Greetings,
+Rafael
