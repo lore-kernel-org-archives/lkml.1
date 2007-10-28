@@ -1,45 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbXJ1NvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXJ1OMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbXJ1NvK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 09:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXJ1Nu5
+	id S1752680AbXJ1OMj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 10:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXJ1OMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 09:50:57 -0400
-Received: from isilmar.linta.de ([213.239.214.66]:40652 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751752AbXJ1Nu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 09:50:56 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Oct 2007 09:50:56 EDT
-Date: Sun, 28 Oct 2007 14:44:14 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Olof Johansson <olof@lixom.net>
-Cc: Christoph Hellwig <hch@lst.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v3] pcmcia: Convert io_req_t to use unsigned int
-Message-ID: <20071028134414.GF26943@isilmar.linta.de>
-Mail-Followup-To: Olof Johansson <olof@lixom.net>,
-	Christoph Hellwig <hch@lst.de>, Matthew Wilcox <matthew@wil.cx>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20070905142742.GA1760@lixom.net> <20070914034854.1658a9cf.akpm@linux-foundation.org> <20070921221516.GA7926@lixom.net> <20070921233936.2aeb2504@the-village.bc.nu> <20070922062551.GE10625@parisc-linux.org> <20070922091303.GA12525@lst.de> <20071019201720.GA13234@lixom.net>
+	Sun, 28 Oct 2007 10:12:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38080 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbXJ1OMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 10:12:30 -0400
+Date: Sun, 28 Oct 2007 14:12:22 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/3] VFS: apply coding standards to fs/ioctl.c
+Message-ID: <20071028141222.GA29323@infradead.org>
+References: <11935266454097-git-send-email-ezk@cs.sunysb.edu> <11935266451616-git-send-email-ezk@cs.sunysb.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071019201720.GA13234@lixom.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <11935266451616-git-send-email-ezk@cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 19, 2007 at 03:17:20PM -0500, Olof Johansson wrote:
-> Convert the io_req_t members to unsigned int, to allow use on machines
-> with more than 16 bits worth of IO ports (i.e. secondary busses on
-> ppc64, etc).
+Nice, I always hated these double-indented switch statements.
 
-Agreed, though I'd prefer if we got rid of kio_addr_t at the same time, and
-convert its users to unsigned int as well -- as was pointed out earlier in
-this thread, there's no known usage of IO ports larger than 32 bits.
+> +	case FIBMAP:
+> +	{
+> +		struct address_space *mapping = filp->f_mapping;
+> +		int res;
+> +		/* do we support this mess? */
+> +		if (!mapping->a_ops->bmap)
+> +			return -EINVAL;
+> +		if (!capable(CAP_SYS_RAWIO))
+> +			return -EPERM;
+> +		error = get_user(block, p);
+> +		if (error)
+> +			return error;
+> +		lock_kernel();
+> +		res = mapping->a_ops->bmap(mapping, block);
+> +		unlock_kernel();
+> +		return put_user(res, p);
 
-	Dominik
+While you're at it, it's probably worth splitting this out into
+a small helper function.
+
+> +	case FIONBIO:
+> +		error = get_user(on, (int __user *)arg);
+> +		if (error)
+> +			break;
+> +		flag = O_NONBLOCK;
+>  #ifdef __sparc__
+> +		/* SunOS compatibility item. */
+> +		if (O_NONBLOCK != O_NDELAY)
+> +			flag |= O_NDELAY;
+>  #endif
+> +		if (on)
+> +			filp->f_flags |= flag;
+> +		else
+> +			filp->f_flags &= ~flag;
+> +		break;
+
+Same here.
+
+> +	case FIOASYNC:
+> +		error = get_user(on, (int __user *)arg);
+> +		if (error)
+>  			break;
+> +		flag = on ? FASYNC : 0;
+> +
+> +		/* Did FASYNC state change ? */
+> +		if ((flag ^ filp->f_flags) & FASYNC) {
+> +			if (filp->f_op && filp->f_op->fasync) {
+> +				lock_kernel();
+> +				error = filp->f_op->fasync(fd, filp, on);
+> +				unlock_kernel();
+> +			} else
+>  				error = -ENOTTY;
+> +		}
+> +		if (error != 0)
+>  			break;
+> +
+> +		if (on)
+> +			filp->f_flags |= FASYNC;
+> +		else
+> +			filp->f_flags &= ~FASYNC;
+> +		break;
+
+And here.
+
