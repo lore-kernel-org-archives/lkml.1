@@ -1,248 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbXJ1HoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbXJ1IEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbXJ1HoM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 03:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXJ1Hn6
+	id S1752265AbXJ1IEo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 04:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXJ1IEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 03:43:58 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:1213 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbXJ1Hn5 (ORCPT
+	Sun, 28 Oct 2007 04:04:30 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:25528 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbXJ1IE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 03:43:57 -0400
+	Sun, 28 Oct 2007 04:04:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=n60e+l6cqOYK4DHNPe1y0WmRdD3JmN4qSW8MUx0xoaeXukA5HyNuqT/wRkebEjlA49shbQ2mYDLaSGTuZsTvBS1G7Xcvz2gVHjiQvOPxUSRw2M0xNOpZpGFlwlKC8Ed62RIgDceS05SOw4+SNcNfBTyUZbieRvJ+b+UwzZixL5U=
-Date: Sun, 28 Oct 2007 15:38:43 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jeff Dike <jdike@karaya.com>, user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@osdl.org>
-Subject: [Git Patch] arch/um/os-Linux/: varied improvements and fixes
-Message-ID: <20071028073843.GD2502@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vnm00qU3lpfxoYtywpyLFDXfQ6mSQJOheJd3lkQaNfgO6bbCP9D2uvYQJ8XCirTYquIEbH9hln1jXmQCzLt38yFckOh5QspUAyUbbO9fyE3Z4w0/zlM70dje3Se3nvcIgeU6a10lVud2xHaSBWDQGHN7tfzVzbZqMGs3o9xqmU0=
+Message-ID: <8bd0f97a0710280104k4784c7afo11b9d803e963ed13@mail.gmail.com>
+Date: Sun, 28 Oct 2007 03:04:27 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: struct user . u_ar0
+Cc: linux-arch@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4723DDDD.8050900@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <4723DDDD.8050900@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/27/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> I recently noticed that all architectures appear to have an entry n
+> struct user called u_ar0:
+>
+>    struct user_pt_regs * u_ar0;  /* Used by gdb to help find the values
+> for */
+>                                  /* the registers. */
+>
+> In all cases, u_ar0 is a pointer type, although the type of pointer
+> varies with the architecture.
+>
+> However, under no conditions does this field ever contain a pointer
+> value!  It is set by the a.out code and its derivatives as an offset,
+> not a pointer value (there are a total of four references in the kernel,
+> in arch/{m68k,blackfin}/kernel/process.c, arch/x86/ia32/ia32_aout.c and
+> fs/binfmt_aout.c -- they are all functionally identical and write-only):
+>
+> dump.u_ar0 = (void *)(((unsigned long)(&dump.regs)) - ((unsigned
+> long)(&dump)));
+>
+> Any reason to *NOT* change this field to "unsigned long"?  <asm/user.h>,
+> where struct user is defined, is not exported to userspace in any
+> architecture as far as I can tell, although <linux/user.h>, which just
+> contains #include <asm/user.h>, *is* exported (clearly a bug.)
 
-Hi, Jeff.
-
-This patch contains varied fixes and improvements for some files under
-arch/um/os-Linux/, such as a typo fix in a perror message, a missing
-argument fix for a printf, some constifying for pointers and so on.
-
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Jeff Dike <jdike@karaya.com>
-
----
- arch/um/include/os.h        |   12 ++++++------
- arch/um/os-Linux/file.c     |   14 +++++++-------
- arch/um/os-Linux/main.c     |   12 ++++++++----
- arch/um/os-Linux/mem.c      |    5 ++++-
- arch/um/os-Linux/signal.c   |    3 ++-
- arch/um/os-Linux/start_up.c |    2 +-
- 6 files changed, 28 insertions(+), 20 deletions(-)
-
-diff --git a/arch/um/include/os.h b/arch/um/include/os.h
-index fbf0a87..93f3a70 100644
---- a/arch/um/include/os.h
-+++ b/arch/um/include/os.h
-@@ -137,24 +137,24 @@ extern int os_set_owner(int fd, int pid);
- extern int os_mode_fd(int fd, int mode);
- 
- extern int os_seek_file(int fd, unsigned long long offset);
--extern int os_open_file(char *file, struct openflags flags, int mode);
-+extern int os_open_file(const char *file, struct openflags flags, int mode);
- extern int os_read_file(int fd, void *buf, int len);
- extern int os_write_file(int fd, const void *buf, int count);
--extern int os_file_size(char *file, unsigned long long *size_out);
--extern int os_file_modtime(char *file, unsigned long *modtime);
-+extern int os_file_size(const char *file, unsigned long long *size_out);
-+extern int os_file_modtime(const char *file, unsigned long *modtime);
- extern int os_pipe(int *fd, int stream, int close_on_exec);
- extern int os_set_fd_async(int fd, int owner);
- extern int os_clear_fd_async(int fd);
- extern int os_set_fd_block(int fd, int blocking);
- extern int os_accept_connection(int fd);
--extern int os_create_unix_socket(char *file, int len, int close_on_exec);
-+extern int os_create_unix_socket(const char *file, int len, int close_on_exec);
- extern int os_shutdown_socket(int fd, int r, int w);
- extern void os_close_file(int fd);
- extern int os_rcv_fd(int fd, int *helper_pid_out);
- extern int create_unix_socket(char *file, int len, int close_on_exec);
--extern int os_connect_socket(char *name);
-+extern int os_connect_socket(const char *name);
- extern int os_file_type(char *file);
--extern int os_file_mode(char *file, struct openflags *mode_out);
-+extern int os_file_mode(const char *file, struct openflags *mode_out);
- extern int os_lock_file(int fd, int excl);
- extern void os_flush_stdout(void);
- extern int os_stat_filesystem(char *path, long *bsize_out,
-diff --git a/arch/um/os-Linux/file.c b/arch/um/os-Linux/file.c
-index b542a3a..d8f26be 100644
---- a/arch/um/os-Linux/file.c
-+++ b/arch/um/os-Linux/file.c
-@@ -19,7 +19,7 @@
- #include "user.h"
- #include "kern_util.h"
- 
--static void copy_stat(struct uml_stat *dst, struct stat64 *src)
-+static void copy_stat(struct uml_stat *dst, const struct stat64 *src)
- {
- 	*dst = ((struct uml_stat) {
- 		.ust_dev     = src->st_dev,     /* device */
-@@ -168,7 +168,7 @@ int os_file_type(char *file)
- 	else return OS_TYPE_FILE;
- }
- 
--int os_file_mode(char *file, struct openflags *mode_out)
-+int os_file_mode(const char *file, struct openflags *mode_out)
- {
- 	int err;
- 
-@@ -189,7 +189,7 @@ int os_file_mode(char *file, struct openflags *mode_out)
- 	return err;
- }
- 
--int os_open_file(char *file, struct openflags flags, int mode)
-+int os_open_file(const char *file, struct openflags flags, int mode)
- {
- 	int fd, err, f = 0;
- 
-@@ -216,7 +216,7 @@ int os_open_file(char *file, struct openflags flags, int mode)
- 	return fd;
- }
- 
--int os_connect_socket(char *name)
-+int os_connect_socket(const char *name)
- {
- 	struct sockaddr_un sock;
- 	int fd, err;
-@@ -277,7 +277,7 @@ int os_write_file(int fd, const void *buf, int len)
- 	return n;
- }
- 
--int os_file_size(char *file, unsigned long long *size_out)
-+int os_file_size(const char *file, unsigned long long *size_out)
- {
- 	struct uml_stat buf;
- 	int err;
-@@ -314,7 +314,7 @@ int os_file_size(char *file, unsigned long long *size_out)
- 	return 0;
- }
- 
--int os_file_modtime(char *file, unsigned long *modtime)
-+int os_file_modtime(const char *file, unsigned long *modtime)
- {
- 	struct uml_stat buf;
- 	int err;
-@@ -515,7 +515,7 @@ int os_rcv_fd(int fd, int *helper_pid_out)
- 	return new;
- }
- 
--int os_create_unix_socket(char *file, int len, int close_on_exec)
-+int os_create_unix_socket(const char *file, int len, int close_on_exec)
- {
- 	struct sockaddr_un addr;
- 	int sock, err;
-diff --git a/arch/um/os-Linux/main.c b/arch/um/os-Linux/main.c
-index 82c3778..de664e7 100644
---- a/arch/um/os-Linux/main.c
-+++ b/arch/um/os-Linux/main.c
-@@ -73,7 +73,7 @@ static void install_fatal_handler(int sig)
- 	action.sa_handler = last_ditch_exit;
- 	if (sigaction(sig, &action, NULL) < 0) {
- 		printf("failed to install handler for signal %d - errno = %d\n",
--		       errno);
-+		       sig, errno);
- 		exit(1);
- 	}
- }
-@@ -92,7 +92,8 @@ static void setup_env_path(void)
- 	 * just use the default + /usr/lib/uml
- 	 */
- 	if (!old_path || (path_len = strlen(old_path)) == 0) {
--		putenv("PATH=:/bin:/usr/bin/" UML_LIB_PATH);
-+		if (putenv("PATH=:/bin:/usr/bin/" UML_LIB_PATH))
-+			perror("couldn't putenv");
- 		return;
- 	}
- 
-@@ -100,11 +101,14 @@ static void setup_env_path(void)
- 	path_len += strlen("PATH=" UML_LIB_PATH) + 1;
- 	new_path = malloc(path_len);
- 	if (!new_path) {
--		perror("coudn't malloc to set a new PATH");
-+		perror("couldn't malloc to set a new PATH");
- 		return;
- 	}
- 	snprintf(new_path, path_len, "PATH=%s" UML_LIB_PATH, old_path);
--	putenv(new_path);
-+	if (putenv(new_path)) {
-+		perror("couldn't putenv to set a new PATH");
-+		free(new_path);
-+	}
- }
- 
- extern int uml_exitcode;
-diff --git a/arch/um/os-Linux/mem.c b/arch/um/os-Linux/mem.c
-index 436f8d2..c3b736a 100644
---- a/arch/um/os-Linux/mem.c
-+++ b/arch/um/os-Linux/mem.c
-@@ -172,13 +172,15 @@ int __init make_tempfile(const char *template, char **out_tempname,
- 
- 	which_tmpdir();
- 	tempname = malloc(MAXPATHLEN);
-+	if (!tempname)
-+		goto out;
- 
- 	find_tempdir();
- 	if (template[0] != '/')
- 		strcpy(tempname, tempdir);
- 	else
- 		tempname[0] = '\0';
--	strcat(tempname, template);
-+	strncat(tempname, template, MAXPATHLEN-1-strlen(tempname));
- 	fd = mkstemp(tempname);
- 	if(fd < 0){
- 		fprintf(stderr, "open - cannot create %s: %s\n", tempname,
-@@ -268,6 +270,7 @@ void __init check_tmpexec(void)
- 	if(addr == MAP_FAILED){
- 		err = errno;
- 		perror("failed");
-+		close(fd);
- 		if(err == EPERM)
- 			printf("%s must be not mounted noexec\n",tempdir);
- 		exit(1);
-diff --git a/arch/um/os-Linux/signal.c b/arch/um/os-Linux/signal.c
-index e9800b0..5354057 100644
---- a/arch/um/os-Linux/signal.c
-+++ b/arch/um/os-Linux/signal.c
-@@ -183,7 +183,8 @@ int change_sig(int signal, int on)
- 
- 	sigemptyset(&sigset);
- 	sigaddset(&sigset, signal);
--	sigprocmask(on ? SIG_UNBLOCK : SIG_BLOCK, &sigset, &old);
-+	if (sigprocmask(on ? SIG_UNBLOCK : SIG_BLOCK, &sigset, &old) < 0)
-+		return -1;
- 	return !sigismember(&old, signal);
- }
- 
-diff --git a/arch/um/os-Linux/start_up.c b/arch/um/os-Linux/start_up.c
-index 7b81f6c..c6cf648 100644
---- a/arch/um/os-Linux/start_up.c
-+++ b/arch/um/os-Linux/start_up.c
-@@ -63,7 +63,7 @@ static int ptrace_child(void)
- 	_exit(ret);
- }
- 
--static void fatal_perror(char *str)
-+static void fatal_perror(const char *str)
- {
- 	perror(str);
- 	exit(1);
+Blackfin doesnt support a.out, so it may be easier to just change it
+to "reserved2" (assuming this structure is part of our ABI), or delete
+it (assuming the structure is internal to the kernel only).
+-mike
