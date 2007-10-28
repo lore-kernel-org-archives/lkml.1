@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbXJ1XTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbXJ1Xbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbXJ1XTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 19:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXJ1XTf
+	id S1755249AbXJ1Xbc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 19:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXJ1XbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 19:19:35 -0400
-Received: from smtp811.mail.ird.yahoo.com ([217.146.188.71]:25171 "HELO
-	smtp811.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752870AbXJ1XTf (ORCPT
+	Sun, 28 Oct 2007 19:31:22 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33473 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbXJ1XbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 19:19:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=btinternet.com;
-  h=Received:X-YMail-OSG:Date:From:To:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding;
-  b=vvwaZ6asx7sGjeYEaaP22vXuoPNviPu8gUDaMPlorbuuQmA+nd+7LRo93btzYntSoFKYijVfXsIlTRMGA0zDzCRQVyV8rrO2sFR4zEkBvsfPhhyAxZD/rEWyqLVE2uYMa0+CoEmU0EZAtTHmJbHqkVsINY02zsD/KYSErBTMOLg=  ;
-X-YMail-OSG: e94tvDMVM1mN_TSh_4NxhvmAtwhN5GIV2Z2g58m84YPtgP93Z99zxvkoa4W2XnSN4oTgtXkMNg--
-Date: Sun, 28 Oct 2007 23:19:54 +0000
-From: Bradley Smith <bradjsmith@btinternet.com>
-To: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, dz@debian.org
-Subject: Re: [PATCH 1/2] I8K: Allow i8k driver to be built on x86_64 systems
-Message-ID: <20071028231954.31767a7e@debian.hob>
-In-Reply-To: <20071028173724.GE7227@stusta.de>
-References: <20071028172519.371dbbe8@debian.hob>
-	<20071028173724.GE7227@stusta.de>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Oct 2007 19:31:21 -0400
+Date: Sun, 28 Oct 2007 17:31:20 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+Message-ID: <20071028233119.GE32359@parisc-linux.org>
+References: <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org> <20071028182732.GK27248@parisc-linux.org> <20071028184052.49abd092@the-village.bc.nu> <20071028201101.GA32359@parisc-linux.org> <1193608230.7561.11.camel@heimdal.trondhjem.org> <20071028224157.GC32359@parisc-linux.org> <Pine.LNX.4.64.0710282349470.18815@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0710282349470.18815@twin.jikos.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 18:37:24 +0100
-Adrian Bunk <bunk@kernel.org> wrote:
-
+On Sun, Oct 28, 2007 at 11:55:52PM +0100, Jiri Kosina wrote:
+> On Sun, 28 Oct 2007, Matthew Wilcox wrote:
 > 
-> Please use CONFIG_X86_64.
+> > Bzzt.  You get a false deadlock with multiple threads like so:
+> > Thread A of task B takes lock 1
+> > Thread C of task D takes lock 2
+> > Thread C of task D blocks on lock 1
+> > Thread E of task B blocks on lock 2
 > 
-> cu
-> Adrian
+> 	A potential for deadlock occurs if a process controlling a locked 
+> 	region is put to sleep by attempting to lock another process' 
+> 	locked region. If the system detects that sleeping until a locked 
+> 	region is unlocked would cause a deadlock, fcntl() shall fail with 
+> 	an [EDEADLK] error.
 > 
+> This is what POSIX says [1], even after being modified with respect to 
+> POSIX Threads Extension, right?
+> 
+> So it doesn't deal with threads at all, just processess are taken into 
+> account. Probably for a reason :)
 
-Now uses CONFIG_X86_64.
+Did you have a concrete suggestion, or are you just quoting the spec?
 
-Brad.
+The problem is that it's nonsense -- processes don't sleep, threads do.
+I think the key is "would deadlock", not "might deadlock".  Our current
+behaviour is clearly in violation of SuSv3.
 
---- linux-2.6/drivers/char/i8k.c.orig	2007-10-28 12:27:34.000000000 +0000
-+++ linux-2.6/drivers/char/i8k.c	2007-10-28 14:27:56.000000000 +0000
-@@ -113,6 +113,33 @@ static int i8k_smm(struct smm_regs *regs
- 	int rc;
- 	int eax = regs->eax;
- 
-+#if defined(CONFIG_X86_64)
-+	asm("pushq %%rax\n\t"
-+		"movl 0(%%rax),%%edx\n\t"
-+		"pushq %%rdx\n\t"
-+		"movl 4(%%rax),%%ebx\n\t"
-+		"movl 8(%%rax),%%ecx\n\t"
-+		"movl 12(%%rax),%%edx\n\t"
-+		"movl 16(%%rax),%%esi\n\t"
-+		"movl 20(%%rax),%%edi\n\t"
-+		"popq %%rax\n\t"
-+		"out %%al,$0xb2\n\t"
-+		"out %%al,$0x84\n\t"
-+		"xchgq %%rax,(%%rsp)\n\t"
-+		"movl %%ebx,4(%%rax)\n\t"
-+		"movl %%ecx,8(%%rax)\n\t"
-+		"movl %%edx,12(%%rax)\n\t"
-+		"movl %%esi,16(%%rax)\n\t"
-+		"movl %%edi,20(%%rax)\n\t"
-+		"popq %%rdx\n\t"
-+		"movl %%edx,0(%%rax)\n\t"
-+		"lahf\n\t"
-+		"shrl $8,%%eax\n\t"
-+		"andl $1,%%eax\n"
-+		:"=a"(rc)
-+		:    "a"(regs)
-+		:    "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory");
-+#else
- 	asm("pushl %%eax\n\t"
- 	    "movl 0(%%eax),%%edx\n\t"
- 	    "push %%edx\n\t"
-@@ -137,7 +164,7 @@ static int i8k_smm(struct smm_regs *regs
- 	    "andl $1,%%eax\n":"=a"(rc)
- 	    :    "a"(regs)
- 	    :    "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory");
--
-+#endif
- 	if (rc != 0 || (regs->eax & 0xffff) == 0xffff || regs->eax == eax)
- 		return -EINVAL;
- 
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
