@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXJ1Qfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbXJ1Qu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbXJ1Qfo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 12:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXJ1Qff
+	id S1752948AbXJ1Qu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXJ1QuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 12:35:35 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:44394 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbXJ1Qfe (ORCPT
+	Sun, 28 Oct 2007 12:50:16 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2042 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750841AbXJ1QuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 12:35:34 -0400
-Date: Sun, 28 Oct 2007 12:31:50 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Michael Buesch <mb@bu3sch.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [2.6 patch] fix USB_OHCI_HCD_SSB dependencies
-In-Reply-To: <4724B597.1070806@goop.org>
-Message-ID: <Pine.LNX.4.64.0710281230430.4921@localhost.localdomain>
-References: <20071027010647.GN30533@stusta.de> <20071027085748.GB3742@elte.hu>
- <20071027134556.GS30533@stusta.de> <4724B597.1070806@goop.org>
+	Sun, 28 Oct 2007 12:50:15 -0400
+Date: Sun, 28 Oct 2007 12:50:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Martin <oliver.martin@student.tuwien.ac.at>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Oliver Neukum <oliver@neukum.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: USB_SUSPEND needs SUSPEND?
+In-Reply-To: <200710281435.31690.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0710281245130.28311-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007, Jeremy Fitzhardinge wrote:
+On Sun, 28 Oct 2007, Rafael J. Wysocki wrote:
 
-> Adrian Bunk wrote:
-> > On Sat, Oct 27, 2007 at 10:57:48AM +0200, Ingo Molnar wrote:
-> >
-> >> * Adrian Bunk <bunk@kernel.org> wrote:
-> >>
-> >>
-> >>> -	depends on USB_OHCI_HCD && (SSB = y || SSB = CONFIG_USB_OHCI_HCD) && EXPERIMENTAL
-> >>> +	depends on USB_OHCI_HCD && (SSB = y || SSB = USB_OHCI_HCD) && EXPERIMENTAL
-> >>>
-> >> oops, indeed ... my Kconfig fu needs strengthening. Does Kconfig warn
-> >> somewhere if it sees an erroneous CONFIG_ token?
-> >>
-> >
-> > No. IIRC Sam was working in getting warnings for such things, but
-> > currently kconfig simply can't know whether it's a bug or OK.
->
-> Are there any instances of CONFIG_CONFIG_X?  Doesn't seem like a
-> terribly sensible name...
+> On Sunday, 28 October 2007 02:00, Oliver Martin wrote:
+> > Hello,
+> > 
+> > it seems that there is some dependency missing for CONFIG_USB_SUSPEND.
+> > When I compile a kernel without CONFIG_SUSPEND, USB suspend doesn't work
+> > (or at least doesn't expose its interface to userspace).
+> > /sys/bus/usb/devices/.../power doesn't exist, but it is there when I
+> > enable CONFIG_SUSPEND. So should CONFIG_USB_SUSPEND depend on
+> > CONFIG_SUSPEND (or something selected by CONFIG_SUSPEND)?
+> > 
+> > diff between the two configs follows, full config and dmesg for both
+> > kernels is available at http://stud4.tuwien.ac.at/~e0626486/usb_suspend/
+> > (though the dmesg diff doesn't seem to be all that interesting).
 
-there used to be:
+Actually I think the problem is the other way around.  /sys/.../power 
+should exist whenever CONFIG_PM is defined, not just when 
+CONFIG_SUSPEND is enabled.
 
-http://lists.linuxcoding.com/kernel/2006-q1/msg18685.html
+Alan Stern
 
-but that was just the one, and it's gone now.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
