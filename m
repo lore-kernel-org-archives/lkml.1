@@ -1,64 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbXJ1Tuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXJ1TxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbXJ1Tuw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 15:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXJ1Tuo
+	id S1755259AbXJ1TxK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 15:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbXJ1Tw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 15:50:44 -0400
-Received: from main.gmane.org ([80.91.229.2]:49564 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751485AbXJ1Tuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 15:50:44 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: No module symbols loaded - kernel modules not enabled.
-Date: Sun, 28 Oct 2007 20:50:18 +0100
-Message-ID: <fg2p69$t4p$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p508c416a.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 28 Oct 2007 15:52:57 -0400
+Received: from outbound.mse10.exchange.ms ([216.52.164.190]:19652 "EHLO
+	outbound.mse10.exchange.ms" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752206AbXJ1Tw4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 15:52:56 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Align PCI memory regions to page size (4K) - Fix
+Date: Sun, 28 Oct 2007 15:53:20 -0400
+Message-ID: <9392A06CB0FDC847B3A530B3DC174E7B03C96F36@mse10be1.mse10.exchange.ms>
+In-reply-to: <20071028193104.GA13956@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Align PCI memory regions to page size (4K) - Fix
+Thread-Index: AcgZmXayHQqKAuZPQJO8RPtw3jxeqwAAcXRQ
+References: <9392A06CB0FDC847B3A530B3DC174E7B03C96F1D@mse10be1.mse10.exchange.ms> <20071028193104.GA13956@suse.de>
+From: "Barak Fargoun" <barak@neocleus.com>
+To: "Greg KH" <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "Guy Zana" <guy@neocleus.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi!
 
-I get the following output from the command "head -n 7 /var/log/boot.msg".
+Regarding all the technical stuff (documentation, coding style, etc.) -
+I thought I did it correctly :( I will fix it ASAP, 
+and send an update when I will finish it.
 
-Inspecting /boot/System.map-2.6.23.1-default
-Loaded 27483 symbols from /boot/System.map-2.6.23.1-default.
-Symbols match kernel version 2.6.23.
-No module symbols loaded - kernel modules not enabled.
+About your question: today, some of the hypervisors are using linux
+kernel as their domain-0 (e.g. Xen). In order
+to implement direct hardware access for these native domains (e.g.
+running windows in a virtual machine above Xen),
+the PCI memory regions should be aligned at-least at the page-level (so,
+a virtual machine - can't see data of other
+devices which may not be assigned to it). So, for that reason, we wanted
+a boot parameter to let us force the kernel
+to align PCI memory regions at-least at a PAGE_SIZE alignment. It is
+very useful for hypervisors which are developed 
+at Linux environment (e.g.: Xen).
 
-klogd 1.4.1, log source = ksyslog started.
-<5>Linux version 2.6.23.1-default (root@Sonne) (gcc version 4.2.1 (SUSE Linux)) #1 SMP
-PREEMPT Sun Oct 28 15:34:56 CET 2007
+I hope I made myself clear.
 
+Barak
 
-A lot of discussions can be found around this specific notice about symbol loading. I am
-interested in an explanation for the effects on the current kernel.
-Does it just mean that no debugging symbols were loaded?
+-----Original Message-----
+From: Greg KH [mailto:gregkh@suse.de] 
+Sent: Sunday, October 28, 2007 21:31 PM
+To: Barak Fargoun
+Cc: linux-kernel@vger.kernel.org; linux-pci@atrey.karlin.mff.cuni.cz;
+Guy Zana
+Subject: Re: [PATCH] Align PCI memory regions to page size (4K) - Fix
 
-Load all symbols for debugging/ksymoops (KALLSYMS):
-"Say Y here to let the kernel print out symbolic crash information and
-symbolic stack backtraces. This increases the size of the kernel
-somewhat, as all symbols have to be loaded into the kernel image."
+On Sun, Oct 28, 2007 at 01:27:27PM -0400, Barak Fargoun wrote:
+> Sorry, my mail client corrupted the previous mail containing the
+patch... it should be ok now...
+> 
+> Add a boot parameter (?pci-mem-align?) which forces PCI memory regions
+> to be aligned to 4K. 
+> 
+> This is very useful when developing an hypervisor, since in case we
+> want to let native domains direct access to specific hardware, we
+> don?t want PCI devices to share their memory region page with other
+> devices. In Xen for example, PCI devices mmio resources are mapped by
+> remapping complete pages (by Intel VT-d & the Neocleus pass-through
+> patch for Xen).
+> 
+> Signed-off-by: Barak Fargoun???? (barak@neocleus.com)
+> ---
+> Kernel version: 2.6.18	(since this is the kernel version used
+in Xen for Dom-0)
+> ---
+> diff -r 840b9df48b6a drivers/pci/bus.c
+> --- a/drivers/pci/bus.c	Tue Aug 07 09:37:41 2007 +0100
+> +++ b/drivers/pci/bus.c	Sun Oct 28 08:40:52 2007 -0400
+> @@ -16,6 +16,8 @@
+>  #include <linux/init.h>
+>  
+>  #include "pci.h"
+> +
+> +extern int pci_mem_align;
 
+Please don't declare externs in a .c file, put it in a header file.
 
-The following configuration option is active on my system, of course.
+>  /**
+>   * pci_bus_alloc_resource - allocate a resource from a parent bus
+> @@ -43,6 +45,15 @@ pci_bus_alloc_resource(struct pci_bus *b
+>  	int i, ret = -ENOMEM;
+>  
+>  	type_mask |= IORESOURCE_IO | IORESOURCE_MEM;
+> +
+> +	/* if the boot parameter 'pci-mem-align' was specified, then we
+need to 
+> +		align the memory addresses, at page size alignment  */
+> +	if (pci_mem_align)
+> +	{
+> +		/* we change only alignments which are smaller than page
+size */
+> +		if (align < (PAGE_SIZE-1))
+> +			align = PAGE_SIZE - 1;
+> +	}
 
-Automatic kernel module loading (KMOD):
-"Normally when you have selected some parts of the kernel to
-be created as kernel modules, you must load them (using the
-"modprobe" command) before you can use them. If you say Y
-here, some parts of the kernel will be able to load modules
-automatically: when a part of the kernel needs a module, it
-runs modprobe with the appropriate arguments, thereby
-loading the module if it is available. If unsure, say Y."
+Please follow the proper coding style rules as documented in
+Documentation/CodingStyle.  Also running the script scrips/checkpatch.pl
+would have pointed this out.
 
-Regards,
-Markus
+>  
+>  	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>  		struct resource *r = bus->resource[i];
+> diff -r 840b9df48b6a drivers/pci/quirks.c
+> --- a/drivers/pci/quirks.c	Tue Aug 07 09:37:41 2007 +0100
+> +++ b/drivers/pci/quirks.c	Sun Oct 28 08:40:52 2007 -0400
+> @@ -22,6 +22,54 @@
+>  #include <linux/delay.h>
+>  #include <linux/acpi.h>
+>  #include "pci.h"
+> +
+> +/* a global flag, which signals if we should align PCI mem windows to
+4K */
+> +int pci_mem_align = 0;
+> +
+> +/* this function is called, if the 'pci-mem-align' was specified as a
+boot
+> +		parameter. Used to force the kernel to align PCI mem
+windows to 4k */
 
+All command line paramaters need to be documented in the Documentation
+directory.
+
+> +static int __init set_pci_mem_align(char *str)
+> +{
+> +	pci_mem_align = 1;
+> +	return 1;
+> +}
+> +__setup("pci-mem-align", set_pci_mem_align);
+> +
+> +/*	
+> +	This quirk function enables us to force all memory resources
+which are 
+> +		assigned to PCI devices, to be aligned at a page size.
+This 
+> +		fetaurs helps us in xen when running native domains
+
+Trailing spaces are not allowed :(
+
+> +*/
+> +static void __devinit quirk_xen_align_mem_resources(struct pci_dev
+*dev)
+> +{
+> +	int i;
+> +	struct resource *r;
+> +
+> +	/* if the boot parameter 'pci-mem-align' wasn't specified, then
+no need
+> +		to align the memory addresses */
+> +	if (pci_mem_align == 0)
+> +		return;
+> +
+> +	for (i=0; i < DEVICE_COUNT_RESOURCE; ++i) {
+> +		r = &dev->resource[i];
+> +
+> +		if (r == NULL)
+> +			continue;
+> +
+> +		/* we need to adjust only memory resources */
+> +		if (r->flags & IORESOURCE_MEM) {
+> +			/* align the start address in page size
+alignment alignment (round up) */
+> +			resource_size_t old_start = r->start;
+> +			r->start = (r->start + (PAGE_SIZE-1))  &
+(~(PAGE_SIZE-1));
+> +
+> +			/* update the end address, so that the region
+size will not be 
+> +				affected */
+> +			r->end = r->end - (old_start - r->start);
+> +		}
+> +	}
+> +}
+> +DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID,
+quirk_xen_align_mem_resources);
+
+Now for the main reason.  I really don't understand why this is needed.
+Is it only for virtual machines?  Are there drivers in the kernel tree
+today that need this functionality?  What breaks if you do not align
+these resources?
+
+thanks,
+
+greg k-h
