@@ -1,93 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXJ1Rmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbXJ1Rng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbXJ1Rmb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 13:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbXJ1RmP
+	id S1756457AbXJ1Rng (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 13:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXJ1Rn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 13:42:15 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:57785 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754683AbXJ1RmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 13:42:14 -0400
-Message-ID: <4724C9E8.3070404@cateee.net>
-Date: Sun, 28 Oct 2007 18:42:00 +0100
-From: Giacomo Catenazzi <cate@cateee.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Sun, 28 Oct 2007 13:43:27 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:54160 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754376AbXJ1Rn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 13:43:26 -0400
+Date: Sun, 28 Oct 2007 13:43:21 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: [RFC, PATCH] locks: remove posix deadlock detection
+Message-ID: <20071028174321.GB16905@fieldses.org>
+References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kbuild devel list <linux-kbuild@vger.kernel.org>
-Subject: kernel drivers database (hardware, config, file) and "autoconfiguration"
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071028173136.GA16905@fieldses.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-I've build a python script (consisting on short 4 modules) to
-build a hardware database fomr kernel sources, with includes:
-type of hardware, hardware information, kernel CONFIG and
-the kernel file where such hardware was described.
+We currently attempt to return -EDEALK to blocking fcntl() file locking
+requests that would create a cycle in the graph of tasks waiting on
+locks.
 
-Actually I can detect nearly 6000 probes (and easily expandable).
+This is inefficient: in the general case it requires us determining
+whether we're adding a cycle to an arbitrary directed acyclic graph.
+And this calculation has to be performed while holding a lock (currently
+the BKL) that prevents that graph from changing.
 
-The script is writen in pyhon:
-$ wc -l *.py
-  148 build-drivers-db.py
-  819 devicetables.py
-  134 kbuildparser.py
-  281 srcparser.py
- 1382 total
+It has historically been a source of bugs; most recently it was noticed
+that it could loop indefinitely while holding the BKL.
 
-build-drivers-db.py : the main procedures
-devicetables.py : the information of structures and fields of probes
-kbuildparser.py : a simpler scanner of Makefile for the configuration infos
-srcparser.py : a not so simple source parser, macro expander, quite fast
+It seems unlikely to be useful to applications:
+	- The difficulty of implementation has kept standards from
+	  requiring it.  (E.g. SUSv3 : "Since implementation of full
+	  deadlock detection is not always feasible, the [EDEADLK] error
+	  was made optional.")  So portable applications may not be able to
+	  depend on it.
+	- It only detects deadlocks that involve nothing but local posix
+	  file locks; deadlocks involving network filesystems or other kinds
+	  of locks or resources are missed.
 
+It therefore seems best to remove deadlock detection.
 
-In addition, I've done a short and incomplete shell scripts which detect and
-write own hardware information, and a shell script which tell you what
-CONFIG_ you should check.
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ fs/locks.c |   48 ------------------------------------------------
+ 1 files changed, 0 insertions(+), 48 deletions(-)
 
+This also solves the problem addressed by the previous patch.  But this
+patch would require more discussion, and the problem needs to be fixed
+now.
 
-The build-drivers-db part use a lot of euristic to have a sensible
-hardware list, but some drivers are "strange", some use non-standard
-methods and other have also an hardware blacklist (which the program
-take it as a whitelist).
+Of course, we shouldn't apply this if there's a chance that real
+applications may depend on the existing (imperfect) deadlock detection.
 
-But the script is still usefull, clean, easily expandable and
-very fast (near 2 minutes with an hot cache and intermediate
-machine for entiere kernel sources)
-I expect to correct some deficiencies of the script and to write
-clean-up patches where the drivers code is very ugly.
-
-
-The other two shell scripts are almost incomplete, they need more
-care, but now I've done as proof of concept.
-
-
-I like to receive comments, corrections or simple bug reports.
-
-The scripts are in:
-http://www.cateee.net/kernel/kernautoconf/kernautoconf-3.0/
-and the driver database is (updated to last git)
-http://www.cateee.net/kernel/kernautoconf/kernautoconf-3.0/drivers-db
-
-ciao
-	cate
-
-
-PS: The project was born (IIRC) in 2001, as part of 2.5.x kbuild rewrite.
-After rejection of the two other main projects (kbuild and CML2), I
-stopped the project, because of lack of an interface.
-Latelly I read again the code, and I started to rewrite it, mainly
-on the database building problem.
-
-When I'll find the latest old version, I'll put online. On some
-part it was more powerfull, but without an automatic creation of driver
-database.  The old autoconfiguration had more detection of basic system
-configuration (non database based, such CPU, CPU extentions, system drivers,...).
-I'll try to import also such parts, but now I'm more interested on building
-a nearly complete driver database.
+diff --git a/fs/locks.c b/fs/locks.c
+index 131aa88..564b85d 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -683,50 +683,6 @@ posix_test_lock(struct file *filp, struct file_lock *fl)
+ 
+ EXPORT_SYMBOL(posix_test_lock);
+ 
+-/* This function tests for deadlock condition before putting a process to
+- * sleep. The detection scheme is no longer recursive. Recursive was neat,
+- * but dangerous - we risked stack corruption if the lock data was bad, or
+- * if the recursion was too deep for any other reason.
+- *
+- * We rely on the fact that a task can only be on one lock's wait queue
+- * at a time. When we find blocked_task on a wait queue we can re-search
+- * with blocked_task equal to that queue's owner, until either blocked_task
+- * isn't found, or blocked_task is found on a queue owned by my_task.
+- *
+- * Note: the above assumption may not be true when handling lock requests
+- * from a broken NFS client. But broken NFS clients have a lot more to
+- * worry about than proper deadlock detection anyway... --okir
+- *
+- * However, the failure of this assumption (also possible in the case of
+- * multiple tasks sharing the same open file table) also means there's no
+- * guarantee that the loop below will terminate.  As a hack, we give up
+- * after a few iterations.  We don't bother returning EDEADLK in that case;
+- * the deadlock has probably already happened anyway.
+- */
+-
+-#define MAX_DEADLK_ITERATIONS 10
+-
+-static int posix_locks_deadlock(struct file_lock *caller_fl,
+-				struct file_lock *block_fl)
+-{
+-	struct file_lock *fl;
+-	int i = 0;
+-
+-next_task:
+-	if (posix_same_owner(caller_fl, block_fl))
+-		return 1;
+-	list_for_each_entry(fl, &blocked_list, fl_link) {
+-		if (posix_same_owner(fl, block_fl)) {
+-			if (i++ > MAX_DEADLK_ITERATIONS)
+-				return 0;
+-			fl = fl->fl_next;
+-			block_fl = fl;
+-			goto next_task;
+-		}
+-	}
+-	return 0;
+-}
+-
+ /* Try to create a FLOCK lock on filp. We always insert new FLOCK locks
+  * after any leases, but before any posix locks.
+  *
+@@ -846,10 +802,6 @@ static int __posix_lock_file(struct inode *inode, struct file_lock *request, str
+ 			error = -EAGAIN;
+ 			if (!(request->fl_flags & FL_SLEEP))
+ 				goto out;
+-			error = -EDEADLK;
+-			if (posix_locks_deadlock(request, fl))
+-				goto out;
+-			error = -EAGAIN;
+ 			locks_insert_block(fl, request);
+ 			goto out;
+   		}
+-- 
+1.5.3.4.208.gc990
 
