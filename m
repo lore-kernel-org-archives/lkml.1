@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbXJ1R7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbXJ1R7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbXJ1R7h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 13:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXJ1R7Z
+	id S1756640AbXJ1R7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 13:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbXJ1R7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 13:59:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59485 "EHLO mail.dvmed.net"
+	Sun, 28 Oct 2007 13:59:30 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2206 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbXJ1R7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 13:59:25 -0400
-Message-ID: <4724CDFA.1080106@garzik.org>
-Date: Sun, 28 Oct 2007 13:59:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752239AbXJ1R72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 13:59:28 -0400
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] proc_fs.h redux
+Date: Sun, 28 Oct 2007 19:58:22 +0200
+User-Agent: KMail/1.9.7
+Cc: Joe Perches <joe@perches.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@osdl.org, torvalds@osdl.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-arch@vger.kernel.org
+References: <20071027194758.GD9816@martell.zuzino.mipt.ru> <1193524804.26695.103.camel@localhost> <20071028103415.GA12554@flint.arm.linux.org.uk>
+In-Reply-To: <20071028103415.GA12554@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Bradley Smith <bradjsmith@btinternet.com>
-CC: linux-kernel@vger.kernel.org, dz@debian.org
-Subject: Re: [PATCH 1/2] I8K: Allow i8k driver to be built on x86_64 systems
-References: <20071028172519.371dbbe8@debian.hob>
-In-Reply-To: <20071028172519.371dbbe8@debian.hob>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200710281858.23705.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bradley Smith wrote:
-> From: Bradley Smith <bradjsmith@btinternet.com>
-> 
-> Adds #if clause and additional inline assembly so that the driver
-> builds on x86_64 systems.
-> 
-> Signed-off-by: Bradley Smith <bradjsmith@btinternet.com>
+Hi,
 
-Is this actually known to be working on a Dell laptop?
+On Sunday 28 October 2007, Russell King wrote:
 
-	Jeff
+> On Sat, Oct 27, 2007 at 03:40:04PM -0700, Joe Perches wrote:
+> > and forward declarations of
+> >
+> > struct proc_dir_entry;
+> > struct file_operations;
+> >
+> > As a general rule, I think it better to use includes
+> > than use naked forward declarations.
+>
+> If you go down that route, you end up with _lots_ of circular
+> dependencies - header file X needs Y needs Z which needs X.  We've
+> been there, several times.  It very quickly becomes quite
+> unmaintainable - you end up with hard to predict behaviour from
+> include files.
+>
+> The only realistic solution is to use forward declarations.
 
+It's unfortunately more complicated than that. What basically needs to be done 
+is to separate declarations from its users (usually inline functions). The 
+problem is to correctly pull the declarations from the <asm/...> and 
+<linux/...> header in the correct order. A typical mistake is to put 
+declarations and inline functions in the same linux header and then include 
+some additional from an asm header. For most high level header it's not much 
+of a problem, but let's take <linux/list.h> as example. struct list_head is 
+used everywhere, but just to get this one definition one also gets quite a 
+few other dependencies as well.
 
-
+bye, Roman
