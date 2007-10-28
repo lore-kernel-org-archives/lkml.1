@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXJ1D3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXJ1DdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752126AbXJ1D3k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Oct 2007 23:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXJ1D3d
+	id S1752682AbXJ1DdQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Oct 2007 23:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXJ1DdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Oct 2007 23:29:33 -0400
-Received: from ro-out-1112.google.com ([72.14.202.176]:38245 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbXJ1D3c (ORCPT
+	Sat, 27 Oct 2007 23:33:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59545 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750948AbXJ1Dc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Oct 2007 23:29:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=rzzy/M1s2W0u7oX4MX0Q4c0GvxMXtegB+PZp3OT/FNB5YlxOF13OIjYuccQHPTvDw6M3MJaFZcsxKkNDkozDE9lpcmR2sp9p2bps688Zevpwddj4usFBxgeRaaCvey7JY5db901YMCeykd4vy6hxwSQVZ6uaraxv6odpyL8cfZE=
-Date: Sun, 28 Oct 2007 11:24:41 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net,
-       sam@ravnborg.org
-Subject: UML building failed in current Linus-tree
-Message-ID: <20071028032441.GB2502@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Sat, 27 Oct 2007 23:32:59 -0400
+Message-Id: <20071028033258.779134394@sgi.com>
+References: <20071028033156.022983073@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Sat, 27 Oct 2007 20:31:58 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [patch 02/10] SLUB: Noinline some functions to avoid them being folded into alloc/free
+Content-Disposition: inline; filename=slub_noinline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some function tend to get folded into __slab_free and __slab_alloc
+although they are rarely called. They cause register pressure that
+leads to bad code generation.
 
-Hi, Jeff, Sam!
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-I just pulled from Linus-tree, and got the following error when building uml.
+---
+ mm/slub.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-$ make defconfig ARCH=um
-/home/wangcong/projects/linux-2.6/arch/um/Makefile-i386:32: /home/wangcong/projects/linux-2.6/arch/i386/Makefile.cpu: No such file or directory
-make: *** No rule to make target `/home/wangcong/projects/linux-2.6/arch/i386/Makefile.cpu'.  Stop.
-
-Is this a known problem? Yesterday's Linus-tree was fine.
-
-Regards.
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-10-25 19:36:10.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-10-25 19:36:59.000000000 -0700
+@@ -831,8 +831,8 @@ static void setup_object_debug(struct km
+ 	init_tracking(s, object);
+ }
+ 
+-static int alloc_debug_processing(struct kmem_cache *s, struct page *page,
+-						void *object, void *addr)
++static noinline int alloc_debug_processing(struct kmem_cache *s,
++		struct page *page, void *object, void *addr)
+ {
+ 	if (!check_slab(s, page))
+ 		goto bad;
+@@ -871,8 +871,8 @@ bad:
+ 	return 0;
+ }
+ 
+-static int free_debug_processing(struct kmem_cache *s, struct page *page,
+-						void *object, void *addr)
++static noinline int free_debug_processing(struct kmem_cache *s,
++			struct page *page, void *object, void *addr)
+ {
+ 	if (!check_slab(s, page))
+ 		goto fail;
+@@ -1075,7 +1075,8 @@ static void setup_object(struct kmem_cac
+ 		s->ctor(s, object);
+ }
+ 
+-static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
++static noinline struct page *new_slab(struct kmem_cache *s,
++						gfp_t flags, int node)
+ {
+ 	struct page *page;
+ 	struct kmem_cache_node *n;
+@@ -1209,7 +1210,7 @@ static void add_partial(struct kmem_cach
+ 	spin_unlock(&n->list_lock);
+ }
+ 
+-static void remove_partial(struct kmem_cache *s,
++static noinline void remove_partial(struct kmem_cache *s,
+ 						struct page *page)
+ {
+ 	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
 
 -- 
-May the Source Be With You.
