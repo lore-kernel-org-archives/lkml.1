@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXJ1XNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbXJ1XTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbXJ1XNE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 19:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXJ1XMx
+	id S1755962AbXJ1XTn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 19:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXJ1XTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 19:12:53 -0400
-Received: from mailgw2.3essentials.com ([66.179.153.59]:3811 "EHLO
-	mailgw2.3essentials.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753566AbXJ1XMw (ORCPT
+	Sun, 28 Oct 2007 19:19:35 -0400
+Received: from smtp811.mail.ird.yahoo.com ([217.146.188.71]:25171 "HELO
+	smtp811.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752870AbXJ1XTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 19:12:52 -0400
-Message-ID: <4725174F.40701@antonello.org>
-Date: Mon, 29 Oct 2007 00:12:15 +0100
-From: "lists@antonello.org" <lists@antonello.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Matt Domsch <Matt_Domsch@dell.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Dell laptop backlight driver
-References: <4724B4F5.80004@antonello.org> <20071028161955.GF23359@auslistsprd01.us.dell.com> <4724CF9F.6050908@antonello.org> <20071028192031.GA11442@auslistsprd01.us.dell.com>
-In-Reply-To: <20071028192031.GA11442@auslistsprd01.us.dell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 28 Oct 2007 19:19:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=btinternet.com;
+  h=Received:X-YMail-OSG:Date:From:To:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding;
+  b=vvwaZ6asx7sGjeYEaaP22vXuoPNviPu8gUDaMPlorbuuQmA+nd+7LRo93btzYntSoFKYijVfXsIlTRMGA0zDzCRQVyV8rrO2sFR4zEkBvsfPhhyAxZD/rEWyqLVE2uYMa0+CoEmU0EZAtTHmJbHqkVsINY02zsD/KYSErBTMOLg=  ;
+X-YMail-OSG: e94tvDMVM1mN_TSh_4NxhvmAtwhN5GIV2Z2g58m84YPtgP93Z99zxvkoa4W2XnSN4oTgtXkMNg--
+Date: Sun, 28 Oct 2007 23:19:54 +0000
+From: Bradley Smith <bradjsmith@btinternet.com>
+To: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, dz@debian.org
+Subject: Re: [PATCH 1/2] I8K: Allow i8k driver to be built on x86_64 systems
+Message-ID: <20071028231954.31767a7e@debian.hob>
+In-Reply-To: <20071028173724.GE7227@stusta.de>
+References: <20071028172519.371dbbe8@debian.hob>
+	<20071028173724.GE7227@stusta.de>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Domsch wrote:
-> On Sun, Oct 28, 2007 at 07:06:23PM +0100, lists@antonello.org wrote:
->> Matt Domsch wrote:
->>> On Sun, Oct 28, 2007 at 05:12:37PM +0100, jack@antonello.org wrote:
->>>> Hello,
->>>> this driver implements backlight control on Dell laptops
->>>> which use SMI  for changing brightness levels.
->>>>
->>>> The driver is INCOMPLETE since it is unable to probe some required 
->>>> parameters
->>>> in order to perform backlight control. Such parameters are found in a Dell
->>>> proprietary DMI table which should be parsed. For now external tools may 
->>>> be
->>>> used to find these parameters by hand. So if you intend to try this out,
->>>> FIRST write your laptop model parameters correctly inside the source code
->>>> as explained in Documentation/dell-laptop.txt.
->>>>
->>>> Parts of this driver may also be used to provide additional 
->>>> functionalities
->>>> similarly to the drivers/misc/*-laptop.c drivers.
->>> Why is this better done in the kernel rather than in userspace with
->>> libsmbios as you've noted?
->>>
->> I had to do a kernelspace driver for controlling the backlight. This
->> was part of a college project assignment. In order for it to be valid
->> for an operating system course, it had to be in kernelspace (not
->> Unix programming) :).
->>
->> As i mentioned that can be done in userspace and it IS sensible to do
->> so. I know that the code which was already written for Dell implied
->> a userspace approach, but i simply had no choice.
->>
->> I also don't expect this driver to become mainstream, but since i have
->> written it, other people might want to have a look at it.
+On Sun, 28 Oct 2007 18:37:24 +0100
+Adrian Bunk <bunk@kernel.org> wrote:
+
 > 
-> OK, that's fair.
+> Please use CONFIG_X86_64.
 > 
->  
->> Finally i really don't think there's any sensible way of implementing
->> Linux LCD Backlight Abstraction relying on a userspace application.
->> That would mean the kernel calling userspace code to change the
->> brightness, then this latter code would again call the kernel to trigger
->> a SMI and so on. That's just not a good design. I think a userspace
->> solution implies choosing NOT to implement the LCD Abstraction. Causing
->> Dell laptops to be treated differently from other machines (as they are
->> not compliant with Linux's own interface).
-> 
-> I've had this discussion on lkml before. Short story is, until Dell
-> laptops implement the ACPI methods that the backlight API expects, the
-> only sane way to do it is to let libsmbios handle it.  Moving the
-> fairly large and complex libsmbios into the kernel isn't a good idea
-> (imho).
-> 
-> 
+> cu
+> Adrian
 > 
 
-I agree. The problem is that Dell's DMI tables are not defined in the 
-SMBIOS standard. Thus getting the parameters required for the backlight
-control (io port, io code, location) needs to be dealt with specifically.
-Plus DMI is not as comprehensively supported as ACPI is under Linux.
+Now uses CONFIG_X86_64.
 
-I think reading Dell's tables to find out backlight parameters in
-kernelspace is possible. Unfortunately it would require a significant
-amount of brand new code to be written. And i'm not sure it is worth
-the effort. Libsmbios is big and complex because it is written in
-proficient C++ with lots of OO abstraction. It is also portable. But
-the task accomplished is simple in principle.
+Brad.
 
-jacopo
-
+--- linux-2.6/drivers/char/i8k.c.orig	2007-10-28 12:27:34.000000000 +0000
++++ linux-2.6/drivers/char/i8k.c	2007-10-28 14:27:56.000000000 +0000
+@@ -113,6 +113,33 @@ static int i8k_smm(struct smm_regs *regs
+ 	int rc;
+ 	int eax = regs->eax;
+ 
++#if defined(CONFIG_X86_64)
++	asm("pushq %%rax\n\t"
++		"movl 0(%%rax),%%edx\n\t"
++		"pushq %%rdx\n\t"
++		"movl 4(%%rax),%%ebx\n\t"
++		"movl 8(%%rax),%%ecx\n\t"
++		"movl 12(%%rax),%%edx\n\t"
++		"movl 16(%%rax),%%esi\n\t"
++		"movl 20(%%rax),%%edi\n\t"
++		"popq %%rax\n\t"
++		"out %%al,$0xb2\n\t"
++		"out %%al,$0x84\n\t"
++		"xchgq %%rax,(%%rsp)\n\t"
++		"movl %%ebx,4(%%rax)\n\t"
++		"movl %%ecx,8(%%rax)\n\t"
++		"movl %%edx,12(%%rax)\n\t"
++		"movl %%esi,16(%%rax)\n\t"
++		"movl %%edi,20(%%rax)\n\t"
++		"popq %%rdx\n\t"
++		"movl %%edx,0(%%rax)\n\t"
++		"lahf\n\t"
++		"shrl $8,%%eax\n\t"
++		"andl $1,%%eax\n"
++		:"=a"(rc)
++		:    "a"(regs)
++		:    "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory");
++#else
+ 	asm("pushl %%eax\n\t"
+ 	    "movl 0(%%eax),%%edx\n\t"
+ 	    "push %%edx\n\t"
+@@ -137,7 +164,7 @@ static int i8k_smm(struct smm_regs *regs
+ 	    "andl $1,%%eax\n":"=a"(rc)
+ 	    :    "a"(regs)
+ 	    :    "%ebx", "%ecx", "%edx", "%esi", "%edi", "memory");
+-
++#endif
+ 	if (rc != 0 || (regs->eax & 0xffff) == 0xffff || regs->eax == eax)
+ 		return -EINVAL;
+ 
