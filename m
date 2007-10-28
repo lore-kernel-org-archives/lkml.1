@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbXJ1L2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXJ1MAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753883AbXJ1L2K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 07:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXJ1L16
+	id S1753659AbXJ1MAN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 08:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXJ1L74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 07:27:58 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49060 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbXJ1L15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 07:27:57 -0400
-Date: Thu, 25 Oct 2007 16:38:02 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: X86: UML build fix
-Message-ID: <20071025110801.GA20633@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
+	Sun, 28 Oct 2007 07:59:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49757 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbXJ1L7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 07:59:55 -0400
+Date: Sun, 28 Oct 2007 12:59:52 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-arch@vger.kernel.org
+Cc: Joe Perches <joe@perches.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] proc_fs.h redux
+Message-ID: <20071028115952.GA18479@suse.de>
+Mail-Followup-To: viro@zeniv.linux.org.uk,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arch@vger.kernel.org, Joe Perches <joe@perches.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
+	torvalds@osdl.org
+References: <20071027194758.GD9816@martell.zuzino.mipt.ru> <1193524804.26695.103.camel@localhost> <20071028103415.GA12554@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071028103415.GA12554@flint.arm.linux.org.uk>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[sorry if this is a duplicate, looks like my first post did not make it
- to lkml]
+* Russell King <rmk+lkml@arm.linux.org.uk> [2007-10-28 11:34]:
+> 
+> If you go down that route, you end up with _lots_ of circular
+> dependencies - header file X needs Y needs Z which needs X.  We've
+> been there, several times.  It very quickly becomes quite
+> unmaintainable - you end up with hard to predict behaviour from
+> include files.
+> 
+> The only realistic solution is to use forward declarations.
 
-Fix stat.h to not use __i386__, but use BITS_PER_LONG. The UML architecture
-in turn includes this file. This helps resolve one build failure in the
-current UML code
-
-Before the fix, the failure was
-
-In file included from init/do_mounts.c:19:
-init/do_mounts.h: In function 'bstat':
-init/do_mounts.h:25: error: storage size of 'stat' isn't known
-init/do_mounts.h:25: warning: unused variable 'stat'
-init/do_mounts.h:33: warning: control reaches end of non-void function
-make[1]: *** [init/do_mounts.o] Error 1
-make: *** [init/do_mounts.o] Error 2
+In header files, yes. But that's not true for implementation files.
 
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- include/asm-x86/stat.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff -puN init/do_mounts.h~uml-fix-init-domounts init/do_mounts.h
-diff -puN include/asm-x86/stat.h~uml-fix-init-domounts include/asm-x86/stat.h
---- 2.6.24-rc1/include/asm-x86/stat.h~uml-fix-init-domounts	2007-10-25 16:23:04.000000000 +0530
-+++ 2.6.24-rc1-balbir/include/asm-x86/stat.h	2007-10-25 16:23:04.000000000 +0530
-@@ -1,9 +1,11 @@
- #ifndef _ASM_X86_STAT_H
- #define _ASM_X86_STAT_H
- 
-+#include <asm/types.h>
-+
- #define STAT_HAVE_NSEC 1
- 
--#ifdef __i386__
-+#if BITS_PER_LONG == 32
- struct stat {
- 	unsigned long  st_dev;
- 	unsigned long  st_ino;
-@@ -63,7 +65,7 @@ struct stat64 {
- 	unsigned long long	st_ino;
- };
- 
--#else /* __i386__ */
-+#else /* BITS_PER_LONG == 32 */
- 
- struct stat {
- 	unsigned long	st_dev;
-_
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thanks,
+   Bernhard
