@@ -1,163 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbXJ1TZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXJ1Td5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbXJ1TZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 15:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXJ1TZR
+	id S1754015AbXJ1Td5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 15:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbXJ1Tdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 15:25:17 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54726 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752327AbXJ1TZP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 15:25:15 -0400
-Date: Sun, 28 Oct 2007 20:25:28 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Greg KH <greg@kroah.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Giacomo Catenazzi <cate@debian.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: eradicating out of tree modules
-Message-ID: <20071028192528.GF7227@stusta.de>
-References: <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026232653.GF30533@stusta.de> <47234F73.3040809@imap.cc> <20071028005555.GC23339@stusta.de> <4724DA20.1010609@imap.cc>
+	Sun, 28 Oct 2007 15:33:49 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47110 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751570AbXJ1Tds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 15:33:48 -0400
+Date: Sun, 28 Oct 2007 12:31:04 -0700
+From: Greg KH <gregkh@suse.de>
+To: Barak Fargoun <barak@neocleus.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Guy Zana <guy@neocleus.com>
+Subject: Re: [PATCH] Align PCI memory regions to page size (4K) - Fix
+Message-ID: <20071028193104.GA13956@suse.de>
+References: <9392A06CB0FDC847B3A530B3DC174E7B03C96F1D@mse10be1.mse10.exchange.ms>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4724DA20.1010609@imap.cc>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <9392A06CB0FDC847B3A530B3DC174E7B03C96F1D@mse10be1.mse10.exchange.ms>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 07:51:12PM +0100, Tilman Schmidt wrote:
-> Am 28.10.2007 02:55 schrieb Adrian Bunk:
-> > Justifying anything with code with not GPL compatible licences has zero 
-> > relevance here.
-> > 
-> > And there's value in making life harder for such modules with 
-> > questionable legality. As an example, consider people who experienced 
-> > crashes of "the Linux kernel" caused by some binary-only driver.
-> > Not that uncommon e.g. with some graphics drivers.
-> > This harms the reputation of Linux as being stable.
+On Sun, Oct 28, 2007 at 01:27:27PM -0400, Barak Fargoun wrote:
+> Sorry, my mail client corrupted the previous mail containing the patch... it should be ok now...
 > 
-> You are mixing up several distinct categories here: "out of tree"
-> != "non-GPL" != "proprietary" != "of questionable legality" !=
-> "binary-only" != "causing kernel crashes".
-
-"binary-only non-GPL out-of-tree module causes kernel crashes" is a 
-quite common pattern for some popular binary-only modules.
-
-And noone except the vendor of this module can debug and fix it.
-
-Include more than one binary-only module into your kernel and the number 
-of people being able to debug it might drop to zero.
-
-> > The solution is not to support proprietary drivers, the solution is to 
-> > get open source replacements.
+> Add a boot parameter (?pci-mem-align?) which forces PCI memory regions
+> to be aligned to 4K. 
 > 
-> So how do you propose to "get" those replacements? And what shall
-> users do during the time this "getting" may take?
-
-They should swamp the hardware vendors with requests for releasing 
-hardware specifications.
-
-Or even better buy their hardware from a competitor.
-
-> > If it's low quality code doing something useful - well, how many hundred 
-> > people are on Greg's list only waiting for some driver they could write?
+> This is very useful when developing an hypervisor, since in case we
+> want to let native domains direct access to specific hardware, we
+> don?t want PCI devices to share their memory region page with other
+> devices. In Xen for example, PCI devices mmio resources are mapped by
+> remapping complete pages (by Intel VT-d & the Neocleus pass-through
+> patch for Xen).
 > 
-> No idea. Obviously not enough to actually solve the problem.
+> Signed-off-by: Barak Fargoun???? (barak@neocleus.com)
+> ---
+> Kernel version: 2.6.18	(since this is the kernel version used in Xen for Dom-0)
+> ---
+> diff -r 840b9df48b6a drivers/pci/bus.c
+> --- a/drivers/pci/bus.c	Tue Aug 07 09:37:41 2007 +0100
+> +++ b/drivers/pci/bus.c	Sun Oct 28 08:40:52 2007 -0400
+> @@ -16,6 +16,8 @@
+>  #include <linux/init.h>
+>  
+>  #include "pci.h"
+> +
+> +extern int pci_mem_align;
 
-Greg has just begins with getting this started.
+Please don't declare externs in a .c file, put it in a header file.
 
-> What solution do you propose?
+>  /**
+>   * pci_bus_alloc_resource - allocate a resource from a parent bus
+> @@ -43,6 +45,15 @@ pci_bus_alloc_resource(struct pci_bus *b
+>  	int i, ret = -ENOMEM;
+>  
+>  	type_mask |= IORESOURCE_IO | IORESOURCE_MEM;
+> +
+> +	/* if the boot parameter 'pci-mem-align' was specified, then we need to 
+> +		align the memory addresses, at page size alignment  */
+> +	if (pci_mem_align)
+> +	{
+> +		/* we change only alignments which are smaller than page size */
+> +		if (align < (PAGE_SIZE-1))
+> +			align = PAGE_SIZE - 1;
+> +	}
 
-You list the drivers you currently have in mind at the Linux Driver 
-Project [1].
+Please follow the proper coding style rules as documented in
+Documentation/CodingStyle.  Also running the script scrips/checkpatch.pl
+would have pointed this out.
 
-> >> [D]o you think the world would
-> >> be a better place if all the existing out-of-tree modules
-> >> just ceased to exist, without any replacement?
-> > 
-> > With your "without any replacement" you needlessly excluded the 
-> > reasonable solution:
-> > 
-> > The solution is that someone other than the author either takes the 
-> > existing external code or rewrites it from scratch, submits it for 
-> > inclusion into the kernel, and maintains it there.
-> 
-> My "without any replacement" is just a description of reality.
-> All current external code I am aware of continues to exist only
-> because there is no in-kernel replacement.
-> 
-> Again: how do you propose to bring that solution of yours to pass,
+>  
+>  	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>  		struct resource *r = bus->resource[i];
+> diff -r 840b9df48b6a drivers/pci/quirks.c
+> --- a/drivers/pci/quirks.c	Tue Aug 07 09:37:41 2007 +0100
+> +++ b/drivers/pci/quirks.c	Sun Oct 28 08:40:52 2007 -0400
+> @@ -22,6 +22,54 @@
+>  #include <linux/delay.h>
+>  #include <linux/acpi.h>
+>  #include "pci.h"
+> +
+> +/* a global flag, which signals if we should align PCI mem windows to 4K */
+> +int pci_mem_align = 0;
+> +
+> +/* this function is called, if the 'pci-mem-align' was specified as a boot
+> +		parameter. Used to force the kernel to align PCI mem windows to 4k */
 
-You list the drivers you currently have in mind at the Linux Driver
-Project [1].
+All command line paramaters need to be documented in the Documentation
+directory.
 
-> how long do you think it will take, and what do you propose current
-> users of out-of-tree modules do in the meantime?
+> +static int __init set_pci_mem_align(char *str)
+> +{
+> +	pci_mem_align = 1;
+> +	return 1;
+> +}
+> +__setup("pci-mem-align", set_pci_mem_align);
+> +
+> +/*	
+> +	This quirk function enables us to force all memory resources which are 
+> +		assigned to PCI devices, to be aligned at a page size. This 
+> +		fetaurs helps us in xen when running native domains
 
-Noone proposed to make the existance of out-of-tree modules completely 
-impossible - but it is a fact that derives directly from the Linux 
-kernel development model that thre's no stable API for out-of-tree 
-modules, and therefore each new kernel breaks many of them.
+Trailing spaces are not allowed :(
 
-Once you accept this fundamental fact there's not much point in arguing 
-that changes that break out-of-tree modules should be fewer.
+> +*/
+> +static void __devinit quirk_xen_align_mem_resources(struct pci_dev *dev)
+> +{
+> +	int i;
+> +	struct resource *r;
+> +
+> +	/* if the boot parameter 'pci-mem-align' wasn't specified, then no need
+> +		to align the memory addresses */
+> +	if (pci_mem_align == 0)
+> +		return;
+> +
+> +	for (i=0; i < DEVICE_COUNT_RESOURCE; ++i) {
+> +		r = &dev->resource[i];
+> +
+> +		if (r == NULL)
+> +			continue;
+> +
+> +		/* we need to adjust only memory resources */
+> +		if (r->flags & IORESOURCE_MEM) {
+> +			/* align the start address in page size alignment alignment (round up) */
+> +			resource_size_t old_start = r->start;
+> +			r->start = (r->start + (PAGE_SIZE-1))  & (~(PAGE_SIZE-1));
+> +
+> +			/* update the end address, so that the region size will not be 
+> +				affected */
+> +			r->end = r->end - (old_start - r->start);
+> +		}
+> +	}
+> +}
+> +DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, quirk_xen_align_mem_resources);
 
->...
-> > Let me repeat that Greg has said he has hundreds of volunteers for such 
-> > tasks.
-> 
-> Even with hundreds of volunteers, your proposed solution of just
-> rewriting *all* external code in a way fit for inclusion into the
-> kernel is an unachievable goal. Just look at the list on
-> http://linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
-> and try to answer why each of them is still out of tree.
-> Hint: In most cases it's neither out of malice nor stupidity on
-> the authors' part.
+Now for the main reason.  I really don't understand why this is needed.
+Is it only for virtual machines?  Are there drivers in the kernel tree
+today that need this functionality?  What breaks if you do not align
+these resources?
 
-There are different problems why different drivers are not (yet) 
-included in the kernel, but which ones don't have any possible solution?
+thanks,
 
-And if you compare the numbers you'll see that Greg has on average a 
-handful of volunteers for one driver.
-
-> Of course in-tree code is always better than out-of-tree code. But
-> I maintain there will always be out-of-tree code (modules, drivers,
-> whatever) that fills a real need not (though hopefully, just not
-> yet) satisfied by any in-tree code. All I'm asking for is that you
-> take a pragmatic stance with regard to that: not going to any great
-> lengths to support it, but acknowledging its existence and
-> legitimacy - and not inciting to deliberately break it.
-
-The most important question is still:
-
-Why should there always be out-of-tree code that fills a real need not 
-satisfied by any in-tree code?
-
-Not everything might have worked in an ideal way in the past, but let's 
-try to fix the problem, not let the problem justify workarounds.
-
-> Thanks,
-> Tilman
-
-cu
-Adrian
-
-[1] http://linuxdriverproject.org
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
