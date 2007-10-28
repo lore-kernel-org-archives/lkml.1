@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXJ1QPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbXJ1QSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXJ1QPt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 12:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXJ1QPj
+	id S1755263AbXJ1QSy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXJ1QSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 12:15:39 -0400
-Received: from main.gmane.org ([80.91.229.2]:59725 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbXJ1QPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 12:15:38 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Samuel Tardieu <sam@rfc1149.net>
-Subject: Re: [PATCH] backlight dimmer
-Date: Sun, 28 Oct 2007 17:15:16 +0100
-Message-ID: <87y7dndxm3.fsf@willow.rfc1149.net>
-References: <4724B48D.6090405@antonello.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: zaphod.rfc1149.net
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-Cancel-Lock: sha1:Zehfk4c+q0eEHEz0xa0XWyCqbiI=
-X-Leafnode-NNTP-Posting-Host: 2001:6f8:37a:2::2
+	Sun, 28 Oct 2007 12:18:46 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49326 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbXJ1QSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 12:18:46 -0400
+Date: Sun, 28 Oct 2007 17:18:45 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Roel Kluin <12o3l@tiscali.nl>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Debugging activated during runtime
+In-Reply-To: <4724B3BD.1010509@tiscali.nl>
+Message-ID: <Pine.LNX.4.64.0710281717290.30465@fbirervta.pbzchgretzou.qr>
+References: <4724A783.9050400@tiscali.nl> <Pine.LNX.4.64.0710281618520.30465@fbirervta.pbzchgretzou.qr>
+ <4724B3BD.1010509@tiscali.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jacopo" == jack  <jack@antonello.org> writes:
 
-Jacopo> this patch implements a macbook like backlight dimmer on top
-Jacopo> of backlight.c.
+On Oct 28 2007 17:07, Roel Kluin wrote:
+>Jan Engelhardt wrote:
+>> On Oct 28 2007 16:15, Roel Kluin wrote:
+>>> Wouldn't it be nice to be able to specify upon loading, or during runtime
+>>> to modules whether debug messages should be printed?
+>> 
+>> modprobe ark3116 debug=1
+>> 
+>> Nothing new.
+>
+>Ok, thanks and sorry, I didn't know that.
 
-Jacopo, if you want your patch to be reviewed, you should first put it
-in an acceptable form. You can start by running it through
-scripts/checkpatch.pl.
+Loading debug info at runtime is more complex, and I doubt it is worth
+the time. If writing a module, carefully consider when to print what.
+When pr_*() comes in, this might be a bit relaxed.
 
-  Sam
--- 
-Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
+>>> - A module could be loaded after an unexpected conditions (e.g. after a BUG_ON).
+>> 
+>> After a BUG_ON, you are probably next to a panic.
+>
+>Not always, it appears.
+>
 
+But anything can happen. It might end in a panic. Or it might eat your data.
