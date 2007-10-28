@@ -1,116 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXJ1THV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbXJ1TSC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbXJ1THV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 15:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJ1THH
+	id S1753628AbXJ1TSC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 15:18:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXJ1TRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 15:07:07 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:37490 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbXJ1THE (ORCPT
+	Sun, 28 Oct 2007 15:17:53 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:37144 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbXJ1TRw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 15:07:04 -0400
+	Sun, 28 Oct 2007 15:17:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=e2QdBZ/Aq56I0jiO5JBem6Z1nAifE5KO32TwkDyJvtiJ23RUXt3QkSnaFrrBpAtFdMFAKv41QKpN8plHW3gmC1zEa+Jbac+c4hs9id/1XtXNvlRbzA/zHtGzqNUyMh7iNdwi21uNPVDhpjFoWcqhK6AWBm718Am7pjYyeoKsx/A=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Pavel Machek'" <pavel@ucw.cz>, "'Ray Lee'" <ray-lk@madrabbit.org>
-Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
-       "'Chris Wright'" <chrisw@sous-sol.org>,
-       "'Casey Schaufler'" <casey@schaufler-ca.com>,
-       "'Adrian Bunk'" <bunk@kernel.org>, "'Simon Arlott'" <simon@fire.lp0.eu>,
-       <linux-kernel@vger.kernel.org>, <linux-security-module@vger.kernel.org>,
-       "'Jan Engelhardt'" <jengelh@computergmbh.de>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Andreas Gruenbacher'" <agruen@suse.de>,
-       "'Thomas Fricaccia'" <thomas_fricacci@yahoo.com>,
-       "'Jeremy Fitzhardinge'" <jeremy@goop.org>,
-       "'James Morris'" <jmorris@namei.org>,
-       "'Crispin Cowan'" <crispin@crispincowan.com>,
-       "'Giacomo Catenazzi'" <cate@debian.org>
-References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com> <20071025002356.GB3660@sequoia.sous-sol.org> <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com> <20071025024131.6082e4a8@the-village.bc.nu> <2c0942db0710251117k37c30b2ex5cc6d8cd8c9ea029@mail.gmail.com> <20071027182911.GD4159@ucw.cz>
-In-Reply-To: <20071027182911.GD4159@ucw.cz>
-Subject: RE: Linux Security *Module* Framework (Was: LSM conversion to static interface)
-Date: Sun, 28 Oct 2007 12:05:46 -0700
-Message-ID: <008601c81995$90670030$b1350090$@com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uNcHnIIDFhKlvqq+BlatCJJTvtmQHevfrE0gd1xwzf9QK4NB2kJGsf9ZIAqcUXC8rHWx81dtumq3dwwETIeKynQXQvnEkQppXVDjx93R88l03IR6Ppf1XY8AZV2tqdzYNZlkQqHLEhZs1mOcthl5N7sWl/QoU7qyW1I72P0psFA=
+Message-ID: <3cce60f30710281217h44abb72dvece026e4e079da5f@mail.gmail.com>
+Date: Sun, 28 Oct 2007 12:17:48 -0700
+From: "Shannon Nelson" <shannon.lee.nelson@gmail.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re: [PATCH] DMA: Fix broken device refcounting
+Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>
+In-Reply-To: <1193512357.18911.6.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcgZjlwFpFPt2li5SpKpcqUD1itVswABNHPw
-Content-Language: en-us
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1193415162504-git-send-email-hskinnemoen@atmel.com>
+	 <1193416577.9353.5.camel@dwillia2-linux.ch.intel.com>
+	 <20071027154947.6836a3d9@siona>
+	 <1193512357.18911.6.camel@dwillia2-linux.ch.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think you may be misinterpreting the word "poor" here.
-
-Many people in this thread consider a security solution "poor" because it's
-not "complete" or "perfect": it may work against attack ABC but not attack
-XYZ. The defendants say that XYZ isn't possible in the environment that it's
-supposed to be used, or XYZ may be too expensive to be worth implementing,
-or they just are rare enough to be ignored. Heck, all security solutions
-could be broke given physical access.
-
-Implementing a security solution has a cost. Bypassing it also has a cost.
-Sometimes it's economy, not technique, decides whether a particular security
-solution is a good one.
-
-Locks are a good example for this. It has a low cost/effect ratio, and very
-easy to use. Is it 100% safe? Definitely not. People lock their bikes to a
-tree when they enter a supermarket because it's reasonably safe. But leaving
-their bikes like that over a few nights on a downtown street? Probably not a
-good idea. Don't assume all people are idiots who do not know that (ok, some
-people are, so the lock's manual states "it can be bypassed by a skilled
-thief").
-
-But what tapes are good for? I don't know what kind of value it adds to the
-discussion.
-
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> owner@vger.kernel.org] On Behalf Of Pavel Machek
-> Sent: Saturday, October 27, 2007 11:29 AM
-> To: Ray Lee
-> Cc: Alan Cox; Chris Wright; Casey Schaufler; Adrian Bunk; Simon Arlott;
-> linux-kernel@vger.kernel.org; linux-security-module@vger.kernel.org;
-> Jan Engelhardt; Linus Torvalds; Andreas Gruenbacher; Thomas Fricaccia;
-> Jeremy Fitzhardinge; James Morris; Crispin Cowan; Giacomo Catenazzi
-> Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
-> static interface)
-> 
-> Hi!
-> 
-> > > > The idea that poor security is worse than no security is
-> fallacious,
-> > > > and not backed up by common experience.
-> > >
-> > > There is a ton of evidence both in computing and outside of it
-> which
-> > > shows that poor security can be very much worse than no security at
-> all.
+On 10/27/07, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Sat, 2007-10-27 at 06:49 -0700, Haavard Skinnemoen wrote:
+> > On Fri, 26 Oct 2007 09:36:17 -0700
+> > Dan Williams <dan.j.williams@intel.com> wrote:
 > >
-> > (So, I take it that you *don't* lock your bike up, as poor security
-> is
-> > worse than none?)
-> 
-> I do lock my bike with combination lock I found somewhere and cracked
-> in five minutes... sometimes.
-> 
-> But do you suggest that I use paper tape to 'lock' my bike to
-> streetlight? You just said that poor security is better than none,
-> right?
-> 
-> 							Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures)
-> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > > @@ -221,7 +220,6 @@ void dma_chan_cleanup(struct kref *kref)
+> > >  {
+> > >       struct dma_chan *chan = container_of(kref, struct dma_chan, refcount);
+> > >       chan->device->device_free_chan_resources(chan);
+> > > -     kref_put(&chan->device->refcount, dma_async_device_cleanup);
+> > >  }
+> > >  EXPORT_SYMBOL(dma_chan_cleanup);
+> >
+> > While I can't see any problems with the rest of the patch, I think this
+> > part is wrong for the same reasons removing the kref_put() from the
+> > class device cleanup function is. I don't see any constraint that
+> > guarantees that dma_chan_cleanup() will always be called before
+> > dma_dev_release(), which means that "chan" may have been freed before
+> > this function gets a chance to run. Please correct me if I'm wrong.
+>
+> Absolutely right, the driver, not dmaengine, frees the memory so there
+> must be a per channel reference on the device to hold off the driver's
+> remove routine.
+> >
+> > Håvard
+>
+> So how about this...
+>
+> ---snip---
+> dmaengine: Fix broken device refcounting
+>
+> From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+>
+> When a DMA device is unregistered, its reference count is decremented
+> twice for each channel: Once dma_class_dev_release() and once in
+> dma_chan_cleanup(). This may result in the DMA device driver's
+> remove() function completing before all channels have been cleaned
+> up, causing lots of use-after-free fun.
+>
+> Fix it by incrementing the device's reference count twice for each
+> channel during registration.
+>
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> [dan.j.williams@intel.com: kill unnecessary client refcounting]
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
+>
+>  drivers/dma/dmaengine.c |   17 ++++++-----------
+>  1 files changed, 6 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+> index 84257f7..ec7e871 100644
+> --- a/drivers/dma/dmaengine.c
+> +++ b/drivers/dma/dmaengine.c
+> @@ -186,10 +186,9 @@ static void dma_client_chan_alloc(struct dma_client *client)
+>                                 /* we are done once this client rejects
+>                                  * an available resource
+>                                  */
+> -                               if (ack == DMA_ACK) {
+> +                               if (ack == DMA_ACK)
+>                                         dma_chan_get(chan);
+> -                                       kref_get(&device->refcount);
+> -                               } else if (ack == DMA_NAK)
+> +                               else if (ack == DMA_NAK)
+>                                         return;
+>                         }
+>                 }
+> @@ -276,11 +275,8 @@ static void dma_clients_notify_removed(struct dma_chan *chan)
+>                 /* client was holding resources for this channel so
+>                  * free it
+>                  */
+> -               if (ack == DMA_ACK) {
+> +               if (ack == DMA_ACK)
+>                         dma_chan_put(chan);
+> -                       kref_put(&chan->device->refcount,
+> -                               dma_async_device_cleanup);
+> -               }
+>         }
+>
+>         mutex_unlock(&dma_list_mutex);
+> @@ -320,11 +316,8 @@ void dma_async_client_unregister(struct dma_client *client)
+>                         ack = client->event_callback(client, chan,
+>                                 DMA_RESOURCE_REMOVED);
+>
+> -                       if (ack == DMA_ACK) {
+> +                       if (ack == DMA_ACK)
+>                                 dma_chan_put(chan);
+> -                               kref_put(&chan->device->refcount,
+> -                                       dma_async_device_cleanup);
+> -                       }
+>                 }
+>
+>         list_del(&client->global_node);
+> @@ -401,6 +394,8 @@ int dma_async_device_register(struct dma_device *device)
+>                         goto err_out;
+>                 }
+>
+> +               /* One for the channel, one of the class device */
+> +               kref_get(&device->refcount);
+>                 kref_get(&device->refcount);
+>                 kref_init(&chan->refcount);
+>                 chan->slow_ref = 0;
 > -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+Thanks - when I get back in tomorrow morning I'll test this to see
+that it gets rid of the panic that I've been getting.
+
+sln
+-- 
+==============================================
+Mr. Shannon Nelson         Parents can't afford to be squeamish.
