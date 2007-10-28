@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbXJ1Xu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXJ1X4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbXJ1Xu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 19:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXJ1XuT
+	id S1755528AbXJ1X4O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 19:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXJ1X4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 19:50:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45279 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752459AbXJ1XuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 19:50:17 -0400
-Date: Mon, 29 Oct 2007 10:50:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: Christoph Hellwig <hch@lst.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v2] pcmcia: Remove replace kio_addr_t with unsigned int
- everywhere
-Message-Id: <20071029105005.d85e212e.sfr@canb.auug.org.au>
-In-Reply-To: <20071028201858.GA10048@lixom.net>
-References: <20070905142742.GA1760@lixom.net>
-	<20070914034854.1658a9cf.akpm@linux-foundation.org>
-	<20070921221516.GA7926@lixom.net>
-	<20070921233936.2aeb2504@the-village.bc.nu>
-	<20070922062551.GE10625@parisc-linux.org>
-	<20070922091303.GA12525@lst.de>
-	<20071019201720.GA13234@lixom.net>
-	<20071028134414.GF26943@isilmar.linta.de>
-	<20071028201034.GB9472@lixom.net>
-	<20071028201858.GA10048@lixom.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Oct_2007_10_50_05_+1100_/wj1YA2jLaKIDaIk"
+	Sun, 28 Oct 2007 19:56:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:46560 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbXJ1Xz7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 19:55:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DFbtrQEqvvytw2aeLlp9kwEjtfTQXA8sURROUqZJBOwmXlPAg/jgRqHOS/Uy4ISi8JzneZsZWbACFwNisWuerzJhE5S3J+DAK1sYL2Ws2KnBoKmeq2cLCRFS5jlqiVwoPpEoer4/TnYyxWSR6lcX07mlihQpUDuF31Ra+4xYI7g=
+Message-ID: <e7d8f83e0710281655y5818b3a8o247d0c7b1ddb657@mail.gmail.com>
+Date: Mon, 29 Oct 2007 09:55:47 +1000
+From: "Peter Dolding" <oiaohm@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+In-Reply-To: <47250878.6040506@crispincowan.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071024223124.GI30533@stusta.de>
+	 <446110.89443.qm@web36608.mail.mud.yahoo.com>
+	 <20071025002356.GB3660@sequoia.sous-sol.org>
+	 <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com>
+	 <20071025024131.6082e4a8@the-village.bc.nu>
+	 <47250878.6040506@crispincowan.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__29_Oct_2007_10_50_05_+1100_/wj1YA2jLaKIDaIk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 10/29/07, Crispin Cowan <crispin@crispincowan.com> wrote:
+> To reject an LSM for providing "bad" security, IMHO you should have to
+> show how it is possible to subvert the self-stated goals of that LSM.
+> Complaints that the LSM fails to meet some goal outside of its stated
+> purpose is irrelevant. Conjecture that it probably can be violated
+> because of $contrivance is just so much FUD.
 
-Hi Olof,
+LSM is providing bad security on two fronts.
 
-diffstat output is very useful - especially for patches like this that
-touch lots of files.  It makes it easier for potential reviewers to see
-if they should be potential reviewers.  :-)
+Number 1 LSM are speeding effort to create features.  Apparmor and
+Selinux both provide file access filtering from applications.  Yet
+they double up the code to do it.   So they cannot be used with each
+other without doubling up hooks.  Then other LSM are creating there
+own sections of code to do the same thing.   Simple rule more code
+more risk of bugs since it will be less audited.  Duplication defense
+features is really bad for security.  Some how code sharing has to be
+got into LSM construction.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Number 2 The critical bit LSM stop at the edges of applications.   Now
+without overlapping my hooks with existing LSMs I cannot create
+application level protections.  Overlapping hooks will cause speed
+loss.
 
---Signature=_Mon__29_Oct_2007_10_50_05_+1100_/wj1YA2jLaKIDaIk
-Content-Type: application/pgp-signature
+LSM is set to protect the application. But inside the application
+there will be sections that need the access rights and others that
+don't.  Now a exploit in any section of the application under LSM gets
+the LSM assigned rights.   With application level this can be done a
+few ways extension to elf that is create by the complier and api calls
+lowering access functions of current thread or for a starting thread.
+If you exploit a section of the code without access to disk network
+access and so on and without the right to call any function that does
+that.   What have you exploited.   Minor data damage compared to
+complete data that the application have access to being stolen as what
+is the case with LSM at moment.  Basically LSM prevent taking control
+of the complete system but don't help to stop peoples private data
+from being stolen.  Both are bad to happen to a person.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+LSM design is there to help security development not get in its way or
+to cause bitrot.  Currently LSM design is causing major risk bitrot in
+duplicated code.
 
-iD8DBQFHJSAyTgG2atn1QN8RAv7yAKCObr3GjbrpzJI8sXVagHeKbC0ZmgCfYFac
-F/JZV1JYRRVd1IICT1KeiTo=
-=Uyqn
------END PGP SIGNATURE-----
+Reading and processing configuration files should be independent to
+the protection methods.   Hopefully designed to be able to run user
+mode to test if the new profile for a application is safe to add
+before adding it to the OS.   Typo prevention on both sides.  Current
+method of just sticking everything into one huge blob is preventing
+code sharing and risking more security holes.
 
---Signature=_Mon__29_Oct_2007_10_50_05_+1100_/wj1YA2jLaKIDaIk--
+The current LSM design is bad on so many levels.  I am surprised that
+it takes a Non PHD System Admin to see it.  Some how I think its a
+empire thing.   If everything was just simple blocks a person could
+write a new LSM in hours with pretty good security.  Compared to
+todays long time trying effort.  Leads of Apparmor selinux and so on
+not being prepared to give up there little empire for the greater
+good.
+
+I personally hate stacking as a idea.  I personally prefer two layers
+only.  Config reading and  enforcement.   Of course that does not stop
+applications being assigned to different config reading systems.
+Depth the two layers should stay fixed even if you have many different
+models in use.
+
+All LSM seam to want to force System Admins to pick there LSM over
+another.   Instead of being able to pick LSM for task at hand.   Same
+with poor security being better than no security its true.  Its
+nothing strange to find selinux based systems with there security
+disabled because the Admin cannot configure it.   But the reverse is
+also true that when you have skilled Admins stuck with a system like
+Apparmor cannot harden the system as far as they could with selinux.
+Both ways its causing security holes poor security when you should
+have good security is bad too.  Part of the problem LSM maintainers
+are not at the front lines is all I can guess.  Because they don't
+seam to know what is really needed.
+
+Peter Dolding
