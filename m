@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbXJ1Q3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXJ1Qfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbXJ1Q3v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 12:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXJ1Q3n
+	id S1753956AbXJ1Qfo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXJ1Qff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 12:29:43 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:23795 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbXJ1Q3m (ORCPT
+	Sun, 28 Oct 2007 12:35:35 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:44394 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbXJ1Qfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 12:29:42 -0400
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Oct 2007 12:29:42 EDT
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=nqXMuPvcVi1yv4LOqpJkDZgX6rU3GdPfKQrwoOvZtoAHwIpHYipaT8ew+gPG7ro5Ihn/tJ3/H6oTdbsvOrTea/FMrIy+qBZdmQFhUGQPiucNUtzwKulHOtdPDBadAWiu;
-X-IronPort-AV: E=Sophos;i="4.21,339,1188795600"; 
-   d="scan'208";a="402189651"
-Date: Sun, 28 Oct 2007 11:19:55 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: jack@antonello.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Dell laptop backlight driver
-Message-ID: <20071028161955.GF23359@auslistsprd01.us.dell.com>
-References: <4724B4F5.80004@antonello.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4724B4F5.80004@antonello.org>
-User-Agent: Mutt/1.5.11
+	Sun, 28 Oct 2007 12:35:34 -0400
+Date: Sun, 28 Oct 2007 12:31:50 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [2.6 patch] fix USB_OHCI_HCD_SSB dependencies
+In-Reply-To: <4724B597.1070806@goop.org>
+Message-ID: <Pine.LNX.4.64.0710281230430.4921@localhost.localdomain>
+References: <20071027010647.GN30533@stusta.de> <20071027085748.GB3742@elte.hu>
+ <20071027134556.GS30533@stusta.de> <4724B597.1070806@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 05:12:37PM +0100, jack@antonello.org wrote:
-> Hello,
-> this driver implements backlight control on Dell laptops
-> which use SMI  for changing brightness levels.
-> 
-> The driver is INCOMPLETE since it is unable to probe some required 
-> parameters
-> in order to perform backlight control. Such parameters are found in a Dell
-> proprietary DMI table which should be parsed. For now external tools may be
-> used to find these parameters by hand. So if you intend to try this out,
-> FIRST write your laptop model parameters correctly inside the source code
-> as explained in Documentation/dell-laptop.txt.
-> 
-> Parts of this driver may also be used to provide additional functionalities
-> similarly to the drivers/misc/*-laptop.c drivers.
+On Sun, 28 Oct 2007, Jeremy Fitzhardinge wrote:
 
-Why is this better done in the kernel rather than in userspace with
-libsmbios as you've noted?
+> Adrian Bunk wrote:
+> > On Sat, Oct 27, 2007 at 10:57:48AM +0200, Ingo Molnar wrote:
+> >
+> >> * Adrian Bunk <bunk@kernel.org> wrote:
+> >>
+> >>
+> >>> -	depends on USB_OHCI_HCD && (SSB = y || SSB = CONFIG_USB_OHCI_HCD) && EXPERIMENTAL
+> >>> +	depends on USB_OHCI_HCD && (SSB = y || SSB = USB_OHCI_HCD) && EXPERIMENTAL
+> >>>
+> >> oops, indeed ... my Kconfig fu needs strengthening. Does Kconfig warn
+> >> somewhere if it sees an erroneous CONFIG_ token?
+> >>
+> >
+> > No. IIRC Sam was working in getting warnings for such things, but
+> > currently kconfig simply can't know whether it's a bug or OK.
+>
+> Are there any instances of CONFIG_CONFIG_X?  Doesn't seem like a
+> terribly sensible name...
 
+there used to be:
+
+http://lists.linuxcoding.com/kernel/2006-q1/msg18685.html
+
+but that was just the one, and it's gone now.
+
+rday
 -- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
