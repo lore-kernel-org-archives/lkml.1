@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582AbXJ1FmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbXJ1GvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751582AbXJ1FmA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 01:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXJ1Flw
+	id S1751623AbXJ1GvA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 02:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXJ1Gux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 01:41:52 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:39821 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750705AbXJ1Flu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 01:41:50 -0400
-X-YMail-OSG: ZzKx8cgVM1nloEZb8xsHSSAJhFJwVA4py9AgnloLTxlZTFk4OuwgInYAMlZqReQ5ASloeVKw3w--
-X-RocketYMMF: rancidfat
-Date: Sat, 27 Oct 2007 22:41:49 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 2/2] Version 9 (2.6.24-rc1) Smack: Simplified Mandatory Access Control Kernel
-To: Al Viro <viro@ftp.linux.org.uk>, "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: casey@schaufler-ca.com, akpm@osdl.org, torvalds@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20071027234719.GU8181@ftp.linux.org.uk>
+	Sun, 28 Oct 2007 02:50:53 -0400
+Received: from mx30.mail.ru ([194.67.23.238]:11791 "EHLO mx30.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750740AbXJ1Guv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 02:50:51 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: cbou@mail.ru
+Subject: Re: [PATCH] 2.6.24-rc1: ensure "present" sysfs attribute even if battery is absent
+Date: Sun, 28 Oct 2007 10:50:45 +0400
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, Alexey Starikovskiy <aystarik@gmail.com>
+References: <200710272054.31160.arvidjaar@mail.ru> <20071027184249.GA2982@zarina>
+In-Reply-To: <20071027184249.GA2982@zarina>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <833827.6337.qm@web36612.mail.mud.yahoo.com>
+Content-Type: multipart/signed;
+  boundary="nextPart3230126.ZlRjpxZkLj";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710280950.46779.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart3230126.ZlRjpxZkLj
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---- Al Viro <viro@ftp.linux.org.uk> wrote:
+On Saturday 27 October 2007, Anton Vorontsov wrote:
+> On Sat, Oct 27, 2007 at 08:54:30PM +0400, Andrey Borzenkov wrote:
+> > I am not exactly sure about this one ... what other power_supply class
+> > drivers do? Should I fix HAL instead (but then, I do not know whether H=
+AL
+> > is the only application that is using this interface).
+>
+> Well, PROP_PRESENT wasn't my idea, currently it's used by pmu and
+> olpc drivers becuase it's not trivial to register/unregister their
+> batteries on physical insertion/removal. I have some plans to teach
+> at least pmu batteries to not use PROP_PRESENT. I don't have any
+> OLPC, thus I can't convert it.
+>
+> To sum this: the good way to handle "missing" batteries is to
+> unregister them, so they'll not show up in the /sys/class/power_supply.
 
-> On Sat, Oct 27, 2007 at 11:01:12AM +0200, Ahmed S. Darwish wrote:
-> > The problem here (As discussed in private mails) is that the for loop 
-> > assumes that the beginning of given user-space buffer is the beginning
-> > of a rule. This leads to situations where the rule becomes "ecret 20",
-> > or "cret 20" instead of "Secret 20". Big input buffers/files leads 
-> > smack to recieve a rule like "Secret 20" in fragmented chunks like:
-> > 
-> > write("<lots of rules before ours>\nSec", ..)
-> > write("r", 1, ..)
-> > write("et 20\n<remaing rules after ours>", ..)
-> > 
-> > Parsing a rule in such tough conditions in _kernel space_ is very
-> > hard. I began to feel that it will be much easier if we do the parsing 
-> > in a userspace utility and let smack accept only small buffers (80 char). 
-> 
-> For crying out louf, all it takes is a finite state machine...  BTW, folks,
-> your parser *and* input language suck.  Really.  Silently allowing noise
-> is Dumb(tm).
+Well, in this case HAL behaviour makes sense (default to present =3D=3D tru=
+e=20
+if "present" attribute is missing)
 
-I was planning to patient Dumb, but if you've already got a copywrite
-on it I'll have to go a different route. Carp.
+> Is that possible with the ACPI?
+>
 
-> Please, write the grammar down and _follow_ _it_.
+At least looking in ACPI specs, this looks possible. What currently is=20
+presented as battery object is actually battery bay according to ACPI spec:
 
-Good idea. I'll do it.
+Unlike most other devices, when a battery is inserted or removed from the=20
+system, the device itself (the
+battery bay) is still considered to be present in the system.
 
->  ...
-> 
-> Come on, people, this is ridiculous - why bother reinventing the wheels for
-> the stuff that belongs to exercises halfway through any self-respecting
-> introductory textbook?  Scary parser, my arse...
+When battery is inserted/removed, ACPI notifies us and we can check whether=
+=20
+battery is actually present and update registration accordingly. From the=20
+sysfs structure POV probably nothing has to be changed; just when and how=20
+power_supply is registered=20
+under /sys/devices/LNXSYSTM:00/device:00/PNP0C0A:0n
 
-That code is in need of cleansing. With bleach. Yes, it's on my list.
-I managed to get my virtual disk back, found how I messed up on v9,
-and now have a (long) list of improvements and fixes.
-
-No rest for the wicked.
+Alexey, does it make sense (or doable)?
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+--nextPart3230126.ZlRjpxZkLj
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHJDFGR6LMutpd94wRAqqkAJ9nX27iHO3qWc1pC5L21TJjAm2nWwCfemi3
+f2od9RViOmueN4E3Sl+67KI=
+=UncZ
+-----END PGP SIGNATURE-----
+
+--nextPart3230126.ZlRjpxZkLj--
