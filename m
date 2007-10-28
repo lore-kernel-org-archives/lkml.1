@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXJ1Vsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbXJ1WIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbXJ1Vsv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 17:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXJ1Vsl
+	id S1752852AbXJ1WIi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 18:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXJ1WI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 17:48:41 -0400
-Received: from pat.uio.no ([129.240.10.15]:58934 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbXJ1Vsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 17:48:40 -0400
-Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
+	Sun, 28 Oct 2007 18:08:29 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:40055 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750949AbXJ1WI2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 18:08:28 -0400
+Message-ID: <47250878.6040506@crispincowan.com>
+Date: Sun, 28 Oct 2007 15:08:56 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ray Lee <ray-lk@madrabbit.org>, Chris Wright <chrisw@sous-sol.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20071028201101.GA32359@parisc-linux.org>
-References: <20071017185157.GC3785@mvista.com>
-	 <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org>
-	 <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org>
-	 <20071028174321.GB16905@fieldses.org>
-	 <20071028182732.GK27248@parisc-linux.org>
-	 <20071028184052.49abd092@the-village.bc.nu>
-	 <20071028201101.GA32359@parisc-linux.org>
-Content-Type: text/plain
-Date: Sun, 28 Oct 2007 17:50:30 -0400
-Message-Id: <1193608230.7561.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Giacomo Catenazzi <cate@debian.org>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+References: <20071024223124.GI30533@stusta.de>	<446110.89443.qm@web36608.mail.mud.yahoo.com>	<20071025002356.GB3660@sequoia.sous-sol.org>	<2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com> <20071025024131.6082e4a8@the-village.bc.nu>
+In-Reply-To: <20071025024131.6082e4a8@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.141)
-X-UiO-Scanned: 7E39F2701A1130ABA457AC77BE1A1347AA43F2F1
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 542 total 4766266 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+>> The idea that poor security is worse than no security is fallacious,
+>> and not backed up by common experience.
+>>     
+> There is a ton of evidence both in computing and outside of it which
+> shows that poor security can be very much worse than no security at all.
+> In particular stuff which makes users think they are secure but is
+> worthless is very dangerous indeed.
+>
+> When you know that security is limited you act appropriately, when you
+> believe security is good but it is not you take inappropriate risks and
+> get badly burned.
+>   
+The "bad security is worse than no security" idea comes exactly from
+what Alan says above: it happens when the security is not as good as you
+think it is, and so you don't take adequate precautions.
 
-On Sun, 2007-10-28 at 14:11 -0600, Matthew Wilcox wrote:
-> On Sun, Oct 28, 2007 at 06:40:52PM +0000, Alan Cox wrote:
-> > so we need to fix the bugs - the lock usage and the looping. At that
-> > point it merely becomes a performance concern to those who use it, which
-> > is the proper behaviour. If you want a faster non-checking one use
-> > flock(), or add another flag that is a Linux "don't check for deadlock"
-> 
-> You can't fix the false EDEADLK detection without solving the halting
-> problem.  Best of luck with that.
+Using the ongoing bicycle lock example, the discovery a few years ago
+that a certain model of Kryptonite bike lock could be picked with a
+simple pen made the security on this otherwise very sturdy lock become
+abruptly very weak http://www.wired.com/culture/lifestyle/news/2004/09/64987
 
-I can see that it would be difficult to do efficiently, but basically,
-this boils down to finding a circular path in a graph. That is hardly an
-unsolvable issue...
+Conversely, the case can also be made that "weak security is better than
+no security". It is better to secure your bike with a $10 lock than no
+lock. If someone insists on only "high" security bike locks that cost
+$1000 and weigh 30 lbs, then most people will choose to not lock their
+bikes, or skip biking all together.
 
-Trond
+IMHO, much of the criticism leveled at proposed LSMs has been of the
+latter kind, or worse. That the security of the proposed LSM does not
+meet some particular use case does not make it "bad", it makes it not
+for that use case.
+
+To reject an LSM for providing "bad" security, IMHO you should have to
+show how it is possible to subvert the self-stated goals of that LSM.
+Complaints that the LSM fails to meet some goal outside of its stated
+purpose is irrelevant. Conjecture that it probably can be violated
+because of $contrivance is just so much FUD.
+
+Exception: it is valid to say that the self-stated goal is too narrow to
+be useful. But IMHO that bar of "too narrow" should be very, very low.
+Defenses against specific modes of attack would be a fine thing to build
+up in the library of LSMs, especially if we got a decent stacking module
+so that they could be composed.
+
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
 
