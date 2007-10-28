@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbXJ1VjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbXJ1Vp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbXJ1VjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 17:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbXJ1VjJ
+	id S1753505AbXJ1Vp6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 17:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbXJ1Vps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 17:39:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45358 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbXJ1VjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 17:39:08 -0400
-Date: Sun, 28 Oct 2007 14:34:45 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "lists@antonello.org" <lists@antonello.org>
-Cc: Samuel Tardieu <sam@rfc1149.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight dimmer
-Message-ID: <20071028143445.4617efd8@laptopd505.fenrus.org>
-In-Reply-To: <4724FF8F.30306@antonello.org>
-References: <4724B48D.6090405@antonello.org>
-	<87y7dndxm3.fsf@willow.rfc1149.net>
-	<4724FF8F.30306@antonello.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 28 Oct 2007 17:45:48 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:38397 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbXJ1Vpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 17:45:47 -0400
+Date: Sun, 28 Oct 2007 22:45:17 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+In-Reply-To: <20071028213855.769741b6@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0710282238580.18815@twin.jikos.cz>
+References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com>
+ <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org>
+ <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org>
+ <20071028182732.GK27248@parisc-linux.org> <20071028184052.49abd092@the-village.bc.nu>
+ <20071028201101.GA32359@parisc-linux.org> <20071028213855.769741b6@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 22:30:55 +0100
-"lists@antonello.org" <lists@antonello.org> wrote:
+On Sun, 28 Oct 2007, Matthew Wilcox wrote:
 
-> Ok,
->   now checkpatch.pl only complains about a missing signed-off-by.
-> Is this ok for review?
+> You can't fix the false EDEADLK detection without solving the halting
+> problem.  Best of luck with that.
 
+Could you please elaborate a little bit more on this? I don't see how 
+detecting loops in graph relates to solving halting problem.
 
-hi,
-
-when going over your patch.. is there a reason you introduce yet
-another timeout infrastructure? Is there something wrong with the
-existing ones that maybe should be fixed instead?
-Either way.. please put justification for such new mechanism in the
-patch changelog....
-
-Greetings,
-   Arjan van de Ven
+Of course the halting problem can be transformed to deadlock-detection 
+problem, but this relates to static code analysis, right? Not anything we 
+are interested in, i.e. tracking things in runtime and detecting loops in 
+simple dependency graphs.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jiri Kosina
