@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXJ1RsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbXJ1Rsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbXJ1RsV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 13:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXJ1RsH
+	id S1756876AbXJ1Rsy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 13:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXJ1Rsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 13:48:07 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:62061 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXJ1RsF (ORCPT
+	Sun, 28 Oct 2007 13:48:45 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:12434 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbXJ1Rso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 13:48:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K2RISwaHCZOK/D/9ULFgdn3kul3ipicOUqJ9xVKu52jJg3kyrZ5UJKn5lEz1cuViS0AWsd9/2urKI/lWLcxwolaYtTLEiuccI2Ftko+Hd3OVodH9IBa9ur0kabQ49cwvT0PxHOrFTm1glx4eSyR0b1kpurwp9wFzP/DaEHcFPyg=
-Message-ID: <64bb37e0710281048x589ab063o8a32294e30488979@mail.gmail.com>
-Date: Sun, 28 Oct 2007 19:48:03 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [RFC: 2.6 patch] remove the USB_STORAGE_ONETOUCH driver
-Cc: "Nick Sillik" <n.sillik@temple.edu>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20071028155212.GC7227@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Oct 2007 13:48:44 -0400
+Date: Sun, 28 Oct 2007 13:48:20 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH] i5k_amb: Convert macros to C functions
+Message-ID: <20071028174820.GO30546@jupiter.solarsys.private>
+References: <20070730033840.GG31314@jupiter.solarsys.private> <20070730192606.GD2795@tree.beaverton.ibm.com> <200707302141.l6ULfAnT021069@e1.ny.us.ibm.com> <20070731183706.GG2795@tree.beaverton.ibm.com> <20071016125429.GG3731@jupiter.solarsys.private> <20071016230657.GA6408@tree.beaverton.ibm.com> <20071018131550.GA3526@jupiter.solarsys.private> <20071018202243.GF31309@tree.beaverton.ibm.com> <20071025161912.9e4ef550.akpm@linux-foundation.org> <20071026185511.GB7333@tree.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071028155212.GC7227@stusta.de>
+In-Reply-To: <20071026185511.GB7333@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/28/07, Adrian Bunk <bunk@kernel.org> wrote:
-> Nearly two years ago, USB_STORAGE_ONETOUCH got a dependency on !PM.
-> Considering that this also implies that the driver is not available
-> e.g. when ACPI is enabled in the kernel that's not far from a dependency
-> on BROKEN.
->
-> This patch therefore removes this driver.
+Hi:
 
-Hmm...
+* Darrick J. Wong <djwong@us.ibm.com> [2007-10-26 11:55:11 -0700]:
+> akpm objected to some of the macros, so convert them into functions.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/i5k_amb.c |   65 +++++++++++++++++++++++++++++++----------------
+>  1 files changed, 43 insertions(+), 22 deletions(-)
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=c9d00fc148b210aa8cf388d6e1eac187a0e855a6
--> Adds !PM because suspend was broken (17.11.2005)
+Applied to hwmon-2.6.git/testing, thanks.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7931e1c6f8007d5fef8a0bb2dc71bd97315eeae9
--> Adds suspend support, but fails to remove the !PM (5.12.2005)
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
 
-So it looks like that !PM is false.
-
-I have the following device:
-Bus 001 Device 005: ID 1058:0400 Western Digital Technologies, Inc.
-Bus 001 Device 004: ID 1058:0600 Western Digital Technologies, Inc.
-Bus 001 Device 003: ID 1058:0500 Western Digital Technologies, Inc.
-aka Western Digital Media Center
-This firewire+usb hdd enclosure also has three buttons.
-But it looks like that uses another driver:
-hiddev0hidraw1: USB HID v1.10 Device [Western Digital External HDD] on
-usb-0000:00:02.1-5.2
-
-Otherwise I would be willing to try to test this, if someone would
-tell me how to check that the second commit did fix the suspend
-problem.
-
-Torsten
