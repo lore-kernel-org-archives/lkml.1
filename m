@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXJ1VWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbXJ1VWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXJ1VWD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 17:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXJ1VVy
+	id S1754453AbXJ1VWb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 17:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbXJ1VWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 17:21:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35257 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbXJ1VVy (ORCPT
+	Sun, 28 Oct 2007 17:22:21 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:46301 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750895AbXJ1VWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 17:21:54 -0400
-Date: Sun, 28 Oct 2007 22:21:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix x86_64 TIF_SYSCALL_TRACE race in entry.S
-Message-ID: <20071028212150.GA20321@one.firstfloor.org>
-References: <20071026193738.GA1591@Krystal> <20071027180837.GA18134@Krystal> <p73sl3wnzty.fsf@bingen.suse.de> <20071028211527.GA9129@Krystal>
-Mime-Version: 1.0
+	Sun, 28 Oct 2007 17:22:20 -0400
+Date: Sun, 28 Oct 2007 22:16:00 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: "Sergey S. Kostyliov" <rathamahata@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Alexander Y. Fomichev" <gluk@php4.ru>
+Subject: Re: 2.6.24-rc1 kills onboard r8169 (rtl8111b) NIC
+Message-ID: <20071028211600.GA28735@electric-eye.fr.zoreil.com>
+References: <d6a046090710281254k149e300alc66266f241ccdf03@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071028211527.GA9129@Krystal>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <d6a046090710281254k149e300alc66266f241ccdf03@mail.gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Setting the thread flag being an atomic operation, I would expect
-> setting/clearing it asynchronously from another thread to be a valid
+Sergey S. Kostyliov <rathamahata@gmail.com> :
+[...]
+> After booting 2.6.24-rc1 on my home machine I lost onboard rtl8111b
+> network card. It is neither functional nor even visible by lspci
+> anymore.
+> 
+> Moreover rebooting to previous 2.6.23-rc9 didn't fix it - card was
+> still not available.
 
-It could be a very short stop. Also do you start kernel tracing that often?
+It should reappear after some time at rest. Until I come with
+something better, you should use 2.6.24-rc with the r8169 driver from
+2.6.23.
 
-> Here is a modified version where I add my test only in the path where we
-> know that we have work to do, therefore removing the supplementary test
-> from the performance critical path. Would it be more acceptable ?
-
-It's better, but stopping would be even better. I wouldn't
-be surprised if there are other problems with async thread flags changing.
- 
-Also I object to you calling this a bug. It's a new feature.
-
--Andi
+-- 
+Ueimor
