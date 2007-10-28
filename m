@@ -1,145 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbXJ1RmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXJ1Rmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbXJ1RmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 13:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXJ1RmE
+	id S1756531AbXJ1Rmb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 13:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbXJ1RmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 13:42:04 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37986 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbXJ1RmC (ORCPT
+	Sun, 28 Oct 2007 13:42:15 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:57785 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754683AbXJ1RmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 13:42:02 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4724C9DA.7030900@s5r6.in-berlin.de>
-Date: Sun, 28 Oct 2007 18:41:46 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sun, 28 Oct 2007 13:42:14 -0400
+Message-ID: <4724C9E8.3070404@cateee.net>
+Date: Sun, 28 Oct 2007 18:42:00 +0100
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: linux1394-user@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: VIA VT6307 OHCI version?
-References: <m3sl4ciz1h.fsf@maximus.localdomain>	<4714EF01.2060609@s5r6.in-berlin.de>	<m3d4vebylw.fsf@maximus.localdomain>	<471527E5.1050407@s5r6.in-berlin.de>	<m34pgpmszu.fsf@maximus.localdomain>	<47166C83.2050207@s5r6.in-berlin.de>	<m3fy09ffp9.fsf@maximus.localdomain>	<4719A0C4.3050301@s5r6.in-berlin.de>	<m3bqausztv.fsf@maximus.localdomain>	<4719FF0F.3080504@s5r6.in-berlin.de> <m3ejfp4bg9.fsf@maximus.localdomain>
-In-Reply-To: <m3ejfp4bg9.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kbuild devel list <linux-kbuild@vger.kernel.org>
+Subject: kernel drivers database (hardware, config, file) and "autoconfiguration"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Ok. I just put a program on something like
-> http://www.kernel.org/~chris/vt6307ohciver.c
-> 
-> Anybody with OHCI-1.0 VT6307* Firewire chip may want to try. Obviously
-> it's based on undocumented features, it may blow your machine etc.
-> 
-> Please remove your ohci1394 or firewire-ohci driver before using this
-> program.
-> 
-> Compile with the usual spell: gcc -Wall -O2 vt6307ohciver.c -o vt6307ohciver
+Hello,
 
-I also had to specify "-lpci" on Mandrake 10.1, "-lpci -lz" on Gentoo.
+I've build a python script (consisting on short 4 modules) to
+build a hardware database fomr kernel sources, with includes:
+type of hardware, hardware information, kernel CONFIG and
+the kernel file where such hardware was described.
 
-...
-> If you have a VT6306-based card and you run this program, I'd
-> appreciate it if you let me know the EEPROM contents (make sure
-> you mention chip type)
+Actually I can detect nearly 6000 probes (and easily expandable).
 
-	# lspci|grep 1394
-	00:0a.3 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394
-	Host Controller (rev 46)
-	00:0c.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394
-	Host Controller (rev 46)
+The script is writen in pyhon:
+$ wc -l *.py
+  148 build-drivers-db.py
+  819 devicetables.py
+  134 kbuildparser.py
+  281 srcparser.py
+ 1382 total
 
-These are both VT6306, one on the motherboard and one on a PCI card.
-
-	# ./a.out 00:0a.3
-	I/O region #1 is at C800
-	It seems your VT6307 chip is connected to 93c46 EEPROM
-	Page size is 4096 (0x1000) bytes
-	GUID PROM register address is 0xec101004
-	Mapping 8 (0x8) bytes of memory at 0xec101000
-	Mapped mem region #0 at virtual address 0xb7f3a000
-	GUID PROM register is at virtual address 0xb7f3a004
-
-	EEPROM dump:
-	00: 00 11 06 00 00 00 E3 32 00 88 00 08 44 00 00 00
-	10: A1 E4 2F 00 06 11 44 30 03 DF 40 00 00 20 00 73
-	20: 3C 10 00 00 00 00 FF FF FF FF FF FF D7 57 55 75
-
-	Your VT6307 chip is in OHCI 1.0 mode
-
-	# ./a.out 00:0c.0
-	I/O region #1 is at D000
-	It seems your VT6307 chip is connected to 93c46 EEPROM
-	Page size is 4096 (0x1000) bytes
-	GUID PROM register address is 0xec103004
-	Mapping 8 (0x8) bytes of memory at 0xec103000
-	Mapped mem region #0 at virtual address 0xb7f1a000
-	GUID PROM register is at virtual address 0xb7f1a004
-
-	EEPROM dump:
-	00: 00 30 1B AC 00 00 2B A4 04 04 32 55 F8 00 A2 02
-	10: A1 00 40 63 06 11 44 30 03 DF 40 00 00 20 00 73
-	20: 3C 10 00 00 00 00 FF FF FF FF FF FF FF FF FF FF
-
-	Your VT6307 chip is in OHCI 1.0 mode
+build-drivers-db.py : the main procedures
+devicetables.py : the information of structures and fields of probes
+kbuildparser.py : a simpler scanner of Makefile for the configuration infos
+srcparser.py : a not so simple source parser, macro expander, quite fast
 
 
-On another PC:
+In addition, I've done a short and incomplete shell scripts which detect and
+write own hardware information, and a shell script which tell you what
+CONFIG_ you should check.
 
-	# lspci | grep 1394
-	02:02.0 FireWire (IEEE 1394): Texas Instruments TSB82AA2
-	IEEE-1394b Link Layer Controller (rev 01)
-	05:04.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394
-	Host Controller (rev 80)
-	06:00.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394
-	Host Controller (rev 46)
 
-The "rev 80" chip is a VT6307 on the motherboard.
+The build-drivers-db part use a lot of euristic to have a sensible
+hardware list, but some drivers are "strange", some use non-standard
+methods and other have also an hardware blacklist (which the program
+take it as a whitelist).
 
-	# ./a.out 05:04.0
-	I/O region #1 is at ED00
-	It seems your VT6307 chip is connected to I^2C (24c01 or
-	similar) EEPROM
-	Page size is 4096 (0x1000) bytes
-	GUID PROM register address is 0xfbffd004
-	Mapping 8 (0x8) bytes of memory at 0xfbffd000
-	Mapped mem region #0 at virtual address 0xb7f76000
-	GUID PROM register is at virtual address 0xb7f76004
+But the script is still usefull, clean, easily expandable and
+very fast (near 2 minutes with an hot cache and intermediate
+machine for entiere kernel sources)
+I expect to correct some deficiencies of the script and to write
+clean-up patches where the drivers code is very ugly.
 
-	EEPROM dump:
-	00: 00 10 DC 56 00 FE D2 D4 04 04 32 55 F8 00 A2 02
-	10: A1 00 40 63 20 63 62 14 03 DF 40 80 00 20 00 73
-	20: 3C 10 08 00 00 00 FF FF FF FF FF FF FF FF FF FF
 
-	Your VT6307 chip is in OHCI 1.1 mode
+The other two shell scripts are almost incomplete, they need more
+care, but now I've done as proof of concept.
 
-The "rev 46" chip is on a CardBus card.  So far I believed it to be a
-VT6306 but I can't easily open the card's casing...
 
-	# ./a.out 06:00.0
-	I/O region #1 is at E000
-	It seems your VT6307 chip is connected to I^2C (24c01 or
-	similar) EEPROM
-	Page size is 4096 (0x1000) bytes
-	GUID PROM register address is 0x80000004
-	Mapping 8 (0x8) bytes of memory at 0x80000000
-	Mapped mem region #0 at virtual address 0xb7f2f000
-	GUID PROM register is at virtual address 0xb7f2f004
+I like to receive comments, corrections or simple bug reports.
 
-	EEPROM dump:
-	00: 00 11 06 00 00 00 41 CC 04 04 32 55 F8 00 92 02
-	10: A1 00 40 63 06 11 44 30 03 DF 40 80 00 20 00 73
-	20: 3C 10 00 00 00 00 A0 00 FF FF FF FF FF FF FF FF
+The scripts are in:
+http://www.cateee.net/kernel/kernautoconf/kernautoconf-3.0/
+and the driver database is (updated to last git)
+http://www.cateee.net/kernel/kernautoconf/kernautoconf-3.0/drivers-db
 
-	Your VT6307 chip is in OHCI 1.0 mode
+ciao
+	cate
 
-> and, if you tried "upgrading" or "downgrading", if it worked.
 
-I haven't tried it yet.
--- 
-Stefan Richter
--=====-=-=== =-=- ===--
-http://arcgraph.de/sr/
+PS: The project was born (IIRC) in 2001, as part of 2.5.x kbuild rewrite.
+After rejection of the two other main projects (kbuild and CML2), I
+stopped the project, because of lack of an interface.
+Latelly I read again the code, and I started to rewrite it, mainly
+on the database building problem.
+
+When I'll find the latest old version, I'll put online. On some
+part it was more powerfull, but without an automatic creation of driver
+database.  The old autoconfiguration had more detection of basic system
+configuration (non database based, such CPU, CPU extentions, system drivers,...).
+I'll try to import also such parts, but now I'm more interested on building
+a nearly complete driver database.
+
