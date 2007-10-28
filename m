@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXJ1QCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbXJ1QHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbXJ1QCS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 12:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXJ1QCE
+	id S1754621AbXJ1QHk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 12:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbXJ1QHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 12:02:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54996 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbXJ1QCB (ORCPT
+	Sun, 28 Oct 2007 12:07:33 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:44329 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbXJ1QHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 12:02:01 -0400
-Date: Sun, 28 Oct 2007 17:02:00 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Markus Elfring <Markus.Elfring@web.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Check dependencies for modules "dm-snapshot" and "sd_mod" in
- kernel 2.6.23.1
-In-Reply-To: <fg2b7g$1hj$1@ger.gmane.org>
-Message-ID: <Pine.LNX.4.64.0710281700360.30465@fbirervta.pbzchgretzou.qr>
-References: <fg2b7g$1hj$1@ger.gmane.org>
+	Sun, 28 Oct 2007 12:07:33 -0400
+Message-ID: <4724B3BD.1010509@tiscali.nl>
+Date: Sun, 28 Oct 2007 17:07:25 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Debugging activated during runtime
+References: <4724A783.9050400@tiscali.nl> <Pine.LNX.4.64.0710281618520.30465@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0710281618520.30465@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> On Oct 28 2007 16:15, Roel Kluin wrote:
+>> Wouldn't it be nice to be able to specify upon loading, or during runtime
+>> to modules whether debug messages should be printed?
+> 
+> modprobe ark3116 debug=1
+> 
+> Nothing new.
 
-On Oct 28 2007 16:52, Markus Elfring wrote:
->Hello,
->
->I get the following output from the command "make install" after the source
->files were successfully compiled for my personal configuration.
->
->if [ -r System.map -a -x /sbin/depmod ]; then /sbin/depmod -ae -F System.map
->2.6.23.1-default; fi
->sh /usr/src/linux-2.6.23.1/arch/i386/boot/install.sh 2.6.23.1-default
->arch/x86_64/boot/bzImage System.map "/boot"
->
->Kernel image:   /boot/vmlinuz-2.6.23.1-default
->Initrd image:   /boot/initrd-2.6.23.1-default
->Root device:    /dev/system/root (mounted on / as ext3)
->Resume device:  /dev/sdb5
->WARNING Cannot determine dependencies of kernel module 'dm-snapshot'.
->        Does it exist? If it does, try depmod -a. Continuing without dm-snapshot.
->WARNING Cannot determine dependencies of kernel module 'sd_mod'.
->        Does it exist? If it does, try depmod -a. Continuing without sd_mod.
->Kernel Modules: processor thermal libata pata_amd sata_nv sata_sil24 fan jbd mbcache ext3
->dm-mod edd usbcore ohci-hcd uhci-hcd ehci-hcd hid usbhid linear
->Features:       keyboard-blink dm block usb lvm2 resume.userspace resume.kernel
->Bootsplash:     SuSE (1024x768)
->20893 blocks
->
->Is anything wrong here with the executable generation for these modules?
->Are there any open issues with dependency management for (LVM) snapshots and SCSI devices?
+Ok, thanks and sorry, I didn't know that.
 
+>> - A module could be loaded after an unexpected conditions (e.g. after a BUG_ON).
+> 
+> After a BUG_ON, you are probably next to a panic.
 
-Perhaps your personal configuration is missing the
-modules SUSE 10.3 requires. I'd use one of their rpms anyway.
+Not always, it appears.
