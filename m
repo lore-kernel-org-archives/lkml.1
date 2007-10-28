@@ -1,62 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXJ1SwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXJ1THV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbXJ1SwR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 14:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXJ1SwG
+	id S1753589AbXJ1THV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 15:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJ1THH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 14:52:06 -0400
-Received: from main.gmane.org ([80.91.229.2]:39441 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbXJ1SwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 14:52:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: Re: Check dependencies for modules "dm-snapshot" and "sd_mod" in
- kernel 2.6.23.1
-Date: Sun, 28 Oct 2007 19:51:37 +0100
-Message-ID: <4724DA39.4020601@web.de>
-References: <fg2b7g$1hj$1@ger.gmane.org> <Pine.LNX.4.64.0710281700360.30465@fbirervta.pbzchgretzou.qr> <fg2fhb$tev$1@ger.gmane.org> <Pine.LNX.4.64.0710281815020.30465@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 28 Oct 2007 15:07:07 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:37490 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbXJ1THE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 15:07:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=e2QdBZ/Aq56I0jiO5JBem6Z1nAifE5KO32TwkDyJvtiJ23RUXt3QkSnaFrrBpAtFdMFAKv41QKpN8plHW3gmC1zEa+Jbac+c4hs9id/1XtXNvlRbzA/zHtGzqNUyMh7iNdwi21uNPVDhpjFoWcqhK6AWBm718Am7pjYyeoKsx/A=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Pavel Machek'" <pavel@ucw.cz>, "'Ray Lee'" <ray-lk@madrabbit.org>
+Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
+       "'Chris Wright'" <chrisw@sous-sol.org>,
+       "'Casey Schaufler'" <casey@schaufler-ca.com>,
+       "'Adrian Bunk'" <bunk@kernel.org>, "'Simon Arlott'" <simon@fire.lp0.eu>,
+       <linux-kernel@vger.kernel.org>, <linux-security-module@vger.kernel.org>,
+       "'Jan Engelhardt'" <jengelh@computergmbh.de>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Andreas Gruenbacher'" <agruen@suse.de>,
+       "'Thomas Fricaccia'" <thomas_fricacci@yahoo.com>,
+       "'Jeremy Fitzhardinge'" <jeremy@goop.org>,
+       "'James Morris'" <jmorris@namei.org>,
+       "'Crispin Cowan'" <crispin@crispincowan.com>,
+       "'Giacomo Catenazzi'" <cate@debian.org>
+References: <20071024223124.GI30533@stusta.de> <446110.89443.qm@web36608.mail.mud.yahoo.com> <20071025002356.GB3660@sequoia.sous-sol.org> <2c0942db0710241735j78cfbec9rd8b5128d5da1fb96@mail.gmail.com> <20071025024131.6082e4a8@the-village.bc.nu> <2c0942db0710251117k37c30b2ex5cc6d8cd8c9ea029@mail.gmail.com> <20071027182911.GD4159@ucw.cz>
+In-Reply-To: <20071027182911.GD4159@ucw.cz>
+Subject: RE: Linux Security *Module* Framework (Was: LSM conversion to static interface)
+Date: Sun, 28 Oct 2007 12:05:46 -0700
+Message-ID: <008601c81995$90670030$b1350090$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p508c416a.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-In-Reply-To: <Pine.LNX.4.64.0710281815020.30465@fbirervta.pbzchgretzou.qr>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcgZjlwFpFPt2li5SpKpcqUD1itVswABNHPw
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you really have to roll your own kernel (often this is not the case-YMMV),
-> I suggest you enable dm-snapshot and sd_mod.
+I think you may be misinterpreting the word "poor" here.
 
-I intentionally omitted the configuration option "DM_SNAPSHOT" because it is marked as
-"EXPERIMENTAL".
-Snapshot target:
-"Allow volume managers to take writable snapshots of a device."
+Many people in this thread consider a security solution "poor" because it's
+not "complete" or "perfect": it may work against attack ABC but not attack
+XYZ. The defendants say that XYZ isn't possible in the environment that it's
+supposed to be used, or XYZ may be too expensive to be worth implementing,
+or they just are rare enough to be ignored. Heck, all security solutions
+could be broke given physical access.
 
-I intentionally checked the option "BLK_DEV_SD". I do not want to build it as a module.
-SCSI disk support:
-"If you want to use SCSI hard disks, Fibre Channel disks,
-Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
-USB storage or the SCSI or parallel port version of
-the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
-the Disk-HOWTO and the Multi-Disk-HOWTO, available from
-<http://www.tldp.org/docs.html#howto>. This is NOT for SCSI
-CD-ROMs.
+Implementing a security solution has a cost. Bypassing it also has a cost.
+Sometimes it's economy, not technique, decides whether a particular security
+solution is a good one.
 
-To compile this driver as a module, choose M here and read
-<file:Documentation/scsi/scsi.txt>.
-The module will be called sd_mod.
+Locks are a good example for this. It has a low cost/effect ratio, and very
+easy to use. Is it 100% safe? Definitely not. People lock their bikes to a
+tree when they enter a supermarket because it's reasonably safe. But leaving
+their bikes like that over a few nights on a downtown street? Probably not a
+good idea. Don't assume all people are idiots who do not know that (ok, some
+people are, so the lock's manual states "it can be bypassed by a skilled
+thief").
 
-Do not compile this driver as a module if your root file system
-(the one containing the directory /) is located on a SCSI disk.
-In this case, do not compile the driver for your SCSI host adapter
-(below) as a module either."
+But what tapes are good for? I don't know what kind of value it adds to the
+discussion.
 
-
-Do I expect more from the dependency management than it is provided at the moment?
-
-Regards,
-Markus
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> owner@vger.kernel.org] On Behalf Of Pavel Machek
+> Sent: Saturday, October 27, 2007 11:29 AM
+> To: Ray Lee
+> Cc: Alan Cox; Chris Wright; Casey Schaufler; Adrian Bunk; Simon Arlott;
+> linux-kernel@vger.kernel.org; linux-security-module@vger.kernel.org;
+> Jan Engelhardt; Linus Torvalds; Andreas Gruenbacher; Thomas Fricaccia;
+> Jeremy Fitzhardinge; James Morris; Crispin Cowan; Giacomo Catenazzi
+> Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to
+> static interface)
+> 
+> Hi!
+> 
+> > > > The idea that poor security is worse than no security is
+> fallacious,
+> > > > and not backed up by common experience.
+> > >
+> > > There is a ton of evidence both in computing and outside of it
+> which
+> > > shows that poor security can be very much worse than no security at
+> all.
+> >
+> > (So, I take it that you *don't* lock your bike up, as poor security
+> is
+> > worse than none?)
+> 
+> I do lock my bike with combination lock I found somewhere and cracked
+> in five minutes... sometimes.
+> 
+> But do you suggest that I use paper tape to 'lock' my bike to
+> streetlight? You just said that poor security is better than none,
+> right?
+> 
+> 							Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures)
+> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
