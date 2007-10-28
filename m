@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbXJ1W4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbXJ1XDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbXJ1W4s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 18:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXJ1W4j
+	id S1755185AbXJ1XDf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 19:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXJ1XD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 18:56:39 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:42905 "EHLO twin.jikos.cz"
+	Sun, 28 Oct 2007 19:03:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60769 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637AbXJ1W4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 18:56:38 -0400
-Date: Sun, 28 Oct 2007 23:55:52 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
-In-Reply-To: <20071028224157.GC32359@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0710282349470.18815@twin.jikos.cz>
-References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com>
- <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org>
- <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org>
- <20071028182732.GK27248@parisc-linux.org> <20071028184052.49abd092@the-village.bc.nu>
- <20071028201101.GA32359@parisc-linux.org> <1193608230.7561.11.camel@heimdal.trondhjem.org>
- <20071028224157.GC32359@parisc-linux.org>
+	id S1751291AbXJ1XD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 19:03:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: 2.6.24-rc1-git4: Reported regressions from 2.6.23
+Date: Mon, 29 Oct 2007 00:19:56 +0100
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+References: <200710282351.56284.rjw@sisk.pl> <E1ImGvo-0006bE-Tr@faramir.fjphome.nl>
+In-Reply-To: <E1ImGvo-0006bE-Tr@faramir.fjphome.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710290019.56862.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007, Matthew Wilcox wrote:
+On Sunday, 28 October 2007 23:48, Frans Pop wrote:
+> The regression in process CPU usage display in top is still there:
+> http://bugzilla.kernel.org/show_bug.cgi?id=9135
+> 
+> It's a regression from .22, not from .23, but I guess it should still be
+> listed.
 
-> Bzzt.  You get a false deadlock with multiple threads like so:
-> Thread A of task B takes lock 1
-> Thread C of task D takes lock 2
-> Thread C of task D blocks on lock 1
-> Thread E of task B blocks on lock 2
+Well, my intention is to list the most recent regressions in these messages.
 
-	A potential for deadlock occurs if a process controlling a locked 
-	region is put to sleep by attempting to lock another process' 
-	locked region. If the system detects that sleeping until a locked 
-	region is unlocked would cause a deadlock, fcntl() shall fail with 
-	an [EDEADLK] error.
+Your regression is in the bugzilla, is marked as a regression and linked
+to the appropriate meta bug entry ...
 
-This is what POSIX says [1], even after being modified with respect to 
-POSIX Threads Extension, right?
+Well, perhaps I'll be able to send a "post 2.6.22 regressions" message with a
+longer list from time to time, but I can't promise that.
 
-So it doesn't deal with threads at all, just processess are taken into 
-account. Probably for a reason :)
-
-[1] http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html
-
--- 
-Jiri Kosina
+Greetings,
+Rafael
