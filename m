@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbXJ1O1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXJ1Oj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbXJ1O1R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 10:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXJ1O1G
+	id S1752623AbXJ1Oj6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 10:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXJ1Ojs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 10:27:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:43409 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbXJ1O1F (ORCPT
+	Sun, 28 Oct 2007 10:39:48 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60727 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbXJ1Ojr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 10:27:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Qq0fmhoZ6xbty4Z8e3cMCXQwGuHvtvJkmBU90zNJSVxExM33dOtAedp0deztbd2mu9I6H0MZKdDFSmH5XuOO6Rac53pysb2oy2CCdta657v/8eqL8QvfiI2ey0gEln4scYo9xVr/t5S8PXOAMpVdMZ8kNLm8o8eIx7bZ5w1gMi8=
-Message-ID: <8b67d60710280727k651ddea7sebaf3f4b995241eb@mail.gmail.com>
-Date: Sun, 28 Oct 2007 14:27:04 +0000
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Dreamcast AICA sound - Get rid of annoying compiler warning
-Cc: linuxsh-dev@lists.sourceforge.net
+	Sun, 28 Oct 2007 10:39:47 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47249E8C.4070001@s5r6.in-berlin.de>
+Date: Sun, 28 Oct 2007 15:37:00 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Adrian Bunk <bunk@kernel.org>, Greg KH <greg@kroah.com>,
+       Simon Arlott <simon@fire.lp0.eu>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Crispin Cowan <crispin@crispincowan.com>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: eradicating out of tree modules
+References: <20071023220649.5a76af82@laptopd505.fenrus.org> <55615.simon.1193226629@5ec7c279.invalid> <20071024125533.GE30533@stusta.de> <471F8AC5.9080300@simon.arlott.org.uk> <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc> <20071026025647.GC21408@kroah.com> <4721B77F.8070102@imap.cc> <20071026232653.GF30533@stusta.de> <47234F73.3040809@imap.cc> <20071028005555.GC23339@stusta.de> <4724557C.6000408@s5r6.in-berlin.de> <47247A1C.8010406@imap.cc>
+In-Reply-To: <47247A1C.8010406@imap.cc>
+X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch supresses an annoying compiler warning that the variable
-err may be used uninitialised.
+Tilman Schmidt wrote:
+> Am 28.10.2007 10:25 schrieb Stefan Richter:
+>> You two are hypothesizing.
+> 
+> No, we're not. We're discussing the very real issue of whether
+> LSM should be amputated in such a way as to make life difficult
+> for out of tree security module developers.
 
-Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-
-
-diff --git a/sound/sh/aica.c b/sound/sh/aica.c
-index 88dc840..8861d2f 100644
---- a/sound/sh/aica.c
-+++ b/sound/sh/aica.c
-@@ -237,6 +237,7 @@ static int aica_dma_transfer(int channels, int buffer_size,
- 	struct snd_card_aica *dreamcastcard;
- 	struct snd_pcm_runtime *runtime;
- 	unsigned long flags;
-+	err = 0;
- 	dreamcastcard = substream->pcm->private_data;
- 	period_offset = dreamcastcard->clicks;
- 	period_offset %= (AICA_PERIOD_NUMBER / channels);
+I still believe you are.  From what I understood, the API change had
+technical reasons.  (What I have read is that using security modules in
+the form of loadable and unloadable kernel modules didn't make sense.)
+-- 
+Stefan Richter
+-=====-=-=== =-=- ===--
+http://arcgraph.de/sr/
