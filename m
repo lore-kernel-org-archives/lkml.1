@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXJ2U0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbXJ2U1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbXJ2U0h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXJ2U0a
+	id S1755932AbXJ2U1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbXJ2U1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:26:30 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:44028 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbXJ2U03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:26:29 -0400
-Date: Mon, 29 Oct 2007 13:26:17 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
-       dino@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com, antonb@us.ibm.com,
-       rostedt@goodmis.org, niv@us.ibm.com
-Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
-Message-ID: <20071029202617.GF8824@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071029185044.GA23413@linux.vnet.ibm.com> <1193688468.9928.30.camel@pasglop>
+	Mon, 29 Oct 2007 16:27:25 -0400
+Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:28174 "HELO
+	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753385AbXJ2U1Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:27:24 -0400
+X-YMail-OSG: IHgJIIQVM1nc0Hppx8Vc4u87dYT1tkho6Y0n4CHZj88f2zz3giq91kdFz3BIyOz5mgZxZ6qdNQ--
+X-RocketYMMF: rancidfat
+Date: Mon, 29 Oct 2007 13:27:23 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to           static interface)
+To: rmeijer@xs4all.nl, Crispin Cowan <crispin@crispincowan.com>
+Cc: rmeijer@xs4all.nl, casey@schaufler-ca.com,
+       Chris Wright <chrisw@sous-sol.org>, Adrian Bunk <bunk@kernel.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193688468.9928.30.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <949883.45076.qm@web36602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 07:07:48AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Mon, 2007-10-29 at 11:50 -0700, Paul E. McKenney wrote:
-> > Hello!
-> > 
-> > A few random patches that permit POWER to pass kernbench on -rt.
-> > Many of these have more focus on expediency than care for correctness,
-> > so might best be thought of as workarounds than as complete solutions.
-> > There are still issues not addressed by this patch, including:
-> > 
-> > o	kmem_cache_alloc() from non-preemptible context during
-> > 	bootup (xics_startup() building the irq_radix_revmap()).
-> > 
-> > o	unmap_vmas() freeing pages with preemption disabled.
-> > 	Might be able to address this by linking the pages together,
-> > 	then freeing them en masse after preemption has been re-enabled,
-> > 	but there is likely a better approach.
-> > 
-> > Thoughts?
-> 
-> I see a lot of case where you add preempt_disable/enable around areas
-> that have the PTE lock held...
-> 
-> So in -rt, spin_lock doesn't disable preempt ? I'm a bit worried...
-> there are some strong requirements that anything within that lock is not
-> preempted, so zap_pte_ranges() is the obvious ones but all of them would
-> need to be addressed.
 
-Right in one!  One of the big changes in -rt is that spinlock critical
-sections (and RCU read-side critical sections, for that matter) are
-preemptible under CONFIG_PREEMPT_RT.
+--- Rob Meijer <capibara@xs4all.nl> wrote:
 
-And I agree that this patchset will have missed quite a few places where
-additional changes are required.  Hence the word "including" above, rather
-than something like "specifically".  ;-)
 
-							Thanx, Paul
+> >     * The proposal only allows a single implementation of each formal
+> >       model. In theory, theory is just like practice, but in practice it
+> >       is not. SMACK and SELinux follow substantially similar formal
+> >       models (not exactly the same) so should we exclude one and keep
+> >       the other? No, of course not, because in practice they are very
+> >       different.
+> 
+> I would think the two may benefit from a role as described above.
+> But I was thinking more in the line of new modules that may again
+> implement this same model, and would thus benefit from interaction with
+> this 'model maintainer' role.
+
+The Smack development has benefited greatly from comments, suggestions,
+and bug reports from members of the SELinux community. Further, I have
+had no trouble whatever sharing the netlabel component with SELinux.
+Audit is another matter as it requires some work to get the SELinux
+dependencies out, but everyone's been receptive to proposals there.
+Why on earth would I want some 'model maintainer' passing judgements
+on my work in progress? The only thing I can imagine a 'model
+maintainer' doing is obstructing innovation. Unless it was me, of
+course. Linus is right, you know.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
