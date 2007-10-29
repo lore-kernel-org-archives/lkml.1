@@ -1,163 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbXJ2BEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbXJ2BFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756296AbXJ2BEj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 21:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbXJ2BE3
+	id S1755984AbXJ2BFj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 21:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXJ2BFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 21:04:29 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:37290 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755243AbXJ2BE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 21:04:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=xbyhcb/XDcWijmEyyE2r4YPlTXBMTOJGevGa8mGJ3wNOCDFg3FNT4w0xTQFyJb5mn
-	oeBjWJ0JerNiyzXWax/Ng==
-Date: Sun, 28 Oct 2007 18:04:14 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <20071028164637.8d1b45b0.pj@sgi.com>
-Message-ID: <alpine.DEB.0.9999.0710281742090.26837@chino.kir.corp.google.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <20071025185506.8c373aa8.pj@sgi.com> <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com> <1193412644.5032.13.camel@localhost> <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
- <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com> <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com> <1193434278.5032.106.camel@localhost>
- <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com> <20071026180713.aeedfac2.pj@sgi.com> <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com> <20071026194144.6042316a.pj@sgi.com> <alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
- <20071027161955.e9d4d2db.pj@sgi.com> <alpine.DEB.0.9999.0710272231170.23796@chino.kir.corp.google.com> <20071028164637.8d1b45b0.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 28 Oct 2007 21:05:30 -0400
+Received: from mga03.intel.com ([143.182.124.21]:7013 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752502AbXJ2BF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 21:05:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,339,1188802800"; 
+   d="scan'208";a="307365857"
+Subject: Re: [PATCH 1/3 -v4] x86_64 EFI runtime service support: EFI basic
+	runtime service support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20071026123128.4fbe9568@the-village.bc.nu>
+References: <1193295473.23935.202.camel@caritas-dev.intel.com>
+	 <alpine.LFD.0.9999.0710251800250.3186@localhost.localdomain>
+	 <1193360591.23935.212.camel@caritas-dev.intel.com>
+	 <20071026123128.4fbe9568@the-village.bc.nu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 29 Oct 2007 09:05:38 +0800
+Message-Id: <1193619938.23935.303.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 29 Oct 2007 01:02:42.0118 (UTC) FILETIME=[686C6660:01C819C7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007, Paul Jackson wrote:
-
-> The Linux documentation is not a legal contract.  Anytime we change the
-> actual behaviour of the code, we have to ask ourselves what will be the
-> impact of that change on existing users and usages.  The burden is on
-> us to minimize breaking things (by that I mean, what users would
-> consider breakage, even if we think it is all for the better and that
-> their code was the real problem.)  I didn't say no breakage, but
-> minimum breakage, doing our best to guide users through changes with
-> minimum disruption to their work.
+On Fri, 2007-10-26 at 12:31 +0100, Alan Cox wrote:
+> On Fri, 26 Oct 2007 09:03:11 +0800
+> "Huang, Ying" <ying.huang@intel.com> wrote:
 > 
-
-Nobody can show an example of an application that would be broken because 
-of this and, given the scenario and sequence of events that it requires to 
-be broken when implementing the default as Choice B, I don't think it's as 
-much of an issue as you believe.
-
-> >     However, in deference to the needs of libnuma, if the following
-> >     call was made, this would change the mode for that task to
-> >     Choice A:
+> > On Thu, 2007-10-25 at 18:09 +0200, Thomas Gleixner wrote:
+> > > > EFI runtime
+> > > > services initialization are implemented in efi.c. Some x86_64
+> > > > specifics are worth noting here. On x86_64, parameters passed to UEFI
+> > > > firmware services need to follow the UEFI calling convention. For this
+> > > > purpose, a set of functions named lin2win<x> (<x> is the number of
+> > > > parameters) are implemented. EFI function calls are wrapped before
+> > > > calling the firmware service.
+> > > 
+> > > Why needs this to be called lin2win? We do not call Windows, we call
+> > > EFI services, so please use a naming convention which is related to
+> > > the functionality of the code.
+> > > 
+> > > > + *
+> > > > + *  Function calling ABI conversion from SYSV to Windows for x86_64
+> > > 
+> > > Again, these are wrappers to access EFI and not Windows.
 > > 
-> > 	get_mempolicy(NULL, NULL, 0, 0, 0);
-> > 
-> >     This last detail above is an admitted hack.  *So far as I know*
-> >     it happens that all current infield versions of libnuma issue the
-> >     above call, as their first mempolicy query, to detemine whether
-> >     the active kernel supports mempolicy.
+> > EFI uses the Windows x86_64 calling convention. The lin2win may be a
+> > more general naming convention that can be used for some other code (the
+> > NDISwrapper?) in the future. Do you agree?
 > 
-> The above is the hack that allows us to support existing libnuma based
-> applications (the most significant users of memory policy historically)
-> with a default of Choice A, while other code and future code defaults
-> to Choice B.
-> 
+> The SYSV description is wrong as well. SYSV has no calling convention. I
+> think you mean iABI or iBCS2 ?
 
-So all applications that use the libnuma interface and numactl will have 
-different default behavior than those that simply issue 
-{get,set}_mempolicy() calls.  libnuma is a collection of higher level 
-functions that should be built upon {get,set}_mempolicy() like they 
-currently are and not introduce new subtleties like changing the semantics 
-of a preferred node argument.  This is going to quickly become a 
-documentation nightmare and, in my opinion, isn't worth the time or effort 
-to support because we haven't even idenitifed any real-world examples.
+The SYSV description comes from the following document:
+http://www.x86-64.org/documentation/abi-0.98.pdf
 
-Maybe Andi Kleen should weigh in on this topic because, if we go with what 
-you're suggesting, we'll never get rid of the two differing behaviors and 
-we'll be introducing different semantics to arguments of libnuma functions 
-than the kernel API they are built upon.
 
-> I'm trying to protect almost any application that uses both
-> set_mempolicy or mbind, while in a cpuset.
-> 
->     If a task is in a cpuset on say nodes 16-23, and it wants to issue
->     any mbind, or any MPOL_PREFERRED, MPOL_BIND, or MPOL_INTERLEAVE
->     mempolicy call, then under Choice A it must issue nodemasks offset
->     by 16, relative to what it would issue under Choice B.
-> 
+> Whats wrong with following the pattern of other calls like syscall(...)
+> and just having eficall() ?
 
-True, but the ordering of that scenario is troublesome.  The correct way 
-to implement it is to use set_mempolicy() or a higher level libnuma 
-function with the same semantics and _then_ attach the task to a cpuset.  
-Then the nodes_remap() takes care of the rest.
+Yes. This is better.
 
-The scenario you describe above has a problem because it requires the task 
-to have knowledge of the cpuset's mems in which it is attached when, for 
-portability, it should have been written so that it is robust to any range 
-of nodes you happen to assign it to.
-
-> Almost any task using memory policies on a system making active use of
-> cpusets will be affected, even well written ones doing simple things.
-> 
-
-No, because nodes_remap() takes care of the instances you describe above 
-when the task sets its memory policy (usually done when it is started) and 
-is then attached to a cpuset.
-
-> However, if anyone is deploying product or has important (to them) but
-> not easy to change software using both memory policies and cpusets that
-> are not doing so via libnuma or libcpuset, then any change that
-> changes the default for their memory policy calls from Choice A to
-> Choice B will probably break them.
-> 
-
-Supporting two different behaviors is going to be more problematic than 
-simply selecting one and going with it and its associated documentation in 
-future versions of the kernel.
-
-> I'm tempted to think I need to go a bit further:
->  1) Add a per-system or per-cpuset runtime mode, to enable a system
->     administrator to revert to the Choice A default.
-
-Paul, the changes required to an application that is currently using 
-{get,set}_mempolicy() calls to setup the memory policy or the higher level 
-functions through libnuma is so easy to use Choice B as a default instead 
-of Choice A that it would be ridiculous to support configuring it on a 
-per-system or per-cpuset basis.
-
->  2) Make sure that both the new libnuma and libcpuset versions dynamically
->     probe the state of this default, and dynamically adapt to running
->     on a kernel, or in a cpuset, of either default.  If this mode is
->     per-cpuset, then so long as there are not two applications that
->     must both run in the same cpuset, both using memory policies,
->     neither using libnuma or libcpuset, requiring conflicting defaults
->     (one Choice A, the other Choice B) then this would provide an
->     administrator sufficient flexibility to adapt.
-> 
-
-Choosing only one behavior for the kernel (Choice B) is by far the 
-superior selection because then any task can share a cpuset with any other 
-task and implement its memory policy preferences in terms of low level 
-system calls, numactl, or libnuma.  That's the power that we should be 
-giving users, not the addition of hacks or more configuration knobs that 
-is going to clutter and confuse anybody who wants to simply pick a 
-preferred node.
-
-> There would be one key advantage to a per-cpuset mode flag here.  It
-> exposes in a fairly visible way this change in the default numbering of
-> memory policy node masks, from cpuset relative to system relative (with
-> the system now automatically making them cpuset relative across any
-> changes in the number of nodes in the cpuset.)  This is a classic way
-> to guide users to understanding new alternatives and changes; expose it
-> as a 'button on the dashboard', a feature, not a hidden gotcha.
-> 
-
-Yet the 'mems' file would still be system-wide; otherwise it would be 
-impossible to expand the memory your cpuset has access to.  Everything 
-else would be relative to 'mems'.
-
-		David
+Best Regards,
+Huang Ying
