@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXJ2TpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbXJ2Tpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbXJ2TpE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbXJ2Tkf
+	id S1752965AbXJ2Tpj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXJ2TlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:40:35 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42204 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753862AbXJ2Tkc (ORCPT
+	Mon, 29 Oct 2007 15:41:15 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:42847 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753864AbXJ2TlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:40:32 -0400
-Date: Mon, 29 Oct 2007 12:40:29 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071029124029.2a86e536.pj@sgi.com>
-In-Reply-To: <1193676854.5035.121.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-	<20071026194144.6042316a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
-	<20071027161955.e9d4d2db.pj@sgi.com>
-	<1193676854.5035.121.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Oct 2007 15:41:13 -0400
+Message-ID: <4726377A.4080807@crispincowan.com>
+Date: Mon, 29 Oct 2007 12:41:46 -0700
+From: Crispin Cowan <crispin@crispincowan.com>
+Organization: Crispin's Labs
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: rmeijer@xs4all.nl
+CC: casey@schaufler-ca.com, Chris Wright <chrisw@sous-sol.org>,
+       Adrian Bunk <bunk@kernel.org>, Simon Arlott <simon@fire.lp0.eu>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Thomas Fricaccia <thomas_fricacci@yahoo.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Giacomo Catenazzi <cate@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to   
+        static interface)
+References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
+In-Reply-To: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> If most apps use libnuma APIs instead of directly calling the sys calls,
-> libnuma could query something as simple as an environment variable, or a
-> new flag to get_mempolicy(), or the value of a file in it's current
-> cpuset--but I'd like to avoid a dependency on libcpuset--to determine
-> whether to implement "new" semantics.
+Rob Meijer wrote:
+> On Mon, October 29, 2007 11:24, Crispin Cowan wrote:
+>   
+>>> Thus IMHO it may be a good idea to instead of a maintainer for LSM
+>>> modules as proposed, alternatively a maintainer for each formal model
+>>> may be more appropriate. This also would require module builders to
+>>> first
+>>> think about what formal model they are actualy using, thus resulting in
+>>> cleaner module design.
+>>>       
+>> I *really* dislike this idea. It seems to set up the situation that the
+>> only acceptable modules are those that follow some "formal" model.
+>> Problems:
+>> ...
+>>     * The proposal only allows a single implementation of each formal
+>>       model. In theory, theory is just like practice, but in practice it
+>>       is not. SMACK and SELinux follow substantially similar formal
+>>       models (not exactly the same) so should we exclude one and keep
+>>       the other? No, of course not, because in practice they are very
+>>       different.
+>>     
+> I would think the two may benefit from a role as described above.
+> But I was thinking more in the line of new modules that may again
+> implement this same model, and would thus benefit from interaction with
+> this 'model maintainer' role.
+>   
+Ah! So the proposal really is to have an LSM maintainer for each
+"family" of models, acting as a resource and arbiter for modules in a class.
 
-The patch I'm working has a new set of options to get_mempolicy to set
-and get the per-task kernel state indicating whether to use the old or
-new semantics.
+I like that idea, and have no objection to it. However, it does have
+resource problems, in that the pool of LSM maintainers is not that
+large. There is also the likely objection that this degree of scale is
+not needed until at least there are multiple families of models in the
+upstream kernel, and possibly until there are multiple instances of a
+single family in the upstream kernel.
+
+It also begs the question of what constitutes a family.
+
+    * AppArmor, SELinux, and TOMOYO are all ambient capability systems
+          o AppArmor and TOMOYO are pathname based
+          o SELinux is label based
+    * SELinux and SMACK are label-based
+          o I don't know if SMACK is an ambient capability system
+    * Rob Meijer implicitly advocated for an object capability LSM
+          o would it be pathname or label based? You could do either or
+            both ...
+    * The LSPP work from RH, Tresys, and TCS is MLS based
+          o this is a subset of both label-based and ambient capability
+            based
+    * I have no clue what family to put MultiADM or Dazuko into
+    * Getting very formal, I could imagine a Clarke-Wilson module
+    * Getting very informal, I could imagine a module that is a
+      collection of cute intrusion prevention hacks, such as the Open
+      wall Linux symlink and hardlink restrictions, and my own RaceGuard
+      work
+          o Oh wait, I published
+            <http://citeseer.ist.psu.edu/cowan01raceguard.html>
+            RaceGuard. Does that make it formal? :-)
+
+Crispin
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
+CEO, Mercenary Linux		   http://mercenarylinux.com/
+	       Itanium. Vista. GPLv3. Complexity at work
+
