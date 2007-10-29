@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXJ2Ujt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXJ2Ukm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbXJ2Ujt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbXJ2Ujl
+	id S1756368AbXJ2Ukm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbXJ2Ukf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:39:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55785 "EHLO mx3.mail.elte.hu"
+	Mon, 29 Oct 2007 16:40:35 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57388 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751866AbXJ2Ujk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:39:40 -0400
-Date: Mon, 29 Oct 2007 21:39:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] scheduler fixes
-Message-ID: <20071029203923.GA9314@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752296AbXJ2Uke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:40:34 -0400
+Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
+       dino@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com, antonb@us.ibm.com,
+       rostedt@goodmis.org, niv@us.ibm.com
+In-Reply-To: <20071029202617.GF8824@linux.vnet.ibm.com>
+References: <20071029185044.GA23413@linux.vnet.ibm.com>
+	 <1193688468.9928.30.camel@pasglop>
+	 <20071029202617.GF8824@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 07:37:50 +1100
+Message-Id: <1193690270.9928.35.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus, please pull the latest scheduler git tree from:
+On Mon, 2007-10-29 at 13:26 -0700, Paul E. McKenney wrote:
+> 
+> > I see a lot of case where you add preempt_disable/enable around
+> areas
+> > that have the PTE lock held...
+> > 
+> > So in -rt, spin_lock doesn't disable preempt ? I'm a bit worried...
+> > there are some strong requirements that anything within that lock is
+> not
+> > preempted, so zap_pte_ranges() is the obvious ones but all of them
+> would
+> > need to be addressed.
+> 
+> Right in one!  One of the big changes in -rt is that spinlock critical
+> sections (and RCU read-side critical sections, for that matter) are
+> preemptible under CONFIG_PREEMPT_RT.
+> 
+> And I agree that this patchset will have missed quite a few places
+> where
+> additional changes are required.  Hence the word "including" above,
+> rather
+> than something like "specifically".  ;-)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+Ok, well, I'm pretty familiar with that MM code since I wrote a good
+deal of the current version so I'll try to spend some time with your
+patch have a look. It may have to wait for next week though, but feel
+free to ping me if you don't hear back, in case it falls through the
+hole in my brain :-)
 
-it contains 7 commits: 3 (small) fixes, 1 code cleanup and 3 style 
-cleanups - all fallout of recent merges.
+Ben.
 
-[ There is one commit that is borderline for post-rc1 inclusion: "sched:
-  report CPU usage in CFS cgroup directories" which completes/fixes 
-  cgroup CPU accounting by introducing a small piece of new code. It's 
-  only relevant to cgroups which is a new feature in 2.6.24 so there are 
-  no regression/compatibility worries, so i included it. ]
 
-Thanks,
-
-	Ingo
-
------------------->
-Adrian Bunk (1):
-      sched: make kernel/sched.c:account_guest_time() static
-
-Ingo Molnar (2):
-      sched: fix style of swap() macro in kernel/sched_fair.c
-      sched: fix style in kernel/sched.c
-
-James Bottomley (1):
-      sched: fix incorrect assumption that cpu 0 exists
-
-Paul Menage (1):
-      sched: report CPU usage in CFS cgroup directories
-
-Peter Zijlstra (1):
-      sched: keep utime/stime monotonic
-
-Srivatsa Vaddagiri (1):
-      sched: move rcu_head to task_group struct
-
- fs/proc/array.c       |    3 +-
- include/linux/sched.h |    1 
- kernel/fork.c         |    1 
- kernel/sched.c        |   70 +++++++++++++++++++++++++++++++++++---------------
- kernel/sched_fair.c   |    2 -
- 5 files changed, 54 insertions(+), 23 deletions(-)
