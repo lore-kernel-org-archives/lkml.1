@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbXJ2XFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbXJ2XIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbXJ2XFk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 19:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXJ2XFc
+	id S1754571AbXJ2XIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbXJ2XIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 19:05:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63113 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbXJ2XFc (ORCPT
+	Mon, 29 Oct 2007 19:08:04 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57976 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752530AbXJ2XID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 19:05:32 -0400
-Date: Mon, 29 Oct 2007 11:19:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] bttv: uses input functions, should depend on INPUT
-Message-Id: <20071029111945.7abaeb64.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 29 Oct 2007 19:08:03 -0400
+X-Sasl-enc: TjlrtYIUlEuPOVmq3L8KrceX7RMkIN/v+4CZmVu266XH 1193699281
+Message-ID: <472667EB.4030502@imap.cc>
+Date: Tue, 30 Oct 2007 00:08:27 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Emil Medve <Emilian.Medve@Freescale.com>
+CC: mochel@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       hjlipp@web.de, gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, mac@melware.de,
+       linux-omap-open-source@linux.omap.com
+Subject: Re: [PATCH resend] Make the dev_*() family of macros in device.h
+ complete
+References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE2CF69EA2B09C1135AC10B22"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE2CF69EA2B09C1135AC10B22
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Several media drivers use input_(*) functions so they need to depend on
-the INPUT config symbol.
+Am 29.10.2007 23:43 schrieb Emil Medve:
+> Removed duplicates defined elsewhere
+>=20
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 
-drivers/built-in.o: In function `bttv_input_fini':
-linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/bttv-input.c:346: undefined reference to `input_unregister_device'
-drivers/built-in.o: In function `bttv_input_init':
-linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/bttv-input.c:204: undefined reference to `input_allocate_device'
-linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/bttv-input.c:335: undefined reference to `input_free_device'
-linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/bttv-input.c:321: undefined reference to `input_register_device'
-linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/bttv-input.c:335: undefined reference to `input_free_device'
+Acked-by: Tilman Schmidt <tilman@imap.cc>
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/media/video/bt8xx/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+for:
 
---- linux-2.6.24-rc1-git4.orig/drivers/media/video/bt8xx/Kconfig
-+++ linux-2.6.24-rc1-git4/drivers/media/video/bt8xx/Kconfig
-@@ -1,6 +1,6 @@
- config VIDEO_BT848
- 	tristate "BT848 Video For Linux"
--	depends on VIDEO_DEV && PCI && I2C && VIDEO_V4L1
-+	depends on VIDEO_DEV && PCI && I2C && VIDEO_V4L1 && INPUT
- 	select I2C_ALGOBIT
- 	select FW_LOADER
- 	select VIDEO_BTCX
+> diff --git a/drivers/isdn/gigaset/gigaset.h b/drivers/isdn/gigaset/giga=
+set.h
+> index a0317ab..02bdaf2 100644
+> --- a/drivers/isdn/gigaset/gigaset.h
+> +++ b/drivers/isdn/gigaset/gigaset.h
+> @@ -106,12 +106,6 @@ enum debuglevel {
+>  					 activated */
+>  };
+> =20
+> -/* missing from linux/device.h ... */
+> -#ifndef dev_notice
+> -#define dev_notice(dev, format, arg...)		\
+> -	dev_printk(KERN_NOTICE , dev , format , ## arg)
+> -#endif
+> -
+>  /* Kernel message macros for situations where dev_printk and friends c=
+annot be
+>   * used for lack of reliable access to a device structure.
+>   * linux/usb.h already contains these but in an obsolete form which cl=
+utters
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigE2CF69EA2B09C1135AC10B22
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHJmfrMdB4Whm86/kRApJ0AJ0TndU2phadwTNtqF6Z2xPA18hAvQCfXtGE
+EbQDGodMYRpl62IWLo5towM=
+=7/H2
+-----END PGP SIGNATURE-----
+
+--------------enigE2CF69EA2B09C1135AC10B22--
