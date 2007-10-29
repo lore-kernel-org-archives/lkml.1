@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXJ2Uqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbXJ2Us4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbXJ2Uqz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXJ2Uqs
+	id S1753949AbXJ2Us4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXJ2Uss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:46:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:22042 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXJ2Uqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:46:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=t8wkq76ZXtOws9hjQUPBqqWlr+7Df+gNnZus/EKXKCKksvo57vDXz/u+kxTOq/lAjvzfPgaYDLWoYgcY+g8cGusR3Ozke88RD5mPhR4NjgCoeWG3DNhowMDeYeQEeAg2qJWY/r1dyXgJfwuDBWzkmotXPj+dlmKdHORDkPemXMU=
-Date: Mon, 29 Oct 2007 23:46:38 +0300
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: linux/interrupt.h doesn't need sched.h
-Message-ID: <20071029204638.GC1822@martell.zuzino.mipt.ru>
-References: <20071029134539.GB7810@ghostprotocols.net> <20071029181210.GA1822@martell.zuzino.mipt.ru> <20071029190845.GC7810@ghostprotocols.net>
+	Mon, 29 Oct 2007 16:48:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37153 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbXJ2Usr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:48:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
+Date: Mon, 29 Oct 2007 22:05:10 +0100
+User-Agent: KMail/1.9.5
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20071029201955.GA1955@titan.lahn.de>
+In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071029190845.GC7810@ghostprotocols.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Message-Id: <200710292205.11459.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 05:08:46PM -0200, Arnaldo Carvalho de Melo wrote:
-> Em Mon, Oct 29, 2007 at 09:12:10PM +0300, Alexey Dobriyan escreveu:
-> > On Mon, Oct 29, 2007 at 11:45:39AM -0200, Arnaldo Carvalho de Melo wrote:
-> > > --- a/include/linux/interrupt.h
-> > > +++ b/include/linux/interrupt.h
-> > > @@ -9,7 +9,6 @@
-> > >  #include <linux/cpumask.h>
-> > >  #include <linux/irqreturn.h>
-> > >  #include <linux/hardirq.h>
-> > > -#include <linux/sched.h>
-> > >  #include <linux/irqflags.h>
-> > >  #include <asm/atomic.h>
-> > >  #include <asm/ptrace.h>
-> > 
-> > ACK the part that nothing needs sched.h, but it shouldn't change anything,
-> > because of interrupt.h => hardirq.h => smp_lock.h => sched.h dependency.
+On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
+> Hello Thomas, Pavel, Rafael!
 > 
-> Yeah, but one thing at a time, now its one link in the maze, before it
-> was two :-)
->  
-> > [puts patch on cross-compile farm anyway]
-> > [starts finding scalpels]
+> I have an IBM X41 tablet pc running 2.6.23 with the following problem:
+> Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
+> /sys/power/state), the notebook hangs showing the following lines:
+>         Stopping tasks ... done.
+>         Shrinking memory... done (49361 pages freed)
+>         Freed 197444 kbytes in 0.64 seconds (308.50 MB/s)
+>         Suspending console(s)
+> 
+> When I repeatedly press some keys or move the TrackPoint, the SwSusp
+> continues and the notebook powers off.
+> On reboot, the notebook resumes but hangs showing the following screen:
+>         Stopping tasks ... done.
+>         Loading image data pages (62483 pages) ... done
+>         Read 249932 kbytes in 18.63 seconds (13.41 MB/s)
+>         Suspending console(s)
+> 
+> Generating interrupts by pressing keys or moving the TrackPoints makes
+> the resume continue. But after that, the notebook looses time, xterms
+> don't get updated until I press a key, the beeper beeps until I press a
+> key, etc.
+> 
+> Any idea what the problem might be?
 
-Argh!
+Nope.
 
-interrupt.h contains sti().
-sti() on m68k wants hardirq_count().
-hardirq_count() wants preempt_count();
-preempt_count() wants current_thread_info()
-current_thread_info() on m68k wants task_thread_info()
-task_thread_info() on m68k is
+> DMESG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.dmesg
+> CONFIG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.config
+> 
+> If you need more data, just ask.
 
-	(&(tsk)->thread.info)
+Please try to do "echo shutdown > /sys/power/disk" before hibernation and
+see what happens.
 
-We're screwed, because adding sched.h to asm-m68k/thread_info.h leads to
-even more horrible things.
+Also, is it an SMP kernel or UP?
 
-Comments? Well, apart from "our header dependencies suck" and "let's add
-CONFIG_M^*K to interrupt.h".
+Rafael
