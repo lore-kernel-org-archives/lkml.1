@@ -1,1222 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbXJ2OdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXJ2Ok2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758948AbXJ2OdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbXJ2ObD
+	id S1757384AbXJ2Ok2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXJ2OkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:31:03 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39974 "EHLO smtp.polymtl.ca"
+	Mon, 29 Oct 2007 10:40:17 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37091 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758187AbXJ2OaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:30:15 -0400
-Message-Id: <20071029142941.774277044@polymtl.ca>
-References: <20071029142646.699058449@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 29 Oct 2007 10:26:55 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 09/10] Move blktrace to instrumentation directory
-Content-Disposition: inline; filename=move-blktrace-to-instrumentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 29 Oct 2007 14:29:42 +0000
+	id S1750870AbXJ2OkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 10:40:15 -0400
+Date: Mon, 29 Oct 2007 17:40:02 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: wim@iguana.be
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] watchdog: spin_lock_init() fixes
+Message-ID: <20071029144002.GA6208@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This block IO tracing belongs to the instrumentation category.
+Some watchdog drivers initialize global spinlocks in module's init function
+which is tolerable, but some do it in PCI probe function. So, switch to
+static initialization to fix theoretical bugs and, more importantly, stop
+giving people bad examples.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 ---
- block/Makefile             |    1 
- block/blktrace.c           |  576 ---------------------------------------------
- instrumentation/Makefile   |    1 
- instrumentation/blktrace.c |  576 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 577 insertions(+), 577 deletions(-)
 
-Index: linux-2.6-lttng.stable/block/Makefile
-===================================================================
---- linux-2.6-lttng.stable.orig/block/Makefile	2007-10-29 09:51:05.000000000 -0400
-+++ linux-2.6-lttng.stable/block/Makefile	2007-10-29 09:53:17.000000000 -0400
-@@ -10,5 +10,4 @@ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
- obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
- obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+ drivers/watchdog/alim1535_wdt.c   |    4 +---
+ drivers/watchdog/davinci_wdt.c    |    4 +---
+ drivers/watchdog/i6300esb.c       |    4 +---
+ drivers/watchdog/ib700wdt.c       |    4 +---
+ drivers/watchdog/machzwd.c        |    7 ++-----
+ drivers/watchdog/mpc83xx_wdt.c    |    5 +----
+ drivers/watchdog/pc87413_wdt.c    |    4 +---
+ drivers/watchdog/pnx4008_wdt.c    |    4 +---
+ drivers/watchdog/sbc8360.c        |    3 +--
+ drivers/watchdog/sc1200wdt.c      |    3 +--
+ drivers/watchdog/sc520_wdt.c      |    4 +---
+ drivers/watchdog/smsc37b787_wdt.c |    4 +---
+ drivers/watchdog/w83627hf_wdt.c   |    4 +---
+ drivers/watchdog/w83697hf_wdt.c   |    4 +---
+ drivers/watchdog/w83877f_wdt.c    |    4 +---
+ drivers/watchdog/w83977f_wdt.c    |    4 +---
+ drivers/watchdog/wafer5823wdt.c   |    4 +---
+ drivers/watchdog/wdt977.c         |    4 +---
+ drivers/watchdog/wdt_pci.c        |    3 +--
+ 19 files changed, 20 insertions(+), 57 deletions(-)
+
+--- a/drivers/watchdog/alim1535_wdt.c
++++ b/drivers/watchdog/alim1535_wdt.c
+@@ -31,7 +31,7 @@ static unsigned long ali_is_open;
+ static char ali_expect_release;
+ static struct pci_dev *ali_pci;
+ static u32 ali_timeout_bits;	/* stores the computed timeout */
+-static spinlock_t ali_lock;	/* Guards the hardware */
++static DEFINE_SPINLOCK(ali_lock);	/* Guards the hardware */
  
--obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
- obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
-Index: linux-2.6-lttng.stable/block/blktrace.c
-===================================================================
---- linux-2.6-lttng.stable.orig/block/blktrace.c	2007-10-29 09:51:05.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,576 +0,0 @@
--/*
-- * Copyright (C) 2006 Jens Axboe <axboe@kernel.dk>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-- *
-- */
--#include <linux/kernel.h>
--#include <linux/blkdev.h>
--#include <linux/blktrace_api.h>
--#include <linux/percpu.h>
--#include <linux/init.h>
--#include <linux/mutex.h>
--#include <linux/debugfs.h>
--#include <linux/time.h>
--#include <asm/uaccess.h>
--
--static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
--static unsigned int blktrace_seq __read_mostly = 1;
--
--/*
-- * Send out a notify message.
-- */
--static void trace_note(struct blk_trace *bt, pid_t pid, int action,
--		       const void *data, size_t len)
--{
--	struct blk_io_trace *t;
--
--	t = relay_reserve(bt->rchan, sizeof(*t) + len);
--	if (t) {
--		const int cpu = smp_processor_id();
--
--		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
--		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
--		t->device = bt->dev;
--		t->action = action;
--		t->pid = pid;
--		t->cpu = cpu;
--		t->pdu_len = len;
--		memcpy((void *) t + sizeof(*t), data, len);
--	}
--}
--
--/*
-- * Send out a notify for this process, if we haven't done so since a trace
-- * started
-- */
--static void trace_note_tsk(struct blk_trace *bt, struct task_struct *tsk)
--{
--	tsk->btrace_seq = blktrace_seq;
--	trace_note(bt, tsk->pid, BLK_TN_PROCESS, tsk->comm, sizeof(tsk->comm));
--}
--
--static void trace_note_time(struct blk_trace *bt)
--{
--	struct timespec now;
--	unsigned long flags;
--	u32 words[2];
--
--	getnstimeofday(&now);
--	words[0] = now.tv_sec;
--	words[1] = now.tv_nsec;
--
--	local_irq_save(flags);
--	trace_note(bt, 0, BLK_TN_TIMESTAMP, words, sizeof(words));
--	local_irq_restore(flags);
--}
--
--static int act_log_check(struct blk_trace *bt, u32 what, sector_t sector,
--			 pid_t pid)
--{
--	if (((bt->act_mask << BLK_TC_SHIFT) & what) == 0)
--		return 1;
--	if (sector < bt->start_lba || sector > bt->end_lba)
--		return 1;
--	if (bt->pid && pid != bt->pid)
--		return 1;
--
--	return 0;
--}
--
--/*
-- * Data direction bit lookup
-- */
--static u32 ddir_act[2] __read_mostly = { BLK_TC_ACT(BLK_TC_READ), BLK_TC_ACT(BLK_TC_WRITE) };
--
--/*
-- * Bio action bits of interest
-- */
--static u32 bio_act[9] __read_mostly = { 0, BLK_TC_ACT(BLK_TC_BARRIER), BLK_TC_ACT(BLK_TC_SYNC), 0, BLK_TC_ACT(BLK_TC_AHEAD), 0, 0, 0, BLK_TC_ACT(BLK_TC_META) };
--
--/*
-- * More could be added as needed, taking care to increment the decrementer
-- * to get correct indexing
-- */
--#define trace_barrier_bit(rw)	\
--	(((rw) & (1 << BIO_RW_BARRIER)) >> (BIO_RW_BARRIER - 0))
--#define trace_sync_bit(rw)	\
--	(((rw) & (1 << BIO_RW_SYNC)) >> (BIO_RW_SYNC - 1))
--#define trace_ahead_bit(rw)	\
--	(((rw) & (1 << BIO_RW_AHEAD)) << (2 - BIO_RW_AHEAD))
--#define trace_meta_bit(rw)	\
--	(((rw) & (1 << BIO_RW_META)) >> (BIO_RW_META - 3))
--
--/*
-- * The worker for the various blk_add_trace*() types. Fills out a
-- * blk_io_trace structure and places it in a per-cpu subbuffer.
-- */
--void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
--		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
--{
--	struct task_struct *tsk = current;
--	struct blk_io_trace *t;
--	unsigned long flags;
--	unsigned long *sequence;
--	pid_t pid;
--	int cpu;
--
--	if (unlikely(bt->trace_state != Blktrace_running))
--		return;
--
--	what |= ddir_act[rw & WRITE];
--	what |= bio_act[trace_barrier_bit(rw)];
--	what |= bio_act[trace_sync_bit(rw)];
--	what |= bio_act[trace_ahead_bit(rw)];
--	what |= bio_act[trace_meta_bit(rw)];
--
--	pid = tsk->pid;
--	if (unlikely(act_log_check(bt, what, sector, pid)))
--		return;
--
--	/*
--	 * A word about the locking here - we disable interrupts to reserve
--	 * some space in the relay per-cpu buffer, to prevent an irq
--	 * from coming in and stepping on our toes. Once reserved, it's
--	 * enough to get preemption disabled to prevent read of this data
--	 * before we are through filling it. get_cpu()/put_cpu() does this
--	 * for us
--	 */
--	local_irq_save(flags);
--
--	if (unlikely(tsk->btrace_seq != blktrace_seq))
--		trace_note_tsk(bt, tsk);
--
--	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
--	if (t) {
--		cpu = smp_processor_id();
--		sequence = per_cpu_ptr(bt->sequence, cpu);
--
--		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
--		t->sequence = ++(*sequence);
--		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
--		t->sector = sector;
--		t->bytes = bytes;
--		t->action = what;
--		t->pid = pid;
--		t->device = bt->dev;
--		t->cpu = cpu;
--		t->error = error;
--		t->pdu_len = pdu_len;
--
--		if (pdu_len)
--			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
--	}
--
--	local_irq_restore(flags);
--}
--
--EXPORT_SYMBOL_GPL(__blk_add_trace);
--
--static struct dentry *blk_tree_root;
--static struct mutex blk_tree_mutex;
--static unsigned int root_users;
--
--static inline void blk_remove_root(void)
--{
--	if (blk_tree_root) {
--		debugfs_remove(blk_tree_root);
--		blk_tree_root = NULL;
--	}
--}
--
--static void blk_remove_tree(struct dentry *dir)
--{
--	mutex_lock(&blk_tree_mutex);
--	debugfs_remove(dir);
--	if (--root_users == 0)
--		blk_remove_root();
--	mutex_unlock(&blk_tree_mutex);
--}
--
--static struct dentry *blk_create_tree(const char *blk_name)
--{
--	struct dentry *dir = NULL;
--
--	mutex_lock(&blk_tree_mutex);
--
--	if (!blk_tree_root) {
--		blk_tree_root = debugfs_create_dir("block", NULL);
--		if (!blk_tree_root)
--			goto err;
--	}
--
--	dir = debugfs_create_dir(blk_name, blk_tree_root);
--	if (dir)
--		root_users++;
--	else
--		blk_remove_root();
--
--err:
--	mutex_unlock(&blk_tree_mutex);
--	return dir;
--}
--
--static void blk_trace_cleanup(struct blk_trace *bt)
--{
--	relay_close(bt->rchan);
--	debugfs_remove(bt->dropped_file);
--	blk_remove_tree(bt->dir);
--	free_percpu(bt->sequence);
--	kfree(bt);
--}
--
--static int blk_trace_remove(struct request_queue *q)
--{
--	struct blk_trace *bt;
--
--	bt = xchg(&q->blk_trace, NULL);
--	if (!bt)
--		return -EINVAL;
--
--	if (bt->trace_state == Blktrace_setup ||
--	    bt->trace_state == Blktrace_stopped)
--		blk_trace_cleanup(bt);
--
--	return 0;
--}
--
--static int blk_dropped_open(struct inode *inode, struct file *filp)
--{
--	filp->private_data = inode->i_private;
--
--	return 0;
--}
--
--static ssize_t blk_dropped_read(struct file *filp, char __user *buffer,
--				size_t count, loff_t *ppos)
--{
--	struct blk_trace *bt = filp->private_data;
--	char buf[16];
--
--	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&bt->dropped));
--
--	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
--}
--
--static const struct file_operations blk_dropped_fops = {
--	.owner =	THIS_MODULE,
--	.open =		blk_dropped_open,
--	.read =		blk_dropped_read,
--};
--
--/*
-- * Keep track of how many times we encountered a full subbuffer, to aid
-- * the user space app in telling how many lost events there were.
-- */
--static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
--				     void *prev_subbuf, size_t prev_padding)
--{
--	struct blk_trace *bt;
--
--	if (!relay_buf_full(buf))
--		return 1;
--
--	bt = buf->chan->private_data;
--	atomic_inc(&bt->dropped);
--	return 0;
--}
--
--static int blk_remove_buf_file_callback(struct dentry *dentry)
--{
--	debugfs_remove(dentry);
--	return 0;
--}
--
--static struct dentry *blk_create_buf_file_callback(const char *filename,
--						   struct dentry *parent,
--						   int mode,
--						   struct rchan_buf *buf,
--						   int *is_global)
--{
--	return debugfs_create_file(filename, mode, parent, buf,
--					&relay_file_operations);
--}
--
--static struct rchan_callbacks blk_relay_callbacks = {
--	.subbuf_start		= blk_subbuf_start_callback,
--	.create_buf_file	= blk_create_buf_file_callback,
--	.remove_buf_file	= blk_remove_buf_file_callback,
--};
--
--/*
-- * Setup everything required to start tracing
-- */
--int do_blk_trace_setup(struct request_queue *q, struct block_device *bdev,
--			struct blk_user_trace_setup *buts)
--{
--	struct blk_trace *old_bt, *bt = NULL;
--	struct dentry *dir = NULL;
--	char b[BDEVNAME_SIZE];
--	int ret, i;
--
--	if (!buts->buf_size || !buts->buf_nr)
--		return -EINVAL;
--
--	strcpy(buts->name, bdevname(bdev, b));
--
--	/*
--	 * some device names have larger paths - convert the slashes
--	 * to underscores for this to work as expected
--	 */
--	for (i = 0; i < strlen(buts->name); i++)
--		if (buts->name[i] == '/')
--			buts->name[i] = '_';
--
--	ret = -ENOMEM;
--	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
--	if (!bt)
--		goto err;
--
--	bt->sequence = alloc_percpu(unsigned long);
--	if (!bt->sequence)
--		goto err;
--
--	ret = -ENOENT;
--	dir = blk_create_tree(buts->name);
--	if (!dir)
--		goto err;
--
--	bt->dir = dir;
--	bt->dev = bdev->bd_dev;
--	atomic_set(&bt->dropped, 0);
--
--	ret = -EIO;
--	bt->dropped_file = debugfs_create_file("dropped", 0444, dir, bt, &blk_dropped_fops);
--	if (!bt->dropped_file)
--		goto err;
--
--	bt->rchan = relay_open("trace", dir, buts->buf_size,
--				buts->buf_nr, &blk_relay_callbacks, bt);
--	if (!bt->rchan)
--		goto err;
--
--	bt->act_mask = buts->act_mask;
--	if (!bt->act_mask)
--		bt->act_mask = (u16) -1;
--
--	bt->start_lba = buts->start_lba;
--	bt->end_lba = buts->end_lba;
--	if (!bt->end_lba)
--		bt->end_lba = -1ULL;
--
--	bt->pid = buts->pid;
--	bt->trace_state = Blktrace_setup;
--
--	ret = -EBUSY;
--	old_bt = xchg(&q->blk_trace, bt);
--	if (old_bt) {
--		(void) xchg(&q->blk_trace, old_bt);
--		goto err;
--	}
--
--	return 0;
--err:
--	if (dir)
--		blk_remove_tree(dir);
--	if (bt) {
--		if (bt->dropped_file)
--			debugfs_remove(bt->dropped_file);
--		free_percpu(bt->sequence);
--		if (bt->rchan)
--			relay_close(bt->rchan);
--		kfree(bt);
--	}
--	return ret;
--}
--
--static int blk_trace_setup(struct request_queue *q, struct block_device *bdev,
--			   char __user *arg)
--{
--	struct blk_user_trace_setup buts;
--	int ret;
--
--	ret = copy_from_user(&buts, arg, sizeof(buts));
--	if (ret)
--		return -EFAULT;
--
--	ret = do_blk_trace_setup(q, bdev, &buts);
--	if (ret)
--		return ret;
--
--	if (copy_to_user(arg, &buts, sizeof(buts)))
--		return -EFAULT;
--
--	return 0;
--}
--
--static int blk_trace_startstop(struct request_queue *q, int start)
--{
--	struct blk_trace *bt;
--	int ret;
--
--	if ((bt = q->blk_trace) == NULL)
--		return -EINVAL;
--
--	/*
--	 * For starting a trace, we can transition from a setup or stopped
--	 * trace. For stopping a trace, the state must be running
--	 */
--	ret = -EINVAL;
--	if (start) {
--		if (bt->trace_state == Blktrace_setup ||
--		    bt->trace_state == Blktrace_stopped) {
--			blktrace_seq++;
--			smp_mb();
--			bt->trace_state = Blktrace_running;
--
--			trace_note_time(bt);
--			ret = 0;
--		}
--	} else {
--		if (bt->trace_state == Blktrace_running) {
--			bt->trace_state = Blktrace_stopped;
--			relay_flush(bt->rchan);
--			ret = 0;
--		}
--	}
--
--	return ret;
--}
--
--/**
-- * blk_trace_ioctl: - handle the ioctls associated with tracing
-- * @bdev:	the block device
-- * @cmd: 	the ioctl cmd
-- * @arg:	the argument data, if any
-- *
-- **/
--int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
--{
--	struct request_queue *q;
--	int ret, start = 0;
--
--	q = bdev_get_queue(bdev);
--	if (!q)
--		return -ENXIO;
--
--	mutex_lock(&bdev->bd_mutex);
--
--	switch (cmd) {
--	case BLKTRACESETUP:
--		ret = blk_trace_setup(q, bdev, arg);
--		break;
--	case BLKTRACESTART:
--		start = 1;
--	case BLKTRACESTOP:
--		ret = blk_trace_startstop(q, start);
--		break;
--	case BLKTRACETEARDOWN:
--		ret = blk_trace_remove(q);
--		break;
--	default:
--		ret = -ENOTTY;
--		break;
--	}
--
--	mutex_unlock(&bdev->bd_mutex);
--	return ret;
--}
--
--/**
-- * blk_trace_shutdown: - stop and cleanup trace structures
-- * @q:    the request queue associated with the device
-- *
-- **/
--void blk_trace_shutdown(struct request_queue *q)
--{
--	if (q->blk_trace) {
--		blk_trace_startstop(q, 0);
--		blk_trace_remove(q);
--	}
--}
--
--/*
-- * Average offset over two calls to cpu_clock() with a gettimeofday()
-- * in the middle
-- */
--static void blk_check_time(unsigned long long *t, int this_cpu)
--{
--	unsigned long long a, b;
--	struct timeval tv;
--
--	a = cpu_clock(this_cpu);
--	do_gettimeofday(&tv);
--	b = cpu_clock(this_cpu);
--
--	*t = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
--	*t -= (a + b) / 2;
--}
--
--/*
-- * calibrate our inter-CPU timings
-- */
--static void blk_trace_check_cpu_time(void *data)
--{
--	unsigned long long *t;
--	int this_cpu = get_cpu();
--
--	t = &per_cpu(blk_trace_cpu_offset, this_cpu);
--
--	/*
--	 * Just call it twice, hopefully the second call will be cache hot
--	 * and a little more precise
--	 */
--	blk_check_time(t, this_cpu);
--	blk_check_time(t, this_cpu);
--
--	put_cpu();
--}
--
--static void blk_trace_set_ht_offsets(void)
--{
--#if defined(CONFIG_SCHED_SMT)
--	int cpu, i;
--
--	/*
--	 * now make sure HT siblings have the same time offset
--	 */
--	preempt_disable();
--	for_each_online_cpu(cpu) {
--		unsigned long long *cpu_off, *sibling_off;
--
--		for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu)) {
--			if (i == cpu)
--				continue;
--
--			cpu_off = &per_cpu(blk_trace_cpu_offset, cpu);
--			sibling_off = &per_cpu(blk_trace_cpu_offset, i);
--			*sibling_off = *cpu_off;
--		}
--	}
--	preempt_enable();
--#endif
--}
--
--static __init int blk_trace_init(void)
--{
--	mutex_init(&blk_tree_mutex);
--	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
--	blk_trace_set_ht_offsets();
--
--	return 0;
--}
--
--module_init(blk_trace_init);
--
-Index: linux-2.6-lttng.stable/instrumentation/Makefile
-===================================================================
---- linux-2.6-lttng.stable.orig/instrumentation/Makefile	2007-10-29 09:53:14.000000000 -0400
-+++ linux-2.6-lttng.stable/instrumentation/Makefile	2007-10-29 09:53:24.000000000 -0400
-@@ -10,3 +10,4 @@ obj-$(CONFIG_LOCKDEP) += lockdep.o
- ifeq ($(CONFIG_PROC_FS),y)
- obj-$(CONFIG_LOCKDEP) += lockdep_proc.o
- endif
-+obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
-Index: linux-2.6-lttng.stable/instrumentation/blktrace.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng.stable/instrumentation/blktrace.c	2007-10-29 09:53:17.000000000 -0400
-@@ -0,0 +1,576 @@
-+/*
-+ * Copyright (C) 2006 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/blkdev.h>
-+#include <linux/blktrace_api.h>
-+#include <linux/percpu.h>
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/debugfs.h>
-+#include <linux/time.h>
-+#include <asm/uaccess.h>
-+
-+static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
-+static unsigned int blktrace_seq __read_mostly = 1;
-+
-+/*
-+ * Send out a notify message.
-+ */
-+static void trace_note(struct blk_trace *bt, pid_t pid, int action,
-+		       const void *data, size_t len)
-+{
-+	struct blk_io_trace *t;
-+
-+	t = relay_reserve(bt->rchan, sizeof(*t) + len);
-+	if (t) {
-+		const int cpu = smp_processor_id();
-+
-+		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-+		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-+		t->device = bt->dev;
-+		t->action = action;
-+		t->pid = pid;
-+		t->cpu = cpu;
-+		t->pdu_len = len;
-+		memcpy((void *) t + sizeof(*t), data, len);
-+	}
-+}
-+
-+/*
-+ * Send out a notify for this process, if we haven't done so since a trace
-+ * started
-+ */
-+static void trace_note_tsk(struct blk_trace *bt, struct task_struct *tsk)
-+{
-+	tsk->btrace_seq = blktrace_seq;
-+	trace_note(bt, tsk->pid, BLK_TN_PROCESS, tsk->comm, sizeof(tsk->comm));
-+}
-+
-+static void trace_note_time(struct blk_trace *bt)
-+{
-+	struct timespec now;
-+	unsigned long flags;
-+	u32 words[2];
-+
-+	getnstimeofday(&now);
-+	words[0] = now.tv_sec;
-+	words[1] = now.tv_nsec;
-+
-+	local_irq_save(flags);
-+	trace_note(bt, 0, BLK_TN_TIMESTAMP, words, sizeof(words));
-+	local_irq_restore(flags);
-+}
-+
-+static int act_log_check(struct blk_trace *bt, u32 what, sector_t sector,
-+			 pid_t pid)
-+{
-+	if (((bt->act_mask << BLK_TC_SHIFT) & what) == 0)
-+		return 1;
-+	if (sector < bt->start_lba || sector > bt->end_lba)
-+		return 1;
-+	if (bt->pid && pid != bt->pid)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Data direction bit lookup
-+ */
-+static u32 ddir_act[2] __read_mostly = { BLK_TC_ACT(BLK_TC_READ), BLK_TC_ACT(BLK_TC_WRITE) };
-+
-+/*
-+ * Bio action bits of interest
-+ */
-+static u32 bio_act[9] __read_mostly = { 0, BLK_TC_ACT(BLK_TC_BARRIER), BLK_TC_ACT(BLK_TC_SYNC), 0, BLK_TC_ACT(BLK_TC_AHEAD), 0, 0, 0, BLK_TC_ACT(BLK_TC_META) };
-+
-+/*
-+ * More could be added as needed, taking care to increment the decrementer
-+ * to get correct indexing
-+ */
-+#define trace_barrier_bit(rw)	\
-+	(((rw) & (1 << BIO_RW_BARRIER)) >> (BIO_RW_BARRIER - 0))
-+#define trace_sync_bit(rw)	\
-+	(((rw) & (1 << BIO_RW_SYNC)) >> (BIO_RW_SYNC - 1))
-+#define trace_ahead_bit(rw)	\
-+	(((rw) & (1 << BIO_RW_AHEAD)) << (2 - BIO_RW_AHEAD))
-+#define trace_meta_bit(rw)	\
-+	(((rw) & (1 << BIO_RW_META)) >> (BIO_RW_META - 3))
-+
-+/*
-+ * The worker for the various blk_add_trace*() types. Fills out a
-+ * blk_io_trace structure and places it in a per-cpu subbuffer.
-+ */
-+void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
-+		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
-+{
-+	struct task_struct *tsk = current;
-+	struct blk_io_trace *t;
-+	unsigned long flags;
-+	unsigned long *sequence;
-+	pid_t pid;
-+	int cpu;
-+
-+	if (unlikely(bt->trace_state != Blktrace_running))
-+		return;
-+
-+	what |= ddir_act[rw & WRITE];
-+	what |= bio_act[trace_barrier_bit(rw)];
-+	what |= bio_act[trace_sync_bit(rw)];
-+	what |= bio_act[trace_ahead_bit(rw)];
-+	what |= bio_act[trace_meta_bit(rw)];
-+
-+	pid = tsk->pid;
-+	if (unlikely(act_log_check(bt, what, sector, pid)))
-+		return;
-+
-+	/*
-+	 * A word about the locking here - we disable interrupts to reserve
-+	 * some space in the relay per-cpu buffer, to prevent an irq
-+	 * from coming in and stepping on our toes. Once reserved, it's
-+	 * enough to get preemption disabled to prevent read of this data
-+	 * before we are through filling it. get_cpu()/put_cpu() does this
-+	 * for us
-+	 */
-+	local_irq_save(flags);
-+
-+	if (unlikely(tsk->btrace_seq != blktrace_seq))
-+		trace_note_tsk(bt, tsk);
-+
-+	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
-+	if (t) {
-+		cpu = smp_processor_id();
-+		sequence = per_cpu_ptr(bt->sequence, cpu);
-+
-+		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
-+		t->sequence = ++(*sequence);
-+		t->time = cpu_clock(cpu) - per_cpu(blk_trace_cpu_offset, cpu);
-+		t->sector = sector;
-+		t->bytes = bytes;
-+		t->action = what;
-+		t->pid = pid;
-+		t->device = bt->dev;
-+		t->cpu = cpu;
-+		t->error = error;
-+		t->pdu_len = pdu_len;
-+
-+		if (pdu_len)
-+			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
-+	}
-+
-+	local_irq_restore(flags);
-+}
-+
-+EXPORT_SYMBOL_GPL(__blk_add_trace);
-+
-+static struct dentry *blk_tree_root;
-+static struct mutex blk_tree_mutex;
-+static unsigned int root_users;
-+
-+static inline void blk_remove_root(void)
-+{
-+	if (blk_tree_root) {
-+		debugfs_remove(blk_tree_root);
-+		blk_tree_root = NULL;
-+	}
-+}
-+
-+static void blk_remove_tree(struct dentry *dir)
-+{
-+	mutex_lock(&blk_tree_mutex);
-+	debugfs_remove(dir);
-+	if (--root_users == 0)
-+		blk_remove_root();
-+	mutex_unlock(&blk_tree_mutex);
-+}
-+
-+static struct dentry *blk_create_tree(const char *blk_name)
-+{
-+	struct dentry *dir = NULL;
-+
-+	mutex_lock(&blk_tree_mutex);
-+
-+	if (!blk_tree_root) {
-+		blk_tree_root = debugfs_create_dir("block", NULL);
-+		if (!blk_tree_root)
-+			goto err;
-+	}
-+
-+	dir = debugfs_create_dir(blk_name, blk_tree_root);
-+	if (dir)
-+		root_users++;
-+	else
-+		blk_remove_root();
-+
-+err:
-+	mutex_unlock(&blk_tree_mutex);
-+	return dir;
-+}
-+
-+static void blk_trace_cleanup(struct blk_trace *bt)
-+{
-+	relay_close(bt->rchan);
-+	debugfs_remove(bt->dropped_file);
-+	blk_remove_tree(bt->dir);
-+	free_percpu(bt->sequence);
-+	kfree(bt);
-+}
-+
-+static int blk_trace_remove(struct request_queue *q)
-+{
-+	struct blk_trace *bt;
-+
-+	bt = xchg(&q->blk_trace, NULL);
-+	if (!bt)
-+		return -EINVAL;
-+
-+	if (bt->trace_state == Blktrace_setup ||
-+	    bt->trace_state == Blktrace_stopped)
-+		blk_trace_cleanup(bt);
-+
-+	return 0;
-+}
-+
-+static int blk_dropped_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t blk_dropped_read(struct file *filp, char __user *buffer,
-+				size_t count, loff_t *ppos)
-+{
-+	struct blk_trace *bt = filp->private_data;
-+	char buf[16];
-+
-+	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&bt->dropped));
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static const struct file_operations blk_dropped_fops = {
-+	.owner =	THIS_MODULE,
-+	.open =		blk_dropped_open,
-+	.read =		blk_dropped_read,
-+};
-+
-+/*
-+ * Keep track of how many times we encountered a full subbuffer, to aid
-+ * the user space app in telling how many lost events there were.
-+ */
-+static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
-+				     void *prev_subbuf, size_t prev_padding)
-+{
-+	struct blk_trace *bt;
-+
-+	if (!relay_buf_full(buf))
-+		return 1;
-+
-+	bt = buf->chan->private_data;
-+	atomic_inc(&bt->dropped);
-+	return 0;
-+}
-+
-+static int blk_remove_buf_file_callback(struct dentry *dentry)
-+{
-+	debugfs_remove(dentry);
-+	return 0;
-+}
-+
-+static struct dentry *blk_create_buf_file_callback(const char *filename,
-+						   struct dentry *parent,
-+						   int mode,
-+						   struct rchan_buf *buf,
-+						   int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent, buf,
-+					&relay_file_operations);
-+}
-+
-+static struct rchan_callbacks blk_relay_callbacks = {
-+	.subbuf_start		= blk_subbuf_start_callback,
-+	.create_buf_file	= blk_create_buf_file_callback,
-+	.remove_buf_file	= blk_remove_buf_file_callback,
-+};
-+
-+/*
-+ * Setup everything required to start tracing
-+ */
-+int do_blk_trace_setup(struct request_queue *q, struct block_device *bdev,
-+			struct blk_user_trace_setup *buts)
-+{
-+	struct blk_trace *old_bt, *bt = NULL;
-+	struct dentry *dir = NULL;
-+	char b[BDEVNAME_SIZE];
-+	int ret, i;
-+
-+	if (!buts->buf_size || !buts->buf_nr)
-+		return -EINVAL;
-+
-+	strcpy(buts->name, bdevname(bdev, b));
-+
-+	/*
-+	 * some device names have larger paths - convert the slashes
-+	 * to underscores for this to work as expected
-+	 */
-+	for (i = 0; i < strlen(buts->name); i++)
-+		if (buts->name[i] == '/')
-+			buts->name[i] = '_';
-+
-+	ret = -ENOMEM;
-+	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
-+	if (!bt)
-+		goto err;
-+
-+	bt->sequence = alloc_percpu(unsigned long);
-+	if (!bt->sequence)
-+		goto err;
-+
-+	ret = -ENOENT;
-+	dir = blk_create_tree(buts->name);
-+	if (!dir)
-+		goto err;
-+
-+	bt->dir = dir;
-+	bt->dev = bdev->bd_dev;
-+	atomic_set(&bt->dropped, 0);
-+
-+	ret = -EIO;
-+	bt->dropped_file = debugfs_create_file("dropped", 0444, dir, bt, &blk_dropped_fops);
-+	if (!bt->dropped_file)
-+		goto err;
-+
-+	bt->rchan = relay_open("trace", dir, buts->buf_size,
-+				buts->buf_nr, &blk_relay_callbacks, bt);
-+	if (!bt->rchan)
-+		goto err;
-+
-+	bt->act_mask = buts->act_mask;
-+	if (!bt->act_mask)
-+		bt->act_mask = (u16) -1;
-+
-+	bt->start_lba = buts->start_lba;
-+	bt->end_lba = buts->end_lba;
-+	if (!bt->end_lba)
-+		bt->end_lba = -1ULL;
-+
-+	bt->pid = buts->pid;
-+	bt->trace_state = Blktrace_setup;
-+
-+	ret = -EBUSY;
-+	old_bt = xchg(&q->blk_trace, bt);
-+	if (old_bt) {
-+		(void) xchg(&q->blk_trace, old_bt);
-+		goto err;
-+	}
-+
-+	return 0;
-+err:
-+	if (dir)
-+		blk_remove_tree(dir);
-+	if (bt) {
-+		if (bt->dropped_file)
-+			debugfs_remove(bt->dropped_file);
-+		free_percpu(bt->sequence);
-+		if (bt->rchan)
-+			relay_close(bt->rchan);
-+		kfree(bt);
-+	}
-+	return ret;
-+}
-+
-+static int blk_trace_setup(struct request_queue *q, struct block_device *bdev,
-+			   char __user *arg)
-+{
-+	struct blk_user_trace_setup buts;
-+	int ret;
-+
-+	ret = copy_from_user(&buts, arg, sizeof(buts));
-+	if (ret)
-+		return -EFAULT;
-+
-+	ret = do_blk_trace_setup(q, bdev, &buts);
-+	if (ret)
-+		return ret;
-+
-+	if (copy_to_user(arg, &buts, sizeof(buts)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int blk_trace_startstop(struct request_queue *q, int start)
-+{
-+	struct blk_trace *bt;
-+	int ret;
-+
-+	if ((bt = q->blk_trace) == NULL)
-+		return -EINVAL;
-+
-+	/*
-+	 * For starting a trace, we can transition from a setup or stopped
-+	 * trace. For stopping a trace, the state must be running
-+	 */
-+	ret = -EINVAL;
-+	if (start) {
-+		if (bt->trace_state == Blktrace_setup ||
-+		    bt->trace_state == Blktrace_stopped) {
-+			blktrace_seq++;
-+			smp_mb();
-+			bt->trace_state = Blktrace_running;
-+
-+			trace_note_time(bt);
-+			ret = 0;
-+		}
-+	} else {
-+		if (bt->trace_state == Blktrace_running) {
-+			bt->trace_state = Blktrace_stopped;
-+			relay_flush(bt->rchan);
-+			ret = 0;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * blk_trace_ioctl: - handle the ioctls associated with tracing
-+ * @bdev:	the block device
-+ * @cmd: 	the ioctl cmd
-+ * @arg:	the argument data, if any
-+ *
-+ **/
-+int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
-+{
-+	struct request_queue *q;
-+	int ret, start = 0;
-+
-+	q = bdev_get_queue(bdev);
-+	if (!q)
-+		return -ENXIO;
-+
-+	mutex_lock(&bdev->bd_mutex);
-+
-+	switch (cmd) {
-+	case BLKTRACESETUP:
-+		ret = blk_trace_setup(q, bdev, arg);
-+		break;
-+	case BLKTRACESTART:
-+		start = 1;
-+	case BLKTRACESTOP:
-+		ret = blk_trace_startstop(q, start);
-+		break;
-+	case BLKTRACETEARDOWN:
-+		ret = blk_trace_remove(q);
-+		break;
-+	default:
-+		ret = -ENOTTY;
-+		break;
-+	}
-+
-+	mutex_unlock(&bdev->bd_mutex);
-+	return ret;
-+}
-+
-+/**
-+ * blk_trace_shutdown: - stop and cleanup trace structures
-+ * @q:    the request queue associated with the device
-+ *
-+ **/
-+void blk_trace_shutdown(struct request_queue *q)
-+{
-+	if (q->blk_trace) {
-+		blk_trace_startstop(q, 0);
-+		blk_trace_remove(q);
-+	}
-+}
-+
-+/*
-+ * Average offset over two calls to cpu_clock() with a gettimeofday()
-+ * in the middle
-+ */
-+static void blk_check_time(unsigned long long *t, int this_cpu)
-+{
-+	unsigned long long a, b;
-+	struct timeval tv;
-+
-+	a = cpu_clock(this_cpu);
-+	do_gettimeofday(&tv);
-+	b = cpu_clock(this_cpu);
-+
-+	*t = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
-+	*t -= (a + b) / 2;
-+}
-+
-+/*
-+ * calibrate our inter-CPU timings
-+ */
-+static void blk_trace_check_cpu_time(void *data)
-+{
-+	unsigned long long *t;
-+	int this_cpu = get_cpu();
-+
-+	t = &per_cpu(blk_trace_cpu_offset, this_cpu);
-+
-+	/*
-+	 * Just call it twice, hopefully the second call will be cache hot
-+	 * and a little more precise
-+	 */
-+	blk_check_time(t, this_cpu);
-+	blk_check_time(t, this_cpu);
-+
-+	put_cpu();
-+}
-+
-+static void blk_trace_set_ht_offsets(void)
-+{
-+#if defined(CONFIG_SCHED_SMT)
-+	int cpu, i;
-+
-+	/*
-+	 * now make sure HT siblings have the same time offset
-+	 */
-+	preempt_disable();
-+	for_each_online_cpu(cpu) {
-+		unsigned long long *cpu_off, *sibling_off;
-+
-+		for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu)) {
-+			if (i == cpu)
-+				continue;
-+
-+			cpu_off = &per_cpu(blk_trace_cpu_offset, cpu);
-+			sibling_off = &per_cpu(blk_trace_cpu_offset, i);
-+			*sibling_off = *cpu_off;
-+		}
-+	}
-+	preempt_enable();
-+#endif
-+}
-+
-+static __init int blk_trace_init(void)
-+{
-+	mutex_init(&blk_tree_mutex);
-+	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
-+	blk_trace_set_ht_offsets();
-+
-+	return 0;
-+}
-+
-+module_init(blk_trace_init);
-+
+ /* module parameters */
+ static int timeout = WATCHDOG_TIMEOUT;
+@@ -398,8 +398,6 @@ static int __init watchdog_init(void)
+ {
+ 	int ret;
+ 
+-	spin_lock_init(&ali_lock);
+-
+ 	/* Check whether or not the hardware watchdog is there */
+ 	if (ali_find_watchdog() != 0) {
+ 		return -ENODEV;
+--- a/drivers/watchdog/davinci_wdt.c
++++ b/drivers/watchdog/davinci_wdt.c
+@@ -61,7 +61,7 @@
+ 
+ static int heartbeat = DEFAULT_HEARTBEAT;
+ 
+-static spinlock_t io_lock;
++static DEFINE_SPINLOCK(io_lock);
+ static unsigned long wdt_status;
+ #define WDT_IN_USE        0
+ #define WDT_OK_TO_CLOSE   1
+@@ -200,8 +200,6 @@ static int davinci_wdt_probe(struct platform_device *pdev)
+ 	int ret = 0, size;
+ 	struct resource *res;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	if (heartbeat < 1 || heartbeat > MAX_HEARTBEAT)
+ 		heartbeat = DEFAULT_HEARTBEAT;
+ 
+--- a/drivers/watchdog/i6300esb.c
++++ b/drivers/watchdog/i6300esb.c
+@@ -77,7 +77,7 @@
+ 
+ /* internal variables */
+ static void __iomem *BASEADDR;
+-static spinlock_t esb_lock; /* Guards the hardware */
++static DEFINE_SPINLOCK(esb_lock); /* Guards the hardware */
+ static unsigned long timer_alive;
+ static struct pci_dev *esb_pci;
+ static unsigned short triggered; /* The status of the watchdog upon boot */
+@@ -456,8 +456,6 @@ static int __init watchdog_init (void)
+ {
+         int ret;
+ 
+-        spin_lock_init(&esb_lock);
+-
+         /* Check whether or not the hardware watchdog is there */
+         if (!esb_getdevice () || esb_pci == NULL)
+                 return -ENODEV;
+--- a/drivers/watchdog/ib700wdt.c
++++ b/drivers/watchdog/ib700wdt.c
+@@ -48,7 +48,7 @@
+ 
+ static struct platform_device *ibwdt_platform_device;
+ static unsigned long ibwdt_is_open;
+-static spinlock_t ibwdt_lock;
++static DEFINE_SPINLOCK(ibwdt_lock);
+ static char expect_close;
+ 
+ /* Module information */
+@@ -308,8 +308,6 @@ static int __devinit ibwdt_probe(struct platform_device *dev)
+ {
+ 	int res;
+ 
+-	spin_lock_init(&ibwdt_lock);
+-
+ #if WDT_START != WDT_STOP
+ 	if (!request_region(WDT_STOP, 1, "IB700 WDT")) {
+ 		printk (KERN_ERR PFX "STOP method I/O %X is not available.\n", WDT_STOP);
+--- a/drivers/watchdog/machzwd.c
++++ b/drivers/watchdog/machzwd.c
+@@ -123,8 +123,8 @@ static void zf_ping(unsigned long data);
+ static int zf_action = GEN_RESET;
+ static unsigned long zf_is_open;
+ static char zf_expect_close;
+-static spinlock_t zf_lock;
+-static spinlock_t zf_port_lock;
++static DEFINE_SPINLOCK(zf_lock);
++static DEFINE_SPINLOCK(zf_port_lock);
+ static DEFINE_TIMER(zf_timer, zf_ping, 0, 0);
+ static unsigned long next_heartbeat = 0;
+ 
+@@ -438,9 +438,6 @@ static int __init zf_init(void)
+ 
+ 	zf_show_action(action);
+ 
+-	spin_lock_init(&zf_lock);
+-	spin_lock_init(&zf_port_lock);
+-
+ 	if(!request_region(ZF_IOBASE, 3, "MachZ ZFL WDT")){
+ 		printk(KERN_ERR "cannot reserve I/O ports at %d\n",
+ 							ZF_IOBASE);
+--- a/drivers/watchdog/mpc83xx_wdt.c
++++ b/drivers/watchdog/mpc83xx_wdt.c
+@@ -56,7 +56,7 @@ static int prescale = 1;
+ static unsigned int timeout_sec;
+ 
+ static unsigned long wdt_is_open;
+-static spinlock_t wdt_spinlock;
++static DEFINE_SPINLOCK(wdt_spinlock);
+ 
+ static void mpc83xx_wdt_keepalive(void)
+ {
+@@ -185,9 +185,6 @@ static int __devinit mpc83xx_wdt_probe(struct platform_device *dev)
+ 	printk(KERN_INFO "WDT driver for MPC83xx initialized. "
+ 		"mode:%s timeout=%d (%d seconds)\n",
+ 		reset ? "reset":"interrupt", timeout, timeout_sec);
+-
+-	spin_lock_init(&wdt_spinlock);
+-
+ 	return 0;
+ 
+ err_unmap:
+--- a/drivers/watchdog/pc87413_wdt.c
++++ b/drivers/watchdog/pc87413_wdt.c
+@@ -61,7 +61,7 @@ static unsigned long timer_enabled = 0;  /* is the timer enabled? */
+ 
+ static char expect_close;                /* is the close expected? */
+ 
+-static spinlock_t io_lock;               /* to guard the watchdog from io races */
++static DEFINE_SPINLOCK(io_lock);/* to guard the watchdog from io races */
+ 
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ 
+@@ -561,8 +561,6 @@ static int __init pc87413_init(void)
+ {
+ 	int ret;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	printk(KERN_INFO PFX "Version " VERSION " at io 0x%X\n", WDT_INDEX_IO_PORT);
+ 
+ 	/* request_region(io, 2, "pc87413"); */
+--- a/drivers/watchdog/pnx4008_wdt.c
++++ b/drivers/watchdog/pnx4008_wdt.c
+@@ -80,7 +80,7 @@
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ static int heartbeat = DEFAULT_HEARTBEAT;
+ 
+-static spinlock_t io_lock;
++static DEFINE_SPINLOCK(io_lock);
+ static unsigned long wdt_status;
+ #define WDT_IN_USE        0
+ #define WDT_OK_TO_CLOSE   1
+@@ -254,8 +254,6 @@ static int pnx4008_wdt_probe(struct platform_device *pdev)
+ 	int ret = 0, size;
+ 	struct resource *res;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	if (heartbeat < 1 || heartbeat > MAX_HEARTBEAT)
+ 		heartbeat = DEFAULT_HEARTBEAT;
+ 
+--- a/drivers/watchdog/sbc8360.c
++++ b/drivers/watchdog/sbc8360.c
+@@ -54,7 +54,7 @@
+ #include <asm/system.h>
+ 
+ static unsigned long sbc8360_is_open;
+-static spinlock_t sbc8360_lock;
++static DEFINE_SPINLOCK(sbc8360_lock);
+ static char expect_close;
+ 
+ #define PFX "sbc8360: "
+@@ -359,7 +359,6 @@ static int __init sbc8360_init(void)
+ 		goto out_noreboot;
+ 	}
+ 
+-	spin_lock_init(&sbc8360_lock);
+ 	res = misc_register(&sbc8360_miscdev);
+ 	if (res) {
+ 		printk(KERN_ERR PFX "failed to register misc device\n");
+--- a/drivers/watchdog/sc1200wdt.c
++++ b/drivers/watchdog/sc1200wdt.c
+@@ -74,7 +74,7 @@ static int io = -1;
+ static int io_len = 2;		/* for non plug and play */
+ static struct semaphore open_sem;
+ static char expect_close;
+-static spinlock_t sc1200wdt_lock;	/* io port access serialisation */
++static DEFINE_SPINLOCK(sc1200wdt_lock);	/* io port access serialisation */
+ 
+ #if defined CONFIG_PNP
+ static int isapnp = 1;
+@@ -375,7 +375,6 @@ static int __init sc1200wdt_init(void)
+ 
+ 	printk("%s\n", banner);
+ 
+-	spin_lock_init(&sc1200wdt_lock);
+ 	sema_init(&open_sem, 1);
+ 
+ #if defined CONFIG_PNP
+--- a/drivers/watchdog/sc520_wdt.c
++++ b/drivers/watchdog/sc520_wdt.c
+@@ -125,7 +125,7 @@ static DEFINE_TIMER(timer, wdt_timer_ping, 0, 0);
+ static unsigned long next_heartbeat;
+ static unsigned long wdt_is_open;
+ static char wdt_expect_close;
+-static spinlock_t wdt_spinlock;
++static DEFINE_SPINLOCK(wdt_spinlock);
+ 
+ /*
+  *	Whack the dog
+@@ -383,8 +383,6 @@ static int __init sc520_wdt_init(void)
+ {
+ 	int rc = -EBUSY;
+ 
+-	spin_lock_init(&wdt_spinlock);
+-
+ 	/* Check that the timeout value is within it's range ; if not reset to the default */
+ 	if (wdt_set_heartbeat(timeout)) {
+ 		wdt_set_heartbeat(WATCHDOG_TIMEOUT);
+--- a/drivers/watchdog/smsc37b787_wdt.c
++++ b/drivers/watchdog/smsc37b787_wdt.c
+@@ -83,7 +83,7 @@ static unsigned long timer_enabled = 0;   /* is the timer enabled? */
+ 
+ static char expect_close;       /* is the close expected? */
+ 
+-static spinlock_t io_lock;	/* to guard the watchdog from io races */
++static DEFINE_SPINLOCK(io_lock);/* to guard the watchdog from io races */
+ 
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ 
+@@ -540,8 +540,6 @@ static int __init wb_smsc_wdt_init(void)
+ {
+ 	int ret;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	printk("SMsC 37B787 watchdog component driver " VERSION " initialising...\n");
+ 
+ 	if (!request_region(IOPORT, IOPORT_SIZE, "SMsC 37B787 watchdog")) {
+--- a/drivers/watchdog/w83627hf_wdt.c
++++ b/drivers/watchdog/w83627hf_wdt.c
+@@ -48,7 +48,7 @@
+ 
+ static unsigned long wdt_is_open;
+ static char expect_close;
+-static spinlock_t io_lock;
++static DEFINE_SPINLOCK(io_lock);
+ 
+ /* You must set this - there is no sane way to probe for this board. */
+ static int wdt_io = 0x2E;
+@@ -328,8 +328,6 @@ wdt_init(void)
+ {
+ 	int ret;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	printk(KERN_INFO "WDT driver for the Winbond(TM) W83627HF/THF/HG Super I/O chip initialising.\n");
+ 
+ 	if (wdt_set_heartbeat(timeout)) {
+--- a/drivers/watchdog/w83697hf_wdt.c
++++ b/drivers/watchdog/w83697hf_wdt.c
+@@ -47,7 +47,7 @@
+ 
+ static unsigned long wdt_is_open;
+ static char expect_close;
+-static spinlock_t io_lock;
++static DEFINE_SPINLOCK(io_lock);
+ 
+ /* You must set this - there is no sane way to probe for this board. */
+ static int wdt_io = 0x2e;
+@@ -376,8 +376,6 @@ wdt_init(void)
+ {
+ 	int ret, i, found = 0;
+ 
+-	spin_lock_init(&io_lock);
+-
+ 	printk (KERN_INFO PFX "WDT driver for W83697HF/HG initializing\n");
+ 
+ 	if (wdt_io == 0) {
+--- a/drivers/watchdog/w83877f_wdt.c
++++ b/drivers/watchdog/w83877f_wdt.c
+@@ -94,7 +94,7 @@ static DEFINE_TIMER(timer, wdt_timer_ping, 0, 0);
+ static unsigned long next_heartbeat;
+ static unsigned long wdt_is_open;
+ static char wdt_expect_close;
+-static spinlock_t wdt_spinlock;
++static DEFINE_SPINLOCK(wdt_spinlock);
+ 
+ /*
+  *	Whack the dog
+@@ -350,8 +350,6 @@ static int __init w83877f_wdt_init(void)
+ {
+ 	int rc = -EBUSY;
+ 
+-	spin_lock_init(&wdt_spinlock);
+-
+ 	if(timeout < 1 || timeout > 3600) /* arbitrary upper limit */
+ 	{
+ 		timeout = WATCHDOG_TIMEOUT;
+--- a/drivers/watchdog/w83977f_wdt.c
++++ b/drivers/watchdog/w83977f_wdt.c
+@@ -50,7 +50,7 @@ static	int timeoutW;			/* timeout in watchdog counter units */
+ static	unsigned long timer_alive;
+ static	int testmode;
+ static	char expect_close;
+-static	spinlock_t spinlock;
++static	DEFINE_SPINLOCK(spinlock);
+ 
+ module_param(timeout, int, 0);
+ MODULE_PARM_DESC(timeout,"Watchdog timeout in seconds (15..7635), default=" __MODULE_STRING(DEFAULT_TIMEOUT) ")");
+@@ -476,8 +476,6 @@ static int __init w83977f_wdt_init(void)
+ 
+         printk(KERN_INFO PFX DRIVER_VERSION);
+ 
+-	spin_lock_init(&spinlock);
+-
+ 	/*
+ 	 * Check that the timeout value is within it's range ; 
+ 	 * if not reset to the default
+--- a/drivers/watchdog/wafer5823wdt.c
++++ b/drivers/watchdog/wafer5823wdt.c
+@@ -45,7 +45,7 @@
+ 
+ static unsigned long wafwdt_is_open;
+ static char expect_close;
+-static spinlock_t wafwdt_lock;
++static DEFINE_SPINLOCK(wafwdt_lock);
+ 
+ /*
+  *	You must set these - there is no sane way to probe for this board.
+@@ -252,8 +252,6 @@ static int __init wafwdt_init(void)
+ 
+ 	printk(KERN_INFO "WDT driver for Wafer 5823 single board computer initialising.\n");
+ 
+-	spin_lock_init(&wafwdt_lock);
+-
+ 	if (timeout < 1 || timeout > 255) {
+ 		timeout = WD_TIMO;
+ 		printk (KERN_INFO PFX "timeout value must be 1<=x<=255, using %d\n",
+--- a/drivers/watchdog/wdt977.c
++++ b/drivers/watchdog/wdt977.c
+@@ -59,7 +59,7 @@ static	int timeoutM;				/* timeout in minutes */
+ static	unsigned long timer_alive;
+ static	int testmode;
+ static	char expect_close;
+-static	spinlock_t spinlock;
++static	DEFINE_SPINLOCK(spinlock);
+ 
+ module_param(timeout, int, 0);
+ MODULE_PARM_DESC(timeout,"Watchdog timeout in seconds (60..15300), default=" __MODULE_STRING(DEFAULT_TIMEOUT) ")");
+@@ -448,8 +448,6 @@ static int __init wd977_init(void)
+ 
+ 	printk(KERN_INFO PFX DRIVER_VERSION);
+ 
+-	spin_lock_init(&spinlock);
+-
+ 	/* Check that the timeout value is within it's range ; if not reset to the default */
+ 	if (wdt977_set_timeout(timeout))
+ 	{
+--- a/drivers/watchdog/wdt_pci.c
++++ b/drivers/watchdog/wdt_pci.c
+@@ -74,7 +74,7 @@
+ static int dev_count;
+ 
+ static struct semaphore open_sem;
+-static spinlock_t wdtpci_lock;
++static DEFINE_SPINLOCK(wdtpci_lock);
+ static char expect_close;
+ 
+ static int io;
+@@ -606,7 +606,6 @@ static int __devinit wdtpci_init_one (struct pci_dev *dev,
+ 	}
+ 
+ 	sema_init(&open_sem, 1);
+-	spin_lock_init(&wdtpci_lock);
+ 
+ 	irq = dev->irq;
+ 	io = pci_resource_start (dev, 2);
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
