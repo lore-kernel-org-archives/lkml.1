@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbXJ2Us4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbXJ2Uwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbXJ2Us4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXJ2Uss
+	id S1753432AbXJ2Uwq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXJ2Uwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:48:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37153 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbXJ2Usr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:48:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Date: Mon, 29 Oct 2007 22:05:10 +0100
-User-Agent: KMail/1.9.5
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20071029201955.GA1955@titan.lahn.de>
-In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
+	Mon, 29 Oct 2007 16:52:39 -0400
+Received: from rn-out-0910.google.com ([64.233.170.189]:13429 "EHLO
+	rn-out-0102.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752066AbXJ2Uwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:52:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=R6DCwPOOfbjREAHfbBsSn+wmt60EYRXckKxPFEFfRfU45EaYthT/EGKeJSMS6F47CHoXdlkCM+UWA5Htm35XcYd7hP8gDQ1sotsfF20FBWqMKAW6qLDMuDlcF27QTK6sEimEdibjVaIhKfZIJ3AQuxhgyV/R9E8NTocAzWzo64Y=
+Message-ID: <b3790d380710291352k83e04ebl331f8bb784ba218c@mail.gmail.com>
+Date: Mon, 29 Oct 2007 21:52:35 +0100
+From: "Wijnand Rietman" <wijnand.rietman@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_IDEDMA_AUTO & 2.4.32 & hdparm -d1
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+In-Reply-To: <20071029194241.GA27646@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710292205.11459.rjw@sisk.pl>
+References: <b3790d380710290605g5d1770fao675418f062f111b9@mail.gmail.com>
+	 <20071029194241.GA27646@csclub.uwaterloo.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
-> Hello Thomas, Pavel, Rafael!
-> 
-> I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> /sys/power/state), the notebook hangs showing the following lines:
->         Stopping tasks ... done.
->         Shrinking memory... done (49361 pages freed)
->         Freed 197444 kbytes in 0.64 seconds (308.50 MB/s)
->         Suspending console(s)
-> 
-> When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> continues and the notebook powers off.
-> On reboot, the notebook resumes but hangs showing the following screen:
->         Stopping tasks ... done.
->         Loading image data pages (62483 pages) ... done
->         Read 249932 kbytes in 18.63 seconds (13.41 MB/s)
->         Suspending console(s)
-> 
-> Generating interrupts by pressing keys or moving the TrackPoints makes
-> the resume continue. But after that, the notebook looses time, xterms
-> don't get updated until I press a key, the beeper beeps until I press a
-> key, etc.
-> 
-> Any idea what the problem might be?
+> The way I booted was to
+> pass 'ide=nodma' and that worked fine (at least on the sc1200).
+>
+> I could enable dma with hdparm later if I wanted (which of course made
+> the ide driver rather upset when it tried to then use the non existant
+> dma lines).
+>
+> --
+> Len Sorensen
+>
 
-Nope.
+Thanks Lens for the suggestion!
 
-> DMESG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.dmesg
-> CONFIG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.config
-> 
-> If you need more data, just ask.
-
-Please try to do "echo shutdown > /sys/power/disk" before hibernation and
-see what happens.
-
-Also, is it an SMP kernel or UP?
-
-Rafael
+Unfortunately this option doesn't work either. When I pass the "nodma"
+paramater to the kernel, it boots with DMA disabled (like it should),
+but doesn't allow DMA to be enabled anymore with hdparm.
