@@ -1,35 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbXJ2Vff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXJ2VnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbXJ2Vff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXJ2VfQ
+	id S1753289AbXJ2VnW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXJ2VnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:35:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58337 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755127AbXJ2VfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:35:14 -0400
-Message-ID: <4726520F.1020605@garzik.org>
-Date: Mon, 29 Oct 2007 17:35:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
+	Mon, 29 Oct 2007 17:43:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39816 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751889AbXJ2VnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:43:07 -0400
+Date: Mon, 29 Oct 2007 14:40:16 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Jeff Garzik <jgarzik@pobox.com>
 Subject: Re: [bug, 2.6.24-rc1] sysfs: duplicate filename 'eth0' can not be
  created
-References: <20071029211746.GA19876@elte.hu>
+Message-ID: <20071029144016.06c03b7c@freepuppy.rosehill>
 In-Reply-To: <20071029211746.GA19876@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20071029211746.GA19876@elte.hu>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Mon, 29 Oct 2007 22:17:46 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
+> 
 > hm, this seems to have popped up in the last few days, never had it 
 > before:
 > 
@@ -62,13 +65,24 @@ Ingo Molnar wrote:
 >   eth1: RealTek RTL8139 at 0xffffc200001f2000
 > 
 > and that's the ordering in /etc/sysconfig/network-scripts as well.
-
-Does your setup do anything like try to rename the interfaces?
-
-I cannot think of anything that changed recently in this area in net, 
-off the top of my head.
-
-	Jeff
+> 
+> 	Ingo
 
 
+Already fixed post 2.6.24-rc1
 
+commit c8d90dca3211966ba5189e0f3d4bccd558d9ae08
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Fri Oct 26 03:53:42 2007 -0700
+
+    [NET] dev_change_name: ignore changes to same name
+    
+    Prevent error/backtrace from dev_rename() when changing
+    name of network device to the same name. This is a common
+    situation with udev and other scripts that bind addr to device.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
