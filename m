@@ -1,1116 +1,510 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbXJ2Oa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbXJ2Oav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbXJ2Oa0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXJ2O3p
+	id S1758300AbXJ2Oav (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbXJ2OaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:29:45 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39781 "EHLO smtp.polymtl.ca"
+	Mon, 29 Oct 2007 10:30:19 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:39812 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757626AbXJ2O3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:29:42 -0400
-Message-Id: <20071029142939.899008878@polymtl.ca>
+	id S1754647AbXJ2O3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 10:29:44 -0400
+Message-Id: <20071029142938.491677638@polymtl.ca>
 References: <20071029142646.699058449@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 29 Oct 2007 10:26:50 -0400
+Date: Mon, 29 Oct 2007 10:26:47 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 04/10] Move Linux Kernel Markers to instrumentation directory
-Content-Disposition: inline; filename=move-markers-to-instrumentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 29 Oct 2007 14:29:40 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Randy Dunlap <rdunlap@xenotime.net>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [patch 01/10] Create instrumentation directory
+Content-Disposition: inline; filename=create-instrumentation-dir.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 29 Oct 2007 14:29:39 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- instrumentation/Makefile |    1 
- instrumentation/marker.c |  525 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/Makefile          |    1 
- kernel/marker.c          |  525 -----------------------------------------------
- 4 files changed, 526 insertions(+), 526 deletions(-)
+Since we already have the Instrumentation menu in
+kernel/Kconfig.instrumentation and instrumentation code all over the
+kernel tree:
 
-Index: linux-2.6-lttng.stable/instrumentation/Makefile
-===================================================================
---- linux-2.6-lttng.stable.orig/instrumentation/Makefile	2007-10-29 09:51:46.000000000 -0400
-+++ linux-2.6-lttng.stable/instrumentation/Makefile	2007-10-29 09:52:09.000000000 -0400
-@@ -3,3 +3,4 @@
- #
- 
- obj-$(CONFIG_KPROBES) += kprobes.o
-+obj-$(CONFIG_MARKERS) += marker.o
-Index: linux-2.6-lttng.stable/instrumentation/marker.c
+arch/*/oprofile/*.c
+kernel/kprobes.c
+arch/*/kernel/kprobes.c
+kernel/marker.c
+kernel/profile.c
+kernel/lockdep.c
+vm/vmstat.c
+block/blktrace.c
+
+We could move them to
+
+instrumentation/
+arch/*/instrumentation/
+
+Therefore, we could also move the kprobes and marker samples under
+
+instrumentation/samples/
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Randy Dunlap <rdunlap@xenotime.net>
+CC: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/alpha/Kconfig             |    2 -
+ arch/arm/Kconfig               |    2 -
+ arch/blackfin/Kconfig          |    2 -
+ arch/cris/Kconfig              |    2 -
+ arch/frv/Kconfig               |    2 -
+ arch/h8300/Kconfig             |    2 -
+ arch/i386/Kconfig              |    2 -
+ arch/ia64/Kconfig              |    2 -
+ arch/m32r/Kconfig              |    2 -
+ arch/m68k/Kconfig              |    2 -
+ arch/m68knommu/Kconfig         |    2 -
+ arch/mips/Kconfig              |    2 -
+ arch/parisc/Kconfig            |    2 -
+ arch/powerpc/Kconfig           |    2 -
+ arch/ppc/Kconfig               |    2 -
+ arch/s390/Kconfig              |    2 -
+ arch/sh/Kconfig                |    2 -
+ arch/sh64/Kconfig              |    2 -
+ arch/sparc/Kconfig             |    2 -
+ arch/sparc64/Kconfig           |    2 -
+ arch/um/Kconfig                |    2 -
+ arch/v850/Kconfig              |    2 -
+ arch/x86_64/Kconfig            |    2 -
+ arch/xtensa/Kconfig            |    2 -
+ instrumentation/Kconfig        |   49 +++++++++++++++++++++++++++++++++++++++++
+ instrumentation/Makefile       |    3 ++
+ kernel/Kconfig.instrumentation |   49 -----------------------------------------
+ 27 files changed, 76 insertions(+), 73 deletions(-)
+
+Index: linux-2.6-lttng.stable/instrumentation/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng.stable/instrumentation/marker.c	2007-10-29 09:51:51.000000000 -0400
-@@ -0,0 +1,525 @@
-+/*
-+ * Copyright (C) 2007 Mathieu Desnoyers
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/types.h>
-+#include <linux/jhash.h>
-+#include <linux/list.h>
-+#include <linux/rcupdate.h>
-+#include <linux/marker.h>
-+#include <linux/err.h>
++++ linux-2.6-lttng.stable/instrumentation/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -0,0 +1,49 @@
++menuconfig INSTRUMENTATION
++	bool "Instrumentation Support"
++	default y
++	---help---
++	  Say Y here to get to see options related to performance measurement,
++	  system-wide debugging, and testing. This option alone does not add any
++	  kernel code.
 +
-+extern struct marker __start___markers[];
-+extern struct marker __stop___markers[];
++	  If you say N, all options in this submenu will be skipped and
++	  disabled. If you're trying to debug the kernel itself, go see the
++	  Kernel Hacking menu.
 +
-+/*
-+ * module_mutex nests inside markers_mutex. Markers mutex protects the builtin
-+ * and module markers, the hash table and deferred_sync.
-+ */
-+static DEFINE_MUTEX(markers_mutex);
++if INSTRUMENTATION
 +
-+/*
-+ * Marker deferred synchronization.
-+ * Upon marker probe_unregister, we delay call to synchronize_sched() to
-+ * accelerate mass unregistration (only when there is no more reference to a
-+ * given module do we call synchronize_sched()). However, we need to make sure
-+ * every critical region has ended before we re-arm a marker that has been
-+ * unregistered and then registered back with a different probe data.
-+ */
-+static int deferred_sync;
++config PROFILING
++	bool "Profiling support (EXPERIMENTAL)"
++	help
++	  Say Y here to enable the extended profiling support mechanisms used
++	  by profilers such as OProfile.
 +
-+/*
-+ * Marker hash table, containing the active markers.
-+ * Protected by module_mutex.
-+ */
-+#define MARKER_HASH_BITS 6
-+#define MARKER_TABLE_SIZE (1 << MARKER_HASH_BITS)
++config OPROFILE
++	tristate "OProfile system profiling (EXPERIMENTAL)"
++	depends on PROFILING
++	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
++	help
++	  OProfile is a profiling system capable of profiling the
++	  whole system, include the kernel, kernel modules, libraries,
++	  and applications.
 +
-+struct marker_entry {
-+	struct hlist_node hlist;
-+	char *format;
-+	marker_probe_func *probe;
-+	void *private;
-+	int refcount;	/* Number of times armed. 0 if disarmed. */
-+	char name[0];	/* Contains name'\0'format'\0' */
-+};
++	  If unsure, say N.
 +
-+static struct hlist_head marker_table[MARKER_TABLE_SIZE];
++config KPROBES
++	bool "Kprobes"
++	depends on KALLSYMS && MODULES
++	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
++	help
++	  Kprobes allows you to trap at almost any kernel address and
++	  execute a callback function.  register_kprobe() establishes
++	  a probepoint and specifies the callback.  Kprobes is useful
++	  for kernel debugging, non-intrusive instrumentation and testing.
++	  If in doubt, say "N".
 +
-+/**
-+ * __mark_empty_function - Empty probe callback
-+ * @mdata: pointer of type const struct marker
-+ * @fmt: format string
-+ * @...: variable argument list
-+ *
-+ * Empty callback provided as a probe to the markers. By providing this to a
-+ * disabled marker, we make sure the  execution flow is always valid even
-+ * though the function pointer change and the marker enabling are two distinct
-+ * operations that modifies the execution flow of preemptible code.
-+ */
-+void __mark_empty_function(const struct marker *mdata, void *private,
-+	const char *fmt, ...)
-+{
-+}
-+EXPORT_SYMBOL_GPL(__mark_empty_function);
++config MARKERS
++	bool "Activate markers"
++	help
++	  Place an empty function call at each marker site. Can be
++	  dynamically changed for a probe function.
 +
-+/*
-+ * Get marker if the marker is present in the marker hash table.
-+ * Must be called with markers_mutex held.
-+ * Returns NULL if not present.
-+ */
-+static struct marker_entry *get_marker(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	u32 hash = jhash(name, strlen(name), 0);
-+
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(name, e->name))
-+			return e;
-+	}
-+	return NULL;
-+}
-+
-+/*
-+ * Add the marker to the marker hash table. Must be called with markers_mutex
-+ * held.
-+ */
-+static int add_marker(const char *name, const char *format,
-+	marker_probe_func *probe, void *private)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	size_t name_len = strlen(name) + 1;
-+	size_t format_len = 0;
-+	u32 hash = jhash(name, name_len-1, 0);
-+
-+	if (format)
-+		format_len = strlen(format) + 1;
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(name, e->name)) {
-+			printk(KERN_NOTICE
-+				"Marker %s busy, probe %p already installed\n",
-+				name, e->probe);
-+			return -EBUSY;	/* Already there */
-+		}
-+	}
-+	/*
-+	 * Using kmalloc here to allocate a variable length element. Could
-+	 * cause some memory fragmentation if overused.
-+	 */
-+	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
-+			GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+	memcpy(&e->name[0], name, name_len);
-+	if (format) {
-+		e->format = &e->name[name_len];
-+		memcpy(e->format, format, format_len);
-+		trace_mark(core_marker_format, "name %s format %s",
-+				e->name, e->format);
-+	} else
-+		e->format = NULL;
-+	e->probe = probe;
-+	e->private = private;
-+	e->refcount = 0;
-+	hlist_add_head(&e->hlist, head);
-+	return 0;
-+}
-+
-+/*
-+ * Remove the marker from the marker hash table. Must be called with mutex_lock
-+ * held.
-+ */
-+static void *remove_marker(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	int found = 0;
-+	size_t len = strlen(name) + 1;
-+	void *private = NULL;
-+	u32 hash = jhash(name, len-1, 0);
-+
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(name, e->name)) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (found) {
-+		private = e->private;
-+		hlist_del(&e->hlist);
-+		kfree(e);
-+	}
-+	return private;
-+}
-+
-+/*
-+ * Set the mark_entry format to the format found in the element.
-+ */
-+static int marker_set_format(struct marker_entry **entry, const char *format)
-+{
-+	struct marker_entry *e;
-+	size_t name_len = strlen((*entry)->name) + 1;
-+	size_t format_len = strlen(format) + 1;
-+
-+	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
-+			GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+	memcpy(&e->name[0], (*entry)->name, name_len);
-+	e->format = &e->name[name_len];
-+	memcpy(e->format, format, format_len);
-+	e->probe = (*entry)->probe;
-+	e->private = (*entry)->private;
-+	e->refcount = (*entry)->refcount;
-+	hlist_add_before(&e->hlist, &(*entry)->hlist);
-+	hlist_del(&(*entry)->hlist);
-+	kfree(*entry);
-+	*entry = e;
-+	trace_mark(core_marker_format, "name %s format %s",
-+			e->name, e->format);
-+	return 0;
-+}
-+
-+/*
-+ * Sets the probe callback corresponding to one marker.
-+ */
-+static int set_marker(struct marker_entry **entry, struct marker *elem)
-+{
-+	int ret;
-+	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
-+
-+	if ((*entry)->format) {
-+		if (strcmp((*entry)->format, elem->format) != 0) {
-+			printk(KERN_NOTICE
-+				"Format mismatch for probe %s "
-+				"(%s), marker (%s)\n",
-+				(*entry)->name,
-+				(*entry)->format,
-+				elem->format);
-+			return -EPERM;
-+		}
-+	} else {
-+		ret = marker_set_format(entry, elem->format);
-+		if (ret)
-+			return ret;
-+	}
-+	elem->call = (*entry)->probe;
-+	elem->private = (*entry)->private;
-+	elem->state = 1;
-+	return 0;
-+}
-+
-+/*
-+ * Disable a marker and its probe callback.
-+ * Note: only after a synchronize_sched() issued after setting elem->call to the
-+ * empty function insures that the original callback is not used anymore. This
-+ * insured by preemption disabling around the call site.
-+ */
-+static void disable_marker(struct marker *elem)
-+{
-+	elem->state = 0;
-+	elem->call = __mark_empty_function;
-+	/*
-+	 * Leave the private data and id there, because removal is racy and
-+	 * should be done only after a synchronize_sched(). These are never used
-+	 * until the next initialization anyway.
-+	 */
-+}
-+
-+/**
-+ * marker_update_probe_range - Update a probe range
-+ * @begin: beginning of the range
-+ * @end: end of the range
-+ * @probe_module: module address of the probe being updated
-+ * @refcount: number of references left to the given probe_module (out)
-+ *
-+ * Updates the probe callback corresponding to a range of markers.
-+ * Must be called with markers_mutex held.
-+ */
-+void marker_update_probe_range(struct marker *begin,
-+	struct marker *end, struct module *probe_module,
-+	int *refcount)
-+{
-+	struct marker *iter;
-+	struct marker_entry *mark_entry;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		mark_entry = get_marker(iter->name);
-+		if (mark_entry && mark_entry->refcount) {
-+			set_marker(&mark_entry, iter);
-+			/*
-+			 * ignore error, continue
-+			 */
-+			if (probe_module)
-+				if (probe_module ==
-+			__module_text_address((unsigned long)mark_entry->probe))
-+					(*refcount)++;
-+		} else {
-+			disable_marker(iter);
-+		}
-+	}
-+}
-+
-+/*
-+ * Update probes, removing the faulty probes.
-+ * Issues a synchronize_sched() when no reference to the module passed
-+ * as parameter is found in the probes so the probe module can be
-+ * safely unloaded from now on.
-+ */
-+static void marker_update_probes(struct module *probe_module)
-+{
-+	int refcount = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	/* Core kernel markers */
-+	marker_update_probe_range(__start___markers,
-+			__stop___markers, probe_module, &refcount);
-+	/* Markers in modules. */
-+	module_update_markers(probe_module, &refcount);
-+	if (probe_module && refcount == 0) {
-+		synchronize_sched();
-+		deferred_sync = 0;
-+	}
-+	mutex_unlock(&markers_mutex);
-+}
-+
-+/**
-+ * marker_probe_register -  Connect a probe to a marker
-+ * @name: marker name
-+ * @format: format string
-+ * @probe: probe handler
-+ * @private: probe private data
-+ *
-+ * private data must be a valid allocated memory address, or NULL.
-+ * Returns 0 if ok, error value on error.
-+ */
-+int marker_probe_register(const char *name, const char *format,
-+			marker_probe_func *probe, void *private)
-+{
-+	struct marker_entry *entry;
-+	int ret = 0, need_update = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	entry = get_marker(name);
-+	if (entry && entry->refcount) {
-+		ret = -EBUSY;
-+		goto end;
-+	}
-+	if (deferred_sync) {
-+		synchronize_sched();
-+		deferred_sync = 0;
-+	}
-+	ret = add_marker(name, format, probe, private);
-+	if (ret)
-+		goto end;
-+	need_update = 1;
-+end:
-+	mutex_unlock(&markers_mutex);
-+	if (need_update)
-+		marker_update_probes(NULL);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(marker_probe_register);
-+
-+/**
-+ * marker_probe_unregister -  Disconnect a probe from a marker
-+ * @name: marker name
-+ *
-+ * Returns the private data given to marker_probe_register, or an ERR_PTR().
-+ */
-+void *marker_probe_unregister(const char *name)
-+{
-+	struct module *probe_module;
-+	struct marker_entry *entry;
-+	void *private;
-+	int need_update = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	entry = get_marker(name);
-+	if (!entry) {
-+		private = ERR_PTR(-ENOENT);
-+		goto end;
-+	}
-+	entry->refcount = 0;
-+	/* In what module is the probe handler ? */
-+	probe_module = __module_text_address((unsigned long)entry->probe);
-+	private = remove_marker(name);
-+	deferred_sync = 1;
-+	need_update = 1;
-+end:
-+	mutex_unlock(&markers_mutex);
-+	if (need_update)
-+		marker_update_probes(probe_module);
-+	return private;
-+}
-+EXPORT_SYMBOL_GPL(marker_probe_unregister);
-+
-+/**
-+ * marker_probe_unregister_private_data -  Disconnect a probe from a marker
-+ * @private: probe private data
-+ *
-+ * Unregister a marker by providing the registered private data.
-+ * Returns the private data given to marker_probe_register, or an ERR_PTR().
-+ */
-+void *marker_probe_unregister_private_data(void *private)
-+{
-+	struct module *probe_module;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *entry;
-+	int found = 0;
-+	unsigned int i;
-+	int need_update = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
-+		head = &marker_table[i];
-+		hlist_for_each_entry(entry, node, head, hlist) {
-+			if (entry->private == private) {
-+				found = 1;
-+				goto iter_end;
-+			}
-+		}
-+	}
-+iter_end:
-+	if (!found) {
-+		private = ERR_PTR(-ENOENT);
-+		goto end;
-+	}
-+	entry->refcount = 0;
-+	/* In what module is the probe handler ? */
-+	probe_module = __module_text_address((unsigned long)entry->probe);
-+	private = remove_marker(entry->name);
-+	deferred_sync = 1;
-+	need_update = 1;
-+end:
-+	mutex_unlock(&markers_mutex);
-+	if (need_update)
-+		marker_update_probes(probe_module);
-+	return private;
-+}
-+EXPORT_SYMBOL_GPL(marker_probe_unregister_private_data);
-+
-+/**
-+ * marker_arm - Arm a marker
-+ * @name: marker name
-+ *
-+ * Activate a marker. It keeps a reference count of the number of
-+ * arming/disarming done.
-+ * Returns 0 if ok, error value on error.
-+ */
-+int marker_arm(const char *name)
-+{
-+	struct marker_entry *entry;
-+	int ret = 0, need_update = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	entry = get_marker(name);
-+	if (!entry) {
-+		ret = -ENOENT;
-+		goto end;
-+	}
-+	/*
-+	 * Only need to update probes when refcount passes from 0 to 1.
-+	 */
-+	if (entry->refcount++)
-+		goto end;
-+	need_update = 1;
-+end:
-+	mutex_unlock(&markers_mutex);
-+	if (need_update)
-+		marker_update_probes(NULL);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(marker_arm);
-+
-+/**
-+ * marker_disarm - Disarm a marker
-+ * @name: marker name
-+ *
-+ * Disarm a marker. It keeps a reference count of the number of arming/disarming
-+ * done.
-+ * Returns 0 if ok, error value on error.
-+ */
-+int marker_disarm(const char *name)
-+{
-+	struct marker_entry *entry;
-+	int ret = 0, need_update = 0;
-+
-+	mutex_lock(&markers_mutex);
-+	entry = get_marker(name);
-+	if (!entry) {
-+		ret = -ENOENT;
-+		goto end;
-+	}
-+	/*
-+	 * Only permit decrement refcount if higher than 0.
-+	 * Do probe update only on 1 -> 0 transition.
-+	 */
-+	if (entry->refcount) {
-+		if (--entry->refcount)
-+			goto end;
-+	} else {
-+		ret = -EPERM;
-+		goto end;
-+	}
-+	need_update = 1;
-+end:
-+	mutex_unlock(&markers_mutex);
-+	if (need_update)
-+		marker_update_probes(NULL);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(marker_disarm);
-+
-+/**
-+ * marker_get_private_data - Get a marker's probe private data
-+ * @name: marker name
-+ *
-+ * Returns the private data pointer, or an ERR_PTR.
-+ * The private data pointer should _only_ be dereferenced if the caller is the
-+ * owner of the data, or its content could vanish. This is mostly used to
-+ * confirm that a caller is the owner of a registered probe.
-+ */
-+void *marker_get_private_data(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	size_t name_len = strlen(name) + 1;
-+	u32 hash = jhash(name, name_len-1, 0);
-+	int found = 0;
-+
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist) {
-+		if (!strcmp(name, e->name)) {
-+			found = 1;
-+			return e->private;
-+		}
-+	}
-+	return ERR_PTR(-ENOENT);
-+}
-+EXPORT_SYMBOL_GPL(marker_get_private_data);
-Index: linux-2.6-lttng.stable/kernel/Makefile
++endif # INSTRUMENTATION
+Index: linux-2.6-lttng.stable/kernel/Kconfig.instrumentation
 ===================================================================
---- linux-2.6-lttng.stable.orig/kernel/Makefile	2007-10-29 09:51:38.000000000 -0400
-+++ linux-2.6-lttng.stable/kernel/Makefile	2007-10-29 09:51:51.000000000 -0400
-@@ -56,7 +56,6 @@ obj-$(CONFIG_RELAY) += relay.o
- obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
--obj-$(CONFIG_MARKERS) += marker.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: linux-2.6-lttng.stable/kernel/marker.c
-===================================================================
---- linux-2.6-lttng.stable.orig/kernel/marker.c	2007-10-29 09:51:06.000000000 -0400
+--- linux-2.6-lttng.stable.orig/kernel/Kconfig.instrumentation	2007-10-29 09:51:10.000000000 -0400
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,525 +0,0 @@
--/*
-- * Copyright (C) 2007 Mathieu Desnoyers
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-- */
--#include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/types.h>
--#include <linux/jhash.h>
--#include <linux/list.h>
--#include <linux/rcupdate.h>
--#include <linux/marker.h>
--#include <linux/err.h>
+@@ -1,49 +0,0 @@
+-menuconfig INSTRUMENTATION
+-	bool "Instrumentation Support"
+-	default y
+-	---help---
+-	  Say Y here to get to see options related to performance measurement,
+-	  system-wide debugging, and testing. This option alone does not add any
+-	  kernel code.
 -
--extern struct marker __start___markers[];
--extern struct marker __stop___markers[];
+-	  If you say N, all options in this submenu will be skipped and
+-	  disabled. If you're trying to debug the kernel itself, go see the
+-	  Kernel Hacking menu.
 -
--/*
-- * module_mutex nests inside markers_mutex. Markers mutex protects the builtin
-- * and module markers, the hash table and deferred_sync.
-- */
--static DEFINE_MUTEX(markers_mutex);
+-if INSTRUMENTATION
 -
--/*
-- * Marker deferred synchronization.
-- * Upon marker probe_unregister, we delay call to synchronize_sched() to
-- * accelerate mass unregistration (only when there is no more reference to a
-- * given module do we call synchronize_sched()). However, we need to make sure
-- * every critical region has ended before we re-arm a marker that has been
-- * unregistered and then registered back with a different probe data.
-- */
--static int deferred_sync;
+-config PROFILING
+-	bool "Profiling support (EXPERIMENTAL)"
+-	help
+-	  Say Y here to enable the extended profiling support mechanisms used
+-	  by profilers such as OProfile.
 -
--/*
-- * Marker hash table, containing the active markers.
-- * Protected by module_mutex.
-- */
--#define MARKER_HASH_BITS 6
--#define MARKER_TABLE_SIZE (1 << MARKER_HASH_BITS)
+-config OPROFILE
+-	tristate "OProfile system profiling (EXPERIMENTAL)"
+-	depends on PROFILING
+-	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
+-	help
+-	  OProfile is a profiling system capable of profiling the
+-	  whole system, include the kernel, kernel modules, libraries,
+-	  and applications.
 -
--struct marker_entry {
--	struct hlist_node hlist;
--	char *format;
--	marker_probe_func *probe;
--	void *private;
--	int refcount;	/* Number of times armed. 0 if disarmed. */
--	char name[0];	/* Contains name'\0'format'\0' */
--};
+-	  If unsure, say N.
 -
--static struct hlist_head marker_table[MARKER_TABLE_SIZE];
+-config KPROBES
+-	bool "Kprobes"
+-	depends on KALLSYMS && MODULES
+-	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
+-	help
+-	  Kprobes allows you to trap at almost any kernel address and
+-	  execute a callback function.  register_kprobe() establishes
+-	  a probepoint and specifies the callback.  Kprobes is useful
+-	  for kernel debugging, non-intrusive instrumentation and testing.
+-	  If in doubt, say "N".
 -
--/**
-- * __mark_empty_function - Empty probe callback
-- * @mdata: pointer of type const struct marker
-- * @fmt: format string
-- * @...: variable argument list
-- *
-- * Empty callback provided as a probe to the markers. By providing this to a
-- * disabled marker, we make sure the  execution flow is always valid even
-- * though the function pointer change and the marker enabling are two distinct
-- * operations that modifies the execution flow of preemptible code.
-- */
--void __mark_empty_function(const struct marker *mdata, void *private,
--	const char *fmt, ...)
--{
--}
--EXPORT_SYMBOL_GPL(__mark_empty_function);
+-config MARKERS
+-	bool "Activate markers"
+-	help
+-	  Place an empty function call at each marker site. Can be
+-	  dynamically changed for a probe function.
 -
--/*
-- * Get marker if the marker is present in the marker hash table.
-- * Must be called with markers_mutex held.
-- * Returns NULL if not present.
-- */
--static struct marker_entry *get_marker(const char *name)
--{
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct marker_entry *e;
--	u32 hash = jhash(name, strlen(name), 0);
--
--	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name))
--			return e;
--	}
--	return NULL;
--}
--
--/*
-- * Add the marker to the marker hash table. Must be called with markers_mutex
-- * held.
-- */
--static int add_marker(const char *name, const char *format,
--	marker_probe_func *probe, void *private)
--{
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct marker_entry *e;
--	size_t name_len = strlen(name) + 1;
--	size_t format_len = 0;
--	u32 hash = jhash(name, name_len-1, 0);
--
--	if (format)
--		format_len = strlen(format) + 1;
--	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name)) {
--			printk(KERN_NOTICE
--				"Marker %s busy, probe %p already installed\n",
--				name, e->probe);
--			return -EBUSY;	/* Already there */
--		}
--	}
--	/*
--	 * Using kmalloc here to allocate a variable length element. Could
--	 * cause some memory fragmentation if overused.
--	 */
--	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
--			GFP_KERNEL);
--	if (!e)
--		return -ENOMEM;
--	memcpy(&e->name[0], name, name_len);
--	if (format) {
--		e->format = &e->name[name_len];
--		memcpy(e->format, format, format_len);
--		trace_mark(core_marker_format, "name %s format %s",
--				e->name, e->format);
--	} else
--		e->format = NULL;
--	e->probe = probe;
--	e->private = private;
--	e->refcount = 0;
--	hlist_add_head(&e->hlist, head);
--	return 0;
--}
--
--/*
-- * Remove the marker from the marker hash table. Must be called with mutex_lock
-- * held.
-- */
--static void *remove_marker(const char *name)
--{
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct marker_entry *e;
--	int found = 0;
--	size_t len = strlen(name) + 1;
--	void *private = NULL;
--	u32 hash = jhash(name, len-1, 0);
--
--	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name)) {
--			found = 1;
--			break;
--		}
--	}
--	if (found) {
--		private = e->private;
--		hlist_del(&e->hlist);
--		kfree(e);
--	}
--	return private;
--}
--
--/*
-- * Set the mark_entry format to the format found in the element.
-- */
--static int marker_set_format(struct marker_entry **entry, const char *format)
--{
--	struct marker_entry *e;
--	size_t name_len = strlen((*entry)->name) + 1;
--	size_t format_len = strlen(format) + 1;
--
--	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
--			GFP_KERNEL);
--	if (!e)
--		return -ENOMEM;
--	memcpy(&e->name[0], (*entry)->name, name_len);
--	e->format = &e->name[name_len];
--	memcpy(e->format, format, format_len);
--	e->probe = (*entry)->probe;
--	e->private = (*entry)->private;
--	e->refcount = (*entry)->refcount;
--	hlist_add_before(&e->hlist, &(*entry)->hlist);
--	hlist_del(&(*entry)->hlist);
--	kfree(*entry);
--	*entry = e;
--	trace_mark(core_marker_format, "name %s format %s",
--			e->name, e->format);
--	return 0;
--}
--
--/*
-- * Sets the probe callback corresponding to one marker.
-- */
--static int set_marker(struct marker_entry **entry, struct marker *elem)
--{
--	int ret;
--	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
--
--	if ((*entry)->format) {
--		if (strcmp((*entry)->format, elem->format) != 0) {
--			printk(KERN_NOTICE
--				"Format mismatch for probe %s "
--				"(%s), marker (%s)\n",
--				(*entry)->name,
--				(*entry)->format,
--				elem->format);
--			return -EPERM;
--		}
--	} else {
--		ret = marker_set_format(entry, elem->format);
--		if (ret)
--			return ret;
--	}
--	elem->call = (*entry)->probe;
--	elem->private = (*entry)->private;
--	elem->state = 1;
--	return 0;
--}
--
--/*
-- * Disable a marker and its probe callback.
-- * Note: only after a synchronize_sched() issued after setting elem->call to the
-- * empty function insures that the original callback is not used anymore. This
-- * insured by preemption disabling around the call site.
-- */
--static void disable_marker(struct marker *elem)
--{
--	elem->state = 0;
--	elem->call = __mark_empty_function;
--	/*
--	 * Leave the private data and id there, because removal is racy and
--	 * should be done only after a synchronize_sched(). These are never used
--	 * until the next initialization anyway.
--	 */
--}
--
--/**
-- * marker_update_probe_range - Update a probe range
-- * @begin: beginning of the range
-- * @end: end of the range
-- * @probe_module: module address of the probe being updated
-- * @refcount: number of references left to the given probe_module (out)
-- *
-- * Updates the probe callback corresponding to a range of markers.
-- * Must be called with markers_mutex held.
-- */
--void marker_update_probe_range(struct marker *begin,
--	struct marker *end, struct module *probe_module,
--	int *refcount)
--{
--	struct marker *iter;
--	struct marker_entry *mark_entry;
--
--	for (iter = begin; iter < end; iter++) {
--		mark_entry = get_marker(iter->name);
--		if (mark_entry && mark_entry->refcount) {
--			set_marker(&mark_entry, iter);
--			/*
--			 * ignore error, continue
--			 */
--			if (probe_module)
--				if (probe_module ==
--			__module_text_address((unsigned long)mark_entry->probe))
--					(*refcount)++;
--		} else {
--			disable_marker(iter);
--		}
--	}
--}
--
--/*
-- * Update probes, removing the faulty probes.
-- * Issues a synchronize_sched() when no reference to the module passed
-- * as parameter is found in the probes so the probe module can be
-- * safely unloaded from now on.
-- */
--static void marker_update_probes(struct module *probe_module)
--{
--	int refcount = 0;
--
--	mutex_lock(&markers_mutex);
--	/* Core kernel markers */
--	marker_update_probe_range(__start___markers,
--			__stop___markers, probe_module, &refcount);
--	/* Markers in modules. */
--	module_update_markers(probe_module, &refcount);
--	if (probe_module && refcount == 0) {
--		synchronize_sched();
--		deferred_sync = 0;
--	}
--	mutex_unlock(&markers_mutex);
--}
--
--/**
-- * marker_probe_register -  Connect a probe to a marker
-- * @name: marker name
-- * @format: format string
-- * @probe: probe handler
-- * @private: probe private data
-- *
-- * private data must be a valid allocated memory address, or NULL.
-- * Returns 0 if ok, error value on error.
-- */
--int marker_probe_register(const char *name, const char *format,
--			marker_probe_func *probe, void *private)
--{
--	struct marker_entry *entry;
--	int ret = 0, need_update = 0;
--
--	mutex_lock(&markers_mutex);
--	entry = get_marker(name);
--	if (entry && entry->refcount) {
--		ret = -EBUSY;
--		goto end;
--	}
--	if (deferred_sync) {
--		synchronize_sched();
--		deferred_sync = 0;
--	}
--	ret = add_marker(name, format, probe, private);
--	if (ret)
--		goto end;
--	need_update = 1;
--end:
--	mutex_unlock(&markers_mutex);
--	if (need_update)
--		marker_update_probes(NULL);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(marker_probe_register);
--
--/**
-- * marker_probe_unregister -  Disconnect a probe from a marker
-- * @name: marker name
-- *
-- * Returns the private data given to marker_probe_register, or an ERR_PTR().
-- */
--void *marker_probe_unregister(const char *name)
--{
--	struct module *probe_module;
--	struct marker_entry *entry;
--	void *private;
--	int need_update = 0;
--
--	mutex_lock(&markers_mutex);
--	entry = get_marker(name);
--	if (!entry) {
--		private = ERR_PTR(-ENOENT);
--		goto end;
--	}
--	entry->refcount = 0;
--	/* In what module is the probe handler ? */
--	probe_module = __module_text_address((unsigned long)entry->probe);
--	private = remove_marker(name);
--	deferred_sync = 1;
--	need_update = 1;
--end:
--	mutex_unlock(&markers_mutex);
--	if (need_update)
--		marker_update_probes(probe_module);
--	return private;
--}
--EXPORT_SYMBOL_GPL(marker_probe_unregister);
--
--/**
-- * marker_probe_unregister_private_data -  Disconnect a probe from a marker
-- * @private: probe private data
-- *
-- * Unregister a marker by providing the registered private data.
-- * Returns the private data given to marker_probe_register, or an ERR_PTR().
-- */
--void *marker_probe_unregister_private_data(void *private)
--{
--	struct module *probe_module;
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct marker_entry *entry;
--	int found = 0;
--	unsigned int i;
--	int need_update = 0;
--
--	mutex_lock(&markers_mutex);
--	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
--		head = &marker_table[i];
--		hlist_for_each_entry(entry, node, head, hlist) {
--			if (entry->private == private) {
--				found = 1;
--				goto iter_end;
--			}
--		}
--	}
--iter_end:
--	if (!found) {
--		private = ERR_PTR(-ENOENT);
--		goto end;
--	}
--	entry->refcount = 0;
--	/* In what module is the probe handler ? */
--	probe_module = __module_text_address((unsigned long)entry->probe);
--	private = remove_marker(entry->name);
--	deferred_sync = 1;
--	need_update = 1;
--end:
--	mutex_unlock(&markers_mutex);
--	if (need_update)
--		marker_update_probes(probe_module);
--	return private;
--}
--EXPORT_SYMBOL_GPL(marker_probe_unregister_private_data);
--
--/**
-- * marker_arm - Arm a marker
-- * @name: marker name
-- *
-- * Activate a marker. It keeps a reference count of the number of
-- * arming/disarming done.
-- * Returns 0 if ok, error value on error.
-- */
--int marker_arm(const char *name)
--{
--	struct marker_entry *entry;
--	int ret = 0, need_update = 0;
--
--	mutex_lock(&markers_mutex);
--	entry = get_marker(name);
--	if (!entry) {
--		ret = -ENOENT;
--		goto end;
--	}
--	/*
--	 * Only need to update probes when refcount passes from 0 to 1.
--	 */
--	if (entry->refcount++)
--		goto end;
--	need_update = 1;
--end:
--	mutex_unlock(&markers_mutex);
--	if (need_update)
--		marker_update_probes(NULL);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(marker_arm);
--
--/**
-- * marker_disarm - Disarm a marker
-- * @name: marker name
-- *
-- * Disarm a marker. It keeps a reference count of the number of arming/disarming
-- * done.
-- * Returns 0 if ok, error value on error.
-- */
--int marker_disarm(const char *name)
--{
--	struct marker_entry *entry;
--	int ret = 0, need_update = 0;
--
--	mutex_lock(&markers_mutex);
--	entry = get_marker(name);
--	if (!entry) {
--		ret = -ENOENT;
--		goto end;
--	}
--	/*
--	 * Only permit decrement refcount if higher than 0.
--	 * Do probe update only on 1 -> 0 transition.
--	 */
--	if (entry->refcount) {
--		if (--entry->refcount)
--			goto end;
--	} else {
--		ret = -EPERM;
--		goto end;
--	}
--	need_update = 1;
--end:
--	mutex_unlock(&markers_mutex);
--	if (need_update)
--		marker_update_probes(NULL);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(marker_disarm);
--
--/**
-- * marker_get_private_data - Get a marker's probe private data
-- * @name: marker name
-- *
-- * Returns the private data pointer, or an ERR_PTR.
-- * The private data pointer should _only_ be dereferenced if the caller is the
-- * owner of the data, or its content could vanish. This is mostly used to
-- * confirm that a caller is the owner of a registered probe.
-- */
--void *marker_get_private_data(const char *name)
--{
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct marker_entry *e;
--	size_t name_len = strlen(name) + 1;
--	u32 hash = jhash(name, name_len-1, 0);
--	int found = 0;
--
--	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name)) {
--			found = 1;
--			return e->private;
--		}
--	}
--	return ERR_PTR(-ENOENT);
--}
--EXPORT_SYMBOL_GPL(marker_get_private_data);
+-endif # INSTRUMENTATION
+Index: linux-2.6-lttng.stable/arch/alpha/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/alpha/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/alpha/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -654,7 +654,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/alpha/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/arm/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/arm/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/arm/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -1068,7 +1068,7 @@ endmenu
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/arm/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/blackfin/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/blackfin/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/blackfin/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -1062,7 +1062,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ menu "Kernel hacking"
+ 
+Index: linux-2.6-lttng.stable/arch/cris/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/cris/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/cris/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -196,7 +196,7 @@ source "sound/Kconfig"
+ 
+ source "drivers/usb/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/cris/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/frv/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/frv/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/frv/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -375,7 +375,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/frv/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/h8300/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/h8300/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/h8300/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -223,7 +223,7 @@ endmenu
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/h8300/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/i386/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/i386/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/i386/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -1270,7 +1270,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/i386/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/ia64/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/ia64/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/ia64/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -592,7 +592,7 @@ config IRQ_PER_CPU
+ 
+ source "arch/ia64/hp/sim/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/ia64/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/m32r/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/m32r/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/m32r/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -426,7 +426,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/m32r/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/m68k/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/m68k/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/m68k/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -683,7 +683,7 @@ endmenu
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/m68k/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/m68knommu/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/m68knommu/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/m68knommu/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -707,7 +707,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/m68knommu/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/mips/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/mips/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/mips/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -2009,7 +2009,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/mips/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/parisc/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/parisc/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/parisc/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -267,7 +267,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/parisc/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/powerpc/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/powerpc/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -669,7 +669,7 @@ source "arch/powerpc/sysdev/qe_lib/Kconf
+ 
+ source "lib/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/powerpc/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/ppc/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/ppc/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/ppc/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -1317,7 +1317,7 @@ endmenu
+ 
+ source "lib/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/ppc/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/s390/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/s390/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/s390/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -529,7 +529,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/s390/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/sh/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/sh/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/sh/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -758,7 +758,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/sh/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/sh64/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/sh64/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/sh64/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -284,7 +284,7 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/sh64/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/sparc/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/sparc/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/sparc/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -320,7 +320,7 @@ endmenu
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/sparc/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/sparc64/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/sparc64/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/sparc64/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -462,7 +462,7 @@ source "drivers/sbus/char/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/sparc64/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/um/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/um/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/um/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -289,6 +289,6 @@ config INPUT
+ 	bool
+ 	default n
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/um/Kconfig.debug"
+Index: linux-2.6-lttng.stable/arch/v850/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/v850/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/v850/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -331,7 +331,7 @@ source "sound/Kconfig"
+ 
+ source "drivers/usb/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/v850/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/x86_64/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/x86_64/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -833,7 +833,7 @@ source "drivers/firmware/Kconfig"
+ 
+ source fs/Kconfig
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/x86_64/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/arch/xtensa/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/arch/xtensa/Kconfig	2007-10-29 09:51:10.000000000 -0400
++++ linux-2.6-lttng.stable/arch/xtensa/Kconfig	2007-10-29 09:51:12.000000000 -0400
+@@ -251,7 +251,7 @@ config EMBEDDED_RAMDISK_IMAGE
+ 	  provide one yourself.
+ endmenu
+ 
+-source "kernel/Kconfig.instrumentation"
++source "instrumentation/Kconfig"
+ 
+ source "arch/xtensa/Kconfig.debug"
+ 
+Index: linux-2.6-lttng.stable/instrumentation/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.stable/instrumentation/Makefile	2007-10-29 09:51:12.000000000 -0400
+@@ -0,0 +1,3 @@
++#
++# Makefile for the linux kernel instrumentation
++#
 
 -- 
 Mathieu Desnoyers
