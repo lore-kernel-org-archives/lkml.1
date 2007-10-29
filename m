@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbXJ2TwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbXJ2Twy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbXJ2TwA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXJ2Tvv
+	id S1754028AbXJ2Twy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbXJ2Twq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:51:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56813 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750863AbXJ2Tvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:51:50 -0400
-Date: Mon, 29 Oct 2007 12:51:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Ebourne <fedora@ebourne.me.uk>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [stable] 2.6.23 boot failures on x86-64.
-In-Reply-To: <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710291247510.845@schroedinger.engr.sgi.com>
-References: <20071029175014.GH7793@redhat.com> <20071029180739.GA17595@kroah.com>
- <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
+	Mon, 29 Oct 2007 15:52:46 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46433 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbXJ2Twp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 15:52:45 -0400
+Date: Mon, 29 Oct 2007 19:52:43 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: dri-devel@lists.sourceforge.net, keithp@keithp.com,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: Re: [RFC] AGP initial support for chipset flushing..
+In-Reply-To: <200710291247.24791.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0710291951100.1170@skynet.skynet.ie>
+References: <Pine.LNX.4.64.0710290811070.1170@skynet.skynet.ie>
+ <200710291247.24791.jesse.barnes@intel.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007, Linus Torvalds wrote:
 
-> We've had some changes since 2.6.23, and afaik, the 
-> "alloc_bootmem_high_node()" code is alreadt effectively dead there. It's 
-> only called if CONFIG_SPARSEMEM_VMEMMAP is *not* enabled, and I *think* we 
-> enable it by force on x86-64 these days.
+> 
+> In this case, we're performing basically a dma_sync*(...DMA_TO_DEVICE) 
+> right?  Can we be sure that a single flush is sufficient?  Is there any 
+> window between when we flush and when we start accessing memory with 
+> the device that we could get into more caching trouble?
 
-CONFIG_SPARSEMEM_VMEMMAP was introduced in 2.6.24-rc1.
+Not that I can think off, but I don't work for the company who screwed up 
+the coherency :-), and I don't have the docs, so please investigate for me 
+;-)
 
-If I read this Kconfig.x86_64 correctly then it seems that DISCONTIG is 
-still the default. Andy?
+> Looks reasonable, I'm not sure we can do much better.  The only concern 
+> I have is that allocating some more PCI space like that may end up 
+> clobbering some *other* hidden BIOS mapping, but there's not a whole 
+> lot we can do about that.
 
-config ARCH_DISCONTIGMEM_ENABLE
-       bool
-       depends on NUMA
-       default y
+Again I'm trying to workaround broken BIOS.. nothing I can do.
 
-config ARCH_DISCONTIGMEM_DEFAULT
-        def_bool y
-        depends on NUMA
-
-config ARCH_SPARSEMEM_ENABLE
-        def_bool y
-        depends on (NUMA || EXPERIMENTAL)
-        select SPARSEMEM_VMEMMAP_ENABLE
-
-config ARCH_MEMORY_PROBE
-        def_bool y
-        depends on MEMORY_HOTPLUG
-
-config ARCH_FLATMEM_ENABLE
-        def_bool y
-        depends on !NUMA
+Dave.
