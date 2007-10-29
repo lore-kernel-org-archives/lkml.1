@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXJ2OnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXJ2One@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbXJ2OnG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbXJ2Omo
+	id S1758919AbXJ2One (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbXJ2OnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:42:44 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47905 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758145AbXJ2Omn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:42:43 -0400
-In-Reply-To: <0CC518FE-47B0-4A32-B682-1CA5F7CBAC2F@kernel.crashing.org>
-References: <CBDE987B-0713-4D62-8122-054183E75410@kernel.crashing.org> <1193188894.27073.20.camel@heimdal.trondhjem.org> <1954B8FA-6E29-4FB7-86B0-EA43AF8F2AAF@kernel.crashing.org> <2B2C1270-60FB-4830-A62C-D0357D2E1FB3@kernel.crashing.org> <1193335168.7705.39.camel@heimdal.trondhjem.org> <0CC518FE-47B0-4A32-B682-1CA5F7CBAC2F@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <45407DEE-37D0-437A-AF5F-17557D028E1A@kernel.crashing.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net, neilb@suse.de, bfields@fieldses.org,
-       chuck.lever@oracle.com
+	Mon, 29 Oct 2007 10:43:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34885 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754708AbXJ2OnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 10:43:23 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18dqlE7vIkdQhYBof+nWcZ52bzJ7VY2hDoJZ6zU0Z
+	cg81Mqe9Zb4Cxu
+Subject: Re: [Linux-NTFS-Dev] 2.6.23 regression: second access of empty
+	ntfs file leads to D	state hang
+From: Mike Galbraith <efault@gmx.de>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ntfs-dev@lists.sourceforge.net
+In-Reply-To: <4E61D235-B8E8-43DF-96A5-B3169E6AB223@cam.ac.uk>
+References: <1193638086.7409.21.camel@Homer.simpson.net>
+	 <E3E758D0-25AC-45B8-9BAB-F8CDF75AF3CA@cam.ac.uk>
+	 <1193658311.7324.2.camel@Homer.simpson.net>
+	 <4E61D235-B8E8-43DF-96A5-B3169E6AB223@cam.ac.uk>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 15:43:17 +0100
+Message-Id: <1193668997.7284.2.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: LTP ustat01 test fails on NFSROOT
-Date: Mon, 29 Oct 2007 09:41:16 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-X-Mailer: Apple Mail (2.752.2)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-10-29 at 13:39 +0000, Anton Altaparmakov wrote:
+> Hi Mike,
+> 
+> Thanks for the files.  That is really odd.  And you are sure this just  
+> works with 2.6.22.10 on the exact same file?  Have you run  "chkdsk / 
+> f /v /x" on the NTFS volume from Windows?
 
-On Oct 26, 2007, at 4:42 AM, Kumar Gala wrote:
+Yes, 2.6.22.10 can md5sum that file just fine, did it several times.  I
+haven't run chkdsk.
 
->
-> On Oct 25, 2007, at 12:59 PM, Trond Myklebust wrote:
->
->> Could you please try the following patch?
->>
->> Cheers
->>   Trond
->> --------------------------------- CUT HERE  
->> -----------------------------
->> From: Trond Myklebust <Trond.Myklebust@netapp.com>
->> Date: Thu, 25 Oct 2007 13:56:10 -0400
->> NFS: Fix the ustat() regression
->>
->> Since 2.6.18, the superblock sb->s_root has been a dummy dentry  
->> with a
->> dummy inode. This breaks ustat(), which actually uses sb->s_root in a
->> vfstat() call.
->>
->> Fix this by making the s_root a dummy alias to the directory inode  
->> that was
->> used when creating the superblock.
->>
->> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
->> ---
->>
->>  fs/nfs/getroot.c |   81 +++++++++++++++++ 
->> +------------------------------------
->>  1 files changed, 27 insertions(+), 54 deletions(-)
->
-> Any reason not to send this to Linus as a bug fix for 2.6.24 (and  
-> possibly stable)?
+> Would you be able to apply the attached patch to your 2.6.23.1 kernel  
+> and try again and then send me the NTFS error messages?  The patch  
+> should cause more verbose error reporting to happen...  Thanks!
 
-ping.  would love to see this is Linus's tree.
+[  249.009250] NTFS-fs error (device hda1): ntfs_map_runlist_nolock(): vcn 0x0 >= end_vcn 0x0 for inode 0x490f, error 0.
+[  249.020142] NTFS-fs error (device hda1): ntfs_read_compressed_block(): ntfs_map_runlist() failed. Cannot read compression block.
 
-- k
+	-Mike
+
