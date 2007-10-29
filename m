@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXJ2ARX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbXJ2Al2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbXJ2ARX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 20:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXJ2ARQ
+	id S1754735AbXJ2Al2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 20:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXJ2AlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 20:17:16 -0400
-Received: from mga05.intel.com ([192.55.52.89]:26408 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751099AbXJ2ARP (ORCPT
+	Sun, 28 Oct 2007 20:41:13 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46414 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbXJ2AlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 20:17:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,339,1188802800"; 
-   d="scan'208";a="361864128"
-Subject: Re: aim7 -30% regression in 2.6.24-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <1193392422.6914.25.camel@twins>
-References: <1193391787.3019.174.camel@ymzhang>
-	 <1193392422.6914.25.camel@twins>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 29 Oct 2007 08:15:33 +0800
-Message-Id: <1193616933.3019.181.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Oct 2007 20:41:13 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] 0/4 fs/ioctl.c coding style, rename vfs_ioctl/do_ioctl, refactoring (take 2)
+Date: Sun, 28 Oct 2007 20:40:54 -0400
+Message-Id: <11936184581182-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-10-26 at 11:53 +0200, Peter Zijlstra wrote:
-> On Fri, 2007-10-26 at 17:43 +0800, Zhang, Yanmin wrote:
-> > I tested 2.6.24-rc1 on my x86_64 machine which has 2 quad-core processors.
-> > 
-> > Comparing with 2.6.23, aim7 has about -30% regression. I did a bisect and found
-> > patch http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b5869ce7f68b233ceb81465a7644be0d9a5f3dbb
-> > caused the issue.
-> 
-> Bit weird that you point to a merge commit, and not an actual patch. Are
-> you sure git bisect pointed at this one?
-When I did a bisect, kernel couldn't boot and my testing log showed
-it's at b5869ce7f68b233ceb81465a7644be0d9a5f3dbb. So I did a manual
-checkout.
 
-#git clone ...
-#git pull ...
-#git checkout b5869ce7f68b233ceb81465a7644be0d9a5f3dbb
+This series of 4 proposed patches changes fs/ioctl.c and Unionfs as
+follows.  This series is against v2.6.24-rc1-192-gef49c32.
 
-Then, compiled kernel and tested it. Then, reversed above patch and recompiled/retested it.
+Patch 1: just applies coding standards to fs/ioctl.c (while I'm at it, I
+figured it's worth cleaning VFS files one at a time).
 
+Patch 2: does two things:
 
-If I ran git log, I could see this tag in the list.
+(a) Renames the old vfs_ioctl to do_ioctl, because the comment above it
+    clearly indicates that it is an internal function not to be exported to
+    modules; therefore it should have a more traditional do_XXX "internal
+    function" name.  The new do_ioctl is exported in fs.h but not to
+    modules.
 
--yanmin
+(b) Renames the old (static) do_ioctl to vfs_ioctl because the names vfs_XXX
+    should preferably be reserved to callable VFS functions which modules
+    may call, as other vfs_XXX functions already do.  Export the new
+    vfs_ioctl to (GPL) modules so others can use it (including Unionfs and
+    eCryptfs).
+
+Patch 3: factors out the switch statements' cases for
+FIBMAP/FIONBIO/FIOASYNC, into three small static helper functions.
+
+Patch 4: demonstrates how Unionfs can use the new vfs_ioctl.  I successfully
+tested unionfs with this new exported vfs_ioctl.  (eCryptfs could do the
+same.)
+
+I'd like to propose that the first 3 patches be merged in -mm and even
+mainline, pending review.
+
+Erez Zadok (4):
+      VFS: apply coding standards to fs/ioctl.c
+      VFS: swap do_ioctl and vfs_ioctl names
+      VFS: factor out three helpers for FIBMAP/FIONBIO/FIOASYNC file ioctls
+      Unionfs: use vfs_ioctl
+
+ fs/compat_ioctl.c       |    2 
+ fs/ioctl.c              |  224 ++++++++++++++++++++++++++++--------------------
+ fs/unionfs/commonfops.c |   32 +-----
+ include/linux/fs.h      |    3 
+ 4 files changed, 140 insertions(+), 121 deletions(-)
+
+Cheers,
+Erez.
