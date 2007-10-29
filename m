@@ -1,92 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbXJ2XIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbXJ2XIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbXJ2XIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 19:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbXJ2XIE
+	id S1755515AbXJ2XIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXJ2XIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 19:08:04 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57976 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752530AbXJ2XID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 19:08:03 -0400
-X-Sasl-enc: TjlrtYIUlEuPOVmq3L8KrceX7RMkIN/v+4CZmVu266XH 1193699281
-Message-ID: <472667EB.4030502@imap.cc>
-Date: Tue, 30 Oct 2007 00:08:27 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Mon, 29 Oct 2007 19:08:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53832 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752448AbXJ2XIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 19:08:45 -0400
+Message-ID: <472667F3.3000505@garzik.org>
+Date: Mon, 29 Oct 2007 19:08:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Emil Medve <Emilian.Medve@Freescale.com>
-CC: mochel@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       hjlipp@web.de, gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, mac@melware.de,
-       linux-omap-open-source@linux.omap.com
-Subject: Re: [PATCH resend] Make the dev_*() family of macros in device.h
- complete
-References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE2CF69EA2B09C1135AC10B22"
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Randy Dunlap <rdunlap@xenotime.net>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Philippe Elie <phil.el@wanadoo.fr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "William L. Irwin" <wli@holomorphy.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Lameter <christoph@lameter.com>, Valdis.Kletnieks@vt.edu
+Subject: Re: [RFC] Create instrumentation directory (git repository)
+References: <20071029215138.GA4233@Krystal> <20071029154741.cb093f55.rdunlap@xenotime.net> <4726649A.5020605@garzik.org> <20071029230409.GB16943@Krystal>
+In-Reply-To: <20071029230409.GB16943@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE2CF69EA2B09C1135AC10B22
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Mathieu Desnoyers wrote:
+> * Jeff Garzik (jeff@garzik.org) wrote:
+>> Randy Dunlap wrote:
+>>> On Mon, 29 Oct 2007 17:51:38 -0400 Mathieu Desnoyers wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> Since we already have the Instrumentation menu in
+>>>> kernel/Kconfig.instrumentation and instrumentation code all over the
+>>>> kernel tree:
+>>>>
+>>>> arch/*/oprofile/*.c
+>>>> kernel/kprobes.c
+>>>> arch/*/kernel/kprobes.c
+>>>> kernel/marker.c
+>>>> kernel/profile.c
+>>>> kernel/lockdep.c
+>>>> vm/vmstat.c
+>>>> block/blktrace.c
+>>>> drivers/base/power/trace.c
+>>>>
+>>>> We could move them to
+>>>>
+>>>> instrumentation/
+>>>> arch/*/instrumentation/
+>>>>
+>>>> Therefore, we could also move the kprobes and marker samples under
+>>>>
+>>>> instrumentation/samples/
+>>>>
+>>>> Here is a link to a git repository containing the changes, based on
+>>>> 2.6.24-rc1:
+>>>>
+>>>> git://ltt.polymtl.ca/linux-2.6-instrumentation.git 
+>>>> instrumentation-for-linus
+>>>> (the interesting range is : v2.6.24-rc1..instrumentation-for-linus)
+>>>>
+>>>> Through the gitweb interface:
+>>>> http://ltt.polymtl.ca/cgi-bin/gitweb.cgi?p=linux-2.6-instrumentation.git
+>>>>
+>>>> Feedback is appreciated. Sorry for the huge CC list, but the change
+>>>> involves many maintainers.
+>>> Two more added.  Jeff Garzik and Christoph H. sometimes have some comments
+>>> about this.
+>>>
+>>> It would be helpful if we could get comments on this in the next day
+>>> or two [instead of in 1-2 weeks].
+>> "instrumentation" is long, and painful to the fingers :)
+>>
+> 
+> Quoting my post from last week:
+> 
+>> My main concern is that 15 characters long directory name might be
+>> inelegant (however, it only beats Documentation by 2).
+> 
+> And quoting the answer from Valdis.Kletnieks@vt.edu :
+> How so?  i n s esc.  4 keystrokes (and still 2 more than D<ESC> ;)
+> 
+> 
+> 
+> Better suggestions are wery welcome. However, in modern shells,
+> auto-completion is cheap nowadays.
 
-Am 29.10.2007 23:43 schrieb Emil Medve:
-> Removed duplicates defined elsewhere
->=20
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+That is no excuse for extreme verbosity.  It makes ls(1) displays ugly, 
+it makes diffstat ugly, it causes long pathnames to be truncated in 
+various display-oriented programs.
 
-Acked-by: Tilman Schmidt <tilman@imap.cc>
+Pick a shorter word like probes or profile or what... or better yet... 
+just leave most things in their current directories.
 
-for:
+Shuffling files around just to put them into directories with extra-long 
+names is highly undesirable.
 
-> diff --git a/drivers/isdn/gigaset/gigaset.h b/drivers/isdn/gigaset/giga=
-set.h
-> index a0317ab..02bdaf2 100644
-> --- a/drivers/isdn/gigaset/gigaset.h
-> +++ b/drivers/isdn/gigaset/gigaset.h
-> @@ -106,12 +106,6 @@ enum debuglevel {
->  					 activated */
->  };
-> =20
-> -/* missing from linux/device.h ... */
-> -#ifndef dev_notice
-> -#define dev_notice(dev, format, arg...)		\
-> -	dev_printk(KERN_NOTICE , dev , format , ## arg)
-> -#endif
-> -
->  /* Kernel message macros for situations where dev_printk and friends c=
-annot be
->   * used for lack of reliable access to a device structure.
->   * linux/usb.h already contains these but in an obsolete form which cl=
-utters
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+	Jeff
 
 
---------------enigE2CF69EA2B09C1135AC10B22
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHJmfrMdB4Whm86/kRApJ0AJ0TndU2phadwTNtqF6Z2xPA18hAvQCfXtGE
-EbQDGodMYRpl62IWLo5towM=
-=7/H2
------END PGP SIGNATURE-----
-
---------------enigE2CF69EA2B09C1135AC10B22--
