@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbXJ2Eil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXJ2EnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbXJ2Eil (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 00:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXJ2Eic
+	id S1754140AbXJ2EnI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 00:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXJ2Em4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 00:38:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35415 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbXJ2Eib (ORCPT
+	Mon, 29 Oct 2007 00:42:56 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58528 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbXJ2Em4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 00:38:31 -0400
-Message-ID: <472562F2.1010103@zytor.com>
-Date: Sun, 28 Oct 2007 21:34:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [REGRESSION] 2.6.24-rc1 fails to boot on a 486
-References: <200710290005.l9T05wM5001672@harpo.it.uu.se>
-In-Reply-To: <200710290005.l9T05wM5001672@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 00:42:56 -0400
+Date: Mon, 29 Oct 2007 04:42:55 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] missing atomic_read_long() in slub.c
+Message-ID: <20071029044255.GA8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> My old 486 fails to boot with the 2.6.24-rc1 kernel.
-> Grub loads it, 4 lines of text appear but not the kernel's
-> "Linux version <blah> greet", and the machine reboots.
-> Double-checked with a serial console: nothing appears
-> before it reboots.
-> 
-> All 2.6 kernels up to 2.6.23 worked fine on this machine.
-> 
-> Config is at http://user.it.uu.se/~mikpe/linux/tmp/486-config-2.6.24-rc1.
-> The kernel is unpatched 2.6.24-rc1 compiled with gcc-4.2.2.
-> 
+nr_slabs is atomic_long_t, not atomic_t
 
-Any chance you could bisect this problem?
-
-	-hpa
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/mm/slub.c b/mm/slub.c
+index aac1dd3..bcdb2c8 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2734,7 +2734,7 @@ static void slab_mem_offline_callback(void *arg)
+ 			 * and offline_pages() function shoudn't call this
+ 			 * callback. So, we must fail.
+ 			 */
+-			BUG_ON(atomic_read(&n->nr_slabs));
++			BUG_ON(atomic_long_read(&n->nr_slabs));
+ 
+ 			s->node[offline_node] = NULL;
+ 			kmem_cache_free(kmalloc_caches, n);
