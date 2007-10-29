@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbXJ2NHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbXJ2NIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757143AbXJ2NHw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 09:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXJ2NHm
+	id S1757819AbXJ2NIN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 09:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbXJ2NHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 09:07:42 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:14848 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752327AbXJ2NHl (ORCPT
+	Mon, 29 Oct 2007 09:07:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:51406 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756109AbXJ2NHs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 09:07:41 -0400
-Date: Mon, 29 Oct 2007 14:06:57 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Dirk Hohndel <hohndel@linux.intel.com>
-Cc: Andries Brouwer <aeb@cwi.nl>, Al Viro <viro@ftp.linux.org.uk>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add_partition silently ignored errors
-Message-ID: <20071029140657.09d3a343@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20071029122211.GA18536@bigserver.hohndel.org>
-References: <20071029122211.GA18536@bigserver.hohndel.org>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 09:07:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Sk0ddyUYh5UV9y0s+z3KvLh2cN0RgfdZSu2LVDZ/eBc6S5G30K1s2Vm4GYBjosc/STwiKjPWvtqGPfOft3hN1p7HhwiLBNIcfLNLnHBVy055MwG3Qz8b7UGLB2a2v2MM4R1KWZb2xM1sGJNllNVPk5mXzssqdS2mgzz6/DAyk8I=
+Message-ID: <d120d5000710290607x66832f96lad21d37fff987b09@mail.gmail.com>
+Date: Mon, 29 Oct 2007 09:07:46 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "=?ISO-8859-1?Q?Oliv=E9r_Pint=E9r?=" <oliver.pntr@gmail.com>
+Subject: Re: [REGRESSION 2.6.22.Y] KEYBOARD && CAPSLOCK && RANDOM UPPER and LOWERCASE CHARs
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6101e8c40710281850s2d9ca5ads6859ed692c21bc51@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <6101e8c40710281850s2d9ca5ads6859ed692c21bc51@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 05:22:11 -0700,
-Dirk Hohndel <hohndel@linux.intel.com> wrote:
+Hi Olivér,
 
-<only commenting on the kobject part...>
+On 10/28/07, Olivér Pintér <oliver.pntr@gmail.com> wrote:
+> Hi Dmitry!
+>
+> I have one very nice regression ... under 2.6.22 kernel, im VT mode,
+> when I turn on the caps lock and I typing for Q - M, then become this
+> string: qwERTZUiOPõúAsdfgHjkléáûíyxcvbnM
+>
+> i tested under 2.6.22.9 tainted, 2.6.22.9 not tainted, 2.6.22.10
+> tainted and 2.6.22.10 not tainted. Under FreeBSD is all ok, and under
+> X is ok. All kernell tested under debian 3.1 Sarge and 4.0 Etch.
+>
 
-> @@ -390,20 +390,31 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
->  	p->kobj.parent = &disk->kobj;
->  	p->kobj.ktype = &ktype_part;
->  	kobject_init(&p->kobj);
-> -	kobject_add(&p->kobj);
-> +	if (kobject_add(&p->kobj)) 
-> +		return -1;
->  	if (!disk->part_uevent_suppress)
->  		kobject_uevent(&p->kobj, KOBJ_ADD);
-> -	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-> +	if(sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem")) {
-> +		kobject_del(&p->kobj);
-> +		kfree(p);
-> +		return -1;
-> +	}
+I presume 2.6.21 works for you? Could you tell me what keymap you are loading?
 
-
-- This is missing a KOBJ_DEL uevent if you did a KOBJ_ADD uevent.
-- Calling kfree() after you already registered the kobject via
-  kobject_add() is wrong, since someone else might already have obtained
-  a reference. You must drop your reference after kobject_del() and let
-  the release mechanism take care of it.
-
-<I think I'm having some kind of deja vu, since it seems I've already
-pointed that out a couple of times to different people :) >
-
->  	if (flags & ADDPART_FLAG_WHOLEDISK) {
->  		static struct attribute addpartattr = {
->  			.name = "whole_disk",
->  			.mode = S_IRUSR | S_IRGRP | S_IROTH,
->  		};
-> 
-> -		sysfs_create_file(&p->kobj, &addpartattr);
-> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-> +			kobject_del(&p->kobj);
-> +			kfree(p);
-> +			return -1;
-> +		}
-
-Same here. You should probably also delete the link you created above.
-
->  	}
->  	partition_sysfs_add_subdir(p);
->  	disk->part[part-1] = p;
-> +	
-> +	return 0;
->  }
-> 
->  static char *make_block_name(struct gendisk *disk)
+-- 
+Dmitry
