@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXJ2Q3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbXJ2Qaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbXJ2Q3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXJ2Q32
+	id S1758612AbXJ2Qaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXJ2Qah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:29:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33531 "EHLO mail.dvmed.net"
+	Mon, 29 Oct 2007 12:30:37 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:57946 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753497AbXJ2Q31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:29:27 -0400
-Message-ID: <47260A65.7040008@garzik.org>
-Date: Mon, 29 Oct 2007 12:29:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1754143AbXJ2Qag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:30:36 -0400
+Message-ID: <47260AB1.9000003@zabbo.net>
+Date: Mon, 29 Oct 2007 09:30:41 -0700
+From: Zach Brown <zab@zabbo.net>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH v4 1/2] SCSI: Asynchronous event	notification	infrastructure
-References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>	 <20071029144208.676251F8168@havoc.gtf.org>	 <1193673088.3383.34.camel@localhost.localdomain>	 <47260546.9090508@garzik.org> <1193674627.3383.45.camel@localhost.localdomain>
-In-Reply-To: <1193674627.3383.45.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Chris Mason <chris.mason@oracle.com>
+CC: Anton Altaparmakov <aia21@cam.ac.uk>, Mike Waychison <mikew@google.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/6][RFC] Cleanup FIBMAP
+References: <20071026233732.568575496@crlf.corp.google.com>	<E579083F-FED3-4990-8E24-275ED38E9E3B@cam.ac.uk> <20071029101001.4378a7cf@think.oraclecorp.com>
+In-Reply-To: <20071029101001.4378a7cf@think.oraclecorp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2007-10-29 at 12:07 -0400, Jeff Garzik wrote:
->> James Bottomley wrote:
->>> This still doesn't solve the fundamental corruption problem:
->>> sdev->event_work has to contain the work entry until the workqueue has
->>> finished executing it (which is some unspecified time in the future).
->>> As soon as you drop the sdev->list_lock, the system thinks
->>> sdev->event_work is available for reuse.  If we fire another event
->>> before the work queue finished processing the prior event, the queue
->>> will be corrupted.
->> I think you're misunderstanding the workqueue code?  You can call 
->> schedule_work(&sdev->event_work) from anywhere, any time you like, as 
->> many times as you like.
+
+>> And another of my pet peeves with ->bmap is that it uses 0 to mean  
+>> "sparse" which causes a conflict on NTFS at least as block zero is  
+>> part of the $Boot system file so it is a real, valid block...  NTFS  
+>> uses -1 to denote sparse blocks internally.
 > 
-> OK, take me through it slowly then ... I think schedule_work(work)
-> inserts work->entry onto the workqueue list (in
-> workqueue.c:insert_work()).  If the event hasn't fired, it will already
-> be on the list, so adding the same entry to a list twice causes a list
-> corruption problem.
+> Reiserfs and Btrfs also use 0 to mean packed.  It would be nice if there
+> was a way to indicate your-data-is-here-but-isn't-alone.  But that's
+> more of a feature for the FIEMAP stuff.
 
-It does a test_and_set_bit() first thing in queue_work().  Similar 
-exclusivity logic is found in net device land.  Ah, the fun of locking 
-without locks that benh grumbles about :)
+And maybe we can step back and see what the callers of FIBMAP are doing
+with the results they're getting.
 
+One use is to discover the order in which to read file data that will
+result in efficient IO.
 
-> Plus, unfortunately, the CC/UA events are going to have to carry extra
-> sense data; they're not simply going to be triggers saying something
-> happened.
+If we had an interface specifically for this use case then perhaps a
+sparse block would be better reported as the position of the inode
+relative to other data blocks.  Maybe the inode block number in ext* land.
 
-OK this is a fair criticism.
+This use is interesting to me because it can be useful for any file
+system, particularly networked file systems.
 
-If additional data must be carried, then I must ditch the beloved bitmap 
-implementation and go back to a list (with associated GFP_ATOMIC alloc).
-
-I will fix this, unless I receive email to the contrary...
-
-	Jeff
-
-
+- z
