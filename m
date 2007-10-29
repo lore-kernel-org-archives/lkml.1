@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbXJ2C6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXJ2C7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbXJ2C6H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 22:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXJ2C5z
+	id S1756576AbXJ2C7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 22:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXJ2C7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 22:57:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:53593 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbXJ2C5z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 22:57:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=cEQm8tW77zEEYKRgCJAERk6lOzV3BtSrINCEA+MWgbYWFldzqBDJ0KkWnpm3dTsUK
-	MsFgZGpLnljlfPXfQlHVg==
-Message-ID: <4d47a5d10710281957g1e423c1q6f45415d7465d90@mail.gmail.com>
-Date: Sun, 28 Oct 2007 19:57:47 -0700
-From: "Daniel Phillips" <phillips@google.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [PATCH 1/3] VFS: apply coding standards to fs/ioctl.c
-Cc: "Erez Zadok" <ezk@cs.sunysb.edu>, viro@ftp.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20071028141222.GA29323@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 28 Oct 2007 22:59:13 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50506 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751875AbXJ2C7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 22:59:13 -0400
+Date: Mon, 29 Oct 2007 13:59:11 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] Silence radeon_pm warning
+Message-Id: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11935266454097-git-send-email-ezk@cs.sunysb.edu>
-	 <11935266451616-git-send-email-ezk@cs.sunysb.edu>
-	 <20071028141222.GA29323@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/28/07, Christoph Hellwig <hch@infradead.org> wrote:
-> While you're at it, it's probably worth splitting this out into
-> a small helper function.
+drivers/video/aty/radeon_pm.c:30: warning: 'radeon_reinitialize_M10' declared 'static' but never defined
 
-Why? Is the same pattern called from more than one place?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/video/aty/radeon_pm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Regards,
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Daniel
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index be1d57b..f989836 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -27,7 +27,9 @@
+ 
+ #include "ati_ids.h"
+ 
++#ifdef CONFIG_PM
+ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
++#endif
+ 
+ /*
+  * Workarounds for bugs in PC laptops:
+-- 
+1.5.3.4
+
