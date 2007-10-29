@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbXJ2JAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXJ2JBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbXJ2JAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXJ2I7x
+	id S1757596AbXJ2JBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbXJ2JBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 04:59:53 -0400
-Received: from anyanka.rfc1149.net ([81.56.47.149]:57366 "EHLO
-	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbXJ2I7w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 04:59:52 -0400
-To: "marco gaddoni" <marco.gaddoni@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel BUG at mm/slab.c:597!
-References: <3b2bc9d0710290050g4e1cf8aoa7917ab7e091da5a@mail.gmail.com>
-In-Reply-To: <3b2bc9d0710290050g4e1cf8aoa7917ab7e091da5a@mail.gmail.com>
-Date: Mon, 29 Oct 2007 09:59:49 +0100
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Mon, 29 Oct 2007 05:01:07 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7906 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbXJ2JBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:01:05 -0400
+Date: Mon, 29 Oct 2007 09:58:44 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vasily Averin <vvs@sw.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: i2o: CONFIG_DEBUG_SG compilation fixed
+Message-ID: <20071029085844.GC5467@kernel.dk>
+References: <47257E6D.30403@sw.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Samuel Tardieu <sam@rfc1149.net>
-Organization: RFC 1149 (see http://www.rfc1149.net/)
-Content-Transfer-Encoding: 8bit
-X-WWW: http://www.rfc1149.net/sam
-X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
-X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
-Message-Id: <2007-10-29-09-59-49+trackit+sam@rfc1149.net>
+Content-Disposition: inline
+In-Reply-To: <47257E6D.30403@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "marco" == marco gaddoni <marco.gaddoni@gmail.com> writes:
+On Mon, Oct 29 2007, Vasily Averin wrote:
+> i2o crashed when CONFIG_DEBUG_SG is enabled because i2o_block_request structure
+> includes array of scatterlists that should be initialised
+> 
+> Signed-off-by:	Vasily Averin <vvs@sw.ru>
+> --- a/drivers/message/i2o/i2o_block.c
+> +++ b/drivers/message/i2o/i2o_block.c
+> @@ -1137,6 +1137,18 @@ static struct i2o_driver i2o_block_driver = {
+>   *
+>   *	Returns 0 on success or negative error code on failure.
+>   */
+> +
+> +#ifdef CONFIG_DEBUG_SG
+> +static void i2o_block_req_ctor(struct kmem_cache *cachep, void *objp) {
+> +	sg_init_table(((struct i2o_block_request *)(objp))->sg_table,
+> +						 I2O_MAX_PHYS_SEGMENTS);
+> +}
+> +
+> +#define I2O_BLK_CTOR	&i2o_block_req_ctor
+> +#else
+> +#define I2O_BLK_CTOR	NULL
+> +#endif
+> +
+>  static int __init i2o_block_init(void)
+>  {
+>  	int rc;
+> @@ -1147,7 +1159,7 @@ static int __init i2o_block_init(void)
+>  	/* Allocate request mempool and slab */
+>  	size = sizeof(struct i2o_block_request);
+>  	i2o_blk_req_pool.slab = kmem_cache_create("i2o_block_req", size, 0,
+> -						  SLAB_HWCACHE_ALIGN, NULL);
+> +					  SLAB_HWCACHE_ALIGN, I2O_BLK_CTOR);
+>  	if (!i2o_blk_req_pool.slab) {
+>  		osm_err("can't init request slab\n");
+>  		rc = -ENOMEM;
 
-marco> i got this oops on my server.  the kernel is a
-marco> 2.6.21-2-686 from the debian.
+This should already work, since Oct 24. Your i2o_block_request_alloc()
+should look like this:
 
-marco> this is an ext3 filesystem on a raid0 array of 2 ide disks.
-marco> got the oops while doing a big rm.
+static inline struct i2o_block_request *i2o_block_request_alloc(void)
+{
+        struct i2o_block_request *ireq;
 
-marco> any idea on the possible cause?
+        ireq = mempool_alloc(i2o_blk_req_pool.pool, GFP_ATOMIC);
+        if (!ireq)
+                return ERR_PTR(-ENOMEM);
 
-Marco,
+        INIT_LIST_HEAD(&ireq->queue);
+        sg_init_table(ireq->sg_table, I2O_MAX_PHYS_SEGMENTS);
 
-I also had one of these with 2.6.21 or around. Unfortunately, I did a
-fsck (which solved it) before I could pinpoint the problem. It was on
-a raid1 array with 2 sata disks and an ext3 filesystem so it may be
-related either to the md driver, to the ext3 filesystem or something
-else.
+        return ireq;
+}
 
-You can probably make the problem go away with a simple fsck, but if
-you want to help find the cause of the problem, you can do one of the
-following instead:
+Note that I also don't like your solution, no need to change this to be
+a constructor setup and you definitely should not guard sg_init_table()
+with CONFIG_DEBUG_SG. It needs to be done always.
 
-  - do a full copy (using dd) of your filesystem; however, if you're
-    using a raid0 array, it may be because the filesystem is very
-    large;
-
-  - compile and boot a 2.6.24-rc1 kernel and see if the "rm" still
-    generates a oops and help debug the problem.
-
- Sam
 -- 
-Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
+Jens Axboe
 
