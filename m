@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXJ2Q4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbXJ2Q6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbXJ2Q4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXJ2Q4I
+	id S1758824AbXJ2Q6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXJ2Q56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:56:08 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:36703 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754054AbXJ2Q4G (ORCPT
+	Mon, 29 Oct 2007 12:57:58 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55249 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752300AbXJ2Q55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:56:06 -0400
-Date: Mon, 29 Oct 2007 12:55:29 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [Git Patch] arch/um/os-Linux/: varied improvements and fixes
-Message-ID: <20071029165529.GA6055@c2.user-mode-linux.org>
-References: <20071028073843.GD2502@hacking>
+	Mon, 29 Oct 2007 12:57:57 -0400
+Subject: Re: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1193676852.2655.21.camel@lov.site>
+References: <1193671019.3383.13.camel@localhost.localdomain>
+	 <1193676852.2655.21.camel@lov.site>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 11:57:51 -0500
+Message-Id: <1193677071.3383.56.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071028073843.GD2502@hacking>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 03:38:43PM +0800, WANG Cong wrote:
-> This patch contains varied fixes and improvements for some files under
-> arch/um/os-Linux/, such as a typo fix in a perror message, a missing
-> argument fix for a printf, some constifying for pointers and so on.
+On Mon, 2007-10-29 at 17:54 +0100, Kay Sievers wrote:
+> On Mon, 2007-10-29 at 10:16 -0500, James Bottomley wrote:
+> > In the SCSI transport classes (and soon to be in the AEN event
+> > subsystem) we have a lot of need for a grouping that doesn't include all
+> > files in the group.  We basically want to show capability by which file
+> > is present.  A classic example of this is the SPI transport class
+> > connected to the 53c700 card.  It's incapable of doing all of the modern
+> > LVD functions, so we don't show any of those capabilities in its sysfs
+> > directory.  However, we have a lot of horrible logic to generate
+> > separate per host groupings of attributes for this.  We would be able to
+> > use the standard sysfs group attributes *if* there were a way of
+> > filtering them so that certain attributes didn't appear.
+> 
+> Sounds fine.
+>  
+> > This patch is a first pass at adding a filter function to the group
+> > attributes, just to see how the idea flies.  If everyone's OK with this,
+> > I think the next thing that we might do is add bitmap functions (so
+> > every bit in the bitmap has a name, but also might not appear) to
+> > groups.
+> 
+> Bitmaps in the attribute groups?
 
-Generally looks good, thanks.
+Actually, no ... that would spoil our one group for all devices rule.
+So they would be a set of helper functions for manipulating bitmaps, but
+the bitmap would have to be in separate storage elsewhere.
+
+> >  struct attribute_group {
+> >  	const char		*name;
+> > +	int			(*filter_show)(struct kobject *, int);
+> 
+> Are you sure that you want to return an array index here, instead of the
+> actual attribute? Like:
+
+Actually, it returns a true/false value indicating whether the given
+attribute should be displayed.
+
+>   int (*filter_show)(struct kobject *kobj, struct attribute *attr);
+> 
+> The names "show" and "store" are the ususal file-operation names, and we
+> are not filtering a "show" here, right? Maybe "create", or "export", or
+> something else might be a better name?
+
+how about (*attribute_is_visible)?
+
+James
 
 
->  		printf("failed to install handler for signal %d - errno = %d\n",
-> -		       errno);
-> +		       sig, errno);
-
-Nice spotting - I wonder why gcc didn't complain about this.
-
-> -	sigprocmask(on ? SIG_UNBLOCK : SIG_BLOCK, &sigset, &old);
-> +	if (sigprocmask(on ? SIG_UNBLOCK : SIG_BLOCK, &sigset, &old) < 0)
-> +		return -1;
-
-In cases like this, I return -errno, not -1.  I'll fix this up.
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
