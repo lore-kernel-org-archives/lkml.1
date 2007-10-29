@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbXJ2Tt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXJ2Tu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbXJ2Tt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXJ2TsX
+	id S1755593AbXJ2Tu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXJ2TuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:48:23 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35691 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754618AbXJ2TsV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:48:21 -0400
-Date: Mon, 29 Oct 2007 15:48:20 -0400
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
-Subject: Re: WANTED: kernel projects for CS students
-Message-ID: <20071029194820.GC27646@csclub.uwaterloo.ca>
-References: <20071014190128.6e3cdb44@bree.surriel.com> <20071028180707.GA6111@ucw.cz>
+	Mon, 29 Oct 2007 15:50:06 -0400
+Received: from mga03.intel.com ([143.182.124.21]:56667 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753316AbXJ2TuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 15:50:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,343,1188802800"; 
+   d="scan'208";a="307935496"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: dri-devel@lists.sourceforge.net
+Subject: Re: [RFC] AGP initial support for chipset flushing..
+Date: Mon, 29 Oct 2007 12:47:23 -0700
+User-Agent: KMail/1.9.7
+Cc: Dave Airlie <airlied@skynet.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, keithp@keithp.com
+References: <Pine.LNX.4.64.0710290811070.1170@skynet.skynet.ie>
+In-Reply-To: <Pine.LNX.4.64.0710290811070.1170@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071028180707.GA6111@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200710291247.24791.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 06:07:07PM +0000, Pavel Machek wrote:
-> Hard stuff:
-> 
-> * network character device -- similar to nbd, but for char devices.
->   either figure out how to forward ioctls(), or implement
->   usb-over-network, or...
-> 
-> * openMosix -- they seem to have userspace solution, but not GPLed.
-> 
-> * compression for ext4. Its about time someone did it right. Special
->   bonus if you can do it in a way that it does not slow down. If cpu
->   is free, compress, if it is busy, just write it straight to disk.
+On Monday, October 29, 2007 1:15 am Dave Airlie wrote:
+> Hi,
+>
+> We've uncovered a need when using the new memory manager to flush the
+> chipset global write buffers on certain intel chipset due to a lack
+> of coherency..
+>
+> The attached patches add a new AGP interface  for this purpose and
+> implements this in the Intel AGP driver. This stuff is based of some
+> guesswork in the 915 case from comments in the documentation :).
 
-So if I decide that the cpu is busy (because something is asking me to
-write the cpu is clearly doing something and hence busy), then I can
-skip compression and just write to disk.  So by that definition ext4
-already does compression.  What a simple project. :)
+In this case, we're performing basically a dma_sync*(...DMA_TO_DEVICE) 
+right?  Can we be sure that a single flush is sufficient?  Is there any 
+window between when we flush and when we start accessing memory with 
+the device that we could get into more caching trouble?
 
-Did you mean it ought to come back and do the compression later?
+> Unfortuantely the 965 BIOS doesn't set this stuff up properly and it
+> doesn't use a standard BAR address, so I have to do it by hand, I'd
+> appreciate any commentary particularly in the setting up of the
+> resource stuff.
 
-Is it possible that for some data compressing it and writing will take
-less time than not compressing it and writing it to disk?
+Looks reasonable, I'm not sure we can do much better.  The only concern 
+I have is that allocating some more PCI space like that may end up 
+clobbering some *other* hidden BIOS mapping, but there's not a whole 
+lot we can do about that.
 
---
-Len Sorensen
+Jesse
