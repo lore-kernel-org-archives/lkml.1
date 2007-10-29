@@ -1,75 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbXJ2UCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbXJ2UFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbXJ2UCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbXJ2UCU
+	id S1755117AbXJ2UFS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXJ2UFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:02:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44068 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752453AbXJ2UCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:02:19 -0400
-Date: Mon, 29 Oct 2007 13:02:17 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071029130217.6dd46df0.pj@sgi.com>
-In-Reply-To: <1193676854.5035.121.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-	<20071026194144.6042316a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
-	<20071027161955.e9d4d2db.pj@sgi.com>
-	<1193676854.5035.121.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 16:05:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46325 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752267AbXJ2UFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:05:01 -0400
+Date: Mon, 29 Oct 2007 21:04:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Frans Pop <elendil@planet.nl>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+Message-ID: <20071029200425.GA830@elte.hu>
+References: <200710122231.50739.elendil@planet.nl> <200710161234.35529.borntraeger@de.ibm.com> <4714B5BF.1090001@linux.vnet.ibm.com> <200710291305.52992.elendil@planet.nl> <4725D2A5.1050908@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4725D2A5.1050908@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> In libnuma in numactl-1.0.2 that I recently grabbed off Andi's site,
-> numa_available() indeed issues this call.  But, I don't see any internal
-> calls to numa_available() [comments says all other calls undefined when
-> numa_available() returns an error] nor any other calls to
-> get_mempolicy() with all null/0 args.  So, you'd be depending on the
-> application to call numa_available().
 
-Aha - good point.  It happened to be the numactl command line utility
-that I tested with that issued the get_mempolicy(0,0,0,0,0) call.
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Yup - this proposed hack, to have the kernel revert to the original
-memory policy nodemask numbering if it sees such a getmempolicy call
-is now officially dead meat.
+> We'll I initially thought of it and then I remembered that the 
+> regression occurs only when the accounting itself is inaccurate. I am 
+> tempted to ack the removal, but I would like to get input from others. 
+> Meanwhile, I'll try and see if I can fix the problem
 
-Thanks.
+i've got a patch from Peter queued up. (see below) This should fix the 
+main issue.
 
-> However, you could define an
-> additional MPOL_F_* flag to get_mempolicy() that is issued in library
-> init code to enable new behavior--again, based on some indication that
-> new behavior is desired or not.
+	Ingo
 
-Yes - I am intending to define such MPOL_F_* flags, to set and get
-which behavior applies to the current task.
+-------------------->
+Subject: sched: keep utime/stime monotonic
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+keep utime/stime monotonic.
+
+cpustats use utime/stime as a ratio against sum_exec_runtime, as a
+consequence it can happen - when the ratio changes faster than time
+accumulates - that either can be appear to go backwards.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/proc/array.c       |    3 ++-
+ include/linux/sched.h |    1 +
+ kernel/fork.c         |    1 +
+ 3 files changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux/fs/proc/array.c
+===================================================================
+--- linux.orig/fs/proc/array.c
++++ linux/fs/proc/array.c
+@@ -358,7 +358,8 @@ static cputime_t task_utime(struct task_
+ 	}
+ 	utime = (clock_t)temp;
+ 
+-	return clock_t_to_cputime(utime);
++	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
++	return p->prev_utime;
+ }
+ 
+ static cputime_t task_stime(struct task_struct *p)
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -1009,6 +1009,7 @@ struct task_struct {
+ 	unsigned int rt_priority;
+ 	cputime_t utime, stime, utimescaled, stimescaled;
+ 	cputime_t gtime;
++	cputime_t prev_utime;
+ 	unsigned long nvcsw, nivcsw; /* context switch counts */
+ 	struct timespec start_time; 		/* monotonic time */
+ 	struct timespec real_start_time;	/* boot based time */
+Index: linux/kernel/fork.c
+===================================================================
+--- linux.orig/kernel/fork.c
++++ linux/kernel/fork.c
+@@ -1056,6 +1056,7 @@ static struct task_struct *copy_process(
+ 	p->gtime = cputime_zero;
+ 	p->utimescaled = cputime_zero;
+ 	p->stimescaled = cputime_zero;
++	p->prev_utime = cputime_zero;
+ 
+ #ifdef CONFIG_TASK_XACCT
+ 	p->rchar = 0;		/* I/O counter: bytes read */
