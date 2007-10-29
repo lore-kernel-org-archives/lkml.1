@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbXJ2OMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbXJ2OR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbXJ2OMU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbXJ2OMK
+	id S1755636AbXJ2OR5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXJ2ORt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:12:10 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30816 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbXJ2OMJ (ORCPT
+	Mon, 29 Oct 2007 10:17:49 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:22154 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752793AbXJ2ORs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:12:09 -0400
-Date: Mon, 29 Oct 2007 10:10:01 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Mike Waychison <mikew@google.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/6][RFC] Cleanup FIBMAP
-Message-ID: <20071029101001.4378a7cf@think.oraclecorp.com>
-In-Reply-To: <E579083F-FED3-4990-8E24-275ED38E9E3B@cam.ac.uk>
-References: <20071026233732.568575496@crlf.corp.google.com>
-	<E579083F-FED3-4990-8E24-275ED38E9E3B@cam.ac.uk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Oct 2007 10:17:48 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH resend2] rd: fix data corruption on memory pressure
+Date: Mon, 29 Oct 2007 15:17:44 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200710291517.44332.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007 18:57:06 +0100
-Anton Altaparmakov <aia21@cam.ac.uk> wrote:
+Nick, Eric, Andrew,
 
-> Hi,
-> 
-> ->bmap is ugly and horrible!  If you have to do this at the very
-> least please cause ->bmap64 to be able to return error values in case
-> the file system failed to get the information or indeed such
-> information does not exist as is the case for compressed and
-> encrypted files for example and also for small files that are inside
-> the on-disk inode (NTFS resident files and reiserfs packed tails are
-> examples of this).
-> 
-> And another of my pet peeves with ->bmap is that it uses 0 to mean  
-> "sparse" which causes a conflict on NTFS at least as block zero is  
-> part of the $Boot system file so it is a real, valid block...  NTFS  
-> uses -1 to denote sparse blocks internally.
+we now have passed rc1. That means that Erics or Nicks rd rewrite is no longer
+an option for 2.6.24. If I followed the last thread correctly all alternative
+patches have one of the following issue
+- too big for post rc1
+- break reiserfs and maybe others
+- call into vfs while being unrelated
 
-Reiserfs and Btrfs also use 0 to mean packed.  It would be nice if there
-was a way to indicate your-data-is-here-but-isn't-alone.  But that's
-more of a feature for the FIEMAP stuff.
+So this is a resend of my patch, which is in my opinion the simplest fix for
+the data corruption problem.
+The patch was tested by our test department, thanks to Oliver Paukstadt and
+Thorsten Diehl.
 
--chris
+---
+
+Subject: [PATCH] rd: fix data corruption on memory pressure
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+
+We have seen ramdisk based install systems, where some pages of mapped 
+libraries and programs were suddendly zeroed under memory pressure. This 
+should not happen, as the ramdisk avoids freeing its pages by keeping them 
+dirty all the time.
+
+It turns out that there is a case, where the VM makes a ramdisk page clean, 
+without telling the ramdisk driver.
+On memory pressure shrink_zone runs and it starts to run shrink_active_list. 
+There is a check for buffer_heads_over_limit, and if true, pagevec_strip is 
+called. pagevec_strip calls try_to_release_page. If the mapping has no 
+releasepage callback, try_to_free_buffers is called. try_to_free_buffers has 
+now a special logic for some file systems to make a dirty page clean, if all 
+buffers are clean. Thats what happened in our test case.
+
+The simplest solution is to provide a noop-releasepage callback for the
+ramdisk driver. This avoids try_to_free_buffers for ramdisk pages. 
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ drivers/block/rd.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+Index: linux-2.6/drivers/block/rd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/rd.c
++++ linux-2.6/drivers/block/rd.c
+@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
+ 	return 0;
+ }
+ 
++/*
++ * releasepage is called by pagevec_strip/try_to_release_page if
++ * buffers_heads_over_limit is true. Without a releasepage function
++ * try_to_free_buffers is called instead. That can unset the dirty
++ * bit of our ram disk pages, which will be eventually freed, even
++ * if the page is still in use.
++ */
++static int ramdisk_releasepage(struct page *page, gfp_t dummy)
++{
++	return 0;
++}
++
+ static const struct address_space_operations ramdisk_aops = {
+ 	.readpage	= ramdisk_readpage,
+ 	.prepare_write	= ramdisk_prepare_write,
+@@ -196,6 +208,7 @@ static const struct address_space_operat
+ 	.writepage	= ramdisk_writepage,
+ 	.set_page_dirty	= ramdisk_set_page_dirty,
+ 	.writepages	= ramdisk_writepages,
++	.releasepage	= ramdisk_releasepage,
+ };
+ 
+ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
