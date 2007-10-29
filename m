@@ -1,68 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXJ2SYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXJ2Sjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbXJ2SYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 14:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbXJ2SYg
+	id S1757587AbXJ2Sjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 14:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbXJ2Sje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 14:24:36 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27514 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbXJ2SYf (ORCPT
+	Mon, 29 Oct 2007 14:39:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46718 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752496AbXJ2Sjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 14:24:35 -0400
-Date: Mon, 29 Oct 2007 11:20:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com
-Subject: [PATCH] rtc: m48t59 fix section mismatch warning
-Message-Id: <20071029112004.de52d9db.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 29 Oct 2007 14:39:33 -0400
+Date: Mon, 29 Oct 2007 11:37:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Ebourne <fedora@ebourne.me.uk>,
+       Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Andy Whitcroft <apw@shadowen.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [stable] 2.6.23 boot failures on x86-64.
+In-Reply-To: <20071029180739.GA17595@kroah.com>
+Message-ID: <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
+References: <20071029175014.GH7793@redhat.com>
+ <20071029180739.GA17595@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Change the name of this data to use a name (suffix) that is whitelisted
-by MODPOST so that the section warning is fixed (not generated).
 
-WARNING: vmlinux.o(.data+0x1b140): Section mismatch: reference to .init.text:m48t59_rtc_probe (between 'm48t59_rtc_platdrv' and 'm48t59_nvram_attr')
+On Mon, 29 Oct 2007, Greg KH wrote:
+> 
+> I'll be glad to revert it in -stable, if it's also reverted in Linus's
+> tree first :)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/rtc/rtc-m48t59.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+We've had some changes since 2.6.23, and afaik, the 
+"alloc_bootmem_high_node()" code is alreadt effectively dead there. It's 
+only called if CONFIG_SPARSEMEM_VMEMMAP is *not* enabled, and I *think* we 
+enable it by force on x86-64 these days.
 
---- linux-2.6.24-rc1-git4.orig/drivers/rtc/rtc-m48t59.c
-+++ linux-2.6.24-rc1-git4/drivers/rtc/rtc-m48t59.c
-@@ -464,7 +464,7 @@ static int __devexit m48t59_rtc_remove(s
- 	return 0;
+More people added to Cc, just to clarify whether I'm just confused.
+
+Andy, Christoph, Mel: commit 2e1c49db4c640b35df13889b86b9d62215ade4b6 aka 
+"x86_64: allocate sparsemem memmap above 4G" is the one that causes the 
+failures, just fyi.
+
+Martin - it would be great if you could try out your failing machine with 
+2.6.24-rc1 (or a nightly snapshot or current git.. the more recent the 
+better).
+
+But if I'm right, that commit should be reverted from 2.6.24 just because 
+it's pointless (even if the bug itself is gone). And if I'm wrong, it 
+should be reverted. So something like the appended would make sense 
+regardless.
+
+Can I get a "tested-by"? And/or ack/nack's on my half-arsed theory above?
+
+		Linus
+--
+From: Linus Torvalds <torvalds@woody.linux-foundation.org>
+
+Revert "x86_64: allocate sparsemem memmap above 4G"
+
+This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6, since
+testing in Fedora has shown it to cause boot failures, as per Dave
+Jones. Bisected down by Martin Ebourne.
+
+Cc: Dave Jones <davej@redhat.com>
+Cc: Martin Ebourne <fedora@ebourne.me.uk>
+Cc: Zou Nan hai <nanhai.zou@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 1e3862e..a7308b2 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -728,12 +728,6 @@ int in_gate_area_no_task(unsigned long addr)
+ 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
  }
  
--static struct platform_driver m48t59_rtc_platdrv = {
-+static struct platform_driver m48t59_rtc_driver = {
- 	.driver		= {
- 		.name	= "rtc-m48t59",
- 		.owner	= THIS_MODULE,
-@@ -475,12 +475,12 @@ static struct platform_driver m48t59_rtc
- 
- static int __init m48t59_rtc_init(void)
+-void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+-{
+-	return __alloc_bootmem_core(pgdat->bdata, size,
+-			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+-}
+-
+ const char *arch_vma_name(struct vm_area_struct *vma)
  {
--	return platform_driver_register(&m48t59_rtc_platdrv);
-+	return platform_driver_register(&m48t59_rtc_driver);
+ 	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index c83534e..0365ec9 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct bootmem_data *bdata,
+ 				  unsigned long align,
+ 				  unsigned long goal,
+ 				  unsigned long limit);
+-extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
+ 
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+ extern void reserve_bootmem(unsigned long addr, unsigned long size);
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 08fb14f..e06f514 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -220,12 +220,6 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
+ 	return 1;
  }
  
- static void __exit m48t59_rtc_exit(void)
+-__attribute__((weak)) __init
+-void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+-{
+-	return NULL;
+-}
+-
+ static unsigned long usemap_size(void)
  {
--	platform_driver_unregister(&m48t59_rtc_platdrv);
-+	platform_driver_unregister(&m48t59_rtc_driver);
- }
+ 	unsigned long size_bytes;
+@@ -267,11 +261,6 @@ struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
+ 	if (map)
+ 		return map;
  
- module_init(m48t59_rtc_init);
+-  	map = alloc_bootmem_high_node(NODE_DATA(nid),
+-                       sizeof(struct page) * PAGES_PER_SECTION);
+-	if (map)
+-		return map;
+-
+ 	map = alloc_bootmem_node(NODE_DATA(nid),
+ 			sizeof(struct page) * PAGES_PER_SECTION);
+ 	return map;
