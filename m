@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbXJ2OoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbXJ2Oqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbXJ2OoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbXJ2OoB
+	id S1758551AbXJ2Oqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXJ2Oqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:44:01 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:45658 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755300AbXJ2OoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:44:00 -0400
-Date: Mon, 29 Oct 2007 15:43:39 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+	Mon, 29 Oct 2007 10:46:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54073 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbXJ2Oqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 10:46:47 -0400
+Message-ID: <4725F254.700@garzik.org>
+Date: Mon, 29 Oct 2007 10:46:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
 To: Dirk Hohndel <hohndel@linux.intel.com>
-Cc: Andries Brouwer <aeb@cwi.nl>, Al Viro <viro@ftp.linux.org.uk>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add_partition silently ignored errors
-Message-ID: <20071029154339.00512901@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20071029142427.GA21930@bigserver.hohndel.org>
-References: <20071029140657.09d3a343@gondolin.boeblingen.de.ibm.com>
-	<20071029142427.GA21930@bigserver.hohndel.org>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pciserial_resume_one ignored return value of pci_enable_device
+References: <20071029132817.GA20449@bigserver.hohndel.org>
+In-Reply-To: <20071029132817.GA20449@bigserver.hohndel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 07:24:27 -0700,
-Dirk Hohndel <hohndel@linux.intel.com> wrote:
-
-> @@ -390,20 +390,33 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
->  	p->kobj.parent = &disk->kobj;
->  	p->kobj.ktype = &ktype_part;
->  	kobject_init(&p->kobj);
-> -	kobject_add(&p->kobj);
-> +	if (kobject_add(&p->kobj)) 
-
-Hm, here the structure needs to be freed as well (via kobject_put()).
-
-> +		return -1;
->  	if (!disk->part_uevent_suppress)
->  		kobject_uevent(&p->kobj, KOBJ_ADD);
-> -	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-> +	if(sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem")) 
-
-Whitespace (if (...)).
-
-> +		goto out_cleanup;
->  	if (flags & ADDPART_FLAG_WHOLEDISK) {
->  		static struct attribute addpartattr = {
->  			.name = "whole_disk",
->  			.mode = S_IRUSR | S_IRGRP | S_IROTH,
->  		};
+Dirk Hohndel wrote:
+> [PATCH] pciserial_resume_one ignored return value of pci_enable_device
 > 
-> -		sysfs_create_file(&p->kobj, &addpartattr);
-> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-> +			sysfs_remove_link (&p->kobj, "subsystem");
-> +			goto out_cleanup;
-> +		}
->  	}
->  	partition_sysfs_add_subdir(p);
->  	disk->part[part-1] = p;
-> +	
-> +	return 0;
-> +
-> +out_cleanup:
-> +	if (!disk->part_uevent_suppress)
-> +		kobject_uevent(&p->kobj, KOBJ_REMOVE);
-> +	kobject_del(&p->kobj);
-
-You need a kobject_put() here to drop the reference you obtained in
-kobject_init().
-
-> +	return -1;
->  }
+> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
 > 
->  static char *make_block_name(struct gendisk *disk)
+> ---
+>  drivers/serial/8250_pci.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+> index 0e35756..ceb03c9 100644
+> --- a/drivers/serial/8250_pci.c
+> +++ b/drivers/serial/8250_pci.c
+> @@ -1986,6 +1986,7 @@ static int pciserial_suspend_one(struct pci_dev *dev, pm_message_t state)
+>  
+>  static int pciserial_resume_one(struct pci_dev *dev)
+>  {
+> +	int err;
+>  	struct serial_private *priv = pci_get_drvdata(dev);
+>  
+>  	pci_set_power_state(dev, PCI_D0);
+> @@ -1995,7 +1996,9 @@ static int pciserial_resume_one(struct pci_dev *dev)
+>  		/*
+>  		 * The device may have been disabled.  Re-enable it.
+>  		 */
+> -		pci_enable_device(dev);
+> +		err = pci_enable_device(dev);
+> +		if (err)
+> +			return err;
+
+ACK
+
+
