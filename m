@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbXJ2Ji0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbXJ2Ji4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbXJ2Ji0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXJ2JiT
+	id S1757434AbXJ2Ji4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbXJ2Jis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:38:19 -0400
-Received: from mga05.intel.com ([192.55.52.89]:4893 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752137AbXJ2JiS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:38:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,341,1188802800"; 
-   d="scan'208";a="362295258"
-Subject: Re: aim7 -30% regression in 2.6.24-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1193624538.3019.189.camel@ymzhang>
-References: <1193391787.3019.174.camel@ymzhang>
-	 <20071026112307.GA30406@elte.hu>  <1193624538.3019.189.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 29 Oct 2007 17:37:06 +0800
-Message-Id: <1193650626.3019.198.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 05:38:48 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26712 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbXJ2Jir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:38:47 -0400
+Date: Mon, 29 Oct 2007 10:36:26 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
+Message-ID: <20071029093625.GF5467@kernel.dk>
+References: <20071027184404.GQ8181@ftp.linux.org.uk> <20071027201700.GC22235@flint.arm.linux.org.uk> <20071029085935.GD5467@kernel.dk> <20071029090710.GB7801@flint.arm.linux.org.uk> <20071029091206.GE5467@kernel.dk> <20071029092103.GE8181@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029092103.GE8181@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 10:22 +0800, Zhang, Yanmin wrote:
-> On Fri, 2007-10-26 at 13:23 +0200, Ingo Molnar wrote:
-> > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
-> > 
-> > > I tested 2.6.24-rc1 on my x86_64 machine which has 2 quad-core processors.
+On Mon, Oct 29 2007, Al Viro wrote:
+> On Mon, Oct 29, 2007 at 10:12:06AM +0100, Jens Axboe wrote:
+> > > > Russell, will you be merging this yourself or do you want me to include
+> > > > it in the sg fixup branch?
 > > > 
-> > > Comparing with 2.6.23, aim7 has about -30% regression. I did a bisect 
-> > > and found patch 
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b5869ce7f68b233ceb81465a7644be0d9a5f3dbb 
-> > > caused the issue.
+> > > It's already merged into the ARM git tree as of Friday.  Waiting for
+> > > ack's from various people for other merged patches before sending the
+> > > set to Linus.
 > > 
-> > weird, that's a commit diff - i.e. it changes no code.
-> I got the tag from #git log. As for above link, I just added prior http address,
-> so readers could check the patch by clicking.
+> > Great, thanks.
 > 
-> > 
-> > > kbuild/SPECjbb2000/SPECjbb2005 also has big regressions. On my another 
-> > > tigerton machine (4 quad-core processors), SPECjbb2005 has more than 
-> > > -40% regression. I didn't do a bisect on such benchmark testing, but I 
-> > > suspect the root cause is like aim7's.
-> > 
-> > these two commits might be relevant:
-> > 
-> >   7a6c6bcee029a978f866511d6e41dbc7301fde4c
-> I did a quick testing. This patch has no impact.
+> Speaking of sg fixups...  What should be done about zfcp_address_to_sg()?
+> You've added the third argument to all calls, but not to definition...
 > 
-> >   95dbb421d12fdd9796ed153853daf3679809274f
-> Above big patch doesn't include this one, which means if I do
-> 'git checkout b5869ce7f68b233ceb81465a7644be0d9a5f3dbb', the kernel doesn't include
-> 95dbb421d12fdd9796ed153853daf3679809274f.
-> 
-> > 
-> > but a bisection result would be the best info.
-> I will do a bisect between 2.6.23 and tag 9c63d9c021f375a2708ad79043d6f4dd1291a085.
-I ran git bisect with kernel version as the tag. It looks like git will
-be crazy sometimes. So I checked ChangeLog and used the number tag to replace
-the kernel version and retested it.
+> static inline void
+> zfcp_address_to_sg(void *address, struct scatterlist *list, size_t size)
+> {
+> 	sg_set_buf(list, address, size);
+> }
+> seems to be a plausible guess at what you meant to do, but that's a guess
+> without anything to back it - I really have not looked into the area at all.
 
-It looks like at least 2 patches were responsible for the regression. I'm
-doing sub-bisect now.
+Should already be fixed up in the 'sg' branch, like this:
 
-I could find aim7 regression on all my testing machines although the regression
-percentage is different.
+diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
+index 0754542..e268f79 100644
+--- a/drivers/s390/scsi/zfcp_def.h
++++ b/drivers/s390/scsi/zfcp_def.h
+@@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
+  * zfcp_address_to_sg - set up struct scatterlist from kernel address
+  * @address: kernel address
+  * @list: struct scatterlist
++ * @size: buffer size
+  */
+ static inline void
+-zfcp_address_to_sg(void *address, struct scatterlist *list)
++zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
+ {
+-	sg_set_buf(list, address, 0);
++	sg_set_buf(list, address, size);
+ }
+ 
+ #define REQUEST_LIST_SIZE 128
 
-Machine					regression
-8-core stoakley				30%
-16-core tigerton			6%
-tulsa(dual-core+HT, 16 logical cpu)	20%
+-- 
+Jens Axboe
 
--yanmin
