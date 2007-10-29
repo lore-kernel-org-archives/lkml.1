@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbXJ2Wz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXJ2XBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbXJ2Wz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXJ2Wzu
+	id S1753364AbXJ2XBx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXJ2XBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:55:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49845 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Oct 2007 19:01:46 -0400
+Received: from ns120.gr8dns.org ([193.108.181.120]:58779 "EHLO mail.gr8dns.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750865AbXJ2Wzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:55:50 -0400
-Date: Mon, 29 Oct 2007 23:55:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Zachary Amsden <zach@vmware.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, rusty@rustcorp.com.au,
-       --cc@redhat.com, avi@quramnet.com, kvm-devel@lists.sourceforge.net,
-       Glauber de Oliveira Costa <glauber@t60.localdomain>,
-       Dan Hecht <dhecht@vmware.com>, Garrett Smith <garrett@vmware.com>
-Subject: Re: [PATCH] raise tsc clocksource rating
-Message-ID: <20071029225528.GA31293@elte.hu>
-References: <11936994092607-git-send-email-gcosta@redhat.com> <1193697734.9793.86.camel@bodhitayantram.eng.vmware.com> <20071029224852.GA27547@elte.hu> <47266431.1010500@goop.org>
+	id S1751849AbXJ2XBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 19:01:45 -0400
+X-Greylist: delayed 625 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 19:01:44 EDT
+Date: Mon, 29 Oct 2007 15:50:51 -0700
+From: Dirk Hohndel <hohndel@linux.intel.com>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Jeff Garzik <jeff@garzik.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from
+	input_register_device
+Message-ID: <20071029225051.GA1473@linux.intel.com>
+References: <20071029152050.GA23411@bigserver.hohndel.org> <Pine.LNX.4.64.0710291827140.18815@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47266431.1010500@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0002]
+In-Reply-To: <Pine.LNX.4.64.0710291827140.18815@twin.jikos.cz>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[sorry - mail config screwup caused this to bounce for the more restrictive
+of the recipient addresses, including the mailing lists, so resending again]
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Mon, Oct 29, 2007 at 06:28:36PM +0100, Jiri Kosina wrote:                                                                                                                 
+>                                                                                                                                                                            
+> > Would something like this work?                                                                                                                                          
+>                                                                                                                                                                            
+> Yes, I think that this patch is in principle fine, modulo the redundant                                                                                                    
+> NULL-ptr checks.                                                                                                                                                           
+                                                                                                                                                                             
+Thanks everyone with helping me to get this right! Which I hope this one is :-)                                                                                              
+                                                                                                                                                                             
+/D                                                                                                                                                                           
 
-> > if it's inaccurate why are you exposing it to the guest then? Native 
-> > only uses the TSC if it's safe and accurate to do so.
-> 
-> It is used as part of the Xen clocksource as a short term 
-> extrapolator, with correction parameters supplied by the hypervisor.  
-> It should never be used directly.
 
-that's totally broken then. You cannot create an SMP-safe monotonic 
-clocksource via interpolation - native does not do it either. Good thing 
-this problem got exposed, it needs to be fixed.
+[PATCH] hidinput_connect ignores retval from input_register_device
 
-	Ingo
+signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+
+---
+ drivers/hid/hid-input.c |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index dd332f2..aa9b52d 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -1152,7 +1152,7 @@ int hidinput_connect(struct hid_device *hid)
+ 					kfree(hidinput);
+ 					input_free_device(input_dev);
+ 					err_hid("Out of memory during hid input probe");
+-					return -1;
++					goto out_unwind;
+ 				}
+ 
+ 				input_set_drvdata(input_dev, hid);
+@@ -1186,15 +1186,25 @@ int hidinput_connect(struct hid_device *hid)
+ 				 * UGCI) cram a lot of unrelated inputs into the
+ 				 * same interface. */
+ 				hidinput->report = report;
+-				input_register_device(hidinput->input);
++				if (input_register_device(hidinput->input))
++					goto out_cleanup;
+ 				hidinput = NULL;
+ 			}
+ 		}
+ 
+-	if (hidinput)
+-		input_register_device(hidinput->input);
++	if (hidinput && input_register_device(hidinput->input))
++		goto out_cleanup;
+ 
+ 	return 0;
++
++out_cleanup:
++	input_free_device(hidinput->input);
++	kfree(hidinput);
++out_unwind:
++	/* unwind the ones we already registered */
++	hidinput_disconnect(hid);
++
++	return -1;
+ }
+ EXPORT_SYMBOL_GPL(hidinput_connect);
+ 
+-- 
+gitgui.0.8.4.g8d863
+
