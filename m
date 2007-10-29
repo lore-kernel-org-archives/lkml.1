@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbXJ2F1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbXJ2FeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbXJ2F1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 01:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXJ2F1J
+	id S1755027AbXJ2FeD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 01:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXJ2Fdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 01:27:09 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:41028 "EHLO e6.ny.us.ibm.com"
+	Mon, 29 Oct 2007 01:33:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58100 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbXJ2F1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 01:27:06 -0400
-Date: Mon, 29 Oct 2007 10:56:35 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kprobe_exceptions_notify(): fix NULL dereference
-Message-ID: <20071029052635.GA8063@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20071027141914.GW30533@stusta.de>
+	id S1751187AbXJ2Fdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 01:33:53 -0400
+Date: Mon, 29 Oct 2007 16:33:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olof Johansson <olof@lixom.net>
+Cc: Ben Herrenschmidt <benh@kernel.crashing.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] Silence radeon_pm warning
+Message-Id: <20071029163343.7fe7e6b8.sfr@canb.auug.org.au>
+In-Reply-To: <20071029050202.GA16159@lixom.net>
+References: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
+	<20071029050202.GA16159@lixom.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071027141914.GW30533@stusta.de>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 04:19:14PM +0200, Adrian Bunk wrote:
-> This patch fixes later NULL dereferences spotted by the Coverity 
-> checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+--Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-NACK... see below
+On Mon, 29 Oct 2007 00:02:02 -0500 Olof Johansson <olof@lixom.net> wrote:
+>
+> I posted this one a few days ago, without adding a new ifdef (just moving=
+ the
+> declaration down into the already existing ifdef below it):
+>=20
+> http://marc.info/?l=3Dlinux-kernel&m=3D119311699109698&w=3D2
 
-> ---
-> 
-> BTW: The avr32 and s390 versions of kprobe_exceptions_notify() are
->      not touched since they don't contain this check.
-> 
->  arch/ia64/kernel/kprobes.c    |    2 +-
->  arch/powerpc/kernel/kprobes.c |    2 +-
->  arch/sparc64/kernel/kprobes.c |    2 +-
->  arch/x86/kernel/kprobes_32.c  |    2 +-
->  arch/x86/kernel/kprobes_64.c  |    2 +-
->  5 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> b6f1241ee20dd22210f48b4100bc5055315f3808 
-> diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
-> index 5fd65d8..3663dfb 100644
-> --- a/arch/ia64/kernel/kprobes.c
-> +++ b/arch/ia64/kernel/kprobes.c
-> @@ -886,11 +886,11 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
->  				       unsigned long val, void *data)
->  {
->  	struct die_args *args = (struct die_args *)data;
->  	int ret = NOTIFY_DONE;
-> 
-> -	if (args->regs && user_mode(args->regs))
-> +	if (args->regs || user_mode(args->regs))
+Yeah, missed that and yours looks better.
 
-This change is incorrect as you return if args->regs != NULL leading to
-a sure system crash.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Ananth
+--Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHJXC7TgG2atn1QN8RAorsAJ9qMbbi2lUTNO02IoxFMxQhSNl3kgCdGhFx
+QOGcj7EMN+n17WIE43lNN4A=
+=hgi+
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh--
