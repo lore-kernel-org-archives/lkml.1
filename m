@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbXJ2PZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbXJ2P0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbXJ2PZP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbXJ2PZA
+	id S1759297AbXJ2P0O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbXJ2PZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:25:00 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:60602 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbXJ2PY7 (ORCPT
+	Mon, 29 Oct 2007 11:25:59 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:42264 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbXJ2PZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:24:59 -0400
-Message-ID: <4725FB46.70802@tiscali.nl>
-Date: Mon, 29 Oct 2007 16:24:54 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: build failure, missing libvdeplug.h?
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 11:25:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:subject:date:to:x-mailer:from;
+        b=FH3uJ938dkW3M/FfKGcJxQmmXR5SjMS7icUJ3rF0sKk2sdU/NCpfqUI6FRwkiOKxaWhGtG7pY9/zvb+cJ2n8Ql6jw0YidNdAE9Nc+qLhaJZl4ESRtne/MdTDJv5DUgGx3FpEeJE2+zFFgxhLsUegD81hTt8ulwXdjF5XWcJbUr8=
+In-Reply-To: <20071029045116.GB8181@ftp.linux.org.uk>
+References: <20071029045116.GB8181@ftp.linux.org.uk>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8B618420-85D9-415C-8FE5-38D32235A623@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       anil.s.keshavamurthy@intel.com, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] intel-iommu fixes
+Date: Mon, 29 Oct 2007 10:25:54 -0500
+To: Al Viro <viro@ftp.linux.org.uk>
+X-Mailer: Apple Mail (2.752.2)
+From: Mark Rustad <mrustad@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Building uml with an allyesconfig and a few changes in UML only fails with:
+On Oct 28, 2007, at 11:51 PM, Al Viro wrote:
 
-...
-  CC      arch/um/drivers/vde_user.o
-/home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:8:24: error: libvdeplug.h: No such file or directory
-/home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c: In function 'vde_user_init':
-/home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:18: error: 'VDECONN' undeclared (first use in this function)
-...
+> 	* off by one in dmar_get_fault_reason() (maximal index in
+> array is ARRAY_SIZE()-1, not ARRAY_SIZE())
+> 	* NULL noise removal
+> 	* __iomem annotation fix
+>
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> index 0c4ab3b..9b35259 100644
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -745,7 +745,7 @@ static char *fault_reason_strings[] =
+>  	"non-zero reserved fields in PTE",
+>  	"Unknown"
+>  };
+> -#define MAX_FAULT_REASON_IDX 	ARRAY_SIZE(fault_reason_strings)
+> +#define MAX_FAULT_REASON_IDX 	ARRAY_SIZE(fault_reason_strings) - 1
 
-the file libvdeplug.h is missing and I can't find it neither in the tree or on
-the net. 'git-grep VDECONN' shows that VDECONN isn't defined anywhere.
+This define now should really have ()'s around its value now that it  
+is an expression to avoid potential problems at its reference sites.
 
-this code was added in this commit:
+<snip>
 
---
-commit ad43c3565bebada7e5a13288e37542fd940369e8
-Author: Jeff Dike <jdike@addtoit.com>
-Date:   Tue Oct 16 01:26:48 2007 -0700
+-- 
+Mark Rustad, MRustad@gmail.com
 
-    uml: add VDE networking support
 
-    Added vde network backend in uml to introduce native Virtual Distributed
-    Ethernet support (using libvdeplug).
-
-    Signed-off-by: Luca Bigliardi <shammash@artha.org>
-    Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
---
-
-There is a reference to http://wiki.virtualsquare.org/index.php/Main_Page in
-the Kconfig (also added by this commit).
-After reverting this commit the build continues. possibly the header 
-libvdeplug.h was forgotten?
-
-Roel
