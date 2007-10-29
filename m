@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXJ2VSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbXJ2VUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXJ2VSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbXJ2VSX
+	id S1753909AbXJ2VUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXJ2VUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:18:23 -0400
-Received: from sargon.lncsa.com ([212.99.8.251]:47857 "EHLO sargon.lncsa.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbXJ2VSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:18:22 -0400
-Date: Mon, 29 Oct 2007 22:18:18 +0100
-From: Laurent Caron <lcaron@lncsa.com>
-To: linux-kernel@vger.kernel.org
-Subject: Crash with XFS on top of DRBD (DRBD 8.0.6 svn / Kernel 2.6.22)
-Message-ID: <20071029221645.eiseeshu@trusted.lncsa.com>
+	Mon, 29 Oct 2007 17:20:11 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48946 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751730AbXJ2VUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:20:09 -0400
+X-Sasl-enc: 7cTMKjQb7HhulvZaOqWBFIrr5tPsUrcOMszt3f+CP5Z5 1193692807
+Message-ID: <47264E93.2040009@imap.cc>
+Date: Mon, 29 Oct 2007 22:20:19 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net,
+       Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <kkeil@suse.de>,
+       i4ldeveloper@listserv.isdn4linux.de
+Subject: Re: [linux-usb-devel] [PATCH 1/2] usb_gigaset: suspend support
+References: <Pine.LNX.4.44L0.0710291509060.11831-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0710291509060.11831-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig45BEDA61EBDE85816BFF77E1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig45BEDA61EBDE85816BFF77E1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Am 29.10.2007 20:10 schrieb Alan Stern:
+> On Mon, 29 Oct 2007, Tilman Schmidt wrote:
+>=20
+>> From: Tilman Schmidt <tilman@imap.cc>
+>>
+>> Add basic suspend/resume support to the usb_gigaset driver.
+>=20
+>> @@ -117,6 +122,11 @@ static struct usb_driver gigaset_usb_dri
+>>  	.probe =3D	gigaset_probe,
+>>  	.disconnect =3D	gigaset_disconnect,
+>>  	.id_table =3D	gigaset_table,
+>> +	.suspend =3D	gigaset_suspend,
+>> +	.resume =3D	gigaset_resume,
+>> +	.reset_resume =3D	gigaset_resume,
+>> +	.pre_reset =3D	gigaset_suspend,
+>> +	.post_reset =3D	gigaset_resume,
+>>  };
+>=20
+> Does this really compile?  The .pre_reset and .suspend members are=20
+> pointers to functions with different prototypes; I don't see how you=20
+> can assign the same function to both pointers.
 
-I'm back with my crash, oomkiller..... problems on my DRBD cluster of 2
-servers.
+Oops, you're right. Yes, it does compile, but with a warning
+"initialization from incompatible pointer type" which I
+foolishly ignored.
 
-I compiled a 2.6.22 kernel with slab/slab debugging turned on.
+I'll produce a corrected version promptly.
 
-Here is the last oom-killer message I got on that server.
+Thanks,
+Tilman
 
-I couldn't wait until a crash since a lot of users are working on it:
-
------------------------------------------------
-kernel: procmail invoked oom-killer: gfp_mask=0xd0, order=1, oomkilladj=0
-kernel: [<c0147dbe>] out_of_memory+0x69/0x197
-kernel: [<c01492e1>] __alloc_pages+0x20a/0x294
-kernel: [<c0149397>] __get_free_pages+0x2c/0x3a
-kernel: [<c011ba87>] copy_process+0xa4/0x102d
-kernel: [<c012aff2>] alloc_pid+0x16/0x240
-kernel: [<c016048d>] kmem_cache_alloc+0x80/0x8a
-kernel: [<c012aff2>] alloc_pid+0x16/0x240
-kernel: [<c011cc57>] do_fork+0x9a/0x1c2
-kernel: [<c01021d1>] sys_clone+0x36/0x3b
-kernel: [<c0103cb2>] sysenter_past_esp+0x6b/0xa1
-kernel: =======================
-kernel: Mem-info:
-kernel: DMA per-cpu:
-kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    4: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    5: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    6: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: CPU    7: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0  
-kernel: Normal per-cpu:
-kernel: CPU    0: Hot: hi:  186, btch:  31 usd:  63   Cold: hi:   62, btch:  15 usd:  51 
-kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  97   Cold: hi:   62, btch:  15 usd:  54 
-kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  26   Cold: hi:   62, btch:  15 usd:  47 
-kernel: CPU    3: Hot: hi:  186, btch:  31 usd:   8   Cold: hi:   62, btch:  15 usd:  61 
-kernel: CPU    4: Hot: hi:  186, btch:  31 usd:  18   Cold: hi:   62, btch:  15 usd:  53 
-kernel: CPU    5: Hot: hi:  186, btch:  31 usd:   0   Cold: hi:   62, btch:  15 usd:  60 
-kernel: CPU    6: Hot: hi:  186, btch:  31 usd:   6   Cold: hi:   62, btch:  15 usd:  57 
-kernel: CPU    7: Hot: hi:  186, btch:  31 usd:  28   Cold: hi:   62, btch:  15 usd:  59 
-kernel: HighMem per-cpu:
-kernel: CPU    0: Hot: hi:  186, btch:  31 usd:  98   Cold: hi:   62, btch:  15 usd:   8 
-kernel: CPU    1: Hot: hi:  186, btch:  31 usd:   7   Cold: hi:   62, btch:  15 usd:  12 
-kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  85   Cold: hi:   62, btch:  15 usd:   4 
-kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  72   Cold: hi:   62, btch:  15 usd:   0 
-kernel: CPU    4: Hot: hi:  186, btch:  31 usd:  21   Cold: hi:   62, btch:  15 usd:   6 
-kernel: CPU    5: Hot: hi:  186, btch:  31 usd:  19   Cold: hi:   62, btch:  15 usd:  12 
-kernel: CPU    6: Hot: hi:  186, btch:  31 usd: 175   Cold: hi:   62, btch:  15 usd:  12 
-kernel: CPU    7: Hot: hi:  186, btch:  31 usd: 137   Cold: hi:   62, btch:  15 usd:   2 
-kernel: Active:381850 inactive:9157 dirty:256 writeback:97 unstable:0
-kernel: free:2519061 slab:22044 mapped:7487 pagetables:2163 bounce:0
-kernel: DMA free:3564kB min:68kB low:84kB high:100kB active:0kB inactive:0kB present:16256kB pages_scanned:0 all_unreclaimable? yes 
-kernel: lowmem_reserve[]: 0 873 12938
-kernel: Normal free:7756kB min:3744kB low:4680kB high:5616kB active:116kB inactive:0kB present:894080kB pages_scanned:192 all_unreclaimable? yes 
-kernel: lowmem_reserve[]: 0 0 96520
-kernel: HighMem free:10064924kB min:512kB low:13456kB high:26404kB active:1527284kB inactive:36804kB present:12354560kB pages_scanned:0 all_unreclaimable? no
-kernel: lowmem_reserve[]: 0 0 0
-kernel: DMA: 9*4kB 15*8kB 3*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3564kB
-kernel: Normal: 1495*4kB 10*8kB 1*16kB 0*32kB 1*64kB 1*128kB 0*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 7804kB
-kernel: HighMem: 39234*4kB 109305*8kB 80630*16kB 52420*32kB 27267*64kB 9904*128kB 2822*256kB 871*512kB 377*1024kB 218*2048kB 257*4096kB = 10065264kB
-kernel: Swap cache: add 43, delete 42, find 0/0, race 0+0 
-kernel: Free swap  = 393204kB
-kernel: Total swap = 393208kB
-kernel: Free swap:       393204kB
-kernel: 3342335 pages of RAM
-kernel: 3112959 pages of HIGHMEM
-kernel: 224356 reserved pages
-kernel: 221558 pages shared
-kernel: 1 pages swap cached
-kernel: 256 pages dirty
-kernel: 97 pages writeback
-kernel: 7487 pages mapped
-kernel: 22044 pages slab
-kernel: 2163 pages pagetables
-kernel: Out of memory: kill process 12069 (slapd) score 62386 or a child 
-kernel: Killed process 12069 (slapd)
----------------------------------------------
-
-Do anyone have any clue about what's happening ?
-
-Thanks
-
-Laurent
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
+--------------enig45BEDA61EBDE85816BFF77E1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-lcaron@lncsa.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHJk6hMdB4Whm86/kRAh9UAJ42pW5+NVJVE3g7Ej1zEg3WUhXmCACbB/4+
+eKAwKRpnw/fQWyi7D9EfevY=
+=ZFlx
+-----END PGP SIGNATURE-----
+
+--------------enig45BEDA61EBDE85816BFF77E1--
