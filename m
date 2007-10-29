@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXJ2AJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXJ2ARX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbXJ2AJP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 20:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXJ2AJA
+	id S1754681AbXJ2ARX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 20:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXJ2ARQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 20:09:00 -0400
-Received: from lixom.net ([66.141.50.11]:60746 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752022AbXJ2AJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 20:09:00 -0400
-Date: Sun, 28 Oct 2007 19:16:57 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Alan@ozlabs.org, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v2] pcmcia: Remove replace kio_addr_t with unsigned int
-	everywhere
-Message-ID: <20071029001657.GA12709@lixom.net>
-References: <20070914034854.1658a9cf.akpm@linux-foundation.org> <20070921221516.GA7926@lixom.net> <20070921233936.2aeb2504@the-village.bc.nu> <20070922062551.GE10625@parisc-linux.org> <20070922091303.GA12525@lst.de> <20071019201720.GA13234@lixom.net> <20071028134414.GF26943@isilmar.linta.de> <20071028201034.GB9472@lixom.net> <20071028201858.GA10048@lixom.net> <20071029105005.d85e212e.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029105005.d85e212e.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 28 Oct 2007 20:17:16 -0400
+Received: from mga05.intel.com ([192.55.52.89]:26408 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751099AbXJ2ARP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 20:17:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,339,1188802800"; 
+   d="scan'208";a="361864128"
+Subject: Re: aim7 -30% regression in 2.6.24-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1193392422.6914.25.camel@twins>
+References: <1193391787.3019.174.camel@ymzhang>
+	 <1193392422.6914.25.camel@twins>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 29 Oct 2007 08:15:33 +0800
+Message-Id: <1193616933.3019.181.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 10:50:05AM +1100, Stephen Rothwell wrote:
-> Hi Olof,
+On Fri, 2007-10-26 at 11:53 +0200, Peter Zijlstra wrote:
+> On Fri, 2007-10-26 at 17:43 +0800, Zhang, Yanmin wrote:
+> > I tested 2.6.24-rc1 on my x86_64 machine which has 2 quad-core processors.
+> > 
+> > Comparing with 2.6.23, aim7 has about -30% regression. I did a bisect and found
+> > patch http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b5869ce7f68b233ceb81465a7644be0d9a5f3dbb
+> > caused the issue.
 > 
-> diffstat output is very useful - especially for patches like this that
-> touch lots of files.  It makes it easier for potential reviewers to see
-> if they should be potential reviewers.  :-)
+> Bit weird that you point to a merge commit, and not an actual patch. Are
+> you sure git bisect pointed at this one?
+When I did a bisect, kernel couldn't boot and my testing log showed
+it's at b5869ce7f68b233ceb81465a7644be0d9a5f3dbb. So I did a manual
+checkout.
 
-Hi,
+#git clone ...
+#git pull ...
+#git checkout b5869ce7f68b233ceb81465a7644be0d9a5f3dbb
 
-Good point. I'll include it next time if I end up re-posting it. I hope
-I won't have to. :-)
-
-This is the diffstat from the posted patch:
-
- Documentation/pcmcia/driver-changes.txt |    4 +-
- drivers/bluetooth/bt3c_cs.c             |    2 -
- drivers/bluetooth/btuart_cs.c           |    2 -
- drivers/net/pcmcia/3c574_cs.c           |   49 ++++++++++++-------------
- drivers/net/pcmcia/3c589_cs.c           |   30 +++++++--------
- drivers/net/pcmcia/axnet_cs.c           |   26 ++++++-------
- drivers/net/pcmcia/fmvj18x_cs.c         |   23 ++++++-----
- drivers/net/pcmcia/nmclan_cs.c          |   24 ++++++------
- drivers/net/pcmcia/pcnet_cs.c           |   36 +++++++++---------
- drivers/net/pcmcia/smc91c92_cs.c        |   62 ++++++++++++++++----------------
- drivers/net/pcmcia/xirc2ps_cs.c         |   51 +++++++++++++-------------
- drivers/net/wireless/netwave_cs.c       |   24 ++++++------
- drivers/net/wireless/wavelan_cs.c       |   56 ++++++++++++++--------------
- drivers/pcmcia/i82092.c                 |    2 -
- drivers/pcmcia/i82365.c                 |   14 +++----
- drivers/pcmcia/m32r_cfc.c               |    7 ++-
- drivers/pcmcia/m32r_pcc.c               |    5 +-
- drivers/pcmcia/rsrc_nonstatic.c         |    5 +-
- drivers/serial/serial_cs.c              |    6 +--
- include/pcmcia/cs_types.h               |    1 
- include/pcmcia/ss.h                     |    6 +--
- 21 files changed, 220 insertions(+), 215 deletions(-)
+Then, compiled kernel and tested it. Then, reversed above patch and recompiled/retested it.
 
 
+If I ran git log, I could see this tag in the list.
 
--Olof
+-yanmin
