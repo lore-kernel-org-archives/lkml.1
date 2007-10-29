@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ2PlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXJ2Pn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXJ2PlV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbXJ2PlO
+	id S1758145AbXJ2Pn4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXJ2Pns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:41:14 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:53186 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbXJ2PlN (ORCPT
+	Mon, 29 Oct 2007 11:43:48 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40218 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752608AbXJ2Pnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:41:13 -0400
-Message-ID: <4725FF15.5050908@tiscali.nl>
-Date: Mon, 29 Oct 2007 16:41:09 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: build failure, missing libvdeplug.h?
-References: <4725FB46.70802@tiscali.nl>
-In-Reply-To: <4725FB46.70802@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 11:43:47 -0400
+Subject: Re: [PATCH v4 0/2] [SCSI] Asynchronous event notification
+	infrastructure
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
+In-Reply-To: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>
+References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 10:43:44 -0500
+Message-Id: <1193672624.3383.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> the file libvdeplug.h is missing
-
+On Mon, 2007-10-29 at 10:42 -0400, Jeff Garzik wrote:
+> This is the next revision of the SCSI event notification infrastructure
+> patchset, enabling SATA Asynchronous Notification ("AN") for CD/DVD
+> devices that support it.
 > 
-> There is a reference to http://wiki.virtualsquare.org/index.php/Main_Page in
-> the Kconfig (also added by this commit).
-> After reverting this commit the build continues. possibly the header 
-> libvdeplug.h was forgotten?
+> For devices that support SATA AN (only very recent ones do), this means
+> that HAL and other userspace utilities no longer need to repeatedly poll
+> the CD/DVD device to determine if the user has changed the media.
+> 
+> This revision takes into account James' comments from earlier today,
+> modulo the following notes:
+> 
+> * I think the various event attributes should always be present,
+>   for all devices at all times.  If various events are not supported,
+>   the attribute will of course return zero (false, not supported).
 
-Sorry for answering myself, but apparently it can be found here:
+Actually, I don't think so.  We have precedent for this in the transport
+classes: if a device doesn't support a feature, we don't export the flag
+for that feature through sysfs.  This allows not only feature control,
+but an immediate view of the device capabilities simply by viewing the
+sysfs directory.
 
-http://vde.sourceforge.net/
+I think this functionality is very easy to layer in, so there's no
+reason not to do it.
 
-I think, however that there is a 'depends on' missing in kconfig - to prevent build
-failure?
+> * I do not think this work should be blocked behind a revamp
+>   of the attribute group interface.
+
+Assuming gregkh or kay ack, it won't be.
+
+> * I was slack and did not bother to implement the 'set' operation
+>   for the attributes.  This can easily be done at a later time in a
+>   separate patch.  It is not a merge stopper to have the driver
+>   exclusively control the event mask, rather than driver+sysfs.
+
+James
+
+
