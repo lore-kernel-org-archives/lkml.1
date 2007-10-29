@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbXJ2HC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbXJ2HH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbXJ2HC5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 03:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXJ2HCu
+	id S1754934AbXJ2HH4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 03:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXJ2HHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 03:02:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33907 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751816AbXJ2HCt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 03:02:49 -0400
-Date: Mon, 29 Oct 2007 00:02:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Toralf =?ISO-8859-1?B?RvZyc3Rlcg==?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
-Subject: Re: cpu governor ondemand issue
-Message-Id: <20071029000243.9101d363.akpm@linux-foundation.org>
-In-Reply-To: <200710211316.14955.toralf.foerster@gmx.de>
-References: <200710211316.14955.toralf.foerster@gmx.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Mon, 29 Oct 2007 03:07:49 -0400
+Received: from tuxrocks.com ([208.78.103.217]:34339 "EHLO tuxrocks.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751860AbXJ2HHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 03:07:48 -0400
+X-Greylist: delayed 3297 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 03:07:48 EDT
+Message-ID: <472579D8.7010404@tuxrocks.com>
+Date: Mon, 29 Oct 2007 01:12:40 -0500
+From: Frank Sorenson <frank@tuxrocks.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Bradley Smith <bradjsmith@btinternet.com>, linux-kernel@vger.kernel.org,
+       dz@debian.org
+Subject: Re: [PATCH 1/2] I8K: Allow i8k driver to be built on x86_64 systems
+References: <20071028172519.371dbbe8@debian.hob> <4724CDFA.1080106@garzik.org>
+In-Reply-To: <4724CDFA.1080106@garzik.org>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Oct 2007 13:16:14 +0200 Toralf Förster <toralf.foerster@gmx.de> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> I use the following one liner for regression tests of the cpufreq governor and
-> friends:
+Jeff Garzik wrote:
+> Bradley Smith wrote:
+>> From: Bradley Smith <bradjsmith@btinternet.com>
+>>
+>> Adds #if clause and additional inline assembly so that the driver
+>> builds on x86_64 systems.
+>>
+>> Signed-off-by: Bradley Smith <bradjsmith@btinternet.com>
 > 
-> tfoerste@n22 ~ $ time factor 819734028463158891
+> Is this actually known to be working on a Dell laptop?
 > 
-> which usually needs 5.5 secs to complete at 1.7 GHz of my pentium M processor.
-> 
-> With the  current git sources (commit cfa76f0 at Sat Oct 20 20:19:15 2007 -0700)
-> instead this command needs 3 times longer if I run the "distributed.net client"
-> as a background process with nice level 19 b/c the cpu frequency still stays
-> at 600 MHz.
-> After stopping dnetc the cpu frequency governor ondemand works as expected again.
-> 
-> Tested at my ThinkPad T41 with stable Gentoo:
-> 
-> tfoerste@n22 ~ $ grep -e ^CONFIG_ACPI -e ^CONFIG_CPU_FREQ_GOV_ ~/devel/linux-2.6/.config
-> CONFIG_ACPI=y
-> CONFIG_ACPI_SLEEP=y
-> CONFIG_ACPI_PROCFS=y
-> CONFIG_ACPI_PROC_EVENT=y
-> CONFIG_ACPI_AC=m
-> CONFIG_ACPI_BATTERY=m
-> CONFIG_ACPI_BUTTON=m
-> CONFIG_ACPI_VIDEO=m
-> CONFIG_ACPI_FAN=m
-> CONFIG_ACPI_PROCESSOR=m
-> CONFIG_ACPI_THERMAL=m
-> CONFIG_ACPI_BLACKLIST_YEAR=0
-> CONFIG_ACPI_EC=y
-> CONFIG_ACPI_POWER=y
-> CONFIG_ACPI_SYSTEM=y
-> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> 
+>     Jeff
 
-And 2.6.23 was OK?
+Yes, the patch works well on my Dell, and I've got several
+follow-up patches to Brad's.  During the last i8k refresh
+(http://lkml.org/lkml/2005/2/24/11), not everything made it
+into mainline, so i8k is due for another facelift.
 
-Is this problem still present in Linus's current tree?
+Needs the following in order to work correctly on my Inspiron E1705:
 
-Thanks.
+
+Add DMI Product name to i8k for Dell MP061 hardware (Inspiron 9400/E1705)
+
+Signed-off-by: Frank Sorenson <frank@tuxrocks.com>
+- ---
+ drivers/char/i8k.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-2.6.24-rc1/drivers/char/i8k.c
+===================================================================
+- --- linux-2.6.24-rc1.orig/drivers/char/i8k.c	2007-10-29 00:27:21.000000000 -0500
++++ linux-2.6.24-rc1/drivers/char/i8k.c	2007-10-29 00:30:05.000000000 -0500
+@@ -468,6 +468,13 @@
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Latitude"),
+ 		},
+ 	},
++	{
++		.ident = "Dell Inspiron 3",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MP061"),
++		},
++	},
+ 	{ }
+ };
+
+
+Frank
+- -- 
+Frank Sorenson - KD7TZK
+Linux Systems Engineer, DSS Engineering, UBS AG
+frank@tuxrocks.com
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHJXnUaI0dwg4A47wRApQrAKDKb0Zq+QrG+CUsXrpfoxVxLyM+PQCg5uZc
+kvUjuY3a1F7MIx0Z9DSrYbg=
+=IcmN
+-----END PGP SIGNATURE-----
