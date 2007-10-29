@@ -1,94 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbXJ2Nuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbXJ2Nww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbXJ2Nuq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 09:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXJ2Nuj
+	id S1757910AbXJ2Nww (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 09:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXJ2Nwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 09:50:39 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:43438 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbXJ2Nui (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 09:50:38 -0400
-Date: Mon, 29 Oct 2007 09:47:03 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: dhowells@redhat.com
-Subject: [PATCH] FRV: Move DMA macros to scatterlist.h for consistency.
-Message-ID: <Pine.LNX.4.64.0710290945130.12985@localhost.localdomain>
+	Mon, 29 Oct 2007 09:52:45 -0400
+Received: from www.tglx.de ([62.245.132.106]:57890 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234AbXJ2Nwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 09:52:44 -0400
+Date: Mon, 29 Oct 2007 14:52:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove the dead X86_REMOTE_DEBUG option
+In-Reply-To: <20071029124916.GK7227@stusta.de>
+Message-ID: <alpine.LFD.0.9999.0710291451560.3186@localhost.localdomain>
+References: <20071029124916.GK7227@stusta.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 29 Oct 2007, Adrian Bunk wrote:
 
-To be consistent with other architectures, these two DMA macros should
-be defined in scatterlist.h as opposed to dma-mapping.h
+> This patch removes the dead X86_REMOTE_DEBUG option.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Applied, thanks
 
----
+	tglx
 
- include/asm-frv/dma-mapping.h |   10 ----------
- include/asm-frv/scatterlist.h |   10 ++++++++++
- 2 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/include/asm-frv/dma-mapping.h b/include/asm-frv/dma-mapping.h
-index bcb2df6..2e8966c 100644
---- a/include/asm-frv/dma-mapping.h
-+++ b/include/asm-frv/dma-mapping.h
-@@ -17,16 +17,6 @@ void *dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle
- void dma_free_coherent(struct device *dev, size_t size, void *vaddr, dma_addr_t dma_handle);
-
- /*
-- * These macros should be used after a pci_map_sg call has been done
-- * to get bus addresses of each of the SG entries and their lengths.
-- * You should only work with the number of sg entries pci_map_sg
-- * returns, or alternatively stop on the first sg_dma_len(sg) which
-- * is 0.
-- */
--#define sg_dma_address(sg)	((sg)->dma_address)
--#define sg_dma_len(sg)		((sg)->length)
--
--/*
-  * Map a single buffer of the indicated size for DMA in streaming mode.
-  * The 32-bit bus address to use is returned.
-  *
-diff --git a/include/asm-frv/scatterlist.h b/include/asm-frv/scatterlist.h
-index 2e7143b..4bca8a2 100644
---- a/include/asm-frv/scatterlist.h
-+++ b/include/asm-frv/scatterlist.h
-@@ -31,6 +31,16 @@ struct scatterlist {
- 	unsigned int	length;
- };
-
-+/*
-+ * These macros should be used after a pci_map_sg call has been done
-+ * to get bus addresses of each of the SG entries and their lengths.
-+ * You should only work with the number of sg entries pci_map_sg
-+ * returns, or alternatively stop on the first sg_dma_len(sg) which
-+ * is 0.
-+ */
-+#define sg_dma_address(sg)	((sg)->dma_address)
-+#define sg_dma_len(sg)		((sg)->length)
-+
- #define ISA_DMA_THRESHOLD (0xffffffffUL)
-
- #endif /* !_ASM_SCATTERLIST_H */
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+> ---
+> 6ea2f2bbd1646369a3affbed8ad1af5acc1530cd 
+> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+> index 970b2de..a2fa37d 100644
+> --- a/arch/x86/Kconfig.debug
+> +++ b/arch/x86/Kconfig.debug
+> @@ -113,7 +113,4 @@ config IOMMU_LEAK
+>  	  Add a simple leak tracer to the IOMMU code. This is useful when you
+>  	  are debugging a buggy device driver that leaks IOMMU mappings.
+>  
+> -#config X86_REMOTE_DEBUG
+> -#	bool "kgdb debugging stub"
+> -
+>  endmenu
+> 
