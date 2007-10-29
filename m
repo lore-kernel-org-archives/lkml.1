@@ -1,287 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXKAVhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760323AbXKAVhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbXKAVhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXKAVfv
+	id S1760323AbXKAVhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbXKAVfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:35:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:43994 "EHLO mx1.suse.de"
+	Thu, 1 Nov 2007 17:35:52 -0400
+Received: from ns1.suse.de ([195.135.220.2]:43991 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755172AbXKAVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755059AbXKAVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Nov 2007 17:35:46 -0400
-Message-Id: <20071029124121.829255433@weierstrass.suse.de>
+Message-Id: <20071029124121.701104778@weierstrass.suse.de>
 References: <20071029124120.528997881@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 29 Oct 2007 13:41:26 +0100
+Date: Mon, 29 Oct 2007 13:41:25 +0100
 From: Jan Blunck <jblunck@suse.de>
 To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [PATCH 6/7] d_path: Make d_path() use a struct path
-Content-Disposition: inline; filename=vfs/d_path-use_struct_path.diff
+Subject: [PATCH 5/7] d_path: Make get_dcookie() use a struct path argument
+Content-Disposition: inline; filename=vfs/d_path_Make_get_dcookie_use_a_struct_path_argument.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-d_path() is used on a <dentry,vfsmount> pair. Lets use a struct path to
-reflect this.
+get_dcookie() is always called with a dentry and a vfsmount from a struct
+path. Make get_dcookie() take it directly as an argument.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- drivers/md/bitmap.c               |    8 +-------
- drivers/usb/gadget/file_storage.c |    3 +--
- fs/compat_ioctl.c                 |    2 +-
- fs/dcache.c                       |   12 +++++-------
- fs/dcookies.c                     |    2 +-
- fs/ecryptfs/super.c               |    5 ++---
- fs/nfsd/export.c                  |    3 ++-
- fs/proc/base.c                    |    2 +-
- fs/seq_file.c                     |    4 +++-
- fs/sysfs/file.c                   |    5 ++---
- fs/unionfs/super.c                |    3 +--
- include/linux/dcache.h            |    5 +++--
- kernel/audit.c                    |    2 +-
- 13 files changed, 24 insertions(+), 32 deletions(-)
+ arch/powerpc/oprofile/cell/spu_task_sync.c |   15 +++++---------
+ drivers/oprofile/buffer_sync.c             |   21 ++++++++-----------
+ fs/dcookies.c                              |   31 ++++++++++++-----------------
+ include/linux/dcookies.h                   |   15 ++++++--------
+ 4 files changed, 35 insertions(+), 47 deletions(-)
 
-Index: b/drivers/md/bitmap.c
+Index: b/arch/powerpc/oprofile/cell/spu_task_sync.c
 ===================================================================
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -206,16 +206,10 @@ static void bitmap_checkfree(struct bitm
- /* copy the pathname of a file to a buffer */
- char *file_path(struct file *file, char *buf, int count)
- {
--	struct dentry *d;
--	struct vfsmount *v;
--
- 	if (!buf)
- 		return NULL;
- 
--	d = file->f_path.dentry;
--	v = file->f_path.mnt;
--
--	buf = d_path(d, v, buf, count);
-+	buf = d_path(&file->f_path, buf, count);
- 
- 	return IS_ERR(buf) ? NULL : buf;
- }
-Index: b/drivers/usb/gadget/file_storage.c
-===================================================================
---- a/drivers/usb/gadget/file_storage.c
-+++ b/drivers/usb/gadget/file_storage.c
-@@ -3567,8 +3567,7 @@ static ssize_t show_file(struct device *
- 
- 	down_read(&fsg->filesem);
- 	if (backing_file_is_open(curlun)) {	// Get the complete pathname
--		p = d_path(curlun->filp->f_path.dentry,
--				curlun->filp->f_path.mnt, buf, PAGE_SIZE - 1);
-+		p = d_path(&curlun->filp->f_path, buf, PAGE_SIZE - 1);
- 		if (IS_ERR(p))
- 			rc = PTR_ERR(p);
- 		else {
-Index: b/fs/compat_ioctl.c
-===================================================================
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -3544,7 +3544,7 @@ static void compat_ioctl_error(struct fi
- 	/* find the name of the device. */
- 	path = (char *)__get_free_page(GFP_KERNEL);
- 	if (path) {
--		fn = d_path(filp->f_path.dentry, filp->f_path.mnt, path, PAGE_SIZE);
-+		fn = d_path(&filp->f_path, path, PAGE_SIZE);
- 		if (IS_ERR(fn))
- 			fn = "?";
- 	}
-Index: b/fs/dcache.c
-===================================================================
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1831,8 +1831,7 @@ Elong:
- 
- /**
-  * d_path - return the path of a dentry
-- * @dentry: dentry to report
-- * @vfsmnt: vfsmnt to which the dentry belongs
-+ * @path: path to report
-  * @buf: buffer to return value in
-  * @buflen: buffer length
-  *
-@@ -1843,8 +1842,7 @@ Elong:
-  *
-  * "buflen" should be positive. Caller holds the dcache_lock.
+--- a/arch/powerpc/oprofile/cell/spu_task_sync.c
++++ b/arch/powerpc/oprofile/cell/spu_task_sync.c
+@@ -198,14 +198,13 @@ out:
+  * dcookie user still being registered (namely, the reader
+  * of the event buffer).
   */
--char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
--	     char *buf, int buflen)
-+char *d_path(struct path *path, char *buf, int buflen)
+-static inline unsigned long fast_get_dcookie(struct dentry *dentry,
+-					     struct vfsmount *vfsmnt)
++static inline unsigned long fast_get_dcookie(struct path *path)
  {
- 	char *res;
- 	struct path root;
-@@ -1856,15 +1854,15 @@ char *d_path(struct dentry *dentry, stru
- 	 * user wants to identify the object in /proc/pid/fd/.  The little hack
- 	 * below allows us to generate a name for these objects on demand:
- 	 */
--	if (dentry->d_op && dentry->d_op->d_dname)
--		return dentry->d_op->d_dname(dentry, buf, buflen);
-+	if (path->dentry->d_op && path->dentry->d_op->d_dname)
-+		return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
+ 	unsigned long cookie;
  
- 	read_lock(&current->fs->lock);
- 	root = current->fs->root;
- 	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
-+	res = __d_path(path->dentry, path->mnt, &root, buf, buflen);
- 	spin_unlock(&dcache_lock);
- 	path_put(&root);
- 	return res;
+-	if (dentry->d_cookie)
+-		return (unsigned long)dentry;
+-	get_dcookie(dentry, vfsmnt, &cookie);
++	if (path->dentry->d_cookie)
++		return (unsigned long)path->dentry;
++	get_dcookie(path, &cookie);
+ 	return cookie;
+ }
+ 
+@@ -240,8 +239,7 @@ get_exec_dcookie_and_offset(struct spu *
+ 			continue;
+ 		if (!(vma->vm_flags & VM_EXECUTABLE))
+ 			continue;
+-		app_cookie = fast_get_dcookie(vma->vm_file->f_dentry,
+-					  vma->vm_file->f_vfsmnt);
++		app_cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 		pr_debug("got dcookie for %s\n",
+ 			 vma->vm_file->f_dentry->d_name.name);
+ 		app = vma->vm_file;
+@@ -262,8 +260,7 @@ get_exec_dcookie_and_offset(struct spu *
+ 		break;
+ 	}
+ 
+-	*spu_bin_dcookie = fast_get_dcookie(vma->vm_file->f_dentry,
+-						 vma->vm_file->f_vfsmnt);
++	*spu_bin_dcookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 	pr_debug("got dcookie for %s\n", vma->vm_file->f_dentry->d_name.name);
+ 
+ 	up_read(&mm->mmap_sem);
+Index: b/drivers/oprofile/buffer_sync.c
+===================================================================
+--- a/drivers/oprofile/buffer_sync.c
++++ b/drivers/oprofile/buffer_sync.c
+@@ -187,23 +187,22 @@ void sync_stop(void)
+ 	end_sync();
+ }
+ 
+- 
++
+ /* Optimisation. We can manage without taking the dcookie sem
+  * because we cannot reach this code without at least one
+  * dcookie user still being registered (namely, the reader
+  * of the event buffer). */
+-static inline unsigned long fast_get_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt)
++static inline unsigned long fast_get_dcookie(struct path *path)
+ {
+ 	unsigned long cookie;
+- 
+-	if (dentry->d_cookie)
+-		return (unsigned long)dentry;
+-	get_dcookie(dentry, vfsmnt, &cookie);
++
++	if (path->dentry->d_cookie)
++		return (unsigned long)path->dentry;
++	get_dcookie(path, &cookie);
+ 	return cookie;
+ }
+ 
+- 
++
+ /* Look up the dcookie for the task's first VM_EXECUTABLE mapping,
+  * which corresponds loosely to "application name". This is
+  * not strictly necessary but allows oprofile to associate
+@@ -222,8 +221,7 @@ static unsigned long get_exec_dcookie(st
+ 			continue;
+ 		if (!(vma->vm_flags & VM_EXECUTABLE))
+ 			continue;
+-		cookie = fast_get_dcookie(vma->vm_file->f_path.dentry,
+-			vma->vm_file->f_path.mnt);
++		cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 		break;
+ 	}
+ 
+@@ -248,8 +246,7 @@ static unsigned long lookup_dcookie(stru
+ 			continue;
+ 
+ 		if (vma->vm_file) {
+-			cookie = fast_get_dcookie(vma->vm_file->f_path.dentry,
+-				vma->vm_file->f_path.mnt);
++			cookie = fast_get_dcookie(&vma->vm_file->f_path);
+ 			*offset = (vma->vm_pgoff << PAGE_SHIFT) + addr -
+ 				vma->vm_start;
+ 		} else {
 Index: b/fs/dcookies.c
 ===================================================================
 --- a/fs/dcookies.c
 +++ b/fs/dcookies.c
-@@ -170,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
+@@ -24,6 +24,7 @@
+ #include <linux/errno.h>
+ #include <linux/dcookies.h>
+ #include <linux/mutex.h>
++#include <linux/path.h>
+ #include <asm/uaccess.h>
+ 
+ /* The dcookies are allocated from a kmem_cache and
+@@ -31,8 +32,7 @@
+  * code here is particularly performance critical
+  */
+ struct dcookie_struct {
+-	struct dentry * dentry;
+-	struct vfsmount * vfsmnt;
++	struct path path;
+ 	struct list_head hash_list;
+ };
+ 
+@@ -51,7 +51,7 @@ static inline int is_live(void)
+ /* The dentry is locked, its address will do for the cookie */
+ static inline unsigned long dcookie_value(struct dcookie_struct * dcs)
+ {
+-	return (unsigned long)dcs->dentry;
++	return (unsigned long)dcs->path.dentry;
+ }
+ 
+ 
+@@ -89,19 +89,16 @@ static void hash_dcookie(struct dcookie_
+ }
+ 
+ 
+-static struct dcookie_struct * alloc_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt)
++static struct dcookie_struct * alloc_dcookie(struct path *path)
+ {
+ 	struct dcookie_struct * dcs = kmem_cache_alloc(dcookie_cache, GFP_KERNEL);
+ 	if (!dcs)
+ 		return NULL;
+ 
+-	dentry->d_cookie = dcs;
+-
+-	dcs->dentry = dget(dentry);
+-	dcs->vfsmnt = mntget(vfsmnt);
++	path->dentry->d_cookie = dcs;
++	dcs->path = *path;
++	path_get(path);
+ 	hash_dcookie(dcs);
+-
+ 	return dcs;
+ }
+ 
+@@ -109,8 +106,7 @@ static struct dcookie_struct * alloc_dco
+ /* This is the main kernel-side routine that retrieves the cookie
+  * value for a dentry/vfsmnt pair.
+  */
+-int get_dcookie(struct dentry * dentry, struct vfsmount * vfsmnt,
+-	unsigned long * cookie)
++int get_dcookie(struct path *path, unsigned long * cookie)
+ {
+ 	int err = 0;
+ 	struct dcookie_struct * dcs;
+@@ -122,10 +118,10 @@ int get_dcookie(struct dentry * dentry, 
+ 		goto out;
+ 	}
+ 
+-	dcs = dentry->d_cookie;
++	dcs = path->dentry->d_cookie;
+ 
+ 	if (!dcs)
+-		dcs = alloc_dcookie(dentry, vfsmnt);
++		dcs = alloc_dcookie(path);
+ 
+ 	if (!dcs) {
+ 		err = -ENOMEM;
+@@ -174,7 +170,7 @@ asmlinkage long sys_lookup_dcookie(u64 c
  		goto out;
  
  	/* FIXME: (deleted) ? */
--	path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
-+	path = d_path(&dcs->path, kbuf, PAGE_SIZE);
+-	path = d_path(dcs->dentry, dcs->vfsmnt, kbuf, PAGE_SIZE);
++	path = d_path(dcs->path.dentry, dcs->path.mnt, kbuf, PAGE_SIZE);
  
  	if (IS_ERR(path)) {
  		err = PTR_ERR(path);
-Index: b/fs/ecryptfs/super.c
-===================================================================
---- a/fs/ecryptfs/super.c
-+++ b/fs/ecryptfs/super.c
-@@ -163,8 +163,7 @@ static void ecryptfs_clear_inode(struct 
- static int ecryptfs_show_options(struct seq_file *m, struct vfsmount *mnt)
+@@ -254,9 +250,8 @@ out_kmem:
+ 
+ static void free_dcookie(struct dcookie_struct * dcs)
  {
- 	struct super_block *sb = mnt->mnt_sb;
--	struct dentry *lower_root_dentry = ecryptfs_dentry_to_lower(sb->s_root);
--	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(sb->s_root);
-+	struct path *lower_root = &ecryptfs_dentry_to_private(sb->s_root)->lower_path;
- 	char *tmp_page;
- 	char *path;
- 	int rc = 0;
-@@ -174,7 +173,7 @@ static int ecryptfs_show_options(struct 
- 		rc = -ENOMEM;
- 		goto out;
- 	}
--	path = d_path(lower_root_dentry, lower_mnt, tmp_page, PAGE_SIZE);
-+	path = d_path(lower_root, tmp_page, PAGE_SIZE);
- 	if (IS_ERR(path)) {
- 		rc = PTR_ERR(path);
- 		goto out;
-Index: b/fs/nfsd/export.c
+-	dcs->dentry->d_cookie = NULL;
+-	dput(dcs->dentry);
+-	mntput(dcs->vfsmnt);
++	dcs->path.dentry->d_cookie = NULL;
++	path_put(&dcs->path);
+ 	kmem_cache_free(dcookie_cache, dcs);
+ }
+ 
+Index: b/include/linux/dcookies.h
 ===================================================================
---- a/fs/nfsd/export.c
-+++ b/fs/nfsd/export.c
-@@ -346,10 +346,11 @@ static void svc_export_request(struct ca
- {
- 	/*  client path */
- 	struct svc_export *exp = container_of(h, struct svc_export, h);
-+	struct path path = { .dentry = exp->ex_dentry, .mnt = exp->ex_mnt };
- 	char *pth;
- 
- 	qword_add(bpp, blen, exp->ex_client->name);
--	pth = d_path(exp->ex_dentry, exp->ex_mnt, *bpp, *blen);
-+	pth = d_path(&path, *bpp, *blen);
- 	if (IS_ERR(pth)) {
- 		/* is this correct? */
- 		(*bpp)[0] = '\n';
-Index: b/fs/proc/base.c
-===================================================================
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1054,7 +1054,7 @@ static int do_proc_readlink(struct path 
- 	if (!tmp)
- 		return -ENOMEM;
- 
--	pathname = d_path(path->dentry, path->mnt, tmp, PAGE_SIZE);
-+	pathname = d_path(path, tmp, PAGE_SIZE);
- 	len = PTR_ERR(pathname);
- 	if (IS_ERR(pathname))
- 		goto out;
-Index: b/fs/seq_file.c
-===================================================================
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -353,9 +353,11 @@ int seq_path(struct seq_file *m,
- 	     struct vfsmount *mnt, struct dentry *dentry,
- 	     char *esc)
- {
-+	struct path path = { .dentry = dentry, .mnt = mnt };
-+
- 	if (m->count < m->size) {
- 		char *s = m->buf + m->count;
--		char *p = d_path(dentry, mnt, s, m->size - m->count);
-+		char *p = d_path(&path, s, m->size - m->count);
- 		if (!IS_ERR(p)) {
- 			while (s <= p) {
- 				char c = *p++;
-Index: b/fs/sysfs/file.c
-===================================================================
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -355,9 +355,8 @@ static int sysfs_open_file(struct inode 
- 	int error;
- 	char *p;
- 
--	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
--		   sizeof(last_sysfs_file));
--	if (p)
-+	p = d_path(&file->f_path, last_sysfs_file, sizeof(last_sysfs_file));
-+	if (!IS_ERR(p))
- 		memmove(last_sysfs_file, p, strlen(p) + 1);
- 
- 	/* need attr_sd for attr and ops, its parent for kobj */
-Index: b/fs/unionfs/super.c
-===================================================================
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -974,8 +974,7 @@ static int unionfs_show_options(struct s
- 
- 	seq_printf(m, ",dirs=");
- 	for (bindex = bstart; bindex <= bend; bindex++) {
--		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
--			      unionfs_lower_mnt_idx(sb->s_root, bindex),
-+		path = d_path(&UNIONFS_D(sb->s_root)->lower_paths[bindex],
- 			      tmp_page, PAGE_SIZE);
- 		if (IS_ERR(path)) {
- 			ret = PTR_ERR(path);
-Index: b/include/linux/dcache.h
-===================================================================
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -10,6 +10,7 @@
- #include <linux/rcupdate.h>
- 
- struct nameidata;
-+struct path;
- struct vfsmount;
- 
- /*
-@@ -300,8 +301,8 @@ extern int d_validate(struct dentry *, s
+--- a/include/linux/dcookies.h
++++ b/include/linux/dcookies.h
+@@ -13,6 +13,7 @@
+ #ifdef CONFIG_PROFILING
+  
+ #include <linux/dcache.h>
++#include <linux/path.h>
+ #include <linux/types.h>
+  
+ struct dcookie_user;
+@@ -43,8 +44,7 @@ void dcookie_unregister(struct dcookie_u
+  *
+  * Returns 0 on success, with *cookie filled in
   */
- extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
+-int get_dcookie(struct dentry * dentry, struct vfsmount * vfsmnt,
+-	unsigned long * cookie);
++int get_dcookie(struct path *path, unsigned long *cookie);
  
--extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
--  
-+extern char *d_path(struct path *, char *, int);
+ #else
+ 
+@@ -57,13 +57,12 @@ static inline void dcookie_unregister(st
+ {
+ 	return;
+ }
+- 
+-static inline int get_dcookie(struct dentry * dentry,
+-	struct vfsmount * vfsmnt, unsigned long * cookie)
 +
- /* Allocation counts.. */
- 
- /**
-Index: b/kernel/audit.c
-===================================================================
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1407,7 +1407,7 @@ void audit_log_d_path(struct audit_buffe
- 		audit_log_format(ab, "<no memory>");
- 		return;
- 	}
--	p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
-+	p = d_path(path, pathname, PATH_MAX+11);
- 	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
- 		/* FIXME: can we save some information here? */
- 		audit_log_format(ab, "<too long>");
++static inline int get_dcookie(struct path *path, unsigned long *cookie)
+ {
+ 	return -ENOSYS;
+-} 
+- 
++}
++
+ #endif /* CONFIG_PROFILING */
+- 
++
+ #endif /* DCOOKIES_H */
 
 -- 
 
