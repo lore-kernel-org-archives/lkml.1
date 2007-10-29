@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbXJ2VVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbXJ2VWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbXJ2VVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXJ2VVZ
+	id S1754754AbXJ2VWy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXJ2VWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:21:25 -0400
-Received: from smtp.aaisp.net.uk ([81.187.81.52]:47674 "EHLO smtp.aaisp.net.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbXJ2VVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:21:24 -0400
-X-Greylist: delayed 3215 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 17:21:24 EDT
-Subject: Re: 2.6.23 boot failures on x86-64.
-From: Martin Ebourne <martin@zepler.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, stable@kernel.org,
+	Mon, 29 Oct 2007 17:22:46 -0400
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:20504 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751574AbXJ2VWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:22:45 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+Date: Mon, 29 Oct 2007 22:22:41 +0100
+User-Agent: KMail/1.9.7
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20071029194311.GE1650@redhat.com>
-References: <20071029175014.GH7793@redhat.com>
-	 <200710291918.43869.ak@suse.de> <20071029184747.GB1650@redhat.com>
-	 <200710292003.09317.ak@suse.de>  <20071029194311.GE1650@redhat.com>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 21:21:02 +0000
-Message-Id: <1193692862.3133.14.camel@avenin.ebourne.me.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <200710122231.50739.elendil@planet.nl> <200710292133.48125.borntraeger@de.ibm.com> <20071029204116.GA13026@elte.hu>
+In-Reply-To: <20071029204116.GA13026@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710292222.42688.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Oct 2007 21:22:43.0278 (UTC) FILETIME=[D7B6FEE0:01C81A71]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 15:43 -0400, Dave Jones wrote:
-> On Mon, Oct 29, 2007 at 08:03:09PM +0100, Andi Kleen wrote:
->  > >  > But if allocating bootmem >4G doesn't work on these systems
->  > >  > most likely they have more problems anyways. It might be better
->  > >  > to find out what goes wrong exactly.
->  > > Any ideas on what to instrument ?
->  > 
->  > See what address the bootmem_alloc_high returns; check if it overlaps
->  > with something etc.
->  > 
->  > Fill the memory on the system and see if it can access all of its memory.
-> 
-> Martin, as you have one of the affected systems, do you feel up to this?
+On Monday 29 October 2007, Ingo Molnar wrote:
+> * Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> > > -	return clock_t_to_cputime(utime);
+> > > +	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
+> > > +	return p->prev_utime;
+> > >  }
+> >
+> > [...]
+> >
+> > I dont think it will work. It will make utime monotic, but stime can
+> > still decrease. For example let sum_exec_runtime increase by a tiny
+> > little bit while utime will get a full additional tick. stime is
+> > sum-utime. So stime can still go backwards. So I think that we need
+> > this kind of logic for stime as well, no?
+>
+> yeah, probably. Peter?
 
-Faking a node at 0000000000000000-000000001fff0000
-Bootmem setup node 0 0000000000000000-000000001fff0000
-sparse_early_mem_map_alloc: returned address ffff81000070b000
+Yes, definitely :-)
 
-My box has 512MB of RAM.
+With this patch stime is still all over the place.
 
-Cheers,
+Oct 29 22:12:39 314 64
+Oct 29 22:12:40 392 68
+Oct 29 22:12:41 408 67  <--
+Oct 29 22:12:42 410 67
+Oct 29 22:12:43 416 68
+Oct 29 22:12:44 420 68
+Oct 29 22:12:45 424 68
+Oct 29 22:12:46 426 68
+Oct 29 22:12:47 430 70
+Oct 29 22:12:48 430 70
+Oct 29 22:12:49 430 70
+Oct 29 22:12:50 432 68  <--
+Oct 29 22:12:51 432 69
+Oct 29 22:12:52 432 69
+Oct 29 22:12:53 432 69
+Oct 29 22:12:54 432 69
+Oct 29 22:12:55 432 69
+Oct 29 22:12:56 433 70
+Oct 29 22:12:57 434 69  <--
+Oct 29 22:12:58 443 71
 
-Martin.
-
+utime looks OK now, though I'd like to test it a bit more (when stime is 
+fixed too) before giving a final verdict on that.
