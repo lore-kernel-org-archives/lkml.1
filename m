@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbXJ2Vct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbXJ2VfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbXJ2Vct (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXJ2VcF
+	id S1754874AbXJ2VfJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXJ2Ve5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:32:05 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:52461 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753092AbXJ2VcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:32:00 -0400
-To: Linux-SCSI <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-Id: <137ca918a21e98763766b0e1b93aa2ea19293424.1193692827.git.jeff@garzik.org>
-In-Reply-To: <1e0190fe71e148eb044c16b805738908ae2fe0bc.1193692827.git.jeff@garzik.org>
-References: <1e0190fe71e148eb044c16b805738908ae2fe0bc.1193692827.git.jeff@garzik.org>
-	<1193677315.3383.59.camel@localhost.localdomain>
-From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH v5 2/2] libata: Utilize new SCSI event infrastructure
-Date: Mon, 29 Oct 2007 17:31:58 -0400 (EDT)
+	Mon, 29 Oct 2007 17:34:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57971 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752093AbXJ2Ve4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:34:56 -0400
+Date: Mon, 29 Oct 2007 14:34:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: linux-kernel@vger.kernel.org, kay.sievers@suse.de,
+       Michael_E_Brown@dell.com, zoz@suse.de, dkukawka@suse.de, trenn@suse.de,
+       Douglas_Warzecha@dell.com, Anil_Rao@dell.com, davej@redhat.com,
+       davidz@redhat.com, ben.collins@ubuntu.com
+Subject: Re: [PATCH] dcdbas: add DMI-based module autloading
+Message-Id: <20071029143434.a87fe371.akpm@linux-foundation.org>
+In-Reply-To: <20071029212514.GA1328@humbolt.us.dell.com>
+References: <20071029212514.GA1328@humbolt.us.dell.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An end to CD-ROM polling (if you have a device that supports AN)...
-hooray!
+On Mon, 29 Oct 2007 16:25:15 -0500
+Matt Domsch <Matt_Domsch@dell.com> wrote:
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/libata-scsi.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+> DMI autoload dcdbas on all Dell systems.
+> 
+> This looks for BIOS Vendor or System Vendor == Dell, so this should
+> work for systems both Dell-branded and those Dell builds but brands
+> for others.  It causes udev to load the dcdbas module at startup,
+> which is used by tools called by HAL for wireless control and
+> backlight control, among other uses.
 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 93bd36c..3cbee22 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -841,6 +841,9 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
- 		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
- 	}
- 
-+	if (dev->flags & ATA_DFLAG_AN)
-+		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
-+
- 	if (dev->flags & ATA_DFLAG_NCQ) {
- 		int depth;
- 
-@@ -3293,10 +3296,9 @@ static void ata_scsi_handle_link_detach(struct ata_link *link)
-  */
- void ata_scsi_media_change_notify(struct ata_device *dev)
- {
--#ifdef OTHER_AN_PATCHES_HAVE_BEEN_APPLIED
- 	if (dev->sdev)
--		scsi_device_event_notify(dev->sdev, SDEV_MEDIA_CHANGE);
--#endif
-+		sdev_evt_send_simple(dev->sdev, SDEV_EVT_MEDIA_CHANGE,
-+				     GFP_ATOMIC);
- }
- 
- /**
--- 
-1.5.2.4
-
+fyi, I added this to the 2.6.25 queue.  If you think a patch should go into
+2.6.24 then it is best to explicitly say that and to explain why.
