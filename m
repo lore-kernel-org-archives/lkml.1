@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXJ2VnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXJ2VpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXJ2VnW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXJ2VnI
+	id S1753651AbXJ2VpA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXJ2Vox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:43:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39816 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751889AbXJ2VnH (ORCPT
+	Mon, 29 Oct 2007 17:44:53 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54196 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752267AbXJ2Vox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:43:07 -0400
-Date: Mon, 29 Oct 2007 14:40:16 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [bug, 2.6.24-rc1] sysfs: duplicate filename 'eth0' can not be
- created
-Message-ID: <20071029144016.06c03b7c@freepuppy.rosehill>
-In-Reply-To: <20071029211746.GA19876@elte.hu>
-References: <20071029211746.GA19876@elte.hu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 17:44:53 -0400
+Date: Mon, 29 Oct 2007 17:44:52 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org
+Subject: Re: WANTED: kernel projects for CS students
+Message-ID: <20071029214452.GA27643@csclub.uwaterloo.ca>
+References: <20071014190128.6e3cdb44@bree.surriel.com> <20071028180707.GA6111@ucw.cz> <20071029194820.GC27646@csclub.uwaterloo.ca> <20071029201911.GB3537@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029201911.GB3537@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 22:17:46 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Oct 29, 2007 at 09:19:11PM +0100, Pavel Machek wrote:
+> Tell it to your profesor ;-).
 
-> 
-> hm, this seems to have popped up in the last few days, never had it 
-> before:
-> 
->   sysfs: duplicate filename 'eth0' can not be created
->   WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> 
->   Call Trace:
->    [<ffffffff802de00a>] sysfs_add_one+0x54/0xbd
->    [<ffffffff802dee61>] sysfs_create_link+0xc6/0x11d
->    [<ffffffff8047c491>] device_rename+0x175/0x1d6
->    [<ffffffff806180a6>] dev_change_name+0x118/0x211
->    [<ffffffff8061893c>] dev_ioctl+0x4fa/0x5f8
->    [<ffffffff8062eb11>] netlink_insert+0x13c/0x14b
->    [<ffffffff806a877f>] do_page_fault+0x3eb/0x73f
->    [<ffffffff8060b909>] sock_ioctl+0x1f2/0x200
->    [<ffffffff802a5a5d>] do_ioctl+0x21/0x6b
->    [<ffffffff802a5cea>] vfs_ioctl+0x243/0x25c
->    [<ffffffff802a5d54>] sys_ioctl+0x51/0x71
->    [<ffffffff8020c02e>] system_call+0x7e/0x83
-> 
->    net eth0: device_rename: sysfs_create_symlink failed (-17)
-> 
-> 32-bit bzImage kernel - config attached. (The 64-bit kernel even lost 
-> connectivity due to this and ifcfg-eth0 got renamed to ifcfg-eth0.bak by 
-> kudzu.)
-> 
-> detected order of the interfaces is:
-> 
->   forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @1
->   eth1: RealTek RTL8139 at 0xffffc200001f2000
-> 
-> and that's the ordering in /etc/sysconfig/network-scripts as well.
-> 
-> 	Ingo
+I don't have one.  I graduated 7 years ago.  I was just pointing holes
+in the spec. :)
 
+> Not neccessarily but yes, that would be nice, too.
 
-Already fixed post 2.6.24-rc1
+If it doesn't it seems the compression feature is going to be rather
+unpredictable and my optimization would be perfectly within spec and
+make it pretty much useless.
 
-commit c8d90dca3211966ba5189e0f3d4bccd558d9ae08
-Author: Stephen Hemminger <shemminger@linux-foundation.org>
-Date:   Fri Oct 26 03:53:42 2007 -0700
+> Yes. Typically for all zeros. It will be similar for
+> highly-compressible data (pictures, timetables, ....)
 
-    [NET] dev_change_name: ignore changes to same name
-    
-    Prevent error/backtrace from dev_rename() when changing
-    name of network device to the same name. This is a common
-    situation with udev and other scripts that bind addr to device.
-    
-    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+That would make it tricky to say if you should ever skip compression due
+to cpu load.  There is a chance cpu load would be better off by doing
+the compression.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+> root@amd:/data/tmp# time ( cat /dev/zero | head -c 100000000 > delme; sync )
+> 0.04user 0.48system 6.52 (0m6.521s) elapsed 7.97%CPU
+> root@amd:/data/tmp# time ( cat /dev/zero | head -c 100000000 > delme; sync )
+> 0.05user 0.61system 6.33 (0m6.333s) elapsed 10.42%CPU
+> root@amd:/data/tmp# time ( cat /dev/zero | head -c 100000000 | gzip - > delme; sync )
+> 1.57user 0.32system 1.74 (0m1.749s) elapsed 100.00%CPU
+> root@amd:/data/tmp# time ( cat /dev/zero | head -c 100000000 | gzip - > delme; sync )
+> 1.61user 0.18system 1.65 (0m1.652s) elapsed 100.00%CPU
+
+--
+Len Sorensen
