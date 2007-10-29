@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbXJ2Kr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbXJ2Kv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbXJ2Kr5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 06:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXJ2Kru
+	id S1753758AbXJ2Kv4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 06:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXJ2Kvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 06:47:50 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53669 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbXJ2Krt (ORCPT
+	Mon, 29 Oct 2007 06:51:49 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:52530 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300AbXJ2Kvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 06:47:49 -0400
-Date: Mon, 29 Oct 2007 11:47:48 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Markus Elfring <Markus.Elfring@web.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: No module symbols loaded - kernel modules not enabled.
-In-Reply-To: <4725B988.9000806@web.de>
-Message-ID: <Pine.LNX.4.64.0710291147290.26070@fbirervta.pbzchgretzou.qr>
-References: <fg2p69$t4p$1@ger.gmane.org> <Pine.LNX.4.64.0710282146440.17164@fbirervta.pbzchgretzou.qr>
- <47250092.5070303@web.de> <Pine.LNX.4.64.0710282310370.4125@fbirervta.pbzchgretzou.qr>
- <4725B0F9.4000501@web.de> <Pine.LNX.4.64.0710291109020.26070@fbirervta.pbzchgretzou.qr>
- <4725B988.9000806@web.de>
+	Mon, 29 Oct 2007 06:51:48 -0400
+Message-ID: <4725BAF1.5010006@bx.jp.nec.com>
+Date: Mon, 29 Oct 2007 19:50:25 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH 1/2] fix typo in SubmittingPatches
+References: <47218DBC.8070404@bx.jp.nec.com>	<47218E80.50700@bx.jp.nec.com> <20071026205009.24ec2d83.randy.dunlap@oracle.com>
+In-Reply-To: <20071026205009.24ec2d83.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
->> Like I said, no. This is done by klogd.
->
->Now I have found the notice "Inspecting" in the function "CheckMapVersion".
->http://chuck.netbsd.sk/source/xref/sysklogd-1.4.1rh/ksym.c
->
->I am interested to look at a source file that contains the dicussed error message. Does
->anybody know a development package for the kernel log daemon?
+>> -Once significant exception is when moving code from one file to
+>> +One significant exception is when moving code from one file to
+>>  another in this case you should not modify the moved code at all in
+>>  the same patch which moves it.  This clearly delineates the act of
+>>  moving the code and your changes.  This greatly aids review of the
+> 
+> That first sentence is still broken.  It should be more like this,
+> with either a ":" or ";" or " -- " between clauses:
+> 
+> One significant exception is when moving code from one file to
+> another -- in this case you should not modify the moved code at all in
+> the same patch which moves it.
 
-syslogd...src.rpm in your distribution.
+Tahnks for your point.
+I will fix this sentence as above.
+
+-- 
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
