@@ -1,82 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXJ2QLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbXJ2QLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXJ2QLN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXJ2QK5
+	id S1758630AbXJ2QLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbXJ2QLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:10:57 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:51754 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754040AbXJ2QK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:10:56 -0400
-Subject: Re: [PATCH v4 0/2] [SCSI] Asynchronous event
-	notification	infrastructure
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
-In-Reply-To: <47260326.9050701@garzik.org>
-References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>
-	 <1193672624.3383.25.camel@localhost.localdomain>
-	 <47260326.9050701@garzik.org>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 11:10:53 -0500
-Message-Id: <1193674253.3383.38.camel@localhost.localdomain>
+	Mon, 29 Oct 2007 12:11:33 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:58627 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754093AbXJ2QLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:11:32 -0400
+Date: Mon, 29 Oct 2007 17:11:20 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Nelson, Shannon" <shannon.nelson@intel.com>
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] DMA: Fix broken device refcounting
+Message-ID: <20071029171120.587d2bac@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C034FF787@orsmsx418.amr.corp.intel.com>
+References: <1193415162504-git-send-email-hskinnemoen@atmel.com>
+	<1193416577.9353.5.camel@dwillia2-linux.ch.intel.com>
+	<20071027154947.6836a3d9@siona>
+	<1193512357.18911.6.camel@dwillia2-linux.ch.intel.com>
+	<BAE9DCEF64577A439B3A37F36F9B691C034FF787@orsmsx418.amr.corp.intel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 11:58 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > On Mon, 2007-10-29 at 10:42 -0400, Jeff Garzik wrote:
-> >> This is the next revision of the SCSI event notification infrastructure
-> >> patchset, enabling SATA Asynchronous Notification ("AN") for CD/DVD
-> >> devices that support it.
-> >>
-> >> For devices that support SATA AN (only very recent ones do), this means
-> >> that HAL and other userspace utilities no longer need to repeatedly poll
-> >> the CD/DVD device to determine if the user has changed the media.
-> >>
-> >> This revision takes into account James' comments from earlier today,
-> >> modulo the following notes:
-> >>
-> >> * I think the various event attributes should always be present,
-> >>   for all devices at all times.  If various events are not supported,
-> >>   the attribute will of course return zero (false, not supported).
-> > 
-> > Actually, I don't think so.  We have precedent for this in the transport
-> > classes: if a device doesn't support a feature, we don't export the flag
-> > for that feature through sysfs.  This allows not only feature control,
-> > but an immediate view of the device capabilities simply by viewing the
-> > sysfs directory.
-> 
-> Think about about the values being exported by these sysfs attributes: 
-> they indicate whether or not that feature is supported.
+On Mon, 29 Oct 2007 09:02:34 -0700
+"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
 
-Ah, OK; I haven't communicated what we need very clearly.  We need a way
-to see if the event is supported by the device, as well as a way to turn
-it off.  For some of the events (possibly not the SATA AN one, since I
-know all SATA devices will be well behaved) there's going to be a need
-to deal with berserk or broken devices that become trigger happy, so
-turning off the event will be a useful (and possibly essential) way of
-coping.
+> I tested this in my ioatdma setup and no longer get the panic.  I'm good with this if you two are happy with it.  
 
-> Thus, using the presence/absence of an attribute to communicate the same 
-> thing would be redundant.
-> 
-> This suggestion adds a whole lot of complexity -- mirroring every change 
-> to sdev->supported_events by dynamically adding or removing attributes.
-> 
-> The current nice, simple, elegant bitops-based interface is suddenly a 
-> lot more cumbersome if forced to deal with attribute creation and disposal.
-> 
-> Finally, this additional complexity of dynamic attribute management also 
-> eliminates some key information:  userland can test the existence of the 
-> attribute to determine if that support is present in the kernel.
+Looks good to me too, although I haven't had a chance to test it yet.
 
-James
-
-
+Thanks,
+Håvard
