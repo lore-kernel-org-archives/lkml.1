@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXJ2R3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbXJ2R3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXJ2R3E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:29:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759618AbXJ2R2x
+	id S1759825AbXJ2R3o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbXJ2R3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:28:53 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:60971 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758419AbXJ2R2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:28:52 -0400
-Date: Mon, 29 Oct 2007 18:28:36 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Dirk Hohndel <hohndel@linux.intel.com>
-cc: Jeff Garzik <jeff@garzik.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from
- input_register_device
-In-Reply-To: <20071029152050.GA23411@bigserver.hohndel.org>
-Message-ID: <Pine.LNX.4.64.0710291827140.18815@twin.jikos.cz>
-References: <20071029152050.GA23411@bigserver.hohndel.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Oct 2007 13:29:34 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:56517 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752793AbXJ2R3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 13:29:32 -0400
+Subject: Re: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4726180E.5030909@garzik.org>
+References: <1193671019.3383.13.camel@localhost.localdomain>
+	 <1193676852.2655.21.camel@lov.site>
+	 <1193677071.3383.56.camel@localhost.localdomain>
+	 <20071029181814.25410e00@gondolin.boeblingen.de.ibm.com>
+	 <1193678646.3383.76.camel@localhost.localdomain>
+	 <4726180E.5030909@garzik.org>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 12:29:27 -0500
+Message-Id: <1193678967.3383.81.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007, Dirk Hohndel wrote:
+On Mon, 2007-10-29 at 13:27 -0400, Jeff Garzik wrote:
+> James Bottomley wrote:
+> > visibility and creation are the same thing, aren't they?  An invisible
+> > attribute doesn't appear in the sysfs directory, so it's equivalent to
+> > the file for it not being created.
+> 
+> 
+> What about the case where it's visible at creation time, but then needs 
+> to be made selectively invisible later on?
+> 
+> That implies either a remove operation or dentry checks on each lookup?
 
-> 	hidinput = kzalloc(sizeof(*hidinput), GFP_KERNEL);
-> 	input_dev = input_allocate_device();
-> 	if (!hidinput || !input_dev) {
-> 		kfree(hidinput);
-> 		input_free_device(input_dev);
-> This either passes a NULL pointer to kfree or to input_free_device. That's
-> not nice.
+Yes, that comes with the bitmap manipulation code.  There will be a way
+to add and remove runtime visibility.  I just wanted to get the basic
+concept agreed to first.
 
-Actually both of the cases are fine -- it is valid to pass NULL pointer to 
-kfree() and to input_free_device() too.
+James
 
-> Would something like this work?
 
-Yes, I think that this patch is in principle fine, modulo the redundant 
-NULL-ptr checks.
-
-Thanks,
-
--- 
-Jiri Kosina
