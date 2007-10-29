@@ -1,53 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXJ2Uf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXJ2UgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXJ2Uf6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbXJ2Ufu
+	id S1756823AbXJ2UgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbXJ2Uf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:35:50 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55186 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753109AbXJ2Uft (ORCPT
+	Mon, 29 Oct 2007 16:35:58 -0400
+Received: from mga10.intel.com ([192.55.52.92]:27281 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756619AbXJ2Uf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:35:49 -0400
-Date: Mon, 29 Oct 2007 13:35:48 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-In-Reply-To: <1193670056.5035.27.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0710291335100.1566@schroedinger.engr.sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-  <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com> 
- <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com> 
- <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com> 
- <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com> 
- <20071025185506.8c373aa8.pj@sgi.com>  <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-  <1193412644.5032.13.camel@localhost>  <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-  <20071026120037.7b95a136.pj@sgi.com>  <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-  <1193433239.5032.95.camel@localhost>  <Pine.LNX.4.64.0710261415580.18139@schroedinger.engr.sgi.com>
-  <1193433992.5032.102.camel@localhost>  <Pine.LNX.4.64.0710261436070.18899@schroedinger.engr.sgi.com>
- <1193670056.5035.27.camel@localhost>
+	Mon, 29 Oct 2007 16:35:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,344,1188802800"; 
+   d="scan'208";a="362819876"
+Date: Mon, 29 Oct 2007 13:31:30 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] iommu-PMEN_REG boot up support
+Message-ID: <20071029203130.GA1734@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20071026181849.GA25256@linux.intel.com> <20071027001938.GB10215@rhun.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071027001938.GB10215@rhun.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007, Lee Schermerhorn wrote:
+On Sat, Oct 27, 2007 at 02:19:38AM +0200, Muli Ben-Yehuda wrote:
+> On Fri, Oct 26, 2007 at 11:18:49AM -0700, Mark Gross wrote:
+> 
+> > The following patch clears the portect memory region enable bit at
+> > boot time by default.  It also provides a kernel parrameter for
+> > disabling this behavior and leave the PMEN_REG untouched if so
+> > wanted.
+> > 
+> > If the boot loader or platform has protected memory regions enabled
+> > at boot time it could prevent DMA's from happening as drivers are
+> > loaded and used.
+> 
+> What's the value of adding a command line option for this? Under what
+> circumstances would we want to not clear this bit?
 
-> Note:  I don't [didn't] think I need to ref count the nodemasks
-> associated with the mempolicies because they are allocated when the
-> mempolicy is and destroyed when the policy is--not shared.  Just like
-> the custom zonelist for bind policy, and we have no ref count there.
-> I.e., they're protected by the mempol's ref.  However, now that you
-> bring it up, I'm wondering about the effects of policy remapping, and
-> whether we have the reference counting or indirect protection [mmap_sem,
-> whatever] correct there in current code.  I'll have to take a look.
+umm, /me asks around and finds out that at this time there isn't much
+point to having a command line to preserve any protected areas set up at
+boot time.
 
-In that case we could just put the nodemask at the end of the mempolicy 
-structure and then allocate the size needed? That way we would not need to 
-deref an additional pointer?
+> 
+> > +		} else if (!strncmp(str, "no_epm_clear", 12)) {
+> > +			printk(KERN_INFO
+> > +				"Intel-IOMMU: subress clearing of Enable "
+> > +				"Protected Memory bit\n");
+> > +			clear_pmen_epm = 0;
+> 
+> `suppress', I assume. Rest looks fine, if the configuration option is
+> really needed.
+> 
+> Cheers,
+> Muli
+> -- 
+> SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
+> http://www.haifa.il.ibm.com/Workshops/systor2007/
+> 
+> Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
+> -
 
+
+Signed-off-by: mark gross <mgross@linux.intel.com>
+
+--mgross
+
+
+Index: linux-2.6/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/intel-iommu.c	2007-10-24 09:31:32.000000000 -0700
++++ linux-2.6/drivers/pci/intel-iommu.c	2007-10-29 13:30:29.000000000 -0700
+@@ -692,6 +692,23 @@
+ 		DMA_TLB_PSI_FLUSH, non_present_entry_flush);
+ }
+ 
++static void iommu_disable_protect_mem_regions(struct intel_iommu *iommu)
++{
++	u32 pmen;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iommu->register_lock, flags);
++	pmen = readl(iommu->reg + DMAR_PMEN_REG);
++	pmen &= ~DMA_PMEN_EPM;
++	writel(pmen, iommu->reg + DMAR_PMEN_REG);
++
++	/* wait for the protected region status bit to clear */
++	IOMMU_WAIT_OP(iommu, DMAR_PMEN_REG,
++		readl, (pmen & DMA_PMEN_PRS), pmen);
++
++	spin_unlock_irqrestore(&iommu->register_lock, flags);
++}
++
+ static int iommu_enable_translation(struct intel_iommu *iommu)
+ {
+ 	u32 sts;
+@@ -1731,6 +1748,8 @@
+ 		iommu_flush_context_global(iommu, 0);
+ 		iommu_flush_iotlb_global(iommu, 0);
+ 
++		iommu_disable_protect_mem_regions(iommu);
++
+ 		ret = iommu_enable_translation(iommu);
+ 		if (ret)
+ 			goto error;
+Index: linux-2.6/drivers/pci/intel-iommu.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/intel-iommu.h	2007-10-24 09:31:32.000000000 -0700
++++ linux-2.6/drivers/pci/intel-iommu.h	2007-10-29 10:30:24.000000000 -0700
+@@ -126,6 +126,10 @@
+ #define DMA_TLB_IH_NONLEAF (((u64)1) << 6)
+ #define DMA_TLB_MAX_SIZE (0x3f)
+ 
++/* PMEN_REG */
++#define DMA_PMEN_EPM (((u32)1)<<31)
++#define DMA_PMEN_PRS (((u32)1)<<0)
++
+ /* GCMD_REG */
+ #define DMA_GCMD_TE (((u32)1) << 31)
+ #define DMA_GCMD_SRTP (((u32)1) << 30)
