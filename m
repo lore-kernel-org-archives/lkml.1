@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXJ2Joh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXJ2Jrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbXJ2Joh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXJ2Jo2
+	id S1757243AbXJ2Jrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXJ2Jrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:44:28 -0400
-Received: from sa3.bezeqint.net ([192.115.104.17]:55875 "EHLO sa3.bezeqint.net"
+	Mon, 29 Oct 2007 05:47:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43867 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXJ2Jo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:44:27 -0400
-X-Greylist: delayed 1308 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 05:44:27 EDT
-Message-ID: <4725AB71.6000308@panasas.com>
-Date: Mon, 29 Oct 2007 11:44:17 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1752238AbXJ2Jrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:47:40 -0400
+Message-ID: <4725AC37.2050903@garzik.org>
+Date: Mon, 29 Oct 2007 05:47:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] scsi/seagate.c: remove dead code
-References: <20071028155142.GB7227@stusta.de>
-In-Reply-To: <20071028155142.GB7227@stusta.de>
-Content-Type: text/plain; charset=UTF-8
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH] ehea: add kexec support
+References: <200710261437.29117.ossthema@de.ibm.com>
+In-Reply-To: <200710261437.29117.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28 2007 at 17:51 +0200, Adrian Bunk <bunk@kernel.org> wrote:
-> This patch removes obviously dead code.
+Jan-Bernd Themann wrote:
+> eHEA resources that are allocated via H_CALLs have a unique identifier each.
+> These identifiers are necessary to free the resources. A reboot notifier
+> is used to free all eHEA resources before the indentifiers get lost, i.e
+> before kexec starts a new kernel.
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/scsi/seagate.c |    2 --
->  1 file changed, 2 deletions(-)
-> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Actually I have sent a patch to completely remove this driver.
-http://www.spinics.net/lists/linux-scsi/msg20308.html
+applied to #upstream-fixes
 
-Does any one objects?
 
-Boaz
