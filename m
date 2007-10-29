@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXJ2JBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXJ2JCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXJ2JBS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbXJ2JBH
+	id S1757788AbXJ2JCK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXJ2JB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:01:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7906 "EHLO kernel.dk"
+	Mon, 29 Oct 2007 05:01:58 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7914 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbXJ2JBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:01:05 -0400
-Date: Mon, 29 Oct 2007 09:58:44 +0100
+	id S1753067AbXJ2JB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:01:57 -0400
+Date: Mon, 29 Oct 2007 09:59:36 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Vasily Averin <vvs@sw.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: i2o: CONFIG_DEBUG_SG compilation fixed
-Message-ID: <20071029085844.GC5467@kernel.dk>
-References: <47257E6D.30403@sw.ru>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
+Message-ID: <20071029085935.GD5467@kernel.dk>
+References: <20071027184404.GQ8181@ftp.linux.org.uk> <20071027201700.GC22235@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47257E6D.30403@sw.ru>
+In-Reply-To: <20071027201700.GC22235@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29 2007, Vasily Averin wrote:
-> i2o crashed when CONFIG_DEBUG_SG is enabled because i2o_block_request structure
-> includes array of scatterlists that should be initialised
+On Sat, Oct 27 2007, Russell King wrote:
+> On Sat, Oct 27, 2007 at 07:44:04PM +0100, Al Viro wrote:
+> > 
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > ---
+> > diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
+> > index 21ba571..2d09fef 100644
+> > --- a/drivers/scsi/arm/scsi.h
+> > +++ b/drivers/scsi/arm/scsi.h
+> > @@ -39,7 +39,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
+> >  		SCp->buffer++;
+> >  		SCp->buffers_residual--;
+> >  		SCp->ptr = (char *)
+> > -			 (page_address(SCp->buffer->page) +
+> > +			 (page_address(sg_page(SCp->buffer)) +
+> >  			  SCp->buffer->offset);
+> >  		SCp->this_residual = SCp->buffer->length;
+> >  	} else {
+> > @@ -77,7 +77,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
+> >  		SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
+> >  		SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
+> >  		SCpnt->SCp.ptr = (char *)
+> > -			 (page_address(SCpnt->SCp.buffer->page) +
+> > +			 (page_address(sg_page(SCpnt->SCp.buffer)) +
+> >  			  SCpnt->SCp.buffer->offset);
+> >  		SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
+> >  		SCpnt->SCp.phase = SCpnt->request_bufflen;
 > 
-> Signed-off-by:	Vasily Averin <vvs@sw.ru>
-> --- a/drivers/message/i2o/i2o_block.c
-> +++ b/drivers/message/i2o/i2o_block.c
-> @@ -1137,6 +1137,18 @@ static struct i2o_driver i2o_block_driver = {
->   *
->   *	Returns 0 on success or negative error code on failure.
->   */
-> +
-> +#ifdef CONFIG_DEBUG_SG
-> +static void i2o_block_req_ctor(struct kmem_cache *cachep, void *objp) {
-> +	sg_init_table(((struct i2o_block_request *)(objp))->sg_table,
-> +						 I2O_MAX_PHYS_SEGMENTS);
-> +}
-> +
-> +#define I2O_BLK_CTOR	&i2o_block_req_ctor
-> +#else
-> +#define I2O_BLK_CTOR	NULL
-> +#endif
-> +
->  static int __init i2o_block_init(void)
->  {
->  	int rc;
-> @@ -1147,7 +1159,7 @@ static int __init i2o_block_init(void)
->  	/* Allocate request mempool and slab */
->  	size = sizeof(struct i2o_block_request);
->  	i2o_blk_req_pool.slab = kmem_cache_create("i2o_block_req", size, 0,
-> -						  SLAB_HWCACHE_ALIGN, NULL);
-> +					  SLAB_HWCACHE_ALIGN, I2O_BLK_CTOR);
->  	if (!i2o_blk_req_pool.slab) {
->  		osm_err("can't init request slab\n");
->  		rc = -ENOMEM;
+> FYI, here's what I have queued (cut'n'pasted so probably won't apply):
+> 
+> diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
+> index 21ba571..bb6550e 100644
+> --- a/drivers/scsi/arm/scsi.h
+> +++ b/drivers/scsi/arm/scsi.h
+> @@ -38,9 +38,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
+>         if (ret) {
+>                 SCp->buffer++;
+>                 SCp->buffers_residual--;
+> -               SCp->ptr = (char *)
+> -                        (page_address(SCp->buffer->page) +
+> -                         SCp->buffer->offset);
+> +               SCp->ptr = sg_virt(SCp->buffer);
+>                 SCp->this_residual = SCp->buffer->length;
+>         } else {
+>                 SCp->ptr = NULL;
+> @@ -76,9 +74,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
+> 
+>                 SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
+>                 SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
+> -               SCpnt->SCp.ptr = (char *)
+> -                        (page_address(SCpnt->SCp.buffer->page) +
+> -                         SCpnt->SCp.buffer->offset);
+> +               SCpnt->SCp.ptr = sg_virt(SCpnt->SCp.buffer);
+>                 SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
+>                 SCpnt->SCp.phase = SCpnt->request_bufflen;
 
-This should already work, since Oct 24. Your i2o_block_request_alloc()
-should look like this:
-
-static inline struct i2o_block_request *i2o_block_request_alloc(void)
-{
-        struct i2o_block_request *ireq;
-
-        ireq = mempool_alloc(i2o_blk_req_pool.pool, GFP_ATOMIC);
-        if (!ireq)
-                return ERR_PTR(-ENOMEM);
-
-        INIT_LIST_HEAD(&ireq->queue);
-        sg_init_table(ireq->sg_table, I2O_MAX_PHYS_SEGMENTS);
-
-        return ireq;
-}
-
-Note that I also don't like your solution, no need to change this to be
-a constructor setup and you definitely should not guard sg_init_table()
-with CONFIG_DEBUG_SG. It needs to be done always.
+Russell, will you be merging this yourself or do you want me to include
+it in the sg fixup branch?
 
 -- 
 Jens Axboe
