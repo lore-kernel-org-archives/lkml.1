@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXJ2XTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXJ2XT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbXJ2XTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 19:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXJ2XTb
+	id S1756057AbXJ2XT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJ2XTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 19:19:31 -0400
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:45502 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751964AbXJ2XTa (ORCPT
+	Mon, 29 Oct 2007 19:19:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52084 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbXJ2XTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 19:19:30 -0400
-From: Frans Pop <elendil@planet.nl>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-Date: Tue, 30 Oct 2007 00:19:27 +0100
-User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200710122231.50739.elendil@planet.nl> <20071029200425.GA830@elte.hu> <20071029214321.GA25669@linux.vnet.ibm.com>
-In-Reply-To: <20071029214321.GA25669@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 29 Oct 2007 19:19:50 -0400
+Date: Mon, 29 Oct 2007 16:15:34 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: vgoyal@in.ibm.com, tglx@linutronix.de, hbabu@us.ibm.com,
+       linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] Revert x86: add lapic_shutdown for x86_64
+Message-ID: <20071029161534.6e7f0db6@laptopd505.fenrus.org>
+In-Reply-To: <47266132.5050001@ct.jp.nec.com>
+References: <47195763.1090803@ct.jp.nec.com>
+	<47195807.6030809@ct.jp.nec.com>
+	<20071024062933.GA4622@in.ibm.com>
+	<47266132.5050001@ct.jp.nec.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710300019.28871.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Oct 2007 23:19:29.0428 (UTC) FILETIME=[27B4A540:01C81A82]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 October 2007, Balbir Singh wrote:
-> We'll also need this additional patch (untested),
+On Mon, 29 Oct 2007 15:39:46 -0700
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-OK. Both patches together do the trick. Gave it a nice long test run and got 
-no more weirdness.
-Tested-by: Frans Pop <elendil@planet.nl>
+> lapic_shutdown is useless on x86_64.
+> 
 
-> but in the long run I think the approach needs to be
->
-> 1. Update stime and utime at the time of context switching -- keep it
->    in sync with p->sum_exec_runtime
-> 2. Keep track of system/user context at system call entry points
+.... but since the goal is to get apic_32.c and apic_64.c to be more
+converging (to the point of becoming the same file)... isn't your patch
+going in the opposite direction?
 
-Feel free to send me a patch for testing when you have one.
-
-Cheers,
-Frans
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
