@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbXJ2FeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbXJ2Ffi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbXJ2FeD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 01:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXJ2Fdy
+	id S1755702AbXJ2Ffi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 01:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXJ2Ffa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 01:33:54 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58100 "EHLO smtps.tip.net.au"
+	Mon, 29 Oct 2007 01:35:30 -0400
+Received: from ozlabs.org ([203.10.76.45]:54353 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbXJ2Fdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 01:33:53 -0400
-Date: Mon, 29 Oct 2007 16:33:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: Ben Herrenschmidt <benh@kernel.crashing.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] Silence radeon_pm warning
-Message-Id: <20071029163343.7fe7e6b8.sfr@canb.auug.org.au>
-In-Reply-To: <20071029050202.GA16159@lixom.net>
-References: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
-	<20071029050202.GA16159@lixom.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh"
+	id S1751230AbXJ2Ffa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 01:35:30 -0400
+To: <tglx@linutronix.de>
+Cc: <linux-kernel@vger.kernel.org>
+Message-Id: <ed0a9ee8c6bc2ac894924b24c22a221a07e66931.1193635831.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Quieten hrtimer printk: "Switched to high resolution mode .."
+Date: Mon, 29 Oct 2007 16:35:29 +1100 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Change the hrtimer printk "Switched to high resolution mode .." to
+be KERN_DEBUG, rather than KERN_INFO. If users need to see this they
+can pass "loglevel" or "debug" on the command line, or check dmesg.
 
-On Mon, 29 Oct 2007 00:02:02 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> I posted this one a few days ago, without adding a new ifdef (just moving=
- the
-> declaration down into the already existing ifdef below it):
->=20
-> http://marc.info/?l=3Dlinux-kernel&m=3D119311699109698&w=3D2
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-Yeah, missed that and yours looks better.
+Any objections? It gets a little repetitive, eg:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Switched to high resolution mode on CPU 0
+Switched to high resolution mode on CPU 17
+Switched to high resolution mode on CPU 10
+Switched to high resolution mode on CPU 2
+Switched to high resolution mode on CPU 7
+Switched to high resolution mode on CPU 11
+Switched to high resolution mode on CPU 3
+Switched to high resolution mode on CPU 8
+Switched to high resolution mode on CPU 12
+Switched to high resolution mode on CPU 1
+Switched to high resolution mode on CPU 4
+Switched to high resolution mode on CPU 5
+Switched to high resolution mode on CPU 13
+Switched to high resolution mode on CPU 14
+Switched to high resolution mode on CPU 15
+Switched to high resolution mode on CPU 9
+Switched to high resolution mode on CPU 6
+Switched to high resolution mode on CPU 16
 
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
-Content-Type: application/pgp-signature
+cheers
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHJXC7TgG2atn1QN8RAorsAJ9qMbbi2lUTNO02IoxFMxQhSNl3kgCdGhFx
-QOGcj7EMN+n17WIE43lNN4A=
-=hgi+
------END PGP SIGNATURE-----
+ kernel/hrtimer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh--
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index b6d2ff7..22a2514 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -602,7 +602,7 @@ static int hrtimer_switch_to_hres(void)
+ 	/* "Retrigger" the interrupt to get things going */
+ 	retrigger_next_event(NULL);
+ 	local_irq_restore(flags);
+-	printk(KERN_INFO "Switched to high resolution mode on CPU %d\n",
++	printk(KERN_DEBUG "Switched to high resolution mode on CPU %d\n",
+ 	       smp_processor_id());
+ 	return 1;
+ }
+-- 
+1.5.2.rc1.1884.g59b20
+
