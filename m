@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXJ2I44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbXJ2JAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbXJ2I44 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 04:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbXJ2I4q
+	id S1757467AbXJ2JAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXJ2I7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 04:56:46 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:42485 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbXJ2I4p (ORCPT
+	Mon, 29 Oct 2007 04:59:53 -0400
+Received: from anyanka.rfc1149.net ([81.56.47.149]:57366 "EHLO
+	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbXJ2I7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 04:56:45 -0400
-Subject: Re: [PATCH] r8169: don't call napi_disable if not doing NAPI
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Francois Romieu <romieu@fr.zoreil.com>,
-       Jeff Garzik <jeff@garzik.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Edward Hsu <edward_hsu@realtek.com.tw>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20071026113305.57dea765@freepuppy.rosehill>
-References: <alpine.LFD.0.999.0710232057080.30120@woody.linux-foundation.org>
-	 <1193232344.32208.0.camel@localhost> <20071024142759.GA13657@elte.hu>
-	 <1193241191.14314.8.camel@localhost> <20071024155521.GA16690@elte.hu>
-	 <1193242267.6914.6.camel@twins> <1193378269.17910.4.camel@localhost>
-	 <20071026063733.GA12426@elte.hu>
-	 <20071026094833.539a69aa@freepuppy.rosehill>
-	 <20071026175613.GA18770@elte.hu>
-	 <20071026113305.57dea765@freepuppy.rosehill>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 29 Oct 2007 09:56:42 +0100
-Message-Id: <1193648202.15743.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 29 Oct 2007 04:59:52 -0400
+To: "marco gaddoni" <marco.gaddoni@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel BUG at mm/slab.c:597!
+References: <3b2bc9d0710290050g4e1cf8aoa7917ab7e091da5a@mail.gmail.com>
+In-Reply-To: <3b2bc9d0710290050g4e1cf8aoa7917ab7e091da5a@mail.gmail.com>
+Date: Mon, 29 Oct 2007 09:59:49 +0100
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Samuel Tardieu <sam@rfc1149.net>
+Organization: RFC 1149 (see http://www.rfc1149.net/)
 Content-Transfer-Encoding: 8bit
+X-WWW: http://www.rfc1149.net/sam
+X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
+X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
+Message-Id: <2007-10-29-09-59-49+trackit+sam@rfc1149.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "marco" == marco gaddoni <marco.gaddoni@gmail.com> writes:
 
-On Fri, 2007-10-26 at 11:33 -0700, Stephen Hemminger wrote:
-> Don't call napi_disable if not configured.
-> And make sure that any misuse of napi_xxx in future fails
-> with a compile error.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> 
+marco> i got this oops on my server.  the kernel is a
+marco> 2.6.21-2-686 from the debian.
 
-This fix the problem for me (at least, after 8 suspend/resume cycles). 
-Thanks.
+marco> this is an ext3 filesystem on a raid0 array of 2 ide disks.
+marco> got the oops while doing a big rm.
 
-Tested-by: Romano Giannetti <romano.giannetti@gmail.com>
+marco> any idea on the possible cause?
 
+Marco,
+
+I also had one of these with 2.6.21 or around. Unfortunately, I did a
+fsck (which solved it) before I could pinpoint the problem. It was on
+a raid1 array with 2 sata disks and an ext3 filesystem so it may be
+related either to the md driver, to the ext3 filesystem or something
+else.
+
+You can probably make the problem go away with a simple fsck, but if
+you want to help find the cause of the problem, you can do one of the
+following instead:
+
+  - do a full copy (using dd) of your filesystem; however, if you're
+    using a raid0 array, it may be because the filesystem is very
+    large;
+
+  - compile and boot a 2.6.24-rc1 kernel and see if the "rm" still
+    generates a oops and help debug the problem.
+
+ Sam
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
+Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
 
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
