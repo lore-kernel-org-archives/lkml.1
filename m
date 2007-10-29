@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXJ2Jrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbXJ2Ju0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbXJ2Jrv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXJ2Jrl
+	id S1757445AbXJ2Ju0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXJ2JuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:47:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43867 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238AbXJ2Jrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:47:40 -0400
-Message-ID: <4725AC37.2050903@garzik.org>
-Date: Mon, 29 Oct 2007 05:47:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH] ehea: add kexec support
-References: <200710261437.29117.ossthema@de.ibm.com>
-In-Reply-To: <200710261437.29117.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Mon, 29 Oct 2007 05:50:17 -0400
+Received: from grex.cyberspace.org ([216.86.77.194]:31504 "EHLO
+	grex.cyberspace.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbXJ2JuP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:50:15 -0400
+Date: Mon, 29 Oct 2007 05:50:15 -0400
+From: Roopesh <roopesh@cyberspace.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Roopesh <roopesh@cyberspace.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MMC: CRC Errors with 2GB cards
+Message-ID: <20071029095015.GA20714@grex.cyberspace.org>
+References: <20071019161700.GA19254@grex.cyberspace.org> <20071027140017.41e9d67f@poseidon.drzeus.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071027140017.41e9d67f@poseidon.drzeus.cx>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
-> eHEA resources that are allocated via H_CALLs have a unique identifier each.
-> These identifiers are necessary to free the resources. A reboot notifier
-> is used to free all eHEA resources before the indentifiers get lost, i.e
-> before kexec starts a new kernel.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+ Hi Pierrie, 
 
-applied to #upstream-fixes
+ Thanks for writing back. 
 
+:     > -			} while (!(cmd.resp[0] & R1_READY_FOR_DATA));
+:     > -
+:     > +			} while (!(R1_CURRENT_STATE(cmd.resp[0]) == 4)); 
+:     > +			
+:     >  #if 0
+:     
+:     This might trade us one problem for another. Could you try the following:
+:     
+:     } while (!(cmd.resp[0] & R1_READY_FOR_DATA) || (R1_CURRENT_STATE(cmd.resp[0]) == 7));
+:
+:     
+:     This should also work for cards that mishandle the state field, and if the card jumps to
+:     some odd state for some reason.
+:     
+:     > 
+:     >  I am just wondering if I have set of broken cards.  Any pointers 
+:     >  in this regard?
+:     > 
+:     
+:     You do. But don't be too alarmed, that is unfortunately the norm. :/
+:     
 
+ I have purchased 4 Transcend cards, and all of them behave the 
+ same way.  Just wondering why others dont have this problem, and 
+ why such a fix hasn't made it to main tree yet.
+
+ I have tried the fix, and it works fine.  Thanks.
+
+ Roopesh.
