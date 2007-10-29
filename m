@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbXKAVg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXKAVgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbXKAVg3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbXKAVfs
+	id S1759358AbXKAVgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbXKAVft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:35:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55665 "EHLO mx2.suse.de"
+	Thu, 1 Nov 2007 17:35:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55666 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755135AbXKAVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755130AbXKAVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Nov 2007 17:35:46 -0400
-Message-Id: <20071029124120.979011558@weierstrass.suse.de>
-References: <20071029124120.528997881@weierstrass.suse.de>
+Message-Id: <20071029124120.528997881@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 29 Oct 2007 13:41:21 +0100
+Date: Mon, 29 Oct 2007 13:41:20 +0100
 From: Jan Blunck <jblunck@suse.de>
 To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [PATCH 1/7] One less parameter to __d_path
-Content-Disposition: inline; filename=vfs/one-less-parameter-to-__d_path.patch
+Subject: [PATCH 0/7] struct path related cleanups of d_path() code
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All callers to __d_path pass the dentry and vfsmount of a struct
-path to __d_path. Pass the struct path directly, instead.
 
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: Jan Blunck <jblunck@suse.de>
----
- fs/dcache.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+Here are some more struct path cleanups. This patch series changes d_path() to
+take a struct path argument. The existing users are changed to give struct path
+more deeply into the call chain. In some structures I need to replace existing
+<dentry,vfsmount> pairs and embed a struct path instead.
 
-Index: b/fs/dcache.c
-===================================================================
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1778,9 +1778,8 @@ shouldnt_be_hashed:
-  *
-  * "buflen" should be positive. Caller holds the dcache_lock.
-  */
--static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
--			struct dentry *root, struct vfsmount *rootmnt,
--			char *buffer, int buflen)
-+static char * __d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+		       struct path *root, char *buffer, int buflen)
- {
- 	char * end = buffer+buflen;
- 	char * retval;
-@@ -1805,7 +1804,7 @@ static char * __d_path( struct dentry *d
- 	for (;;) {
- 		struct dentry * parent;
- 
--		if (dentry == root && vfsmnt == rootmnt)
-+		if (dentry == root->dentry && vfsmnt == root->mnt)
- 			break;
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
- 			/* Global root? */
-@@ -1868,7 +1867,7 @@ char * d_path(struct dentry *dentry, str
- 	path_get(&current->fs->root);
- 	read_unlock(&current->fs->lock);
- 	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, root.dentry, root.mnt, buf, buflen);
-+	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
- 	spin_unlock(&dcache_lock);
- 	path_put(&root);
- 	return res;
-@@ -1936,8 +1935,7 @@ asmlinkage long sys_getcwd(char __user *
- 		unsigned long len;
- 		char * cwd;
- 
--		cwd = __d_path(pwd.dentry, pwd.mnt, root.dentry, root.mnt,
--			       page, PAGE_SIZE);
-+		cwd = __d_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
- 		spin_unlock(&dcache_lock);
- 
- 		error = PTR_ERR(cwd);
+Andreas,
+since JJ just posted the AppArmor related d_path() patches I don't include
+them here too.
+
+Comments?
+
+Jan
+
+
+>>one-less-parameter-to-__d_path.patch<<
+One less parameter to __d_path
+
+>>d_path-kerneldoc_cleanup.diff<<
+d_path: kerneldoc cleanup
+
+>>d_path-Use_struct_path_in_struct_avc_audit_data.diff<<
+d_path: Use struct path in struct avc_audit_data
+
+>>d_path-Make_proc_get_link_use_a_struct_path_argument.diff<<
+d_path: Make proc_get_link() use a struct path argument
+
+>>d_path_Make_get_dcookie_use_a_struct_path_argument.diff<<
+d_path: Make get_dcookie() use a struct path argument
+
+>>d_path-use_struct_path.diff<<
+d_path: Make d_path() use a struct path
+
+>>nfsd-svc_export_use_struct_path.diff<<
+Use struct path in struct svc_export
 
 -- 
 
