@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbXJ2McI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXJ2Mf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbXJ2McI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXJ2Mbz
+	id S1754680AbXJ2Mf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXJ2MfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:31:55 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48622 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbXJ2Mbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:31:55 -0400
-Message-ID: <4725D2A5.1050908@linux.vnet.ibm.com>
-Date: Mon, 29 Oct 2007 18:01:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-References: <200710122231.50739.elendil@planet.nl> <200710161234.35529.borntraeger@de.ibm.com> <4714B5BF.1090001@linux.vnet.ibm.com> <200710291305.52992.elendil@planet.nl>
-In-Reply-To: <200710291305.52992.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 08:35:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55285 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbXJ2MfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 08:35:15 -0400
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <1193652717.27652.45.camel@twins>
+References: <1193064057.16541.1.camel@matrix>
+	 <20071029004002.60c7182a.akpm@linux-foundation.org>
+	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
+	 <1193652717.27652.45.camel@twins>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 13:35:08 +0100
+Message-Id: <1193661308.27652.47.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> Hello Balbir,
-
-[snip]
-
-> Any progress on this issue? I noticed that it's still there in current git.
+On Mon, 2007-10-29 at 11:11 +0100, Peter Zijlstra wrote:
+> On Mon, 2007-10-29 at 01:17 -0700, Jaya Kumar wrote:
+> > On 10/29/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > On Mon, 22 Oct 2007 16:40:57 +0200 Stefani Seibold <stefani@seibold.net> wrote:
+> > > >
+> > > > The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
+> > > > This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
+> > > > which will be in an extra thread handled, to perform the IO and clean and
+> > > > write protect all pages with page_clean().
+> > > >
+> > 
+> > Hi,
+> > 
+> > An aside, I just tested that deferred IO works fine on 2.6.22.10/pxa255.
+> > 
+> > I understood from the thread that PeterZ is looking into page_mkclean
+> > changes which I guess went into 2.6.23. I'm also happy to help in any
+> > way if the way we're doing fb_defio needs to change.
 > 
-
-I have been looking elsewhere, sorry, I'll look into this issue tonight
-
-> If a better implementation is not expected any time soon, how about an ACK 
-> on the reversion patch Christian proposed in
-> http://lkml.org/lkml/2007/10/16/76
-> so we can at least get rid of the regression?
+> Yeah, its the truncate race stuff introduced by Nick in
+>   d0217ac04ca6591841e5665f518e38064f4e65bd
 > 
+> I'm a bit at a loss on how to go around fixing this. One ugly idea I had
+> was to check page->mapping before going into page_mkwrite() and when
+> that is null, don't bother with the truncate check.
 
-We'll I initially thought of it and then I remembered that the
-regression occurs only when the accounting itself is inaccurate.
-I am tempted to ack the removal, but I would like to get input
-from others. Meanwhile, I'll try and see if I can fix the problem
+Something like this
 
-> Thanks,
-> Frans Pop
+---
+ mm/memory.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -2300,6 +2300,8 @@ static int __do_fault(struct mm_struct *
+ 			 * to become writable
+ 			 */
+ 			if (vma->vm_ops->page_mkwrite) {
++				struct address_space *mapping = page->mapping;
++
+ 				unlock_page(page);
+ 				if (vma->vm_ops->page_mkwrite(vma, page) < 0) {
+ 					ret = VM_FAULT_SIGBUS;
+@@ -2314,7 +2316,7 @@ static int __do_fault(struct mm_struct *
+ 				 * reworking page_mkwrite locking API, which
+ 				 * is better done later.
+ 				 */
+-				if (!page->mapping) {
++				if (mapping != page->mapping) {
+ 					ret = 0;
+ 					anon = 1; /* no anon but release vmf.page */
+ 					goto out;
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
