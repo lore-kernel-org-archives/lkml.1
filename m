@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbXJ2WhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbXJ2Wh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752914AbXJ2WhD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXJ2Wg2
+	id S1752619AbXJ2Wh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbXJ2Wgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:36:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36307 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbXJ2Wg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:36:26 -0400
-Date: Mon, 29 Oct 2007 23:36:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, --cc@redhat.com,
-       avi@quramnet.com, kvm-devel@lists.sourceforge.net,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] raise tsc clocksource rating
-Message-ID: <20071029223600.GA21296@elte.hu>
-References: <11936994092607-git-send-email-gcosta@redhat.com> <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain>
+	Mon, 29 Oct 2007 18:36:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:40320 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbXJ2Wg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 18:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=nR7YEXKqTQB76pNFHW80KzhF1HSDneyTsOueznIGNniwfaSoRH7ugkJY7bIAozbQuDb7R1nkSy8o9QGb0eM1nF9D41sXCO7+e32Z/YrAfrRZf0AOMd917AGVPGd/kx/ahkPyXDKXieKd0UWgrEvUos+ylLvQJ+81y1KDeJoD+n4=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
+Date: Tue, 30 Oct 2007 00:36:13 +0200
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200710271405.32908.maximlevitsky@gmail.com> <200710290845.11016.maximlevitsky@gmail.com> <200710292137.37997.rjw@sisk.pl>
+In-Reply-To: <200710292137.37997.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0234]
+Message-Id: <200710300036.13186.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> > Since it's being a tendency among paravirt clocksources to use 
-> > values around 400, we should declare tsc as even better: So we use 
-> > 500.
+On Monday 29 October 2007 22:37:37 Rafael J. Wysocki wrote:
+> On Monday, 29 October 2007 07:45, Maxim Levitsky wrote:
+> > On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
+> > > On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
+> > > > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
+> > > > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
+> > > > > > Hi,
+> > > > > > 
+> > > > > > Recently I noticed that my system resumes just after suspend to disk.
+> > > > > > 
+> > > > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
+> > > > > > 
+> > > > > > Note:
+> > > > > > 
+> > > > > > This happens only if I enable WOL using /proc/acpi/wakeup
+> > > > > > (echo "ILAN" > /proc/acpi/wakeup)
+> > > > > 
+> > > > > What happens after a suspend to RAM?
+> > > > I do more testing tomorrow, but what I remember is that,
+> > > > I had no issues with suspend-to-ram.
+> > > > (And take into account the fact that _all_ wakeup devices were enabled always,
+> > > > the rc.local does that for me, and still I did quite a lot of suspends, but I
+> > > > got the immediate resume, only and always after suspend to disk.
+> > > 
+> > > Hm, can you please retest with the above commit applied, but with
+> > > device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
+> > Bingo! doing the above fixes this problem.
+> > And... strange, since I did test the system with e1000 unloaded, but still got same bug,
+> > back when I chased that bug, thus it is probably not related to e1000 and WOL.
 > > 
-> > This patch also touches the comments on clocksource.h, which 
-> > suggests that 499 would be a limit on the rating values.
+> > the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
+> > of e1000 is shared with EHCI and HDA sound codec.
+> > (But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
 > > 
-> > Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+> > (But disabling this wakeup source, fixes this bug too)
 > 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> OK
+> 
+> Please get back to device_suspend() in hibernation_platform_enter() and try
+> to unload ehci_hcd before hibernation with the wakeup source enabled.
+Well, ... bingo! again!
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Replacing back the device_suspend() , and unloading the ehci_hcd fixes the problem!
+Even more, loading this module back causes this problem to reappear, and vise-verso.
+All wakeup sources are enabled always.
 
-	Ingo
+Note that I don't have any USB 2.0 devices yet.
+The usb devices I have are: keyboard,mouse,and joystick.
+
+So now this problem looks fixable, I take a look at ehci driver.
+
+> 
+> Greetings,
+> Rafael
+
+Big thanks again,
+	Best regards,
+		Maxim Levitsky
