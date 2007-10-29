@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbXJ2WNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXJ2WRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbXJ2WNk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXJ2WNc
+	id S1754569AbXJ2WRq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbXJ2WRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:13:32 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:36249 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbXJ2WNb (ORCPT
+	Mon, 29 Oct 2007 18:17:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60482 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752236AbXJ2WRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:13:31 -0400
-Date: Tue, 30 Oct 2007 03:13:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frans Pop <elendil@planet.nl>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-Message-ID: <20071029214321.GA25669@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <200710122231.50739.elendil@planet.nl> <200710161234.35529.borntraeger@de.ibm.com> <4714B5BF.1090001@linux.vnet.ibm.com> <200710291305.52992.elendil@planet.nl> <4725D2A5.1050908@linux.vnet.ibm.com> <20071029200425.GA830@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029200425.GA830@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 29 Oct 2007 18:17:37 -0400
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <1193681839.27652.60.camel@twins>
+References: <1193064057.16541.1.camel@matrix>
+	 <20071029004002.60c7182a.akpm@linux-foundation.org>
+	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
+	 <1193677302.27652.56.camel@twins>
+	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
+	 <1193681839.27652.60.camel@twins>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 23:16:50 +0100
+Message-Id: <1193696211.5644.100.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 09:04:25PM +0100, Ingo Molnar wrote:
+
+On Mon, 2007-10-29 at 19:17 +0100, Peter Zijlstra wrote:
+> On Mon, 2007-10-29 at 13:51 -0400, Jaya Kumar wrote:
+> > On 10/29/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > On Mon, 2007-10-29 at 01:17 -0700, Jaya Kumar wrote:
+> > > > An aside, I just tested that deferred IO works fine on 2.6.22.10/pxa255.
+> > > >
+> > > > I understood from the thread that PeterZ is looking into page_mkclean
+> > > > changes which I guess went into 2.6.23. I'm also happy to help in any
+> > > > way if the way we're doing fb_defio needs to change.
+> > >
+> > > OK, seems I can't read. Or at least, I missed a large part of the
+> > > problem.
+> > >
+> > > page_mkclean() hasn't changed, it was ->page_mkwrite() that changed. And
+> > > looking at the fb_defio code, I'm not sure I understand how its
+> > > page_mkclean() use could ever have worked.
+> > >
+> > > The proposed patch [1] only fixes the issue of ->page_mkwrite() on
+> > > vmalloc()'ed memory. Not page_mkclean(), and that has never worked from
+> > > what I can make of it.
+> > >
+> > > Jaya, could you shed some light on this? I presume you had your display
+> > > working.
+> > >
+> > 
+> > I thought I had it working. I saw the display update after each
+> > mmap/write sequence to the framebuffer. I need to check if there's an
+> > munmap or anything else going on in between write sequences that would
+> > cause it to behave like page_mkclean was working.
+> > 
+> > Is it correct to assume that page_mkclean should mark the pages
+> > read-only so that the next write would again trigger mkwrite?
 > 
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Well, yes, that is the intended behaviour.
 > 
-> > We'll I initially thought of it and then I remembered that the 
-> > regression occurs only when the accounting itself is inaccurate. I am 
-> > tempted to ack the removal, but I would like to get input from others. 
-> > Meanwhile, I'll try and see if I can fix the problem
+> >  Even if the page was from a vmalloc_to_page()?
 > 
-> i've got a patch from Peter queued up. (see below) This should fix the 
-> main issue.
-> 
-> 	Ingo
->
+> That is the crux, I only ever implemented it for file pages.
 
-We'll also need this additional patch (untested), but in the long run
-I think the approach needs to be
+Hmm, so these vmalloc pages are mapped into user-space with
+remap_pfn_range(), which doesn't have any form of rmap. That is, given a
+pfn there is no way to obtain all ptes for it. So the interface to
+page_mkclean() could never work for these (as it only provides a struct
+page *).
 
-1. Update stime and utime at the time of context switching -- keep it
-   in sync with p->sum_exec_runtime
-2. Keep track of system/user context at system call entry points
+[ also, remap_vmalloc_range() suffers similar issues, only file and anon
+  have proper rmap ]
 
- 
-Extend Peter's patch to fix accounting issues.
+I'm not sure we want full rmap for remap_pfn/vmalloc_range, but perhaps
+we could assist drivers in maintaining and using vma lists.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+I think page_mkclean_one() would work if you'd manually set page->index
+and iterate the vmas yourself. Although atm I'm not sure of anything so
+don't pin me on it.
 
- fs/proc/array.c       |    3 ++-
- include/linux/sched.h |    2 +-
- kernel/fork.c         |    1 +
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
-diff -puN fs/proc/array.c~fix-accounting-issue-extended fs/proc/array.c
---- 2.6.24-rc1/fs/proc/array.c~fix-accounting-issue-extended	2007-10-30 03:08:18.000000000 +0530
-+++ 2.6.24-rc1-balbir/fs/proc/array.c	2007-10-30 03:09:46.000000000 +0530
-@@ -374,7 +374,8 @@ static cputime_t task_stime(struct task_
- 	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
- 			cputime_to_clock_t(task_utime(p));
- 
--	return clock_t_to_cputime(stime);
-+	p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
-+	return p->prev_stime;
- }
- #endif
- 
-diff -puN include/linux/sched.h~fix-accounting-issue-extended include/linux/sched.h
---- 2.6.24-rc1/include/linux/sched.h~fix-accounting-issue-extended	2007-10-30 03:08:18.000000000 +0530
-+++ 2.6.24-rc1-balbir/include/linux/sched.h	2007-10-30 03:08:32.000000000 +0530
-@@ -1004,7 +1004,7 @@ struct task_struct {
- 	unsigned int rt_priority;
- 	cputime_t utime, stime, utimescaled, stimescaled;
- 	cputime_t gtime;
--	cputime_t prev_utime;
-+	cputime_t prev_utime, prev_stime;
- 	unsigned long nvcsw, nivcsw; /* context switch counts */
- 	struct timespec start_time; 		/* monotonic time */
- 	struct timespec real_start_time;	/* boot based time */
-diff -puN kernel/fork.c~fix-accounting-issue-extended kernel/fork.c
---- 2.6.24-rc1/kernel/fork.c~fix-accounting-issue-extended	2007-10-30 03:08:18.000000000 +0530
-+++ 2.6.24-rc1-balbir/kernel/fork.c	2007-10-30 03:08:42.000000000 +0530
-@@ -1057,6 +1057,7 @@ static struct task_struct *copy_process(
- 	p->utimescaled = cputime_zero;
- 	p->stimescaled = cputime_zero;
- 	p->prev_utime = cputime_zero;
-+	p->prev_stime = cputime_zero;
- 
- #ifdef CONFIG_TASK_XACCT
- 	p->rchar = 0;		/* I/O counter: bytes read */
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
