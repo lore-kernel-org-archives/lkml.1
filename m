@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbXJ2Wh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbXJ2WkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbXJ2Wh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbXJ2Wgb
+	id S1753621AbXJ2WkH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbXJ2Wjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:36:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:40320 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbXJ2Wg1 (ORCPT
+	Mon, 29 Oct 2007 18:39:55 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:11977 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbXJ2Wjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:36:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=nR7YEXKqTQB76pNFHW80KzhF1HSDneyTsOueznIGNniwfaSoRH7ugkJY7bIAozbQuDb7R1nkSy8o9QGb0eM1nF9D41sXCO7+e32Z/YrAfrRZf0AOMd917AGVPGd/kx/ahkPyXDKXieKd0UWgrEvUos+ylLvQJ+81y1KDeJoD+n4=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
-Date: Tue, 30 Oct 2007 00:36:13 +0200
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200710271405.32908.maximlevitsky@gmail.com> <200710290845.11016.maximlevitsky@gmail.com> <200710292137.37997.rjw@sisk.pl>
-In-Reply-To: <200710292137.37997.rjw@sisk.pl>
+	Mon, 29 Oct 2007 18:39:54 -0400
+Message-ID: <47266132.5050001@ct.jp.nec.com>
+Date: Mon, 29 Oct 2007 15:39:46 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: vgoyal@in.ibm.com, tglx@linutronix.de
+Cc: hbabu@us.ibm.com, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH] Revert x86: add lapic_shutdown for x86_64
+References: <47195763.1090803@ct.jp.nec.com> <47195807.6030809@ct.jp.nec.com> <20071024062933.GA4622@in.ibm.com>
+In-Reply-To: <20071024062933.GA4622@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710300036.13186.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 October 2007 22:37:37 Rafael J. Wysocki wrote:
-> On Monday, 29 October 2007 07:45, Maxim Levitsky wrote:
-> > On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
-> > > On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
-> > > > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
-> > > > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > Recently I noticed that my system resumes just after suspend to disk.
-> > > > > > 
-> > > > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
-> > > > > > 
-> > > > > > Note:
-> > > > > > 
-> > > > > > This happens only if I enable WOL using /proc/acpi/wakeup
-> > > > > > (echo "ILAN" > /proc/acpi/wakeup)
-> > > > > 
-> > > > > What happens after a suspend to RAM?
-> > > > I do more testing tomorrow, but what I remember is that,
-> > > > I had no issues with suspend-to-ram.
-> > > > (And take into account the fact that _all_ wakeup devices were enabled always,
-> > > > the rc.local does that for me, and still I did quite a lot of suspends, but I
-> > > > got the immediate resume, only and always after suspend to disk.
-> > > 
-> > > Hm, can you please retest with the above commit applied, but with
-> > > device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
-> > Bingo! doing the above fixes this problem.
-> > And... strange, since I did test the system with e1000 unloaded, but still got same bug,
-> > back when I chased that bug, thus it is probably not related to e1000 and WOL.
-> > 
-> > the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
-> > of e1000 is shared with EHCI and HDA sound codec.
-> > (But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
-> > 
-> > (But disabling this wakeup source, fixes this bug too)
-> 
-> OK
-> 
-> Please get back to device_suspend() in hibernation_platform_enter() and try
-> to unload ehci_hcd before hibernation with the wakeup source enabled.
-Well, ... bingo! again!
+lapic_shutdown is useless on x86_64.
 
-Replacing back the device_suspend() , and unloading the ehci_hcd fixes the problem!
-Even more, loading this module back causes this problem to reappear, and vise-verso.
-All wakeup sources are enabled always.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/apic_64.c |   14 --------------
+ arch/x86/kernel/crash.c   |    5 +++++
+ include/asm-x86/apic_64.h |    1 -
+ 3 files changed, 5 insertions(+), 15 deletions(-)
 
-Note that I don't have any USB 2.0 devices yet.
-The usb devices I have are: keyboard,mouse,and joystick.
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index f28ccb5..f47bc49 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -287,20 +287,6 @@ void disable_local_APIC(void)
+ 	apic_write(APIC_SPIV, value);
+ }
+ 
+-void lapic_shutdown(void)
+-{
+-	unsigned long flags;
+-
+-	if (!cpu_has_apic)
+-		return;
+-
+-	local_irq_save(flags);
+-
+-	disable_local_APIC();
+-
+-	local_irq_restore(flags);
+-}
+-
+ /*
+  * This is to verify that we're looking at a real local APIC.
+  * Check these against your board if the CPUs aren't getting
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 8bb482f..79a5a25 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -136,7 +136,12 @@ void machine_crash_shutdown(struct pt_regs *regs)
+ 	/* Make a note of crashing cpu. Will be used in NMI callback.*/
+ 	crashing_cpu = safe_smp_processor_id();
+ 	nmi_shootdown_cpus();
++#ifdef CONFIG_X86_32
+ 	lapic_shutdown();
++#else
++	if (cpu_has_apic)
++		disable_local_APIC();
++#endif
+ #if defined(CONFIG_X86_IO_APIC)
+ 	disable_IO_APIC();
+ #endif
+diff --git a/include/asm-x86/apic_64.h b/include/asm-x86/apic_64.h
+index 2747a11..3c8f21e 100644
+--- a/include/asm-x86/apic_64.h
++++ b/include/asm-x86/apic_64.h
+@@ -69,7 +69,6 @@ extern void clear_local_APIC (void);
+ extern void connect_bsp_APIC (void);
+ extern void disconnect_bsp_APIC (int virt_wire_setup);
+ extern void disable_local_APIC (void);
+-extern void lapic_shutdown (void);
+ extern int verify_local_APIC (void);
+ extern void cache_APIC_registers (void);
+ extern void sync_Arb_IDs (void);
+-- 
+1.5.3.4
 
-So now this problem looks fixable, I take a look at ehci driver.
-
-> 
-> Greetings,
-> Rafael
-
-Big thanks again,
-	Best regards,
-		Maxim Levitsky
