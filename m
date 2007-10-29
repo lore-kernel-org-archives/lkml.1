@@ -1,42 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbXJ2NsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbXJ2Nsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbXJ2NsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 09:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbXJ2NsG
+	id S1758046AbXJ2Nsa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 09:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXJ2NsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 29 Oct 2007 09:48:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:32876 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753869AbXJ2NsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Oct 2007 09:48:06 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55017 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752327AbXJ2NsF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 09:48:05 -0400
-Date: Mon, 29 Oct 2007 13:50:04 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dirk Hohndel <hohndel@linux.intel.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pciserial_resume_one ignored return value of
- pci_enable_device
-Message-ID: <20071029135004.1fc4fc64@the-village.bc.nu>
-In-Reply-To: <20071029132817.GA20449@bigserver.hohndel.org>
-References: <20071029132817.GA20449@bigserver.hohndel.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Mon, 29 Oct 2007 14:47:49 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [REGRESSION] 2.6.24-rc1 fails to boot on a 486
+In-Reply-To: <200710290628.l9T6SDpo012530@harpo.it.uu.se>
+Message-ID: <alpine.LFD.0.9999.0710291440570.3186@localhost.localdomain>
+References: <200710290628.l9T6SDpo012530@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 06:28:17 -0700
-Dirk Hohndel <hohndel@linux.intel.com> wrote:
+On Mon, 29 Oct 2007, Mikael Pettersson wrote:
 
-> [PATCH] pciserial_resume_one ignored return value of pci_enable_device
+> On Sun, 28 Oct 2007 21:33:02 -0700, H. Peter Anvin wrote:
+> > Mikael Pettersson wrote:
+> > > My old 486 fails to boot with the 2.6.24-rc1 kernel.
+> > > Grub loads it, 4 lines of text appear but not the kernel's
+> > > "Linux version <blah> greet", and the machine reboots.
+> > > Double-checked with a serial console: nothing appears
+> > > before it reboots.
+> > 
+> > What four lines of text?
 > 
-> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+> They're impossible to capture because they're only visible
+> on the VGA screen for like 0.2 seconds before the machine
+> reboots and the screen is blanked; they don't show up on
+> the serial console.
+> 
+> They look like paths to the vmlinuz and initrd surrounded
+> by [ ] brackets, so I guess they come from grub.
 
-Acked-by: Alan Cox <alan@redhat.com>
+Any chance to use serial console ?
 
-Not sure its worth the hassle but I guess someone could pull a hotplug
-PCI serial card and then resume.
+Enable CONFIG_EARLY_PRINTK and add
+ 
+earlyprintk=serial,ttyS0,115200,keep
+
+to the kernel command line.
+
+Can you please provide your .config file ?
+
+I tested on my i386 box and Linus latest git boots fine:
+# uname -a
+Linux museum386 2.6.24-rc1-2a397e82 #1 PREEMPT Mon Oct 29 13:39:29 CET 2007 i386 unknown
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : unknown
+cpu family      : 3
+model           : 0
+model name      : 386
+stepping        : unknown
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : no
+fpu_exception   : no
+cpuid level     : -1
+wp              : no
+flags           :
+bogomips        : 6.93
+clflush size    : 32
+
+Thanks,
+
+	tglx
