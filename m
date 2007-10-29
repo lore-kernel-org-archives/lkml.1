@@ -1,58 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbXJ2Ue2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbXJ2Ue7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbXJ2Ue2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXJ2UeU
+	id S1756461AbXJ2Ue7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXJ2Uet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:34:20 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:17814 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbXJ2UeT (ORCPT
+	Mon, 29 Oct 2007 16:34:49 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33341 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbXJ2Uer (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:34:19 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
-Date: Mon, 29 Oct 2007 21:33:48 +0100
-User-Agent: KMail/1.9.7
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Frans Pop <elendil@planet.nl>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200710122231.50739.elendil@planet.nl> <4725D2A5.1050908@linux.vnet.ibm.com> <20071029200425.GA830@elte.hu>
-In-Reply-To: <20071029200425.GA830@elte.hu>
+	Mon, 29 Oct 2007 16:34:47 -0400
+Date: Mon, 29 Oct 2007 20:33:45 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ryan Finnie <ryan@finnie.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-Reply-To: <200710282023.l9SKNKK0031790@agora.fsl.cs.sunysb.edu>
+Message-ID: <Pine.LNX.4.64.0710292027310.21528@blonde.wat.veritas.com>
+References: <200710282023.l9SKNKK0031790@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710292133.48125.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 29. Oktober 2007 schrieb Ingo Molnar:
-> i've got a patch from Peter queued up. (see below) This should fix the 
-> main issue.
-[...]
-> --- linux.orig/fs/proc/array.c
-> +++ linux/fs/proc/array.c
-> @@ -358,7 +358,8 @@ static cputime_t task_utime(struct task_
->  	}
->  	utime = (clock_t)temp;
+On Sun, 28 Oct 2007, Erez Zadok wrote:
 > 
-> -	return clock_t_to_cputime(utime);
-> +	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
-> +	return p->prev_utime;
->  }
-[...]
+> I took your advise regarding ~(__GFP_FS|__GFP_IO), AOP_WRITEPAGE_ACTIVATE,
+> and such.  I revised my unionfs_writepage and unionfs_sync_page, and tested
+> it under memory pressure: I have a couple of live CDs that use tmpfs and can
+> deterministically reproduce the conditions resulting in A_W_A.  I also went
+> back to using grab_cache_page but with the gfp_mask suggestions you made.
+> 
+> I'm happy to report that it all works great now!
 
-I dont think it will work. It will make utime monotic, but stime can still 
-decrease. For example let sum_exec_runtime increase by a tiny little bit while
-utime will get a full additional tick. stime is sum-utime. So stime can still
-go backwards. So I think that we need this kind of logic for stime as well, 
-no?
+That's very encouraging...
 
-Christian
+> Below is the entirety of
+> the new unionfs_mmap and unionfs_sync_page code.  I'd appreciate if you and
+> others can look it over and see if you find any problems.
 
+... but still a few problems, I'm afraid.
 
+The greatest problem is a tmpfs one, that would be for me to solve.
+But first...
 
+> static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
+> {
+> 	int err = -EIO;
+> 	struct inode *inode;
+> 	struct inode *lower_inode;
+> 	struct page *lower_page;
+> 	char *kaddr, *lower_kaddr;
+> 	struct address_space *mapping; /* lower inode mapping */
+> 	gfp_t old_gfp_mask;
+> 
+> 	inode = page->mapping->host;
+> 	lower_inode = unionfs_lower_inode(inode);
+> 	mapping = lower_inode->i_mapping;
+> 
+> 	/*
+> 	 * find lower page (returns a locked page)
+> 	 *
+> 	 * We turn off __GFP_IO|__GFP_FS so as to prevent a deadlock under
+
+On reflection, I think I went too far in asking you to mask off __GFP_IO.
+Loop has to do so because it's a block device, down towards the IO layer;
+but unionfs is a filesystem, so masking off __GFP_FS is enough to prevent
+recursion into the FS layer with danger of deadlock, and leaving __GFP_IO
+on gives a better chance of success.
+
+> 	 * memory pressure conditions.  This is similar to how the loop
+> 	 * driver behaves (see loop_set_fd in drivers/block/loop.c).
+> 	 * If we can't find the lower page, we redirty our page and return
+> 	 * "success" so that the VM will call us again in the (hopefully
+> 	 * near) future.
+> 	 */
+> 	old_gfp_mask = mapping_gfp_mask(mapping);
+> 	mapping_set_gfp_mask(mapping, old_gfp_mask & ~(__GFP_IO|__GFP_FS));
+> 
+> 	lower_page = grab_cache_page(mapping, page->index);
+> 	mapping_set_gfp_mask(mapping, old_gfp_mask);
+
+Hmm, several points on that.
+
+When suggesting something like this, I did remark "what locking needed?".
+You've got none: which is problematic if two stacked mounts are playing
+with the same underlying file concurrently (yes, userspace would have
+a data coherency problem in such a case, but the kernel still needs to
+worry about its own internal integrity) - you'd be in danger of masking
+(__GFP_IO|__GFP_FS) permanently off the underlying file; and furthermore,
+losing error flags (AS_EIO, AS_ENOSPC) which share the same unsigned long.
+Neither likely but both wrong.
+
+See the comment on mapping_set_gfp_mask() in include/pagemap.h:
+ * This is non-atomic.  Only to be used before the mapping is activated.
+Strictly speaking, I guess loop was a little bit guilty even when just
+loop_set_fd() did it: the underlying mapping might already be active.
+It appears to be just as guilty as you in its do_loop_switch() case
+(done at BIO completion time), but that's for a LOOP_CHANGE_FD ioctl
+which would only be expected to be called once, during installation;
+whereas you're using mapping_set_gfp_mask here with great frequency.
+
+Another point on this is: loop masks __GFP_IO|__GFP_FS off the file
+for the whole duration while it is looped, whereas you're flipping it
+just in this preliminary section of unionfs_writepage.  I think you're
+probably okay to be doing it only here within ->writepage: I think
+loop covered every operation because it's at the block device level,
+perhaps both reads and writes needed to serve reclaim at the higher
+FS level; and also easier to do it once for all.
+
+Are you wrong to be doing it only around the grab_cache_page,
+leaving the lower level ->writepage further down unprotected?
+Certainly doing it around the grab_cache_page is likely to be way
+more important than around the ->writepage (but rather depends on
+filesystem).  And on reflection, I think that the lower filesystem's
+writepage should already be using GFP_NOFS to avoid deadlocks in
+any of its allocations when wbc->for_reclaim, so you should be
+okay just masking off around the grab_cache_page.
+
+(Actually, in the wbc->for_reclaim case, I think you don't really
+need to call the lower level writepage at all.  Just set_page_dirty
+on the lower page, unlock it and return.  In due course that memory
+pressure which has called unionfs_writepage, will come around to the
+lower level page and do writepage upon it.  Whether that's a better
+strategy or not, I'm do not know.)
+
+There's an attractively simple answer to the mapping_set_gfp_mask
+locking problem, if we're confident that it's only needed around
+the grab_cache_page.  Look at the declaration of grab_cache_page
+in linux/pagemap.h: it immediately extracts the gfp_mask from the
+mapping and passes that down to find_or_create_page, which doesn't
+use the mapping's gfp_mask at all.
+
+So, stop flipping and use find_or_create_page directly yourself.
+
+> 
+> 	if (!lower_page) {
+> 		err = 0;
+> 		set_page_dirty(page);
+
+You need to unlock_page, don't you?  Or move the "out" label up
+before the unlock_page.  There seems to have been confusion about
+this even in the current 2.6.23-mm1 unionfs_writepage: the only
+case in which a writepage returns with its page still locked is
+that AOP_WRITEPAGE_ACTIVATE case we're going to get rid of.
+
+> 		goto out;
+> 	}
+> 
+> 	/* get page address, and encode it */
+> 	kaddr = kmap(page);
+> 	lower_kaddr = kmap(lower_page);
+> 
+> 	memcpy(lower_kaddr, kaddr, PAGE_CACHE_SIZE);
+> 
+> 	kunmap(page);
+> 	kunmap(lower_page);
+
+Better to use kmap_atomic.  unionfs_writepage cannot get called
+at interrupt time, I see no reason to avoid KM_USER0 and KM_USER1:
+therefore simply use copy_highpage(lower_page, page) and let it do
+all the kmapping and copying.
+
+If PAGE_CACHE_SIZE ever diverges from PAGE_SIZE (e.g. Christoph
+Lameter's variable page_cache_size patches), then yes, this
+would need updating to a loop over several pages (or better,
+linux/highmem.h should then provide a function to do it).
+
+> 
+> 	BUG_ON(!mapping->a_ops->writepage);
+> 
+> 	/* call lower writepage (expects locked page) */
+> 	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
+> 	err = mapping->a_ops->writepage(lower_page, wbc);
+> 
+> 	/* b/c grab_cache_page locked it and ->writepage unlocks on success */
+> 	if (err)
+> 		unlock_page(lower_page);
+
+Another instance of that confusion: lower_page is already unlocked,
+on success or failure; it's only the anomalous AOP_WRITEPAGE_ACTIVATE
+case that leaves it locked.
+
+> 	/* b/c grab_cache_page increased refcnt */
+> 	page_cache_release(lower_page);
+> 
+> 	if (err < 0) {
+> 		ClearPageUptodate(page);
+
+Page needs to be unlocked, whether here or at out.
+
+> 		goto out;
+> 	}
+> 	/*
+> 	 * Lower file systems such as ramfs and tmpfs, may return
+> 	 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to (pointlessly)
+> 	 * write the page again for a while.  But those lower file systems
+> 	 * also set the page dirty bit back again.  Since we successfully
+> 	 * copied our page data to the lower page, then the VM will come
+> 	 * back to the lower page (directly) and try to flush it.  So we can
+> 	 * save the VM the hassle of coming back to our page and trying to
+> 	 * flush too.  Therefore, we don't re-dirty our own page, and we
+> 	 * don't return AOP_WRITEPAGE_ACTIVATE back to the VM (we consider
+> 	 * this a success).
+> 	 */
+> 	if (err == AOP_WRITEPAGE_ACTIVATE)
+> 		err = 0;
+
+Right (once you've got the locking right).
+
+> 
+> 	/* all is well */
+> 	SetPageUptodate(page);
+> 	/* lower mtimes has changed: update ours */
+> 	unionfs_copy_attr_times(inode);
+> 
+> 	unlock_page(page);
+> 
+> out:
+> 	return err;
+> }
+> 
+> 
+> static void unionfs_sync_page(struct page *page)
+> {
+
+I'm not going to comment much on your unionfs_sync_page: it looks
+like a total misunderstanding of what sync_page does, assuming from
+the name that it syncs the page in a fsync/msync/sync manner.
+
+No, it would much better be named "unplug_page_io": please take a
+look at sync_page() in mm/filemap.c, observe how it gets called
+(via wait_on_page_bit) and what it ends up doing.  (Don't pay much
+attention to what Documentation/filesystems says about it, either!)
+
+It's an odd business; I think Nick did have a patch to get rid of
+it completely, which would be nice; but changes to unplugging I/O
+(kicking off the I/O after saving up several requests to do all
+together) can be a hang-prone business.
+
+Do you need a unionfs_sync_page at all?  I think not, since the
+I/O, plugged or unplugged, is below your lower level filesystem.
+
+But I started by mentioning a serious tmpfs problem.  Now I've
+persuaded you to go back to grab_cache_page/find_or_create_page,
+I realize a nasty problem for tmpfs.  Under memory pressure, you're
+liable to be putting tmpfs file pages into the page cache at the
+same time as they're already present but in disguise as swap cache
+pages.  Perhaps the solution will be quite simple (since you're
+overwriting the whole page), but I do need to think about it.
+
+Hugh
