@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbXJ2Q6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXJ2RB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbXJ2Q6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXJ2Q56
+	id S1758881AbXJ2RB7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbXJ2RBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:57:58 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55249 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752300AbXJ2Q55 (ORCPT
+	Mon, 29 Oct 2007 13:01:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54484 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754362AbXJ2RBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:57:57 -0400
-Subject: Re: [PATCH] sysfs: add filter function to groups
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1193676852.2655.21.camel@lov.site>
-References: <1193671019.3383.13.camel@localhost.localdomain>
-	 <1193676852.2655.21.camel@lov.site>
+	Mon, 29 Oct 2007 13:01:51 -0400
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       linux-mm@kvack.org
+In-Reply-To: <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
+References: <1193064057.16541.1.camel@matrix>
+	 <20071029004002.60c7182a.akpm@linux-foundation.org>
+	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 29 Oct 2007 11:57:51 -0500
-Message-Id: <1193677071.3383.56.camel@localhost.localdomain>
+Date: Mon, 29 Oct 2007 18:01:42 +0100
+Message-Id: <1193677302.27652.56.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 17:54 +0100, Kay Sievers wrote:
-> On Mon, 2007-10-29 at 10:16 -0500, James Bottomley wrote:
-> > In the SCSI transport classes (and soon to be in the AEN event
-> > subsystem) we have a lot of need for a grouping that doesn't include all
-> > files in the group.  We basically want to show capability by which file
-> > is present.  A classic example of this is the SPI transport class
-> > connected to the 53c700 card.  It's incapable of doing all of the modern
-> > LVD functions, so we don't show any of those capabilities in its sysfs
-> > directory.  However, we have a lot of horrible logic to generate
-> > separate per host groupings of attributes for this.  We would be able to
-> > use the standard sysfs group attributes *if* there were a way of
-> > filtering them so that certain attributes didn't appear.
+On Mon, 2007-10-29 at 01:17 -0700, Jaya Kumar wrote:
+> On 10/29/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Mon, 22 Oct 2007 16:40:57 +0200 Stefani Seibold <stefani@seibold.net> wrote:
+> > >
+> > > The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
+> > > This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
+> > > which will be in an extra thread handled, to perform the IO and clean and
+> > > write protect all pages with page_clean().
+> > >
+
+> An aside, I just tested that deferred IO works fine on 2.6.22.10/pxa255.
 > 
-> Sounds fine.
->  
-> > This patch is a first pass at adding a filter function to the group
-> > attributes, just to see how the idea flies.  If everyone's OK with this,
-> > I think the next thing that we might do is add bitmap functions (so
-> > every bit in the bitmap has a name, but also might not appear) to
-> > groups.
-> 
-> Bitmaps in the attribute groups?
+> I understood from the thread that PeterZ is looking into page_mkclean
+> changes which I guess went into 2.6.23. I'm also happy to help in any
+> way if the way we're doing fb_defio needs to change.
 
-Actually, no ... that would spoil our one group for all devices rule.
-So they would be a set of helper functions for manipulating bitmaps, but
-the bitmap would have to be in separate storage elsewhere.
+OK, seems I can't read. Or at least, I missed a large part of the
+problem.
 
-> >  struct attribute_group {
-> >  	const char		*name;
-> > +	int			(*filter_show)(struct kobject *, int);
-> 
-> Are you sure that you want to return an array index here, instead of the
-> actual attribute? Like:
+page_mkclean() hasn't changed, it was ->page_mkwrite() that changed. And
+looking at the fb_defio code, I'm not sure I understand how its
+page_mkclean() use could ever have worked.
 
-Actually, it returns a true/false value indicating whether the given
-attribute should be displayed.
+The proposed patch [1] only fixes the issue of ->page_mkwrite() on
+vmalloc()'ed memory. Not page_mkclean(), and that has never worked from
+what I can make of it.
 
->   int (*filter_show)(struct kobject *kobj, struct attribute *attr);
-> 
-> The names "show" and "store" are the ususal file-operation names, and we
-> are not filtering a "show" here, right? Maybe "create", or "export", or
-> something else might be a better name?
+Jaya, could you shed some light on this? I presume you had your display
+working.
 
-how about (*attribute_is_visible)?
 
-James
-
+[1] which I will clean up and resend after this issue is cleared up -
+and preferably tested by someone who has this hardware.
 
