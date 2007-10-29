@@ -1,510 +1,471 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbXJ2Oav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXJ2ObR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbXJ2Oav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758198AbXJ2OaT
+	id S1758483AbXJ2ObR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbXJ2OaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:30:19 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39812 "EHLO smtp.polymtl.ca"
+	Mon, 29 Oct 2007 10:30:21 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:39834 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754647AbXJ2O3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:29:44 -0400
-Message-Id: <20071029142938.491677638@polymtl.ca>
+	id S1754637AbXJ2O3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 10:29:46 -0400
+Message-Id: <20071029142942.050901326@polymtl.ca>
 References: <20071029142646.699058449@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 29 Oct 2007 10:26:47 -0400
+Date: Mon, 29 Oct 2007 10:26:56 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Randy Dunlap <rdunlap@xenotime.net>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 01/10] Create instrumentation directory
-Content-Disposition: inline; filename=create-instrumentation-dir.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 29 Oct 2007 14:29:39 +0000
+       Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <rdunlap@xenotime.net>
+Subject: [patch 10/10] Move samples to instrumentation/samples
+Content-Disposition: inline; filename=move-samples-to-instrumentation-samples.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 29 Oct 2007 14:29:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we already have the Instrumentation menu in
-kernel/Kconfig.instrumentation and instrumentation code all over the
-kernel tree:
+Move the markers samples to instrumentation/samples.
 
-arch/*/oprofile/*.c
-kernel/kprobes.c
-arch/*/kernel/kprobes.c
-kernel/marker.c
-kernel/profile.c
-kernel/lockdep.c
-vm/vmstat.c
-block/blktrace.c
-
-We could move them to
-
-instrumentation/
-arch/*/instrumentation/
-
-Therefore, we could also move the kprobes and marker samples under
-
-instrumentation/samples/
+Was previously built late in the kernel build, but is now built at the same time
+as instrumentation/ (core-y).
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Randy Dunlap <rdunlap@xenotime.net>
 CC: Sam Ravnborg <sam@ravnborg.org>
+CC: Randy Dunlap <rdunlap@xenotime.net>
 ---
- arch/alpha/Kconfig             |    2 -
- arch/arm/Kconfig               |    2 -
- arch/blackfin/Kconfig          |    2 -
- arch/cris/Kconfig              |    2 -
- arch/frv/Kconfig               |    2 -
- arch/h8300/Kconfig             |    2 -
- arch/i386/Kconfig              |    2 -
- arch/ia64/Kconfig              |    2 -
- arch/m32r/Kconfig              |    2 -
- arch/m68k/Kconfig              |    2 -
- arch/m68knommu/Kconfig         |    2 -
- arch/mips/Kconfig              |    2 -
- arch/parisc/Kconfig            |    2 -
- arch/powerpc/Kconfig           |    2 -
- arch/ppc/Kconfig               |    2 -
- arch/s390/Kconfig              |    2 -
- arch/sh/Kconfig                |    2 -
- arch/sh64/Kconfig              |    2 -
- arch/sparc/Kconfig             |    2 -
- arch/sparc64/Kconfig           |    2 -
- arch/um/Kconfig                |    2 -
- arch/v850/Kconfig              |    2 -
- arch/x86_64/Kconfig            |    2 -
- arch/xtensa/Kconfig            |    2 -
- instrumentation/Kconfig        |   49 +++++++++++++++++++++++++++++++++++++++++
- instrumentation/Makefile       |    3 ++
- kernel/Kconfig.instrumentation |   49 -----------------------------------------
- 27 files changed, 76 insertions(+), 73 deletions(-)
+ Makefile                                 |    3 
+ instrumentation/Kconfig                  |    6 +
+ instrumentation/Makefile                 |    2 
+ instrumentation/samples/Makefile         |    4 +
+ instrumentation/samples/marker-example.c |   54 +++++++++++++++++
+ instrumentation/samples/probe-example.c  |   98 +++++++++++++++++++++++++++++++
+ lib/Kconfig.debug                        |    2 
+ samples/Kconfig                          |   16 -----
+ samples/Makefile                         |    3 
+ samples/markers/Makefile                 |    4 -
+ samples/markers/marker-example.c         |   54 -----------------
+ samples/markers/probe-example.c          |   98 -------------------------------
+ 12 files changed, 164 insertions(+), 180 deletions(-)
 
 Index: linux-2.6-lttng.stable/instrumentation/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng.stable/instrumentation/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -0,0 +1,49 @@
-+menuconfig INSTRUMENTATION
-+	bool "Instrumentation Support"
-+	default y
-+	---help---
-+	  Say Y here to get to see options related to performance measurement,
-+	  system-wide debugging, and testing. This option alone does not add any
-+	  kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and
-+	  disabled. If you're trying to debug the kernel itself, go see the
-+	  Kernel Hacking menu.
-+
-+if INSTRUMENTATION
-+
-+config PROFILING
-+	bool "Profiling support (EXPERIMENTAL)"
+--- linux-2.6-lttng.stable.orig/instrumentation/Kconfig	2007-10-29 10:01:09.000000000 -0400
++++ linux-2.6-lttng.stable/instrumentation/Kconfig	2007-10-29 10:03:18.000000000 -0400
+@@ -59,4 +59,10 @@ config BLK_DEV_IO_TRACE
+ 
+ 	  git://brick.kernel.dk/data/git/blktrace.git
+ 
++config SAMPLE_MARKERS
++	tristate "Build markers examples -- loadable modules only"
++	depends on MARKERS && m
 +	help
-+	  Say Y here to enable the extended profiling support mechanisms used
-+	  by profilers such as OProfile.
++	  This build markers example modules.
 +
-+config OPROFILE
-+	tristate "OProfile system profiling (EXPERIMENTAL)"
-+	depends on PROFILING
-+	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
-+	help
-+	  OProfile is a profiling system capable of profiling the
-+	  whole system, include the kernel, kernel modules, libraries,
-+	  and applications.
-+
-+	  If unsure, say N.
-+
-+config KPROBES
-+	bool "Kprobes"
-+	depends on KALLSYMS && MODULES
-+	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
-+	help
-+	  Kprobes allows you to trap at almost any kernel address and
-+	  execute a callback function.  register_kprobe() establishes
-+	  a probepoint and specifies the callback.  Kprobes is useful
-+	  for kernel debugging, non-intrusive instrumentation and testing.
-+	  If in doubt, say "N".
-+
-+config MARKERS
-+	bool "Activate markers"
-+	help
-+	  Place an empty function call at each marker site. Can be
-+	  dynamically changed for a probe function.
-+
-+endif # INSTRUMENTATION
-Index: linux-2.6-lttng.stable/kernel/Kconfig.instrumentation
+ endif # INSTRUMENTATION
+Index: linux-2.6-lttng.stable/samples/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/kernel/Kconfig.instrumentation	2007-10-29 09:51:10.000000000 -0400
+--- linux-2.6-lttng.stable.orig/samples/Kconfig	2007-10-29 10:01:09.000000000 -0400
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,49 +0,0 @@
--menuconfig INSTRUMENTATION
--	bool "Instrumentation Support"
--	default y
--	---help---
--	  Say Y here to get to see options related to performance measurement,
--	  system-wide debugging, and testing. This option alone does not add any
--	  kernel code.
+@@ -1,16 +0,0 @@
+-# samples/Kconfig
 -
--	  If you say N, all options in this submenu will be skipped and
--	  disabled. If you're trying to debug the kernel itself, go see the
--	  Kernel Hacking menu.
--
--if INSTRUMENTATION
--
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
+-menuconfig SAMPLES
+-	bool "Sample kernel code"
 -	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
+-	  You can build and test sample kernel code here.
 -
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING
--	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
+-if SAMPLES
+-
+-config SAMPLE_MARKERS
+-	tristate "Build markers examples -- loadable modules only"
+-	depends on MARKERS && m
 -	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
+-	  This build markers example modules.
 -
--	  If unsure, say N.
--
--config KPROBES
--	bool "Kprobes"
--	depends on KALLSYMS && MODULES
--	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
--	help
--	  Kprobes allows you to trap at almost any kernel address and
--	  execute a callback function.  register_kprobe() establishes
--	  a probepoint and specifies the callback.  Kprobes is useful
--	  for kernel debugging, non-intrusive instrumentation and testing.
--	  If in doubt, say "N".
--
--config MARKERS
--	bool "Activate markers"
--	help
--	  Place an empty function call at each marker site. Can be
--	  dynamically changed for a probe function.
--
--endif # INSTRUMENTATION
-Index: linux-2.6-lttng.stable/arch/alpha/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/alpha/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/alpha/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -654,7 +654,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/alpha/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/arm/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/arm/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -1068,7 +1068,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/arm/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/blackfin/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/blackfin/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/blackfin/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -1062,7 +1062,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- menu "Kernel hacking"
- 
-Index: linux-2.6-lttng.stable/arch/cris/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/cris/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/cris/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -196,7 +196,7 @@ source "sound/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/cris/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/frv/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/frv/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/frv/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -375,7 +375,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/frv/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/h8300/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/h8300/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/h8300/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -223,7 +223,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/h8300/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/i386/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/i386/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/i386/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -1270,7 +1270,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/i386/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/ia64/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/ia64/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/ia64/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -592,7 +592,7 @@ config IRQ_PER_CPU
- 
- source "arch/ia64/hp/sim/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/ia64/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/m32r/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/m32r/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/m32r/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -426,7 +426,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/m32r/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/m68k/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/m68k/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/m68k/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -683,7 +683,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/m68k/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/m68knommu/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/m68knommu/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/m68knommu/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -707,7 +707,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/m68knommu/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/mips/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/mips/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/mips/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -2009,7 +2009,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/mips/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/parisc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/parisc/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/parisc/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -267,7 +267,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/parisc/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/powerpc/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/powerpc/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -669,7 +669,7 @@ source "arch/powerpc/sysdev/qe_lib/Kconf
- 
- source "lib/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/powerpc/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/ppc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/ppc/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/ppc/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -1317,7 +1317,7 @@ endmenu
- 
- source "lib/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/ppc/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/s390/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/s390/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/s390/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -529,7 +529,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/s390/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/sh/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sh/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sh/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -758,7 +758,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/sh/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/sh64/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sh64/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sh64/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -284,7 +284,7 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/sh64/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/sparc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sparc/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sparc/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -320,7 +320,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/sparc/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/sparc64/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sparc64/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sparc64/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -462,7 +462,7 @@ source "drivers/sbus/char/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/sparc64/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/um/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/um/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/um/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -289,6 +289,6 @@ config INPUT
- 	bool
- 	default n
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/um/Kconfig.debug"
-Index: linux-2.6-lttng.stable/arch/v850/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/v850/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/v850/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -331,7 +331,7 @@ source "sound/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/v850/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/x86_64/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/x86_64/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -833,7 +833,7 @@ source "drivers/firmware/Kconfig"
- 
- source fs/Kconfig
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/x86_64/Kconfig.debug"
- 
-Index: linux-2.6-lttng.stable/arch/xtensa/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/xtensa/Kconfig	2007-10-29 09:51:10.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/xtensa/Kconfig	2007-10-29 09:51:12.000000000 -0400
-@@ -251,7 +251,7 @@ config EMBEDDED_RAMDISK_IMAGE
- 	  provide one yourself.
- endmenu
- 
--source "kernel/Kconfig.instrumentation"
-+source "instrumentation/Kconfig"
- 
- source "arch/xtensa/Kconfig.debug"
- 
+-endif # SAMPLES
 Index: linux-2.6-lttng.stable/instrumentation/Makefile
 ===================================================================
+--- linux-2.6-lttng.stable.orig/instrumentation/Makefile	2007-10-29 10:03:14.000000000 -0400
++++ linux-2.6-lttng.stable/instrumentation/Makefile	2007-10-29 10:03:18.000000000 -0400
+@@ -11,3 +11,5 @@ ifeq ($(CONFIG_PROC_FS),y)
+ obj-$(CONFIG_LOCKDEP) += lockdep_proc.o
+ endif
+ obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
++
++obj-y += samples/
+Index: linux-2.6-lttng.stable/instrumentation/samples/Makefile
+===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng.stable/instrumentation/Makefile	2007-10-29 09:51:12.000000000 -0400
-@@ -0,0 +1,3 @@
-+#
-+# Makefile for the linux kernel instrumentation
-+#
++++ linux-2.6-lttng.stable/instrumentation/samples/Makefile	2007-10-29 10:17:36.000000000 -0400
+@@ -0,0 +1,4 @@
++# builds the kprobes example kernel modules;
++# then to use one (as root):  insmod <module_name.ko>
++
++obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o
+Index: linux-2.6-lttng.stable/samples/Makefile
+===================================================================
+--- linux-2.6-lttng.stable.orig/samples/Makefile	2007-10-29 10:01:09.000000000 -0400
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,3 +0,0 @@
+-# Makefile for Linux samples code
+-
+-obj-$(CONFIG_SAMPLES)	+= markers/
+Index: linux-2.6-lttng.stable/samples/markers/marker-example.c
+===================================================================
+--- linux-2.6-lttng.stable.orig/samples/markers/marker-example.c	2007-10-29 10:01:09.000000000 -0400
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,54 +0,0 @@
+-/* marker-example.c
+- *
+- * Executes a marker when /proc/marker-example is opened.
+- *
+- * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/marker.h>
+-#include <linux/sched.h>
+-#include <linux/proc_fs.h>
+-
+-struct proc_dir_entry *pentry_example;
+-
+-static int my_open(struct inode *inode, struct file *file)
+-{
+-	int i;
+-
+-	trace_mark(subsystem_event, "%d %s", 123, "example string");
+-	for (i = 0; i < 10; i++)
+-		trace_mark(subsystem_eventb, MARK_NOARGS);
+-	return -EPERM;
+-}
+-
+-static struct file_operations mark_ops = {
+-	.open = my_open,
+-};
+-
+-static int example_init(void)
+-{
+-	printk(KERN_ALERT "example init\n");
+-	pentry_example = create_proc_entry("marker-example", 0444, NULL);
+-	if (pentry_example)
+-		pentry_example->proc_fops = &mark_ops;
+-	else
+-		return -EPERM;
+-	return 0;
+-}
+-
+-static void example_exit(void)
+-{
+-	printk(KERN_ALERT "example exit\n");
+-	remove_proc_entry("marker-example", NULL);
+-}
+-
+-module_init(example_init)
+-module_exit(example_exit)
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Mathieu Desnoyers");
+-MODULE_DESCRIPTION("Marker example");
+Index: linux-2.6-lttng.stable/samples/markers/probe-example.c
+===================================================================
+--- linux-2.6-lttng.stable.orig/samples/markers/probe-example.c	2007-10-29 10:01:09.000000000 -0400
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,98 +0,0 @@
+-/* probe-example.c
+- *
+- * Connects two functions to marker call sites.
+- *
+- * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/marker.h>
+-#include <asm/atomic.h>
+-
+-struct probe_data {
+-	const char *name;
+-	const char *format;
+-	marker_probe_func *probe_func;
+-};
+-
+-void probe_subsystem_event(const struct marker *mdata, void *private,
+-	const char *format, ...)
+-{
+-	va_list ap;
+-	/* Declare args */
+-	unsigned int value;
+-	const char *mystr;
+-
+-	/* Assign args */
+-	va_start(ap, format);
+-	value = va_arg(ap, typeof(value));
+-	mystr = va_arg(ap, typeof(mystr));
+-
+-	/* Call printk */
+-	printk(KERN_DEBUG "Value %u, string %s\n", value, mystr);
+-
+-	/* or count, check rights, serialize data in a buffer */
+-
+-	va_end(ap);
+-}
+-
+-atomic_t eventb_count = ATOMIC_INIT(0);
+-
+-void probe_subsystem_eventb(const struct marker *mdata, void *private,
+-	const char *format, ...)
+-{
+-	/* Increment counter */
+-	atomic_inc(&eventb_count);
+-}
+-
+-static struct probe_data probe_array[] =
+-{
+-	{	.name = "subsystem_event",
+-		.format = "%d %s",
+-		.probe_func = probe_subsystem_event },
+-	{	.name = "subsystem_eventb",
+-		.format = MARK_NOARGS,
+-		.probe_func = probe_subsystem_eventb },
+-};
+-
+-static int __init probe_init(void)
+-{
+-	int result;
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
+-		result = marker_probe_register(probe_array[i].name,
+-				probe_array[i].format,
+-				probe_array[i].probe_func, &probe_array[i]);
+-		if (result)
+-			printk(KERN_INFO "Unable to register probe %s\n",
+-				probe_array[i].name);
+-		result = marker_arm(probe_array[i].name);
+-		if (result)
+-			printk(KERN_INFO "Unable to arm probe %s\n",
+-				probe_array[i].name);
+-	}
+-	return 0;
+-}
+-
+-static void __exit probe_fini(void)
+-{
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(probe_array); i++)
+-		marker_probe_unregister(probe_array[i].name);
+-	printk(KERN_INFO "Number of event b : %u\n",
+-			atomic_read(&eventb_count));
+-}
+-
+-module_init(probe_init);
+-module_exit(probe_fini);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Mathieu Desnoyers");
+-MODULE_DESCRIPTION("SUBSYSTEM Probe");
+Index: linux-2.6-lttng.stable/lib/Kconfig.debug
+===================================================================
+--- linux-2.6-lttng.stable.orig/lib/Kconfig.debug	2007-10-29 10:03:13.000000000 -0400
++++ linux-2.6-lttng.stable/lib/Kconfig.debug	2007-10-29 10:03:18.000000000 -0400
+@@ -508,5 +508,3 @@ config FAULT_INJECTION_STACKTRACE_FILTER
+ 	select FRAME_POINTER
+ 	help
+ 	  Provide stacktrace filter for fault-injection capabilities
+-
+-source "samples/Kconfig"
+Index: linux-2.6-lttng.stable/Makefile
+===================================================================
+--- linux-2.6-lttng.stable.orig/Makefile	2007-10-29 10:01:09.000000000 -0400
++++ linux-2.6-lttng.stable/Makefile	2007-10-29 10:03:18.000000000 -0400
+@@ -775,9 +775,6 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) 
+ ifdef CONFIG_HEADERS_CHECK
+ 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
+ endif
+-ifdef CONFIG_SAMPLES
+-	$(Q)$(MAKE) $(build)=samples
+-endif
+ 	$(call vmlinux-modpost)
+ 	$(call if_changed_rule,vmlinux__)
+ 	$(Q)rm -f .old_version
+Index: linux-2.6-lttng.stable/samples/markers/Makefile
+===================================================================
+--- linux-2.6-lttng.stable.orig/samples/markers/Makefile	2007-10-29 10:01:09.000000000 -0400
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,4 +0,0 @@
+-# builds the kprobes example kernel modules;
+-# then to use one (as root):  insmod <module_name.ko>
+-
+-obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o
+Index: linux-2.6-lttng.stable/instrumentation/samples/marker-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.stable/instrumentation/samples/marker-example.c	2007-10-29 10:03:18.000000000 -0400
+@@ -0,0 +1,54 @@
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i = 0; i < 10; i++)
++		trace_mark(subsystem_eventb, MARK_NOARGS);
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Marker example");
+Index: linux-2.6-lttng.stable/instrumentation/samples/probe-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.stable/instrumentation/samples/probe-example.c	2007-10-29 10:03:18.000000000 -0400
+@@ -0,0 +1,98 @@
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++void probe_subsystem_event(const struct marker *mdata, void *private,
++	const char *format, ...)
++{
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk(KERN_DEBUG "Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct marker *mdata, void *private,
++	const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_probe_register(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++		result = marker_arm(probe_array[i].name);
++		if (result)
++			printk(KERN_INFO "Unable to arm probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++)
++		marker_probe_unregister(probe_array[i].name);
++	printk(KERN_INFO "Number of event b : %u\n",
++			atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
 
 -- 
 Mathieu Desnoyers
