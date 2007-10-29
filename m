@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbXJ2GBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXJ2GGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbXJ2GBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 02:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXJ2GB1
+	id S1754212AbXJ2GGr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 02:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbXJ2GGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 02:01:27 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:8146 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbXJ2GB0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 02:01:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DgIHMl+noLE0MEENRud9DFzD/TkHJUyNoBo3sp3mZgxfRcC3E0kOYqu1mNiw+9wm9cCKG7/DOUUU1R/aS8B9OYrSGcIi4xQU0MnEk9gpbKvDPJ0XF9N33WLKfo+DE75ds5jATzrjWsIVI+2nsyhbTJwgg/Ip+TuXasVh2fmS3oQ=
-Message-ID: <64bb37e0710282301s1b3db994u83a7ecf4b419bb17@mail.gmail.com>
-Date: Mon, 29 Oct 2007 08:01:25 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [RFC: 2.6 patch] remove the USB_STORAGE_ONETOUCH driver
-Cc: linux-input@atrey.karlin.mff.cuni.cz, "Jiri Kosina" <jikos@jikos.cz>,
-       "Adrian Bunk" <bunk@kernel.org>, "Nick Sillik" <n.sillik@temple.edu>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <200710282238.11692.dtor@insightbb.com>
+	Mon, 29 Oct 2007 02:06:39 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:20335 "EHLO
+	outbound7-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750994AbXJ2GGh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 02:06:37 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071028155212.GC7227@stusta.de>
-	 <64bb37e0710281048x589ab063o8a32294e30488979@mail.gmail.com>
-	 <Pine.LNX.4.64.0710282134020.18815@twin.jikos.cz>
-	 <200710282238.11692.dtor@insightbb.com>
+Subject: RE: [PATCH 5/5]: [PCI]: Remove 3 incorrect MSI quirks.
+Date: Mon, 29 Oct 2007 14:06:16 +0800
+Message-ID: <5CAB7B5D6F8AB84AA868A46B47A50705623160@sshaexmb1.amd.com>
+In-Reply-To: <20071026.043833.88113848.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/5]: [PCI]: Remove 3 incorrect MSI quirks.
+Thread-Index: AcgXxMs3f1bTnzHlTLeTuqmDESb41gCKkfVg
+References: <20071025.011716.123998434.davem@davemloft.net>
+ <9783dadb0710260356g4ef94e3dvadf69d4d263c2361@mail.gmail.com>
+ <20071026.043833.88113848.davem@davemloft.net>
+From: "Shane Huang" <Shane.Huang@amd.com>
+To: "David Miller" <davem@davemloft.net>, david.gaarenstroom@gmail.com,
+       htejun@gmail.com
+cc: linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, gregkh@suse.de, brice.goglin@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org,
+       brice@myri.com, mchan@broadcom.com, "Shane Huang" <Shane.Huang@amd.com>
+X-OriginalArrivalTime: 29 Oct 2007 06:06:22.0132 (UTC)
+ FILETIME=[D465E740:01C819F1]
+X-WSS-ID: 6B3BA7D507S631554-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> On Sunday 28 October 2007 16:39, Jiri Kosina wrote:
-> > On Sun, 28 Oct 2007, Torsten Kaiser wrote:
-> >
-> > > But it looks like that uses another driver:
-> > > hiddev0hidraw1: USB HID v1.10 Device [Western Digital External HDD] on
-> > > usb-0000:00:02.1-5.2
-> > > Otherwise I would be willing to try to test this, if someone would tell
-> > > me how to check that the second commit did fix the suspend problem.
-[snip]
-> Maybe onetouch driver is not needed after all. I wonder what key/button does
-> HID deriver reports when it binds to it... Torsten, could you please post
-> your /proc/bus/input/devices?
 
-I only read the mail from Adrian, because I was 100% sure that my
-device is such a Maxtor Onetouch, because it's a external HDD and has
-buttons. (I even compiled this driver into my kernel when it was
-added...)
-But after finding these two git commits and starting to write my
-initial mail I looked for the exact name of my device and found that
-this is not a Maxtor at all but a Western Digital.
-So I'm rather unsure if this driver will work for me...
+> I would like those to be removed, but to be conservative we should
+> first get some testing feedback that confirms this just like those
+> provided to me from the AMD folks for the RS690, RX790 and RD580
+> cases.
+> 
+> Otherwise the risk to break people's systems is very real.
 
-Anyway here is my /proc/bus/input/devices:
-I: Bus=0019 Vendor=0000 Product=0002 Version=0000
-N: Name="Power Button (FF)"
-P: Phys=LNXPWRBN/button/input0
-S: Sysfs=/devices/virtual/input/input0
-U: Uniq=
-H: Handlers=kbd event0
-B: EV=3
-B: KEY=10000000000000 0
+In fact, our team only has boards with RS690+SB700 and RX790+SB700,
+I don't know why the RD580 MSI is disabled too by the patch
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
+t;h=aea6a433f50cd89b9cbd10850fd0b32f961f9883
+Maybe Tejun can give us more information on this case,
+I think the cause should be same as RS690 and RX790.
 
-I: Bus=0019 Vendor=0000 Product=0001 Version=0000
-N: Name="Power Button (CM)"
-P: Phys=PNP0C0C/button/input0
-S: Sysfs=/devices/virtual/input/input1
-U: Uniq=
-H: Handlers=kbd event1
-B: EV=3
-B: KEY=10000000000000 0
+If you need some small test on USB issue related with RS480 or
+something else, you may tell me, I can try to ask the help from our
+SW QA or test by myself, if we can find out such test platform.
 
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/devices/platform/i8042/serio0/input/input2
-U: Uniq=
-H: Handlers=kbd event2
-B: EV=120013
-B: KEY=402000000 3803078f800d001 feffffdfffefffff fffffffffffffffe
-B: MSC=10
-B: LED=7
+Thanks
+Shane
 
-I: Bus=0010 Vendor=001f Product=0001 Version=0100
-N: Name="PC Speaker"
-P: Phys=isa0061/input0
-S: Sysfs=/devices/platform/pcspkr/input/input3
-U: Uniq=
-H: Handlers=kbd event3
-B: EV=40001
-B: SND=6
 
-I: Bus=0003 Vendor=062a Product=0000 Version=0110
-N: Name="HID 062a:0000"
-P: Phys=usb-0000:00:02.0-9/input0
-S: Sysfs=/devices/pci0000:00/0000:00:02.0/usb2/2-9/2-9:1.0/input/input4
-U: Uniq=
-H: Handlers=mouse0 event4
-B: EV=17
-B: KEY=70000 0 0 0 0
-B: REL=103
-B: MSC=10
 
-The button part of the device is visible in sysfs under bus/usb, but
-not under class/input:
-(There is also a cardreader, a hub and the hdd visible under
-/sys/bus/usb/devices/1-5 )
-
-/sys/bus/usb/devices/1-5.2:1.1
-|-- driver -> ../../../../../../../bus/usb/drivers/usbhid
-|-- ep_81 -> ../../../../../../../devices/pci0000:00/0000:00:02.1/usb1/1-5/1-5.2/1-5.2:1.1/usb_endpoint/usbdev1.5_ep81
-|-- subsystem -> ../../../../../../../bus/usb
-|-- usb
-|   `-- hiddev0
-|       |-- device ->
-../../../../../../../../../devices/pci0000:00/0000:00:02.1/usb1/1-5/1-5.2/1-5.2:1.1
-|       `-- subsystem -> ../../../../../../../../../class/usb
-`-- usb_endpoint
-    `-- usbdev1.5_ep81
-        |-- device ->
-../../../../../../../../../devices/pci0000:00/0000:00:02.1/usb1/1-5/1-5.2/1-5.2:1.1
-        `-- subsystem -> ../../../../../../../../../class/usb_endpoint
-
-Torsten
