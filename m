@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXJ2RCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbXJ2RHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXJ2RCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXJ2RB7
+	id S1758096AbXJ2RHY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXJ2RHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:01:59 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55309 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758217AbXJ2RB5 (ORCPT
+	Mon, 29 Oct 2007 13:07:13 -0400
+Received: from warlock.qualcomm.com ([129.46.50.49]:47359 "EHLO
+	warlock.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbXJ2RHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:01:57 -0400
-Subject: Re: [PATCH v4 1/2] SCSI: Asynchronous
-	event	notification	infrastructure
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
-In-Reply-To: <47260A65.7040008@garzik.org>
-References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>
-	 <20071029144208.676251F8168@havoc.gtf.org>
-	 <1193673088.3383.34.camel@localhost.localdomain>
-	 <47260546.9090508@garzik.org>
-	 <1193674627.3383.45.camel@localhost.localdomain>
-	 <47260A65.7040008@garzik.org>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 12:01:55 -0500
-Message-Id: <1193677315.3383.59.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Mon, 29 Oct 2007 13:07:11 -0400
+Message-ID: <47261043.5020907@qualcomm.com>
+Date: Mon, 29 Oct 2007 09:54:27 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Strange freezes (seems like SATA related)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 12:29 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > On Mon, 2007-10-29 at 12:07 -0400, Jeff Garzik wrote:
-> >> James Bottomley wrote:
-> >>> This still doesn't solve the fundamental corruption problem:
-> >>> sdev->event_work has to contain the work entry until the workqueue has
-> >>> finished executing it (which is some unspecified time in the future).
-> >>> As soon as you drop the sdev->list_lock, the system thinks
-> >>> sdev->event_work is available for reuse.  If we fire another event
-> >>> before the work queue finished processing the prior event, the queue
-> >>> will be corrupted.
-> >> I think you're misunderstanding the workqueue code?  You can call 
-> >> schedule_work(&sdev->event_work) from anywhere, any time you like, as 
-> >> many times as you like.
-> > 
-> > OK, take me through it slowly then ... I think schedule_work(work)
-> > inserts work->entry onto the workqueue list (in
-> > workqueue.c:insert_work()).  If the event hasn't fired, it will already
-> > be on the list, so adding the same entry to a list twice causes a list
-> > corruption problem.
-> 
-> It does a test_and_set_bit() first thing in queue_work().  Similar 
-> exclusivity logic is found in net device land.  Ah, the fun of locking 
-> without locks that benh grumbles about :)
+A couple of HP xw9300 machines (dual Opterons) started freezing up.
+We're running on 2.6.22.1 on them. Freezes a somewhere weird. VGA console is alive
+(I can switch vts, etc) but everything else is dead (network, etc).
+Unfortunately SYSRQ was not enabled and I could not get backtraces and stuff.
 
-Ah, OK, sorry ... I was actually looking at __queue_work().
+Hooked up serial console and the only error that shows up is this.
 
-> > Plus, unfortunately, the CC/UA events are going to have to carry extra
-> > sense data; they're not simply going to be triggers saying something
-> > happened.
-> 
-> OK this is a fair criticism.
-> 
-> If additional data must be carried, then I must ditch the beloved bitmap 
-> implementation and go back to a list (with associated GFP_ATOMIC alloc).
-> 
-> I will fix this, unless I receive email to the contrary...
+ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd ca/00:08:57:00:80/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Descriptor sense data with sense descriptors (in hex):
+end_request: I/O error, dev sda, sector 8388695
+Buffer I/O error on device sda1, logical block 1048579
+lost page write due to I/O error on sda1
+sd 0:0:0:0: [sda] Write Protect is off
 
-Yes, unfortunately, thanks.  If all events were a simple number, it's
-easy, but the CC/UA events carry data as well.
+I see a bunch of those and then the box just sits there spewing this periodically
 
-James
+ata1: EH in ADMA mode, notifier 0x1 notifier_error 0x0 gen_ctl 0x1581000 status 0x1540 next cpb count 0x0 next cpb idx 0x0
+ata1: CPB 0: ctl_flags 0xd, resp_flags 0x1
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd ca/00:08:4f:00:f8/00:00:00:00:00/e1 tag 0 cdb 0x0 data 4096 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+
+SMART selftest on the drive passed without errors.
+
+Here is how this machine looks like
+
+00:00.0 Memory controller: nVidia Corporation CK804 Memory Controller (rev a3)
+00:01.0 ISA bridge: nVidia Corporation CK804 ISA Bridge (rev a3)
+00:01.1 SMBus: nVidia Corporation CK804 SMBus (rev a2)
+00:02.0 USB Controller: nVidia Corporation CK804 USB Controller (rev a2)
+00:02.1 USB Controller: nVidia Corporation CK804 USB Controller (rev a3)
+00:04.0 Multimedia audio controller: nVidia Corporation CK804 AC'97 Audio Controller (rev a2)
+00:06.0 IDE interface: nVidia Corporation CK804 IDE (rev f2)
+00:07.0 IDE interface: nVidia Corporation CK804 Serial ATA Controller (rev f3)
+00:08.0 IDE interface: nVidia Corporation CK804 Serial ATA Controller (rev f3)
+00:09.0 PCI bridge: nVidia Corporation CK804 PCI Bridge (rev a2)
+00:0a.0 Bridge: nVidia Corporation CK804 Ethernet Controller (rev a3)
+00:0e.0 PCI bridge: nVidia Corporation CK804 PCIE Bridge (rev a3)
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+00:19.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+00:19.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+00:19.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+00:19.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+05:04.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY [Radeon 7000/VE]
+05:05.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
+0a:00.0 Ethernet controller: Intel Corporation 82572EI Gigabit Ethernet Controller (Copper) (rev 06)
+40:01.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
+40:01.1 PIC: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC (rev 01)
+40:02.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
+40:02.1 PIC: Advanced Micro Devices [AMD] AMD-8131 PCI-X IOAPIC (rev 01)
+61:04.0 PCI bridge: Intel Corporation Unknown device 537c (rev 07)
+61:06.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 07)
+61:06.1 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 07)
+61:09.0 PCI bridge: Intel Corporation Unknown device 537c (rev 07)
+62:09.0 Multimedia controller: BittWare, Inc. Unknown device 0035 (rev 01)
+63:09.0 Multimedia controller: BittWare, Inc. Unknown device 0035 (rev 01)
+80:00.0 Memory controller: nVidia Corporation CK804 Memory Controller (rev a3)
+80:01.0 Memory controller: nVidia Corporation CK804 Memory Controller (rev a3)
+80:0e.0 PCI bridge: nVidia Corporation CK804 PCIE Bridge (rev a3)
+81:00.0 Ethernet controller: Intel Corporation 82572EI Gigabit Ethernet Controller (Copper) (rev 06)
+
+As I mentioned dual Opteron, NUMA. Nothing fancy in the kernel config. 
+
+Any ideas what might the problem be ?
+
+Max
 
