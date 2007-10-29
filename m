@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbXKAOdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbXKAOdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759862AbXKAOdZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbXKAOdA
+	id S1755880AbXKAOdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbXKAOdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:33:00 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4263 "EHLO spitz.ucw.cz"
+	Thu, 1 Nov 2007 10:33:02 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4266 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753749AbXKAOc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:32:57 -0400
-Date: Mon, 29 Oct 2007 18:54:45 +0000
+	id S1754580AbXKAOdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:33:00 -0400
+Date: Mon, 29 Oct 2007 19:24:15 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Matt Mackall <mpm@selenic.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: IRQ off latency of printk is very high
-Message-ID: <20071029185445.GA7742@ucw.cz>
-References: <4720F21F.9090404@am.sony.com> <20071025222804.GA13954@Krystal> <47211E2C.90301@am.sony.com> <20071025231237.GT19691@waste.org> <472129C3.6040405@am.sony.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
+Message-ID: <20071029192414.GC7742@ucw.cz>
+References: <20071026105125.GA28769@enneenne.com> <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <472129C3.6040405@am.sony.com>
+In-Reply-To: <20071026171857.GC19019@enneenne.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Hmm, I see this at the beginning of the post-BK era (2.6.12-rc2):
+On Fri 2007-10-26 19:18:57, Rodolfo Giometti wrote:
+> On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
+> 
+> > > > > Also if you didn't eject the socket, at resume the device will be
+> > > > > powered up again, my patch just prevents that a pre-powered off device
+> > > > > to be turned on at resume time.
+> > > > > 
+> > > > > However you should consider that some embedded systems have fixed
+> > > > > PCMCIA devices that can't be removed so there are no reasons to detect
+> > > > > them after resume, nobody can change them. :)
+> > > > > 
+> > > > > Also battery powered devices can go very frequently to sleep and the
+> > > > > current behavior force the user to switch off the unused device each
+> > > > > time the system resumes from sleep.
+> > > > 
+> > > > I realise that.  I do work on embedded devices, and this behaviour is
+> > > > explicitly there to support embedded devices.
+> > > > 
+> > > > I've suggested a workable solution to you which allows both of us to
+> > > > have the behaviour we both desire from the system.  That sounds like
+> > > > a negotiated solution to me...
+> > > 
+> > > Do you mean to switch off the socket from userland? It could be a
+> > > solution but in this case the device is powered on each time even if
+> > > for a short delay...
 > > 
-> > 	        spin_lock_irqsave(&logbuf_lock, flags);
-> > 		...
-> > 		spin_unlock(&logbuf_lock);
-> > 		call_console_drivers(_con_start, _log_end);
-> > 		local_irq_restore(flags);
-> > 
+> > If it's a permanent device, and you've powered it down via pccardctl,
+> > then you've powered it down from userland.  So record that it's been
+> > powered down from userland.  Then, on resume, if it's been powered down
+> > from userland, don't try to re-power it on resume.
 > 
-> Well, I need to do some more research.  This must be in
-> release_console_sem().  I was looking at vprintk, through
-> the ages.  At 2.6.16, it looked like this:
-> 
->         spin_lock_irqsave(&logbuf_lock, flags);
->         ...
->               spin_unlock_irqrestore(&logbuf_lock, flags);
->               console_may_schedule = 0;
->               release_console_sem();
-> 
-> but the irq restore has been moving around to different places
-> in that function over the last few years.  I suspect that in the
-> common case the irqsave in vprintk is the one that disables
-> ints.
-> 
-> It appears that formerly interrupts were enabled in vprintk but
-> re-disabled immediately upon entering release_console_sem().
-> As it is now, they're held during formatting, buffering,
-> and output, which seems excessive.
-> 
-> It seems draconian to drain the entire buffer with ints disabled.
-> Is it possible to break this up and send out smaller chunks
-> at a time?  Maybe by putting a chunk loop in release_console_sem()?
+> But the userland doesn't re-power it on resume... it's the kernel
+> itself whos re-powers the device on resume. So the userland can only
+> power down the device again.
 
-Well, I believe someone got
+I think Russell means: at a flag into kernel. If user powers down the
+device, set the flag. If flag is set during resume, avoid powering up
+the device.
 
-DDetetccctted ed 113223 HHzz CPUCPU
-
-in his dmesg, and now we have this 'draconian' locking. How can we
-prevent mangled messages without it?
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
