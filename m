@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbXJ2RrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXJ2RvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbXJ2RrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXJ2RrA
+	id S1758582AbXJ2RvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbXJ2RvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:47:00 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:42636 "EHLO atlrel7.hp.com"
+	Mon, 29 Oct 2007 13:51:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40298 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbXJ2Rq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:46:59 -0400
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: clameter@sgi.com, rientjes@google.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-In-Reply-To: <20071029103316.a68d00be.pj@sgi.com>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	 <20071025185506.8c373aa8.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	 <1193412644.5032.13.camel@localhost>
-	 <alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	 <20071026120037.7b95a136.pj@sgi.com>
-	 <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	 <1193433239.5032.95.camel@localhost>
-	 <Pine.LNX.4.64.0710261415580.18139@schroedinger.engr.sgi.com>
-	 <1193433992.5032.102.camel@localhost>
-	 <Pine.LNX.4.64.0710261436070.18899@schroedinger.engr.sgi.com>
-	 <1193670056.5035.27.camel@localhost>  <20071029103316.a68d00be.pj@sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 29 Oct 2007 13:46:40 -0400
-Message-Id: <1193680000.5035.123.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1753559AbXJ2RvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 13:51:16 -0400
+Date: Mon, 29 Oct 2007 13:50:14 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Martin Ebourne <fedora@ebourne.me.uk>, Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: 2.6.23 boot failures on x86-64.
+Message-ID: <20071029175014.GH7793@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Martin Ebourne <fedora@ebourne.me.uk>,
+	Zou Nan hai <nanhai.zou@intel.com>,
+	Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
+	stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 10:33 -0700, Paul Jackson wrote:
-> Lee wrote:
-> > I only brought it up again because now you all are considering another
-> > nodemask per policy.
-> 
-> The patch David and I are discussing will replace the
-> cpuset_mems_allowed nodemask in struct mempolicy, not
-> add a new nodemask.  In other words, the meaning and
-> name of that existing nodemask will change, with no
-> change in the overall structure size.
+We've had a number of people reporting that their x86-64s stopped booting
+when they moved to 2.6.23.  It rebooted just after discovering the AGP bridge
+as a result of the IOMMU init.
+
+Martin tracked this down to the following commit.
 
 
-Kool!
+commit 2e1c49db4c640b35df13889b86b9d62215ade4b6
+Author: Zou Nan hai <nanhai.zou@intel.com>
+Date:   Fri Jun 1 00:46:28 2007 -0700
 
-Lee
+    x86_64: allocate sparsemem memmap above 4G
+    
+    On systems with huge amount of physical memory, VFS cache and memory memmap
+    may eat all available system memory under 4G, then the system may fail to
+    allocate swiotlb bounce buffer.
+    
+    There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix dose
+    not cover sparsemem model.
+    
+    This patch add fix to sparsemem model by first try to allocate memmap above
+    4G.
+    
+    Signed-off-by: Zou Nan hai <nanhai.zou@intel.com>
+    Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+    Cc: Andi Kleen <ak@suse.de>
+    Cc: <stable@kernel.org>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
+
+This should be probably be reverted for 2.6.23-stable, and either fixed
+properly in .24, or reverted there too.
+
+More info at https://bugzilla.redhat.com/show_bug.cgi?id=249174
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
