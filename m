@@ -1,87 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXJ2VZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbXJ2V0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbXJ2VZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXJ2VZd
+	id S1755549AbXJ2V0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXJ2VZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:25:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54366 "EHLO hera.kernel.org"
+	Mon, 29 Oct 2007 17:25:58 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:53245 "EHLO atlrel8.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbXJ2VZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:25:33 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] cpuidle: remove unused exports
-Date: Mon, 29 Oct 2007 17:25:19 -0400
-User-Agent: KMail/1.9.5
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-References: <20071029124913.GJ7227@stusta.de>
-In-Reply-To: <20071029124913.GJ7227@stusta.de>
+	id S1752240AbXJ2VZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:25:56 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Adam Belay <ambx1@neo.rr.com>
+Subject: [RFC] [PATCH] PNP: request ioport and iomem resources used by active devices
+Date: Mon, 29 Oct 2007 15:25:31 -0600
+User-Agent: KMail/1.9.6
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710291725.19844.lenb@kernel.org>
+Message-Id: <200710291525.31475.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
+Reserve resources used by active PNP devices to prevent those resources
+from being assigned to other devices.
 
-thanks,
--Len
+This can be turned off with the "pnp=no_reservations" flag.  If you need to
+use it, please report it, because it indicates a potential problem, like a
+driver that requests more resources than it needs.
 
-On Monday 29 October 2007 08:49, Adrian Bunk wrote:
-> This patch removes the following unused exports:
-> - cpuidle_devices
-> - cpuidle_register_governor
-> - cpuidle_unregister_governor
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/cpuidle/cpuidle.c  |    1 -
->  drivers/cpuidle/governor.c |    3 ---
->  2 files changed, 4 deletions(-)
-> 
-> d2197cfe905506ff95f6acd1ee6a6cd933419fdf 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index fdf4106..d2fabe7 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -19,7 +19,6 @@
->  #include "cpuidle.h"
->  
->  DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
-> -EXPORT_PER_CPU_SYMBOL_GPL(cpuidle_devices);
->  
->  DEFINE_MUTEX(cpuidle_lock);
->  LIST_HEAD(cpuidle_detected_devices);
-> diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-> index bb699cb..70b5964 100644
-> --- a/drivers/cpuidle/governor.c
-> +++ b/drivers/cpuidle/governor.c
-> @@ -94,8 +94,6 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
->  	return ret;
->  }
->  
-> -EXPORT_SYMBOL_GPL(cpuidle_register_governor);
-> -
->  /**
->   * cpuidle_replace_governor - find a replacement governor
->   * @exclude_rating: the rating that will be skipped while looking for
-> @@ -138,4 +136,3 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
->  	mutex_unlock(&cpuidle_lock);
->  }
->  
-> -EXPORT_SYMBOL_GPL(cpuidle_unregister_governor);
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+This is similar to request_standard_resources().  That function requests
+resources for a compiled-in list of standard PC devices such as DMA
+controllers, PICs, timers, and keyboard, and marks them "busy."  This
+patch requests resources for devices that are actually present but does
+not mark them "busy."
+
+Sometimes the built-in standard resources are larger than what PNP reports,
+or they combine things that PNP reports separately, which makes things look
+a little strange, e.g.,
+
+    0000-001f : dma1		<-- built-in resource includes 2 controllers
+      0000-000f : 00:02		<-- PNP reports only one DMA controller
+    0020-0021 : pic1
+    002e-002f : 00:06
+    0040-0043 : timer0
+    0050-0053 : timer1
+    0060-006f : keyboard	<-- built-in resource groups several things
+      0060-0060 : 00:04		<-- PNP reports 8042 controller data register
+      0061-0061 : 00:03		<-- PNP reports AT-style speaker
+      0064-0064 : 00:04		<-- PNP reports 8042 controller status register
+    0070-0073 : 00:06
+      0070-0071 : rtc
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: w/Documentation/kernel-parameters.txt
+===================================================================
+--- w.orig/Documentation/kernel-parameters.txt	2007-10-29 15:00:46.000000000 -0600
++++ w/Documentation/kernel-parameters.txt	2007-10-29 15:02:32.000000000 -0600
+@@ -1410,6 +1410,14 @@
+ 			Format: { parport<nr> | timid | 0 }
+ 			See also Documentation/parport.txt.
+ 
++	pnp=		[PNP] PNP subsystem options:
++		no_reservations	Don't reserve resources used by PNP devices
++				This is for working around problems where a
++				driver uses a PNP device without using the PNP
++				core.  Typical symptom is that the driver can't
++				reserve the resources it needs.  Please report
++				these issues.
++
+ 	pnpacpi=	[ACPI]
+ 			{ off }
+ 
+Index: w/drivers/pnp/base.h
+===================================================================
+--- w.orig/drivers/pnp/base.h	2007-10-29 15:00:45.000000000 -0600
++++ w/drivers/pnp/base.h	2007-10-29 15:00:58.000000000 -0600
+@@ -5,6 +5,8 @@
+ void pnp_free_option(struct pnp_option *option);
+ int __pnp_add_device(struct pnp_dev *dev);
+ void __pnp_remove_device(struct pnp_dev *dev);
++int pnp_request_resources(struct pnp_dev *dev);
++int pnp_release_resources(struct pnp_dev *dev);
+ 
+ int pnp_check_port(struct pnp_dev * dev, int idx);
+ int pnp_check_mem(struct pnp_dev * dev, int idx);
+Index: w/drivers/pnp/core.c
+===================================================================
+--- w.orig/drivers/pnp/core.c	2007-10-29 15:00:45.000000000 -0600
++++ w/drivers/pnp/core.c	2007-10-29 15:00:58.000000000 -0600
+@@ -124,6 +124,9 @@
+ 	list_add_tail(&dev->protocol_list, &dev->protocol->devices);
+ 	spin_unlock(&pnp_lock);
+ 
++	if (dev->active)
++		pnp_request_resources(dev);
++
+ 	ret = device_register(&dev->dev);
+ 	if (ret)
+ 		return ret;
+Index: w/drivers/pnp/manager.c
+===================================================================
+--- w.orig/drivers/pnp/manager.c	2007-10-29 15:00:45.000000000 -0600
++++ w/drivers/pnp/manager.c	2007-10-29 15:00:58.000000000 -0600
+@@ -391,9 +391,11 @@
+ 
+ 	if (!pnp_can_configure(dev))
+ 		return -ENODEV;
++
+ 	bak = pnp_alloc(sizeof(struct pnp_resource_table));
+ 	if (!bak)
+ 		return -ENOMEM;
++
+ 	*bak = dev->res;
+ 
+ 	down(&pnp_res_mutex);
+@@ -463,7 +465,7 @@
+  * pnp_start_dev - low-level start of the PnP device
+  * @dev: pointer to the desired device
+  *
+- * assumes that resources have already been allocated
++ * assumes that resources have already been assigned to the device
+  */
+ int pnp_start_dev(struct pnp_dev *dev)
+ {
+@@ -472,6 +474,9 @@
+ 		return -EINVAL;
+ 	}
+ 
++	if (pnp_request_resources(dev))
++		dev_err(&dev->dev, "could not allocate resources\n");
++
+ 	if (dev->protocol->set(dev, &dev->res) < 0) {
+ 		dev_err(&dev->dev, "activation failed\n");
+ 		return -EIO;
+@@ -484,8 +489,6 @@
+ /**
+  * pnp_stop_dev - low-level disable of the PnP device
+  * @dev: pointer to the desired device
+- *
+- * does not free resources
+  */
+ int pnp_stop_dev(struct pnp_dev *dev)
+ {
+@@ -493,11 +496,14 @@
+ 		dev_dbg(&dev->dev, "disabling not supported\n");
+ 		return -EINVAL;
+ 	}
++
+ 	if (dev->protocol->disable(dev) < 0) {
+ 		dev_err(&dev->dev, "disable failed\n");
+ 		return -EIO;
+ 	}
+ 
++	pnp_release_resources(dev);
++
+ 	dev_info(&dev->dev, "disabled\n");
+ 	return 0;
+ }
+Index: w/drivers/pnp/resource.c
+===================================================================
+--- w.orig/drivers/pnp/resource.c	2007-10-29 15:00:45.000000000 -0600
++++ w/drivers/pnp/resource.c	2007-10-29 15:00:58.000000000 -0600
+@@ -23,6 +23,7 @@
+ static int pnp_reserve_dma[8] = {[0 ... 7] = -1 };	/* reserve (don't use) some DMA */
+ static int pnp_reserve_io[16] = {[0 ... 15] = -1 };	/* reserve (don't use) some I/O region */
+ static int pnp_reserve_mem[16] = {[0 ... 15] = -1 };	/* reserve (don't use) some memory region */
++static int pnp_no_reservations;
+ 
+ /*
+  * option registration
+@@ -459,6 +460,98 @@
+ #endif
+ }
+ 
++int pnp_request_resources(struct pnp_dev *dev)
++{
++	int i, ret;
++	struct resource *res;
++
++	if (pnp_no_reservations) {
++		dev_warn(&dev->dev, "not reserving active resources because "
++			"\"pnp=no_reservations\"\n");
++		for (i = 0; i < PNP_MAX_PORT; i++) {
++			if (pnp_port_valid(dev, i)) {
++				res = &dev->res.port_resource[i];
++				dev_warn(&dev->dev, "  ports 0x%llx-0x%llx\n",
++					(unsigned long long) res->start,
++					(unsigned long long) res->end);
++			}
++		}
++		for (i = 0; i < PNP_MAX_MEM; i++) {
++			if (pnp_mem_valid(dev, i)) {
++				res = &dev->res.mem_resource[i];
++				dev_warn(&dev->dev, "  MMIO 0x%llx-0x%llx\n",
++					(unsigned long long) res->start,
++					(unsigned long long) res->end);
++			}
++		}
++		return 0;
++	}
++
++	/*
++	 * We use insert_resource() rather than request_resource() because
++	 * request_standard_resources() has already requested some standard
++	 * areas that are described by PNP.
++	 */
++	for (i = 0; i < PNP_MAX_PORT; i++) {
++		if (pnp_port_valid(dev, i)) {
++			res = &dev->res.port_resource[i];
++			res->name = dev->dev.bus_id;
++			ret = insert_resource(&ioport_resource, res);
++			if (ret)
++				dev_warn(&dev->dev,
++					"can't allocate I/O ports at 0x%llx\n",
++					(unsigned long long) res->start);
++		}
++	}
++
++	for (i = 0; i < PNP_MAX_MEM; i++) {
++		if (pnp_mem_valid(dev, i)) {
++			res = &dev->res.mem_resource[i];
++			res->name = dev->dev.bus_id;
++			ret = insert_resource(&iomem_resource, res);
++			if (ret)
++				dev_warn(&dev->dev,
++					"can't allocate MMIO space at 0x%llx\n",
++					(unsigned long long) res->start);
++		}
++	}
++
++	return 0;
++}
++
++int pnp_release_resources(struct pnp_dev *dev)
++{
++	int i, ret;
++	struct resource *res;
++
++	if (pnp_no_reservations)
++		return 0;
++
++	for (i = 0; i < PNP_MAX_PORT; i++) {
++		if (pnp_port_valid(dev, i)) {
++			res = &dev->res.port_resource[i];
++			ret = release_resource(res);
++			if (ret)
++				dev_warn(&dev->dev,
++					"can't release I/O ports at 0x%llx\n",
++					(unsigned long long) res->start);
++		}
++	}
++
++	for (i = 0; i < PNP_MAX_MEM; i++) {
++		if (pnp_mem_valid(dev, i)) {
++			res = &dev->res.mem_resource[i];
++			ret = release_resource(res);
++			if (ret)
++				dev_warn(&dev->dev,
++					"can't release MMIO space at 0x%llx\n",
++					(unsigned long long) res->start);
++		}
++	}
++
++	return 0;
++}
++
+ /* format is: pnp_reserve_irq=irq1[,irq2] .... */
+ static int __init pnp_setup_reserve_irq(char *str)
+ {
+@@ -510,3 +603,13 @@
+ }
+ 
+ __setup("pnp_reserve_mem=", pnp_setup_reserve_mem);
++
++static int __init pnp_setup(char *str)
++{
++	if (!strcmp(str, "no_reservations"))
++		pnp_no_reservations = 1;
++
++	return 1;
++}
++
++__setup("pnp=", pnp_setup);
