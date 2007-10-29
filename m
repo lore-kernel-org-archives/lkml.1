@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757747AbXJ2Rdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbXJ2Rfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757747AbXJ2Rdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXJ2RdX
+	id S1758536AbXJ2Rfz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbXJ2Rfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:33:23 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42047 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751981AbXJ2RdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:33:22 -0400
-Date: Mon, 29 Oct 2007 10:33:16 -0700
-From: Paul Jackson <pj@sgi.com>
+	Mon, 29 Oct 2007 13:35:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52431 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752970AbXJ2Rfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 13:35:47 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
 To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: clameter@sgi.com, rientjes@google.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
 Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071029103316.a68d00be.pj@sgi.com>
-In-Reply-To: <1193670056.5035.27.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<Pine.LNX.4.64.0710261415580.18139@schroedinger.engr.sgi.com>
-	<1193433992.5032.102.camel@localhost>
-	<Pine.LNX.4.64.0710261436070.18899@schroedinger.engr.sgi.com>
-	<1193670056.5035.27.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 29 Oct 2007 18:35:42 +0100
+User-Agent: KMail/1.9.6
+Cc: David Rientjes <rientjes@google.com>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <alpine.DEB.0.9999.0710271212450.19199@chino.kir.corp.google.com> <1193674988.5035.93.camel@localhost>
+In-Reply-To: <1193674988.5035.93.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710291835.42826.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> I only brought it up again because now you all are considering another
-> nodemask per policy.
 
-The patch David and I are discussing will replace the
-cpuset_mems_allowed nodemask in struct mempolicy, not
-add a new nodemask.  In other words, the meaning and
-name of that existing nodemask will change, with no
-change in the overall structure size.
+> 
+> Another thing occurs to me:  perhaps numactl would need an additional
+> 'nodes' specifier such as 'allowed'.  Alternatively, 'all' could be
+> redefined to me 'all allowed'.  This is independent of how you specify
+> 'all allowed' to the system call.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+cpuset support in libnuma/numactl is still incomplete. I'm also
+not sure what the best way to handle this is.
+
+Probably there should be a switch for both.
+
+-Andi
