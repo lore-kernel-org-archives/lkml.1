@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbXJ2VYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXJ2VZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbXJ2VYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbXJ2VYL
+	id S1755196AbXJ2VZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 17:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXJ2VZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:24:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59106 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751928AbXJ2VYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:24:10 -0400
-Date: Mon, 29 Oct 2007 22:24:14 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Message-ID: <20071029212414.GD3692@elf.ucw.cz>
-References: <20071029201955.GA1955@titan.lahn.de>
+	Mon, 29 Oct 2007 17:25:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54366 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbXJ2VZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 17:25:33 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] cpuidle: remove unused exports
+Date: Mon, 29 Oct 2007 17:25:19 -0400
+User-Agent: KMail/1.9.5
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+References: <20071029124913.GJ7227@stusta.de>
+In-Reply-To: <20071029124913.GJ7227@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710291725.19844.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Applied.
 
-> I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> /sys/power/state), the notebook hangs showing the following lines:
->         Stopping tasks ... done.
->         Shrinking memory... done (49361 pages freed)
->         Freed 197444 kbytes in 0.64 seconds (308.50 MB/s)
->         Suspending console(s)
-> 
-> When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> continues and the notebook powers off.
-> On reboot, the notebook resumes but hangs showing the following screen:
->         Stopping tasks ... done.
->         Loading image data pages (62483 pages) ... done
->         Read 249932 kbytes in 18.63 seconds (13.41 MB/s)
->         Suspending console(s)
-> 
-> Generating interrupts by pressing keys or moving the TrackPoints makes
-> the resume continue. But after that, the notebook looses time, xterms
-> don't get updated until I press a key, the beeper beeps until I press a
-> key, etc.
-> 
-> Any idea what the problem might be?
+thanks,
+-Len
 
-Yep, I seen that before. Try "nohz=off".
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Monday 29 October 2007 08:49, Adrian Bunk wrote:
+> This patch removes the following unused exports:
+> - cpuidle_devices
+> - cpuidle_register_governor
+> - cpuidle_unregister_governor
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  drivers/cpuidle/cpuidle.c  |    1 -
+>  drivers/cpuidle/governor.c |    3 ---
+>  2 files changed, 4 deletions(-)
+> 
+> d2197cfe905506ff95f6acd1ee6a6cd933419fdf 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index fdf4106..d2fabe7 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -19,7 +19,6 @@
+>  #include "cpuidle.h"
+>  
+>  DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+> -EXPORT_PER_CPU_SYMBOL_GPL(cpuidle_devices);
+>  
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+> diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+> index bb699cb..70b5964 100644
+> --- a/drivers/cpuidle/governor.c
+> +++ b/drivers/cpuidle/governor.c
+> @@ -94,8 +94,6 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
+>  	return ret;
+>  }
+>  
+> -EXPORT_SYMBOL_GPL(cpuidle_register_governor);
+> -
+>  /**
+>   * cpuidle_replace_governor - find a replacement governor
+>   * @exclude_rating: the rating that will be skipped while looking for
+> @@ -138,4 +136,3 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
+>  	mutex_unlock(&cpuidle_lock);
+>  }
+>  
+> -EXPORT_SYMBOL_GPL(cpuidle_unregister_governor);
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
