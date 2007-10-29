@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbXJ2Mta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbXJ2Mto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbXJ2Mta (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXJ2MtG
+	id S1752953AbXJ2Mto (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbXJ2MtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:49:06 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33029 "EHLO
+	Mon, 29 Oct 2007 08:49:08 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33031 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752752AbXJ2MtE (ORCPT
+	with ESMTP id S1752904AbXJ2MtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:49:04 -0400
-Date: Mon, 29 Oct 2007 13:49:13 +0100
+	Mon, 29 Oct 2007 08:49:07 -0400
+Date: Mon, 29 Oct 2007 13:49:16 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] cpuidle: remove unused exports
-Message-ID: <20071029124913.GJ7227@stusta.de>
+Subject: [2.6 patch] remove the dead X86_REMOTE_DEBUG option
+Message-ID: <20071029124916.GK7227@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,48 +23,22 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the following unused exports:
-- cpuidle_devices
-- cpuidle_register_governor
-- cpuidle_unregister_governor
+This patch removes the dead X86_REMOTE_DEBUG option.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/cpuidle/cpuidle.c  |    1 -
- drivers/cpuidle/governor.c |    3 ---
- 2 files changed, 4 deletions(-)
-
-d2197cfe905506ff95f6acd1ee6a6cd933419fdf 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index fdf4106..d2fabe7 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -19,7 +19,6 @@
- #include "cpuidle.h"
+6ea2f2bbd1646369a3affbed8ad1af5acc1530cd 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 970b2de..a2fa37d 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -113,7 +113,4 @@ config IOMMU_LEAK
+ 	  Add a simple leak tracer to the IOMMU code. This is useful when you
+ 	  are debugging a buggy device driver that leaks IOMMU mappings.
  
- DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
--EXPORT_PER_CPU_SYMBOL_GPL(cpuidle_devices);
- 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
-diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-index bb699cb..70b5964 100644
---- a/drivers/cpuidle/governor.c
-+++ b/drivers/cpuidle/governor.c
-@@ -94,8 +94,6 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
- 	return ret;
- }
- 
--EXPORT_SYMBOL_GPL(cpuidle_register_governor);
+-#config X86_REMOTE_DEBUG
+-#	bool "kgdb debugging stub"
 -
- /**
-  * cpuidle_replace_governor - find a replacement governor
-  * @exclude_rating: the rating that will be skipped while looking for
-@@ -138,4 +136,3 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
- 	mutex_unlock(&cpuidle_lock);
- }
- 
--EXPORT_SYMBOL_GPL(cpuidle_unregister_governor);
+ endmenu
 
