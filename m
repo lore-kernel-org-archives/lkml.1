@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbXJ2Pkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ2PlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbXJ2Pkg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXJ2Pk3
+	id S1758266AbXJ2PlV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbXJ2PlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:40:29 -0400
-Received: from cavan.codon.org.uk ([78.32.9.130]:51270 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbXJ2Pk2 (ORCPT
+	Mon, 29 Oct 2007 11:41:14 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:53186 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbXJ2PlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:40:28 -0400
-Date: Mon, 29 Oct 2007 15:40:10 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: "lists@antonello.org" <lists@antonello.org>, linux-kernel@vger.kernel.org
-Message-ID: <20071029154009.GA28898@srcf.ucam.org>
-References: <4724B4F5.80004@antonello.org> <20071028161955.GF23359@auslistsprd01.us.dell.com> <4724CF9F.6050908@antonello.org> <20071028192031.GA11442@auslistsprd01.us.dell.com>
+	Mon, 29 Oct 2007 11:41:13 -0400
+Message-ID: <4725FF15.5050908@tiscali.nl>
+Date: Mon, 29 Oct 2007 16:41:09 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071028192031.GA11442@auslistsprd01.us.dell.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Dell laptop backlight driver
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: build failure, missing libvdeplug.h?
+References: <4725FB46.70802@tiscali.nl>
+In-Reply-To: <4725FB46.70802@tiscali.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 02:20:31PM -0500, Matt Domsch wrote:
+Roel Kluin wrote:
+> the file libvdeplug.h is missing
 
-> I've had this discussion on lkml before. Short story is, until Dell
-> laptops implement the ACPI methods that the backlight API expects, the
-> only sane way to do it is to let libsmbios handle it.  Moving the
-> fairly large and complex libsmbios into the kernel isn't a good idea
-> (imho).
+> 
+> There is a reference to http://wiki.virtualsquare.org/index.php/Main_Page in
+> the Kconfig (also added by this commit).
+> After reverting this commit the build continues. possibly the header 
+> libvdeplug.h was forgotten?
 
-My understanding was that the current range supported the ACPI methods.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Sorry for answering myself, but apparently it can be found here:
+
+http://vde.sourceforge.net/
+
+I think, however that there is a 'depends on' missing in kconfig - to prevent build
+failure?
