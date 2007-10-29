@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760421AbXJ2TD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbXJ2TFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760421AbXJ2TD0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbXJ2TDS
+	id S1760092AbXJ2TFk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbXJ2TFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:03:18 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58829 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbXJ2TDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:03:17 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.23 boot failures on x86-64.
-Date: Mon, 29 Oct 2007 20:03:09 +0100
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Ebourne <fedora@ebourne.me.uk>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071029175014.GH7793@redhat.com> <200710291918.43869.ak@suse.de> <20071029184747.GB1650@redhat.com>
-In-Reply-To: <20071029184747.GB1650@redhat.com>
+	Mon, 29 Oct 2007 15:05:30 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1529 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166AbXJ2TF3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 15:05:29 -0400
+X-Greylist: delayed 32551 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 15:05:28 EDT
+Message-ID: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
+Date: Mon, 29 Oct 2007 20:04:37 +0100 (CET)
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to      
+     static interface)
+From: "Rob Meijer" <capibara@xs4all.nl>
+To: "Crispin Cowan" <crispin@crispincowan.com>
+Cc: rmeijer@xs4all.nl, casey@schaufler-ca.com,
+       "Chris Wright" <chrisw@sous-sol.org>, "Adrian Bunk" <bunk@kernel.org>,
+       "Simon Arlott" <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andreas Gruenbacher" <agruen@suse.de>,
+       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "James Morris" <jmorris@namei.org>,
+       "Giacomo Catenazzi" <cate@debian.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Reply-To: rmeijer@xs4all.nl
+User-Agent: SquirrelMail/1.4.11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710292003.09317.ak@suse.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 October 2007 19:47:47 Dave Jones wrote:
-> On Mon, Oct 29, 2007 at 07:18:43PM +0100, Andi Kleen wrote:
->  > On Monday 29 October 2007 18:50:14 Dave Jones wrote:
->  > > We've had a number of people reporting that their x86-64s stopped booting
->  > > when they moved to 2.6.23.  It rebooted just after discovering the AGP bridge
->  > > as a result of the IOMMU init.
->  > 
->  > It's probably the usual "nobody tests sparsemem at all" issue.
-> 
-> We've been using SPARSEMEM in Fedora for a *long* time.
-> So long in fact, I forget why we moved away from DISCONTIGMEM, so there's
-> a significant number of users using that configuration for some time.
+On Mon, October 29, 2007 11:24, Crispin Cowan wrote:
 
-Supposedly you wanted a slower kernel that needs more memory? 
+>> Thus IMHO it may be a good idea to instead of a maintainer for LSM
+>> modules as proposed, alternatively a maintainer for each formal model
+>> may be more appropriate. This also would require module builders to
+>> first
+>> think about what formal model they are actualy using, thus resulting in
+>> cleaner module design.
+>>
+> I *really* dislike this idea. It seems to set up the situation that the
+> only acceptable modules are those that follow some "formal" model.
+> Problems:
+>
+>     * What qualifies as a formal model? This becomes an arbitrary litmus
+>       test, depending on whether the model was originally published in a
+>       sufficiently snooty forum.
+>     * What if someone invents a new model that has not been "formalized"
+>       yet? Should Linux be forced to wait until the idea has been
+>       through the academic mill before we allow someone to try
+>       implementing a module for the idea?
 
-Ok I wasn't aware of that. I tended to get sparsemem reports usually
-at least 1-2 releases after the fact, so it looked like it was undertested.
+I may have been stating things a bit to strong when talking only about
+"formal" models only. But possibly you could just define the non-formal
+experimental models as a single group.
 
-> 
->  > But if allocating bootmem >4G doesn't work on these systems
->  > most likely they have more problems anyways. It might be better
->  > to find out what goes wrong exactly.
-> 
-> Any ideas on what to instrument ?
+The thing I was trying to propose was aimed at the problem that if someone
+proposes a patch to the LSM base code that he/she feels is needed to
+complete an LSM module that implements a particular (formal) model,
+he/she would end up explaining and/or defending both the 'model', the module
+and its requirement for the patch.
 
-See what address the bootmem_alloc_high returns; check if it overlaps
-with something etc.
+What I tried to propose is to assign some sort of maintainer role for each
+(formal) model, and let these roles take care of the module/patch part of
+stuff, while the module writer would only need to defend/discuss the the
+patch with the model maintainer.
 
-Fill the memory on the system and see if it can access all of its memory.
+>     * The proposal only allows a single implementation of each formal
+>       model. In theory, theory is just like practice, but in practice it
+>       is not. SMACK and SELinux follow substantially similar formal
+>       models (not exactly the same) so should we exclude one and keep
+>       the other? No, of course not, because in practice they are very
+>       different.
 
--Andi
+I would think the two may benefit from a role as described above.
+But I was thinking more in the line of new modules that may again
+implement this same model, and would thus benefit from interaction with
+this 'model maintainer' role.
+
+
+Rob
+
