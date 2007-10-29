@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ2SlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbXJ2Sno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXJ2SlV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 14:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbXJ2SlN
+	id S1758631AbXJ2Sno (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 14:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXJ2Snh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 14:41:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52163 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752496AbXJ2SlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 14:41:12 -0400
-Date: Mon, 29 Oct 2007 11:41:09 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071029114109.46285026.pj@sgi.com>
-In-Reply-To: <1193670617.5035.38.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<1193670617.5035.38.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Mon, 29 Oct 2007 14:43:37 -0400
+Received: from pat.uio.no ([129.240.10.15]:60147 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbXJ2Sng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 14:43:36 -0400
+Subject: Re: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Florin Iucha <florin@iucha.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071029150154.GC25561@iucha.net>
+References: <20071028152428.GJ7918@iucha.net>
+	 <1193665619.7396.8.camel@heimdal.trondhjem.org>
+	 <20071029150154.GC25561@iucha.net>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 14:43:32 -0400
+Message-Id: <1193683412.7497.10.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.6, required=12.0, autolearn=disabled, AWL=-0.571)
+X-UiO-Scanned: A5945EDADEF4880F4025F56B8BF721675214DABC
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -5 maxlevel 200 minaction 2 bait 0 mail/h: 605 total 4790743 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> Maybe it's just me, but I think it's pretty presumptuous to think we can
-> infer the intent of the application from the nodemask w/o additional
-> flags such as Christoph proposed [cpuset relative]--especially for
-> subsets of the cpuset.  E.g., the application could intend the nodemask
-> to specify memories within a certain distance of a physical resource,
-> such as where a particular IO adapter or set thereof attach to the
-> platform.
 
-Well, yes, we can't presume to know whether some application can move
-or not.
+On Mon, 2007-10-29 at 10:01 -0500, Florin Iucha wrote:
+> On Mon, Oct 29, 2007 at 09:46:59AM -0400, Trond Myklebust wrote:
+> > > What could cause this?  I use NFS4 to automount the home directories
+> > > from a Solaris10 server, and this box found a few bugs in the NFS4
+> > > code (fixed in the 2.6.22 kernel).
+> > > 
+> > > I'll try running with 2.6.23 again for a few days, to see if I get the
+> > > pdflush stuck.  Any other ideas?
+> > 
+> > One of them appears to be waiting for i/o congestion to clear up. If the
+> > filesystem is NFS, then that means that some other thread is busy
+> > writing data out to the server. You'll need to look at the rest of the
+> > thread dump to figure out which thread is writing the data out, and
+> > where it is getting stuck.
+> 
+> Trond,
+> 
+> The full dmesg is at http://iucha.net/2.6.24-rc1/dmesg.stuck_pdflush.gz
+> 
+> Cheers,
+> florin
 
-But our kernel work is not presuming that.
+I can't see any evidence of NFS traffic at all in those traces, but
+there is a fuse process that is sleeping in :fuse:fuse_dev_read(). Could
+that perhaps be relevant.
 
-It's providing mechanisms useful for moving apps.
+Trond
 
-The people using this decide what and when and if to move.
-
-For example, the particular customers (HPC) I focus on for my job don't
-move jobs because they don't want to take the transient performance
-hit that would come from blowing out all their memory caches.
-
-I'm guessing that David's situation involves something closer what you
-see with a shared web hosting service, running jobs that are very
-independent of hardware particulars.
-
-But in any case, we (the kernel) are just providing the mechanisms.
-If they don't fit ones needs, don't use them ;).
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
