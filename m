@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbXJ2P6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbXJ2QCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759146AbXJ2P6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbXJ2P6f
+	id S1757873AbXJ2QCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXJ2QCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:58:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43492 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758853AbXJ2P6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:58:33 -0400
-Message-ID: <47260326.9050701@garzik.org>
-Date: Mon, 29 Oct 2007 11:58:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH v4 0/2] [SCSI] Asynchronous event notification	infrastructure
-References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org> <1193672624.3383.25.camel@localhost.localdomain>
-In-Reply-To: <1193672624.3383.25.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Oct 2007 12:02:30 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53068 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbXJ2QC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:02:29 -0400
+Subject: Re: [PATCH] pidns: Limit kill -1 and cap_set_all
+From: Dave Hansen <haveblue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelyanov <xemul@openvz.org>,
+       "Sukadev Bhattiprolu [imap]" <sukadev@us.ibm.com>
+In-Reply-To: <m1k5p9zk6b.fsf_-_@ebiederm.dsl.xmission.com>
+References: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>
+	 <alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>
+	 <m1r6jhzmov.fsf_-_@ebiederm.dsl.xmission.com>
+	 <m1k5p9zk6b.fsf_-_@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 09:02:18 -0700
+Message-Id: <1193673738.24087.176.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2007-10-29 at 10:42 -0400, Jeff Garzik wrote:
->> This is the next revision of the SCSI event notification infrastructure
->> patchset, enabling SATA Asynchronous Notification ("AN") for CD/DVD
->> devices that support it.
->>
->> For devices that support SATA AN (only very recent ones do), this means
->> that HAL and other userspace utilities no longer need to repeatedly poll
->> the CD/DVD device to determine if the user has changed the media.
->>
->> This revision takes into account James' comments from earlier today,
->> modulo the following notes:
->>
->> * I think the various event attributes should always be present,
->>   for all devices at all times.  If various events are not supported,
->>   the attribute will of course return zero (false, not supported).
+On Fri, 2007-10-26 at 14:37 -0600, Eric W. Biederman wrote:
 > 
-> Actually, I don't think so.  We have precedent for this in the transport
-> classes: if a device doesn't support a feature, we don't export the flag
-> for that feature through sysfs.  This allows not only feature control,
-> but an immediate view of the device capabilities simply by viewing the
-> sysfs directory.
+> +static int pid_in_pid_ns(struct pid *pid, struct pid_namespace *ns)
+> +{
+> +       return pid && (ns->level <= pid->level) &&
+> +               pid->numbers[ns->level].ns == ns;
+> +}
 
-Think about about the values being exported by these sysfs attributes: 
-they indicate whether or not that feature is supported.
+Could we blow this out a little bit?  (I think the blown-out version
+lends itself to being better commented, and easier to read.)  Also, can
+we think of any better name for this?  It seems a bit funky that:
 
-Thus, using the presence/absence of an attribute to communicate the same 
-thing would be redundant.
+	pid_in_pid_ns(mypid, &init_pid_ns);
 
-This suggestion adds a whole lot of complexity -- mirroring every change 
-to sdev->supported_events by dynamically adding or removing attributes.
+would _ever_ return 0.  So, it isn't truly a test for belonging *in* a
+namespace, but having that namespace be the lowest level one.  I think
+Suka toyed with calling it an "active" or "primary" pid namespace.  That
+differentiated mere membership in a pid namespace from the one that
+actually molds that pid's view of the world.
 
-The current nice, simple, elegant bitops-based interface is suddenly a 
-lot more cumbersome if forced to deal with attribute creation and disposal.
+static int pid_in_pid_ns(struct pid *pid, struct pid_namespace *ns)
+{
+	if (!pid)
+		return 0;
+	if (ns->level > pid->level)
+		return 0;
+	if (pid->numbers[ns->level].ns != ns)
+		return 0;
+	return 1;
+}
 
-Finally, this additional complexity of dynamic attribute management also 
-eliminates some key information:  userland can test the existence of the 
-attribute to determine if that support is present in the kernel.
-
-	Jeff
-
+-- Dave
 
