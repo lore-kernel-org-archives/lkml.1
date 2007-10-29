@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbXJ2UcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbXJ2Ue2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbXJ2UcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXJ2UcG
+	id S1753604AbXJ2Ue2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXJ2UeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:32:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:29247 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752627AbXJ2UcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:32:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,344,1188802800"; 
-   d="scan'208";a="307953768"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Keith Packard <keithp@keithp.com>
-Subject: Re: [RFC] AGP initial support for chipset flushing..
-Date: Mon, 29 Oct 2007 13:28:09 -0700
+	Mon, 29 Oct 2007 16:34:20 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:17814 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751639AbXJ2UeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:34:19 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+Date: Mon, 29 Oct 2007 21:33:48 +0100
 User-Agent: KMail/1.9.7
-Cc: Dave Airlie <airlied@skynet.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-References: <Pine.LNX.4.64.0710290811070.1170@skynet.skynet.ie> <200710291247.24791.jesse.barnes@intel.com> <1193688778.4723.35.camel@koto.keithp.com>
-In-Reply-To: <1193688778.4723.35.camel@koto.keithp.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Frans Pop <elendil@planet.nl>,
+       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200710122231.50739.elendil@planet.nl> <4725D2A5.1050908@linux.vnet.ibm.com> <20071029200425.GA830@elte.hu>
+In-Reply-To: <20071029200425.GA830@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710291328.10763.jesse.barnes@intel.com>
+Message-Id: <200710292133.48125.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, October 29, 2007 1:12 pm Keith Packard wrote:
-> On Mon, 2007-10-29 at 12:47 -0700, Jesse Barnes wrote:
-> > In this case, we're performing basically a
-> > dma_sync*(...DMA_TO_DEVICE) right?
->
-> But this is just for the GPU; every other DMA device in the system is
-> cache-coherent.
+Am Montag, 29. Oktober 2007 schrieb Ingo Molnar:
+> i've got a patch from Peter queued up. (see below) This should fix the 
+> main issue.
+[...]
+> --- linux.orig/fs/proc/array.c
+> +++ linux/fs/proc/array.c
+> @@ -358,7 +358,8 @@ static cputime_t task_utime(struct task_
+>  	}
+>  	utime = (clock_t)temp;
+> 
+> -	return clock_t_to_cputime(utime);
+> +	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
+> +	return p->prev_utime;
+>  }
+[...]
 
-Right.
+I dont think it will work. It will make utime monotic, but stime can still 
+decrease. For example let sum_exec_runtime increase by a tiny little bit while
+utime will get a full additional tick. stime is sum-utime. So stime can still
+go backwards. So I think that we need this kind of logic for stime as well, 
+no?
 
-> >   Can we be sure that a single flush is sufficient?  Is there any
-> > window between when we flush and when we start accessing memory
-> > with the device that we could get into more caching trouble?
->
-> An uncached write to this page will not complete until the buffers
-> are completely flushed.
+Christian
 
-Yeah, so we should be safe.
 
-> > Looks reasonable, I'm not sure we can do much better.  The only
-> > concern I have is that allocating some more PCI space like that may
-> > end up clobbering some *other* hidden BIOS mapping, but there's not
-> > a whole lot we can do about that.
->
-> This isn't a hidden mapping; the i965 doesn't allocate space for it
-> in the BIOS.
 
-I know, that's what I'm worried about.  If the BIOS is broken enough to 
-not allocate MMIO space for the flush page, it may also be broken 
-enough that our hand crafted MMIO space allocation will end up 
-conflicting with some unreported BIOS area, which would be bad.
-
-Jesse
