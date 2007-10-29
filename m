@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbXJ2Hx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbXJ2IEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbXJ2Hx2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 03:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXJ2HxV
+	id S1755750AbXJ2IEl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 04:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXJ2IEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 03:53:21 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50592 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbXJ2HxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 03:53:20 -0400
-Message-ID: <4725916A.7010505@garzik.org>
-Date: Mon, 29 Oct 2007 03:53:14 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Dirk Hohndel <hohndel@linux.intel.com>
-CC: Jiri Kosina <jikos@jikos.cz>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from input_register_device
-References: <20071029065153.GA9490@bigserver.hohndel.org>
-In-Reply-To: <20071029065153.GA9490@bigserver.hohndel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Oct 2007 04:04:25 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39639 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751014AbXJ2IEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 04:04:24 -0400
+Date: Mon, 29 Oct 2007 08:06:04 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+Message-ID: <20071029080604.508b19ce@the-village.bc.nu>
+In-Reply-To: <20071028174321.GB16905@fieldses.org>
+References: <20071017185157.GC3785@mvista.com>
+	<20071018185759.GU3785@mvista.com>
+	<20071026170750.GC13033@fieldses.org>
+	<20071026224707.GO13033@fieldses.org>
+	<20071028173136.GA16905@fieldses.org>
+	<20071028174321.GB16905@fieldses.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dirk Hohndel wrote:
-> [INPUT] hidinput_connect incorrectly ignored return value from input_register_device
+On Sun, 28 Oct 2007 13:43:21 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
+
+> From: J. Bruce Fields <bfields@citi.umich.edu>
 > 
-> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+> We currently attempt to return -EDEALK to blocking fcntl() file locking
+> requests that would create a cycle in the graph of tasks waiting on
+> locks.
 > 
-> ---
->  drivers/hid/hid-input.c |   10 ++++++++--
->  1 files changed, 8 insertions(+), 2 deletions(-)
+> This is inefficient: in the general case it requires us determining
+> whether we're adding a cycle to an arbitrary directed acyclic graph.
+> And this calculation has to be performed while holding a lock (currently
+> the BKL) that prevents that graph from changing.
 > 
-> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-> index dd332f2..c8640e7 100644
-> --- a/drivers/hid/hid-input.c
-> +++ b/drivers/hid/hid-input.c
-> @@ -1186,13 +1186,19 @@ int hidinput_connect(struct hid_device *hid)
->  				 * UGCI) cram a lot of unrelated inputs into the
->  				 * same interface. */
->  				hidinput->report = report;
-> -				input_register_device(hidinput->input);
-> +				if (input_register_device(hidinput->input)) {
-> +					input_free_device(hidinput->input);
-> +					return -1;
-> +				}
->  				hidinput = NULL;
->  			}
->  		}
->  
->  	if (hidinput)
-> -		input_register_device(hidinput->input);
-> +		if (input_register_device(hidinput->input)) {
-> +			input_free_device(hidinput->input);
-> +			return -1;
-> +		}
-
-You would also want to kfree(hidinput) on failure too.
-
-Thanks for attacking this newly added warning!
-
-	Jeff
+> It has historically been a source of bugs; most recently it was noticed
+> that it could loop indefinitely while holding the BKL.
+> 
+> It seems unlikely to be useful to applications:
+> 	- The difficulty of implementation has kept standards from
+> 	  requiring it.  (E.g. SUSv3 : "Since implementation of full
+> 	  deadlock detection is not always feasible, the [EDEADLK] error
+> 	  was made optional.")  So portable applications may not be able to
+> 	  depend on it.
+> 	- It only detects deadlocks that involve nothing but local posix
+> 	  file locks; deadlocks involving network filesystems or other kinds
+> 	  of locks or resources are missed.
+> 
+> It therefore seems best to remove deadlock detection.
+> 
+> Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
 
+NAK. This is an ABI change and one that was rejected before when this was
+last discussed in detail. Moving it out of BKL makes a ton of sense, even
+adding a "don't check" flag makes a lot of sense. Removing the checking
+does not.
 
+I'd much rather see
+
+
+	if (flags & FL_NODLCHECK)
+		posix_deadlock_detect(....)
+
+
+The failure case for removing this feature is obscure and hard to debug
+application hangs for the afflicted programs - not nice for users at all.
+
+Alan
