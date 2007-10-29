@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbXJ2V7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXJ2WFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbXJ2V7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 17:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXJ2V72
+	id S1753240AbXJ2WFD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXJ2WEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 17:59:28 -0400
-Received: from mga11.intel.com ([192.55.52.93]:43690 "EHLO mga11.intel.com"
+	Mon, 29 Oct 2007 18:04:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47802 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbXJ2V71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 17:59:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,344,1188802800"; 
-   d="scan'208";a="362901159"
-From: Auke Kok <auke-jan.h.kok@intel.com>
-Subject: [PATCH] quirk_vialatency: Omit reading pci revision ID
-To: gregkh@suse.de, alan@lxorguk.ukuu.org.uk
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Date: Mon, 29 Oct 2007 14:55:02 -0700
-Message-ID: <20071029215502.4951.90574.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
+	id S1751889AbXJ2WEx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 18:04:53 -0400
+From: Steve Grubb <sgrubb@redhat.com>
+Organization: Red Hat
+To: Tony Jones <tonyj@suse.de>
+Subject: Re: [PATCH] audit: clear thread flag for new children
+Date: Mon, 29 Oct 2007 18:04:31 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       viro@ftp.linux.org.uk
+References: <20071026204228.GA1519@suse.de> <200710271021.42093.sgrubb@redhat.com> <20071029172058.GA8433@suse.de>
+In-Reply-To: <20071029172058.GA8433@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Oct 2007 21:55:04.0909 (UTC) FILETIME=[5D045FD0:01C81A76]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200710291804.31784.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't read the revision ID unnecessary since the PCI subsystem
-fills this field in already.
+On Monday 29 October 2007 01:20:58 pm Tony Jones wrote:
+> > The problem is that removing that flag makes the children unauditable in
+> > the future. The only place that flag gets set is during fork.
+>
+> I don't see this.
 
-Updated to fix a thinko bug in a previously sent patch.
+If the child does not have the TIF_SYSCALL_AUDIT flag, it never goes into 
+audit_syscall_entry. It becomes unauditable.
 
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
-Cc: alan@lxorguk.ukuu.org.uk
----
 
- drivers/pci/quirks.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+> The case that would be undesirable would be for a task to have an audit
+> context but to not have the thread flag enabled.
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index d0bb5b9..92dc513 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -139,25 +139,22 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 	PCI_DEVICE_ID_INTEL_82439TX, 	quir
- static void quirk_vialatency(struct pci_dev *dev)
- {
- 	struct pci_dev *p;
--	u8 rev;
- 	u8 busarb;
- 	/* Ok we have a potential problem chipset here. Now see if we have
- 	   a buggy southbridge */
- 	   
- 	p = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C686, NULL);
- 	if (p!=NULL) {
--		pci_read_config_byte(p, PCI_CLASS_REVISION, &rev);
- 		/* 0x40 - 0x4f == 686B, 0x10 - 0x2f == 686A; thanks Dan Hollis */
- 		/* Check for buggy part revisions */
--		if (rev < 0x40 || rev > 0x42)
-+		if (p->revision < 0x40 || p->revision > 0x42)
- 			goto exit;
- 	} else {
- 		p = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
- 		if (p==NULL)	/* No problem parts */
- 			goto exit;
--		pci_read_config_byte(p, PCI_CLASS_REVISION, &rev);
- 		/* Check for buggy part revisions */
--		if (rev < 0x10 || rev > 0x12) 
-+		if (p->revision < 0x10 || p->revision > 0x12) 
- 			goto exit;
- 	}
- 	
+That would just be a small allocation of memory that will be returned when the 
+process exits. From an auditing PoV, something that is undesirable is the 
+inability to audit a process that you want to audit.
+
+
+> > Unless I'm missing something, to make all children auditable again would
+> > mean stopping all processes and or'ing that flag into all thread info
+> > areas.
+>
+> I think you are.  Or maybe the code was different two years ago so that the
+> above made sense.  
+>
+> In the above scenario, audit is disabled, a new child is forked, we bail
+> early so there is no audit context (and now there is no flag in the thread
+> area).   Currently there is no way this task is ever going to be audited as
+> there is no audit context. 
+
+So when audit is re-enabled, how do you make that task auditable?
+
+
+> If this task forks a new child, at this point the value of audit enabled
+> will determine if there should be a context allocated and it will allocate
+> the TIF flag also.
+
+In the new child, but not the parent.
+
+
+> I don't see your stopping all processes scenario. 
+
+That is so you can walk the process table and "or" the bit in unconditionally. 
+All processes need to be auditable or you've got a security hole.
+
+-Steve
