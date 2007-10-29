@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXJ2DDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXJ2DEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbXJ2DDV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 23:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXJ2DDO
+	id S1756159AbXJ2DEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 23:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXJ2DEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 23:03:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40612 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751352AbXJ2DDN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 23:03:13 -0400
-Date: Sun, 28 Oct 2007 20:03:12 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 09/10] SLUB: Do our own locking via slab_lock and
- slab_unlock.
-In-Reply-To: <Pine.LNX.4.64.0710281702140.6766@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0710282001000.28636@schroedinger.engr.sgi.com>
-References: <20071028033156.022983073@sgi.com> <20071028033300.479692380@sgi.com>
- <Pine.LNX.4.64.0710281702140.6766@sbz-30.cs.Helsinki.FI>
+	Sun, 28 Oct 2007 23:04:30 -0400
+Received: from waste.org ([66.93.16.53]:50810 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbXJ2DEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Oct 2007 23:04:30 -0400
+Date: Sun, 28 Oct 2007 22:03:52 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Matthew Wilcox <matthew@wil.cx>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/4] stringbuf: A string buffer implementation
+Message-ID: <20071029030352.GC19691@waste.org>
+References: <20071024195847.GE27248@parisc-linux.org> <20071026115727.GR27248@parisc-linux.org> <20071026205714.GQ17536@waste.org> <200710272009.31430.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200710272009.31430.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007, Pekka J Enberg wrote:
-
-> It would be easier to review the actual locking changes if you did the 
-> SlabXXX removal in a separate patch.
-
-There are no locking changes.
-
-> > -static __always_inline void slab_lock(struct page *page)
-> > +static __always_inline void slab_unlock(struct page *page,
-> > +					unsigned long state)
-> >  {
-> > -	bit_spin_lock(PG_locked, &page->flags);
-> > +	smp_wmb();
+On Sat, Oct 27, 2007 at 08:09:30PM +1000, Rusty Russell wrote:
+> On Saturday 27 October 2007 06:57:14 Matt Mackall wrote:
+> > Well I expect once you start letting people easily build strings by
+> > concatenation, you'll very shortly afterwards have people using them
+> > in loops.  And having hidden O(n^2) behavior in there is a little sad, 
+> > even though n will tend to be small and well-bounded. If we can do
+> > something simple to avoid it, we should.
 > 
-> Memory barriers deserve a comment. I suppose this is protecting 
-> page->flags but against what?
-
-Its making sure that the changes to page flags are made visible after all 
-other changes.
-
+> Hi Matt,
 > 
-> > +	page->flags = state;
-> > +	preempt_enable();
+>         I avoid typing even a single character of optimization until it's 
+> justified.  This is partially a reaction against the machoptimization 
+> tendencies of many kernel programmers, but it's mainly a concern at the 
+> kernel's complexity creep.
 > 
-> We don't need preempt_enable for CONFIG_SMP, right?
-
-preempt_enable is needed if preemption is enabled.
-
+> Meanwhile, of course, I've now spent far too long analyzing this :)
 > 
-> > +	 __release(bitlock);
-> 
-> This needs a less generic name and maybe a comment explaining that it's 
-> not annotating a proper lock? Or maybe we can drop it completely?
+> Building a 1000 byte string 1 byte at a time involves 6 reallocs (SLAB) or 10 
+> reallocs (SLUB).  Frankly, that's good enough without an explicit alloc 
+> length field (better in some ways).
 
-Probably.
+And on SLOB, which doesn't have those bloaty power-of-2 constraints?
+Looks like ~500 reallocs, including 250000 bytes of memcpy. Ouch!
 
-> > +static __always_inline unsigned long slab_trylock(struct page *page)
-> > +{
-> > +	unsigned long state;
-> > +
-> > +	preempt_disable();
-> > +	state = page->flags & ~LOCKED;
-> > +#ifdef CONFIG_SMP
-> > +	if (cmpxchg(&page->flags, state, state | LOCKED) != state) {
-> > +		 preempt_enable();
-> > +		 return 0;
-> > +	}
-> > +#endif
-> 
-> This is hairy. Perhaps it would be cleaner to have totally separate 
-> functions for SMP and UP instead?
+SLAB and SLUB (accidentally) internalize the optimization that I'm
+proposing: grow the string by a constant factor at each step. Failing
+to do that makes the behavior dismal.
 
-I think that is reasonably clear. Having code duplicated is not good 
-either. Well we may have to clean this up a bit.
-
-
-
+-- 
+Mathematics is the supreme nostalgia of our time.
