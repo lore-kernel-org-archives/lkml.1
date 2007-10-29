@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbXJ2Trt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbXJ2TqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756913AbXJ2Trt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXJ2TpQ
+	id S1755819AbXJ2TqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXJ2TmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:45:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56382 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754755AbXJ2TpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:45:12 -0400
-Date: Mon, 29 Oct 2007 12:45:10 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071029124510.002559e0.pj@sgi.com>
-In-Reply-To: <1193676854.5035.121.camel@localhost>
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
-	<20071025185506.8c373aa8.pj@sgi.com>
-	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
-	<1193412644.5032.13.camel@localhost>
-	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
-	<20071026120037.7b95a136.pj@sgi.com>
-	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
-	<1193433239.5032.95.camel@localhost>
-	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
-	<1193434278.5032.106.camel@localhost>
-	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
-	<20071026180713.aeedfac2.pj@sgi.com>
-	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
-	<20071026194144.6042316a.pj@sgi.com>
-	<alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
-	<20071027161955.e9d4d2db.pj@sgi.com>
-	<1193676854.5035.121.camel@localhost>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Mon, 29 Oct 2007 15:42:04 -0400
+Received: from wolff.to ([66.93.197.194]:52921 "HELO wolff.to"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754858AbXJ2TmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 15:42:03 -0400
+X-Greylist: delayed 2345 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 15:42:01 EDT
+Date: Mon, 29 Oct 2007 13:55:22 -0500
+From: Bruno Wolff III <bruno@wolff.to>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+Message-ID: <20071029185522.GB30571@wolff.to>
+References: <46B10BB7.60900@redhat.com> <20070803113407.0b04d44e.akpm@linux-foundation.org> <20070804084426.GA20464@kobayashi-maru.wspse.de> <20070809095943.GA7763@kobayashi-maru.wspse.de> <20070809095534.25ae1c42.akpm@linux-foundation.org> <Pine.LNX.4.64.0709211623190.16442@blonde.wat.veritas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709211623190.16442@blonde.wat.veritas.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee wrote:
-> Again, we stumble upon the notion of "intent".  If the intent is just to
-> spread allocations to share bandwidth, it probably doesn't matter.  If,
-> on the other hand, the original mask was carefully constructed, taking
-> into consideration the distances between the memories specified and
-> other resources [cpus in the cpuset, other memories in the cpuset, IO
-> adpater connection points, ...], there is a lot more to consider than
-> just preserving the cpuset relative positions of the nodes.
+On Fri, Sep 21, 2007 at 16:58:15 +0100,
+  Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> But once I look harder at it, I wonder what would have kept
+> 2.6.18 to 2.6.23 safe from the same issue: per-cpu deltas from
+> the global vm stats too low to get synched back to global, yet
+> adding up to something which misleads balance_dirty_pages into
+> an indefinite loop e.g. total nr_writeback actually 0, but
+> appearing more than dirty_thresh in the global approximation.
 
-Yes - as I noted in an earlier reply, the kernel just provides the
-mechanisms.  It's up to user level code and people to decide whether
-moving jobs around is a worthwhile activity in their situation.
+I have been seeing this problem since Fedora Core 5's 2.6.20-1.2300.fc5
+kernel. The last Fedora kernel that didn't have this problem was
+2.6.19-1.2288.2.4.fc5, which I am still running on one machine.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+I have put up vmstat and proc/meminfo data at: http://wolff.to/bruno/vmlog
+There are a number of iterations of the output and they are mixed together,
+though the vmstat info was written when a buffer was full, so there are
+chunks of lines together. This was from a machine running Fedora 7's
+2.6.23.1-4.fc7 kernel.
+
+The machine is a single processor P3 with 512 MB of memory. There are
+three hard drives, two of which are used in software raid 1 arrays.
+I have ext3 file systems mounted noatime. I can provide more details if
+you need anything else.
+
+I can get lockups to happen fairly often. Often lots of firefox activity
+and/or some other disk heavy task such as yum update will get it to happen.
+
+I am not subscribed to LMKL, so please keep me copied on replies.
