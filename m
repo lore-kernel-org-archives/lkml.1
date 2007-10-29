@@ -1,36 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbXJ2QiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbXJ2QjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758621AbXJ2QiU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbXJ2QiN
+	id S1759224AbXJ2QjP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbXJ2Qi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:38:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58810 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbXJ2QiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:38:11 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.0.999.0710290926140.30120@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0710290926140.30120@woody.linux-foundation.org> <20071029152028.14124.50739.stgit@warthog.procyon.org.uk>
+	Mon, 29 Oct 2007 12:38:58 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:36606 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755823AbXJ2Qi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:38:57 -0400
+Date: Mon, 29 Oct 2007 12:38:41 -0400
+From: Jeff Dike <jdike@addtoit.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org, rpjday@crashcourse.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Permit the memory to be located elsewhere in NOMMU mode
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 29 Oct 2007 16:38:05 +0000
-Message-ID: <20174.1193675885@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] Correctly strip kernel defines from userspace CFLAGS
+Message-ID: <20071029163841.GA7661@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+KERNEL_DEFINES needs whitespace trimmed, otherwise the whitespace
+crunching done by make fools the patsubst which is used to remove
+KERNEL_DEFINES from USER_CFLAGS.
 
-> Do them in the Kconfig language where it belongs, and where it makes much 
-> more sense.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/Makefile |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-That's what I wanted to do, I just didn't realise I could do it.
-
-David
+Index: linux-2.6/arch/um/Makefile
+===================================================================
+--- linux-2.6.orig/arch/um/Makefile	2007-10-22 16:19:38.000000000 -0400
++++ linux-2.6/arch/um/Makefile	2007-10-22 16:19:44.000000000 -0400
+@@ -70,9 +70,12 @@ include $(srctree)/$(ARCH_DIR)/Makefile-
+ # in KBUILD_CFLAGS.  Otherwise, it would cause ld to complain about the two different
+ # errnos.
+ # These apply to kernelspace only.
++#
++# strip leading and trailing whitespace to make the USER_CFLAGS removal of these
++# defines more robust
+ 
+-KERNEL_DEFINES = -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
+-	-Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES)
++KERNEL_DEFINES = $(strip -Derrno=kernel_errno -Dsigprocmask=kernel_sigprocmask \
++			 -Dmktime=kernel_mktime $(ARCH_KERNEL_DEFINES))
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+ KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
+ 
