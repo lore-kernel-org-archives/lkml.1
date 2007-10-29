@@ -1,96 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbXJ2Kkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbXJ2Kpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbXJ2Kkb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 06:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbXJ2KkW
+	id S1753374AbXJ2Kpu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 06:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXJ2Kpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 06:40:22 -0400
-Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:48451 "EHLO
-	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbXJ2KkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 06:40:21 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-To: Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1193638681.7409.22.camel@Homer.simpson.net>
-Subject: Re: 2.6.23 regression: second access of empty ntfs file leads to D state hang
-References: <1193638086.7409.21.camel@Homer.simpson.net> <1193638681.7409.22.camel@Homer.simpson.net>
-Message-Id: <5A8CD521-CAF3-4137-A0D9-AC025E13A4A9@cam.ac.uk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 29 Oct 2007 06:45:43 -0400
+Received: from main.gmane.org ([80.91.229.2]:56516 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbXJ2Kpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 06:45:42 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Markus Elfring <Markus.Elfring@web.de>
+Subject: Re: No module symbols loaded - kernel modules not enabled.
+Date: Mon, 29 Oct 2007 11:44:24 +0100
+Message-ID: <4725B988.9000806@web.de>
+References: <fg2p69$t4p$1@ger.gmane.org> <Pine.LNX.4.64.0710282146440.17164@fbirervta.pbzchgretzou.qr> <47250092.5070303@web.de> <Pine.LNX.4.64.0710282310370.4125@fbirervta.pbzchgretzou.qr> <4725B0F9.4000501@web.de> <Pine.LNX.4.64.0710291109020.26070@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v912)
-Date: Mon, 29 Oct 2007 10:40:16 +0000
-Cc: LKML <linux-kernel@vger.kernel.org>
-X-Mailer: Apple Mail (2.912)
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: p508c5e7b.dip.t-dialin.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+In-Reply-To: <Pine.LNX.4.64.0710291109020.26070@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 Oct 2007, at 06:18, Mike Galbraith wrote:
+> Like I said, no. This is done by klogd.
 
-> hrmph, CC to members only list removed.
+Now I have found the notice "Inspecting" in the function "CheckMapVersion".
+http://chuck.netbsd.sk/source/xref/sysklogd-1.4.1rh/ksym.c
 
-What makes you think it is members only?!?  NTFS-dev is not members  
-only at all.  It is moderated which is a very different thing.  Most  
-list members have to be approved for posting, too...  And the only  
-reason it is moderated is spam filtering.  We delete 99.9% of emails  
-going to the list by hand as moderators because they are all spam.   
-That means the list and the list archives only contain NTFS related  
-messages and not thousands of posts trying to sell you pills and what  
-not...
+I am interested to look at a source file that contains the dicussed error message. Does
+anybody know a development package for the kernel log daemon?
 
-Best regards,
-
-	Anton
-
-> On Mon, 2007-10-29 at 07:08 +0100, Mike Galbraith wrote:
->> Greetings,
->>
->> I've stumbled across a 2.6.22->2.6.23 regression.  First md5sum  
->> access
->> of an empty NTFS file leads to kernel I/O error gripe, a second  
->> access
->> leaves md5sum hung.  2.6.22.10 has no trouble accessing this file.
->>
->> Looking at the 22->23 diff, I don't see a quick and dirty stab
->> candidate, and since I'm preparing for a 5 week separation from my  
->> box
->> <twitch>, I doubt I'll have time to do a bisect.  /me punts.
->>
->> root@Homer: md5sum '/windows/C/Dokumente und Einstellungen/All  
->> Users/Anwendungsdaten/Microsoft/Network/Connections/Pbk/rasphone.pbk'
->> md5sum: /windows/C/Dokumente und Einstellungen/All Users/ 
->> Anwendungsdaten/Microsoft/Network/Connections/Pbk/rasphone.pbk:  
->> Input/output error
->>
->> [  228.551859] NTFS-fs error (device hda1):  
->> ntfs_read_compressed_block(): ntfs_map_runlist() failed. Cannot  
->> read compression block.
->>
->> [  401.721890] md5sum        D eee53d64     0  7249   7019
->> [  401.727155]        eee53d78 00200082 00000002 eee53d64 eee53d5c  
->> 00000000 e9b006b0 e9b00700
->> [  401.735469]        5f6b3463 c0677060 c067a080 e9b00860 c180d080  
->> 00000000 c180d080 c180d108
->> [  401.743991]        00000001 00200086 e9b006e0 00200086 f79ca640  
->> eee53d94 0000b4d3 00200202
->> [  401.752514] Call Trace:
->> [  401.755155]  [<c04b57bf>] io_schedule+0x1e/0x28
->> [  401.759711]  [<c015a269>] sync_page+0x34/0x3f
->> [  401.764102]  [<c04b5b78>] __wait_on_bit_lock+0x40/0x63
->> [  401.769281]  [<c015a221>] __lock_page+0x54/0x5c
->> [  401.773845]  [<c015a826>] do_generic_mapping_read+0x236/0x4e7
->> [  401.779629]  [<c015c165>] generic_file_aio_read+0xff/0x198
->> [  401.785138]  [<c017851c>] do_sync_read+0xd0/0x106
->> [  401.789873]  [<c0178cff>] vfs_read+0x89/0x11d
->> [  401.794266]  [<c0179164>] sys_read+0x3d/0x64
->> [  401.798569]  [<c01041ba>] syscall_call+0x7/0xb
->> [  401.803039]  =======================
-
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+Regards,
+Markus
 
