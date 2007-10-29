@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbXJ2MGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbXJ2MHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbXJ2MGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXJ2MG0
+	id S1753768AbXJ2MHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXJ2MGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:06:26 -0400
-Received: from rrcs-24-97-168-122.nys.biz.rr.com ([24.97.168.122]:2738 "EHLO
-	mx1.ittagteam.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752398AbXJ2MGZ (ORCPT
+	Mon, 29 Oct 2007 08:06:54 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:47528 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752101AbXJ2MGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:06:25 -0400
-From: Syd Alsobrook <syd@ittagteam.com>
-Organization: IT Tag Team, Inc
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Problem: OOPS in khubd on disconnect of Labtec USB Headset
-Date: Mon, 29 Oct 2007 08:05:58 -0400
-User-Agent: KMail/1.8.1
-References: <200710221503.54949.syd@ittagteam.com> <20071029004517.f39f867d.akpm@linux-foundation.org>
-In-Reply-To: <20071029004517.f39f867d.akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+	Mon, 29 Oct 2007 08:06:53 -0400
+Date: Mon, 29 Oct 2007 13:00:07 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>,
+       linux-kernel@vger.kernel.org, Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
+Message-ID: <20071029120007.GA8571@electric-eye.fr.zoreil.com>
+References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu> <47259CFB.2090106@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710290805.58741.syd@ittagteam.com>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (mx1.ittagteam.com [192.168.2.11]); Mon, 29 Oct 2007 08:06:07 -0400 (EDT)
+In-Reply-To: <47259CFB.2090106@garzik.org>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 October 2007 03:45, you wrote:
-> On Mon, 22 Oct 2007 15:03:54 -0400 Syd Alsobrook <syd@ittagteam.com> wrote:
-> > OOPS in khubd on disconnect of Labtec USB Headset
-> >
-> > Linux version 2.6.23.1 (alsobrsp@karma) (gcc version 4.1.3 20070831
-> > (prerelease) (Debian 4.1.2-16)) #5 SMP PREEMPT Sat Oct 20 11:53:38 EDT
-> > 2007
->
-> Did any earlier kernel work OK?  If so, can you tell us which version(s)?
+Jeff Garzik <jeff@garzik.org> :
+[...]
+> Regardless, I agree with your "you...have a return candidate" comment.
 
-This worked with the Debian packaged version of kernel 2.6.22. The specific  
-package is linux-image-2.6.22-2-686 version 2.6.22-4. The problem report is 
-for a custom compiled kernel.
+I would welcome a complete lspci -vxx + dmesg before the board is eventually
+returned though.
 
-Syd
+(Ciaran: CFG_2 is needed, yes.)
 
 -- 
-Syd Alsobrook
-IT Tag Team, Inc.
-518-598-6025
-http://www.ittagteam.com
+Ueimor
