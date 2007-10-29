@@ -1,41 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbXJ2MHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbXJ2MLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbXJ2MHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXJ2MGy
+	id S1753682AbXJ2MLZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbXJ2MLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:06:54 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:47528 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752101AbXJ2MGx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:06:53 -0400
-Date: Mon, 29 Oct 2007 13:00:07 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>,
-       linux-kernel@vger.kernel.org, Edward Hsu <edward_hsu@realtek.com.tw>
-Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
-Message-ID: <20071029120007.GA8571@electric-eye.fr.zoreil.com>
-References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu> <47259CFB.2090106@garzik.org>
+	Mon, 29 Oct 2007 08:11:18 -0400
+Received: from ns.suse.de ([195.135.220.2]:40505 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbXJ2MLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 08:11:17 -0400
+To: Yoav Artzi <yoavar@checkpoint.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux kernel memory and split on 64-bit machines
+From: Andi Kleen <andi@firstfloor.org>
+References: <4725C1EB.10205@checkpoint.com>
+Date: Mon, 29 Oct 2007 13:11:15 +0100
+In-Reply-To: <4725C1EB.10205@checkpoint.com> (Yoav Artzi's message of "Mon\, 29 Oct 2007 13\:20\:11 +0200")
+Message-ID: <p73abq23yu4.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47259CFB.2090106@garzik.org>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> :
-[...]
-> Regardless, I agree with your "you...have a return candidate" comment.
+Yoav Artzi <yoavar@checkpoint.com> writes:
 
-I would welcome a complete lspci -vxx + dmesg before the board is eventually
-returned though.
+> I am researching now about the Linux kernel memory on 64-bit (x86_64)
+> machines. I am looking into answering the following questions:
+>
+> 1. Is there a user-kernel split on 64-bit memories? If so, how is it
+> done? What is the size of each part?
 
-(Ciaran: CFG_2 is needed, yes.)
+See Documentation/x86_64/mm.txt. Note it changed in 2.6.11.
 
--- 
-Ueimor
+-Andi
