@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbXJ2Gbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXJ2GcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbXJ2Gbu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 02:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXJ2Gbm
+	id S1757060AbXJ2GcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 02:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXJ2Gb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 02:31:42 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:36273 "EHLO relay.sw.ru"
+	Mon, 29 Oct 2007 02:31:59 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:15209 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbXJ2Gbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 02:31:41 -0400
-Message-ID: <47257E39.5060101@sw.ru>
-Date: Mon, 29 Oct 2007 09:31:21 +0300
+	id S1756881AbXJ2Gb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 02:31:58 -0400
+Message-ID: <47257E4B.4080904@sw.ru>
+Date: Mon, 29 Oct 2007 09:31:39 +0300
 From: Vasily Averin <vvs@sw.ru>
 User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dm-devel@redhat.com, devel@openvz.org
 CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: i2o: debug messages corrected
+Subject: dm: bounce_pfn limit added
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-max_phys_segments and max_sectors were swapped
+Device mapper uses its own bounce_pfn that may differ from one on underlying
+device. In that way dm can build incorrect requests that contain sg elements
+greater than underlying device is able to handle.
+
+This is the cause of slab corruption in i2o layer, occurred on i386 arch when
+very long direct IO requests are addressed to dm-over-i2o device.
 
 Signed-off-by:	Vasily Averin <vvs@sw.ru>
 
---- a/drivers/message/i2o/i2o_block.c
-+++ b/drivers/message/i2o/i2o_block.c
-@@ -1076,8 +1076,8 @@ static int i2o_block_probe(struct device *dev)
- 	blk_queue_max_sectors(queue, max_sectors);
- 	blk_queue_max_hw_segments(queue, i2o_sg_tablesize(c, body_size));
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -102,6 +102,8 @@ static void combine_restrictions_low(struct io_restrictions
+ 	lhs->seg_boundary_mask =
+ 		min_not_zero(lhs->seg_boundary_mask, rhs->seg_boundary_mask);
 
--	osm_debug("max sectors = %d\n", queue->max_phys_segments);
--	osm_debug("phys segments = %d\n", queue->max_sectors);
-+	osm_debug("max sectors = %d\n", queue->max_sectors);
-+	osm_debug("phys segments = %d\n", queue->max_phys_segments);
- 	osm_debug("max hw segments = %d\n", queue->max_hw_segments);
++	lhs->bounce_pfn = min_not_zero(lhs->bounce_pfn, rhs->bounce_pfn);
++
+ 	lhs->no_cluster |= rhs->no_cluster;
+ }
 
- 	/*
+@@ -566,6 +568,8 @@ void dm_set_device_limits(struct dm_target *ti, struct
+ 		min_not_zero(rs->seg_boundary_mask,
+ 			     q->seg_boundary_mask);
 
++	rs->bounce_pfn = min_not_zero(rs->bounce_pfn, q->bounce_pfn);
++
+ 	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
+ }
+ EXPORT_SYMBOL_GPL(dm_set_device_limits);
+@@ -707,6 +711,8 @@ static void check_for_valid_limits(struct io_restrictions
+ 		rs->max_segment_size = MAX_SEGMENT_SIZE;
+ 	if (!rs->seg_boundary_mask)
+ 		rs->seg_boundary_mask = -1;
++	if (!rs->bounce_pfn)
++		rs->bounce_pfn = -1;
+ }
+
+ int dm_table_add_target(struct dm_table *t, const char *type,
+@@ -891,6 +897,7 @@ void dm_table_set_restrictions(struct dm_table *t, struct
+ 	q->hardsect_size = t->limits.hardsect_size;
+ 	q->max_segment_size = t->limits.max_segment_size;
+ 	q->seg_boundary_mask = t->limits.seg_boundary_mask;
++	q->bounce_pfn = t->limits.bounce_pfn;
+ 	if (t->limits.no_cluster)
+ 		q->queue_flags &= ~(1 << QUEUE_FLAG_CLUSTER);
+ 	else
+--- a/include/linux/device-mapper.h
++++ b/include/linux/device-mapper.h
+@@ -111,6 +111,7 @@ struct target_type {
+
+ struct io_restrictions {
+ 	unsigned long		seg_boundary_mask;
++	unsigned long		bounce_pfn;
+ 	unsigned int		max_sectors;
+ 	unsigned int		max_segment_size;
+ 	unsigned short		max_phys_segments;
