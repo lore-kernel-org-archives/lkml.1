@@ -1,107 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbXJ2GM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXJ2GOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbXJ2GM0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 02:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXJ2GMQ
+	id S1756684AbXJ2GOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 02:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbXJ2GOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 02:12:16 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:42716 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbXJ2GMO convert rfc822-to-8bit (ORCPT
+	Mon, 29 Oct 2007 02:14:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:34428 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbXJ2GOF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 02:12:14 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 29 Oct 2007 02:14:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PcV5G9a5RUuVEjcO36HXH5SGUZKj+8nn6aPT1/XQp4wazP7YMH7Dns+8Rq58Sb5FCcmVY4bDGZQlkdlehI37MaDbFeBIZMG2FpgELqPO3dx51WWRvgg83QytroVTz4xF1HF3bNn/VRrrZYWy1jDi+CldUWOBIlhnztDISjgAL/8=
+Message-ID: <47257A1C.8050206@gmail.com>
+Date: Mon, 29 Oct 2007 15:13:48 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] ucc_geth: add support for netpoll
-Date: Mon, 29 Oct 2007 14:12:07 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20071027143731.GA2616@zarina>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ucc_geth: add support for netpoll
-Thread-Index: AcgYpyuO411A4lV5RtS/odP9QozbWwBRrWBQ
-References: <20071011124842.GB13963@localhost.localdomain> <4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: <cbou@mail.ru>, "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
-Cc: "Anton Vorontsov" <avorontsov@ru.mvista.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+To: Shane Huang <Shane.Huang@amd.com>
+CC: David Miller <davem@davemloft.net>, david.gaarenstroom@gmail.com,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, barkalow@iabervon.org,
+       linas@austin.ibm.com, gregkh@suse.de, brice.goglin@gmail.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org,
+       brice@myri.com, mchan@broadcom.com
+Subject: Re: [PATCH 5/5]: [PCI]: Remove 3 incorrect MSI quirks.
+References: <20071025.011716.123998434.davem@davemloft.net> <9783dadb0710260356g4ef94e3dvadf69d4d263c2361@mail.gmail.com> <20071026.043833.88113848.davem@davemloft.net> <5CAB7B5D6F8AB84AA868A46B47A50705623160@sshaexmb1.amd.com>
+In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A50705623160@sshaexmb1.amd.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Anton Vorontsov [mailto:cbou@mail.ru] 
-> Sent: Saturday, October 27, 2007 10:38 PM
-> To: Sergei Shtylyov
-> Cc: Anton Vorontsov; netdev@vger.kernel.org; Li Yang-r58472; 
-> linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] ucc_geth: add support for netpoll
+Shane Huang wrote:
+>> I would like those to be removed, but to be conservative we should
+>> first get some testing feedback that confirms this just like those
+>> provided to me from the AMD folks for the RS690, RX790 and RD580
+>> cases.
+>>
+>> Otherwise the risk to break people's systems is very real.
 > 
-> On Sat, Oct 27, 2007 at 05:09:51PM +0400, Sergei Shtylyov wrote:
-> > Hello.
-> > 
-> > Anton Vorontsov wrote:
-> > 
-> > > This patch adds netpoll support for the QE UCC Gigabit Ethernet 
-> > > driver. The approach is very similar to the gianfar driver.
-> > 
-> >     It's rather contrarywise -- this is standard approach 
-> and gianfar 
-> > with its
-> > 3 TSEC IRQs has a quite non-standard poll_controller() 
-> implementation.
-> 
-> Oh.. well, right -- gianfar a bit more comlex in that regard.
-> 
-> > 
-> > > Tested using netconsole.
-> > 
-> >     KGDBoE is considered a better test (I hope you've also 
-> tested with it).
-> 
-> At the time of posting it was tested using netconsole only, a 
-> few days later it's was tested using KGDBoE also. So, it works indeed.
-> 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com> 
-> diff --git 
-> > > a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c index 
-> > > 18a6f48..06807ce 100644
-> > > --- a/drivers/net/ucc_geth.c
-> > > +++ b/drivers/net/ucc_geth.c
-> > > @@ -3691,6 +3691,22 @@ static irqreturn_t 
-> ucc_geth_irq_handler(int irq, void *info)
-> > >  	return IRQ_HANDLED;
-> > >  }
-> > >  
-> > > +#ifdef CONFIG_NET_POLL_CONTROLLER
-> > > +/*
-> > > + * Polling 'interrupt' - used by things like netconsole to send 
-> > > +skbs
-> > > + * without having to re-enable interrupts. It's not called while
-> > > + * the interrupt routine is executing.
-> > > + */
-> > > +static void ucc_netpoll(struct net_device *dev) {
-> > > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
-> > > +
-> > > +	disable_irq(ugeth->ug_info->uf_info.irq);
-> > > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
-> > > +	enable_irq(ugeth->ug_info->uf_info.irq);
-> > 
-> >     Why not make it less complex (for a reader and gcc too :-) ?
-> 
-> Yup, I'm agree here but it's too late. Again. ;-)
-> 
-> This patch already accepted into the -mm (a week or so after 
-> the silence), so.. now I'd rather not bother Andrew with such 
-> really cosmetic changes. But if Jeff would directly apply 
-> modfied patch, I'll send it. ;-)
+> In fact, our team only has boards with RS690+SB700 and RX790+SB700,
+> I don't know why the RD580 MSI is disabled too by the patch
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
+> t;h=aea6a433f50cd89b9cbd10850fd0b32f961f9883
+> Maybe Tejun can give us more information on this case,
+> I think the cause should be same as RS690 and RX790.
 
-Oops.  The original patch happened to hit the Junk mail box. :(  I think
-the patch is good to merge after the cosmetic change.  I can do it in
-next pull request to Jeff.
+I don't remember history of each quirk entry but they're either reported
+in a bug report and successfully worked around with pci=nomsi or one of
+AMD guys told me certain PCI IDs share the same problem.  I can dig mail
+archive if you wanna know how it went down for RD580.
 
-Thanks
-- Leo
+-- 
+tejun
