@@ -1,347 +1,595 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbXKAViV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbXKAVif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760682AbXKAViV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 17:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbXKAVfx
+	id S1760874AbXKAVif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 17:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbXKAVfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 17:35:53 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55669 "EHLO mx2.suse.de"
+	Thu, 1 Nov 2007 17:35:55 -0400
+Received: from ns1.suse.de ([195.135.220.2]:43996 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755144AbXKAVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 17:35:46 -0400
-Message-Id: <20071029124121.427816589@weierstrass.suse.de>
+	id S1755173AbXKAVfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 17:35:47 -0400
+Message-Id: <20071029124121.956529923@weierstrass.suse.de>
 References: <20071029124120.528997881@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 29 Oct 2007 13:41:23 +0100
+Date: Mon, 29 Oct 2007 13:41:27 +0100
 From: Jan Blunck <jblunck@suse.de>
 To: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@lst.de>, Andreas Gruenbacher <agruen@suse.de>
-Cc: dwmw2@infradead.org
-Subject: [PATCH 3/7] d_path: Use struct path in struct avc_audit_data
-Content-Disposition: inline; filename=vfs/d_path-Use_struct_path_in_struct_avc_audit_data.diff
+Cc: bfields@fieldses.org, neilb@suse.de
+Subject: [PATCH 7/7] Use struct path in struct svc_export
+Content-Disposition: inline; filename=vfs/nfsd-svc_export_use_struct_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-audit_log_d_path() is a d_path() wrapper that is used by the audit code. To
-use a struct path in audit_log_d_path() I need to embed it into struct
-avc_audit_data.
+I'm embedding struct path into struct svc_export.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- include/linux/audit.h          |    5 ++---
- kernel/audit.c                 |   12 ++++++------
- kernel/auditsc.c               |   28 +++++++++++-----------------
- security/selinux/avc.c         |   13 ++++++++-----
- security/selinux/hooks.c       |   28 ++++++++++++----------------
- security/selinux/include/avc.h |    6 ++----
- 6 files changed, 41 insertions(+), 51 deletions(-)
+ fs/nfsd/export.c            |   69 +++++++++++++++++++++-----------------------
+ fs/nfsd/nfs3proc.c          |    2 -
+ fs/nfsd/nfs3xdr.c           |    4 +-
+ fs/nfsd/nfs4proc.c          |    4 +-
+ fs/nfsd/nfs4xdr.c           |   12 +++----
+ fs/nfsd/nfsfh.c             |   26 ++++++++--------
+ fs/nfsd/nfsproc.c           |    6 +--
+ fs/nfsd/nfsxdr.c            |    2 -
+ fs/nfsd/vfs.c               |   22 +++++++-------
+ include/linux/nfsd/export.h |    5 +--
+ 10 files changed, 74 insertions(+), 78 deletions(-)
 
-Index: b/include/linux/audit.h
+Index: b/fs/nfsd/export.c
 ===================================================================
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -527,8 +527,7 @@ extern const char *	    audit_log_n_untr
- 							const char *string);
- extern void		    audit_log_d_path(struct audit_buffer *ab,
- 					     const char *prefix,
--					     struct dentry *dentry,
--					     struct vfsmount *vfsmnt);
-+					     struct path *path);
- extern void		    audit_log_lost(const char *message);
- 				/* Private API (for audit.c only) */
- extern int audit_filter_user(struct netlink_skb_parms *cb, int type);
-@@ -545,7 +544,7 @@ extern int audit_enabled;
- #define audit_log_hex(a,b,l) do { ; } while (0)
- #define audit_log_untrustedstring(a,s) do { ; } while (0)
- #define audit_log_n_untrustedstring(a,n,s) do { ; } while (0)
--#define audit_log_d_path(b,p,d,v) do { ; } while (0)
-+#define audit_log_d_path(b,p,d) do { ; } while (0)
- #define audit_enabled 0
- #endif
- #endif
-Index: b/kernel/audit.c
-===================================================================
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1394,26 +1394,26 @@ const char *audit_log_untrustedstring(st
- 
- /* This is a helper-function to print the escaped d_path */
- void audit_log_d_path(struct audit_buffer *ab, const char *prefix,
--		      struct dentry *dentry, struct vfsmount *vfsmnt)
-+		      struct path *path)
+--- a/fs/nfsd/export.c
++++ b/fs/nfsd/export.c
+@@ -332,10 +332,9 @@ static void nfsd4_fslocs_free(struct nfs
+ static void svc_export_put(struct kref *ref)
  {
--	char *p, *path;
-+	char *p, *pathname;
+ 	struct svc_export *exp = container_of(ref, struct svc_export, h.ref);
+-	dput(exp->ex_dentry);
+-	mntput(exp->ex_mnt);
++	path_put(&exp->ex_path);
+ 	auth_domain_put(exp->ex_client);
+-	kfree(exp->ex_path);
++	kfree(exp->ex_pathname);
+ 	nfsd4_fslocs_free(&exp->ex_fslocs);
+ 	kfree(exp);
+ }
+@@ -346,11 +345,10 @@ static void svc_export_request(struct ca
+ {
+ 	/*  client path */
+ 	struct svc_export *exp = container_of(h, struct svc_export, h);
+-	struct path path = { .dentry = exp->ex_dentry, .mnt = exp->ex_mnt };
+ 	char *pth;
  
- 	if (prefix)
- 		audit_log_format(ab, " %s", prefix);
+ 	qword_add(bpp, blen, exp->ex_client->name);
+-	pth = d_path(&path, *bpp, *blen);
++	pth = d_path(&exp->ex_path, *bpp, *blen);
+ 	if (IS_ERR(pth)) {
+ 		/* is this correct? */
+ 		(*bpp)[0] = '\n';
+@@ -509,7 +507,7 @@ static int svc_export_parse(struct cache
+ 	int an_int;
  
- 	/* We will allow 11 spaces for ' (deleted)' to be appended */
--	path = kmalloc(PATH_MAX+11, ab->gfp_mask);
--	if (!path) {
-+	pathname = kmalloc(PATH_MAX+11, ab->gfp_mask);
-+	if (!pathname) {
- 		audit_log_format(ab, "<no memory>");
- 		return;
+ 	nd.path.dentry = NULL;
+-	exp.ex_path = NULL;
++	exp.ex_pathname = NULL;
+ 
+ 	/* fs locations */
+ 	exp.ex_fslocs.locations = NULL;
+@@ -548,11 +546,11 @@ static int svc_export_parse(struct cache
+ 
+ 	exp.h.flags = 0;
+ 	exp.ex_client = dom;
+-	exp.ex_mnt = nd.path.mnt;
+-	exp.ex_dentry = nd.path.dentry;
+-	exp.ex_path = kstrdup(buf, GFP_KERNEL);
++	exp.ex_path.mnt = nd.path.mnt;
++	exp.ex_path.dentry = nd.path.dentry;
++	exp.ex_pathname = kstrdup(buf, GFP_KERNEL);
+ 	err = -ENOMEM;
+-	if (!exp.ex_path)
++	if (!exp.ex_pathname)
+ 		goto out;
+ 
+ 	/* expiry */
+@@ -629,7 +627,7 @@ static int svc_export_parse(struct cache
+  out:
+ 	nfsd4_fslocs_free(&exp.ex_fslocs);
+ 	kfree(exp.ex_uuid);
+- 	kfree(exp.ex_path);
++ 	kfree(exp.ex_pathname);
+ 	if (nd.path.dentry)
+ 		path_put(&nd.path);
+  out_no_path:
+@@ -654,7 +652,7 @@ static int svc_export_show(struct seq_fi
+ 		return 0;
  	}
--	p = d_path(dentry, vfsmnt, path, PATH_MAX+11);
-+	p = d_path(path->dentry, path->mnt, pathname, PATH_MAX+11);
- 	if (IS_ERR(p)) { /* Should never happen since we send PATH_MAX */
- 		/* FIXME: can we save some information here? */
- 		audit_log_format(ab, "<too long>");
+ 	exp = container_of(h, struct svc_export, h);
+-	seq_path(m, exp->ex_mnt, exp->ex_dentry, " \t\n\\");
++	seq_path(m, exp->ex_path.mnt, exp->ex_path.dentry, " \t\n\\");
+ 	seq_putc(m, '\t');
+ 	seq_escape(m, exp->ex_client->name, " \t\n\\");
+ 	seq_putc(m, '(');
+@@ -681,8 +679,8 @@ static int svc_export_match(struct cache
+ 	struct svc_export *orig = container_of(a, struct svc_export, h);
+ 	struct svc_export *new = container_of(b, struct svc_export, h);
+ 	return orig->ex_client == new->ex_client &&
+-		orig->ex_dentry == new->ex_dentry &&
+-		orig->ex_mnt == new->ex_mnt;
++		orig->ex_path.dentry == new->ex_path.dentry &&
++		orig->ex_path.mnt == new->ex_path.mnt;
+ }
+ 
+ static void svc_export_init(struct cache_head *cnew, struct cache_head *citem)
+@@ -692,9 +690,9 @@ static void svc_export_init(struct cache
+ 
+ 	kref_get(&item->ex_client->ref);
+ 	new->ex_client = item->ex_client;
+-	new->ex_dentry = dget(item->ex_dentry);
+-	new->ex_mnt = mntget(item->ex_mnt);
+-	new->ex_path = NULL;
++	new->ex_path.dentry = dget(item->ex_path.dentry);
++	new->ex_path.mnt = mntget(item->ex_path.mnt);
++	new->ex_pathname = NULL;
+ 	new->ex_fslocs.locations = NULL;
+ 	new->ex_fslocs.locations_count = 0;
+ 	new->ex_fslocs.migrated = 0;
+@@ -712,8 +710,8 @@ static void export_update(struct cache_h
+ 	new->ex_fsid = item->ex_fsid;
+ 	new->ex_uuid = item->ex_uuid;
+ 	item->ex_uuid = NULL;
+-	new->ex_path = item->ex_path;
+-	item->ex_path = NULL;
++	new->ex_pathname = item->ex_pathname;
++	item->ex_pathname = NULL;
+ 	new->ex_fslocs.locations = item->ex_fslocs.locations;
+ 	item->ex_fslocs.locations = NULL;
+ 	new->ex_fslocs.locations_count = item->ex_fslocs.locations_count;
+@@ -756,8 +754,8 @@ svc_export_lookup(struct svc_export *exp
+ 	struct cache_head *ch;
+ 	int hash;
+ 	hash = hash_ptr(exp->ex_client, EXPORT_HASHBITS);
+-	hash ^= hash_ptr(exp->ex_dentry, EXPORT_HASHBITS);
+-	hash ^= hash_ptr(exp->ex_mnt, EXPORT_HASHBITS);
++	hash ^= hash_ptr(exp->ex_path.dentry, EXPORT_HASHBITS);
++	hash ^= hash_ptr(exp->ex_path.mnt, EXPORT_HASHBITS);
+ 
+ 	ch = sunrpc_cache_lookup(&svc_export_cache, &exp->h,
+ 				 hash);
+@@ -773,8 +771,8 @@ svc_export_update(struct svc_export *new
+ 	struct cache_head *ch;
+ 	int hash;
+ 	hash = hash_ptr(old->ex_client, EXPORT_HASHBITS);
+-	hash ^= hash_ptr(old->ex_dentry, EXPORT_HASHBITS);
+-	hash ^= hash_ptr(old->ex_mnt, EXPORT_HASHBITS);
++	hash ^= hash_ptr(old->ex_path.dentry, EXPORT_HASHBITS);
++	hash ^= hash_ptr(old->ex_path.mnt, EXPORT_HASHBITS);
+ 
+ 	ch = sunrpc_cache_update(&svc_export_cache, &new->h,
+ 				 &old->h,
+@@ -816,8 +814,8 @@ static int exp_set_key(svc_client *clp, 
+ 	key.ek_client = clp;
+ 	key.ek_fsidtype = fsid_type;
+ 	memcpy(key.ek_fsid, fsidv, key_len(fsid_type));
+-	key.ek_mnt = exp->ex_mnt;
+-	key.ek_dentry = exp->ex_dentry;
++	key.ek_mnt = exp->ex_path.mnt;
++	key.ek_dentry = exp->ex_path.dentry;
+ 	key.h.expiry_time = NEVER;
+ 	key.h.flags = 0;
+ 
+@@ -871,8 +869,8 @@ static svc_export *exp_get_by_name(svc_c
+ 		return ERR_PTR(-ENOENT);
+ 
+ 	key.ex_client = clp;
+-	key.ex_mnt = mnt;
+-	key.ex_dentry = dentry;
++	key.ex_path.mnt = mnt;
++	key.ex_path.dentry = dentry;
+ 
+ 	exp = svc_export_lookup(&key);
+ 	if (exp == NULL)
+@@ -969,7 +967,7 @@ static int exp_fsid_hash(svc_client *clp
+ static int exp_hash(struct auth_domain *clp, struct svc_export *exp)
+ {
+ 	u32 fsid[2];
+-	struct inode *inode = exp->ex_dentry->d_inode;
++	struct inode *inode = exp->ex_path.dentry->d_inode;
+ 	dev_t dev = inode->i_sb->s_dev;
+ 
+ 	if (old_valid_dev(dev)) {
+@@ -983,7 +981,7 @@ static int exp_hash(struct auth_domain *
+ static void exp_unhash(struct svc_export *exp)
+ {
+ 	struct svc_expkey *ek;
+-	struct inode *inode = exp->ex_dentry->d_inode;
++	struct inode *inode = exp->ex_path.dentry->d_inode;
+ 
+ 	ek = exp_get_key(exp->ex_client, inode->i_sb->s_dev, inode->i_ino);
+ 	if (!IS_ERR(ek)) {
+@@ -1065,12 +1063,11 @@ exp_export(struct nfsctl_export *nxp)
+ 
+ 	new.h.expiry_time = NEVER;
+ 	new.h.flags = 0;
+-	new.ex_path = kstrdup(nxp->ex_path, GFP_KERNEL);
+-	if (!new.ex_path)
++	new.ex_pathname = kstrdup(nxp->ex_path, GFP_KERNEL);
++	if (!new.ex_pathname)
+ 		goto finish;
+ 	new.ex_client = clp;
+-	new.ex_mnt = nd.path.mnt;
+-	new.ex_dentry = nd.path.dentry;
++	new.ex_path = nd.path;
+ 	new.ex_flags = nxp->ex_flags;
+ 	new.ex_anon_uid = nxp->ex_anon_uid;
+ 	new.ex_anon_gid = nxp->ex_anon_gid;
+@@ -1091,8 +1088,8 @@ exp_export(struct nfsctl_export *nxp)
  	} else
- 		audit_log_untrustedstring(ab, p);
--	kfree(path);
-+	kfree(pathname);
- }
- 
- /**
-Index: b/kernel/auditsc.c
+ 		err = 0;
+ finish:
+-	if (new.ex_path)
+-		kfree(new.ex_path);
++	if (new.ex_pathname)
++		kfree(new.ex_pathname);
+ 	if (exp)
+ 		exp_put(exp);
+ 	if (fsid_key && !IS_ERR(fsid_key))
+@@ -1363,7 +1360,7 @@ exp_pseudoroot(struct svc_rqst *rqstp, s
+ 		return nfserr_perm;
+ 	if (IS_ERR(exp))
+ 		return nfserrno(PTR_ERR(exp));
+-	rv = fh_compose(fhp, exp, exp->ex_dentry, NULL);
++	rv = fh_compose(fhp, exp, exp->ex_path.dentry, NULL);
+ 	if (rv)
+ 		goto out;
+ 	rv = check_nfsd_access(exp, rqstp);
+Index: b/fs/nfsd/nfs3proc.c
 ===================================================================
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -201,8 +201,7 @@ struct audit_context {
- 	int		    name_count;
- 	struct audit_names  names[AUDIT_NAMES];
- 	char *		    filterkey;	/* key for rule that triggered record */
--	struct dentry *	    pwd;
--	struct vfsmount *   pwdmnt;
-+	struct path	    pwd;
- 	struct audit_context *previous; /* For nested syscalls */
- 	struct audit_aux_data *aux;
- 	struct audit_aux_data *aux_pids;
-@@ -758,12 +757,9 @@ static inline void audit_free_names(stru
- 			__putname(context->names[i].name);
- 	}
- 	context->name_count = 0;
--	if (context->pwd)
--		dput(context->pwd);
--	if (context->pwdmnt)
--		mntput(context->pwdmnt);
--	context->pwd = NULL;
--	context->pwdmnt = NULL;
-+	path_put(&context->pwd);
-+	context->pwd.dentry = NULL;
-+	context->pwd.mnt = NULL;
- }
+--- a/fs/nfsd/nfs3proc.c
++++ b/fs/nfsd/nfs3proc.c
+@@ -67,7 +67,7 @@ nfsd3_proc_getattr(struct svc_rqst *rqst
+ 	if (nfserr)
+ 		RETURN_STATUS(nfserr);
  
- static inline void audit_free_aux(struct audit_context *context)
-@@ -910,8 +906,7 @@ static void audit_log_task_info(struct a
- 			if ((vma->vm_flags & VM_EXECUTABLE) &&
- 			    vma->vm_file) {
- 				audit_log_d_path(ab, "exe=",
--						 vma->vm_file->f_path.dentry,
--						 vma->vm_file->f_path.mnt);
-+						 &vma->vm_file->f_path);
- 				break;
- 			}
- 			vma = vma->vm_next;
-@@ -1177,10 +1172,10 @@ static void audit_log_exit(struct audit_
- 				  context->target_sid))
- 			call_panic = 1;
+-	err = vfs_getattr(resp->fh.fh_export->ex_mnt,
++	err = vfs_getattr(resp->fh.fh_export->ex_path.mnt,
+ 			  resp->fh.fh_dentry, &resp->stat);
+ 	nfserr = nfserrno(err);
  
--	if (context->pwd && context->pwdmnt) {
-+	if (context->pwd.dentry && context->pwd.mnt) {
- 		ab = audit_log_start(context, GFP_KERNEL, AUDIT_CWD);
- 		if (ab) {
--			audit_log_d_path(ab, "cwd=", context->pwd, context->pwdmnt);
-+			audit_log_d_path(ab, "cwd=", &context->pwd);
- 			audit_log_end(ab);
+Index: b/fs/nfsd/nfs3xdr.c
+===================================================================
+--- a/fs/nfsd/nfs3xdr.c
++++ b/fs/nfsd/nfs3xdr.c
+@@ -217,7 +217,7 @@ encode_post_op_attr(struct svc_rqst *rqs
+ 	        int err;
+ 		struct kstat stat;
+ 
+-		err = vfs_getattr(fhp->fh_export->ex_mnt, dentry, &stat);
++		err = vfs_getattr(fhp->fh_export->ex_path.mnt, dentry, &stat);
+ 		if (!err) {
+ 			*p++ = xdr_one;		/* attributes follow */
+ 			lease_get_mtime(dentry->d_inode, &stat.mtime);
+@@ -269,7 +269,7 @@ void fill_post_wcc(struct svc_fh *fhp)
+ 	if (fhp->fh_post_saved)
+ 		printk("nfsd: inode locked twice during operation.\n");
+ 
+-	err = vfs_getattr(fhp->fh_export->ex_mnt, fhp->fh_dentry,
++	err = vfs_getattr(fhp->fh_export->ex_path.mnt, fhp->fh_dentry,
+ 			&fhp->fh_post_attr);
+ 	if (err)
+ 		fhp->fh_post_saved = 0;
+Index: b/fs/nfsd/nfs4proc.c
+===================================================================
+--- a/fs/nfsd/nfs4proc.c
++++ b/fs/nfsd/nfs4proc.c
+@@ -658,7 +658,7 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
+ 			return status;
  		}
  	}
-@@ -1203,8 +1198,7 @@ static void audit_log_exit(struct audit_
- 			case 0:
- 				/* name was specified as a relative path and the
- 				 * directory component is the cwd */
--				audit_log_d_path(ab, " name=", context->pwd,
--						 context->pwdmnt);
-+				audit_log_d_path(ab, " name=", &context->pwd);
- 				break;
- 			default:
- 				/* log the name's directory component */
-@@ -1526,10 +1520,10 @@ void __audit_getname(const char *name)
- 	context->names[context->name_count].ino  = (unsigned long)-1;
- 	context->names[context->name_count].osid = 0;
- 	++context->name_count;
--	if (!context->pwd) {
-+	if (!context->pwd.dentry) {
- 		read_lock(&current->fs->lock);
--		context->pwd = dget(current->fs->pwd.dentry);
--		context->pwdmnt = mntget(current->fs->pwd.mnt);
-+		context->pwd = current->fs->pwd;
-+		path_get(&current->fs->pwd);
- 		read_unlock(&current->fs->lock);
- 	}
- 
-Index: b/security/selinux/avc.c
-===================================================================
---- a/security/selinux/avc.c
-+++ b/security/selinux/avc.c
-@@ -568,10 +568,11 @@ void avc_audit(u32 ssid, u32 tsid,
- 			audit_log_format(ab, " capability=%d", a->u.cap);
- 			break;
- 		case AVC_AUDIT_DATA_FS:
--			if (a->u.fs.dentry) {
--				struct dentry *dentry = a->u.fs.dentry;
--				if (a->u.fs.mnt) {
--					audit_log_d_path(ab, "path=", dentry, a->u.fs.mnt);
-+			if (a->u.fs.path.dentry) {
-+				struct dentry *dentry = a->u.fs.path.dentry;
-+				if (a->u.fs.path.mnt) {
-+					audit_log_d_path(ab, "path=",
-+							 &a->u.fs.path);
- 				} else {
- 					audit_log_format(ab, " name=");
- 					audit_log_untrustedstring(ab, dentry->d_name.name);
-@@ -626,8 +627,10 @@ void avc_audit(u32 ssid, u32 tsid,
- 				case AF_UNIX:
- 					u = unix_sk(sk);
- 					if (u->dentry) {
-+						struct path path = { .dentry = u->dentry,
-+								     .mnt = u->mnt };
- 						audit_log_d_path(ab, "path=",
--								 u->dentry, u->mnt);
-+								 &path);
- 						break;
- 					}
- 					if (!u->addr)
-Index: b/security/selinux/hooks.c
-===================================================================
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1106,8 +1106,8 @@ static inline int dentry_has_perm(struct
- 	struct inode *inode = dentry->d_inode;
- 	struct avc_audit_data ad;
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.mnt = mnt;
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.mnt = mnt;
-+	ad.u.fs.path.dentry = dentry;
- 	return inode_has_perm(tsk, inode, av, &ad);
+-	status = mnt_want_write(cstate->current_fh.fh_export->ex_mnt);
++	status = mnt_want_write(cstate->current_fh.fh_export->ex_path.mnt);
+ 	if (status)
+ 		return status;
+ 	status = nfs_ok;
+@@ -670,7 +670,7 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
+ 	status = nfsd_setattr(rqstp, &cstate->current_fh, &setattr->sa_iattr,
+ 				0, (time_t)0);
+ out:
+-	mnt_drop_write(cstate->current_fh.fh_export->ex_mnt);
++	mnt_drop_write(cstate->current_fh.fh_export->ex_path.mnt);
+ 	return status;
  }
  
-@@ -1125,15 +1125,12 @@ static int file_has_perm(struct task_str
+Index: b/fs/nfsd/nfs4xdr.c
+===================================================================
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -1325,9 +1325,9 @@ static char *nfsd4_path(struct svc_rqst 
+ 	*stat = exp_pseudoroot(rqstp, &tmp_fh);
+ 	if (*stat)
+ 		return NULL;
+-	rootpath = tmp_fh.fh_export->ex_path;
++	rootpath = tmp_fh.fh_export->ex_pathname;
+ 
+-	path = exp->ex_path;
++	path = exp->ex_pathname;
+ 
+ 	if (strncmp(path, rootpath, strlen(rootpath))) {
+ 		dprintk("nfsd: fs_locations failed;"
+@@ -1476,7 +1476,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+ 			goto out;
+ 	}
+ 
+-	err = vfs_getattr(exp->ex_mnt, dentry, &stat);
++	err = vfs_getattr(exp->ex_path.mnt, dentry, &stat);
+ 	if (err)
+ 		goto out_nfserr;
+ 	if ((bmval0 & (FATTR4_WORD0_FILES_FREE | FATTR4_WORD0_FILES_TOTAL |
+@@ -1828,9 +1828,9 @@ out_acl:
+ 	if (bmval1 & FATTR4_WORD1_MOUNTED_ON_FILEID) {
+ 		if ((buflen -= 8) < 0)
+                 	goto out_resource;
+-		if (exp->ex_mnt->mnt_root->d_inode == dentry->d_inode) {
+-			err = vfs_getattr(exp->ex_mnt->mnt_parent,
+-				exp->ex_mnt->mnt_mountpoint, &stat);
++		if (exp->ex_path.mnt->mnt_root->d_inode == dentry->d_inode) {
++			err = vfs_getattr(exp->ex_path.mnt->mnt_parent,
++				exp->ex_path.mnt->mnt_mountpoint, &stat);
+ 			if (err)
+ 				goto out_nfserr;
+ 		}
+Index: b/fs/nfsd/nfsfh.c
+===================================================================
+--- a/fs/nfsd/nfsfh.c
++++ b/fs/nfsd/nfsfh.c
+@@ -46,7 +46,7 @@ static int nfsd_acceptable(void *expv, s
+ 		return 1;
+ 
+ 	tdentry = dget(dentry);
+-	while (tdentry != exp->ex_dentry && ! IS_ROOT(tdentry)) {
++	while (tdentry != exp->ex_path.dentry && ! IS_ROOT(tdentry)) {
+ 		/* make sure parents give x permission to user */
+ 		int err;
+ 		parent = dget_parent(tdentry);
+@@ -58,9 +58,9 @@ static int nfsd_acceptable(void *expv, s
+ 		dput(tdentry);
+ 		tdentry = parent;
+ 	}
+-	if (tdentry != exp->ex_dentry)
++	if (tdentry != exp->ex_path.dentry)
+ 		dprintk("nfsd_acceptable failed at %p %s\n", tdentry, tdentry->d_name.name);
+-	rv = (tdentry == exp->ex_dentry);
++	rv = (tdentry == exp->ex_path.dentry);
+ 	dput(tdentry);
+ 	return rv;
+ }
+@@ -203,9 +203,9 @@ fh_verify(struct svc_rqst *rqstp, struct
+ 			fileid_type = fh->fh_fileid_type;
+ 
+ 		if (fileid_type == FILEID_ROOT)
+-			dentry = dget(exp->ex_dentry);
++			dentry = dget(exp->ex_path.dentry);
+ 		else {
+-			dentry = exportfs_decode_fh(exp->ex_mnt, fid,
++			dentry = exportfs_decode_fh(exp->ex_path.mnt, fid,
+ 					data_left, fileid_type,
+ 					nfsd_acceptable, exp);
+ 		}
+@@ -289,7 +289,7 @@ out:
+ static void _fh_update(struct svc_fh *fhp, struct svc_export *exp,
+ 		struct dentry *dentry)
  {
- 	struct task_security_struct *tsec = tsk->security;
- 	struct file_security_struct *fsec = file->f_security;
--	struct vfsmount *mnt = file->f_path.mnt;
--	struct dentry *dentry = file->f_path.dentry;
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct avc_audit_data ad;
- 	int rc;
+-	if (dentry != exp->ex_dentry) {
++	if (dentry != exp->ex_path.dentry) {
+ 		struct fid *fid = (struct fid *)
+ 			(fhp->fh_handle.fh_auth + fhp->fh_handle.fh_size/4 - 1);
+ 		int maxsize = (fhp->fh_maxsize - fhp->fh_handle.fh_size)/4;
+@@ -334,12 +334,12 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 	struct inode * inode = dentry->d_inode;
+ 	struct dentry *parent = dentry->d_parent;
+ 	__u32 *datap;
+-	dev_t ex_dev = exp->ex_dentry->d_inode->i_sb->s_dev;
+-	int root_export = (exp->ex_dentry == exp->ex_dentry->d_sb->s_root);
++	dev_t ex_dev = exp->ex_path.dentry->d_inode->i_sb->s_dev;
++	int root_export = (exp->ex_path.dentry == exp->ex_path.dentry->d_sb->s_root);
  
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.mnt = mnt;
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path = file->f_path;
+ 	dprintk("nfsd: fh_compose(exp %02x:%02x/%ld %s/%s, ino=%ld)\n",
+ 		MAJOR(ex_dev), MINOR(ex_dev),
+-		(long) exp->ex_dentry->d_inode->i_ino,
++		(long) exp->ex_path.dentry->d_inode->i_ino,
+ 		parent->d_name.name, dentry->d_name.name,
+ 		(inode ? inode->i_ino : 0));
  
- 	if (tsec->sid != fsec->sid) {
- 		rc = avc_has_perm(tsec->sid, fsec->sid,
-@@ -1168,7 +1165,7 @@ static int may_create(struct inode *dir,
- 	sbsec = dir->i_sb->s_security;
+@@ -381,7 +381,7 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 			/* FALL THROUGH */
+ 		case FSID_MAJOR_MINOR:
+ 		case FSID_ENCODE_DEV:
+-			if (!(exp->ex_dentry->d_inode->i_sb->s_type->fs_flags
++			if (!(exp->ex_path.dentry->d_inode->i_sb->s_type->fs_flags
+ 			      & FS_REQUIRES_DEV))
+ 				goto retry;
+ 			break;
+@@ -444,7 +444,7 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 		fhp->fh_handle.ofh_dev =  old_encode_dev(ex_dev);
+ 		fhp->fh_handle.ofh_xdev = fhp->fh_handle.ofh_dev;
+ 		fhp->fh_handle.ofh_xino =
+-			ino_t_to_u32(exp->ex_dentry->d_inode->i_ino);
++			ino_t_to_u32(exp->ex_path.dentry->d_inode->i_ino);
+ 		fhp->fh_handle.ofh_dirino = ino_t_to_u32(parent_ino(dentry));
+ 		if (inode)
+ 			_fh_update_old(dentry, exp, &fhp->fh_handle);
+@@ -455,7 +455,7 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 		datap = fhp->fh_handle.fh_auth+0;
+ 		fhp->fh_handle.fh_fsid_type = fsid_type;
+ 		mk_fsid(fsid_type, datap, ex_dev,
+-			exp->ex_dentry->d_inode->i_ino,
++			exp->ex_path.dentry->d_inode->i_ino,
+ 			exp->ex_fsid, exp->ex_uuid);
  
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	rc = avc_has_perm(tsec->sid, dsec->sid, SECCLASS_DIR,
- 			  DIR__ADD_NAME | DIR__SEARCH,
-@@ -1226,7 +1223,7 @@ static int may_link(struct inode *dir,
- 	isec = dentry->d_inode->i_security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	av = DIR__SEARCH;
- 	av |= (kind ? DIR__REMOVE_NAME : DIR__ADD_NAME);
-@@ -1273,7 +1270,7 @@ static inline int may_rename(struct inod
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 
--	ad.u.fs.dentry = old_dentry;
-+	ad.u.fs.path.dentry = old_dentry;
- 	rc = avc_has_perm(tsec->sid, old_dsec->sid, SECCLASS_DIR,
- 			  DIR__REMOVE_NAME | DIR__SEARCH, &ad);
- 	if (rc)
-@@ -1289,7 +1286,7 @@ static inline int may_rename(struct inod
- 			return rc;
- 	}
- 
--	ad.u.fs.dentry = new_dentry;
-+	ad.u.fs.path.dentry = new_dentry;
- 	av = DIR__ADD_NAME | DIR__SEARCH;
- 	if (new_dentry->d_inode)
- 		av |= DIR__REMOVE_NAME;
-@@ -1668,8 +1665,7 @@ static int selinux_bprm_set_security(str
- 	}
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
--	ad.u.fs.mnt = bprm->file->f_path.mnt;
--	ad.u.fs.dentry = bprm->file->f_path.dentry;
-+	ad.u.fs.path = bprm->file->f_path;
- 
- 	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
- 		newsid = tsec->sid;
-@@ -2065,7 +2061,7 @@ static int selinux_sb_kern_mount(struct 
- 		return rc;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = sb->s_root;
-+	ad.u.fs.path.dentry = sb->s_root;
- 	return superblock_has_perm(current, sb, FILESYSTEM__MOUNT, &ad);
- }
- 
-@@ -2074,7 +2070,7 @@ static int selinux_sb_statfs(struct dent
- 	struct avc_audit_data ad;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = dentry->d_sb->s_root;
-+	ad.u.fs.path.dentry = dentry->d_sb->s_root;
- 	return superblock_has_perm(current, dentry->d_sb, FILESYSTEM__GETATTR, &ad);
- }
- 
-@@ -2337,7 +2333,7 @@ static int selinux_inode_setxattr(struct
- 		return -EPERM;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
--	ad.u.fs.dentry = dentry;
-+	ad.u.fs.path.dentry = dentry;
- 
- 	rc = avc_has_perm(tsec->sid, isec->sid, isec->sclass,
- 			  FILE__RELABELFROM, &ad);
-Index: b/security/selinux/include/avc.h
+ 		len = key_len(fsid_type);
+@@ -561,7 +561,7 @@ enum fsid_source fsid_source(struct svc_
+ 	case FSID_DEV:
+ 	case FSID_ENCODE_DEV:
+ 	case FSID_MAJOR_MINOR:
+-		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
++		if (fhp->fh_export->ex_path.dentry->d_inode->i_sb->s_type->fs_flags
+ 		    & FS_REQUIRES_DEV)
+ 			return FSIDSOURCE_DEV;
+ 		break;
+Index: b/fs/nfsd/nfsproc.c
 ===================================================================
---- a/security/selinux/include/avc.h
-+++ b/security/selinux/include/avc.h
-@@ -13,6 +13,7 @@
- #include <linux/spinlock.h>
- #include <linux/init.h>
- #include <linux/in6.h>
-+#include <linux/path.h>
- #include <asm/system.h>
- #include "flask.h"
- #include "av_permissions.h"
-@@ -30,8 +31,6 @@ extern int selinux_enforcing;
- struct avc_entry;
+--- a/fs/nfsd/nfsproc.c
++++ b/fs/nfsd/nfsproc.c
+@@ -41,7 +41,7 @@ static __be32
+ nfsd_return_attrs(__be32 err, struct nfsd_attrstat *resp)
+ {
+ 	if (err) return err;
+-	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
++	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
+ 				    resp->fh.fh_dentry,
+ 				    &resp->stat));
+ }
+@@ -49,7 +49,7 @@ static __be32
+ nfsd_return_dirop(__be32 err, struct nfsd_diropres *resp)
+ {
+ 	if (err) return err;
+-	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
++	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
+ 				    resp->fh.fh_dentry,
+ 				    &resp->stat));
+ }
+@@ -164,7 +164,7 @@ nfsd_proc_read(struct svc_rqst *rqstp, s
+ 				  &resp->count);
  
- struct task_struct;
--struct vfsmount;
--struct dentry;
- struct inode;
- struct sock;
- struct sk_buff;
-@@ -46,8 +45,7 @@ struct avc_audit_data {
- 	struct task_struct *tsk;
- 	union 	{
- 		struct {
--			struct vfsmount *mnt;
--			struct dentry *dentry;
-+			struct path path;
- 			struct inode *inode;
- 		} fs;
- 		struct {
+ 	if (nfserr) return nfserr;
+-	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_mnt,
++	return nfserrno(vfs_getattr(resp->fh.fh_export->ex_path.mnt,
+ 				    resp->fh.fh_dentry,
+ 				    &resp->stat));
+ }
+Index: b/fs/nfsd/nfsxdr.c
+===================================================================
+--- a/fs/nfsd/nfsxdr.c
++++ b/fs/nfsd/nfsxdr.c
+@@ -206,7 +206,7 @@ encode_fattr(struct svc_rqst *rqstp, __b
+ __be32 *nfs2svc_encode_fattr(struct svc_rqst *rqstp, __be32 *p, struct svc_fh *fhp)
+ {
+ 	struct kstat stat;
+-	vfs_getattr(fhp->fh_export->ex_mnt, fhp->fh_dentry, &stat);
++	vfs_getattr(fhp->fh_export->ex_path.mnt, fhp->fh_dentry, &stat);
+ 	return encode_fattr(rqstp, p, fhp, &stat);
+ }
+ 
+Index: b/fs/nfsd/vfs.c
+===================================================================
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -101,7 +101,7 @@ nfsd_cross_mnt(struct svc_rqst *rqstp, s
+ {
+ 	struct svc_export *exp = *expp, *exp2 = NULL;
+ 	struct dentry *dentry = *dpp;
+-	struct vfsmount *mnt = mntget(exp->ex_mnt);
++	struct vfsmount *mnt = mntget(exp->ex_path.mnt);
+ 	struct dentry *mounts = dget(dentry);
+ 	int err = 0;
+ 
+@@ -156,7 +156,7 @@ nfsd_lookup_dentry(struct svc_rqst *rqst
+ 	if (isdotent(name, len)) {
+ 		if (len==1)
+ 			dentry = dget(dparent);
+-		else if (dparent != exp->ex_dentry) {
++		else if (dparent != exp->ex_path.dentry) {
+ 			dentry = dget_parent(dparent);
+ 		} else  if (!EX_NOHIDE(exp))
+ 			dentry = dget(dparent); /* .. == . just like at / */
+@@ -164,7 +164,7 @@ nfsd_lookup_dentry(struct svc_rqst *rqst
+ 			/* checking mountpoint crossing is very different when stepping up */
+ 			struct svc_export *exp2 = NULL;
+ 			struct dentry *dp;
+-			struct vfsmount *mnt = mntget(exp->ex_mnt);
++			struct vfsmount *mnt = mntget(exp->ex_path.mnt);
+ 			dentry = dget(dparent);
+ 			while(dentry == mnt->mnt_root && follow_up(&mnt, &dentry))
+ 				;
+@@ -721,7 +721,7 @@ nfsd_open(struct svc_rqst *rqstp, struct
+ 
+ 		DQUOT_INIT(inode);
+ 	}
+-	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_mnt), flags);
++	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_path.mnt), flags);
+ 	if (IS_ERR(*filp))
+ 		host_err = PTR_ERR(*filp);
+ out_nfserr:
+@@ -1242,11 +1242,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	case S_IFBLK:
+ 	case S_IFIFO:
+ 	case S_IFSOCK:
+-		host_err = mnt_want_write(fhp->fh_export->ex_mnt);
++		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+ 		if (host_err)
+ 			break;
+ 		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
+-		mnt_drop_write(fhp->fh_export->ex_mnt);
++		mnt_drop_write(fhp->fh_export->ex_path.mnt);
+ 		break;
+ 	default:
+ 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
+@@ -1457,7 +1457,7 @@ nfsd_readlink(struct svc_rqst *rqstp, st
+ 	if (!inode->i_op || !inode->i_op->readlink)
+ 		goto out;
+ 
+-	touch_atime(fhp->fh_export->ex_mnt, dentry);
++	touch_atime(fhp->fh_export->ex_path.mnt, dentry);
+ 	/* N.B. Why does this call need a get_fs()??
+ 	 * Remove the set_fs and watch the fireworks:-) --okir
+ 	 */
+@@ -1680,9 +1680,9 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+ 	}
+ 
+ 	host_err = -EXDEV;
+-	if (ffhp->fh_export->ex_mnt != tfhp->fh_export->ex_mnt)
++	if (ffhp->fh_export->ex_path.mnt != tfhp->fh_export->ex_path.mnt)
+ 		goto out_dput_new;
+-	host_err = mnt_want_write(ffhp->fh_export->ex_mnt);
++	host_err = mnt_want_write(ffhp->fh_export->ex_path.mnt);
+ 	if (host_err)
+ 		goto out_dput_new;
+ 
+@@ -1866,7 +1866,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ 		inode->i_mode,
+ 		IS_IMMUTABLE(inode)?	" immut" : "",
+ 		IS_APPEND(inode)?	" append" : "",
+-		__mnt_is_readonly(exp->ex_mnt)?	" ro" : "");
++		__mnt_is_readonly(exp->ex_path.mnt)?	" ro" : "");
+ 	dprintk("      owner %d/%d user %d/%d\n",
+ 		inode->i_uid, inode->i_gid, current->fsuid, current->fsgid);
+ #endif
+@@ -1877,7 +1877,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ 	 */
+ 	if (!(acc & MAY_LOCAL_ACCESS))
+ 		if (acc & (MAY_WRITE | MAY_SATTR | MAY_TRUNC)) {
+-			if (exp_rdonly(rqstp, exp) || __mnt_is_readonly(exp->ex_mnt))
++			if (exp_rdonly(rqstp, exp) || __mnt_is_readonly(exp->ex_path.mnt))
+ 				return nfserr_rofs;
+ 			if (/* (acc & MAY_WRITE) && */ IS_IMMUTABLE(inode))
+ 				return nfserr_perm;
+Index: b/include/linux/nfsd/export.h
+===================================================================
+--- a/include/linux/nfsd/export.h
++++ b/include/linux/nfsd/export.h
+@@ -84,9 +84,8 @@ struct svc_export {
+ 	struct cache_head	h;
+ 	struct auth_domain *	ex_client;
+ 	int			ex_flags;
+-	struct vfsmount *	ex_mnt;
+-	struct dentry *		ex_dentry;
+-	char *			ex_path;
++	struct path		ex_path;
++	char *			ex_pathname;
+ 	uid_t			ex_anon_uid;
+ 	gid_t			ex_anon_gid;
+ 	int			ex_fsid;
 
 -- 
 
