@@ -1,53 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbXJ2PMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbXJ2POw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbXJ2PMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXJ2PMB
+	id S1758243AbXJ2POw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbXJ2POp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:12:01 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:54770 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbXJ2PMA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:12:00 -0400
-Date: Mon, 29 Oct 2007 11:11:58 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: David Miller <davem@davemloft.net>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
-Message-ID: <20071029151158.GC23138@fattire.cabal.ca>
-References: <20071028201549.GA23138@fattire.cabal.ca> <20071028.180949.233462591.davem@davemloft.net>
-MIME-Version: 1.0
+	Mon, 29 Oct 2007 11:14:45 -0400
+Received: from main.gmane.org ([80.91.229.2]:52019 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753037AbXJ2POo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 11:14:44 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Marcus Better <marcus@better.se>
+Subject: Re: 2.6.24-rc1: hangs when logging in to X session
+Date: Mon, 29 Oct 2007 16:13:37 +0100
+Message-ID: <fg4tbq$kum$1@ger.gmane.org>
+References: <fg4qau$9mg$1@ger.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071028.180949.233462591.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: m83-188-172-203.cust.tele2.se
+User-Agent: KNode/0.10.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 28, 2007 at 06:09:49PM -0700, David Miller wrote:
-> From: Kyle McMartin <kyle@mcmartin.ca>
-> Date: Sun, 28 Oct 2007 16:15:49 -0400
-> 
-> > To quote lolcats: CONFIG_RESOURCES_64BIT DO NOT WANT!
-> > 
-> > I *think* I have the logic of this right... Anyway, I was annoyed by
-> > having to do the bloody ugly casts to unsigned long long in
-> > arch-specific code. As near as I can tell, we only want this selectable
-> > in the case of PAE on x86, and some random PPC and MIPS embedded boards.
-> > 
-> > For everyone else, it should be whatever the value of 64BIT is.
-> > 
-> > And I can be happy and continue using unsigned long and going about my
-> > merry business.
-> > 
-> > Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
-> 
-> 32-bit sparc has 36-bit physical addresses and thus needs
-> 64-bit resources too
+Marcus Better wrote:
+> NO_HZ. I will try without it...
 
-I didn't realize this, since it wasn't set in any of the configs, or
-select-ed by any of the Kconfig. Will add this in the next go 'round.
+Nope, still the same result.
 
-Cheers,
-	Kyle
+Marcus
+
