@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXJ2XRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXJ2XTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbXJ2XRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 19:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbXJ2XRY
+	id S1755269AbXJ2XTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXJ2XTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 19:17:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:36401 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754728AbXJ2XRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 19:17:23 -0400
-Message-ID: <47266A00.4040408@goop.org>
-Date: Mon, 29 Oct 2007 16:17:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 29 Oct 2007 19:19:31 -0400
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:45502 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751964AbXJ2XTa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 19:19:30 -0400
+From: Frans Pop <elendil@planet.nl>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+Date: Tue, 30 Oct 2007 00:19:27 +0100
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200710122231.50739.elendil@planet.nl> <20071029200425.GA830@elte.hu> <20071029214321.GA25669@linux.vnet.ibm.com>
+In-Reply-To: <20071029214321.GA25669@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Zachary Amsden <zach@vmware.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, rusty@rustcorp.com.au,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Glauber de Oliveira Costa <glauber@t60.localdomain>,
-       Dan Hecht <dhecht@vmware.com>, Garrett Smith <garrett@vmware.com>
-Subject: Re: [PATCH] raise tsc clocksource rating
-References: <11936994092607-git-send-email-gcosta@redhat.com> <1193697734.9793.86.camel@bodhitayantram.eng.vmware.com> <20071029224852.GA27547@elte.hu> <47266431.1010500@goop.org> <20071029225528.GA31293@elte.hu>
-In-Reply-To: <20071029225528.GA31293@elte.hu>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710300019.28871.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Oct 2007 23:19:29.0428 (UTC) FILETIME=[27B4A540:01C81A82]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> that's totally broken then. You cannot create an SMP-safe monotonic 
-> clocksource via interpolation - native does not do it either. Good thing 
-> this problem got exposed, it needs to be fixed.
->   
+On Monday 29 October 2007, Balbir Singh wrote:
+> We'll also need this additional patch (untested),
 
-Sigh, I don't really want to have this fight again.
+OK. Both patches together do the trick. Gave it a nice long test run and got 
+no more weirdness.
+Tested-by: Frans Pop <elendil@planet.nl>
 
-I don't really see what point there is in raising the tsc's rating (why
-is 300 insufficient again?), but regardless of the value, the Xen
-clocksource rating needs to be higher.
+> but in the long run I think the approach needs to be
+>
+> 1. Update stime and utime at the time of context switching -- keep it
+>    in sync with p->sum_exec_runtime
+> 2. Keep track of system/user context at system call entry points
 
-    J
+Feel free to send me a patch for testing when you have one.
+
+Cheers,
+Frans
