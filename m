@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXJ2UUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXJ2UUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXJ2UUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXJ2UUI
+	id S1752826AbXJ2UUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbXJ2UUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:20:08 -0400
-Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:32805
-	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752760AbXJ2UUE (ORCPT
+	Mon, 29 Oct 2007 16:20:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:34559 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754169AbXJ2UUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:20:04 -0400
-Date: Mon, 29 Oct 2007 21:19:55 +0100
-From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org
-Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [2.6.23] IBM X41 looses time after Suspend2Disk
-Message-ID: <20071029201955.GA1955@titan.lahn.de>
-Mail-Followup-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Thomas Gleixner <tglx@linutronix.de>
+	Mon, 29 Oct 2007 16:20:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=thw0k0TdI9J4ap2MsD6/2MayoPTdv3XJi6dSwaq3415K7Fj3cYmX9WjWUKlIKaejP63aMP5esFKDoQCHszZJcuC1qZXSt3czxgUMBGQnHnP+yKcGTJQsoZyBFcZrTZp9p89UMLAw6s+Z3HQ++ZoCUtJ4klblbZPdJv0reQI/87A=
+Message-ID: <aa79d98a0710291320r5412ebcboc90234cc2ac56102@mail.gmail.com>
+Date: Mon, 29 Oct 2007 23:20:28 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Clean up scatterlist.h and introduce macros for readability.
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071029185803.GA7499@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: UUCP-Freunde Lahn e.V.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <Pine.LNX.4.64.0710291234560.20259@localhost.localdomain>
+	 <20071029185803.GA7499@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas, Pavel, Rafael!
+Could you please give a link to that explanation? It seems I've missed
+it somehow. Thanks.
 
-I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-/sys/power/state), the notebook hangs showing the following lines:
-        Stopping tasks ... done.
-        Shrinking memory... done (49361 pages freed)
-        Freed 197444 kbytes in 0.64 seconds (308.50 MB/s)
-        Suspending console(s)
-
-When I repeatedly press some keys or move the TrackPoint, the SwSusp
-continues and the notebook powers off.
-On reboot, the notebook resumes but hangs showing the following screen:
-        Stopping tasks ... done.
-        Loading image data pages (62483 pages) ... done
-        Read 249932 kbytes in 18.63 seconds (13.41 MB/s)
-        Suspending console(s)
-
-Generating interrupts by pressing keys or moving the TrackPoints makes
-the resume continue. But after that, the notebook looses time, xterms
-don't get updated until I press a key, the beeper beeps until I press a
-key, etc.
-
-Any idea what the problem might be?
-
-DMESG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.dmesg
-CONFIG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.config
-
-If you need more data, just ask.
-
-Thank you, BYtE
-Philipp
--- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
+On 10/29/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Oct 29 2007, Robert P. J. Day wrote:
+> >
+> > Add some macros to <linux/scatterlist.h> to make the bit manipulation
+> > more readable, and expand on some of the documentation.
+> >
+> > This patch incorporates content from Cyrill Gorcunov
+> > <gorcunov@gmail.com> as well.
+>
+> I don't like it, I already explained why I don't consider the 'magic'
+> values a problem. The use of the bits is supposed to be scatterlist.h
+> private and the values are documented at the top of that include file.
+>
+> --
+> Jens Axboe
+>
+>
