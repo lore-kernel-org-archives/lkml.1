@@ -1,105 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXJ2PRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbXJ2PRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXJ2PRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXJ2PRO
+	id S1758779AbXJ2PRf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXJ2PRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:17:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41009 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbXJ2PRN (ORCPT
+	Mon, 29 Oct 2007 11:17:16 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:52093 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752300AbXJ2PRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:17:13 -0400
-Date: Mon, 29 Oct 2007 15:16:47 +0000 (GMT)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Johannes Stezenbach <js@linuxtv.org>, linux-kernel@vger.kernel.org
-Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m & CONFIG_VIDEO_SAA7146_VV=y
-In-Reply-To: <20071029112303.GA18994@elte.hu>
-Message-ID: <Pine.LNX.4.64.0710291125250.6567@pentafluge.infradead.org>
-References: <20071026073736.GA24172@elte.hu> <20071027213057.GA15211@linuxtv.org>
- <20071027163932.e0a0522b.randy.dunlap@oracle.com> <20071029112303.GA18994@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 29 Oct 2007 11:17:14 -0400
+Subject: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 10:16:59 -0500
+Message-Id: <1193671019.3383.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007, Ingo Molnar wrote:
+In the SCSI transport classes (and soon to be in the AEN event
+subsystem) we have a lot of need for a grouping that doesn't include all
+files in the group.  We basically want to show capability by which file
+is present.  A classic example of this is the SPI transport class
+connected to the 53c700 card.  It's incapable of doing all of the modern
+LVD functions, so we don't show any of those capabilities in its sysfs
+directory.  However, we have a lot of horrible logic to generate
+separate per host groupings of attributes for this.  We would be able to
+use the standard sysfs group attributes *if* there were a way of
+filtering them so that certain attributes didn't appear.
 
->
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
->>> config VIDEO_SAA7146_VV
->>> 	tristate
->>> 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
->>> 	select VIDEOBUF_DMA_SG
->>> 	select VIDEO_SAA7146
->>>
->>> (untested)
->>
->> Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
->> has too many "select"s involved, but select doesn't follow the dependency
->> chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
->>
->> 	select is evil.... select will by brute force set a symbol
->> 	equal to 'y' without visiting the dependencies. So abusing
->> 	select you are able to select a symbol FOO even if FOO depends
->> 	on BAR that is not set.
->
-> so ... what should we do? Remove those ~7 select VIDEO_SAA7146_VV lines
-> and replace them with depends on VIDEO_SAA7146_VV ?
+This patch is a first pass at adding a filter function to the group
+attributes, just to see how the idea flies.  If everyone's OK with this,
+I think the next thing that we might do is add bitmap functions (so
+every bit in the bitmap has a name, but also might not appear) to
+groups.
 
-If select is not following the dependency chains, This would mean that we may 
-need to rewrite also on other parts of /drivers/media Kconfig files that may 
-be suffering the same kind of trouble.
+The kzalloc in kernel/params.c is to stop the system crashing on boot
+with a bogus filter function pointer.
 
-There are several places where a similar logic is used, to select modules that 
-are present only on some configurations.
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-For example, by default, bttv module selects all possible audio TV decoders 
-that can be needed by a bttv device (msp34xx, tvaudio, tda7432, ...). Just one 
-audio decoder is needed for a specific bttv hardware. So, there's also an 
-option to manually select just the needed drivers.
+----
 
-The actual logic is:
+There's one final thing; if you're OK with this, can you ack it and let
+me take it through the SCSI tree?  we're building functionality that
+will depend on this.
 
-menu "Encoders/decoders and other helper chips"
-         depends on !VIDEO_HELPER_CHIPS_AUTO
+Thanks,
 
-config VIDEO_TVAUDIO
-         tristate "Simple audio decoder chips"
-         depends on VIDEO_V4L1 && I2C
-...
-endmenu
+James
 
-config VIDEO_BT848
-         tristate "BT848 Video For Linux"
-         depends on VIDEO_DEV && PCI && I2C && VIDEO_V4L1
-         select I2C_ALGOBIT
-         select FW_LOADER
-         select VIDEO_BTCX
-         select VIDEOBUF_DMA_SG
-         select VIDEO_IR
-         select VIDEO_TUNER
-         select VIDEO_TVEEPROM
-         select VIDEO_MSP3400 if VIDEO_HELPER_CHIPS_AUTO
-         select VIDEO_TVAUDIO if VIDEO_HELPER_CHIPS_AUTO
-         select VIDEO_TDA7432 if VIDEO_HELPER_CHIPS_AUTO
-         select VIDEO_TDA9875 if VIDEO_HELPER_CHIPS_AUTO
+Index: BUILD-2.6/fs/sysfs/group.c
+===================================================================
+--- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
++++ BUILD-2.6/fs/sysfs/group.c	2007-10-29 00:55:49.000000000 -0500
+@@ -16,25 +16,31 @@
+ #include "sysfs.h"
+ 
+ 
+-static void remove_files(struct sysfs_dirent *dir_sd,
++static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			 const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
++	int i;
+ 
+-	for (attr = grp->attrs; *attr; attr++)
+-		sysfs_hash_and_remove(dir_sd, (*attr)->name);
++	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
++		if (grp->filter_show &&
++		    grp->filter_show(kobj, i))
++			sysfs_hash_and_remove(dir_sd, (*attr)->name);
+ }
+ 
+-static int create_files(struct sysfs_dirent *dir_sd,
++static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
+-	int error = 0;
++	int error = 0, i;
+ 
+-	for (attr = grp->attrs; *attr && !error; attr++)
+-		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
++	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
++		if (grp->filter_show &&
++		    grp->filter_show(kobj, i))
++			error |=
++				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
+ 	if (error)
+-		remove_files(dir_sd, grp);
++		remove_files(dir_sd, kobj, grp);
+ 	return error;
+ }
+ 
+@@ -54,7 +60,7 @@ int sysfs_create_group(struct kobject * 
+ 	} else
+ 		sd = kobj->sd;
+ 	sysfs_get(sd);
+-	error = create_files(sd, grp);
++	error = create_files(sd, kobj, grp);
+ 	if (error) {
+ 		if (grp->name)
+ 			sysfs_remove_subdir(sd);
+@@ -75,7 +81,7 @@ void sysfs_remove_group(struct kobject *
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
+-	remove_files(sd, grp);
++	remove_files(sd, kobj, grp);
+ 	if (grp->name)
+ 		sysfs_remove_subdir(sd);
+ 
+Index: BUILD-2.6/include/linux/sysfs.h
+===================================================================
+--- BUILD-2.6.orig/include/linux/sysfs.h	2007-10-28 17:20:06.000000000 -0500
++++ BUILD-2.6/include/linux/sysfs.h	2007-10-29 00:37:18.000000000 -0500
+@@ -32,6 +32,7 @@ struct attribute {
+ 
+ struct attribute_group {
+ 	const char		*name;
++	int			(*filter_show)(struct kobject *, int);
+ 	struct attribute	**attrs;
+ };
+ 
+Index: BUILD-2.6/kernel/params.c
+===================================================================
+--- BUILD-2.6.orig/kernel/params.c	2007-10-29 01:18:43.000000000 -0500
++++ BUILD-2.6/kernel/params.c	2007-10-29 01:18:49.000000000 -0500
+@@ -472,7 +472,7 @@ param_sysfs_setup(struct module_kobject 
+ 			sizeof(mp->grp.attrs[0]));
+ 	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
+ 
+-	mp = kmalloc(size[0] + size[1], GFP_KERNEL);
++	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
+ 	if (!mp)
+ 		return ERR_PTR(-ENOMEM);
+ 
 
-Also, the same audio decoders can be used by other devices. For example, 
-msp34xx is used also with pvrusb2 and several em28xx devices.
 
-So, converting this to "depend on" won't be trivial, since there's no direct 
-dependency of a bridge driver (cx88, bttv, pvrusb2) and an auxiliary i2c 
-device (msp34xx, tvaudio, ir, ...).
-
-There's something weird, though. The select does the proper thing for tuners. 
-Why is it failing for SAA7146_VV?
-
--- 
-Cheers,
-Mauro
