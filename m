@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXJ2LjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXJ2LlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbXJ2LjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 07:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXJ2LjJ
+	id S1754701AbXJ2LlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 07:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbXJ2LlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 07:39:09 -0400
-Received: from web52909.mail.re2.yahoo.com ([206.190.49.19]:21519 "HELO
-	web52909.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752454AbXJ2LjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 07:39:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=TJ1mpq5Pd17d3cWhWHRmxH9P80mQjuZFV+0I8VY+uhF11/3aE7bU4H0agVs1g/lXETZYtgtNtD1PkusY6XFw7cJCh7phrqAT/xFVvRAQfKx3CjGcmSKDUaItUCVkjHcB25VNc1fz4avW56jjSNuwqPBUvB8YLHkEZETjj9kZZGE=;
-X-YMail-OSG: wUoTFIUVM1n6zZx3tEwRJ8.4Ge5THJBnW7X7j4xZWI4Efo7p.qDcrcgCvyhBmlXITcFB1X2mhse5YyPa4apToWkvFh6KP27vWkFyNMQnR_uVoy6.qgwHF1noD_s1FUuuA5MhuswDLKmZ9OU-
-Date: Mon, 29 Oct 2007 11:39:05 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [2.6.23.1] PCI device locking up the computer when its module loads
-To: Dan Williams <dcbw@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <1193657365.19938.17.camel@localhost.localdomain>
+	Mon, 29 Oct 2007 07:41:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59763 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbXJ2LlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 07:41:14 -0400
+Date: Mon, 29 Oct 2007 12:40:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Knoblauch <knobi@knobisoft.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, wfg@mail.ustc.edu.cn,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: 2.6.24-rc1: First impressions
+Message-ID: <20071029114048.GA22599@elte.hu>
+References: <213736.67377.qm@web32614.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <343473.92638.qm@web52909.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <213736.67377.qm@web32614.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.1.7-deb
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2111]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Dan Williams <dcbw@redhat.com> wrote:
-> This same sort of problem was just fixed for iwl4965.  The fix for that
-> was to disable device interrupts until everything the driver needed
-> (including interrupt handler) was set up and ready before re-enabling
-> them, I think.  See the thread "iwl4965 detection problem" and the mail
-> from Jes Sorensen on 2007-10-26.
 
-The problem with this case is that pci_enable_device() is the very first thing that the driver
-calls, but (as I understand it) I have no hope of sending commands to the device until this
-function returns. This is a "catch 22" situation from my perspective, because how am I supposed to
-know which device interrupt to disable if I can't call pci_enable_device()?
+* Martin Knoblauch <knobi@knobisoft.de> wrote:
 
-Does the 2.4 kernel survive because IRQs are disabled globally during module_init() or something?
+>  One of the reasons I do 15 GB transfers is to make sure that I am 
+>  well above the possible page cache size. And of course I am doing a 
+>  final sync to finish the runs :-) The sync is also running faster in 
+>  2.6.24-rc1.
+> 
+>  If I factor it in the results for dd1/dd3 are:
+> 
+> test                2.6.19.2        2.6.22.6    2.6.24-rc1
+> sync time              18sec           19sec          6sec
+> dd1                     27.5            47.5            92
+> dd3                    3x9.1           3x8.5          3x29
+> 
+> So basically including the sync time make 2.6.24-rc1 even more 
+> promosing. Now, I know that my benchmarks numbers are crude and show 
+> only a very small aspect of system performance. But - it is an aspect 
+> I care about a lot. And those benchmarks match my use-case pretty 
+> good.
 
-Cheers,
-Chris
+indeed. I'm even more impressed :)
 
-
-
-      ___________________________________________________________ 
-Want ideas for reducing your carbon footprint? Visit Yahoo! For Good  http://uk.promotions.yahoo.com/forgood/environment.html
+	Ingo
