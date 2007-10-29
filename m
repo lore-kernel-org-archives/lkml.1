@@ -1,67 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbXJ2RLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbXJ2RNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbXJ2RLv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXJ2RLn
+	id S1758649AbXJ2RNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXJ2RNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:11:43 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:4609 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbXJ2RLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NIOvWUe+M1jG9doC7oGmnNNE/7Gr4Xg+kH8Al0/O7J1gCX4AgzUi5H1QrM2BKJPk8rqadt2Nk0nU75+MweqVUX0/arxZ2daKn/jlbBCL3DYPDLdbvQFUhx3Kl8Mud71jP9q7b4KxWB4Ym31H9TmarTJER+0zH3SqYLk/nCnERpY=
-Message-ID: <d120d5000710291011u19baaf2avaef6d4b9e5ce003b@mail.gmail.com>
-Date: Mon, 29 Oct 2007 13:11:40 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Hohndel, Dirk" <hohndel@linux.intel.com>
-Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from input_register_device
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Jiri Kosina" <jikos@jikos.cz>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <3CE5A712-C0BE-45EE-9171-C3B54F789483@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 13:13:24 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:34477 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752964AbXJ2RNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 13:13:23 -0400
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.0.9999.0710271212450.19199@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	 <alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	 <alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	 <Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	 <1193411888.5032.9.camel@localhost>
+	 <alpine.DEB.0.9999.0710261136500.11674@chino.kir.corp.google.com>
+	 <alpine.DEB.0.9999.0710271212450.19199@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 29 Oct 2007 12:23:08 -0400
+Message-Id: <1193674988.5035.93.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4725F2DF.1060500@garzik.org>
-	 <20071029152050.GA23411@bigserver.hohndel.org>
-	 <d120d5000710290833i5ed524d6ne95fc1ef34834566@mail.gmail.com>
-	 <3CE5A712-C0BE-45EE-9171-C3B54F789483@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/07, Hohndel, Dirk <hohndel@linux.intel.com> wrote:
->
-> On Oct 29, 2007, at 8:33 AM, Dmitry Torokhov wrote:
->
-> > On 10/29/07, Dirk Hohndel <hohndel@linux.intel.com> wrote:
-> >>
-> >> Actually, the more I look at the code that bails when it runs out
-> >> of memory,
-> >> the more I wonder about that.
-> >>
-> >>        hidinput = kzalloc(sizeof(*hidinput), GFP_KERNEL);
-> >>        input_dev = input_allocate_device();
-> >>        if (!hidinput || !input_dev) {
-> >>                kfree(hidinput);
-> >>                input_free_device(input_dev);
-> >>
-> >> This either passes a NULL pointer to kfree or to
-> >> input_free_device. That's
-> >> not nice.
-> >>
-> >
-> > No, that's allright. input_free_device() takes after kfree() so that
-> > it safe to call it with NULL pointer.
->
-> Ahh - should have checked that.
->
-> Will the rest of the patch work with the call to hidinput_disconnect?
+On Sat, 2007-10-27 at 12:16 -0700, David Rientjes wrote:
+> On Fri, 26 Oct 2007, David Rientjes wrote:
+> 
+> > Hacking and requiring an updated version of libnuma to allow empty 
+> > nodemasks to be passed is a poor solution; if mempolicy's are supposed to 
+> > be independent from cpusets, then what semantics does an empty nodemask 
+> > actually imply when using MPOL_INTERLEAVE?  To me, it means the entire 
+> > set_mempolicy() should be a no-op, and that's exactly how mainline 
+> > currently treats it _as_well_ as libnuma.  So justifying this change in 
+> > the man page is respectible, but passing an empty nodemask just doesn't 
+> > make sense.
+> > 
+> 
+> Another reason that passing an empty nodemask to set_mempolicy() doesn't 
+> make sense is that libnuma uses numa_set_interleave_mask(&numa_no_nodes)
+> to disable interleaving completely.
+> 
 
-Yes, I think it will.
+David:  as we discussed when you contacted me off-list about this, the
+libnuma API and the system call interface are two quite different APIs.
+For example,  numa_set_interleave_mask(&numa_no_nodes) does not pass
+MPOL_INTERLEAVE with an empty mask to set_mempolicy().  Rather it
+"installs" an MPOL_DEFAULT policy which internally just deletes the
+task's mempolicy, allowing fallback to system default policy.  I would
+not propose to change this behavior, nor break libnuma in any way.
 
--- 
-Dmitry
+For other, who weren't involved in the off-list exchange, here's an
+excerpt from my response to David:
+
+[
+At the libnuma level, I think we need an explicit
+"numa_set_interleave_allowed()"--analogous to "numa_set_localalloc()".
+
+The current "numa_alloc_interleaved()" should, I think, allocate on all
+*allowed* nodes, rather than all nodes.  It can do this using the sys
+call interface as defined.
+
+Independent of cpuset-independent interleave, an application needs to
+pass a valid subset of the current mems allowed to
+"numa_alloc_interleaved_subset()".   An application can now obtain the
+mems_allowed using the MPOL_F_MEMS_ALLOWED flag that I added, but we
+need a libnuma wrapper for this as well.  [Yeah, this info can change at
+any time, but that's always been the case....]
+
+"numa_interleave_memory()" is essentially mbind(), I think [not looking
+at the libnuma source code at this moment].  Maybe provide
+"numa_interleave_memory_allowed(void *mem, size_t size)" ???
+
+Finally, I think we need to add a query function:  
+"nodemask_t numa_get_mems_allowed()" to return the mask of valid nodes
+in the current context [cpuset].  This would just be a wrapper around
+get_mempolicy() with the MPOL_F_MEMS_ALLOWED flag.
+]
+
+Couple of comments on the above:
+
+1. "the sys call interface as defined" in the 2nd paragraph of the
+except refers to my patch that uses null/empty nodemask to indicate "all
+allowed".
+
+2.  As this thread progresses, you've discussed relaxing the requirement
+that applications pass a valid subset of mems_allowed.  I.e., something
+that was illegal becomes legal.  An API change, I think.  But, a
+backward compatible one, so that's OK, right? :-)
+
+3. If we do change the semantics of the mempolicy system calls to allow
+nodes outside of the cpuset, then maybe we don't need to query the mems
+allowed.  I still find it useful, but not absolutely necessary--e.g., to
+construct a nodemask that will be acceptable in the current cpuset.
+
+4. I looked at libnuma source.  numa_interleave_memory() does use
+mbind() which, again, does not complain about nodemasks that include
+non-allowed nodes.
+
+Another thing occurs to me:  perhaps numactl would need an additional
+'nodes' specifier such as 'allowed'.  Alternatively, 'all' could be
+redefined to me 'all allowed'.  This is independent of how you specify
+'all allowed' to the system call.
+
+Regards,
+Lee
+
