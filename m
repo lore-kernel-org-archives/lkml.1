@@ -1,72 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbXJ2SFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbXJ2SGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbXJ2SFl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 14:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbXJ2SF3
+	id S1759513AbXJ2SGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 14:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXJ2SFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 14:05:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39794 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758720AbXJ2SF1 (ORCPT
+	Mon, 29 Oct 2007 14:05:52 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:57888 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860AbXJ2SFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 14:05:27 -0400
-Date: Mon, 29 Oct 2007 11:07:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Ebourne <fedora@ebourne.me.uk>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [stable] 2.6.23 boot failures on x86-64.
-Message-ID: <20071029180739.GA17595@kroah.com>
-References: <20071029175014.GH7793@redhat.com>
+	Mon, 29 Oct 2007 14:05:51 -0400
+Message-ID: <472620D8.7010705@fr.ibm.com>
+Date: Mon, 29 Oct 2007 19:05:12 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029175014.GH7793@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       kir@swsoft.com, containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, kir@openvz.org,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take
+ 2)
+References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>	<m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>	<20071027002448.GH30533@stusta.de>	<m18x5puyw7.fsf@ebiederm.dsl.xmission.com>	<20071027020408.GO30533@stusta.de>	<20071026191845.fd0f75c8.akpm@linux-foundation.org> <m18x5pte18.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m18x5pte18.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 01:50:14PM -0400, Dave Jones wrote:
-> We've had a number of people reporting that their x86-64s stopped booting
-> when they moved to 2.6.23.  It rebooted just after discovering the AGP bridge
-> as a result of the IOMMU init.
+Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> Martin tracked this down to the following commit.
+>>> On Sat, 27 Oct 2007 04:04:08 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+>>>> be happy to hear if someone has a better idea.
+>>> There is a difference between "complete the feature" and "early adopters 
+>>> to start playing with the feature" on the one side, and making something 
+>>> available in a released kernel on the other side.
+>>>
+>>> For development and playing with it it can depend on BROKEN (perhaps 
+>>> with the dependency removed through the first -rc kernels), but as soon 
+>>> as it's available in a -final kernel the ABI is fixed.
+>>>
+>> Yes, if we're not 100% certain that the interfaces are correnct and unchanging
+>> and that the implementation is solid, we should disable the feature at Kconfig
+>> time.
 > 
+> Reasonable.  So far things look good for a single pid namespace.  Multiple
+> pid namespaces look iffy.
 > 
-> commit 2e1c49db4c640b35df13889b86b9d62215ade4b6
-> Author: Zou Nan hai <nanhai.zou@intel.com>
-> Date:   Fri Jun 1 00:46:28 2007 -0700
+>> The best option would be to fix things asap.  But assuming that option isn't
+>> reasonable and/or safe, we can slip a `depends on BROKEN' into -rc6 then
+>> resume development for 2.6.25.
 > 
->     x86_64: allocate sparsemem memmap above 4G
->     
->     On systems with huge amount of physical memory, VFS cache and memory memmap
->     may eat all available system memory under 4G, then the system may fail to
->     allocate swiotlb bounce buffer.
->     
->     There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix dose
->     not cover sparsemem model.
->     
->     This patch add fix to sparsemem model by first try to allocate memmap above
->     4G.
->     
->     Signed-off-by: Zou Nan hai <nanhai.zou@intel.com>
->     Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
->     Cc: Andi Kleen <ak@suse.de>
->     Cc: <stable@kernel.org>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> I think we can make a lot of progress but there is enough development
+> yet to do to reach the target of correct and unchanging interfaces,
+> with a solid interface.  That unless we achieve a breakthrough I
+> don't see us achieving that target for 2.6.24.
 > 
-> 
-> This should be probably be reverted for 2.6.23-stable, and either fixed
-> properly in .24, or reverted there too.
+> The outstanding issues I can think of off the top of my head:
+> - signal handling for init on secondary pid namespaces.
+> - Properly setting si_pid on signals that cross namespaces.
 
-I'll be glad to revert it in -stable, if it's also reverted in Linus's
-tree first :)
+these are being addressed by suka patches, and also you with the latest patch 
+you sent. right ? 
 
-thanks,
+> - The kthread API conversion so we don't get kernel threads
+>   trapped in pid namespaces and make them unfreeable.
 
-greg k-h
+a lot of work has been done on that part. take a look at it. the clean up 
+is really impressive ! 
+
+NFS still uses the kernel_thread() API. the first thing to do on the kthread
+topic is to improve the kthread API.
+ 
+I think we can discard the remaining drivers for the moment. 
+
+> - At fork time I think we are doing a little bit too much work
+>   in setting the session and the pgrp, and removing the controlling
+>   tty.
+
+yes probably. this needs to be sorted out. it makes a container init
+process different from the system init process. 
+
+> - AF_unix domain credential passing.
+ 
+see commit b488893a390edfe027bae7a46e9af8083e740668 which is covering 
+UNIX socket credentials and more. Are you thinking we should do more for 
+credentials and use a struct pid* ? This looks scary.
+
+> - misc pid vs vpid sorting out (autofs autofs4, coda, arch specific
+>   syscalls, others?)
+
+autofs* is fixed. netlink ?
+
+> - Removal of task->pid, task->tgid, task->signal->__pgrp,
+>   tsk->signal->__session or some other way to ensure that we have
+>   touched and converted all of the kernel pid handling.
+
+well, __pgrp and __session are pretty well covered with the __deprecated
+attribute. I don't see what else we could to do on these. we can't remove 
+the task_{session,pgrp}_* routines. 
+
+we could apply the same __deprecated technique to task->pid, task->tgid.
+This is going to be a challenge :)
+
+> - flock pid handling.
+
+Pavel again.
+ 
+> It hurts me to even ponder what thinking makes it that 
+> CONFIG_EXPERIMENTAL isn't enough to keep a stable distro
+> from shipping the code in their stable kernel, and locking us into
+> trouble.
+> 
+> With that said.  I think I should just respin the patchset now and add
+> the "depends on BROKEN".  
+> 
+> The user namespace appears to need that treatment as well.
+
+The kernel will be protected by a CONFIG_NAMESPACES option as soon as it
+gets in. Unfortunately, it didn't make 2.6.24 so this will be 2.6.25 
+material.
+
+Cheers,
+
+C.
+ 
+> The network namespace has so little there and it already depends
+> on !SYSFS so I don't think we are going to run into any trouble
+> with it.  Happily I managed to parse that problem differently,
+> so I could slice of the parts of the networking stack that
+> had not been converted.
+> 
+> Eric
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
