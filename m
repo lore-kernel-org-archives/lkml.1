@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXJ2Mf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXJ2MgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbXJ2Mf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXJ2MfQ
+	id S1755943AbXJ2MgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXJ2Mf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:35:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55285 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbXJ2MfP (ORCPT
+	Mon, 29 Oct 2007 08:35:59 -0400
+Received: from allen.werkleitz.de ([80.190.251.108]:47214 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbXJ2Mf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:35:15 -0400
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <1193652717.27652.45.camel@twins>
-References: <1193064057.16541.1.camel@matrix>
-	 <20071029004002.60c7182a.akpm@linux-foundation.org>
-	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-	 <1193652717.27652.45.camel@twins>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 13:35:08 +0100
-Message-Id: <1193661308.27652.47.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 08:35:58 -0400
+Date: Mon, 29 Oct 2007 13:35:33 +0100
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+Message-ID: <20071029123533.GA17331@linuxtv.org>
+References: <20071026073736.GA24172@elte.hu> <20071027213057.GA15211@linuxtv.org> <20071027163932.e0a0522b.randy.dunlap@oracle.com> <20071029112303.GA18994@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029112303.GA18994@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 84.190.153.223
+Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
+	CONFIG_VIDEO_SAA7146_VV=y
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 11:11 +0100, Peter Zijlstra wrote:
-> On Mon, 2007-10-29 at 01:17 -0700, Jaya Kumar wrote:
-> > On 10/29/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Mon, 22 Oct 2007 16:40:57 +0200 Stefani Seibold <stefani@seibold.net> wrote:
-> > > >
-> > > > The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
-> > > > This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
-> > > > which will be in an extra thread handled, to perform the IO and clean and
-> > > > write protect all pages with page_clean().
-> > > >
-> > 
-> > Hi,
-> > 
-> > An aside, I just tested that deferred IO works fine on 2.6.22.10/pxa255.
-> > 
-> > I understood from the thread that PeterZ is looking into page_mkclean
-> > changes which I guess went into 2.6.23. I'm also happy to help in any
-> > way if the way we're doing fb_defio needs to change.
+On Mon, Oct 29, 2007, Ingo Molnar wrote:
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Yeah, its the truncate race stuff introduced by Nick in
->   d0217ac04ca6591841e5665f518e38064f4e65bd
+> > > config VIDEO_SAA7146_VV
+> > > 	tristate
+> > > 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
+> > > 	select VIDEOBUF_DMA_SG
+> > > 	select VIDEO_SAA7146
+> > > 
+> > > (untested)
+> > 
+> > Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
+> > has too many "select"s involved, but select doesn't follow the dependency
+> > chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
+> > 
+> > 	select is evil.... select will by brute force set a symbol
+> > 	equal to 'y' without visiting the dependencies. So abusing
+> > 	select you are able to select a symbol FOO even if FOO depends
+> > 	on BAR that is not set.
 > 
-> I'm a bit at a loss on how to go around fixing this. One ugly idea I had
-> was to check page->mapping before going into page_mkwrite() and when
-> that is null, don't bother with the truncate check.
+> so ... what should we do? Remove those ~7 select VIDEO_SAA7146_VV lines 
+> and replace them with depends on VIDEO_SAA7146_VV ?
 
-Something like this
+Hm, the idea is that the SAA7146 driver is like a library,
+and the V4L or DVB card drivers select the library functions
+they need (base driver or common V4L helper functions).
+The user shouldn't have to worry about those details.
 
----
- mm/memory.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -2300,6 +2300,8 @@ static int __do_fault(struct mm_struct *
- 			 * to become writable
- 			 */
- 			if (vma->vm_ops->page_mkwrite) {
-+				struct address_space *mapping = page->mapping;
-+
- 				unlock_page(page);
- 				if (vma->vm_ops->page_mkwrite(vma, page) < 0) {
- 					ret = VM_FAULT_SIGBUS;
-@@ -2314,7 +2316,7 @@ static int __do_fault(struct mm_struct *
- 				 * reworking page_mkwrite locking API, which
- 				 * is better done later.
- 				 */
--				if (!page->mapping) {
-+				if (mapping != page->mapping) {
- 					ret = 0;
- 					anon = 1; /* no anon but release vmf.page */
- 					goto out;
+But yeah, if it's not possible to do that with kbuild then
+it's probably best to s/select/depends on/ for VIDEO_SAA7146_VV
+and provide a meaningful help text for VIDEO_SAA7146_VV.
 
 
+Johannes
