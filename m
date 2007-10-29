@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXJ2Q3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXJ2Q3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbXJ2Q3P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbXJ2Q3B
+	id S1758945AbXJ2Q3i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXJ2Q32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:29:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42000 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752188AbXJ2Q3A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:29:00 -0400
-Date: Mon, 29 Oct 2007 09:28:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, rpjday@crashcourse.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Permit the memory to be located elsewhere in NOMMU
- mode
-In-Reply-To: <20071029152028.14124.50739.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LFD.0.999.0710290926140.30120@woody.linux-foundation.org>
-References: <20071029152028.14124.50739.stgit@warthog.procyon.org.uk>
+	Mon, 29 Oct 2007 12:29:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33531 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753497AbXJ2Q31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:29:27 -0400
+Message-ID: <47260A65.7040008@garzik.org>
+Date: Mon, 29 Oct 2007 12:29:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: [PATCH v4 1/2] SCSI: Asynchronous event	notification	infrastructure
+References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>	 <20071029144208.676251F8168@havoc.gtf.org>	 <1193673088.3383.34.camel@localhost.localdomain>	 <47260546.9090508@garzik.org> <1193674627.3383.45.camel@localhost.localdomain>
+In-Reply-To: <1193674627.3383.45.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Bottomley wrote:
+> On Mon, 2007-10-29 at 12:07 -0400, Jeff Garzik wrote:
+>> James Bottomley wrote:
+>>> This still doesn't solve the fundamental corruption problem:
+>>> sdev->event_work has to contain the work entry until the workqueue has
+>>> finished executing it (which is some unspecified time in the future).
+>>> As soon as you drop the sdev->list_lock, the system thinks
+>>> sdev->event_work is available for reuse.  If we fire another event
+>>> before the work queue finished processing the prior event, the queue
+>>> will be corrupted.
+>> I think you're misunderstanding the workqueue code?  You can call 
+>> schedule_work(&sdev->event_work) from anywhere, any time you like, as 
+>> many times as you like.
+> 
+> OK, take me through it slowly then ... I think schedule_work(work)
+> inserts work->entry onto the workqueue list (in
+> workqueue.c:insert_work()).  If the event hasn't fired, it will already
+> be on the list, so adding the same entry to a list twice causes a list
+> corruption problem.
+
+It does a test_and_set_bit() first thing in queue_work().  Similar 
+exclusivity logic is found in net device land.  Ah, the fun of locking 
+without locks that benh grumbles about :)
 
 
-On Mon, 29 Oct 2007, David Howells wrote:
->  
-> -__page_offset = 0xc0000000;		/* start of area covered by struct pages */
-> +/* start of area covered by struct pages */
-> +#if defined(CONFIG_UCPAGE_OFFSET_20000000)
-> +__page_offset = 0x20000000;
-> +#elif defined(CONFIG_UCPAGE_OFFSET_40000000)
-> +__page_offset = 0x40000000;
-...
+> Plus, unfortunately, the CC/UA events are going to have to carry extra
+> sense data; they're not simply going to be triggers saying something
+> happened.
 
-Please don't do these kinds of things in the source code.
+OK this is a fair criticism.
 
-Do them in the Kconfig language where it belongs, and where it makes much 
-more sense.
+If additional data must be carried, then I must ditch the beloved bitmap 
+implementation and go back to a list (with associated GFP_ATOMIC alloc).
 
-See, for example, arch/x86/Kconfig.i386:
+I will fix this, unless I receive email to the contrary...
 
-	config PAGE_OFFSET
-	        hex
-	        default 0xB0000000 if VMSPLIT_3G_OPT
-	        default 0x80000000 if VMSPLIT_2G
-	        default 0x78000000 if VMSPLIT_2G_OPT
-	        default 0x40000000 if VMSPLIT_1G
-	        default 0xC0000000
+	Jeff
 
-Notice? Even the syntax is much cleaner!
 
-		Linus
