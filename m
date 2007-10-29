@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbXJ2N24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbXJ2N3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbXJ2N24 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 09:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXJ2N2r
+	id S1756230AbXJ2N3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 09:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbXJ2N3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 09:28:47 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:40331 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbXJ2N2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 09:28:47 -0400
-Date: Mon, 29 Oct 2007 09:25:10 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: dhowells@redhat.com
-Subject: [PATCH] FRV:  Move DMA macros to scatterlist.h for consistency.
-Message-ID: <Pine.LNX.4.64.0710290925001.11882@localhost.localdomain>
+	Mon, 29 Oct 2007 09:29:11 -0400
+Received: from ns120.gr8dns.org ([193.108.181.120]:46502 "EHLO mail.gr8dns.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752106AbXJ2N3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 09:29:10 -0400
+Date: Mon, 29 Oct 2007 06:28:17 -0700
+From: Dirk Hohndel <hohndel@linux.intel.com>
+To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] pciserial_resume_one ignored return value of pci_enable_device
+Message-ID: <20071029132817.GA20449@bigserver.hohndel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] pciserial_resume_one ignored return value of pci_enable_device
 
-To be consistent with other architectures, these two DMA macros should
-be defined in scatterlist.h as opposed to dma-mapping.h
-
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
 
 ---
+ drivers/serial/8250_pci.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-  if david prefers to handle this because he wants to do something
-differently, that's cool.
-
-  not compile-tested as it looks fairly trivial, but i've said *that*
-before.
-
-
-diff --git a/include/asm-frv/dma-mapping.h b/include/asm-frv/dma-mapping.h
-index bcb2df6..2e8966c 100644
---- a/include/asm-frv/dma-mapping.h
-+++ b/include/asm-frv/dma-mapping.h
-@@ -17,16 +17,6 @@ void *dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle
- void dma_free_coherent(struct device *dev, size_t size, void *vaddr, dma_addr_t dma_handle);
-
- /*
-- * These macros should be used after a pci_map_sg call has been done
-- * to get bus addresses of each of the SG entries and their lengths.
-- * You should only work with the number of sg entries pci_map_sg
-- * returns, or alternatively stop on the first sg_dma_len(sg) which
-- * is 0.
-- */
--#define sg_dma_address(sg)	((sg)->dma_address)
--#define sg_dma_len(sg)		((sg)->length)
--
--/*
-  * Map a single buffer of the indicated size for DMA in streaming mode.
-  * The 32-bit bus address to use is returned.
-  *
-diff --git a/include/asm-frv/scatterlist.h b/include/asm-frv/scatterlist.h
-index 2e7143b..c0c2da0 100644
---- a/include/asm-frv/scatterlist.h
-+++ b/include/asm-frv/scatterlist.h
-@@ -31,6 +31,9 @@ struct scatterlist {
- 	unsigned int	length;
- };
-
-+#define sg_dma_address(sg)	((sg)->dma_address)
-+#define sg_dma_len(sg)		((sg)->length)
-+
- #define ISA_DMA_THRESHOLD (0xffffffffUL)
-
- #endif /* !_ASM_SCATTERLIST_H */
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 0e35756..ceb03c9 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -1986,6 +1986,7 @@ static int pciserial_suspend_one(struct pci_dev *dev, pm_message_t state)
+ 
+ static int pciserial_resume_one(struct pci_dev *dev)
+ {
++	int err;
+ 	struct serial_private *priv = pci_get_drvdata(dev);
+ 
+ 	pci_set_power_state(dev, PCI_D0);
+@@ -1995,7 +1996,9 @@ static int pciserial_resume_one(struct pci_dev *dev)
+ 		/*
+ 		 * The device may have been disabled.  Re-enable it.
+ 		 */
+-		pci_enable_device(dev);
++		err = pci_enable_device(dev);
++		if (err)
++			return err;
+ 
+ 		pciserial_resume_ports(priv);
+ 	}
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+gitgui.0.8.4.g8d863
 
-http://crashcourse.ca
-========================================================================
