@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXJ2XYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbXJ2XYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbXJ2XYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 19:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbXJ2XYN
+	id S1756571AbXJ2XYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 19:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbXJ2XYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 19:24:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:13622 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbXJ2XYM (ORCPT
+	Mon, 29 Oct 2007 19:24:39 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53474 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbXJ2XYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 19:24:12 -0400
-Date: Mon, 29 Oct 2007 11:19:06 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Johannes Stezenbach <js@linuxtv.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
- CONFIG_VIDEO_SAA7146_VV=y
-Message-Id: <20071029111906.c488393f.randy.dunlap@oracle.com>
-In-Reply-To: <20071029123533.GA17331@linuxtv.org>
-References: <20071026073736.GA24172@elte.hu>
-	<20071027213057.GA15211@linuxtv.org>
-	<20071027163932.e0a0522b.randy.dunlap@oracle.com>
-	<20071029112303.GA18994@elte.hu>
-	<20071029123533.GA17331@linuxtv.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Oct 2007 19:24:38 -0400
+Message-ID: <47266BAB.2000406@linux.vnet.ibm.com>
+Date: Tue, 30 Oct 2007 04:54:27 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [stable] 2.6.23 regression: top displaying 9999% CPU usage
+References: <200710122231.50739.elendil@planet.nl> <20071029200425.GA830@elte.hu> <20071029214321.GA25669@linux.vnet.ibm.com> <200710300019.28871.elendil@planet.nl>
+In-Reply-To: <200710300019.28871.elendil@planet.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 13:35:33 +0100 Johannes Stezenbach wrote:
-
-> On Mon, Oct 29, 2007, Ingo Molnar wrote:
-> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> > > > config VIDEO_SAA7146_VV
-> > > > 	tristate
-> > > > 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
-> > > > 	select VIDEOBUF_DMA_SG
-> > > > 	select VIDEO_SAA7146
-> > > > 
-> > > > (untested)
-> > > 
-> > > Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
-> > > has too many "select"s involved, but select doesn't follow the dependency
-> > > chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
-> > > 
-> > > 	select is evil.... select will by brute force set a symbol
-> > > 	equal to 'y' without visiting the dependencies. So abusing
-> > > 	select you are able to select a symbol FOO even if FOO depends
-> > > 	on BAR that is not set.
-> > 
-> > so ... what should we do? Remove those ~7 select VIDEO_SAA7146_VV lines 
-> > and replace them with depends on VIDEO_SAA7146_VV ?
+Frans Pop wrote:
+> On Monday 29 October 2007, Balbir Singh wrote:
+>> We'll also need this additional patch (untested),
 > 
-> Hm, the idea is that the SAA7146 driver is like a library,
-> and the V4L or DVB card drivers select the library functions
-> they need (base driver or common V4L helper functions).
-> The user shouldn't have to worry about those details.
+> OK. Both patches together do the trick. Gave it a nice long test run and got 
+> no more weirdness.
+> Tested-by: Frans Pop <elendil@planet.nl>
 > 
-> But yeah, if it's not possible to do that with kbuild then
-> it's probably best to s/select/depends on/ for VIDEO_SAA7146_VV
-> and provide a meaningful help text for VIDEO_SAA7146_VV.
 
-I don't have a better suggestion, but VIDEO_SAA7146_VV will need
-a prompt and help text if a user can enable/disable it.
+Thanks for testing it
 
----
-~Randy
+Ingo, I think this fix needs to be picked as well.
+
+>> but in the long run I think the approach needs to be
+>>
+>> 1. Update stime and utime at the time of context switching -- keep it
+>>    in sync with p->sum_exec_runtime
+>> 2. Keep track of system/user context at system call entry points
+> 
+> Feel free to send me a patch for testing when you have one.
+> 
+
+I hope to find some free time soon and get to it.
+
+> Cheers,
+> Frans
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
