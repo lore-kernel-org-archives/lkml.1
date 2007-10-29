@@ -1,113 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbXJ2IaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbXJ2Iaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbXJ2IaI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 04:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXJ2I34
+	id S1757305AbXJ2Iaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 04:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXJ2Ia1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 04:29:56 -0400
-Received: from web32611.mail.mud.yahoo.com ([68.142.207.238]:43209 "HELO
-	web32611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751581AbXJ2I3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 04:29:55 -0400
-X-YMail-OSG: Pbr4zfUVM1nHeJbM3glvxegEASGcsmP5b5ShRGzHlhRVSPVN
-X-Mailer: YahooMailRC/814.06 YahooMailWebService/0.7.152
-Date: Mon, 29 Oct 2007 01:29:49 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: 2.6.24-rc1: First impressions
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, wfg@mail.ustc.edu.cn,
-       torvalds@linux-foundation.org, riel@redhat.com
+	Mon, 29 Oct 2007 04:30:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59085 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752212AbXJ2Ia0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 04:30:26 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/rciovyuPrUsHIP116qMeEN7U8otb1TmlJeUa1w3
+	inX6bdZwNKwWzU
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: cpu governor ondemand issue
+Date: Mon, 29 Oct 2007 09:30:18 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
+References: <200710211316.14955.toralf.foerster@gmx.de> <20071029000243.9101d363.akpm@linux-foundation.org>
+In-Reply-To: <20071029000243.9101d363.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <193426.68317.qm@web32611.mail.mud.yahoo.com>
+Content-Type: multipart/signed;
+  boundary="nextPart1556381.PV3mO3gBx5";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710290930.19449.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Andrew Morton <akpm@linux-foundation.org>
-> To: Arjan van de Ven <arjan@infradead.org>
-> Cc: Ingo Molnar <mingo@elte.hu>; spamtrap@knobisoft.de; linux-kernel@vger.kernel.org; a.p.zijlstra@chello.nl; wfg@mail.ustc.edu.cn; torvalds@linux-foundation.org; riel@redhat.com
-> Sent: Saturday, October 27, 2007 7:59:51 AM
-> Subject: Re: 2.6.24-rc1: First impressions
-> 
-> On Fri, 26 Oct 2007 22:46:57 -0700 Arjan van de
-> Ven
-> 
-  wrote:
-> 
-> > > > > dd1 - copy 16 GB from /dev/zero to local FS
-> > > > > dd1-dir - same, but using O_DIRECT for output
-> > > > > dd2/dd2-dir - copy 2x7.6 GB in parallel from /dev/zero to
-> local
-> 
- FS
-> > > > > dd3/dd3-dir - copy 3x5.2 GB in parallel from /dev/zero lo
-> local
-> 
- FS
-> > > > > net1 - copy 5.2 GB from NFS3 share to local FS
-> > > > > mix3 - copy 3x5.2 GB from /dev/zero to local disk and two NFS3
-> > > > > shares
-> > > > > 
-> > > > >  I did the numbers for 2.6.19.2, 2.6.22.6 and 2.6.24-rc1. All
-> > > > > units are MB/sec.
-> > > > > 
-> > > > > test           2.6.19.2     2.6.22.6    2.6.24.-rc1
-> > > >
-> >
-> 
- ----------------------------------------------------------------
-> > > > > dd1                  28           50             96
-> > > > > dd1-dir              88           88             86
-> > > > > dd2              2x16.5         2x11         2x44.5
-> > > > > dd2-dir            2x44         2x44           2x43
-> > > > > dd3               3x9.8        3x8.7           3x30
-> > > > > dd3-dir          3x29.5       3x29.5         3x28.5
-> > > > > net1              30-33        50-55          37-52
-> > > > > mix3              17/32        25/50          96/35
-> > > > > (disk/combined-network)
-> > > > 
-> > > > wow, really nice results!
-> > > 
-> > > Those changes seem suspiciously large to me.  I wonder if
-> there's
-> 
- less
-> > > physical IO happening during the timed run, and
-> correspondingly
-> 
- more
-> > > afterwards.
-> > > 
-> > 
-> > another option... this is ext2.. didn't the ext2 reservation
-> stuff
-> 
- get
-> > merged into -rc1? for ext3 that gave a 4x or so speed boost (much
-> > better sequential allocation pattern)
-> > 
-> 
-> Yes, one would expect that to make a large difference in
-> dd2/dd2-dir
-> 
- and
-> dd3/dd3-dir - but only on SMP.  On UP there's not enough concurrency
-> in the fs block allocator for any damage to occur.
->
+--nextPart1556381.PV3mO3gBx5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
- Just for the record the test are done on  SMP.
- 
-> Reservations won't affect dd1 though, and that went faster too.
->
+Am Montag, 29. Oktober 2007 schrieb Andrew Morton:
+> On Sun, 21 Oct 2007 13:16:14 +0200 Toralf F=F6rster <toralf.foerster@gmx.=
+de> wrote:
+>=20
+> > I use the following one liner for regression tests of the cpufreq gover=
+nor and
+> > friends:
+> >=20
+> > tfoerste@n22 ~ $ time factor 819734028463158891
+> >=20
+> > which usually needs 5.5 secs to complete at 1.7 GHz of my pentium M pro=
+cessor.
+> >=20
+> > With the  current git sources (commit cfa76f0 at Sat Oct 20 20:19:15 20=
+07 -0700)
+> > instead this command needs 3 times longer if I run the "distributed.net=
+ client"
+> > as a background process with nice level 19 b/c the cpu frequency still =
+stays
+> > at 600 MHz.
+> > After stopping dnetc the cpu frequency governor ondemand works as expec=
+ted again.
+> >=20
+> > Tested at my ThinkPad T41 with stable Gentoo:
+> >=20
+> > tfoerste@n22 ~ $ grep -e ^CONFIG_ACPI -e ^CONFIG_CPU_FREQ_GOV_ ~/devel/=
+linux-2.6/.config
+> > CONFIG_ACPI=3Dy
+> > CONFIG_ACPI_SLEEP=3Dy
+> > CONFIG_ACPI_PROCFS=3Dy
+> > CONFIG_ACPI_PROC_EVENT=3Dy
+> > CONFIG_ACPI_AC=3Dm
+> > CONFIG_ACPI_BATTERY=3Dm
+> > CONFIG_ACPI_BUTTON=3Dm
+> > CONFIG_ACPI_VIDEO=3Dm
+> > CONFIG_ACPI_FAN=3Dm
+> > CONFIG_ACPI_PROCESSOR=3Dm
+> > CONFIG_ACPI_THERMAL=3Dm
+> > CONFIG_ACPI_BLACKLIST_YEAR=3D0
+> > CONFIG_ACPI_EC=3Dy
+> > CONFIG_ACPI_POWER=3Dy
+> > CONFIG_ACPI_SYSTEM=3Dy
+> > CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
+> > CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dm
+> > CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dy
+> >=20
+>=20
+> And 2.6.23 was OK?
+>=20
+> Is this problem still present in Linus's current tree?
+>=20
+> Thanks.
+>=20
+Hello,
+with -rc1 the problem went away :-)
 
- This is the one result that surprised me most, as I did not really expect any big moves here. I am not complaining :-), but definitely it would be nice to understand the why.
+=2D-=20
+MfG/Sincerely
 
-Cheers
-Martin
-> 
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
 
+--nextPart1556381.PV3mO3gBx5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBHJZobhyrlCH22naMRArIeAKC9qg+zT1LdfXIlepELPzGJlJyYTgCeLHAO
+4Ake8WKp4nl1lo8pE82JBno=
+=6oOK
+-----END PGP SIGNATURE-----
+
+--nextPart1556381.PV3mO3gBx5--
