@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXJ2STB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbXJ2SUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbXJ2STB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 14:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbXJ2SSx
+	id S1759920AbXJ2SUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 14:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbXJ2STz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 14:18:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56061 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752411AbXJ2SSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 14:18:52 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.23 boot failures on x86-64.
-Date: Mon, 29 Oct 2007 19:18:43 +0100
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Ebourne <fedora@ebourne.me.uk>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071029175014.GH7793@redhat.com>
-In-Reply-To: <20071029175014.GH7793@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 29 Oct 2007 14:19:55 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25397 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754866AbXJ2STy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 14:19:54 -0400
+Date: Mon, 29 Oct 2007 11:19:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH/RFC] register_cpu __devinit or __cpuinit
+Message-Id: <20071029111929.cdc8e929.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710291918.43869.ak@suse.de>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 October 2007 18:50:14 Dave Jones wrote:
-> We've had a number of people reporting that their x86-64s stopped booting
-> when they moved to 2.6.23.  It rebooted just after discovering the AGP bridge
-> as a result of the IOMMU init.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-It's probably the usual "nobody tests sparsemem at all" issue.
+Is there some reason why register_cpu() is __devinit instead of __cpuinit ?
+Make it __cpuinit.
 
-But if allocating bootmem >4G doesn't work on these systems
-most likely they have more problems anyways. It might be better
-to find out what goes wrong exactly.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/cpu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Andi
+--- linux-2.6.24-rc1-git4.orig/drivers/base/cpu.c
++++ linux-2.6.24-rc1-git4/drivers/base/cpu.c
+@@ -110,7 +110,7 @@ static SYSDEV_ATTR(crash_notes, 0400, sh
+  *
+  * Initialize and register the CPU device.
+  */
+-int __devinit register_cpu(struct cpu *cpu, int num)
++int __cpuinit register_cpu(struct cpu *cpu, int num)
+ {
+ 	int error;
+ 	cpu->node_id = cpu_to_node(num);
