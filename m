@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbXJ2OJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbXJ2OMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbXJ2OJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 10:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXJ2OJo
+	id S1756209AbXJ2OMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 10:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbXJ2OMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 10:09:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:29679 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbXJ2OJn (ORCPT
+	Mon, 29 Oct 2007 10:12:10 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:30816 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbXJ2OMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 10:09:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PKXa/JY8vNCu0N5n2tCvrKLpb68Hhaq9ffZxCN5K0HLBJy+YTlBp0FFT3NguhSzQF5tIQsyb+3OWZUGGydd6P2Rac1LK6M8/Avg2W6tvun4UobSAQXEmdY1ZFR+MnWAr6vqxJEHc8NVk2HWmytwuG4/5uTsvnUZyj1brBpSHsJE=
-Message-ID: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>
-Date: Mon, 29 Oct 2007 07:09:33 -0700
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: 2.6.23.1-rt4 and kvm 48
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 10:12:09 -0400
+Date: Mon, 29 Oct 2007 10:10:01 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Mike Waychison <mikew@google.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/6][RFC] Cleanup FIBMAP
+Message-ID: <20071029101001.4378a7cf@think.oraclecorp.com>
+In-Reply-To: <E579083F-FED3-4990-8E24-275ED38E9E3B@cam.ac.uk>
+References: <20071026233732.568575496@crlf.corp.google.com>
+	<E579083F-FED3-4990-8E24-275ED38E9E3B@cam.ac.uk>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uhm, not sure who to send this too...
+On Sat, 27 Oct 2007 18:57:06 +0100
+Anton Altaparmakov <aia21@cam.ac.uk> wrote:
 
-I thought I'd try out the realtime patch set and it didn't work at all
-with kvm. The console didn't dump anything and the system completely
-locked up.
+> Hi,
+> 
+> ->bmap is ugly and horrible!  If you have to do this at the very
+> least please cause ->bmap64 to be able to return error values in case
+> the file system failed to get the information or indeed such
+> information does not exist as is the case for compressed and
+> encrypted files for example and also for small files that are inside
+> the on-disk inode (NTFS resident files and reiserfs packed tails are
+> examples of this).
+> 
+> And another of my pet peeves with ->bmap is that it uses 0 to mean  
+> "sparse" which causes a conflict on NTFS at least as block zero is  
+> part of the $Boot system file so it is a real, valid block...  NTFS  
+> uses -1 to denote sparse blocks internally.
 
-Anyone have any suggestions as to how to get more output on this issue?
+Reiserfs and Btrfs also use 0 to mean packed.  It would be nice if there
+was a way to indicate your-data-is-here-but-isn't-alone.  But that's
+more of a feature for the FIEMAP stuff.
 
-It got to the point of bringing up the tap interface and attaching it
-to the bridge but that was about it for the console messages.
-
-Thanks,
-- David Brown
+-chris
