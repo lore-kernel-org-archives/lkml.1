@@ -1,136 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXJ2Sjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ2SlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXJ2Sjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 14:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbXJ2Sje
+	id S1758266AbXJ2SlV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 14:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbXJ2SlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 14:39:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46718 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752496AbXJ2Sjd (ORCPT
+	Mon, 29 Oct 2007 14:41:13 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52163 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752496AbXJ2SlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 14:39:33 -0400
-Date: Mon, 29 Oct 2007 11:37:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Ebourne <fedora@ebourne.me.uk>,
-       Zou Nan hai <nanhai.zou@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Andy Whitcroft <apw@shadowen.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [stable] 2.6.23 boot failures on x86-64.
-In-Reply-To: <20071029180739.GA17595@kroah.com>
-Message-ID: <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
-References: <20071029175014.GH7793@redhat.com>
- <20071029180739.GA17595@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 29 Oct 2007 14:41:12 -0400
+Date: Mon, 29 Oct 2007 11:41:09 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: rientjes@google.com, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071029114109.46285026.pj@sgi.com>
+In-Reply-To: <1193670617.5035.38.camel@localhost>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<1193412644.5032.13.camel@localhost>
+	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+	<20071026120037.7b95a136.pj@sgi.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<1193670617.5035.38.camel@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lee wrote:
+> Maybe it's just me, but I think it's pretty presumptuous to think we can
+> infer the intent of the application from the nodemask w/o additional
+> flags such as Christoph proposed [cpuset relative]--especially for
+> subsets of the cpuset.  E.g., the application could intend the nodemask
+> to specify memories within a certain distance of a physical resource,
+> such as where a particular IO adapter or set thereof attach to the
+> platform.
 
+Well, yes, we can't presume to know whether some application can move
+or not.
 
-On Mon, 29 Oct 2007, Greg KH wrote:
-> 
-> I'll be glad to revert it in -stable, if it's also reverted in Linus's
-> tree first :)
+But our kernel work is not presuming that.
 
-We've had some changes since 2.6.23, and afaik, the 
-"alloc_bootmem_high_node()" code is alreadt effectively dead there. It's 
-only called if CONFIG_SPARSEMEM_VMEMMAP is *not* enabled, and I *think* we 
-enable it by force on x86-64 these days.
+It's providing mechanisms useful for moving apps.
 
-More people added to Cc, just to clarify whether I'm just confused.
+The people using this decide what and when and if to move.
 
-Andy, Christoph, Mel: commit 2e1c49db4c640b35df13889b86b9d62215ade4b6 aka 
-"x86_64: allocate sparsemem memmap above 4G" is the one that causes the 
-failures, just fyi.
+For example, the particular customers (HPC) I focus on for my job don't
+move jobs because they don't want to take the transient performance
+hit that would come from blowing out all their memory caches.
 
-Martin - it would be great if you could try out your failing machine with 
-2.6.24-rc1 (or a nightly snapshot or current git.. the more recent the 
-better).
+I'm guessing that David's situation involves something closer what you
+see with a shared web hosting service, running jobs that are very
+independent of hardware particulars.
 
-But if I'm right, that commit should be reverted from 2.6.24 just because 
-it's pointless (even if the bug itself is gone). And if I'm wrong, it 
-should be reverted. So something like the appended would make sense 
-regardless.
+But in any case, we (the kernel) are just providing the mechanisms.
+If they don't fit ones needs, don't use them ;).
 
-Can I get a "tested-by"? And/or ack/nack's on my half-arsed theory above?
-
-		Linus
---
-From: Linus Torvalds <torvalds@woody.linux-foundation.org>
-
-Revert "x86_64: allocate sparsemem memmap above 4G"
-
-This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6, since
-testing in Fedora has shown it to cause boot failures, as per Dave
-Jones. Bisected down by Martin Ebourne.
-
-Cc: Dave Jones <davej@redhat.com>
-Cc: Martin Ebourne <fedora@ebourne.me.uk>
-Cc: Zou Nan hai <nanhai.zou@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1e3862e..a7308b2 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -728,12 +728,6 @@ int in_gate_area_no_task(unsigned long addr)
- 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
- }
- 
--void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return __alloc_bootmem_core(pgdat->bdata, size,
--			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
--}
--
- const char *arch_vma_name(struct vm_area_struct *vma)
- {
- 	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index c83534e..0365ec9 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct bootmem_data *bdata,
- 				  unsigned long align,
- 				  unsigned long goal,
- 				  unsigned long limit);
--extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
- 
- #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
- extern void reserve_bootmem(unsigned long addr, unsigned long size);
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 08fb14f..e06f514 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -220,12 +220,6 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
- 	return 1;
- }
- 
--__attribute__((weak)) __init
--void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
--{
--	return NULL;
--}
--
- static unsigned long usemap_size(void)
- {
- 	unsigned long size_bytes;
-@@ -267,11 +261,6 @@ struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
- 	if (map)
- 		return map;
- 
--  	map = alloc_bootmem_high_node(NODE_DATA(nid),
--                       sizeof(struct page) * PAGES_PER_SECTION);
--	if (map)
--		return map;
--
- 	map = alloc_bootmem_node(NODE_DATA(nid),
- 			sizeof(struct page) * PAGES_PER_SECTION);
- 	return map;
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
