@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbXJ2MgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXJ2MnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbXJ2MgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 08:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXJ2Mf7
+	id S1754274AbXJ2MnA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 08:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbXJ2Mmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 08:35:59 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:47214 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbXJ2Mf6 (ORCPT
+	Mon, 29 Oct 2007 08:42:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:60991 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbXJ2Mmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 08:35:58 -0400
-Date: Mon, 29 Oct 2007 13:35:33 +0100
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Message-ID: <20071029123533.GA17331@linuxtv.org>
-References: <20071026073736.GA24172@elte.hu> <20071027213057.GA15211@linuxtv.org> <20071027163932.e0a0522b.randy.dunlap@oracle.com> <20071029112303.GA18994@elte.hu>
+	Mon, 29 Oct 2007 08:42:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=AMckyQxXG640FaG0MWugDahGcGUAV5iX/HVwi0lFiQy8t57K/VgRUCJLhADCLF/9rygI3EhCAautSVA5cQKTVTlnPmq8X+9Ukrfq1TaxaYUG++J/LDJXrPrI+6uaQ2PRWosXsrqdkGrsszBbrrD/3XOvukDrJnAxWmdsUloCZ8E=
+Message-ID: <4725D527.8030909@googlemail.com>
+Date: Mon, 29 Oct 2007 13:42:15 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071004)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029112303.GA18994@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 84.190.153.223
-Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
-	CONFIG_VIDEO_SAA7146_VV=y
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       tglx@linutronix.de
+Subject: Re: [REGRESSION] 2.6.24-rc1 fails to boot on a 486
+References: <200710290628.l9T6SDpo012530@harpo.it.uu.se>
+In-Reply-To: <200710290628.l9T6SDpo012530@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007, Ingo Molnar wrote:
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Mikael Pettersson wrote:
+> On Sun, 28 Oct 2007 21:33:02 -0700, H. Peter Anvin wrote:
+>> Mikael Pettersson wrote:
+>>> My old 486 fails to boot with the 2.6.24-rc1 kernel.
+>>> Grub loads it, 4 lines of text appear but not the kernel's
+>>> "Linux version <blah> greet", and the machine reboots.
+>>> Double-checked with a serial console: nothing appears
+>>> before it reboots.
+>> What four lines of text?
 > 
-> > > config VIDEO_SAA7146_VV
-> > > 	tristate
-> > > 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
-> > > 	select VIDEOBUF_DMA_SG
-> > > 	select VIDEO_SAA7146
-> > > 
-> > > (untested)
-> > 
-> > Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
-> > has too many "select"s involved, but select doesn't follow the dependency
-> > chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
-> > 
-> > 	select is evil.... select will by brute force set a symbol
-> > 	equal to 'y' without visiting the dependencies. So abusing
-> > 	select you are able to select a symbol FOO even if FOO depends
-> > 	on BAR that is not set.
+> They're impossible to capture because they're only visible
+> on the VGA screen for like 0.2 seconds before the machine
+> reboots and the screen is blanked; they don't show up on
+> the serial console.
+
+Maybe try to set CONFIG_BOOT_PRINTK_DELAY and boot with boot_delay=N ?
+
 > 
-> so ... what should we do? Remove those ~7 select VIDEO_SAA7146_VV lines 
-> and replace them with depends on VIDEO_SAA7146_VV ?
-
-Hm, the idea is that the SAA7146 driver is like a library,
-and the V4L or DVB card drivers select the library functions
-they need (base driver or common V4L helper functions).
-The user shouldn't have to worry about those details.
-
-But yeah, if it's not possible to do that with kbuild then
-it's probably best to s/select/depends on/ for VIDEO_SAA7146_VV
-and provide a meaningful help text for VIDEO_SAA7146_VV.
+> They look like paths to the vmlinuz and initrd surrounded
+> by [ ] brackets, so I guess they come from grub.
+> 
+> /Mikael
 
 
-Johannes
+Regards,
+
+Gabriel
