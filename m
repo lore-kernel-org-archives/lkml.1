@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbXJ2KMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbXJ2KN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbXJ2KMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 06:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXJ2KMJ
+	id S1757910AbXJ2KN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 06:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXJ2KNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 06:12:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42503 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbXJ2KMH (ORCPT
+	Mon, 29 Oct 2007 06:13:51 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:3551 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753445AbXJ2KNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 06:12:07 -0400
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-References: <1193064057.16541.1.camel@matrix>
-	 <20071029004002.60c7182a.akpm@linux-foundation.org>
-	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 11:11:57 +0100
-Message-Id: <1193652717.27652.45.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 29 Oct 2007 06:13:50 -0400
+Message-ID: <4725B256.3020807@fr.ibm.com>
+Date: Mon, 29 Oct 2007 11:13:42 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Adrian Bunk <bunk@kernel.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Kir Kolyshkin <kir@swsoft.com>, containers@lists.osdl.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, kir@openvz.org
+Subject: Re: [Devel] [PATCH] pidns: Place under CONFIG_EXPERIMENTAL (take
+ 2)
+References: <CBC546DD07068244AEC110EFEDA58B7235893F@excite.int.sw-soft.com>	<m1ve8ty1tq.fsf@ebiederm.dsl.xmission.com>	<20071027002448.GH30533@stusta.de>	<m18x5puyw7.fsf@ebiederm.dsl.xmission.com> <4724B4F2.7070500@goop.org>	<20071028170008.GD7227@stusta.de> <m13avvqef1.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m13avvqef1.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 01:17 -0700, Jaya Kumar wrote:
-> On 10/29/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Mon, 22 Oct 2007 16:40:57 +0200 Stefani Seibold <stefani@seibold.net> wrote:
-> > >
-> > > The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
-> > > This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
-> > > which will be in an extra thread handled, to perform the IO and clean and
-> > > write protect all pages with page_clean().
-> > >
+Eric W. Biederman wrote:
+> Adrian Bunk <bunk@kernel.org> writes:
 > 
-> Hi,
+>> On Sun, Oct 28, 2007 at 09:12:34AM -0700, Jeremy Fitzhardinge wrote:
+>>> Eric W. Biederman wrote:
+>>>> Roughly that sounds like CONFIG_EXPERIMENTAL to me.  But I would
+>>>> be happy to hear if someone has a better idea.
+>>> Rather than overload an existing config option, why not add one with the
+>>> specific semantics you want: CONFIG_UNSTABLE_UABI.  The problem seems
+>>> like one which which may occur again, though one hopes not too often.  I
+>>> guess the risk is that people will leave their subsystems depending on
+>>> it permanently (sysfs?), so it ends up being set all the time and
+>>> becomes as useless as EXPERIMENTAL...
+>> Then let SYSFS depend on UNSTABLE_UABI for the next 10 years and we have 
+>> an excuse for breaking the ABI with each new kernel...
+>>
+>> Either the ABI is stable or it should not be exposed to users at all.
 > 
-> An aside, I just tested that deferred IO works fine on 2.6.22.10/pxa255.
-> 
-> I understood from the thread that PeterZ is looking into page_mkclean
-> changes which I guess went into 2.6.23. I'm also happy to help in any
-> way if the way we're doing fb_defio needs to change.
+> If we need a new config for it.  CONFIG_IMMATURE is the closest I
+> can think of.
 
-Yeah, its the truncate race stuff introduced by Nick in
-  d0217ac04ca6591841e5665f518e38064f4e65bd
-
-I'm a bit at a loss on how to go around fixing this. One ugly idea I had
-was to check page->mapping before going into page_mkwrite() and when
-that is null, don't bother with the truncate check.
+Pavel also has a CONFIG_NAMESPACES patch that he should be resending to 
+andrew when 2.6.24-rc1-mm1 is released. pidns will go under this option, 
+like all the other namespaces, and should protect the distros from shipping 
+any immature namespace.
 
 
-
+C.
