@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbXJ2Cgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbXJ2CiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbXJ2Cgs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Oct 2007 22:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXJ2Cgi
+	id S1755523AbXJ2CiW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Oct 2007 22:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXJ2CiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Oct 2007 22:36:38 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41609 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXJ2Cgh (ORCPT
+	Sun, 28 Oct 2007 22:38:14 -0400
+Received: from mxsf00.insightbb.com ([74.128.0.70]:17417 "EHLO
+	mxsf00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbXJ2CiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Oct 2007 22:36:37 -0400
-Date: Sun, 28 Oct 2007 19:35:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/4] VFS: swap do_ioctl and vfs_ioctl names
-Message-Id: <20071028193508.d49a53ae.randy.dunlap@oracle.com>
-In-Reply-To: <11936184592699-git-send-email-ezk@cs.sunysb.edu>
-References: <11936184581182-git-send-email-ezk@cs.sunysb.edu>
-	<11936184592699-git-send-email-ezk@cs.sunysb.edu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Oct 2007 22:38:13 -0400
+X-IronPort-AV: E=Sophos;i="4.21,339,1188792000"; 
+   d="scan'208";a="91391434"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAPnjJEdKjlCP/2dsb2JhbACBWo5u
+X-IronPort-AV: E=Sophos;i="4.21,339,1188792000"; 
+   d="scan'208";a="89697150"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [RFC: 2.6 patch] remove the USB_STORAGE_ONETOUCH driver
+Date: Sun, 28 Oct 2007 22:38:10 -0400
+User-Agent: KMail/1.9.3
+Cc: Jiri Kosina <jikos@jikos.cz>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Adrian Bunk <bunk@kernel.org>, Nick Sillik <n.sillik@temple.edu>,
+       David Brownell <david-b@pacbell.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <20071028155212.GC7227@stusta.de> <64bb37e0710281048x589ab063o8a32294e30488979@mail.gmail.com> <Pine.LNX.4.64.0710282134020.18815@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0710282134020.18815@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200710282238.11692.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 20:40:56 -0400 Erez Zadok wrote:
-
-> Rename old vfs_ioctl to do_ioctl, because the comment above it clearly
-> indicates that it is an internal function not to be exported to modules;
-> therefore it should have a more traditional do_XXX name.  The new do_ioctl
-> is exported in fs.h but not to modules.
+On Sunday 28 October 2007 16:39, Jiri Kosina wrote:
+> On Sun, 28 Oct 2007, Torsten Kaiser wrote:
 > 
-> Rename the old do_ioctl to vfs_ioctl because the names vfs_XXX should
-> preferably be reserved to callable VFS functions which modules may call, as
-> many other vfs_XXX functions already do.  Export the new vfs_ioctl to GPL
-> modules so others can use it (including Unionfs and eCryptfs).  Add DocBook
-> for new vfs_ioctl.
+> > But it looks like that uses another driver:
+> > hiddev0hidraw1: USB HID v1.10 Device [Western Digital External HDD] on
+> > usb-0000:00:02.1-5.2
+> > Otherwise I would be willing to try to test this, if someone would tell 
+> > me how to check that the second commit did fix the suspend problem.
 > 
-> Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-> ---
->  fs/compat_ioctl.c  |    2 +-
->  fs/ioctl.c         |   30 ++++++++++++++++++++++--------
->  include/linux/fs.h |    3 ++-
->  3 files changed, 25 insertions(+), 10 deletions(-)
+> If you need to unbind usbhid driver from the device and bind another one, 
+> you can use the 'unbind' and 'bind' files in sysfs.
 > 
-
-> diff --git a/fs/ioctl.c b/fs/ioctl.c
-> index 652cacf..34e3f58 100644
-> --- a/fs/ioctl.c
-> +++ b/fs/ioctl.c
-> @@ -16,8 +16,21 @@
->  
->  #include <asm/ioctls.h>
->  
-> -static long do_ioctl(struct file *filp, unsigned int cmd,
-> -		unsigned long arg)
-> +/**
-> + * vfs_ioctl - call filesystem specific ioctl methods
-> + *
-
-No "blank" line allowed in kernel-doc between function name and its
-parameters.
-
-> + * @filp: [in]     open file to invoke ioctl method on
-> + * @cmd:  [in]     ioctl command to execute
-> + * @arg:  [in/out] command-specific argument for ioctl
-> + *
-> + * Invokes filesystem specific ->unlock_ioctl, if one exists; otherwise
-> + * invokes * filesystem specific ->ioctl method.  If neither method exists,
-> + * returns -ENOTTY.
-> + *
-> + * Returns 0 on success, -errno on error.
-> + */
-> +long vfs_ioctl(struct file *filp, unsigned int cmd,
-> +	       unsigned long arg)
->  {
->  	int error = -ENOTTY;
->  
-
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index b3ec4a4..c0c5d36 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1924,7 +1924,8 @@ extern int vfs_stat_fd(int dfd, char __user *, struct kstat *);
->  extern int vfs_lstat_fd(int dfd, char __user *, struct kstat *);
->  extern int vfs_fstat(unsigned int, struct kstat *);
->  
-> -extern int vfs_ioctl(struct file *, unsigned int, unsigned int, unsigned long);
-> +extern long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
-> +extern int do_ioctl(struct file *, unsigned int, unsigned int, unsigned long);
-
-Use/keep parameter names, please.  That is preferred.
-
->  extern void get_filesystem(struct file_system_type *fs);
->  extern void put_filesystem(struct file_system_type *fs);
-> -- 
-> 1.5.2.2
+> As soon as the driver you are willing to test is bound to the device, you 
+> can go ahead with testing any functionality you wish (probably 
+> suspend/resume cycle is needed here?).
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> If the device is claimed by usbhid driver (because its descriptor probably 
+> states that it's HID-compliant device) and should be claimed by another 
+> driver, it's necessary to add it to usbhid blacklist -- just let me know.
 > 
 
+Maybe onetouch driver is not needed after all. I wonder what key/button does
+HID deriver reports when it binds to it... Torsten, could you please post
+your /proc/bus/input/devices?
 
----
-~Randy
+-- 
+Dmitry
