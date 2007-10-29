@@ -1,97 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXJ2JOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbXJ2JQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbXJ2JOg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXJ2JO2
+	id S1757253AbXJ2JQz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXJ2JQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:14:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:10998 "EHLO kernel.dk"
+	Mon, 29 Oct 2007 05:16:47 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:38316 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbXJ2JO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:14:28 -0400
-Date: Mon, 29 Oct 2007 10:12:06 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
+	id S1752212AbXJ2JQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:16:46 -0400
+Date: Mon, 29 Oct 2007 10:15:19 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matthew Wilcox <matthew@wil.cx>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
-Message-ID: <20071029091206.GE5467@kernel.dk>
-References: <20071027184404.GQ8181@ftp.linux.org.uk> <20071027201700.GC22235@flint.arm.linux.org.uk> <20071029085935.GD5467@kernel.dk> <20071029090710.GB7801@flint.arm.linux.org.uk>
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+In-Reply-To: <20071029022922.GD10307@fieldses.org>
+Message-ID: <Pine.LNX.4.64.0710291011190.18815@twin.jikos.cz>
+References: <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org>
+ <20071028182732.GK27248@parisc-linux.org> <20071028184052.49abd092@the-village.bc.nu>
+ <20071028201101.GA32359@parisc-linux.org> <1193608230.7561.11.camel@heimdal.trondhjem.org>
+ <20071028224157.GC32359@parisc-linux.org> <20071028224833.66dc4243@the-village.bc.nu>
+ <20071028225559.GD32359@parisc-linux.org> <20071028233826.24907fba@the-village.bc.nu>
+ <20071029022922.GD10307@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029090710.GB7801@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29 2007, Russell King wrote:
-> On Mon, Oct 29, 2007 at 09:59:36AM +0100, Jens Axboe wrote:
-> > On Sat, Oct 27 2007, Russell King wrote:
-> > > On Sat, Oct 27, 2007 at 07:44:04PM +0100, Al Viro wrote:
-> > > > 
-> > > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > > > ---
-> > > > diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-> > > > index 21ba571..2d09fef 100644
-> > > > --- a/drivers/scsi/arm/scsi.h
-> > > > +++ b/drivers/scsi/arm/scsi.h
-> > > > @@ -39,7 +39,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
-> > > >  		SCp->buffer++;
-> > > >  		SCp->buffers_residual--;
-> > > >  		SCp->ptr = (char *)
-> > > > -			 (page_address(SCp->buffer->page) +
-> > > > +			 (page_address(sg_page(SCp->buffer)) +
-> > > >  			  SCp->buffer->offset);
-> > > >  		SCp->this_residual = SCp->buffer->length;
-> > > >  	} else {
-> > > > @@ -77,7 +77,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
-> > > >  		SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
-> > > >  		SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
-> > > >  		SCpnt->SCp.ptr = (char *)
-> > > > -			 (page_address(SCpnt->SCp.buffer->page) +
-> > > > +			 (page_address(sg_page(SCpnt->SCp.buffer)) +
-> > > >  			  SCpnt->SCp.buffer->offset);
-> > > >  		SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
-> > > >  		SCpnt->SCp.phase = SCpnt->request_bufflen;
-> > > 
-> > > FYI, here's what I have queued (cut'n'pasted so probably won't apply):
-> > > 
-> > > diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-> > > index 21ba571..bb6550e 100644
-> > > --- a/drivers/scsi/arm/scsi.h
-> > > +++ b/drivers/scsi/arm/scsi.h
-> > > @@ -38,9 +38,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
-> > >         if (ret) {
-> > >                 SCp->buffer++;
-> > >                 SCp->buffers_residual--;
-> > > -               SCp->ptr = (char *)
-> > > -                        (page_address(SCp->buffer->page) +
-> > > -                         SCp->buffer->offset);
-> > > +               SCp->ptr = sg_virt(SCp->buffer);
-> > >                 SCp->this_residual = SCp->buffer->length;
-> > >         } else {
-> > >                 SCp->ptr = NULL;
-> > > @@ -76,9 +74,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
-> > > 
-> > >                 SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
-> > >                 SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
-> > > -               SCpnt->SCp.ptr = (char *)
-> > > -                        (page_address(SCpnt->SCp.buffer->page) +
-> > > -                         SCpnt->SCp.buffer->offset);
-> > > +               SCpnt->SCp.ptr = sg_virt(SCpnt->SCp.buffer);
-> > >                 SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
-> > >                 SCpnt->SCp.phase = SCpnt->request_bufflen;
-> > 
-> > Russell, will you be merging this yourself or do you want me to include
-> > it in the sg fixup branch?
-> 
-> It's already merged into the ARM git tree as of Friday.  Waiting for
-> ack's from various people for other merged patches before sending the
-> set to Linus.
+On Sun, 28 Oct 2007, J. Bruce Fields wrote:
 
-Great, thanks.
+> But, OK, if we can identify unshared current->files at the time we put a 
+> task to sleep, then a slight modification of our current algorithm might 
+> be sufficient to detect any deadlock that involves purely posix file 
+> locks and processes.  And we can tell people that avoiding deadlock is 
+> their problem as soon as any task with a shared current->files is 
+> involved.  (Ditto, I assume, if nfsd/lockd acquires a lock.)
+
+Don't forget that comparing file_lock->fl_owner (i.e. current->files) is 
+not the only way how lock ownership could be computed (there could be 
+specific file_lock->fl_lmops->fl_compare_owner() and all of them should 
+be teached this new semantics, right?).
 
 -- 
-Jens Axboe
-
+Jiri Kosina
