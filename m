@@ -1,77 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbXJ2QZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbXJ2QZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbXJ2QZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXJ2QZE
+	id S1755771AbXJ2QZi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbXJ2QZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:25:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53910 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752855AbXJ2QZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:25:01 -0400
-Message-ID: <4726095B.6030508@garzik.org>
-Date: Mon, 29 Oct 2007 12:24:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Mon, 29 Oct 2007 12:25:27 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45209 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753979AbXJ2QZ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:25:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:
+	x-accept-language:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+	b=Q0wEvBvKBvxiBpCisO0tj1bRqqxnKECVpuTucliGMA3DXdjpUYpZa9RbT2DYayYi3
+	XiCzdzbAR+DWQ8mBs4y7g==
+Message-ID: <47260960.2050200@google.com>
+Date: Mon, 29 Oct 2007 12:25:04 -0400
+From: Paul Menage <menage@google.com>
+User-Agent: Mozilla Thunderbird 1.0.8 (X11/20060725)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH v4 0/2] [SCSI] Asynchronous event	notification	infrastructure
-References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>	 <1193672624.3383.25.camel@localhost.localdomain>	 <47260326.9050701@garzik.org> <1193674253.3383.38.camel@localhost.localdomain>
-In-Reply-To: <1193674253.3383.38.camel@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] Report usage in CFS cgroup
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Ah, OK; I haven't communicated what we need very clearly.  We need a way
-> to see if the event is supported by the device, as well as a way to turn
-> it off.  For some of the events (possibly not the SATA AN one, since I
-> know all SATA devices will be well behaved) there's going to be a need
-> to deal with berserk or broken devices that become trigger happy, so
-> turning off the event will be a useful (and possibly essential) way of
-> coping.
+Report CPU usage in CFS Cgroup directories
 
+Adds a cpu.usage file to the CFS cgroup that reports CPU usage in
+milliseconds for that cgroup's tasks
 
-That's possible with the presented interface[1]:
+Signed-off-by: Paul Menage <menage@google.com>
 
-	# see if event is supported
-	cat $path/evt_media_change
+---
 
-	# turn off event to deal with broken/beserk devices
-	echo 0 > $path/evt_media_change
+ kernel/sched.c |   36 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 31 insertions(+), 5 deletions(-)
 
-Some sillyhead can always do
-
-	echo 1 > $path/evt_some_event_my_device_does_not_support
-
-but that will be obviously be a no-op because their device simply will 
-not send such events.
-
-Granted ls(1) is no longer a method for viewing supported-at-boot-time 
-list of events -- ls(1) in the presented interface lists what events the 
-_kernel_ supports, and cat(1) is used to discover which events are 
-actually enabled.
-
-I think that is the only difference between our two positions:  [if I 
-understand you correctly] you want ls(1) to be able to list the device's 
-supported events.  However, I feel that is inconsistent:  for your 
-proposal, userspace must perform two checks in order to determine a 
-feature's availability: 1) does the file exist? 2) is the file context 
-non-zero?
-
-Regards,
-
-	Jeff
-
-
-[1] modulo my comment from the original email in this thread:
-> * I was slack and did not bother to implement the 'set' operation
->   for the attributes.  This can easily be done at a later time in a
->   separate patch.
-
+Index: container-2.6.23-mm1/kernel/sched.c
+===================================================================
+--- container-2.6.23-mm1.orig/kernel/sched.c
++++ container-2.6.23-mm1/kernel/sched.c
+@@ -7005,15 +7005,41 @@ static u64 cpu_shares_read_uint(struct c
+ 	return (u64) tg->shares;
+ }
+ 
+-static struct cftype cpu_shares = {
+-	.name = "shares",
+-	.read_uint = cpu_shares_read_uint,
+-	.write_uint = cpu_shares_write_uint,
++static u64 cpu_usage_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct task_group *tg = cgroup_tg(cgrp);
++	int i;
++	u64 res = 0;
++	for_each_possible_cpu(i) {
++		unsigned long flags;
++		/*
++		 * Lock to prevent races with updating 64-bit counters
++		 * on 32-bit arches.
++		 */
++		spin_lock_irqsave(&cpu_rq(i)->lock, flags);
++		res += tg->se[i]->sum_exec_runtime;
++		spin_unlock_irqrestore(&cpu_rq(i)->lock, flags);
++	}
++	/* Convert from ns to ms */
++	do_div(res, 1000000);
++	return res;
++}
++
++static struct cftype cpu_files[] = {
++	{
++		.name = "shares",
++		.read_uint = cpu_shares_read_uint,
++		.write_uint = cpu_shares_write_uint,
++	},
++	{
++		.name = "usage",
++		.read_uint = cpu_usage_read,
++	},
+ };
+ 
+ static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+ {
+-	return cgroup_add_file(cont, ss, &cpu_shares);
++	return cgroup_add_files(cont, ss, cpu_files, ARRAY_SIZE(cpu_files));
+ }
+ 
+ struct cgroup_subsys cpu_cgroup_subsys = {
