@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbXJ2WkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbXJ2Wl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbXJ2WkH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbXJ2Wjz
+	id S1754075AbXJ2Wl3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXJ2WlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:39:55 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11977 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752502AbXJ2Wjy (ORCPT
+	Mon, 29 Oct 2007 18:41:22 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47560 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751925AbXJ2WlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:39:54 -0400
-Message-ID: <47266132.5050001@ct.jp.nec.com>
-Date: Mon, 29 Oct 2007 15:39:46 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: vgoyal@in.ibm.com, tglx@linutronix.de
-Cc: hbabu@us.ibm.com, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] Revert x86: add lapic_shutdown for x86_64
-References: <47195763.1090803@ct.jp.nec.com> <47195807.6030809@ct.jp.nec.com> <20071024062933.GA4622@in.ibm.com>
-In-Reply-To: <20071024062933.GA4622@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Oct 2007 18:41:22 -0400
+Subject: Re: [PATCH] raise tsc clocksource rating
+From: Zachary Amsden <zach@vmware.com>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, rusty@rustcorp.com.au,
+       jeremy@goop.org, --cc@redhat.com, mingo@elte.hu, avi@quramnet.com,
+       kvm-devel@lists.sourceforge.net,
+       Glauber de Oliveira Costa <glauber@t60.localdomain>,
+       Dan Hecht <dhecht@vmware.com>, Garrett Smith <garrett@vmware.com>
+In-Reply-To: <11936994092607-git-send-email-gcosta@redhat.com>
+References: <11936994092607-git-send-email-gcosta@redhat.com>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 15:42:14 -0700
+Message-Id: <1193697734.9793.86.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lapic_shutdown is useless on x86_64.
+On Mon, 2007-10-29 at 20:10 -0300, Glauber de Oliveira Costa wrote:
+> From: Glauber de Oliveira Costa <glauber@t60.localdomain>
+> 
+> tsc is very good time source (when it does not have drifts, does not
+> change it's frequency, i.e. when it works), so it should have its rating
+> raised to a value greater than, or equal 400.
+> 
+> Since it's being a tendency among paravirt clocksources to use values
+> around 400, we should declare tsc as even better: So we use 500.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/apic_64.c |   14 --------------
- arch/x86/kernel/crash.c   |    5 +++++
- include/asm-x86/apic_64.h |    1 -
- 3 files changed, 5 insertions(+), 15 deletions(-)
+Why is the TSC better than a paravirt clocksource?  In our case this is
+definitely inaccurate.  Paravirt clocksources should be preferred to
+TSC, and both must be made available in hardware for platforms which do
+not support paravirt.
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index f28ccb5..f47bc49 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -287,20 +287,6 @@ void disable_local_APIC(void)
- 	apic_write(APIC_SPIV, value);
- }
- 
--void lapic_shutdown(void)
--{
--	unsigned long flags;
--
--	if (!cpu_has_apic)
--		return;
--
--	local_irq_save(flags);
--
--	disable_local_APIC();
--
--	local_irq_restore(flags);
--}
--
- /*
-  * This is to verify that we're looking at a real local APIC.
-  * Check these against your board if the CPUs aren't getting
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 8bb482f..79a5a25 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -136,7 +136,12 @@ void machine_crash_shutdown(struct pt_regs *regs)
- 	/* Make a note of crashing cpu. Will be used in NMI callback.*/
- 	crashing_cpu = safe_smp_processor_id();
- 	nmi_shootdown_cpus();
-+#ifdef CONFIG_X86_32
- 	lapic_shutdown();
-+#else
-+	if (cpu_has_apic)
-+		disable_local_APIC();
-+#endif
- #if defined(CONFIG_X86_IO_APIC)
- 	disable_IO_APIC();
- #endif
-diff --git a/include/asm-x86/apic_64.h b/include/asm-x86/apic_64.h
-index 2747a11..3c8f21e 100644
---- a/include/asm-x86/apic_64.h
-+++ b/include/asm-x86/apic_64.h
-@@ -69,7 +69,6 @@ extern void clear_local_APIC (void);
- extern void connect_bsp_APIC (void);
- extern void disconnect_bsp_APIC (int virt_wire_setup);
- extern void disable_local_APIC (void);
--extern void lapic_shutdown (void);
- extern int verify_local_APIC (void);
- extern void cache_APIC_registers (void);
- extern void sync_Arb_IDs (void);
--- 
-1.5.3.4
+Also, please cc all the paravirt developers on things related to
+paravirt, especially things with such broad effect.  I think 400 is a
+good value for a perfect native clocksource.  >400 should be reserved
+for super-real (i.e. paravirt) sources that should always be chosen over
+a hardware realistic implementation in a virtual environment.
+
+Zach
 
