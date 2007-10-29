@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbXJ2IuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXJ2Iuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbXJ2IuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 04:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXJ2It6
+	id S1757561AbXJ2Iuf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 04:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbXJ2IuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 04:49:58 -0400
-Received: from 170.Red-213-96-222.staticIP.rima-tde.net ([213.96.222.170]:49345
-	"EHLO smtp.ferdyx.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbXJ2It5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 04:49:57 -0400
-Date: Mon, 29 Oct 2007 08:49:49 +0000
-From: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
-Message-ID: <20071029084949.19d20323@snowcone>
-In-Reply-To: <20071029083333.18a4dab7@the-village.bc.nu>
-References: <20071029061532.5d10dfc6@snowcone>
-	<20071029083333.18a4dab7@the-village.bc.nu>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=MP_D37LtBxCfTU.4WzcY5x.xMz
+	Mon, 29 Oct 2007 04:50:07 -0400
+Received: from ns120.gr8dns.org ([193.108.181.120]:41294 "EHLO mail.gr8dns.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754295AbXJ2IuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 04:50:05 -0400
+Date: Mon, 29 Oct 2007 01:49:17 -0700
+From: Dirk Hohndel <hohndel@linux.intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from input_register_device
+Message-ID: <20071029084917.GA12968@bigserver.hohndel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4725916A.7010505@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_D37LtBxCfTU.4WzcY5x.xMz
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Oct 29, 2007 at 03:53:14AM -0400, Jeff Garzik wrote:
+>
+>  You would also want to kfree(hidinput) on failure too.
 
-On Mon, 29 Oct 2007 08:33:33 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > It is not recognised by 2.6.24-rc1. I'm guessing it's because the
-> > vendor ID is 0001 rather than something sensible. I patched the
-> > kernel as follows:
-> 
-> A vendor ID of 1 is very very very broken. Do all boards have this or
-> do you have a faulty box (perhaps a misprogrammed EEPROM somewhere)
+Oops, of course. Thanks for catching that. Here's the updated patch
 
-A Google for 0001:8168 finds other mentions of the same board. Looks
-like it's a general problem.
+/D
 
-> That will match any device 0x8168 not just a realtek one. I'd use
-> 0x0001, 0x8168 for the match.
 
-Ok. I've attached an updated patch.
+[INPUT] hidinput_connect incorrectly ignored return value from input_register_device
 
-Thanks,
+Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+
+---
+ drivers/hid/hid-input.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index dd332f2..880161b 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -1186,13 +1186,21 @@ int hidinput_connect(struct hid_device *hid)
+ 				 * UGCI) cram a lot of unrelated inputs into the
+ 				 * same interface. */
+ 				hidinput->report = report;
+-				input_register_device(hidinput->input);
++				if (input_register_device(hidinput->input)) {
++					input_free_device(hidinput->input);
++					kfree(hidinput);
++					return -1;
++				}
+ 				hidinput = NULL;
+ 			}
+ 		}
+ 
+ 	if (hidinput)
+-		input_register_device(hidinput->input);
++		if (input_register_device(hidinput->input)) {
++			input_free_device(hidinput->input);
++			kfree(hidinput);
++			return -1;
++		}
+ 
+ 	return 0;
+ }
 -- 
-Ciaran McCreesh
---MP_D37LtBxCfTU.4WzcY5x.xMz
-Content-Type: text/x-patch; name=f-190hd-rlt8139.patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename=f-190hd-rlt8139.patch
+gitgui.0.8.4.g8d863
 
---- drivers/net/r8169.c.orig	2007-10-29 05:37:02.000000000 +0000
-+++ drivers/net/r8169.c	2007-10-29 08:46:24.000000000 +0000
-@@ -165,6 +165,7 @@
- 	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8136), 0, 0, RTL_CFG_2 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8167), 0, 0, RTL_CFG_0 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8168), 0, 0, RTL_CFG_1 },
-+	{ PCI_DEVICE(0x0001,			0x8168), 0, 0, RTL_CFG_2 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8169), 0, 0, RTL_CFG_0 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DLINK,	0x4300), 0, 0, RTL_CFG_0 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AT,		0xc107), 0, 0, RTL_CFG_0 },
 
---MP_D37LtBxCfTU.4WzcY5x.xMz--
