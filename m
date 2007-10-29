@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbXJ2TqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXJ2TsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbXJ2TqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 15:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXJ2TmE
+	id S1756257AbXJ2TsM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 15:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXJ2Tqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 15:42:04 -0400
-Received: from wolff.to ([66.93.197.194]:52921 "HELO wolff.to"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754858AbXJ2TmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 15:42:03 -0400
-X-Greylist: delayed 2345 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 15:42:01 EDT
-Date: Mon, 29 Oct 2007 13:55:22 -0500
-From: Bruno Wolff III <bruno@wolff.to>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-Message-ID: <20071029185522.GB30571@wolff.to>
-References: <46B10BB7.60900@redhat.com> <20070803113407.0b04d44e.akpm@linux-foundation.org> <20070804084426.GA20464@kobayashi-maru.wspse.de> <20070809095943.GA7763@kobayashi-maru.wspse.de> <20070809095534.25ae1c42.akpm@linux-foundation.org> <Pine.LNX.4.64.0709211623190.16442@blonde.wat.veritas.com>
+	Mon, 29 Oct 2007 15:46:39 -0400
+Received: from mx30.micromemory.com ([67.95.226.74]:4505 "EHLO
+	mail.micromemory.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756634AbXJ2Tqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 15:46:38 -0400
+X-Greylist: delayed 471 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Oct 2007 15:46:38 EDT
+Subject: Re: [PATCH 0/5 v3] Porting RapidIO driver from ppc to powerpc
+	architecture and adding memory mapped RapidIO driver.
+From: Phil Terry <pterry@micromemory.com>
+To: wei.zhang@freescale.com
+Cc: galak@kernel.crashing.org, mporter@kernel.crashing.org, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <11854393721520-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 12:38:40 -0700
+Message-Id: <1193686720.20377.2.camel@pterry-fc6.micromemory.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709211623190.16442@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: pterry@micromemory.com
+X-Return-Path: pterry@micromemory.com
+X-Envelope-From: pterry@micromemory.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: pterry@micromemory.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 16:58:15 +0100,
-  Hugh Dickins <hugh@veritas.com> wrote:
+Can anyone tell me what the status of these are? What kernel release are
+they targetted for? Currently I'm trying to work with 2.6.23 plus these
+patches locally.
+
+Cheers
+Phil
+
+On Thu, 2007-07-26 at 16:42 +0800, Zhang Wei wrote:
+> These patches are the version 3 patches for RapidIO with dts update and some minor fixups.
 > 
-> But once I look harder at it, I wonder what would have kept
-> 2.6.18 to 2.6.23 safe from the same issue: per-cpu deltas from
-> the global vm stats too low to get synched back to global, yet
-> adding up to something which misleads balance_dirty_pages into
-> an indefinite loop e.g. total nr_writeback actually 0, but
-> appearing more than dirty_thresh in the global approximation.
+> These patches are used for supporting RapidIO controllers of Freescale. I ported them from ppc architecture to powerpc architecture and added some new features, such as memory mapped driver.
+> 
+> [PATCH 1/5] Add the explanation and sample of RapidIO DTS OF-node to the document of booting-without-of.txt file.
+> [PATCH 2/5] Add RapidIO OF-node to MPC8641HPCN board dts file.
+> [PATCH 3/5] Add the platform device support with RapidIO to MPC8641HPCN platform.
+> [PATCH 4/5] Add RapidIO support to powerpc architecture.
+> [PATCH 5/5] Add the memory management driver to RapidIO.
+> 
+> Please see below descriptions of these patches:
+> 1. Add the RapidIO driver of-device support.
+> 2. Add the RapidIO driver support to MPC8641HPCN board.
+> 3. Port the RapidIO from ppc to powerpc architecture.
+> 4. Add Memory mapped RapidIO driver.
+> 5. Add the support to multi master ports.
+> 6. Add a simple bitmap RapidIO space allocator driver.
+> 7. Change the RapidIO system size of menuconfig to automatically detection.
+> 
+> Thanks!
+> 
+> Best Regards,
+> Zhang Wei
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
 
-I have been seeing this problem since Fedora Core 5's 2.6.20-1.2300.fc5
-kernel. The last Fedora kernel that didn't have this problem was
-2.6.19-1.2288.2.4.fc5, which I am still running on one machine.
 
-I have put up vmstat and proc/meminfo data at: http://wolff.to/bruno/vmlog
-There are a number of iterations of the output and they are mixed together,
-though the vmstat info was written when a buffer was full, so there are
-chunks of lines together. This was from a machine running Fedora 7's
-2.6.23.1-4.fc7 kernel.
-
-The machine is a single processor P3 with 512 MB of memory. There are
-three hard drives, two of which are used in software raid 1 arrays.
-I have ext3 file systems mounted noatime. I can provide more details if
-you need anything else.
-
-I can get lockups to happen fairly often. Often lots of firefox activity
-and/or some other disk heavy task such as yum update will get it to happen.
-
-I am not subscribed to LMKL, so please keep me copied on replies.
