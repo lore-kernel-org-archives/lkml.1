@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbXJ2QDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbXJ2QHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbXJ2QDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXJ2QD2
+	id S1757641AbXJ2QHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbXJ2QHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:03:28 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:36390 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbXJ2QD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:03:26 -0400
-Date: Mon, 29 Oct 2007 12:03:15 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: build failure, missing libvdeplug.h?
-Message-ID: <20071029160315.GA7408@c2.user-mode-linux.org>
-References: <4725FB46.70802@tiscali.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4725FB46.70802@tiscali.nl>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 29 Oct 2007 12:07:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47318 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752708AbXJ2QHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:07:35 -0400
+Message-ID: <47260546.9090508@garzik.org>
+Date: Mon, 29 Oct 2007 12:07:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linux-SCSI <linux-scsi@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: [PATCH v4 1/2] SCSI: Asynchronous event notification	infrastructure
+References: <15624bab8dc0206e384ac8314257a900e60127c1.1193668176.git.jeff@garzik.org>	 <20071029144208.676251F8168@havoc.gtf.org> <1193673088.3383.34.camel@localhost.localdomain>
+In-Reply-To: <1193673088.3383.34.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 04:24:54PM +0100, Roel Kluin wrote:
->   CC      arch/um/drivers/vde_user.o
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:8:24: error: libvdeplug.h: No such file or directory
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c: In function 'vde_user_init':
-> /home/roel/dnld/src/kernel/git/linux-2.6/arch/um/drivers/vde_user.c:18: error: 'VDECONN' undeclared (first use in this function)
-> ...
-> 
-> the file libvdeplug.h is missing and I can't find it neither in the tree or on
-> the net. 'git-grep VDECONN' shows that VDECONN isn't defined anywhere.
+James Bottomley wrote:
+> This still doesn't solve the fundamental corruption problem:
+> sdev->event_work has to contain the work entry until the workqueue has
+> finished executing it (which is some unspecified time in the future).
+> As soon as you drop the sdev->list_lock, the system thinks
+> sdev->event_work is available for reuse.  If we fire another event
+> before the work queue finished processing the prior event, the queue
+> will be corrupted.
 
-This is an option which requires support on the host (in the form of
-vde being installed - pcap is another example of this).
+I think you're misunderstanding the workqueue code?  You can call 
+schedule_work(&sdev->event_work) from anywhere, any time you like, as 
+many times as you like.
 
-				Jeff
 
--- 
-Work email - jdike at linux dot intel dot com
+> Also, I think Kristin's initial use of execute_in_user_context() was a
+> good call .. if we already have a user context, there's no need to
+> bother the workqueue ... some of these events will likely trigger from
+> thread backed kernel daemons.
+
+Quite agreed that sdev_evt_notify() might be called from kernel daemons, 
+but in general this is a fire-and-forget API that is -likely- to be 
+called from interrupt or completion context of many drivers, just like 
+scsi_done or other completion APIs.  It is a fundamentally parallel 
+interface.
+
+If thread-backed kernel daemons want to use this, it is trivial for them 
+to schedule work, then sync.
+
+	Jeff
+
+
