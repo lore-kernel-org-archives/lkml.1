@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbXJ2Wry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbXJ2WtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbXJ2Wry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 18:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbXJ2Wrq
+	id S1754163AbXJ2WtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 18:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXJ2WtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 18:47:46 -0400
-Received: from xenotime.net ([66.160.160.81]:56157 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752689AbXJ2Wrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 18:47:45 -0400
-Date: Mon, 29 Oct 2007 15:47:41 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, hch@infradead.org,
-       jgarzik <jgarzik@pobox.com>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Sam Ravnborg <sam@ravnborg.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Philippe Elie <phil.el@wanadoo.fr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Lameter <christoph@lameter.com>
-Subject: Re: [RFC] Create instrumentation directory (git repository)
-Message-Id: <20071029154741.cb093f55.rdunlap@xenotime.net>
-In-Reply-To: <20071029215138.GA4233@Krystal>
-References: <20071029215138.GA4233@Krystal>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 29 Oct 2007 18:49:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38555 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751640AbXJ2WtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 18:49:00 -0400
+Date: Mon, 29 Oct 2007 15:48:54 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Lee.Schermerhorn@hp.com, rientjes@google.com, clameter@sgi.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071029154854.81fd606d.pj@sgi.com>
+In-Reply-To: <200710292208.30033.ak@suse.de>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<1193674988.5035.93.camel@localhost>
+	<20071029123558.fb077ca9.pj@sgi.com>
+	<200710292208.30033.ak@suse.de>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 17:51:38 -0400 Mathieu Desnoyers wrote:
+> So the user space asks for 8 nodes because it knows the machine
+> has that many from /sys and it only gets 4 if a cpuset says so? That's
+> just bad semantics. And is not likely to make the user programs happy.
 
-> Hi,
-> 
-> Since we already have the Instrumentation menu in
-> kernel/Kconfig.instrumentation and instrumentation code all over the
-> kernel tree:
-> 
-> arch/*/oprofile/*.c
-> kernel/kprobes.c
-> arch/*/kernel/kprobes.c
-> kernel/marker.c
-> kernel/profile.c
-> kernel/lockdep.c
-> vm/vmstat.c
-> block/blktrace.c
-> drivers/base/power/trace.c
-> 
-> We could move them to
-> 
-> instrumentation/
-> arch/*/instrumentation/
-> 
-> Therefore, we could also move the kprobes and marker samples under
-> 
-> instrumentation/samples/
-> 
-> Here is a link to a git repository containing the changes, based on
-> 2.6.24-rc1:
-> 
-> git://ltt.polymtl.ca/linux-2.6-instrumentation.git instrumentation-for-linus
-> (the interesting range is : v2.6.24-rc1..instrumentation-for-linus)
-> 
-> Through the gitweb interface:
-> http://ltt.polymtl.ca/cgi-bin/gitweb.cgi?p=linux-2.6-instrumentation.git
-> 
-> Feedback is appreciated. Sorry for the huge CC list, but the change
-> involves many maintainers.
+That's no different than what can happen today -- if a task actually
+is in an 8 node cpuset, sets up its mempolicies accordingly, and then
+gets shoe horned into a 4 node cpuset.
 
-Two more added.  Jeff Garzik and Christoph H. sometimes have some comments
-about this.
+It's not good or bad; it's just interactions between two mechanisms.
 
-It would be helpful if we could get comments on this in the next day
-or two [instead of in 1-2 weeks].
+If your app doesn't run well in a small cpuset, don't run it there
+(or do run it there, poorly ;).
 
-Thanks,
----
-~Randy
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
