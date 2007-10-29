@@ -1,36 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbXJ2PXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759215AbXJ2PYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbXJ2PXw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 11:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXJ2PXo
+	id S1759215AbXJ2PYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 11:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXJ2PYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 11:23:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36116 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbXJ2PXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 11:23:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0710290945130.12985@localhost.localdomain>
-References: <Pine.LNX.4.64.0710290945130.12985@localhost.localdomain>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: dhowells@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] FRV: Move DMA macros to scatterlist.h for consistency.
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 29 Oct 2007 15:23:41 +0000
-Message-ID: <16285.1193671421@redhat.com>
+	Mon, 29 Oct 2007 11:24:40 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38152 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752608AbXJ2PYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 11:24:39 -0400
+Date: Mon, 29 Oct 2007 16:24:47 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/afs/vlocation.c: fix off-by-one
+Message-ID: <20071029152447.GP7227@stusta.de>
+References: <20071027141957.GY30533@stusta.de> <3357.1193662826@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <3357.1193662826@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-
-> To be consistent with other architectures, these two DMA macros should
-> be defined in scatterlist.h as opposed to dma-mapping.h
+On Mon, Oct 29, 2007 at 01:00:26PM +0000, David Howells wrote:
+> Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> > This patch fixes an off-by-one error spotted by the Coverity checker.
+> 
+> NAK.
+> 
+> Why do you assume it's a NUL-terminated string?  It's not.  It's a fixed
+> length character array that gets padded out with NULs.
+> 
+> Look 9 lines further down in the file from the change you made.  You'll notice
+> it is using memcmp() not strcmp().
 
-Acked-by: David Howells <dhowells@redhat.com>
+Check the last line of the patch I sent:
+  if (vl->vldb.name[namesz] != '\0')
+
+> David
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
