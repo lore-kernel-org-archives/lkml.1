@@ -1,89 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXJ2JCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbXJ2JLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbXJ2JCK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXJ2JB6
+	id S1756359AbXJ2JLQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXJ2JLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:01:58 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7914 "EHLO kernel.dk"
+	Mon, 29 Oct 2007 05:11:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:43353 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753067AbXJ2JB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:01:57 -0400
-Date: Mon, 29 Oct 2007 09:59:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scatterlist fallout: drivers/scsi/arm/
-Message-ID: <20071029085935.GD5467@kernel.dk>
-References: <20071027184404.GQ8181@ftp.linux.org.uk> <20071027201700.GC22235@flint.arm.linux.org.uk>
+	id S1751424AbXJ2JK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:10:59 -0400
+Date: Mon, 29 Oct 2007 10:10:50 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [Git pull] hrtimer updates for 2.6.24
+Message-ID: <alpine.LFD.0.9999.0710291000370.3186@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071027201700.GC22235@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27 2007, Russell King wrote:
-> On Sat, Oct 27, 2007 at 07:44:04PM +0100, Al Viro wrote:
-> > 
-> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > ---
-> > diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-> > index 21ba571..2d09fef 100644
-> > --- a/drivers/scsi/arm/scsi.h
-> > +++ b/drivers/scsi/arm/scsi.h
-> > @@ -39,7 +39,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
-> >  		SCp->buffer++;
-> >  		SCp->buffers_residual--;
-> >  		SCp->ptr = (char *)
-> > -			 (page_address(SCp->buffer->page) +
-> > +			 (page_address(sg_page(SCp->buffer)) +
-> >  			  SCp->buffer->offset);
-> >  		SCp->this_residual = SCp->buffer->length;
-> >  	} else {
-> > @@ -77,7 +77,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
-> >  		SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
-> >  		SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
-> >  		SCpnt->SCp.ptr = (char *)
-> > -			 (page_address(SCpnt->SCp.buffer->page) +
-> > +			 (page_address(sg_page(SCpnt->SCp.buffer)) +
-> >  			  SCpnt->SCp.buffer->offset);
-> >  		SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
-> >  		SCpnt->SCp.phase = SCpnt->request_bufflen;
-> 
-> FYI, here's what I have queued (cut'n'pasted so probably won't apply):
-> 
-> diff --git a/drivers/scsi/arm/scsi.h b/drivers/scsi/arm/scsi.h
-> index 21ba571..bb6550e 100644
-> --- a/drivers/scsi/arm/scsi.h
-> +++ b/drivers/scsi/arm/scsi.h
-> @@ -38,9 +38,7 @@ static inline int next_SCp(struct scsi_pointer *SCp)
->         if (ret) {
->                 SCp->buffer++;
->                 SCp->buffers_residual--;
-> -               SCp->ptr = (char *)
-> -                        (page_address(SCp->buffer->page) +
-> -                         SCp->buffer->offset);
-> +               SCp->ptr = sg_virt(SCp->buffer);
->                 SCp->this_residual = SCp->buffer->length;
->         } else {
->                 SCp->ptr = NULL;
-> @@ -76,9 +74,7 @@ static inline void init_SCp(struct scsi_cmnd *SCpnt)
-> 
->                 SCpnt->SCp.buffer = (struct scatterlist *) SCpnt->request_buffer;
->                 SCpnt->SCp.buffers_residual = SCpnt->use_sg - 1;
-> -               SCpnt->SCp.ptr = (char *)
-> -                        (page_address(SCpnt->SCp.buffer->page) +
-> -                         SCpnt->SCp.buffer->offset);
-> +               SCpnt->SCp.ptr = sg_virt(SCpnt->SCp.buffer);
->                 SCpnt->SCp.this_residual = SCpnt->SCp.buffer->length;
->                 SCpnt->SCp.phase = SCpnt->request_bufflen;
+Linus,
 
-Russell, will you be merging this yourself or do you want me to include
-it in the sg fixup branch?
+please pull from:
 
--- 
-Jens Axboe
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git
 
+the following small updates.
+
+Thanks,
+
+	tglx
+--- 
+Adrian Bunk (1):
+      clockevents: unexport tick_nohz_get_sleep_length
+
+Michael Ellerman (1):
+      Quieten hrtimer printk: "Switched to high resolution mode .."
+
+Vegard Nossum (1):
+      timer_list: Fix printk format strings
+
+ kernel/hrtimer.c         |    2 +-
+ kernel/time/tick-sched.c |    2 --
+ kernel/time/timer_list.c |    6 ++++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index b6d2ff7..22a2514 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -602,7 +602,7 @@ static int hrtimer_switch_to_hres(void)
+ 	/* "Retrigger" the interrupt to get things going */
+ 	retrigger_next_event(NULL);
+ 	local_irq_restore(flags);
+-	printk(KERN_INFO "Switched to high resolution mode on CPU %d\n",
++	printk(KERN_DEBUG "Switched to high resolution mode on CPU %d\n",
+ 	       smp_processor_id());
+ 	return 1;
+ }
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 10a1347..5997456 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -320,8 +320,6 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 	return ts->sleep_length;
+ }
+ 
+-EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
+-
+ /**
+  * nohz_restart_sched_tick - restart the idle tick from the idle task
+  *
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index fdb2e03..12c5f4c 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -129,7 +129,8 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
+ 	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
+ 	int i;
+ 
+-	SEQ_printf(m, "\ncpu: %d\n", cpu);
++	SEQ_printf(m, "\n");
++	SEQ_printf(m, "cpu: %d\n", cpu);
+ 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
+ 		SEQ_printf(m, " clock %d:\n", i);
+ 		print_base(m, cpu_base->clock_base + i, now);
+@@ -184,7 +185,8 @@ print_tickdevice(struct seq_file *m, struct tick_device *td)
+ {
+ 	struct clock_event_device *dev = td->evtdev;
+ 
+-	SEQ_printf(m, "\nTick Device: mode:     %d\n", td->mode);
++	SEQ_printf(m, "\n");
++	SEQ_printf(m, "Tick Device: mode:     %d\n", td->mode);
+ 
+ 	SEQ_printf(m, "Clock Event Device: ");
+ 	if (!dev) {
