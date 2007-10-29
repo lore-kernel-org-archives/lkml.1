@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbXJ2Gpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbXJ2HAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbXJ2Gpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 02:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXJ2GpX
+	id S1753149AbXJ2HAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 03:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXJ2HAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 02:45:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:52775 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbXJ2GpW (ORCPT
+	Mon, 29 Oct 2007 03:00:44 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:49236 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbXJ2HAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 02:45:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=V/FC3FOxi3juQvZgsmWSoDRniHR7IRlvgzyRlkva2hbucpIHYCChkiLppyQel3kVEvL5xTP/rVBOOebcTaH4p4THhE2sg0OVcn4pyHPb9cZKZpFFzr6ph6Scc6M/DCh3q77UMkL4MFyVbzGQp9YjkTrvNwwyvOIZ9AtCZV/wqYI=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] [linux-pm] Commit "Hibernation: Enter platform hibernation state in a consistent way)" makes my system to resume instantly from S4
-Date: Mon, 29 Oct 2007 08:45:10 +0200
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200710271405.32908.maximlevitsky@gmail.com> <200710282200.53910.maximlevitsky@gmail.com> <200710282123.15653.rjw@sisk.pl>
-In-Reply-To: <200710282123.15653.rjw@sisk.pl>
+	Mon, 29 Oct 2007 03:00:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=GFSVVp2YVBlcDug+g3s9LNM64Iah67hb6Hf53W0Kmo4NpCHejde3OPcxJGiX7yoEr
+	7hLRUlZ6jkLOuFEV3XU+A==
+Date: Mon, 29 Oct 2007 00:00:25 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <20071028224533.df924291.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710282352270.23978@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <20071026120037.7b95a136.pj@sgi.com> <alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com> <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+ <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com> <20071026180713.aeedfac2.pj@sgi.com> <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com> <20071026194144.6042316a.pj@sgi.com>
+ <alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com> <20071027161955.e9d4d2db.pj@sgi.com> <alpine.DEB.0.9999.0710272231170.23796@chino.kir.corp.google.com> <20071028164637.8d1b45b0.pj@sgi.com> <alpine.DEB.0.9999.0710281742090.26837@chino.kir.corp.google.com>
+ <20071028212745.57a7db67.pj@sgi.com> <alpine.DEB.0.9999.0710282130320.32474@chino.kir.corp.google.com> <20071028224533.df924291.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710290845.11016.maximlevitsky@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
-> On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
-> > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
-> > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
-> > > > Hi,
-> > > > 
-> > > > Recently I noticed that my system resumes just after suspend to disk.
-> > > > 
-> > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
-> > > > 
-> > > > Note:
-> > > > 
-> > > > This happens only if I enable WOL using /proc/acpi/wakeup
-> > > > (echo "ILAN" > /proc/acpi/wakeup)
-> > > 
-> > > What happens after a suspend to RAM?
-> > I do more testing tomorrow, but what I remember is that,
-> > I had no issues with suspend-to-ram.
-> > (And take into account the fact that _all_ wakeup devices were enabled always,
-> > the rc.local does that for me, and still I did quite a lot of suspends, but I
-> > got the immediate resume, only and always after suspend to disk.
+On Sun, 28 Oct 2007, Paul Jackson wrote:
+
+> > If we can't identify any applications that would be broken by this, what's 
+> > the difference in simply implementing Choice B and then, if we hear 
+> > complaints, add your hack to revert back to Choice A behavior based on the 
+> > get_mempolicy() call you specified is always part of libnuma?
 > 
-> Hm, can you please retest with the above commit applied, but with
-> device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
-Bingo! doing the above fixes this problem.
-And... strange, since I did test the system with e1000 unloaded, but still got same bug,
-back when I chased that bug, thus it is probably not related to e1000 and WOL.
+> I'll probably reply to other parts of your message later, but this
+> one catches my eye right now.
+> 
+> "if we hear complaints, add your hack ... back"  -- this doesn't seem
+> like a good idea to me.  Maybe inside Google you don't see it, but
+> for those of us shipping computer systems using major distributions
+> such as SUSE or Red Hat, there can be a year lag between when I send a
+> feature patch to Andrew, and when my customers send their first
+> feedback to me resulting from using that new feature.
+> 
 
-the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
-of e1000 is shared with EHCI and HDA sound codec.
-(But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
+Let's add a Choice C:
 
-(But disabling this wakeup source, fixes this bug too)
+	Any nodemask that is passed to set_mempolicy() is saved as the
+	intent of the application in struct mempolicy.  All policies
+	are effected on a contextualized per-allocation basis.
 
-Thanks,
-	Best regards,
-		Maxim Levitsky
+	Policies such as MPOL_INTERLEAVE always get AND'd with 
+	pol->cpuset_mems_allowed.  If that yields numa_no_nodes,
+	MPOL_DEFAULT is used instead.
+
+	Policies such as MPOL_PREFERRED are respected if the node is set
+	in pol->cpuset_mems_allowed, otherwise MPOL_DEFAULT is used.	
+
+	If an application attempts to setup a memory policy for an
+	MPOL_PREFERRED node that it doesn't have access to or an
+	MPOL_INTERLEAVE nodemask that is empty when AND'd with
+	pol->cpuset_mems_allowed, -EINVAL is returned and no new policy
+	is effected.
+
+	If an application gains nodes in pol->cpuset_mems_allowed that
+	now include the nodes from MPOL_INTERLEAVE or MPOL_PREFERRED,
+	that policy is then effected once again.  Otherwise,
+	MPOL_DEFAULT is still used.
