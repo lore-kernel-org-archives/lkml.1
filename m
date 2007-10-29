@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbXJ2LWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbXJ2LXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbXJ2LWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 07:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXJ2LWd
+	id S1754081AbXJ2LXc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 07:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbXJ2LXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 07:22:33 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60256 "EHLO e5.ny.us.ibm.com"
+	Mon, 29 Oct 2007 07:23:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52438 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751141AbXJ2LWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 07:22:32 -0400
-Date: Mon, 29 Oct 2007 16:52:28 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-s390@vger.kernel.org
-Subject: [PATCH-RESEND] Re: S390 change in sg_set_page() cause build failure
-Message-ID: <20071029112228.GA29163@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20071026111945.GB21274@linux.vnet.ibm.com> <20071026115429.GH5155@kernel.dk>
+	id S1750796AbXJ2LXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 07:23:24 -0400
+Date: Mon, 29 Oct 2007 12:23:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Johannes Stezenbach <js@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [build bug, 2.6.24-rc1] CONFIG_VIDEO_DEV=m &
+	CONFIG_VIDEO_SAA7146_VV=y
+Message-ID: <20071029112303.GA18994@elte.hu>
+References: <20071026073736.GA24172@elte.hu> <20071027213057.GA15211@linuxtv.org> <20071027163932.e0a0522b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071026115429.GH5155@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071027163932.e0a0522b.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0172]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 01:54:30PM +0200, Jens Axboe wrote:
-> On Fri, Oct 26 2007, Kamalesh Babulal wrote:
-> > Hi Jens,
+
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> > config VIDEO_SAA7146_VV
+> > 	tristate
+> > 	depends on VIDEO_DEV = y || VIDEO_DEV = VIDEO_SAA7146_VV
+> > 	select VIDEOBUF_DMA_SG
+> > 	select VIDEO_SAA7146
 > > 
-> >  	sg_set_buf(list, address, 0);
-<snip>
-> >  }
+> > (untested)
 > 
-> That's not quite right, it should be:
+> Nope, won't work.  I tried that last night.  VIDEO_DEV_SAA7146_VV
+> has too many "select"s involved, but select doesn't follow the dependency
+> chains.  IOW, as written in Documentation/kbuild/kconfig-language.txt:
 > 
-> diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
-> index 0754542..e268f79 100644
-> --- a/drivers/s390/scsi/zfcp_def.h
-> +++ b/drivers/s390/scsi/zfcp_def.h
-> @@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
->   * zfcp_address_to_sg - set up struct scatterlist from kernel address
->   * @address: kernel address
->   * @list: struct scatterlist
-> + * @size: buffer size
->   */
->  static inline void
-> -zfcp_address_to_sg(void *address, struct scatterlist *list)
-> +zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
->  {
-> -	sg_set_buf(list, address, 0);
-> +	sg_set_buf(list, address, size);
->  }
-> 
->  #define REQUEST_LIST_SIZE 128
-> 
-> -- 
-> Jens Axboe
+> 	select is evil.... select will by brute force set a symbol
+> 	equal to 'y' without visiting the dependencies. So abusing
+> 	select you are able to select a symbol FOO even if FOO depends
+> 	on BAR that is not set.
 
-Hi Jens,
+so ... what should we do? Remove those ~7 select VIDEO_SAA7146_VV lines 
+and replace them with depends on VIDEO_SAA7146_VV ?
 
-Resending the patch with the changes pointed by you in the patch.
-
-[jens.axboe@oracle.com: size parameter fix]
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
-diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
-index 0754542..f747e86 100644
---- a/drivers/s390/scsi/zfcp_def.h
-+++ b/drivers/s390/scsi/zfcp_def.h
-@@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
-  * zfcp_address_to_sg - set up struct scatterlist from kernel address
-  * @address: kernel address
-  * @list: struct scatterlist
-+ * @size: buffer size 
-  */
- static inline void
--zfcp_address_to_sg(void *address, struct scatterlist *list)
-+zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int size)
- {
--	sg_set_buf(list, address, 0);
-+	sg_set_buf(list, address, size);
- }
- 
- #define REQUEST_LIST_SIZE 128
-
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM,ISTL.
+	Ingo
