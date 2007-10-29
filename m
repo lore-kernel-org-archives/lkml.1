@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXJ2RWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbXJ2RYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbXJ2RWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 13:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXJ2RWl
+	id S1759438AbXJ2RYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 13:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbXJ2RYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 13:22:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51437 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756246AbXJ2RWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 13:22:40 -0400
-Date: Mon, 29 Oct 2007 10:20:58 -0700
-From: Tony Jones <tonyj@suse.de>
-To: Steve Grubb <sgrubb@redhat.com>
-Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] audit: clear thread flag for new children
-Message-ID: <20071029172058.GA8433@suse.de>
-References: <20071026204228.GA1519@suse.de> <200710271021.42093.sgrubb@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710271021.42093.sgrubb@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 29 Oct 2007 13:24:10 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:36683 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754736AbXJ2RYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 13:24:09 -0400
+Subject: Re: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071029181814.25410e00@gondolin.boeblingen.de.ibm.com>
+References: <1193671019.3383.13.camel@localhost.localdomain>
+	 <1193676852.2655.21.camel@lov.site>
+	 <1193677071.3383.56.camel@localhost.localdomain>
+	 <20071029181814.25410e00@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 12:24:06 -0500
+Message-Id: <1193678646.3383.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 27, 2007 at 10:21:39AM -0400, Steve Grubb wrote:
-> On Friday 26 October 2007 04:42:28 pm Tony Jones wrote:
-> > Thread flag TIF_SYSCALL_AUDIT is not cleared for new children when audit
-> > context creation has been disabled (auditctl -e0). This can cause new
-> > children forked from a parent created when audit was enabled to not take
-> > the fastest syscall path thru entry.S
+On Mon, 2007-10-29 at 18:18 +0100, Cornelia Huck wrote:
+> On Mon, 29 Oct 2007 11:57:51 -0500,
+> James Bottomley <James.Bottomley@SteelEye.com> wrote:
 > 
-> This came up almost 2 years ago:
+> > On Mon, 2007-10-29 at 17:54 +0100, Kay Sievers wrote:
+> > > On Mon, 2007-10-29 at 10:16 -0500, James Bottomley wrote:
+> > > > This patch is a first pass at adding a filter function to the group
+> > > > attributes, just to see how the idea flies.  If everyone's OK with this,
+> > > > I think the next thing that we might do is add bitmap functions (so
+> > > > every bit in the bitmap has a name, but also might not appear) to
+> > > > groups.
+> > > 
+> > > Bitmaps in the attribute groups?
+> > 
+> > Actually, no ... that would spoil our one group for all devices rule.
+> > So they would be a set of helper functions for manipulating bitmaps, but
+> > the bitmap would have to be in separate storage elsewhere.
 > 
-> https://www.redhat.com/archives/linux-audit/2005-September/msg00048.html
+> Can you determine which subset of the attributes you want just before
+> actually creating the group? Then you could do something like:
+> 
+> create_group(grp, kobj)
+> {
+> 	grp->update_creation_mask(kobj);
+> 	actually_create_attrs();
+> }
 
-I was not aware of this, thanks.
+That's actually what we currently do (at least in hand coded form) in
+the current transport classes.  However, it leads to one separate group
+for each attached class.  With the filter approach, we only need one
+constructed group for every transport class.
 
-> The problem is that removing that flag makes the children unauditable in the 
-> future. The only place that flag gets set is during fork. 
+> > 
+> > > >  struct attribute_group {
+> > > >  	const char		*name;
+> > > > +	int			(*filter_show)(struct kobject *, int);
+> > > 
+> > > Are you sure that you want to return an array index here, instead of the
+> > > actual attribute? Like:
+> > 
+> > Actually, it returns a true/false value indicating whether the given
+> > attribute should be displayed.
+> > 
+> > >   int (*filter_show)(struct kobject *kobj, struct attribute *attr);
+> 
+> I'd agree that using the attribute is better in this function.
+> 
+> > > 
+> > > The names "show" and "store" are the ususal file-operation names, and we
+> > > are not filtering a "show" here, right? Maybe "create", or "export", or
+> > > something else might be a better name?
+> > 
+> > how about (*attribute_is_visible)?
+> 
+> Well, you don't only stop the visibility, but the creation of the
+> attribute, so perhaps (*creation_filter)?
 
-I don't see this.  The case that would be undesirable would be for a task
-to have an audit context but to not have the thread flag enabled.  That isn't
-the case.  This was the point Chris made in his Ack, although perhaps somewhat
-tersely.
+visibility and creation are the same thing, aren't they?  An invisible
+attribute doesn't appear in the sysfs directory, so it's equivalent to
+the file for it not being created.
 
-> Unless I'm missing something, to make all children auditable again would 
-> mean stopping all processes and or'ing that flag into all thread info areas. 
+James
 
-I think you are.  Or maybe the code was different two years ago so that the
-above made sense.   
 
-In the above scenario, audit is disabled, a new child is forked, we bail
-early so there is no audit context (and now there is no flag in the thread
-area).   Currently there is no way this task is ever going to be audited as 
-there is no audit context.    If this task forks a new child, at this point
-the value of audit enabled will determine if there should be a context 
-allocated and it will allocate the TIF flag also.   I don't see your stopping
-all processes scenario.
-
-> I do not want to propose that patch to LKML.  :)
-
-;-)
-
-Tony
