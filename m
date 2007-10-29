@@ -1,39 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbXJ2UYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbXJ2UYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbXJ2UYK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 16:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXJ2UX5
+	id S1755330AbXJ2UYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 16:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXJ2UYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 16:23:57 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5728 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752267AbXJ2UX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 16:23:57 -0400
-Date: Mon, 29 Oct 2007 21:23:52 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Clean up scatterlist.h and introduce macros for readability.
-Message-ID: <20071029202352.GF7499@kernel.dk>
-References: <Pine.LNX.4.64.0710291234560.20259@localhost.localdomain> <20071029185803.GA7499@kernel.dk> <aa79d98a0710291320r5412ebcboc90234cc2ac56102@mail.gmail.com>
+	Mon, 29 Oct 2007 16:24:35 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1867 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbXJ2UYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 16:24:34 -0400
+Date: Mon, 29 Oct 2007 20:23:11 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Ebourne <fedora@ebourne.me.uk>,
+       Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [stable] 2.6.23 boot failures on x86-64.
+Message-ID: <20071029202311.GO5529@shadowen.org>
+References: <20071029175014.GH7793@redhat.com> <20071029180739.GA17595@kroah.com> <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aa79d98a0710291320r5412ebcboc90234cc2ac56102@mail.gmail.com>
+In-Reply-To: <alpine.LFD.0.999.0710291123200.30120@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29 2007, Cyrill Gorcunov wrote:
-> Could you please give a link to that explanation? It seems I've missed
-> it somehow. Thanks.
+On Mon, Oct 29, 2007 at 11:37:40AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 29 Oct 2007, Greg KH wrote:
+> > 
+> > I'll be glad to revert it in -stable, if it's also reverted in Linus's
+> > tree first :)
+> 
+> We've had some changes since 2.6.23, and afaik, the 
+> "alloc_bootmem_high_node()" code is alreadt effectively dead there. It's 
+> only called if CONFIG_SPARSEMEM_VMEMMAP is *not* enabled, and I *think* we 
+> enable it by force on x86-64 these days.
 
-(don't top post)
+CONFIG_SPARSEMEM_VMEMMAP is the default when SPARSEMEM is enabled
+on x86_64.   The overall default remains DISCONTIGMEM, mainly as a
+safety measure while the i386/x86_64 => x86 merge stablises.  But yes
+this code is only used when SPARSEMEM is enabled but VMEMMAP is not.
+So it is effectivly redundant.
 
-It was on linux-kernel, message id:
+> More people added to Cc, just to clarify whether I'm just confused.
+> 
+> Andy, Christoph, Mel: commit 2e1c49db4c640b35df13889b86b9d62215ade4b6 aka 
+> "x86_64: allocate sparsemem memmap above 4G" is the one that causes the 
+> failures, just fyi.
 
-Message-ID: <20071023202017.GI14671@kernel.dk>
+That patch seems to have a laudable goal of trying to push the memory
+which backs the sparsemem memmap out to non-dma memory.  I would have
+expected that call to actually succeed as the bootmem allocator seems to
+try at the goal which would likely be outside the node on a small
+machine, and then retry without a goal.  Which is what the code without
+the goal does.  Most illogical.
 
--- 
-Jens Axboe
+> Martin - it would be great if you could try out your failing machine with 
+> 2.6.24-rc1 (or a nightly snapshot or current git.. the more recent the 
+> better).
+> 
+> But if I'm right, that commit should be reverted from 2.6.24 just because 
+> it's pointless (even if the bug itself is gone). And if I'm wrong, it 
+> should be reverted. So something like the appended would make sense 
+> regardless.
+> 
+> Can I get a "tested-by"? And/or ack/nack's on my half-arsed theory above?
 
+This code is definatly only used when SPARSEMEM is enabled, and VMEMMAP
+is not which is not a combination we see on x86_64.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+> 		Linus
+> --
+> From: Linus Torvalds <torvalds@woody.linux-foundation.org>
+> 
+> Revert "x86_64: allocate sparsemem memmap above 4G"
+> 
+> This reverts commit 2e1c49db4c640b35df13889b86b9d62215ade4b6, since
+> testing in Fedora has shown it to cause boot failures, as per Dave
+> Jones. Bisected down by Martin Ebourne.
+> 
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Martin Ebourne <fedora@ebourne.me.uk>
+> Cc: Zou Nan hai <nanhai.zou@intel.com>
+> Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index 1e3862e..a7308b2 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -728,12 +728,6 @@ int in_gate_area_no_task(unsigned long addr)
+>  	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
+>  }
+>  
+> -void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+> -{
+> -	return __alloc_bootmem_core(pgdat->bdata, size,
+> -			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+> -}
+> -
+>  const char *arch_vma_name(struct vm_area_struct *vma)
+>  {
+>  	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
+> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> index c83534e..0365ec9 100644
+> --- a/include/linux/bootmem.h
+> +++ b/include/linux/bootmem.h
+> @@ -59,7 +59,6 @@ extern void *__alloc_bootmem_core(struct bootmem_data *bdata,
+>  				  unsigned long align,
+>  				  unsigned long goal,
+>  				  unsigned long limit);
+> -extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
+>  
+>  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+>  extern void reserve_bootmem(unsigned long addr, unsigned long size);
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index 08fb14f..e06f514 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -220,12 +220,6 @@ static int __meminit sparse_init_one_section(struct mem_section *ms,
+>  	return 1;
+>  }
+>  
+> -__attribute__((weak)) __init
+> -void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+> -{
+> -	return NULL;
+> -}
+> -
+>  static unsigned long usemap_size(void)
+>  {
+>  	unsigned long size_bytes;
+> @@ -267,11 +261,6 @@ struct page __init *sparse_mem_map_populate(unsigned long pnum, int nid)
+>  	if (map)
+>  		return map;
+>  
+> -  	map = alloc_bootmem_high_node(NODE_DATA(nid),
+> -                       sizeof(struct page) * PAGES_PER_SECTION);
+> -	if (map)
+> -		return map;
+> -
+>  	map = alloc_bootmem_node(NODE_DATA(nid),
+>  			sizeof(struct page) * PAGES_PER_SECTION);
+>  	return map;
+
+-apw
