@@ -1,126 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbXJ2Iev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXJ2Imq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbXJ2Iev (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 04:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbXJ2Ieo
+	id S1756155AbXJ2Imq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 04:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbXJ2Imi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 04:34:44 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:19261 "EHLO relay.sw.ru"
+	Mon, 29 Oct 2007 04:42:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49007 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbXJ2Ien (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 04:34:43 -0400
-Message-ID: <47259BE9.4050904@openvz.org>
-Date: Mon, 29 Oct 2007 11:38:01 +0300
-From: Kirill Korotaev <dev@openvz.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	id S1752383AbXJ2Imi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 04:42:38 -0400
+Message-ID: <47259CFB.2090106@garzik.org>
+Date: Mon, 29 Oct 2007 04:42:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH] pidns: Limit kill -1 and cap_set_all
-References: <m1y7dp22d4.fsf@ebiederm.dsl.xmission.com>	<alpine.LFD.0.999.0710261105440.30120@woody.linux-foundation.org>	<m1r6jhzmov.fsf_-_@ebiederm.dsl.xmission.com> <m1k5p9zk6b.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1k5p9zk6b.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
+References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu>
+In-Reply-To: <20071029083333.18a4dab7@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I dislike this patch:
-it's not scalable/efficient to travers all the tasks
-while we know the pid namespace we care about.
+Alan Cox wrote:
+> A vendor ID of 1 is very very very broken. Do all boards have this or do
+> you have a faulty box (perhaps a misprogrammed EEPROM somewhere)
 
-Kirill
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8136), 0, 0, RTL_CFG_2 },
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8167), 0, 0, RTL_CFG_0 },
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_REALTEK,	0x8168), 0, 0, RTL_CFG_1 },
+>> +	{ PCI_DEVICE(PCI_ANY_ID,		0x8168), 0, 0, RTL_CFG_2 },
+
+> That will match any device 0x8168 not just a realtek one. I'd use 0x0001,
+> 0x8168 for the match. However I'd seriously consider checking another
+> board as I suspect you simply have a return candidate.
+
+Amusingly, 8139too had to deal with the exact same problem.  At the 
+time, we chose to obtain the subsystem vendor/device ids, and list them 
+that way:
+
+         /* some crazy cards report invalid vendor ids like
+          * 0x0001 here.  The other ids are valid and constant,
+          * so we simply don't match on the main vendor id.
+          */
+         {PCI_ANY_ID, 0x8139, 0x10ec, 0x8139, 0, 0, RTL8139 },
+         {PCI_ANY_ID, 0x8139, 0x1186, 0x1300, 0, 0, RTL8139 },
+         {PCI_ANY_ID, 0x8139, 0x13d1, 0xab06, 0, 0, RTL8139 },
+
+Given that the subsystem vendor ids in particular were sane and valid in 
+each case, this seemed narrow enough to avoid false positives.
 
 
-Eric W. Biederman wrote:
-> This patch implements task_in_pid_ns and uses it to limit cap_set_all
-> and sys_kill(-1,) to only those tasks in the current pid namespace.
-> 
-> Without this we have a setup for a very nasty surprise.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  include/linux/pid_namespace.h |    2 ++
->  kernel/capability.c           |    3 +++
->  kernel/pid.c                  |   11 +++++++++++
->  kernel/signal.c               |    5 ++++-
->  4 files changed, 20 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-> index 0227e68..b454678 100644
-> --- a/include/linux/pid_namespace.h
-> +++ b/include/linux/pid_namespace.h
-> @@ -78,4 +78,6 @@ static inline struct task_struct *task_child_reaper(struct task_struct *tsk)
->  	return tsk->nsproxy->pid_ns->child_reaper;
->  }
->  
-> +extern int task_in_pid_ns(struct task_struct *tsk, struct pid_namespace *ns);
-> +
->  #endif /* _LINUX_PID_NS_H */
-> diff --git a/kernel/capability.c b/kernel/capability.c
-> index efbd9cd..a801016 100644
-> --- a/kernel/capability.c
-> +++ b/kernel/capability.c
-> @@ -125,6 +125,7 @@ static inline int cap_set_all(kernel_cap_t *effective,
->  			       kernel_cap_t *inheritable,
->  			       kernel_cap_t *permitted)
->  {
-> +     struct pid_namespace *pid_ns = current->nsproxy->pid_ns;
->       struct task_struct *g, *target;
->       int ret = -EPERM;
->       int found = 0;
-> @@ -132,6 +133,8 @@ static inline int cap_set_all(kernel_cap_t *effective,
->       do_each_thread(g, target) {
->               if (target == current || is_container_init(target->group_leader))
->                       continue;
-> +             if (!task_in_pid_ns(target, pid_ns))
-> +		     continue;
->               found = 1;
->  	     if (security_capset_check(target, effective, inheritable,
->  						permitted))
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index f815455..1c332ca 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -430,6 +430,17 @@ struct pid *find_get_pid(pid_t nr)
->  	return pid;
->  }
->  
-> +static int pid_in_pid_ns(struct pid *pid, struct pid_namespace *ns)
-> +{
-> +	return pid && (ns->level <= pid->level) &&
-> +		pid->numbers[ns->level].ns == ns;
-> +}
-> +
-> +int task_in_pid_ns(struct task_struct *task, struct pid_namespace *ns)
-> +{
-> +	return pid_in_pid_ns(task_pid(task), ns);
-> +}
-> +
->  pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
->  {
->  	struct upid *upid;
-> diff --git a/kernel/signal.c b/kernel/signal.c
-> index 1200630..8f5a31f 100644
-> --- a/kernel/signal.c
-> +++ b/kernel/signal.c
-> @@ -1147,10 +1147,13 @@ static int kill_something_info(int sig, struct siginfo *info, int pid)
->  	} else if (pid == -1) {
->  		int retval = 0, count = 0;
->  		struct task_struct * p;
-> +		struct pid_namespace *ns = current->nsproxy->pid_ns;
->  
->  		read_lock(&tasklist_lock);
->  		for_each_process(p) {
-> -			if (p->pid > 1 && !same_thread_group(p, current)) {
-> +			if (!is_container_init(p) &&
-> +			    !same_thread_group(p, current) &&
-> +			    task_in_pid_ns(p, ns)) {
->  				int err = group_send_sig_info(sig, info, p);
->  				++count;
->  				if (err != -EPERM)
+Regardless, I agree with your "you...have a return candidate" comment.
+
+	Jeff
+
 
