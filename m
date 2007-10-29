@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbXJ2JfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbXJ2Ji0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756380AbXJ2JfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 05:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbXJ2JfN
+	id S1755706AbXJ2Ji0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 05:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXJ2JiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 05:35:13 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47366 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbXJ2JfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 05:35:12 -0400
-Message-ID: <4725A948.7030603@garzik.org>
-Date: Mon, 29 Oct 2007 05:35:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Dirk Hohndel <hohndel@linux.intel.com>
-CC: Jiri Kosina <jikos@jikos.cz>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] INPUT: fix hidinput_connect ignoring retval from input_register_device
-References: <20071029084917.GA12968@bigserver.hohndel.org>
-In-Reply-To: <20071029084917.GA12968@bigserver.hohndel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Oct 2007 05:38:19 -0400
+Received: from mga05.intel.com ([192.55.52.89]:4893 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752137AbXJ2JiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 05:38:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,341,1188802800"; 
+   d="scan'208";a="362295258"
+Subject: Re: aim7 -30% regression in 2.6.24-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1193624538.3019.189.camel@ymzhang>
+References: <1193391787.3019.174.camel@ymzhang>
+	 <20071026112307.GA30406@elte.hu>  <1193624538.3019.189.camel@ymzhang>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 29 Oct 2007 17:37:06 +0800
+Message-Id: <1193650626.3019.198.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dirk Hohndel wrote:
-> [INPUT] hidinput_connect incorrectly ignored return value from input_register_device
+On Mon, 2007-10-29 at 10:22 +0800, Zhang, Yanmin wrote:
+> On Fri, 2007-10-26 at 13:23 +0200, Ingo Molnar wrote:
+> > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> > 
+> > > I tested 2.6.24-rc1 on my x86_64 machine which has 2 quad-core processors.
+> > > 
+> > > Comparing with 2.6.23, aim7 has about -30% regression. I did a bisect 
+> > > and found patch 
+> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b5869ce7f68b233ceb81465a7644be0d9a5f3dbb 
+> > > caused the issue.
+> > 
+> > weird, that's a commit diff - i.e. it changes no code.
+> I got the tag from #git log. As for above link, I just added prior http address,
+> so readers could check the patch by clicking.
 > 
-> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+> > 
+> > > kbuild/SPECjbb2000/SPECjbb2005 also has big regressions. On my another 
+> > > tigerton machine (4 quad-core processors), SPECjbb2005 has more than 
+> > > -40% regression. I didn't do a bisect on such benchmark testing, but I 
+> > > suspect the root cause is like aim7's.
+> > 
+> > these two commits might be relevant:
+> > 
+> >   7a6c6bcee029a978f866511d6e41dbc7301fde4c
+> I did a quick testing. This patch has no impact.
 > 
-> ---
->  drivers/hid/hid-input.c |   12 ++++++++++--
->  1 files changed, 10 insertions(+), 2 deletions(-)
+> >   95dbb421d12fdd9796ed153853daf3679809274f
+> Above big patch doesn't include this one, which means if I do
+> 'git checkout b5869ce7f68b233ceb81465a7644be0d9a5f3dbb', the kernel doesn't include
+> 95dbb421d12fdd9796ed153853daf3679809274f.
 > 
-> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-> index dd332f2..880161b 100644
-> --- a/drivers/hid/hid-input.c
-> +++ b/drivers/hid/hid-input.c
-> @@ -1186,13 +1186,21 @@ int hidinput_connect(struct hid_device *hid)
->  				 * UGCI) cram a lot of unrelated inputs into the
->  				 * same interface. */
->  				hidinput->report = report;
-> -				input_register_device(hidinput->input);
-> +				if (input_register_device(hidinput->input)) {
-> +					input_free_device(hidinput->input);
-> +					kfree(hidinput);
-> +					return -1;
-> +				}
->  				hidinput = NULL;
->  			}
->  		}
->  
->  	if (hidinput)
-> -		input_register_device(hidinput->input);
-> +		if (input_register_device(hidinput->input)) {
-> +			input_free_device(hidinput->input);
-> +			kfree(hidinput);
-> +			return -1;
+> > 
+> > but a bisection result would be the best info.
+> I will do a bisect between 2.6.23 and tag 9c63d9c021f375a2708ad79043d6f4dd1291a085.
+I ran git bisect with kernel version as the tag. It looks like git will
+be crazy sometimes. So I checked ChangeLog and used the number tag to replace
+the kernel version and retested it.
 
-ACK, thanks for revising
+It looks like at least 2 patches were responsible for the regression. I'm
+doing sub-bisect now.
 
+I could find aim7 regression on all my testing machines although the regression
+percentage is different.
 
+Machine					regression
+8-core stoakley				30%
+16-core tigerton			6%
+tulsa(dual-core+HT, 16 logical cpu)	20%
 
+-yanmin
