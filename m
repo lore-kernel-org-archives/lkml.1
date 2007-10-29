@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXJ2Qmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbXJ2Qnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXJ2Qmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 12:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXJ2Qml
+	id S1759393AbXJ2Qnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 12:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXJ2Qnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 12:42:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48660 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754505AbXJ2Qml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 12:42:41 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1/X0asoqvbX/fPbDdLIjilrVpCUHPq+fx/aciOeUa
-	C8nHdJAdp2GX2K
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: cpu governor ondemand issue
-Date: Mon, 29 Oct 2007 17:42:35 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cpufreq@www.linux.org.uk
-References: <200710211316.14955.toralf.foerster@gmx.de> <20071029000243.9101d363.akpm@linux-foundation.org> <20071029072129.653fe170@laptopd505.fenrus.org>
-In-Reply-To: <20071029072129.653fe170@laptopd505.fenrus.org>
+	Mon, 29 Oct 2007 12:43:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39262 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbXJ2Qni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 12:43:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Permit the memory to be located elsewhere in NOMMU mode
+	[try #2]
+To: torvalds@osdl.org, akpm@osdl.org, rpjday@crashcourse.ca
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Mon, 29 Oct 2007 16:43:32 +0000
+Message-ID: <20071029164332.24646.28739.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1944123.y5LQddcG0I";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200710291742.37654.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1944123.y5LQddcG0I
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: David Howells <dhowells@redhat.com>
 
-Am Montag, 29. Oktober 2007 schrieb Arjan van de Ven:
-> On Mon, 29 Oct 2007 00:02:43 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->=20
-> >=20
-> > And 2.6.23 was OK?
-> >=20
-> > Is this problem still present in Linus's current tree?
->=20
-> and did you enable the "ignore nice levels" switch in sysfs ondemand
-> directory?
->=20
+Permit the memory to be located somewhere other than address 0xC0000000 in
+NOMMU mode.  The configuration options are already present, it just requires
+wiring up in the linker script.
 
-Oh no,
-if you mean /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load
-I didn't changed anything, instead I just used the same .config file, reboo=
-ted
-into the new kernel and ran the test again.
+Note that only a limited set of locations of runtime addresses are available
+because of the way the CPU protection registers work.
 
-=2D-=20
-MfG/Sincerely
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+ arch/frv/Kconfig              |    9 +++++++++
+ arch/frv/kernel/vmlinux.lds.S |    2 +-
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
---nextPart1944123.y5LQddcG0I
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
+index 43153e7..a4ee80b 100644
+--- a/arch/frv/Kconfig
++++ b/arch/frv/Kconfig
+@@ -138,6 +138,15 @@ config UCPAGE_OFFSET_C0000000
+ 
+ endchoice
+ 
++config PAGE_OFFSET
++	hex
++	default 0x20000000 if UCPAGE_OFFSET_20000000
++	default 0x40000000 if UCPAGE_OFFSET_40000000
++	default 0x60000000 if UCPAGE_OFFSET_60000000
++	default 0x80000000 if UCPAGE_OFFSET_80000000
++	default 0xA0000000 if UCPAGE_OFFSET_A0000000
++	default 0xC0000000
++
+ config PROTECT_KERNEL
+ 	bool "Protect core kernel against userspace"
+ 	depends on !MMU
+diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
+index 3b71e0c..a62b245 100644
+--- a/arch/frv/kernel/vmlinux.lds.S
++++ b/arch/frv/kernel/vmlinux.lds.S
+@@ -13,7 +13,7 @@ ENTRY(_start)
+ 
+ jiffies = jiffies_64 + 4;
+ 
+-__page_offset = 0xc0000000;		/* start of area covered by struct pages */
++__page_offset = CONFIG_PAGE_OFFSET;	/* start of area covered by struct pages */
+ __kernel_image_start = __page_offset;	/* address at which kernel image resides */
+ 
+ SECTIONS
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHJg17hyrlCH22naMRAo7jAKC5THouicQONQfSsYgO2yfzGDSxzgCcCmGC
-2Gci6xEnDUNqd7a5GYHWA/w=
-=xJuY
------END PGP SIGNATURE-----
-
---nextPart1944123.y5LQddcG0I--
