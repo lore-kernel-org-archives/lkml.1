@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbXJ3ENi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbXJ3EQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbXJ3ENi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXJ3ENU
+	id S1753716AbXJ3EQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 00:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXJ3EQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:13:20 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:60933 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752187AbXJ3ENT (ORCPT
+	Tue, 30 Oct 2007 00:16:35 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:36824 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbXJ3EQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:13:19 -0400
-From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Tue, 30 Oct 2007 15:05:46 +1100
-X-Spam-Score: 0.001
-X-CSE-Spam-Checker-Version: SpamAssassin 3.1.3 (2006-06-01) on 
-	note.orchestra.cse.unsw.EDU.AU
-X-CSE-Spam-Level: 
-X-CSE-Spam-Status: No, score=-2.6 required=4.0 tests=BAYES_00,UNPARSEABLE_RELAY 
-	autolearn=ham version=3.1.3
-Message-ID: <4726AD9A.8040707@gelato.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org, Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: [PATCH 2/3] Deadline iosched: Reset batch for ordered requests
-References: <4726AD03.2080908@gelato.unsw.edu.au>
-In-Reply-To: <4726AD03.2080908@gelato.unsw.edu.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 00:16:34 -0400
+Date: Mon, 29 Oct 2007 22:17:40 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: sata_nv and dynamically changing DMA mask?
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>
+Message-id: <4726B064.3000906@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The deadline I/O scheduler does not reset the batch count when starting
-a new batch at a higher-sectored request.  This means the second and
-subsequent batch in the same data direction will never exceed a single
-request in size whenever higher-sectored requests are pending.
+In the sata_nv driver, when running in ADMA mode, we can do 64-bit DMA. 
+However, when an ATAPI device like a DVD drive is connected, we can't 
+use ADMA mode, and so we have to abide by the restrictions of a normal 
+SFF ATA controller and can only do 32-bit DMA. We detect this and try to 
+set the blk_queue_bounce_limit, blk_queue_segment_boundary and 
+blk_queue_max_hw_segments to the values corresponding to a normal SFF 
+controller.
 
-This patch gives new batches in the same data direction as old ones
-their full quota of requests by resetting the batch count.
+However, we have this bug report:
 
-Signed-off-by: Aaron Carroll <aaronc@gelato.unsw.edu.au>
----
- block/deadline-iosched.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+https://bugzilla.redhat.com/show_bug.cgi?id=351451
 
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index a44437e..cb94c83 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -306,12 +306,11 @@ dispatch_writes:
- dispatch_find_request:
- 	/*
- 	 * we are not running a batch, find best request for selected data_dir
-+	 * and start a new batch
- 	 */
- 	if (deadline_check_fifo(dd, data_dir)) {
- 		/* An expired request exists - satisfy it */
--		dd->batching = 0;
- 		rq = rq_entry_fifo(dd->fifo_list[data_dir].next);
--		
- 	} else if (dd->next_rq[data_dir]) {
- 		/*
- 		 * The last req was the same dir and we have a next request in
-@@ -325,12 +324,13 @@ dispatch_find_request:
- 		 * higher-sectored requests. Go back to the lowest sectored
- 		 * request (1 way elevator) and start a new batch.
- 		 */
--		dd->batching = 0;
- 		node = rb_first(&dd->sort_list[data_dir]);
- 		if (node)
- 			rq = rb_entry_rq(node);
- 	}
- 
-+	dd->batching = 0;
-+
- dispatch_request:
- 	/*
- 	 * rq is the selected appropriate request.
+that their DVD drive doesn't work properly on a computer with 4GB of RAM 
+unless they either disable ADMA (thus resulting in the DMA parameters 
+being initialized to the SFF ones from the start) or pass mem=3000M to 
+the kernel to keep the memory above the 4GB mark from being used. Thus I 
+suspect that what we're trying to do with the DMA parameters is not taking.
+
+Question is: is setting blk_queue_bounce_limit enough to prevent 
+addresses outside that mask from showing up, or does the device DMA mask 
+also need to be updated? Is there anything wrong with just changing the 
+DMA mask at runtime? Keep in mind, ATAPI and non-ATAPI devices can 
+potentially be switched out on the port, so the mask might need to be 
+updated at runtime..
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
