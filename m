@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbXJ3T1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbXJ3T1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbXJ3T1X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbXJ3TV5
+	id S1754935AbXJ3T1i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbXJ3TV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:57 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54066 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:58 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54080 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755073AbXJ3TVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757801AbXJ3TVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Oct 2007 15:21:55 -0400
-Message-Id: <20071030192106.745173888@polymtl.ca>
+Message-Id: <20071030192104.567760860@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:13 -0400
+Date: Tue, 30 Oct 2007 15:16:07 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Subject: [patch 16/28] m32r: build fix of arch/m32r/kernel/smpboot.c
-Content-Disposition: inline; filename=fix-m32r-include-sched-h-in-smpboot.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:07 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, starvik@axis.com
+Subject: [patch 10/28] Add cmpxchg_local to cris
+Content-Disposition: inline; filename=add-cmpxchg-local-to-cris.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:05 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is for Mathieu Desnoyers's include/asm-m32r/local.h.
-Applying the new include/asm-m32r/local.h, inclusion of linux/sched.h
-is needed to fix a build error of arch/m32r/kernel/smpboot.c.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
-<--  snip  -->
-  ...
-  CC      arch/m32r/kernel/smpboot.o
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'do_boot_cpu':
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: error: implicit declaration of function 'fork_idle'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: warning: assignment makes pointer from integer without a cast
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:283: error: dereferencing pointer to incomplete type
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:289: error: dereferencing pointer to incomplete type
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: implicit declaration of function 'task_thread_info'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: invalid type argument of '->'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'start_secondary':
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:429: error: implicit declaration of function 'cpu_init'
-make[2]: *** [arch/m32r/kernel/smpboot.o] Error 1
-<--  snip  -->
-
-Signed-off-by: Hirokazu Takata <takata@linux-m32r.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: clameter@sgi.com
+CC: starvik@axis.com
 ---
- arch/m32r/kernel/smpboot.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/asm-cris/system.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Index: linux-2.6-lttng/arch/m32r/kernel/smpboot.c
+Index: linux-2.6-lttng/include/asm-cris/system.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/m32r/kernel/smpboot.c	2007-08-21 09:57:48.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/kernel/smpboot.c	2007-08-21 09:58:12.000000000 -0400
-@@ -43,6 +43,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
-+#include <linux/sched.h>
- #include <linux/err.h>
- #include <linux/irq.h>
- #include <linux/bootmem.h>
+--- linux-2.6-lttng.orig/include/asm-cris/system.h	2007-08-07 14:31:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-cris/system.h	2007-08-07 14:48:53.000000000 -0400
+@@ -66,6 +66,21 @@ static inline unsigned long __xchg(unsig
+   return x;
+ }
+ 
++#include <asm-generic/cmpxchg-local.h>
++
++/*
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
++ */
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
++#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
++
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
++
+ #define arch_align_stack(x) (x)
+ 
+ void default_idle(void);
 
 -- 
 Mathieu Desnoyers
