@@ -1,116 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXJ3TMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXJ3TNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbXJ3TMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbXJ3TMb
+	id S1756797AbXJ3TNh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbXJ3TN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:12:31 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:34893 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752716AbXJ3TM3 (ORCPT
+	Tue, 30 Oct 2007 15:13:28 -0400
+Received: from smtp1.netcabo.pt ([212.113.174.28]:14374 "EHLO
+	exch01smtp10.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752771AbXJ3TN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:12:29 -0400
+	Tue, 30 Oct 2007 15:13:27 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FABsfJ0dMQWvU/2dsb2JhbACBWg
-Date: Tue, 30 Oct 2007 15:12:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi, linux-arch@vger.kernel.org
-Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
-Message-ID: <20071030191226.GA10977@Krystal>
-References: <20071028033156.022983073@sgi.com> <20071028033300.240703208@sgi.com> <20071030114933.904a4cf8.akpm@linux-foundation.org> <Pine.LNX.4.64.0710301155240.12746@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-IronPort-Anti-Spam-Result: AgAAABsfJ0dViqaH/2dsb2JhbAAMkCY
+Message-ID: <472781E3.7010103@rncbc.org>
+Date: Tue, 30 Oct 2007 19:11:31 +0000
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: 2.6.23.1-rt5 (was 2.6.23-rt1 trouble)
+References: <1192154640.15992.10.camel@localhost.localdomain>          <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org> <47234EA1.4050006@rncbc.org> <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com> <47239A37.8000401@rncbc.org>
+In-Reply-To: <47239A37.8000401@rncbc.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0710301155240.12746@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:04:10 up 92 days, 19:23,  4 users,  load average: 0.33, 0.53, 0.48
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 30 Oct 2007 19:13:21.0756 (UTC) FILETIME=[EFE679C0:01C81B28]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Tue, 30 Oct 2007, Andrew Morton wrote:
+Rui Nuno Capela wrote:
+> Steven Rostedt wrote:
+>>
+>> When things start to freeze, could you capture the output of a sysrq-t.
+>>
 > 
-> > Let's cc linux-arch: presumably other architectures can implement cpu-local
-> > cmpxchg and would see some benefit from doing so.
+> yes, you can find a complete serial console capture here, where it holds
+> the final SysRq-T output:
+>   http://www.rncbc.org/datahub/console-2.6.23.1-rt4.1-1.log
 > 
-> Matheiu had a whole series of cmpxchg_local patches. Ccing him too. I 
-> think he has some numbers for other architectures.
->  
-
-Well, I tested it on x86 and AMD64 only. For slub:
-
-Using cmpxchg_local shows a performance improvements of the fast path
-goes from a 66% speedup on a Pentium 4 to a 14% speedup on AMD64.
-
-It really depends on how fast cmpxchg_local is vs disabling interrupts.
-
-
-> > The semantics are "atomic wrt interrutps on this cpu, not atomic wrt other
-> > cpus", yes?
+> the corresponding .config is also there:
+>   http://www.rncbc.org/datahub/config-2.6.23.1-rt4.1
 > 
-> Right.
+> the reason this is a new kernel build, following a shot in the dark from
+> nick mainsbridge, which let out the ntfs module build (CONFIG_NTFS_FS is
+> not set) suggesting that would mitigate similar freezes.
 > 
-> > Do you have a feel for how useful it would be for arch maintainers to implement
-> > this?  IOW, is it worth their time?
+> in deed the general feel is that it seems to run longer and less prone
+> to those incidents, but that is just a gut feeling, nothing more.
 > 
-> That depends on the efficiency of a cmpxchg_local vs. the interrupt 
-> enable/ disable sequence on a particular arch. On x86 this yields about 
-> 50% so it doubles the speed of the fastpath. On other architectures the 
-> cmpxchg is so slow that it is not worth it (ia64 f.e.)
+> hope this be any useful.
+> 
+>> I have a P4HT laptop (unfortunately with no serial). I use it as one of my
+>> main machines, so it will suck for me when it freezes ;-). I'll take your
+>> config and try it out.
+>>
+>> I'll most likely do this on Monday since process Wife has the highest
+>> priority over the weekend ;-)
+>>
+> 
+> that is also true here :)
+> 
+> otoh, as reported before, the freezes are not exclusive to P4HT, which
+> is the main box I'm been reporting here (the one which has a good old
+> serial port anyway), but also applies to my other laptop, an core2 duo
+> t7200.
+> 
 
-As Christoph pointed out, we even saw a small slowdown on ia64 because
-there is no concept of atomicity wrt only one CPU. Emulating this with
-irq disable has been tried, but just the supplementary memory barriers
-hurts performance a bit. We tried to come up with clever macros that
-switch between irq disable and cmpxchg_local depending on the
-architecture, but all the results were awkward.
+still in trouble with 2.6.23.1-rt5 :(
 
-I guess it's time for me to repost my patchset. I use interrupt disable
-to emulate the cmpxchg_local on architectures that lacks atomic ops.
+.config:
+  http://www.rncbc.org/datahub/config-2.6.23.1-rt5.0
 
-# cmpxchg_local and cmpxchg64_local standardization
-add-cmpxchg-local-to-generic-for-up.patch
-i386-cmpxchg64-80386-80486-fallback.patch
-add-cmpxchg64-to-alpha.patch
-add-cmpxchg64-to-mips.patch
-add-cmpxchg64-to-powerpc.patch
-add-cmpxchg64-to-x86_64.patch
-#
-add-cmpxchg-local-to-arm.patch
-add-cmpxchg-local-to-avr32.patch
-add-cmpxchg-local-to-blackfin.patch
-add-cmpxchg-local-to-cris.patch
-add-cmpxchg-local-to-frv.patch
-add-cmpxchg-local-to-h8300.patch
-add-cmpxchg-local-to-ia64.patch
-add-cmpxchg-local-to-m32r.patch
-fix-m32r-__xchg.patch
-fix-m32r-include-sched-h-in-smpboot.patch
-local_t_m32r_optimized.patch
-add-cmpxchg-local-to-m68k.patch
-add-cmpxchg-local-to-m68knommu.patch
-add-cmpxchg-local-to-parisc.patch
-add-cmpxchg-local-to-ppc.patch
-add-cmpxchg-local-to-s390.patch
-add-cmpxchg-local-to-sh.patch
-add-cmpxchg-local-to-sh64.patch
-add-cmpxchg-local-to-sparc.patch
-add-cmpxchg-local-to-sparc64.patch
-add-cmpxchg-local-to-v850.patch
-add-cmpxchg-local-to-xtensa.patch
-#
-slub-use-cmpxchg-local.patch
+serial console capture:
+  http://www.rncbc.org/datahub/console-2.6.23.1-rt5.0-1.log
 
-Mathieu
+one thing about SysRq-T: while in the middle of a freeze it just doesn't
+dump anything, just the 'SysRq : Show State' line. you can see that
+several times on the console output above.
 
+only when it is somewhat recovering, as said, by making some last resort
+measures like SysRq-E as in 'SysRq: terminate All Tasks' for instance,
+then SysRq-T will dump something. my guess is that this later dump will
+be moot :/
+
+back to production with 2.6.22.1-rt9 ;)
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
