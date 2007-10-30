@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbXJ3Rco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbXJ3Rei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbXJ3Rco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXJ3Rcf
+	id S1756733AbXJ3Rei (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXJ3Rea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:32:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51274 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbXJ3Rce (ORCPT
+	Tue, 30 Oct 2007 13:34:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54881 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752861AbXJ3Re3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:32:34 -0400
-Date: Tue, 30 Oct 2007 10:28:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-Message-ID: <20071030102820.47a6e365@laptopd505.fenrus.org>
-In-Reply-To: <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
-	<200710251622.36773.jbarnes@virtuousgeek.org>
-	<20071026025407.GA21408@kroah.com>
-	<200710260959.46811.jbarnes@virtuousgeek.org>
-	<20071027024140.GC29039@kroah.com>
-	<47267232.3020506@shaw.ca>
-	<alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
-	<20071030094756.779ac5c0@laptopd505.fenrus.org>
-	<alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Tue, 30 Oct 2007 13:34:29 -0400
+Date: Tue, 30 Oct 2007 10:33:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-mm1] Change the ida/idr_pre_get() return value to
+ follow the kernel convention
+Message-Id: <20071030103356.bf11d1a7.akpm@linux-foundation.org>
+In-Reply-To: <20071030171350.cd25b87c.pierre.peiffer@bull.net>
+References: <20071030171350.cd25b87c.pierre.peiffer@bull.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 10:07:48 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > > The fact is, CONF1 style accesses are just safer, and *work*. 
-> > 
-> > I would suggest a slight twist then: use CONF1 *until* you're using
-> > something above 256, and then and only then switch to MMCONFIG from
-> > then on for all accesses.
-> 
-> No.
-> 
-> Maybe if you do it per-device, and only *after* probing (ie we have
-> seen multiple, and successful, accesses), but globally, absolutely
-> not. That would be useless. The bugs we have had in this area have
-> been exactly the kinds of things like "we don't know the real size of
-> the MMCONFIG areas" etc.
-
-sorry I wasn't very clear, I meant "per device".
+On Tue, 30 Oct 2007 17:13:50 +0100
+Pierre Peiffer <pierre.peiffer@bull.net> wrote:
 
 > 
-> I could easily see device driver writers probing to see if something 
-> works, and I absolutely don't think we should just automatically
-> enable MMCONFIG from then on.
+> ida_pre_get() and idr_pre_get() currently return 0 in case of error, and 1
+> in case of success, what is not the conventional way to handle error cases.
 > 
-> But maybe we could have a per-device flag that a driver *can* set. Ie
-> have the logic be:
+> This patch makes both of them return 0 in case of success, and an errcode
+> otherwise, and then it changes each caller to let them return the error
+> reported instead of ENOMEM. This avoids to the callers to make any assumption
+> about the cause of the error.
 > 
->  - use MMCONFIG if we have to (reg >= 256)
-> 
-> OR
-> 
->  - use MMCONFIG if the driver specifically asked us to
 
-something like
-int pci_enable_mmconfig(struct pci_dev *pdev) ?
-sounds like a very solid plan to me...
+If we're going to do this (and really we should), then we risk quietly
+breaking out-of-tree code and we risk breaking in-tree or
+soon-to-be-in-tree code which we didn't know about.
 
+So what we should do is to rename these functions when we change their
+interfaces.
 
-> Maybe somebody inside Intel could just clarify the documentation, and 
-> change it from "you're not supposed to mix" to "mix all you want". 
-
-I'll see what I can do ;)
+Happily, this means that we then don't need to remove the old functions -
+we can keep them there for a while as we transition everything over to the
+new functions.  It also means that we can sneak the new functions into the
+2.6.24 stream and then merge these changes via the relevant maintainers
+rather than needing a single atomic megapatch.
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Although I'd much prefer just to remove the pathetic things - idr_pre_get()
+is a truly awful interface.
+
+It would be slightly better if it took an `id' argument and filled in the
+nodes at the appropriate position in the tree so that the caller is
+guaranteed that the subsequent idr_get_new() will succeed.  Because at
+present there is no guarantee that the nodes which you preallocated with
+idr_pre_get() are still available when you do your idr_get_new(): some
+other CPU/task might have come in and used them all.
+
+Storage classes which need to allcoate memory at insertion time are hard:
+radix_tree_preload() gets it right in terms of robustness, but it's an
+awful lot of fuss.
+
+IDR gets it all wrong and compounds the problem by implementing internal
+locking.  It shouldn't have done that: storage code like this should use
+only caller-provided locking.
+
