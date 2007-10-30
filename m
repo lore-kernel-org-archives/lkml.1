@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbXJ3U2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbXJ3U3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757792AbXJ3U2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXJ3U20
+	id S1757985AbXJ3U3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbXJ3U3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:28:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59331 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbXJ3U2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:28:25 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Date: Tue, 30 Oct 2007 21:27:10 +0100
-User-Agent: KMail/1.9.6
-Cc: Lee.Schermerhorn@hp.com, rientjes@google.com, clameter@sgi.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <200710292208.30033.ak@suse.de> <20071030124751.0a2d50b2.pj@sgi.com>
-In-Reply-To: <20071030124751.0a2d50b2.pj@sgi.com>
+	Tue, 30 Oct 2007 16:29:47 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:27611 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751968AbXJ3U3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 16:29:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jfM+6ZkQwd1xOG7P+WVOJXo45JKf811HPMDAepSo2/K4HnMNi26NPsjynG+4Wwd018HueYUFk2vwIHWcKIDMX11JjUhjms1QhaJGGeb1TqmnQiEqRo+zQQQB1eRLsRM0pn491gDyw/WxbdaUzzK4H5vWK+cXJUTScyfOP7/Y7AM=
+Message-ID: <8bd0f97a0710301329i8a21b22ncc9f71a81bc06543@mail.gmail.com>
+Date: Tue, 30 Oct 2007 16:29:45 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 00/14] Blackfin on-chip SPI controller driver updates and bug-fixing
+Cc: "Bryan Wu" <bryan.wu@analog.com>, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710301324.07691.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710302127.10841.ak@suse.de>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com>
+	 <200710301324.07691.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 20:47:51 Paul Jackson wrote:
-> Andi, Christoph, or whomever:
-> 
->   Are there any good regression tests of mempolicy functionality?
+On 10/30/07, David Brownell <david-b@pacbell.net> wrote:
+> And also, pay closer attention to when you may be making
+> changes that make device drivers work differently over
+> your spi_master controller driver than anyone elses ...
+> such platform-specific behaviors are undesirable, and when
+> they go against specified behavior they are also bugs.
 
-numactl has some basic tests (make test). I think newer LTP 
-also has some but i haven't looked at them. And there is Lee's
-memtoy which does some things; but I don't think it's very automated.
-
--Andi
+was there something that caught your eye other than the ugly udelay()
+you mentioned in the other thread ?
+-mike
