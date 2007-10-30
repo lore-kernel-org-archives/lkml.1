@@ -1,99 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbXJ3REL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbXJ3RIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbXJ3REL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXJ3RD4
+	id S1754997AbXJ3RIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXJ3RII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:03:56 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:40792 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbXJ3RDz (ORCPT
+	Tue, 30 Oct 2007 13:08:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34304 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751051AbXJ3RIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:03:55 -0400
-Message-ID: <47275EB5.1070704@student.ltu.se>
-Date: Tue, 30 Oct 2007 17:41:25 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 30 Oct 2007 13:08:06 -0400
+Date: Tue, 30 Oct 2007 10:07:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
+       ak@suse.de, rajesh.shah@intel.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+In-Reply-To: <20071030094756.779ac5c0@laptopd505.fenrus.org>
+Message-ID: <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
+ <200710251622.36773.jbarnes@virtuousgeek.org> <20071026025407.GA21408@kroah.com>
+ <200710260959.46811.jbarnes@virtuousgeek.org> <20071027024140.GC29039@kroah.com>
+ <47267232.3020506@shaw.ca> <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+ <20071030094756.779ac5c0@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Denys Vlasenko <vda.linux@googlemail.com>
-CC: James.Bottomley@steeleye.com, James.Smart@emulex.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/lpfc/lpfc_hw.h: Some minor cleanup.
-References: <20071030104816.30937.77821.sendpatchset@thinktank.campus.ltu.se> <200710301544.02765.vda.linux@googlemail.com>
-In-Reply-To: <200710301544.02765.vda.linux@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys Vlasenko wrote:
-> On Tuesday 30 October 2007 10:54, Richard Knutsson wrote:
->   
->> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
->> ---
->> Diffed against linus-git
->> Checked with script/checkpatch.pl
->>
->>
->> diff --git a/drivers/scsi/lpfc/lpfc_hw.h b/drivers/scsi/lpfc/lpfc_hw.h
->> index 451accd..6f56528 100644
->> --- a/drivers/scsi/lpfc/lpfc_hw.h
->> +++ b/drivers/scsi/lpfc/lpfc_hw.h
->> @@ -3158,31 +3158,30 @@ struct lpfc_sli2_slim {
->>   *
->>   * Parameters:
->>   * device : struct pci_dev 's device field
->> - *
->> - * return 1 => TRUE
->> - *        0 => FALSE
->>   */
->> -static inline int
->> +static inline bool
->>  lpfc_is_LC_HBA(unsigned short device)
->>  {
->> -	if ((device == PCI_DEVICE_ID_TFLY) ||
->> -	    (device == PCI_DEVICE_ID_PFLY) ||
->> -	    (device == PCI_DEVICE_ID_LP101) ||
->> -	    (device == PCI_DEVICE_ID_BMID) ||
->> -	    (device == PCI_DEVICE_ID_BSMB) ||
->> -	    (device == PCI_DEVICE_ID_ZMID) ||
->> -	    (device == PCI_DEVICE_ID_ZSMB) ||
->> -	    (device == PCI_DEVICE_ID_RFLY))
->> -		return 1;
->> -	else
->> -		return 0;
->> +	switch (device) {
->> +	case PCI_DEVICE_ID_TFLY:
->> +	case PCI_DEVICE_ID_PFLY:
->> +	case PCI_DEVICE_ID_LP101:
->> +	case PCI_DEVICE_ID_BMID:
->> +	case PCI_DEVICE_ID_BSMB:
->> +	case PCI_DEVICE_ID_ZMID:
->> +	case PCI_DEVICE_ID_ZSMB:
->> +	case PCI_DEVICE_ID_RFLY:
->> +		return true;
->> +	}
->> +
->> +	return false;
->>  }
->>     
->
-> Why is this patch useful? 
-Just simpler to read, no?
-> I'd rather do this instead:
->
-> -static inline int
-> +static int
->
-> (this function has three callsites, thus de-inlining will
-> make code smaller)
->   
-It is returning (and the results are used as) a boolean so why should it 
-be an integer? But I have no objection to de-inline it.
-Alright with:
--static inline int
-+static bool
-?
 
-Richard Knutsson
 
+On Tue, 30 Oct 2007, Arjan van de Ven wrote:
+> 
+> the problem is... you're not supposed to mix both types of accesses.
+
+You have to, anyway. Even now the MMCONFIG stuff uses CONF1 cycles for 
+startup.
+
+Also, there's reason to believe that mixing things up _has_ to work 
+anyway, and if the issue is between "works in practice" and "theory says 
+that you shouldn't mix", I'll take practice every time.
+
+Especially since we *know* that the theory is broken. Right now MMCONFIG 
+is effectively disabled very aggressively because it's simply unusably 
+flaky. So the choice is between:
+
+ - don't use MMCONFIG at all, because it has so many problems
+ - use MMCONFIG sparingly enough to hide the problems
+
+and what "you're supposed to do" is simply trumped by Real Life(tm). 
+Because Intel screwed up so badly when they designed that piece of shit.
+
+(Where "screwed up badly" is the usual "left it to firmware people" thing, 
+of course. Dammit, Intel *could* have just made it a real PCI BAR in the 
+Northbridge, and specified it as such, and we wouldn't have these 
+problems! But no, it had to be another idiotic "firmware tells where it 
+is" thing)
+
+> > The fact is, CONF1 style accesses are just safer, and *work*. 
+> 
+> I would suggest a slight twist then: use CONF1 *until* you're using
+> something above 256, and then and only then switch to MMCONFIG from
+> then on for all accesses.
+
+No.
+
+Maybe if you do it per-device, and only *after* probing (ie we have seen 
+multiple, and successful, accesses), but globally, absolutely not. That 
+would be useless. The bugs we have had in this area have been exactly the 
+kinds of things like "we don't know the real size of the MMCONFIG areas" 
+etc.
+
+I could easily see device driver writers probing to see if something 
+works, and I absolutely don't think we should just automatically enable 
+MMCONFIG from then on.
+
+But maybe we could have a per-device flag that a driver *can* set. Ie have 
+the logic be:
+
+ - use MMCONFIG if we have to (reg >= 256)
+
+OR
+
+ - use MMCONFIG if the driver specifically asked us to
+
+and then drivers that absolutely need it, and know they do, can set that 
+flag. Preferably after they actually verified that it works.
+
+That way you _can_ get the "this is how you're supposed to do it" 
+behaviour, but you get it when there is a reasonable chance that it 
+actually works.
+
+And quite frankly, if you're not supposed to mix these things even across 
+devices, then I think we are better off just doing what we effectively do 
+now: mostly ignore the damn thing because it's too broken to use.
+
+Maybe somebody inside Intel could just clarify the documentation, and 
+change it from "you're not supposed to mix" to "mix all you want". 
+
+		Linus
