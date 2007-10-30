@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbXJ3Tee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbXJ3Tha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbXJ3Tee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbXJ3Tdg
+	id S1755643AbXJ3Tha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXJ3ThU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:33:36 -0400
-Received: from mx40.mail.ru ([194.67.23.36]:55488 "EHLO mx40.mail.ru"
+	Tue, 30 Oct 2007 15:37:20 -0400
+Received: from ns1.suse.de ([195.135.220.2]:41799 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760282AbXJ3Tdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:33:35 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24: (ACPI AC adapter) sending {proc,netlink,kobject}_event from -> resume method?
-Date: Tue, 30 Oct 2007 22:33:30 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-acpi@vger.kernel.org
+	id S1751816AbXJ3ThT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:37:19 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+Date: Tue, 30 Oct 2007 20:37:14 +0100
+User-Agent: KMail/1.9.6
+Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
+       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <200710301950.58519.ak@suse.de> <alpine.LFD.0.999.0710301205180.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710301205180.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2335885.T9XvSHH5Ht";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200710302233.31791.arvidjaar@mail.ru>
+Content-Disposition: inline
+Message-Id: <200710302037.14418.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2335885.T9XvSHH5Ht
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tuesday 30 October 2007 20:06:12 Linus Torvalds wrote:
+> 
+> On Tue, 30 Oct 2007, Andi Kleen wrote:
+> > 
+> > Also there are still the old x86 Macs where conf1 doesn't work.
+> 
+> I don't think that was ever true. That was a made-up rumor by the EFI 
+> people who were just confused.
+> There's no way to disable conf1 accesses on any known chipset, afaik.
 
-Is it valid to send events from within ->resume device method? If not, what=
- is=20
-the proper way to notify user space about hardware changes during suspensio=
-n?=20
-Specifically it seems that new sysfs ACPI power supply interface sometimes=
-=20
-missing plugged in AC cord during suspend. I suspect that no event is=20
-generated for this; I am not sure whether ACPI is required to generate such=
-=20
-events at all in this case.
+There was a tester with such a machine and he complained until
+the heuristic handled this case.  So there is evidence it 
+really was like this.
 
-I'll need some time to get reproducible case so I do not categorize this ye=
-t=20
-as regression.
-
-=2Dandrey
-
---nextPart2335885.T9XvSHH5Ht
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHJ4cLR6LMutpd94wRAmgkAKC4x7oyGD4MC7JxirA686r9K9TAdACgo4OX
-PFwOpEHZ4Ix5L0opsoflI7U=
-=Qf0i
------END PGP SIGNATURE-----
-
---nextPart2335885.T9XvSHH5Ht--
+-Andi
