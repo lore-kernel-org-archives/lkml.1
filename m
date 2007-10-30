@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXJ3Hy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbXJ3IAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbXJ3Hy5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 03:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXJ3Hys
+	id S1754480AbXJ3IAW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 04:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXJ3IAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 03:54:48 -0400
-Received: from mail8.dotsterhost.com ([66.11.233.1]:34513 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754347AbXJ3Hyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 03:54:47 -0400
-Message-ID: <4726E36F.6030909@crispincowan.com>
-Date: Tue, 30 Oct 2007 00:55:27 -0700
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Cliffe <cliffe@ii.net>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: Defense in depth: LSM *modules*, not a static interface
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl> <4726377A.4080807@crispincowan.com> <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com> <4726D9D9.2000909@ii.net> <20071030065540.GH8181@ftp.linux.org.uk>
-In-Reply-To: <20071030065540.GH8181@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Oct 2007 04:00:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44904 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752267AbXJ3IAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 04:00:07 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/IPX90M6nIGUQUBtKb8h4ctZbxZNs8lzAMYAH/5m
+	ftZ1gHkIerG4Bj
+Subject: Re: [Linux-NTFS-Dev] 2.6.23 regression: second access of empty
+	ntfs file leads to D	state hang
+From: Mike Galbraith <efault@gmx.de>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ntfs-dev@lists.sourceforge.net,
+       Neil Brown <neilb@suse.de>
+In-Reply-To: <1193671099.7172.0.camel@Homer.simpson.net>
+References: <1193638086.7409.21.camel@Homer.simpson.net>
+	 <E3E758D0-25AC-45B8-9BAB-F8CDF75AF3CA@cam.ac.uk>
+	 <1193658311.7324.2.camel@Homer.simpson.net>
+	 <4E61D235-B8E8-43DF-96A5-B3169E6AB223@cam.ac.uk>
+	 <1193668997.7284.2.camel@Homer.simpson.net>
+	 <1193671099.7172.0.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 09:00:02 +0100
+Message-Id: <1193731202.7229.9.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Tue, Oct 30, 2007 at 03:14:33PM +0800, Cliffe wrote:
->   
->> Defense in depth has long been recognised as an important secure design 
->> principle. Security is best achieved using a layered approach.
->>     
->  "Layered approach" is not a magic incantation to excuse any bit of snake
-> oil.  Homeopathic remedies might not harm (pure water is pure water),
-> but that's not an excuse for quackery.  And frankly, most of the
-> "security improvement" crowd sound exactly like woo-peddlers.
->   
-Frank's point was that the static interface makes layering somewhere
-between impractical and impossible. The static interface change should
-be dumped so that layering is at least possible. Whether any given
-security module is worth while is a separate issue.
+On Mon, 2007-10-29 at 16:18 +0100, Mike Galbraith wrote:
+> On Mon, 2007-10-29 at 15:43 +0100, Mike Galbraith wrote:
+> > On Mon, 2007-10-29 at 13:39 +0000, Anton Altaparmakov wrote:
+> > > Hi Mike,
+> > > 
+> > > Thanks for the files.  That is really odd.  And you are sure this just  
+> > > works with 2.6.22.10 on the exact same file?  Have you run  "chkdsk / 
+> > > f /v /x" on the NTFS volume from Windows?
+> > 
+> > Yes, 2.6.22.10 can md5sum that file just fine, did it several times.  I
+> > haven't run chkdsk.
+> 
+> I now have fun chkdsk, it didn't gripe, and the error is still present.
 
-I.e. that there are bad medicines around is a poor excuse to ban
-syringes and demand that everyone be born with a strong immune system.
+Not being very good at walking away from unsolved mysteries, I chased it
+down.  The problem is that...
+	commit[a32ea1e1f925399e0d81ca3f7394a44a6dafa12c] Fix read/truncate race
+...calls ntfs_readpage() for a zero i_size inode, which it isn't
+accustomed to.
 
-Why is it that security flame wars always end up reasoning with absurd
-analogies? :-)
+Below is the hammer which made my box a happy camper again.
 
-Crispin
+diff --git a/fs/ntfs/aops.c b/fs/ntfs/aops.c
+index 6e5c253..ddab5a3 100644
+--- a/fs/ntfs/aops.c
++++ b/fs/ntfs/aops.c
+@@ -401,7 +401,7 @@ static int ntfs_readpage(struct file *file, struct page *page)
+ 	MFT_RECORD *mrec;
+ 	unsigned long flags;
+ 	u32 attr_len;
+-	int err = 0;
++	int err = 0, once = 0;
+ 
+ retry_readpage:
+ 	BUG_ON(!PageLocked(page));
+@@ -414,6 +414,18 @@ retry_readpage:
+ 		return 0;
+ 	}
+ 	vi = page->mapping->host;
++	/*
++	 * If we've been called to read a zero sized inode, zero and bail.
++	 */
++	if (!once) {
++		loff_t i_size = i_size_read(vi);
++
++		once++;
++		if (!i_size) {
++			zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
++			goto done;
++		}
++	}
+ 	ni = NTFS_I(vi);
+ 	/*
+ 	 * Only $DATA attributes can be encrypted and only unnamed $DATA
 
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
 
