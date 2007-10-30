@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbXJ3ETx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbXJ3EYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbXJ3ETx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbXJ3ETq
+	id S1753711AbXJ3EYv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 00:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXJ3EYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:19:46 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36426 "EHLO il.qumranet.com"
+	Tue, 30 Oct 2007 00:24:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41016 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750835AbXJ3ETq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:19:46 -0400
-Message-ID: <4726B088.1010709@qumranet.com>
-Date: Tue, 30 Oct 2007 06:18:16 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: David Brown <dmlb2000@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] 2.6.23.1-rt4 and kvm 48
-References: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>
-In-Reply-To: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	id S1751558AbXJ3EYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 00:24:41 -0400
+Date: Mon, 29 Oct 2007 21:24:33 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: vitalivanov@gmail.com
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au,
+       zaitcev@redhat.com
+Subject: Re: USB: FIx locks and urb->status in adutux
+Message-Id: <20071029212433.c9837c4b.zaitcev@redhat.com>
+In-Reply-To: <1193681097.20985.31.camel@dell1.softservecom.com>
+References: <20071022203447.db6d7950.zaitcev@redhat.com>
+	<200710231138.38266.oliver@neukum.org>
+	<20071023185302.5ce9d187.zaitcev@redhat.com>
+	<1193234987.13750.21.camel@dell1.softservecom.com>
+	<20071024202555.4f1cd215.zaitcev@redhat.com>
+	<1193681097.20985.31.camel@dell1.softservecom.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brown wrote:
-> Uhm, not sure who to send this too...
->
-> I thought I'd try out the realtime patch set and it didn't work at all
-> with kvm. The console didn't dump anything and the system completely
-> locked up.
->
-> Anyone have any suggestions as to how to get more output on this issue?
->   
+On Mon, 29 Oct 2007 20:04:57 +0200, Vitaliy Ivanov <vitalivanov@gmail.com> wrote:
 
-Make sure CONFIG_PREEMPT_NOTIFIERS is enabled. Jan Kiszka reported 
-success with a similar configuration.
+> Finally had a time on my weekend to perform tests and fix Pete's patch a little. Now it seems to be correct.
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+Great!
 
+> 1. One device per user space application. Old driver allowed many users application to work with same device which can lead to IO mess.
+
+OK. This trick was popular in UNIX. Personally I think it's in a bad
+taste, because good applications still need to verify if only one
+instance is running, and threfore can use application level locking.
+But if you are gunning for the maintenership I'm not going to argue
+your style. The busy lock-out certainly works better than "/dev/cua" :-)
+
+However, this looks wrong:
+
+> +			 dev->interrupt_in_endpoint->bInterval);
+> +	dev->read_urb_finished = 0;
+> +	retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
+> +	/* we ignore failure */
+> +	/* end of fixup for first read */
+> +
+> +	/* initialize out direction */
+> +	dev->out_urb_finished = 1;
+
+The finished flag is only set when URB is not in use anymore. Did you
+observe an anomaly with my code? Any hangs? If so, I assure you this
+is not the fix. As it's written, even if we ignore the failure (e.g.
+do not pass it to userland), we sill have to maintain the correct
+flag state.
+
+-- Pete
