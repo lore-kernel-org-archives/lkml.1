@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXJ3Wq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbXJ3Wsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbXJ3Wq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbXJ3WqE
+	id S1758035AbXJ3Wsc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXJ3WsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:46:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41469 "EHLO
+	Tue, 30 Oct 2007 18:48:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48013 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756346AbXJ3WqD (ORCPT
+	by vger.kernel.org with ESMTP id S1753600AbXJ3WsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:46:03 -0400
-Date: Tue, 30 Oct 2007 15:45:56 -0700 (PDT)
+	Tue, 30 Oct 2007 18:48:24 -0400
+Date: Tue, 30 Oct 2007 15:48:09 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Mahoney <jeffm@suse.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mmap: restore -ENODEV on missing f_op->mmap
-In-Reply-To: <4727AE44.10902@suse.com>
-Message-ID: <alpine.LFD.0.999.0710301541050.30120@woody.linux-foundation.org>
-References: <4727AE44.10902@suse.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Arjan van de Ven <arjan@infradead.org>, Robert Hancock <hancockr@shaw.ca>,
+       Greg KH <greg@kroah.com>, akpm@linux-foundation.org, ak@suse.de,
+       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+In-Reply-To: <200710301531.58957.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.0.999.0710301546530.30120@woody.linux-foundation.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
+ <200710301504.36972.jbarnes@virtuousgeek.org>
+ <alpine.LFD.0.999.0710301518570.30120@woody.linux-foundation.org>
+ <200710301531.58957.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,47 +30,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 30 Oct 2007, Jeff Mahoney wrote:
+On Tue, 30 Oct 2007, Jesse Barnes wrote:
 > 
->  Personally, I think this is probably a case of LTP codifying existing
->  behavior rather than testing the for the specification. If that's the case
->  and nobody really cares about the change in behavior, I'm fine letting this
->  drop.
+> Yeah, that's definitely a problem, and would be a firmware bug.  There's 
+> no doubt that firmwares have had trouble with this in the past, but 
+> given that Vista now relies on this stuff working, it's a lot more 
+> likely to be reliable in current and future systems.
 
-Hmm.. I think it's kind of stupid adding that special case early on, just 
-to get one particular error case return when there are multiple possible 
-ones. 
+I agree. I think most of the big problems we had were basically with 
+unreleased or very early systems.
 
-I don't care deeply, but this does smell like a test issue rather than a 
-code issue.
+But the per-device flag should "just fix it" regardless, and we can go 
+forward assuming that things work, but without breaking those borderline 
+systems.
 
-Looking at that path, there are *other* things that might be worth 
-cleaning up, but this wasn't one of them..
-
-		Linus
-
----
-diff --git a/mm/mmap.c b/mm/mmap.c
-index facc1a7..fe286f7 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -893,7 +893,6 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 			unsigned long flags, unsigned long pgoff)
- {
- 	struct mm_struct * mm = current->mm;
--	struct inode *inode;
- 	unsigned int vm_flags;
- 	int error;
- 	int accountable = 1;
-@@ -959,9 +958,9 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 			return -EAGAIN;
- 	}
- 
--	inode = file ? file->f_path.dentry->d_inode : NULL;
--
- 	if (file) {
-+		struct inode *inode = file->f_path.dentry->d_inode;
-+
- 		switch (flags & MAP_TYPE) {
- 		case MAP_SHARED:
- 			if ((prot&PROT_WRITE) && !(file->f_mode&FMODE_WRITE))
+			Linus
