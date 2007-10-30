@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXJ3TXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbXJ3TX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbXJ3TXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbXJ3TVe
+	id S1758441AbXJ3TX4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbXJ3TVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:34 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53907 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:39 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53927 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757368AbXJ3TVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:33 -0400
-Message-Id: <20071030192103.932633073@polymtl.ca>
+	id S1757553AbXJ3TVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:37 -0400
+Message-Id: <20071030192109.356783587@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:05 -0400
+Date: Tue, 30 Oct 2007 15:16:21 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [patch 08/28] Add cmpxchg_local to avr32
-Content-Disposition: inline; filename=add-cmpxchg-local-to-avr32.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:04 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, lethal@linux-sh.org
+Subject: [patch 24/28] Add cmpxchg_local to sh64
+Content-Disposition: inline; filename=add-cmpxchg-local-to-sh64.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt) for 8, 16 and 64 bits
-cmpxchg_local. Use the __cmpxchg_u32 primitive for 32 bits cmpxchg_local.
-
-Note that cmpxchg only uses the __cmpxchg_u32 or __cmpxchg_u64 and will cause
-a linker error if called with 8 or 16 bits argument.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 CC: clameter@sgi.com
-CC: hskinnemoen@atmel.com
+CC: lethal@linux-sh.org
 ---
- include/asm-avr32/system.h |   23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ include/asm-sh64/system.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-avr32/system.h
+Index: linux-2.6-lttng/include/asm-sh64/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-avr32/system.h	2007-07-20 19:10:57.000000000 -0400
-+++ linux-2.6-lttng/include/asm-avr32/system.h	2007-07-20 19:32:36.000000000 -0400
-@@ -140,6 +140,29 @@ static inline unsigned long __cmpxchg(vo
- 				   (unsigned long)(new),	\
- 				   sizeof(*(ptr))))
+--- linux-2.6-lttng.orig/include/asm-sh64/system.h	2007-07-23 11:01:16.000000000 -0400
++++ linux-2.6-lttng/include/asm-sh64/system.h	2007-07-23 11:01:20.000000000 -0400
+@@ -164,6 +164,21 @@ static __inline__ unsigned long __xchg(u
+ 	return x;
+ }
  
 +#include <asm-generic/cmpxchg-local.h>
 +
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_u32(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+#define cmpxchg_local(ptr, old, new)					\
-+	((typeof(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(old),	\
-+				   (unsigned long)(new),		\
-+				   sizeof(*(ptr))))
-+
++/*
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
++ */
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
 +
- struct pt_regs;
- void NORET_TYPE die(const char *str, struct pt_regs *regs, long err);
- void _exception(long signr, struct pt_regs *regs, int code,
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
++
+ /* XXX
+  * disable hlt during certain critical i/o operations
+  */
 
 -- 
 Mathieu Desnoyers
