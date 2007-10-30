@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXJ3CjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbXJ3CsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbXJ3CjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 22:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXJ3CjQ
+	id S1753621AbXJ3CsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 22:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbXJ3CsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 22:39:16 -0400
-Received: from ozlabs.org ([203.10.76.45]:41874 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525AbXJ3CjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 22:39:15 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] raise tsc clocksource rating
-Date: Tue, 30 Oct 2007 13:39:23 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, --cc@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, avi@quramnet.com,
-       kvm-devel@lists.sourceforge.net, John Stultz <johnstul@us.ibm.com>
-References: <11936994092607-git-send-email-gcosta@redhat.com> <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain>
+	Mon, 29 Oct 2007 22:48:09 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:55548 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbXJ3CsH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 22:48:07 -0400
+Date: Tue, 30 Oct 2007 02:48:01 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
+Message-ID: <20071030024801.GA19417@linux-mips.org>
+References: <20071028201549.GA23138@fattire.cabal.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710301339.23628.rusty@rustcorp.com.au>
+In-Reply-To: <20071028201549.GA23138@fattire.cabal.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 09:17:38 Thomas Gleixner wrote:
-> On Mon, 29 Oct 2007, Glauber de Oliveira Costa wrote:
->
-> CC'ed John and removed glauber@t60.localdomain :)
->
-> > From: Glauber de Oliveira Costa <glauber@t60.localdomain>
-> >
-> > tsc is very good time source (when it does not have drifts, does not
-> > change it's frequency, i.e. when it works), so it should have its rating
-> > raised to a value greater than, or equal 400.
-> >
-> > Since it's being a tendency among paravirt clocksources to use values
-> > around 400, we should declare tsc as even better: So we use 500.
-> >
-> > This patch also touches the comments on clocksource.h, which suggests
-> > that 499 would be a limit on the rating values.
-> >
-> > Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
->
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+On Sun, Oct 28, 2007 at 04:15:49PM -0400, Kyle McMartin wrote:
 
-No.  tsc is very good, it's not perfect.  If a paravirt clock registers 400 it 
-really means "pick me over the tsc".
+> +++ b/mm/Kconfig
+> @@ -172,6 +172,7 @@ config MIGRATION
+>  
+>  config RESOURCES_64BIT
+>  	bool "64 bit Memory and IO resources (EXPERIMENTAL)" if (!64BIT && EXPERIMENTAL)
+> +	depends on (MIPS || PPC32 || X86_PAE) || 64BIT
 
-That's *why* they use > 400: it's in the documentation.
+On MIPS it would be a per platform thing.  I'd prefer if RESOURCES_64BIT
+was enabled through reverse dependencies and never visible as a user
+option.
 
-Rusty.
+  Ralf
