@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbXJ3UHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbXJ3UMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbXJ3UHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbXJ3UHW
+	id S1756728AbXJ3UMp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbXJ3UMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:07:22 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:60492 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbXJ3UHV (ORCPT
+	Tue, 30 Oct 2007 16:12:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44647 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbXJ3UMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:07:21 -0400
-Date: Tue, 30 Oct 2007 16:06:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Rui Nuno Capela <rncbc@rncbc.org>
-cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23.1-rt5 (was 2.6.23-rt1 trouble)
-In-Reply-To: <47278BE5.9070401@rncbc.org>
-Message-ID: <Pine.LNX.4.58.0710301605100.31349@gandalf.stny.rr.com>
-References: <1192154640.15992.10.camel@localhost.localdomain>         
- <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org>
- <47234EA1.4050006@rncbc.org> <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com>
- <47239A37.8000401@rncbc.org> <472781E3.7010103@rncbc.org>
- <Pine.LNX.4.58.0710301526480.30690@gandalf.stny.rr.com> <47278BE5.9070401@rncbc.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Oct 2007 16:12:37 -0400
+Subject: Re: [PATCH] Allow auto-destruction of loop devices.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bernie@codewiz.org
+In-Reply-To: <20071030130137.3345ae43.akpm@linux-foundation.org>
+References: <1193612911.2915.80.camel@shinybook.infradead.org>
+	 <20071030130137.3345ae43.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 16:12:51 -0400
+Message-Id: <1193775171.2651.46.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-10-30 at 13:01 -0700, Andrew Morton wrote:
+> Why do we want to do this?
 
---
-> >
->
-> yes, running without the *cough* nvidia module is under way. but do you
-> remember that on my other laptop the freezes also happen and on that one
-> there's no single proprietary modules in it? (same .config btw) problem
-> is, like most modern laptops, it doesn't come bundled with a serial port
-> so that can't give you a serial console evidence ...
->
-> thanks for the reminder, anyway ;)
->
+In general, so that we can automatically allocate loop devices (as with
+losetup -f) and have them disappear when we're done with them.
 
-hmm, it could also be a separate issue. This other laptop is the one that
-took a while to freeze. Correct?
+In particular, right now, so that we can stop relying on the hackish
+special-case in umount(8) which kills off loop devices which were set up
+by 'mount -oloop'. That means we can stop putting crap in /etc/mtab
+which doesn't belong there, which means it can be a symlink
+to /proc/mounts, which means yet another writable file on the root
+filesystem is eliminated and the 'stateless' folks get happier... and
+OLPC trac #356 can be closed.
 
-Was it only on X apps? Or could it possible be something we could do via a
-command line and then we could see vga output (if any).
+The mount(8) side of that is at
+http://marc.info/?l=util-linux-ng&m=119362955431694&w=2
 
--- Steve
+-- 
+dwmw2
 
