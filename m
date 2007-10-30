@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbXJ3Tha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbXJ3TlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbXJ3Tha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXJ3ThU
+	id S1755667AbXJ3TlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXJ3Tkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:37:20 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41799 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbXJ3ThT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:37:19 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-Date: Tue, 30 Oct 2007 20:37:14 +0100
-User-Agent: KMail/1.9.6
-Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <200710301950.58519.ak@suse.de> <alpine.LFD.0.999.0710301205180.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710301205180.30120@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710302037.14418.ak@suse.de>
+	Tue, 30 Oct 2007 15:40:52 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45011 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbXJ3Tkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:40:51 -0400
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
+       randy.dunlap@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH v3] 0/4 fs/ioctl.c coding style, function renaming/factoring
+Date: Tue, 30 Oct 2007 15:39:55 -0400
+Message-Id: <11937731993134-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 20:06:12 Linus Torvalds wrote:
-> 
-> On Tue, 30 Oct 2007, Andi Kleen wrote:
-> > 
-> > Also there are still the old x86 Macs where conf1 doesn't work.
-> 
-> I don't think that was ever true. That was a made-up rumor by the EFI 
-> people who were just confused.
-> There's no way to disable conf1 accesses on any known chipset, afaik.
 
-There was a tester with such a machine and he complained until
-the heuristic handled this case.  So there is evidence it 
-really was like this.
+This series of 4 proposed patches (take 3) changes fs/ioctl.c and Unionfs as
+follows.  This series is against v2.6.24-rc1-423-g97855b4.
 
--Andi
+Patch 1: just applies coding standards to fs/ioctl.c (while I'm at it, I
+figured it's worth cleaning VFS files one at a time).
+
+Patch 2: does two things:
+
+(a) Renames the old vfs_ioctl to do_ioctl, because the comment above it
+    clearly indicates that it is an internal function not to be exported to
+    modules; therefore it should have a more traditional do_XXX "internal
+    function" name.  The new do_ioctl is exported in fs.h but not to
+    modules.
+
+(b) Renames the old (static) do_ioctl to vfs_ioctl because the names vfs_XXX
+    should preferably be reserved to callable VFS functions which modules
+    may call, as other vfs_XXX functions already do.  Export the new
+    vfs_ioctl to (GPL) modules so others can use it (including Unionfs and
+    eCryptfs).
+
+Patch 3: factors out the switch statements' cases for
+FIBMAP/FIONBIO/FIOASYNC, into three small static helper functions.
+
+Patch 4: demonstrates how Unionfs can use the new vfs_ioctl.  I successfully
+tested unionfs with this new exported vfs_ioctl.  (eCryptfs could do the
+same.)
+
+I'd like to propose that the first 3 patches be merged in -mm and even
+mainline, pending review.
+
+Erez Zadok (4):
+      VFS: apply coding standards to fs/ioctl.c
+      VFS: swap do_ioctl and vfs_ioctl names
+      VFS: factor out three helpers for FIBMAP/FIONBIO/FIOASYNC file ioctls
+      Unionfs: use vfs_ioctl
+
+ fs/compat_ioctl.c       |    2 
+ fs/ioctl.c              |  224 ++++++++++++++++++++++++++++--------------------
+ fs/unionfs/commonfops.c |   36 +------
+ include/linux/fs.h      |    4 
+ 4 files changed, 141 insertions(+), 125 deletions(-)
+
+Cheers,
+Erez.
