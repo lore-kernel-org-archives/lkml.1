@@ -1,149 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbXJ3BnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXJ3Bz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbXJ3BnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 21:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXJ3BnM
+	id S1753317AbXJ3Bz0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 21:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbXJ3BzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 21:43:12 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:36020 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752434AbXJ3BnK (ORCPT
+	Mon, 29 Oct 2007 21:55:10 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:39796 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752124AbXJ3BzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 21:43:10 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAAMpJkdMQWvU/2dsb2JhbACBWo5W
-Date: Mon, 29 Oct 2007 21:38:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, hch@infradead.org,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Philippe Elie <phil.el@wanadoo.fr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Lameter <christoph@lameter.com>, Valdis.Kletnieks@vt.edu,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] Create instrumentation directory (git repository)
-Message-ID: <20071030013802.GA24492@Krystal>
-References: <20071029215138.GA4233@Krystal> <20071029154741.cb093f55.rdunlap@xenotime.net> <4726649A.5020605@garzik.org> <20071029230409.GB16943@Krystal> <472667F3.3000505@garzik.org> <20071029233515.GA19413@Krystal> <47267F15.9090302@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 21:55:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=IVCrRXQl7Mkv3t4+ovweCpnqArNWww0Q1mmTUObABdG1/rhOEsPtxJNWxq5uvQ4oA0J2UJEexFw0CgLkRE+CLO081qtshRLN6xsWP8g7S0IgM57wB0qcbGX9u6vydca3+/vnj3caWf3sDe1T3ljhy3PGn23HAadL1QN+33q6SHc=  ;
+X-YMail-OSG: iTbSiMsVM1lrG8jR7OoJAQdvwmVzXLHzEh4v3EjrPojeVAFOO3eu.33ovJCcdC.DjysTzLUG5Q--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch/rfc 0/4] GPIO implementation framework
+Date: Mon, 29 Oct 2007 18:50:12 -0700
+User-Agent: KMail/1.9.6
+Cc: Felipe Balbi <felipebalbi@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, Tony Lindgren <tony@atomide.com>,
+       Jean Delvare <khali@linux-fr.org>, "eric miao" <eric.y.miao@gmail.com>,
+       Kevin Hilman <khilman@mvista.com>, Paul Mundt <lethal@linux-sh.org>,
+       Ben Dooks <ben@trinity.fluff.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <47267F15.9090302@garzik.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:54:48 up 92 days,  1:13,  5 users,  load average: 0.22, 0.55, 0.67
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710291850.13061.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeff Garzik (jeff@garzik.org) wrote:
-> Mathieu Desnoyers wrote:
-> >I see no good reason to have so many different adhoc instrumentation
-> >mechanisms for profiling (sched, vm, oprofile) and tracing (blktrace,
-> >suspend/resume tracing) all over the place. Merging them in a single
-> >directory seems like a good step towards a more generic
-> >instrumentation/profiling/tracing infrastructure.
-> 
-> Moving files about in directories should be at the /lowest/ end of the 
-> priority scale.  It makes diffs unreadable, file histories and diffing 
-> difficult, and a host of other problems.
-> 
-> Please solve the /real/ problems, and then come back and clean up the 
-> file structure after that is done.  Massive file renaming to satisfying 
-> some imagined future everything-is-golden scheme is the /last/ step.  It 
-> is the last step taken because the previous steps inevitably give you 
-> guidance that you otherwise would not have had at the start of the task.
-> 
-> When I try to diff between old and new alpha oprofile code, I really 
-> want to know that the reason why diffing is a pain in the ass is more 
-> than "it seemed like a good first step."
-> 
+When we hashed out the Documentation/gpio.txt GPIO programming
+interfaces last year, there were a few features in the "we want
+this eventually, but can live without it for now" category.
+Following this post are patches adding some of those features.
 
-And how is this confirmed by the way the i386-x86_64 -> x86 merge is
-done ? It seems like a good current counter-example of what you just
-affirmed.
+Two core patches are:
 
-First organizing the functionally similar existing code into a single
-placeholder will just help finding code duplication, just like two very
-similar architectures such as i386 and x86_64.
+ - Implementation framework in lib/gpiolib.c ... the interface
+   provided to GPIO _users_ is unchanged, but providers can now
+   hook up through a "gpio_chip" that lets multiple types of
+   GPIO provider coexist.  Examples:  SOC-native GPIOs, ones
+   provided by an FPGA, I2C or SPI GPIO expanders, etc.
 
-Talking about solving "real" problems, this is what I have been working
-on for about 3 years in the kernel tracing area, writing the LTTng
-tracer. What I see at this point is that there is a strong interest for
-collaboration between the instrumentation projects (LTTng, SystemTAP,
-DTI), but since the code ends up being sprinkled all across the kernel,
-it's rather hard to spot duplicates. Actually, I just ran into Linus's
-suspend/resume tracer _today_.
+   (I'm thinking this is pretty much ready to merge into MM,
+   unless someone turns up a blocking issue...)
 
-Talking about solving real problems, this is also what I did with the
-Linux Kernel Markers patch, which can now be used to instrument the
-kernel code. But it only deals with one aspect of instrumentation: the
-markup itself.
+ - I2C driver for common pcf8574/8575 GPIO expanders ... these
+   are pretty common on embedded hardware, and it's routine for
+   external trees to have ugly board-specific hacks exposing
+   those GPIOs to drivers.  Unlike such hacks, I think support
+   using standard GPIO calls should be mergable upstream.
 
-I would categorize what we need for instrumentation in the following
-categories :
+   (IMO this is ready to merge too, although I know Jean would
+   like additional infrastructure which could let us obsolete
+   existing drivers, instead of just offering an alternative for
+   systems that need kernel access instead of userspace access.)
 
-- Data identification
-  * static markup, enabled dynamically, very low impact
-  * dynamic markup
-  * oprofile (especially for the performance counters)
-  * stack traces
-- Control
-  * Tracing management
-  * Profiling management
-  * PMC management
-- Data extraction
-  * relay
-  * debugfs
-  * serial port output
-  * LKCD
+Two more patches show how they can be used:
 
-What I consider to fit into the instrumentation directory is the data
-identification and the control mechanisms. The data extraction should be
-done be generic pieces of infrastructure already present in the kernel.
+ - Platform conversion for DaVinci ... making the SOC-native
+   GPIOs plug in through gpiolib instead of directly, except
+   when callers can leverage the inline optimization.
 
-Your suggestion of "first fixing the real problems" (do you mean by
-this : add new code ?) and later bother about the file structure just
-seems to go against most suggestions I have received from kernel
-developers in the past years. Getting something new in the kernel is
-much more straightforward if someone is willing to first clean up the
-mess (I am quoting Thomas Gleixner here).  So, in this particular case,
-addressing the real problem : people out there want a tracer in the
-Linux kernel, will first require to clean up the currently existing
-mess : overlapping instrumentation code sprinkled all over the place.
+ - Board conversion (partial) for DaVinci EVM ... exposing
+   the LEDs hooked up to one pcf8574a chip using leds-gpio,
+   along with the A/V clocks (and a random user switch) on
+   another pcf chip.  A third pcf chip isn't converted; it'd
+   mean changing half a dozen drivers, none of which are yet
+   upstream.
 
+If the gpiolib patch merges into MM, then I think it'd be
+realistic to expect some platforms and boards to be using
+this new infrastructure in 2.6.25 ...
 
-> 
-> >Back to "profile" and "probes" directory names, they might be short, but
-> >they do not represent the whole markup-profiling-tracing trio,
-> >"profile" lacks the tracing part and "probe" lacks the markup part.
-> 
-> You can always add more letters (and words) to even reach the desired 
-> level of specificity.  That does nothing to help readability though.
-> 
-> Anyway, it should be clear from existing precedent -- existing pathnames 
-> -- that "instrumentation" is too long, and really IMO too vague anyway.
-> 
+- Dave
 
-I guess you don't use the Documentation/ directory often then. ;)
-
-How about i13n ? :) Jokes aside, I could live with "probe", although it
-doesn't fit the purpose exactly. Getting the perfect name, to me, come
-second after the need to group those files.
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
