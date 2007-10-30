@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbXJ3PBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXJ3PIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbXJ3PBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbXJ3PBg
+	id S1754830AbXJ3PIN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbXJ3PH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:01:36 -0400
-Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:29388 "HELO
-	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752296AbXJ3PBf (ORCPT
+	Tue, 30 Oct 2007 11:07:58 -0400
+Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:34727 "HELO
+	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753105AbXJ3PH5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:01:35 -0400
-X-YMail-OSG: PMjzriAVM1kQV_ZRydxKra8.CY9uylG2Ch2navGv.K0Jz65VvbkvK6s3NAhJksY3EZ4CMeG4fg--
+	Tue, 30 Oct 2007 11:07:57 -0400
+X-YMail-OSG: ktLShR8VM1lhf4TEK2yC4dliMnm__Xp2PRC4jImhIgFx7EVla.B_03KUZTUM6l_ZQYTKyF6T.A--
 X-RocketYMMF: rancidfat
-Date: Tue, 30 Oct 2007 08:01:31 -0700 (PDT)
+Date: Tue, 30 Oct 2007 08:07:56 -0700 (PDT)
 From: Casey Schaufler <casey@schaufler-ca.com>
 Reply-To: casey@schaufler-ca.com
-Subject: Re: Defense in depth: LSM *modules*, not a static interface
-To: Crispin Cowan <crispin@crispincowan.com>, Al Viro <viro@ftp.linux.org.uk>
-Cc: Cliffe <cliffe@ii.net>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <4726E36F.6030909@crispincowan.com>
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+To: "Kazuki Omo\(Company\)" <k-omo@sios.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4726ACAC.7060609@sios.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <697420.13474.qm@web36613.mail.mud.yahoo.com>
+Message-ID: <429123.13355.qm@web36608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Crispin Cowan <crispin@crispincowan.com> wrote:
+--- "Kazuki Omo(Company)" <k-omo@sios.com> wrote:
 
-> Al Viro wrote:
-> > On Tue, Oct 30, 2007 at 03:14:33PM +0800, Cliffe wrote:
-> >   
-> >> Defense in depth has long been recognised as an important secure design 
-> >> principle. Security is best achieved using a layered approach.
-> >>     
-> >  "Layered approach" is not a magic incantation to excuse any bit of snake
-> > oil.  Homeopathic remedies might not harm (pure water is pure water),
-> > but that's not an excuse for quackery.  And frankly, most of the
-> > "security improvement" crowd sound exactly like woo-peddlers.
-> >   
-> Frank's point was that the static interface makes layering somewhere
-> between impractical and impossible. The static interface change should
-> be dumped so that layering is at least possible. Whether any given
-> security module is worth while is a separate issue.
+> Dear, Folks,
 > 
-> I.e. that there are bad medicines around is a poor excuse to ban
-> syringes and demand that everyone be born with a strong immune system.
+> Now we are planning to submit LIDS to mainline.
+> (As you know, it already written for supporing LSM for several years.)
 > 
-> Why is it that security flame wars always end up reasoning with absurd
-> analogies? :-)
+> When we will finish to re-write documentation and some FAQ, then
+> we will be able to submit the patch.
+> 
+> Sincerely,
+> 
+> OMO
 
-That's my fault, sorry. I don't know why it's my fault,
-but that's where it usually ends up and I thought I'd get
-the blame bit out of the way. Gotta go squeeze some legless
-reptiles now.
+Most excellent. Thank you.
 
 
 Casey Schaufler
