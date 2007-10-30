@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759012AbXJ3Uqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbXJ3Ura@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759012AbXJ3Uqg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbXJ3UqZ
+	id S1759013AbXJ3Ura (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbXJ3UrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:46:25 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:47646 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250AbXJ3UqY (ORCPT
+	Tue, 30 Oct 2007 16:47:22 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:37856 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbXJ3UrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:46:24 -0400
-Message-ID: <472797FB.3050509@tiscali.nl>
-Date: Tue, 30 Oct 2007 21:45:47 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 30 Oct 2007 16:47:22 -0400
+Date: Tue, 30 Oct 2007 21:47:20 +0100
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: Huawei E220 and usb storage
+Message-ID: <20071030204720.GI8479@gamma.logic.tuwien.ac.at>
+References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fix drivers/net/wan/lmc/ compilation
-References: <20071030203136.GQ7227@stusta.de>
-In-Reply-To: <20071030203136.GQ7227@stusta.de>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Documentation/SubmitChecklist, point 1:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      drivers/net/wan/lmc/lmc_main.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/wan/lmc/lmc_main.c: In function ‘lmc_ioctl’:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/wan/lmc/lmc_main.c:239: error: expected expression before ‘else’
-> ...
-> make[5]: *** [drivers/net/wan/lmc/lmc_main.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> d5e92a30491abf073e0a7f4d46b466c7c97f0f61 
-> diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
-> index 64eb578..37c52e1 100644
-> --- a/drivers/net/wan/lmc/lmc_main.c
-> +++ b/drivers/net/wan/lmc/lmc_main.c
-> @@ -234,7 +234,7 @@ int lmc_ioctl (struct net_device *dev, struct ifreq *ifr, int cmd) /*fold00*/
->          sc->lmc_xinfo.Magic1 = 0xDEADBEEF;
->  
->          if (copy_to_user(ifr->ifr_data, &sc->lmc_xinfo,
-> -					sizeof(struct lmc_xinfo))) {
-> +			 sizeof(struct lmc_xinfo)))
->  		ret = -EFAULT;
->  	else
->  		ret = 0;
-> 
+Hi Kristoffer,
 
-I am sorry, my patch broke this and Kristov Provost also noticed this.
-See http://lkml.org/lkml/2007/10/30/355
+thanks for the feedback.
 
+On Di, 30 Okt 2007, Kristoffer Ericson wrote:
+> Im using a Huawei E220 USB modem, currently running 2.6.22.5 vanilla kernel. It has worked fine for me since 2.6.21.
 
+Strange. I rebuilt the kernel, compiled the usb serial and options into
+the kernel, while leaving usb-storage as module. Still I have to issue
+the huaweiAktBbo program to get it working/switching into the *right*
+modus.
+
+> The lights give you a hint what mode its in. Green = usb_storage, Dark-blue = MODEM_slow, bright-blue = MODEM_fast (3G).
+
+BTW, I have seen a slightly different pattern: Green blinking from the
+beginning
+calling huaweiAktBbo to make the switch
+still blinking green
+calling the internet provider
+when the connection is established (on the hardware level, not on ip
+level) the modem starts blinking blue and then solid blue
+turning off the ppp connection it goes into blinking blue mode
+
+> If the light is green after reboot, I need to reboot again until it turns blue. I know this sucks, but just something I've noticed.
+
+Probably you could use the huaweiAktBbo program for this, too.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+HASELBURY PLUCKNETT (n.)
+A mechanical device for cleaning combs invented during the industrial
+revolution at the same time as Arkwright's Spinning Jenny, but which
+didn't catch on in the same way.
+			--- Douglas Adams, The Meaning of Liff
