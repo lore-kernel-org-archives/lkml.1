@@ -1,65 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbXJ3Dvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbXJ3DwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbXJ3Dvs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 23:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXJ3Dvk
+	id S1752744AbXJ3DwH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 23:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXJ3Dvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 23:51:40 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:45523 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbXJ3Dvk (ORCPT
+	Mon, 29 Oct 2007 23:51:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51898
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753377AbXJ3Dvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 23:51:40 -0400
-Date: Tue, 30 Oct 2007 14:51:38 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Linux Kernel ML <linux-kernel@vger.kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH] Update zfcp_sg_to_address() for new SG chanegs.
-Message-ID: <20071030035138.GV24243@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 29 Oct 2007 23:51:52 -0400
+Date: Mon, 29 Oct 2007 20:51:50 -0700 (PDT)
+Message-Id: <20071029.205150.04488278.davem@davemloft.net>
+To: 2500@gmx.de
+Cc: pl@dlh.net, sparclinux@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: PATCH: tcp rfc 2385 security/bugfix for sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200710161848.18443.2500@gmx.de>
+References: <200710161848.18443.2500@gmx.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 642f149031d70415d9318b919d50b71e4724adbd Added args to
-zfcp_sg_to_address() but didn't update the defn. to know about them.
+From: Matthias Dellweg <2500@gmx.de>
+Date: Tue, 16 Oct 2007 18:47:56 +0200
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
+> while reviewing the tcp_md5-related code further i came across with another
+> two of these casts which you probably have missed. I don't actually think
+> that they impose a problem by now, but as you said we should remove them.
 
-Only compile tested.
-
- drivers/s390/scsi/zfcp_def.h |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
-index 0754542..e70cd95 100644
---- a/drivers/s390/scsi/zfcp_def.h
-+++ b/drivers/s390/scsi/zfcp_def.h
-@@ -70,11 +70,12 @@ zfcp_sg_to_address(struct scatterlist *list)
-  * zfcp_address_to_sg - set up struct scatterlist from kernel address
-  * @address: kernel address
-  * @list: struct scatterlist
-+ * @len: buffer length
-  */
- static inline void
--zfcp_address_to_sg(void *address, struct scatterlist *list)
-+zfcp_address_to_sg(void *address, struct scatterlist *list, unsigned int len)
- {
--	sg_set_buf(list, address, 0);
-+	sg_set_buf(list, address, len);
- }
- 
- #define REQUEST_LIST_SIZE 128
--- 
-1.5.3.4
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+I'll apply this patch, thanks Matthias.
