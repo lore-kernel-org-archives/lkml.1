@@ -1,34 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbXJ3O45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXJ3O5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbXJ3O45 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJ3O4u
+	id S1755521AbXJ3O5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbXJ3O5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:56:50 -0400
-Received: from hartman.uits.indiana.edu ([129.79.1.194]:33260 "EHLO
-	hartman.uits.indiana.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbXJ3O4t (ORCPT
+	Tue, 30 Oct 2007 10:57:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46630 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbXJ3O5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:56:49 -0400
-From: CSights <csights@fastmail.fm>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cannot "hibernate" if program being debugged in gdb is paused after SIGABRT in linux 2.6.23 (but can in 2.6.22.7)
-Date: Tue, 30 Oct 2007 10:34:08 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200710252103.27675.csights@fastmail.fm> <200710281133.36995.csights@fastmail.fm> <200710281958.57460.rjw@sisk.pl>
-In-Reply-To: <200710281958.57460.rjw@sisk.pl>
+	Tue, 30 Oct 2007 10:57:21 -0400
+Date: Tue, 30 Oct 2007 15:57:20 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-kernel@vger.kernel.org, drepper@redhat.com, riel@redhat.com
+Subject: Re: OOM notifications
+Message-ID: <20071030145720.GB27039@atrey.karlin.mff.cuni.cz>
+References: <20071018201531.GA5938@dmt>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710301034.08268.csights@fastmail.fm>
+In-Reply-To: <20071018201531.GA5938@dmt>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Thanks, I'll try to reproduce the problem here and fix it.
+  Hello,
 
-No really, thank you!
-C.
+> AIX contains the SIGDANGER signal to notify applications to free up some
+> unused cached memory:
+> 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
+> 
+> There have been a few discussions on implementing such an idea on Linux,
+> but nothing concrete has been achieved.
+> 
+> On the kernel side Rik suggested two notification points: "about to
+> swap" (for desktop scenarios) and "about to OOM" (for embedded-like
+> scenarios).
+> 
+> With that assumption in mind it would be necessary to either have two
+> special devices for notification, or somehow indicate both events
+> through the same file descriptor.
+  Actually, wouldn't a generic netlink interface be more elegant? Then
+we could connect it with DBUS and it would be much easier for
+applications (Desktop) to handle such events.
+  I agree that near-to-oom conditions are quite volatile and maybe we
+want a technically simple (and thus more reliable) mechanism for the
+notification but I anyway wanted to point to this possibility.
+
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
