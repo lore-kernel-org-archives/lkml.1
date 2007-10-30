@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXJ3AH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbXJ3AJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXJ3AH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 20:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXJ3AHT
+	id S1753562AbXJ3AJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 20:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbXJ3AJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 20:07:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44348 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbXJ3AHS (ORCPT
+	Mon, 29 Oct 2007 20:09:30 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1307 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752873AbXJ3AJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 20:07:18 -0400
-Message-ID: <472675AC.3070509@zytor.com>
-Date: Mon, 29 Oct 2007 17:07:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: 32bit builds on x86-64 host.
-References: <20071029233231.GI7793@redhat.com>
-In-Reply-To: <20071029233231.GI7793@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Oct 2007 20:09:29 -0400
+Date: Tue, 30 Oct 2007 08:08:27 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+Message-ID: <20071030000827.GA9037@gondor.apana.org.au>
+References: <20071026145905.GA13850@gondor.apana.org.au> <E1IlQfM-0003cO-00@gondolin.me.apana.org.au> <20071029201627.GD7499@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029201627.GD7499@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> Before the arch merge, I frequently would test 32bit compiles
-> by doing make ARCH=i386 {bzImage/modules/file.o}
+On Mon, Oct 29, 2007 at 09:16:27PM +0100, Jens Axboe wrote:
+> On Fri, Oct 26 2007, Herbert Xu wrote:
+> > [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+> > 
+> > This patch moves the sg_init_table out of the timing loops for hash
+> > algorithms so that it doesn't impact on the speed test results.
 > 
-> Since commit 47572387d58a9584c60ebbbdee56fc92c627f16f
-> how does one do this?
-> 
+> Wouldn't it be better to just make sg_init_one() call sg_init_table?
 
-make ARCH=i386 {bzImage/modules/file.o}
+This looks fine to me although I think it's orthogonal to the
+patch you were quoting :)
 
-Amazing, isn't it?
-
-	-hpa
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
