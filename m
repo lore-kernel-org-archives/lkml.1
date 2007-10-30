@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbXKAOdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXKAOdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbXKAOdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 10:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbXKAOdC
+	id S1760918AbXKAOdx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 10:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbXKAOdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 10:33:02 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4266 "EHLO spitz.ucw.cz"
+	Thu, 1 Nov 2007 10:33:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4268 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754580AbXKAOdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 10:33:00 -0400
-Date: Mon, 29 Oct 2007 19:24:15 +0000
+	id S1755216AbXKAOdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 10:33:01 -0400
+Date: Tue, 30 Oct 2007 14:48:39 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCMCIA: prevent auto insert during resume.
-Message-ID: <20071029192414.GC7742@ucw.cz>
-References: <20071026105125.GA28769@enneenne.com> <20071026151141.GA4321@flint.arm.linux.org.uk> <20071026154705.GY19019@enneenne.com> <20071026160206.GC4321@flint.arm.linux.org.uk> <20071026162705.GZ19019@enneenne.com> <20071026163651.GD4321@flint.arm.linux.org.uk> <20071026165400.GA19019@enneenne.com> <20071026170030.GE4321@flint.arm.linux.org.uk> <20071026171857.GC19019@enneenne.com>
+To: jack@antonello.org
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: [PATCH] backlight dimmer
+Message-ID: <20071030144838.GD7742@ucw.cz>
+References: <4724B48D.6090405@antonello.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071026171857.GC19019@enneenne.com>
+In-Reply-To: <4724B48D.6090405@antonello.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-10-26 19:18:57, Rodolfo Giometti wrote:
-> On Fri, Oct 26, 2007 at 06:00:31PM +0100, Russell King wrote:
+On Sun 2007-10-28 17:10:53, jack@antonello.org wrote:
+> Hello,
+> this patch implements a macbook like backlight dimmer on 
+> top of backlight.c.
 > 
-> > > > > Also if you didn't eject the socket, at resume the device will be
-> > > > > powered up again, my patch just prevents that a pre-powered off device
-> > > > > to be turned on at resume time.
-> > > > > 
-> > > > > However you should consider that some embedded systems have fixed
-> > > > > PCMCIA devices that can't be removed so there are no reasons to detect
-> > > > > them after resume, nobody can change them. :)
-> > > > > 
-> > > > > Also battery powered devices can go very frequently to sleep and the
-> > > > > current behavior force the user to switch off the unused device each
-> > > > > time the system resumes from sleep.
-> > > > 
-> > > > I realise that.  I do work on embedded devices, and this behaviour is
-> > > > explicitly there to support embedded devices.
-> > > > 
-> > > > I've suggested a workable solution to you which allows both of us to
-> > > > have the behaviour we both desire from the system.  That sounds like
-> > > > a negotiated solution to me...
-> > > 
-> > > Do you mean to switch off the socket from userland? It could be a
-> > > solution but in this case the device is powered on each time even if
-> > > for a short delay...
-> > 
-> > If it's a permanent device, and you've powered it down via pccardctl,
-> > then you've powered it down from userland.  So record that it's been
-> > powered down from userland.  Then, on resume, if it's been powered down
-> > from userland, don't try to re-power it on resume.
+> The dimmer is entirely in kernelspace and is suitable 
+> for an embedded context in order to avoid the overhead 
+> of a daemon controlling the backlight. Implementing this 
+> functionality in userspace has other advantages and is a 
+> perfectly reasonable alternative, so this patch is
+> not the definitive solution.
 > 
-> But the userland doesn't re-power it on resume... it's the kernel
-> itself whos re-powers the device on resume. So the userland can only
-> power down the device again.
+> activate dimmer:
+> echo 1 > /sys/devices/virtual/backlight/*/dimmer_control
+> 
+> other attributes (britness levels & timeout):
+> /sys/devices/virtual/backlight/*/dimmer_high_level
+> /sys/devices/virtual/backlight/*/dimmer_low_level
+> /sys/devices/virtual/backlight/*/dimmer_timeout
 
-I think Russell means: at a flag into kernel. If user powers down the
-device, set the flag. If flag is set during resume, avoid powering up
-the device.
+I'd say that userspace makes sense here. I'd want backlight to go down
+slowly, for example.
+
+But... maybe undimming should be done in kernel, so it keeps
+low,latency?
+
+Hmm, maybe existing screen blanking infrastructure can be reused?
+
+> --- linux-2.6.23.1/include/linux/backlight.h 2007-10-12 
+> 18:43:44.000000000 +0200
+> +++ b/include/linux/backlight.h	2007-10-28 
+> 13:45:21.000000000 +0100
+> @@ -11,6 +11,7 @@
+> #include <linux/device.h>
+> #include <linux/mutex.h>
+> #include <linux/notifier.h>
+> +#include <linux/timeout.h>
+> 
+> /* Notes on locking:
+
+Your mail client damages patches?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
