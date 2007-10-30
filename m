@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbXJ3IK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbXJ3ILO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbXJ3IK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 04:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbXJ3IKO
+	id S1754001AbXJ3ILO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 04:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXJ3ILB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 04:10:14 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:4761 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbXJ3IKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 04:10:12 -0400
-Date: Tue, 30 Oct 2007 09:07:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dirk Hohndel <hohndel@linux.intel.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Andries Brouwer <aeb@cwi.nl>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add_partition silently ignored errors
-Message-ID: <20071030080742.GE4993@kernel.dk>
-References: <20071029154339.00512901@gondolin.boeblingen.de.ibm.com> <20071029154849.GA24187@bigserver.hohndel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029154849.GA24187@bigserver.hohndel.org>
+	Tue, 30 Oct 2007 04:11:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34717
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752267AbXJ3IK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 04:10:58 -0400
+Date: Tue, 30 Oct 2007 01:10:36 -0700 (PDT)
+Message-Id: <20071030.011036.43329108.davem@davemloft.net>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, SteveW@ACM.org,
+       dipankar@in.ibm.com
+Subject: Re: dn_route.c momentarily exiting RCU read-side critical section
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071029211540.GA12893@linux.vnet.ibm.com>
+References: <20071029211540.GA12893@linux.vnet.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29 2007, Dirk Hohndel wrote:
-> diff --git a/block/ioctl.c b/block/ioctl.c
-> index 52d6385..bb3933e 100644
-> --- a/block/ioctl.c
-> +++ b/block/ioctl.c
-> @@ -61,7 +61,10 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
->  				}
->  			}
->  			/* all seems OK */
-> -			add_partition(disk, part, start, length, ADDPART_FLAG_NONE);
-> +			if (add_partition(disk, part, start, length, ADDPART_FLAG_NONE)) {
-> +				mutex_unlock(&bdev->bd_mutex);
-> +				return -EBUSY;
-> +			}
->  			mutex_unlock(&bdev->bd_mutex);
->  			return 0;
->  		case BLKPG_DEL_PARTITION:
-> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-> index 722e12e..cd92471 100644
-> --- a/fs/partitions/check.c
-> +++ b/fs/partitions/check.c
-> @@ -368,13 +368,13 @@ void delete_partition(struct gendisk *disk, int part)
->  	kobject_put(&p->kobj);
->  }
->  
-> -void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
-> +int add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
->  {
->  	struct hd_struct *p;
->  
->  	p = kzalloc(sizeof(*p), GFP_KERNEL);
->  	if (!p)
-> -		return;
-> +		return -1;
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Date: Mon, 29 Oct 2007 14:15:40 -0700
 
-Why not return the 'correct' error codes, instead of always -1 and
-making that -EBUSY at the caller? This one should be -ENOMEM.
+> net/decnet/dn_route.c in dn_rt_cache_get_next() is as follows:
+> 
+> static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
+> {
+> 	struct dn_rt_cache_iter_state *s = rcu_dereference(seq->private);
+> 
+> 	rt = rt->u.dst.dn_next;
+> 	while(!rt) {
+> 		rcu_read_unlock_bh();
+> 		if (--s->bucket < 0)
+> 			break;
+> 
+> ...  But what happens if seq->private is freed up right here?
+> ...  Or what prevents this from happening?
+ ...
+> Similar code is in rt_cache_get_next().
+> 
+> So, what am I missing here?
 
-IIRC, Al recently vetoed a similar patch. As far as I'm concerned, with
-the correct return values, the patch then looks fine to me.
+seq->private is allocated on file open (here via seq_open_private()),
+and freed up on file close (via seq_release_private).
 
--- 
-Jens Axboe
+So it cannot be freed up in the middle of an iteration.
 
