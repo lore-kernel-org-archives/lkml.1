@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbXJ3Q0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbXJ3Q1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbXJ3Q0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbXJ3QQI
+	id S1759148AbXJ3Q1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbXJ3Q1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:16:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbXJ3QNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:13:40 -0400
-Message-Id: <20071030160912.283002000@chello.nl>
-References: <20071030160401.296770000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:10 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 09/33] mm: system wide ALLOC_NO_WATERMARK
-Content-Disposition: inline; filename=global-ALLOC_NO_WATERMARKS.patch
+	Tue, 30 Oct 2007 12:27:03 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39175 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752995AbXJ3Q1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:27:00 -0400
+Date: Tue, 30 Oct 2007 11:26:57 -0500
+From: Russ Anderson <rja@sgi.com>
+To: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       linux-ia64@vger.kernel.org
+Subject: [patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU is set
+Message-ID: <20071030162657.GA21728@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change ALLOC_NO_WATERMARK page allocation such that the reserves are system
-wide - which they are per setup_per_zone_pages_min(), when we scrape the
-barrel, do it properly.
+[patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU is set
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In __do_IRQ(), the normal case is that IRQ_DISABLED is checked and if
+set the handler (handle_IRQ_event()) is not called.  
+
+Earlier in __do_IRQ(), if IRQ_PER_CPU is set the code does not check
+IRQ_DISABLED and calls the handler even though IRQ_DISABLED is set.
+This behavior seems unintentional.
+
+One user encountering this behavior is the CPE handler (in 
+arch/ia64/kernel/mca.c).  When the CPE handler encounters too many
+CPEs (such as a solid single bit error), it sets up a polling timer
+and disables the CPE interrupt (to avoid excessive overhead logging
+the stream of single bit errors).  disable_irq_nosync() is called
+which sets IRQ_DISABLED.  The IRQ_PER_CPU flag was previously set
+(in ia64_mca_late_init()).  The net result is the CPE handler gets
+called even though it is marked disabled.
+
+If the behavior of not checking IRQ_DISABLED when IRQ_PER_CPU is
+set is intentional, it would be worthy of a comment describing 
+the intended behavior.  disable_irq_nosync() does call chip->disable()
+to provide a chipset specifiec interface for disabling the interrupt,
+which avoids this issue when used.
+
+Comments???
+
+Signed-off-by: Russ Anderson (rja@sgi.com)
+
+--------------------------------------------------------------------
 ---
- mm/page_alloc.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ kernel/irq/handle.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linus/kernel/irq/handle.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1638,6 +1638,12 @@ restart:
- rebalance:
- 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- nofail_alloc:
-+		/*
-+		 * break out of mempolicy boundaries
-+		 */
-+		zonelist = NODE_DATA(numa_node_id())->node_zonelists +
-+			gfp_zone(gfp_mask);
-+
- 		/* go through the zonelist yet again, ignoring mins */
- 		page = get_page_from_freelist(gfp_mask, order, zonelist,
- 				ALLOC_NO_WATERMARKS);
-
---
-
+--- linus.orig/kernel/irq/handle.c	2007-10-30 09:49:26.000000000 -0500
++++ linus/kernel/irq/handle.c	2007-10-30 10:23:52.436719688 -0500
+@@ -178,9 +178,11 @@ fastcall unsigned int __do_IRQ(unsigned 
+ 		 */
+ 		if (desc->chip->ack)
+ 			desc->chip->ack(irq);
+-		action_ret = handle_IRQ_event(irq, desc->action);
+-		if (!noirqdebug)
+-			note_interrupt(irq, desc, action_ret);
++		if (likely(!(desc->status & IRQ_DISABLED))) {
++			action_ret = handle_IRQ_event(irq, desc->action);
++			if (!noirqdebug)
++				note_interrupt(irq, desc, action_ret);
++		}
+ 		desc->chip->end(irq);
+ 		return 1;
+ 	}
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
