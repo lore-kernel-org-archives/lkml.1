@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbXJ3OSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbXJ3OS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbXJ3OSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbXJ3OSY
+	id S1755869AbXJ3OS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbXJ3OSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:18:24 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52521 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbXJ3OSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:18:23 -0400
-In-Reply-To: <20071030083719.GJ32359@parisc-linux.org>
-References: <20071028201549.GA23138@fattire.cabal.ca> <20071030024801.GA19417@linux-mips.org> <AFC1DED8-E331-420C-940E-9CF849630F0B@kernel.crashing.org> <20071030083719.GJ32359@parisc-linux.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C812C5E5-9AA9-42D1-AEE1-679641D1AEB9@kernel.crashing.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
-Date: Tue, 30 Oct 2007 09:19:31 -0500
-To: Matthew Wilcox <matthew@wil.cx>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 30 Oct 2007 10:18:48 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1532 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752181AbXJ3OSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 10:18:46 -0400
+Date: Tue, 30 Oct 2007 22:18:20 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+Message-ID: <20071030141820.GA16501@gondor.apana.org.au>
+References: <20071026145905.GA13850@gondor.apana.org.au> <E1IlQfM-0003cO-00@gondolin.me.apana.org.au> <20071029201627.GD7499@kernel.dk> <20071030000827.GA9037@gondor.apana.org.au> <20071030055056.GG7499@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030055056.GG7499@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Oct 30, 2007, at 3:37 AM, Matthew Wilcox wrote:
-
-> On Mon, Oct 29, 2007 at 10:03:16PM -0500, Kumar Gala wrote:
->> The same is true on PPC32.  Its a per platform thing.   However, I'm
->> not sure if we could hide it from the user.  There are cases on the
->> same HW platform that you want to run with just 32-bit phys (for
->> performance).
+On Tue, Oct 30, 2007 at 06:50:58AM +0100, Jens Axboe wrote:
 >
-> Have you measured what the performance difference is?
+> How so? The reason you changed it to sg_init_table() + sg_set_buf() is
+> exactly because sg_init_one() didn't properly init the entry (as they
+> name promised).
 
-I have not.  On some PPC32 systems having proper 36-bit physical  
-support usually means growing our pte to be 64-bits which creates  
-additional overhead in SW TLB mgmt on these processors.
+For one of the cases yes but the other one repeatedly calls
+sg_init_one on the same sg entry while we really only need
+to initialise it once and call sg_set_buf afterwards.
 
-- k
+Normally this is irrelevant but the loops in question are
+trying to estimate the speed of the algorithms so it's good
+to exclude as much noise from them as possible.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
