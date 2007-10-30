@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbXJ3PvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbXJ3PwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbXJ3PvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXJ3PvI
+	id S1756892AbXJ3PwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXJ3PwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:51:08 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:58753 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbXJ3PvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:51:07 -0400
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0710301535270.9322@blonde.wat.veritas.com>
-References: <1193064057.16541.1.camel@matrix>
-	 <20071029004002.60c7182a.akpm@linux-foundation.org>
-	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-	 <1193677302.27652.56.camel@twins>
-	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
-	 <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy>
-	 <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com>
-	 <1193738177.27652.69.camel@twins>
-	 <45a44e480710300616p34b0a159m87de78d0a4d43028@mail.gmail.com>
-	 <1193750751.27652.86.camel@twins>
-	 <Pine.LNX.4.64.0710301535270.9322@blonde.wat.veritas.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-19tc5Np9Tlb3uJm+SUPC"
-Date: Tue, 30 Oct 2007 16:51:02 +0100
-Message-Id: <1193759462.27652.88.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 30 Oct 2007 11:52:04 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41746 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754903AbXJ3PwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 11:52:01 -0400
+Date: Tue, 30 Oct 2007 11:51:52 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC, PATCH] locks: remove posix deadlock detection
+Message-ID: <20071030155152.GC21595@fieldses.org>
+References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org> <20071028174321.GB16905@fieldses.org> <20071029080604.508b19ce@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029080604.508b19ce@the-village.bc.nu>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 29, 2007 at 08:06:04AM +0000, Alan Cox wrote:
+> On Sun, 28 Oct 2007 13:43:21 -0400
+> "J. Bruce Fields" <bfields@fieldses.org> wrote:
+> 
+> > From: J. Bruce Fields <bfields@citi.umich.edu>
+> > 
+> > We currently attempt to return -EDEALK to blocking fcntl() file locking
+> > requests that would create a cycle in the graph of tasks waiting on
+> > locks.
+> > 
+> > This is inefficient: in the general case it requires us determining
+> > whether we're adding a cycle to an arbitrary directed acyclic graph.
+> > And this calculation has to be performed while holding a lock (currently
+> > the BKL) that prevents that graph from changing.
+> > 
+> > It has historically been a source of bugs; most recently it was noticed
+> > that it could loop indefinitely while holding the BKL.
+> > 
+> > It seems unlikely to be useful to applications:
+> > 	- The difficulty of implementation has kept standards from
+> > 	  requiring it.  (E.g. SUSv3 : "Since implementation of full
+> > 	  deadlock detection is not always feasible, the [EDEADLK] error
+> > 	  was made optional.")  So portable applications may not be able to
+> > 	  depend on it.
+> > 	- It only detects deadlocks that involve nothing but local posix
+> > 	  file locks; deadlocks involving network filesystems or other kinds
+> > 	  of locks or resources are missed.
+> > 
+> > It therefore seems best to remove deadlock detection.
+> > 
+> > Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+> 
+> 
+> NAK. This is an ABI change
 
---=-19tc5Np9Tlb3uJm+SUPC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK, fair enough.
 
-On Tue, 2007-10-30 at 15:47 +0000, Hugh Dickins wrote:
-> On Tue, 30 Oct 2007, Peter Zijlstra wrote:
-> > On Tue, 2007-10-30 at 09:16 -0400, Jaya Kumar wrote:
-> ....
-> > > - defio mmap adds this vma to private list (equivalent of
-> > > address_space or anon_vma)
-> ....
-> > > - foreach vma { foreach page { page_mkclean_one(page, vma) }
-> >=20
-> > Yeah, page_mkclean_one(page, vma) will use vma_address() to obtain an
-> > user-space address for the page in this vma using page->index and the
-> > formula from the last email, this address is then used to walk the page
-> > tables and obtain a pte.
->=20
-> I don't understand why you suggested an anon_vma, nor why Jaya is
-> suggesting a private list.  All vmas mapping /dev/fb0 will be kept
-> in the prio_tree rooted in its struct address_space (__vma_link_file
-> in mm/mmap.c).  And page_mkclean gets page_mkclean_file to walk that
-> very tree.  The missing part is just the setting of page->mapping to
-> point to that struct address_space (and clearing it before finally
-> freeing the pages), and the setting of page->index as you described.
-> Isn't it?
+> and one that was rejected before when this was last discussed in
+> detail.
 
-Hmm, there is a thought. I had not considered that mapping a chardev
-would have that effect.
+That previous discussion (http://marc.info/?t=108652857400003&r=1&w=2)
+read the spec wrong and--now that I reread it--failed to address the
+original bug report.  In fact it looks to me like the actual bug
+reported:
 
-I'd have to have a look at the actual code, but yeah, that might very
-well work out. How silly of me.
+	http://bugzilla.kernel.org/show_bug.cgi?id=2829
 
-Thanks!
+was probably a minor variant of the one which George Davis stumbled on
+again here.  That's a little depressing.
 
---=-19tc5Np9Tlb3uJm+SUPC
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> Moving it out of BKL makes a ton of sense,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+That would at least reduce the impact of bugs here, yeah.  It would be
+great to figure out how to start getting locks.c and lockd out from
+under the BKL, but I don't personally have the time now.  (And I believe
+there's been a failed attempt or two so it's not completely easy.)
 
-iD8DBQBHJ1LmXA2jU0ANEf4RAtAVAJ9i89150XfjGYw/CGSzx4C+V7sdWQCePo+z
-Xn/BLOvy8weUS2EUoyG7AKk=
-=KNkc
------END PGP SIGNATURE-----
+> even adding a "don't check" flag makes a lot of sense.
 
---=-19tc5Np9Tlb3uJm+SUPC--
+That's an idea I'll keep in mind, though I'm not convinced it'll help
+much (or that applications would actually use it).
 
+> The failure case for removing this feature is obscure and hard to debug
+> application hangs for the afflicted programs - not nice for users at all.
+
+Yeah.  I'd still be curious for any data about applications that
+actually rely on posix deadlock detection, though.
+
+--b.
