@@ -1,46 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbXJ3TV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbXJ3TVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbXJ3TV0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbXJ3TVR
+	id S1757631AbXJ3TVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXJ3TVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:17 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53722 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:24 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53814 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753664AbXJ3TVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:16 -0400
-Message-Id: <20071030192105.244901260@polymtl.ca>
+	id S1755987AbXJ3TVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:23 -0400
+Message-Id: <20071030192109.669372596@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:09 -0400
+Date: Tue, 30 Oct 2007 15:16:22 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 12/28] Add cmpxchg_local to h8300
-Content-Disposition: inline; filename=add-cmpxchg-local-to-h8300.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:05 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, wli@holomorphy.com,
+       sparclinux@vger.kernel.org
+Subject: [patch 25/28] Add cmpxchg_local to sparc, move __cmpxchg to system.h
+Content-Disposition: inline; filename=add-cmpxchg-local-to-sparc.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:10 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+Move cmpxchg and add cmpxchg_local to system.h.
+Use the new generic cmpxchg_local (disables interrupt).
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
+CC: wli@holomorphy.com
+CC: sparclinux@vger.kernel.org
 ---
- include/asm-h8300/system.h |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ include/asm-sparc/atomic.h |   36 ----------------------------------
+ include/asm-sparc/system.h |   47 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+), 36 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-h8300/system.h
+Index: linux-2.6-lttng/include/asm-sparc/atomic.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-h8300/system.h	2007-07-20 18:36:09.000000000 -0400
-+++ linux-2.6-lttng/include/asm-h8300/system.h	2007-07-20 19:27:23.000000000 -0400
-@@ -139,6 +139,21 @@ static inline unsigned long __xchg(unsig
-         asm("jmp @@0");			\
- })
+--- linux-2.6-lttng.orig/include/asm-sparc/atomic.h	2007-08-10 19:36:01.000000000 -0400
++++ linux-2.6-lttng/include/asm-sparc/atomic.h	2007-08-10 19:42:47.000000000 -0400
+@@ -17,42 +17,6 @@ typedef struct { volatile int counter; }
  
+ #ifdef __KERNEL__
+ 
+-/* Emulate cmpxchg() the same way we emulate atomics,
+- * by hashing the object address and indexing into an array
+- * of spinlocks to get a bit of performance...
+- *
+- * See arch/sparc/lib/atomic32.c for implementation.
+- *
+- * Cribbed from <asm-parisc/atomic.h>
+- */
+-#define __HAVE_ARCH_CMPXCHG	1
+-
+-/* bug catcher for when unsupported size is used - won't link */
+-extern void __cmpxchg_called_with_bad_pointer(void);
+-/* we only need to support cmpxchg of a u32 on sparc */
+-extern unsigned long __cmpxchg_u32(volatile u32 *m, u32 old, u32 new_);
+-
+-/* don't worry...optimizer will get rid of most of this */
+-static __inline__ unsigned long
+-__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new_, int size)
+-{
+-	switch(size) {
+-	case 4:
+-		return __cmpxchg_u32((u32 *)ptr, (u32)old, (u32)new_);
+-	default:
+-		__cmpxchg_called_with_bad_pointer();
+-		break;
+-	}
+-	return old;
+-}
+-
+-#define cmpxchg(ptr,o,n) ({						\
+-	__typeof__(*(ptr)) _o_ = (o);					\
+-	__typeof__(*(ptr)) _n_ = (n);					\
+-	(__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,	\
+-			(unsigned long)_n_, sizeof(*(ptr)));		\
+-})
+-
+ #define ATOMIC_INIT(i)  { (i) }
+ 
+ extern int __atomic_add_return(int, atomic_t *);
+Index: linux-2.6-lttng/include/asm-sparc/system.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-sparc/system.h	2007-08-10 19:43:08.000000000 -0400
++++ linux-2.6-lttng/include/asm-sparc/system.h	2007-08-10 19:43:42.000000000 -0400
+@@ -245,6 +245,53 @@ static __inline__ unsigned long __xchg(u
+ 	return x;
+ }
+ 
++/* Emulate cmpxchg() the same way we emulate atomics,
++ * by hashing the object address and indexing into an array
++ * of spinlocks to get a bit of performance...
++ *
++ * See arch/sparc/lib/atomic32.c for implementation.
++ *
++ * Cribbed from <asm-parisc/atomic.h>
++ */
++#define __HAVE_ARCH_CMPXCHG	1
++
++/* bug catcher for when unsupported size is used - won't link */
++extern void __cmpxchg_called_with_bad_pointer(void);
++/* we only need to support cmpxchg of a u32 on sparc */
++extern unsigned long __cmpxchg_u32(volatile u32 *m, u32 old, u32 new_);
++
++/* don't worry...optimizer will get rid of most of this */
++static __inline__ unsigned long
++__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new_, int size)
++{
++	switch(size) {
++	case 4:
++		return __cmpxchg_u32((u32 *)ptr, (u32)old, (u32)new_);
++	default:
++		__cmpxchg_called_with_bad_pointer();
++		break;
++	}
++	return old;
++}
++
++#define cmpxchg(ptr,o,n) ({						\
++	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _n_ = (n);					\
++	(__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,	\
++			(unsigned long)_n_, sizeof(*(ptr)));		\
++})
++
 +#include <asm-generic/cmpxchg-local.h>
 +
 +/*
@@ -52,13 +139,9 @@ Index: linux-2.6-lttng/include/asm-h8300/system.h
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
 +
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
-+
- #define arch_align_stack(x) (x)
+ extern void die_if_kernel(char *str, struct pt_regs *regs) __attribute__ ((noreturn));
  
- #endif /* _H8300_SYSTEM_H */
+ #endif /* __KERNEL__ */
 
 -- 
 Mathieu Desnoyers
