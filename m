@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbXJ3Rei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXJ3Rg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbXJ3Rei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXJ3Rea
+	id S1756922AbXJ3Rg6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXJ3Rgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:34:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54881 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752861AbXJ3Re3 (ORCPT
+	Tue, 30 Oct 2007 13:36:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51324 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbXJ3Rgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:34:29 -0400
-Date: Tue, 30 Oct 2007 10:33:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Peiffer <pierre.peiffer@bull.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.23-mm1] Change the ida/idr_pre_get() return value to
- follow the kernel convention
-Message-Id: <20071030103356.bf11d1a7.akpm@linux-foundation.org>
-In-Reply-To: <20071030171350.cd25b87c.pierre.peiffer@bull.net>
-References: <20071030171350.cd25b87c.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 30 Oct 2007 13:36:48 -0400
+Date: Tue, 30 Oct 2007 17:36:45 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: bo yang <bo.yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
+Subject: Re: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+Message-ID: <20071030173645.GA16455@infradead.org>
+References: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 17:13:50 +0100
-Pierre Peiffer <pierre.peiffer@bull.net> wrote:
+On Mon, Oct 01, 2007 at 11:46:51AM -0400, bo yang wrote:
+> +/*
+> + * Fast driver load option, skip scanning for physical devices during
+> + * load.  This would result in physical devices being skipped during
+> + * driver load time. These can be later added though,
+> + * using /proc/scsi/scsi
+> + */
 
-> 
-> ida_pre_get() and idr_pre_get() currently return 0 in case of error, and 1
-> in case of success, what is not the conventional way to handle error cases.
-> 
-> This patch makes both of them return 0 in case of success, and an errcode
-> otherwise, and then it changes each caller to let them return the error
-> reported instead of ENOMEM. This avoids to the callers to make any assumption
-> about the cause of the error.
-> 
+/proc/scsi/scsi is deprecated, so please don't recommend it here.
+The proper way is the scan attribute of the scsi host.
 
-If we're going to do this (and really we should), then we risk quietly
-breaking out-of-tree code and we risk breaking in-tree or
-soon-to-be-in-tree code which we didn't know about.
+> +static unsigned int fast_load;
+> +module_param_named(fast_load, fast_load, int, 0);
+> +MODULE_PARM_DESC(fast_load,
+> +	"megasas: Faster loading of the driver, skips physical devices! "\
+> +	"(default = 0)");
 
-So what we should do is to rename these functions when we change their
-interfaces.
+This should show up in sysfs.
 
-Happily, this means that we then don't need to remove the old functions -
-we can keep them there for a while as we transition everything over to the
-new functions.  It also means that we can sneak the new functions into the
-2.6.24 stream and then merge these changes via the relevant maintainers
-rather than needing a single atomic megapatch.
+> +static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+> +		if ((megasas_mgmt_info.instance[i]) &&
+> +			(megasas_mgmt_info.instance[i]->host->host_no
+> +			== host_no))
 
+no need for the braces here.  This should be:
 
-Although I'd much prefer just to remove the pathetic things - idr_pre_get()
-is a truly awful interface.
+		if (megasas_mgmt_info.instance[i] &&
+		    megasas_mgmt_info.instance[i]->host->host_no == host_no)
 
-It would be slightly better if it took an `id' argument and filled in the
-nodes at the appropriate position in the tree so that the caller is
-guaranteed that the subsequent idr_get_new() will succeed.  Because at
-present there is no guarantee that the nodes which you preallocated with
-idr_pre_get() are still available when you do your idr_get_new(): some
-other CPU/task might have come in and used them all.
+> +static int megasas_slave_alloc(struct scsi_device *sdev)
+> +{
+> +	struct megasas_instance *instance;
+> +	int tmp_fastload = fast_load;
+> +
+> +	instance = megasas_lookup_instance(sdev->host->host_no);
+> +
+> +	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
+> +		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
+> +			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
+> +
+> +		/*
+> +		 * If fast load option was set and scan for last device is
+> +		 * over, reset the fast_load flag so that during a possible
+> +		 * next scan, devices can be made available
+> +		 */
+> +			fast_load = 0;
+> +		}
+> +		return -ENXIO;
+> +	}
+> +
+> +	return 0;
+> +}
 
-Storage classes which need to allcoate memory at insertion time are hard:
-radix_tree_preload() gets it right in terms of robustness, but it's an
-awful lot of fuss.
+This is a rather complicated and fragile way to implement this feature.
 
-IDR gets it all wrong and compounds the problem by implementing internal
-locking.  It shouldn't have done that: storage code like this should use
-only caller-provided locking.
+I'd recomment to change the call to scsi_scan_host in megasas_io_attach
+to something like:
+
+	if (fast_load) {
+		int channel;
+
+		for (channel = 0; channel < MEGASAS_MAX_PD_CHANNELS;
+		     channel++) {
+			scsi_scan_host_selected(host, channel, SCAN_WILD_CARD,
+						SCAN_WILD_CARD, 0);
+		}
+	} else {
+		scsi_scan_host(host);
+	}
 
