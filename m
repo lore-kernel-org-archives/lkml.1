@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbXJ3XvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbXJ3Xvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbXJ3XvE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXJ3Xum
+	id S1758859AbXJ3Xvc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbXJ3Xuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:50:42 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35813 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758111AbXJ3Xul (ORCPT
+	Tue, 30 Oct 2007 19:50:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:3423 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758551AbXJ3Xuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:50:41 -0400
-Date: Wed, 31 Oct 2007 00:50:39 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: tglx@linutronix.de, mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper show_interrupts() prototype
-Message-ID: <20071030235039.GU7227@stusta.de>
+	Tue, 30 Oct 2007 19:50:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KO26pLzVJZhvrQTLitbxVzsHQgv66Zz3m/VA5zhODVOjVFqFojz3yyK3/g5tXk1hkbseh9XDpVY06AQD+fDqrhr900+PgrSCiVDq+y6IOWOKgAqxk/BHLm3qbFpIw3nxugD2g6e+duVcrD6+MG7dGE/NCvnHoao5oTxJmrBBzXw=
+Message-ID: <8bd0f97a0710301650i4d71c358y1a35335d965d7e53@mail.gmail.com>
+Date: Tue, 30 Oct 2007 19:50:51 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Kirill A. Shutemov" <k.shutemov@gmail.com>
+Subject: Re: [PATCH 4/4] Cleanup asm/{elf,page,user}.h: #ifdef __KERNEL__ is no longer needed
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1193742139-29738-5-git-send-email-k.shutemov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1193742139-29738-1-git-send-email-k.shutemov@gmail.com>
+	 <1193742139-29738-5-git-send-email-k.shutemov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper prototype for show_interrupts() in 
-include/linux/interrupt.h
+On 10/30/07, Kirill A. Shutemov <k.shutemov@gmail.com> wrote:
+> asm/elf.h, asm/page.h and asm/user.h don't export to userspace now
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+as long as this is true ...
 
----
+> we can drop #ifdef __KERNEL__ for them.
 
- arch/h8300/kernel/irq.c   |    1 +
- fs/proc/proc_misc.c       |    2 +-
- include/linux/interrupt.h |    2 ++
- 3 files changed, 4 insertions(+), 1 deletion(-)
-
-3884100dff673abe8667f2e53586ecd705e7af24 
-diff --git a/arch/h8300/kernel/irq.c b/arch/h8300/kernel/irq.c
-index 8dec4dd..5a1b4cf 100644
---- a/arch/h8300/kernel/irq.c
-+++ b/arch/h8300/kernel/irq.c
-@@ -14,6 +14,7 @@
- #include <linux/random.h>
- #include <linux/bootmem.h>
- #include <linux/irq.h>
-+#include <linux/interrupt.h>
- 
- #include <asm/system.h>
- #include <asm/traps.h>
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index e0d064e..6357ac2 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -46,6 +46,7 @@
- #include <linux/vmalloc.h>
- #include <linux/crash_dump.h>
- #include <linux/pid_namespace.h>
-+#include <linux/interrupt.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/io.h>
-@@ -598,7 +599,6 @@ static void int_seq_stop(struct seq_file *f, void *v)
- }
- 
- 
--extern int show_interrupts(struct seq_file *f, void *v); /* In arch code */
- static struct seq_operations int_seq_ops = {
- 	.start = int_seq_start,
- 	.next  = int_seq_next,
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 2306920..e194afc 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -443,4 +443,6 @@ static inline void init_irq_proc(void)
- }
- #endif
- 
-+int show_interrupts(struct seq_file *p, void *v);
-+
- #endif
-
+... this sounds great ... thanks (for Blackfin bits) :)
+-mike
