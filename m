@@ -1,51 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbXJ3SOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXJ3SZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbXJ3SOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXJ3SOb
+	id S1754576AbXJ3SZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXJ3SZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:14:31 -0400
-Received: from sandeen.net ([209.173.210.139]:27364 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbXJ3SOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:14:30 -0400
-Message-ID: <47277485.5090500@sandeen.net>
-Date: Tue, 30 Oct 2007 13:14:29 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       byron.bbradley@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: XFS Fails Quality Assurance Tests on ARM
-References: <fb80ve$i5q$1@sea.gmane.org> <20070830.213901.48806818.davem@davemloft.net> <p73ps12vxrl.fsf@bingen.suse.de> <4726C577.9000209@sandeen.net> <20071030175418.GA17768@infradead.org>
-In-Reply-To: <20071030175418.GA17768@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Oct 2007 14:25:48 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:57480 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753289AbXJ3SZr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 14:25:47 -0400
+Subject: Re: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <47261F50.3050901@s5r6.in-berlin.de>
+References: <1193671019.3383.13.camel@localhost.localdomain>
+	 <1193676852.2655.21.camel@lov.site>
+	 <1193677071.3383.56.camel@localhost.localdomain>
+	 <47261F50.3050901@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 13:25:43 -0500
+Message-Id: <1193768743.3321.91.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Tue, Oct 30, 2007 at 12:47:35AM -0500, Eric Sandeen wrote:
->> There was a patch floating around to "fix" it but it's not on-disk
->> compatible w/ x86 & friends, it just makes things consistent for arm.  I
->> think packing some of these structures would take care of it, but this
->> problem could use some attention & testing I think, it's been floating
->> around a long time.
+On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
+> James Bottomley wrote:
+> >> >  struct attribute_group {
+> >> >  	const char		*name;
+> >> > +	int			(*filter_show)(struct kobject *, int);
 > 
-> Do you have a pointer to that patch?  Once the unaliged fields are
-> identified simply using get_unaligned on them should fix this issue.
+> > Actually, it returns a true/false value indicating whether the given
+> > attribute should be displayed.
 > 
+> How about this:
+> 
+> 	int (*is_visible)(...);
 
-http://www.spinics.net/lists/arm-kernel/msg18479.html
+OK, so is this latest revision acceptable to everyone?
 
-is the one I was thinking of, IIRC, but it just does the math a
-different way so that it comes out right on ARM, and doesn't fix the
-underlying problem.  I think the end result is no crashes, but a
-filesystem which is broken when used on another arch.
+James
 
-But the problem AFAIK is that the *on-disk* structures don't match when
-compiled with one ARM abi or another, I think, so get_unaligned isn't
-going to help here.
+Index: BUILD-2.6/fs/sysfs/group.c
+===================================================================
+--- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
++++ BUILD-2.6/fs/sysfs/group.c	2007-10-30 12:35:47.000000000 -0500
+@@ -16,25 +16,31 @@
+ #include "sysfs.h"
+ 
+ 
+-static void remove_files(struct sysfs_dirent *dir_sd,
++static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			 const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
++	int i;
+ 
+-	for (attr = grp->attrs; *attr; attr++)
+-		sysfs_hash_and_remove(dir_sd, (*attr)->name);
++	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
++		if (grp->is_visible &&
++		    grp->is_visible(kobj, *attr, i))
++			sysfs_hash_and_remove(dir_sd, (*attr)->name);
+ }
+ 
+-static int create_files(struct sysfs_dirent *dir_sd,
++static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
+-	int error = 0;
++	int error = 0, i;
+ 
+-	for (attr = grp->attrs; *attr && !error; attr++)
+-		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
++	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
++		if (grp->is_visible &&
++		    grp->is_visible(kobj, *attr, i))
++			error |=
++				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
+ 	if (error)
+-		remove_files(dir_sd, grp);
++		remove_files(dir_sd, kobj, grp);
+ 	return error;
+ }
+ 
+@@ -54,7 +60,7 @@ int sysfs_create_group(struct kobject * 
+ 	} else
+ 		sd = kobj->sd;
+ 	sysfs_get(sd);
+-	error = create_files(sd, grp);
++	error = create_files(sd, kobj, grp);
+ 	if (error) {
+ 		if (grp->name)
+ 			sysfs_remove_subdir(sd);
+@@ -75,7 +81,7 @@ void sysfs_remove_group(struct kobject *
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
+-	remove_files(sd, grp);
++	remove_files(sd, kobj, grp);
+ 	if (grp->name)
+ 		sysfs_remove_subdir(sd);
+ 
+Index: BUILD-2.6/include/linux/sysfs.h
+===================================================================
+--- BUILD-2.6.orig/include/linux/sysfs.h	2007-10-28 17:20:06.000000000 -0500
++++ BUILD-2.6/include/linux/sysfs.h	2007-10-30 13:24:06.000000000 -0500
+@@ -32,6 +32,8 @@ struct attribute {
+ 
+ struct attribute_group {
+ 	const char		*name;
++	int			(*is_visible)(struct kobject *,
++					      struct attribute *, int);
+ 	struct attribute	**attrs;
+ };
+ 
+Index: BUILD-2.6/kernel/params.c
+===================================================================
+--- BUILD-2.6.orig/kernel/params.c	2007-10-29 01:18:43.000000000 -0500
++++ BUILD-2.6/kernel/params.c	2007-10-29 01:18:49.000000000 -0500
+@@ -472,7 +472,7 @@ param_sysfs_setup(struct module_kobject 
+ 			sizeof(mp->grp.attrs[0]));
+ 	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
+ 
+-	mp = kmalloc(size[0] + size[1], GFP_KERNEL);
++	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
+ 	if (!mp)
+ 		return ERR_PTR(-ENOMEM);
+ 
 
--Eric
+
