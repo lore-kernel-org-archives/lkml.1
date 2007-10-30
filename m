@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbXJ3X4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbXJ3X6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbXJ3X4d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJ3X4Z
+	id S1758910AbXJ3X6F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXJ3X5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:56:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60232 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbXJ3X4Y (ORCPT
+	Tue, 30 Oct 2007 19:57:54 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:52957 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbXJ3X5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:56:24 -0400
-Date: Tue, 30 Oct 2007 16:52:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-Message-ID: <20071030165202.14651248@laptopd505.fenrus.org>
-In-Reply-To: <4727C126.8070000@shaw.ca>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
-	<200710251622.36773.jbarnes@virtuousgeek.org>
-	<20071026025407.GA21408@kroah.com>
-	<200710260959.46811.jbarnes@virtuousgeek.org>
-	<20071027024140.GC29039@kroah.com>
-	<47267232.3020506@shaw.ca>
-	<alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
-	<20071030094756.779ac5c0@laptopd505.fenrus.org>
-	<alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
-	<4727C126.8070000@shaw.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 30 Oct 2007 19:57:53 -0400
+Date: Tue, 30 Oct 2007 17:59:52 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv and dynamically changing DMA mask?
+In-reply-to: <20071030100542.3efe01ee@the-village.bc.nu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>
+Message-id: <4727C578.80900@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <4726B064.3000906@shaw.ca>
+ <20071030100542.3efe01ee@the-village.bc.nu>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 17:41:26 -0600
-Robert Hancock <hancockr@shaw.ca> wrote:
-> > I could easily see device driver writers probing to see if
-> > something works, and I absolutely don't think we should just
-> > automatically enable MMCONFIG from then on.
+Alan Cox wrote:
+> On Mon, 29 Oct 2007 22:17:40 -0600
+> Robert Hancock <hancockr@shaw.ca> wrote:
 > 
-> Why per device? It's not like the MSI case where both the platform
-> and the device are potentially busted. Whether or not MMCONFIG works
-> has nothing to do with the device, all that matters is whether it
-> works on the platform. It shouldn't be the driver's responsibility to
-> know this.
+>> In the sata_nv driver, when running in ADMA mode, we can do 64-bit DMA. 
+>> However, when an ATAPI device like a DVD drive is connected, we can't 
+>> use ADMA mode, and so we have to abide by the restrictions of a normal 
+>> SFF ATA controller and can only do 32-bit DMA. We detect this and try to 
+>> set the blk_queue_bounce_limit, blk_queue_segment_boundary and 
+>> blk_queue_max_hw_segments to the values corresponding to a normal SFF 
+>> controller.
+> 
+> What about the DMA padding buffer from nv_adma_port_start and internal
+> buffers for commands like request sense that don't come via the request
+> queue directly.
 
-it's per device so that if you have have no users for this stuff,
-you'll never ever get bitten by bugs (be it linux or the bios).
-It's just avoiding the problem for a large class of cases... doesn't
-mean it's solved for the other class, just in practice it turns it into
-a much smaller problem.
+Indeed we do call ata_port_start from nv_adma_port_start, which calls 
+dmam_alloc_coherent to allocate the SFF PRD table. Since the DMA mask is 
+64-bit, this could indeed be allocated above 4GB which would be bad.
+
+I suppose what we could do is just not call ata_port_start there, but 
+move it into nv_adma_slave_config and call it when going into non-ADMA 
+mode. We'd have to drop the DMA mask down to 32-bit first as well as 
+setting blk_queue_bounce_limit though, which is one of my questions, is 
+this OK to do?
+
+> Also it seems nv_adma_use_reg_mode() can decide to send other commands
+> via the non ADMA interface even for ATA devices. Are we 100% certain it
+> never decides to let through a command with DMA via the register
+> interface in this case - what do you see if you instrument the function ?
+
+The only cases where that could happen are for polling DMA commands 
+(which I presume we never do) or where result taskfile is requested. The 
+latter could be a problem for ATA passthrough commands using DMA, I 
+suppose.. Question is what we can do about it.. We have to switch out of 
+ADMA mode to read a result taskfile. I guess that's not really a problem 
+unless somebody starts issuing NCQ commands via ATA pass-through. Do we 
+allow that?
