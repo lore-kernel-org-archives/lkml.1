@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXJ3MyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXJ3M57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752249AbXJ3MyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbXJ3MyQ
+	id S1754132AbXJ3M57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXJ3M5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:54:16 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:57930 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbXJ3MyP (ORCPT
+	Tue, 30 Oct 2007 08:57:52 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:4125 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbXJ3M5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:54:15 -0400
-Date: Tue, 30 Oct 2007 12:39:20 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Stefani Seibold <stefani@seibold.net>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-In-Reply-To: <1193741356.13775.2.camel@matrix>
-Message-ID: <Pine.LNX.4.64.0710301232220.9601@blonde.wat.veritas.com>
-References: <1193064057.16541.1.camel@matrix>  <20071029004002.60c7182a.akpm@linux-foundation.org>
-  <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com> 
- <1193677302.27652.56.camel@twins>  <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
-  <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy> 
- <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com> 
- <1193738177.27652.69.camel@twins> <1193741356.13775.2.camel@matrix>
+	Tue, 30 Oct 2007 08:57:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QCZ0K7HP+NfKceFzaK+AeO8mTTENWWOeaiQamwLUlUXJXDz8ZlQnhZ3b4yWU2lmnfOwH9qF/2jwkJ9uZtmDH2kAIM9nJPBINwMJ3RUAP4rg3ebr1X+OVDBORuvj/GMuGWXNx8bUvtNfIs1jOjzL8+gLjjLPnxrywzg0zQFvdhfM=
+Message-ID: <b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
+Date: Tue, 30 Oct 2007 21:57:50 +0900
+From: "Suzuki Takashi" <suzuki.takashi@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux kernel [try #2]
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007, Stefani Seibold wrote:
-> 
-> the question is how can i get all pte's from a vmalloc'ed memory. Due to
-> the zeroed mapping pointer i dont see how to do this?
+On 10/29/07, David Howells <dhowells@redhat.com> wrote:
+> The second patch adds the architecture itself, to be selected by ARCH=mn10300
+> on the make command line.
 
-The mapping pointer is zeroed because you've done nothing to set it.
-Below is how I answered you a week ago.  But this is new territory
-(extending page_mkclean to work on more than just pagecache pages),
-I'm still unsure what would be the safest way to do it.
+Why don't you use `am33' for the arch name?
+Do you have any plans to support am30 (mn10300) or any pre-am33 processor cores?
 
-On Mon, 22 Oct 2007, Stefani Seibold wrote:
-> 
-> i have a problem with vmalloc() and vm_ops.page_mkwrite().
-> 
-> ReadOnly access works, but on a write access the VM will
-> endless invoke the vm_ops.page_mkwrite() handler.
-> 
-> I tracked down the problem to the
-> 	struct page.mapping pointer,
-> which is NULL.
-> 
-> The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
-> This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
-> which will be in an extra thread handled, to perform the IO and clean and
-> write protect all pages with page_clean().
+I know the mn10300-* target configurations are also available for toolchains,
+but it is for historical reasons.
+Even the GNUPro packages have the release name am33-04r2-5 instead of mn10300-*.
 
-Interesting.  You need to ask Jaya (CC'ed) since he's the one
-who put that code into fb_defio.c, exported page_mkclean, and
-should have tested it.
+The same arch name would be better for the same architecture
+among the toolchains, the kernel and the library, not to confuse contributors.
+GNU libc has used am33 for the machine name since the architecture was
+supported.
 
-> 
-> I am not sure if the is a feature of the new rmap code or a bug.
 
-page_mkclean was written in the belief that it was being used on
-pagecache pages.  I'm not sure how deeply engrained that belief is.
-
-If it can easily and safely be used on something else, that may be
-nice: though there's a danger we'll keep breaking and re-breaking
-it if there's only one driver using it in an unusual way.  CC'ed
-Peter since he's the one who most needs to be aware of this.
-
-> 
-> Is there an way to get a similar functionality? Currently, i have no
-> idea
-> how to get the ptep from a page alloced with vmalloc().
-
-A pagecache page would have page->mapping initialized to point to
-the struct address_space of the vma, and page->index to the offset
-(in PAGE_SIZE units): see mm/filemap.c:add_to_page_cache.  Without
-page->mapping set, page_mkclean_file won't be able to find the vmas
-in which the page might appear; and without page->index set, it
-won't be able to find where the page should be in those vmas.
-
-If such a driver does not put its pages into the page cache (the
-safer course? I'm unsure), then it needs to set page->mapping and
-page->index appropriately (and reset page->mapping to NULL before
-freeing).
-
-Hugh
+-- 
+Suzuki Takashi
+Japan
