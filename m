@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbXJ3WpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbXJ3WqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbXJ3WpU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbXJ3WpI
+	id S1757969AbXJ3WqL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXJ3Wpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:45:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40302
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752746AbXJ3WpH (ORCPT
+	Tue, 30 Oct 2007 18:45:55 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:37182 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbXJ3Wpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:45:07 -0400
-Date: Tue, 30 Oct 2007 15:44:51 -0700 (PDT)
-Message-Id: <20071030.154451.128207404.davem@davemloft.net>
-To: jbarnes@virtuousgeek.org
-Cc: torvalds@linux-foundation.org, arjan@infradead.org, hancockr@shaw.ca,
-       greg@kroah.com, akpm@linux-foundation.org, ak@suse.de,
-       rajesh.shah@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200710301531.58957.jbarnes@virtuousgeek.org>
-References: <200710301504.36972.jbarnes@virtuousgeek.org>
-	<alpine.LFD.0.999.0710301518570.30120@woody.linux-foundation.org>
-	<200710301531.58957.jbarnes@virtuousgeek.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 18:45:53 -0400
+From: Junio C Hamano <junio@pobox.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [git patches] libata fixes
+References: <20071030184502.GA27246@havoc.gtf.org>
+	<alpine.LFD.0.999.0710301151000.30120@woody.linux-foundation.org>
+	<47278206.2080601@garzik.org>
+	<alpine.LFD.0.999.0710301225370.30120@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0710302045310.31325@fbirervta.pbzchgretzou.qr>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Mikael Pettersson <mikpe@it.uu.se>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Tue, 30 Oct 2007 15:45:42 -0700
+In-Reply-To: <Pine.LNX.4.64.0710302045310.31325@fbirervta.pbzchgretzou.qr>
+	(Jan Engelhardt's message of "Tue, 30 Oct 2007 20:46:25 +0100 (CET)")
+Message-ID: <7v1wbckyqx.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Tue, 30 Oct 2007 15:31:57 -0700
+Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-> I don't disagree there.  I'm just saying the actual mechanism is fine 
-> (as illustrated by the numerous non-PC ports of Linux), and this 
-> particular problem, at least, isn't really specific to how MMCONFIG is 
-> described or configured by the firmware and OS, it's simply a Linux 
-> problem.
+> On Oct 30 2007 12:31, Linus Torvalds wrote:
+>>On Tue, 30 Oct 2007, Jeff Garzik wrote:
+>>> 
+>>> Can we change git-am to accept two dashes as well as three?  :)
+>>
+>>Well, git-am actually used to be a lot less strict about the dashes, and 
+>>we've made it *more* strict rather than less, because the more of these 
+>>breaks we accept, the more likely it is that something that was intended 
+>>to be part of the message gets thrown out.. So I'll say that I'm a bit 
+>>nervous about extending it again.
+>
+> I would not add --. It is already used ("-- " is) in the mail world as a
+> signature separator. Let's stay with ---, which is also what quilt generates.
 
-I totally disagree, it is not a Linux problem.
+Thanks for the input about what quilt does.
 
-The non-PC ports don't have this issue because the PCI config space
-MMIO area of the PCI controller does not overlap PCI MMIO space at
-all.  So the problem simply cannot happen.
-
-They choose to put this MMCONFIG in an area overlapping with PCI MMIO
-space, which breaks both existing practice and code.
+So the way to proceed is to have no change to mailinfo, and have
+a bit of user education.
