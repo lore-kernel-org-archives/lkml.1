@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXJ3LzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbXJ3L7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbXJ3LzS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 07:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXJ3LzG
+	id S1754593AbXJ3L7G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 07:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXJ3L6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 07:55:06 -0400
-Received: from iucha.net ([209.98.146.184]:46549 "EHLO mail.iucha.net"
+	Tue, 30 Oct 2007 07:58:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57595 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbXJ3LzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 07:55:05 -0400
-Date: Tue, 30 Oct 2007 06:55:04 -0500
-From: Florin Iucha <florin@iucha.net>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
-Message-ID: <20071030115504.GM25561@iucha.net>
-References: <20071028152428.GJ7918@iucha.net> <E1ImlvH-0003YH-Qf@localhost> <20071030114250.GL25561@iucha.net> <E1ImpbK-0000l3-1u@localhost>
+	id S1751770AbXJ3L6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 07:58:54 -0400
+Message-ID: <47271CAE.8000907@redhat.com>
+Date: Tue, 30 Oct 2007 09:59:42 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mI5TpPl/qDRoXxBg"
-Content-Disposition: inline
-In-Reply-To: <E1ImpbK-0000l3-1u@localhost>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Zachary Amsden <zach@vmware.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rusty@rustcorp.com.au, jeremy@goop.org,
+       --cc@redhat.com, avi@quramnet.com, kvm-devel@lists.sourceforge.net,
+       Glauber de Oliveira Costa <glauber@t60.localdomain>,
+       Dan Hecht <dhecht@vmware.com>, Garrett Smith <garrett@vmware.com>
+Subject: Re: [PATCH] raise tsc clocksource rating
+References: <11936994092607-git-send-email-gcosta@redhat.com>	 <1193697734.9793.86.camel@bodhitayantram.eng.vmware.com>	 <20071029224852.GA27547@elte.hu> <1193698505.9793.90.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1193698505.9793.90.camel@bodhitayantram.eng.vmware.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---mI5TpPl/qDRoXxBg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Oct 30, 2007 at 07:49:41PM +0800, Fengguang Wu wrote:
-> On Tue, Oct 30, 2007 at 06:42:50AM -0500, Florin Iucha wrote:
-> > On Tue, Oct 30, 2007 at 03:54:03PM +0800, Fengguang Wu wrote:
-> > > It could be triggered by the more aggressive writeback behavior - the
-> > > new code will keep on retrying as long as there are dirty inodes pend=
-ing.
-> > >=20
-> > > Florin, would you try the attached patches against 2.6.24-git?
-> > > They may generate big traffic of printk messages, but will help
-> > > debug the problem.
-> >=20
-> > I have updated to v2.6.24-rc1-334-g82798a1.  After using my computer
-> > for two hours, I left the computer idle overnight.  This morning,
-> > pdflushd is again consuming 25% of a CPU.  I will try Fengguang's
-> > patches today.
->=20
-> Thank you.
->=20
-> Be sure to stop klogd ;-)
-> A `dmesg` will be sufficient for debugging.
->=20
-> btw, I cannot reproduce it with simple NFSv3 tests.
-
-This is using nfsv4.  And being idle in a GNOME session with home
-mounted from the server is hardly a stressful experience.  But what do
-I know ;)
-
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---mI5TpPl/qDRoXxBg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
+Zachary Amsden escreveu:
+> On Mon, 2007-10-29 at 23:48 +0100, Ingo Molnar wrote:
+>> * Zachary Amsden <zach@vmware.com> wrote:
+> 
+>> if it's inaccurate why are you exposing it to the guest then? Native 
+>> only uses the TSC if it's safe and accurate to do so.
+> 
+> Not every guest support paravirt, but for correctness, all guests
+> require TSC, which must be exposed all the way up to userspace, no
+> matter what the efficiency or accuracy may be.
+> 
+> Zach
+> 
+However, with such accuracy, it will fail the tsc clocksources tests. If
+it passes, it'a good clocksource to use.
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-iD8DBQFHJxuYND0rFCN2b1sRAsAHAKCoBRaszdsixwkNlN6h6e5ZumhLdACgoAIF
-ymxE2K6cVSN3UcjHqJvTIiY=
-=WEt4
+iD8DBQFHJxyujYI8LaFUWXMRAhI5AKCDl/O7iA3TdtpvElVg8NoSDVfKpgCeNvz3
+ZEZDMxg8T7FA2R+5cgH/uKI=
+=8qSH
 -----END PGP SIGNATURE-----
-
---mI5TpPl/qDRoXxBg--
