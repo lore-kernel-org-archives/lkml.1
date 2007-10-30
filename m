@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbXJ3WvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXJ3WyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbXJ3WvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXJ3WvL
+	id S1757452AbXJ3WyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXJ3WyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:51:11 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:14710 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754553AbXJ3WvK (ORCPT
+	Tue, 30 Oct 2007 18:54:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5383 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbXJ3WyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:51:10 -0400
-X-IronPort-AV: E=Sophos;i="4.21,349,1188802800"; 
-   d="scan'208";a="244676469"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Shawn Jin <shawnxjin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Multiple MSI messages support
-X-Message-Flag: Warning: May contain useful information
-References: <c3d0340b0710301413r2607ee08x8b27c5bffa43f1c4@mail.gmail.com>
-	<4727AED2.6010908@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 30 Oct 2007 15:51:08 -0700
-In-Reply-To: <4727AED2.6010908@garzik.org> (Jeff Garzik's message of "Tue, 30 Oct 2007 18:23:14 -0400")
-Message-ID: <adaejfci5cz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Tue, 30 Oct 2007 18:54:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=kM/qQJfPckcWTN8zRf0sarHB8tF8lzvVhWYb210lyMsVTO7vugfCfrSxmKBF9rySM
+	xPIzzojDDwLBLaWy8PUoQ==
+Date: Tue, 30 Oct 2007 15:53:47 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+In-Reply-To: <20071029002602.34866d8c.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0710301548350.15640@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com> <1193433239.5032.95.camel@localhost> <alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com> <1193434278.5032.106.camel@localhost> <alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+ <20071026180713.aeedfac2.pj@sgi.com> <Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com> <20071026194144.6042316a.pj@sgi.com> <alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com> <20071027161955.e9d4d2db.pj@sgi.com>
+ <alpine.DEB.0.9999.0710272231170.23796@chino.kir.corp.google.com> <20071028164637.8d1b45b0.pj@sgi.com> <alpine.DEB.0.9999.0710281742090.26837@chino.kir.corp.google.com> <20071028212745.57a7db67.pj@sgi.com> <alpine.DEB.0.9999.0710282130320.32474@chino.kir.corp.google.com>
+ <20071028224533.df924291.pj@sgi.com> <alpine.DEB.0.9999.0710282352270.23978@chino.kir.corp.google.com> <20071029002602.34866d8c.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Oct 2007 22:51:08.0672 (UTC) FILETIME=[5C63A000:01C81B47]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > If this is really off-topic here, I apologize first. But I cannot
- > > think a better place to ask this particular question.
- > > I understand that the current PCI subsystem or linux kernel (x86)
- > > supports only one message when MSI is enabled even for devices having
- > > multiple MSI messages. But why? Is this a limitation solely due to the
- > > OS or due to the x86 APIC?
- > > I know the current linux kernel (2.6.23) changed MSI message data
- > > format a little bit to support other architectures. But some older
- > > version (e.g. 2.6.18) defined a specific format for the MSI msg data
- > > in a way that 8 bits contain the irq number and the other 8 bits have
- > > the interrupt attributes, which is x86 specific. Why does the msg data
- > > need to contain the irq number? Here is my hypothetic explanation. The
- > > device writes the MSI msg data to the specified MSI msg address. And
- > > APIC uses the irq number in the msg data to generate appropriate
- > > interrupt, which of course results in an appropriate ISR invoked. A
- > > device having multiple MSI messages typically appends some information
- > > of which MSI message to the msg data field. For example, if the system
- > > (or OS) configures the MSI msg data as 0x5000, a device having 4 MSI
- > > messages could write 0x5000, 0x5001, 0x5002, 0x5003 to differentiate
- > > the MSI messages. However this cannot work with the APIC due to the
- > > way how APIC asserts interrupts as I described above (if my
- > > understanding is correct).
- > > Hence my answer to the question is this is due to the x86 APIC. For
- > > other architectures such as powerpc this is probably not a problem
- > > since the interrupt controller is different. Am I correct?
+On Mon, 29 Oct 2007, Paul Jackson wrote:
 
- > IMO it's more like there has never been enough need for anybody to
- > look into it, I bet...
+> >     Policies such as MPOL_INTERLEAVE always get AND'd with
+> >     pol->cpuset_mems_allowed.
+> 
+> Not AND'd - Folded, as in bitmap_remap().
+> 
+> >     If that yields numa_no_nodes, MPOL_DEFAULT is used instead.
+> 
+> Not an issue with Folding.
+> 
+> >     Policies such as MPOL_PREFERRED are respected if the node
+> >     is set in pol->cpuset_mems_allowed, otherwise MPOL_DEFAULT
+> >     is used.
+> 
+> Not an issue with Folding.
+> 
+> >     If an application attempts to setup a memory policy for
+> >     an MPOL_PREFERRED node that it doesn't have access to or
+> >     an MPOL_INTERLEAVE nodemask that is empty when AND'd with
+> >     pol->cpuset_mems_allowed, -EINVAL is returned and no new
+> >     policy is effected.
+> 
+> Not issues with Folding.
+> 
+> >     If an application gains nodes in pol->cpuset_mems_allowed that
+> >     now include the nodes from MPOL_INTERLEAVE or MPOL_PREFERRED,
+> >     that policy is then effected once again.  Otherwise,
+> >     MPOL_DEFAULT is still used.
+> 
+> Not issues with Folding.
+> 
+> With folding, an application that layed out an elaborate memory
+> policy configuration covering say 16 nodes can run in a 4 node
+> cpuset, where whatever would have been on node N gets folded down
+> to node N % 4.
+> 
 
-Actually the original poster's explanation is pretty accurate.  MSI
-imposes a restriction on how a device generates multiple messages,
-since there is only one message data register and the rest of the
-messages must be based on that in a simple way.  And the format of
-"Intel-style" APIC MSI messages does not match up with the way the PCI
-spec generates multiple messages.
+Missing the point; this is an alternative to the previous choices; Choice 
+C explicitly removes all remaps ("folding") from mempolicies.  The 
+nodemask passed to set_mempolicy() will always have exactly one meaning: 
+the system nodes that the policy is intended for.
 
-In fact at least IBM pSeries boxes seem to be able to use MSI to
-generate multiple interrupts from the same device -- BenH can probably
-give details.
+Cpusets, which are built upon mempolicies, can obviously take access to 
+some of those nodes away.  That's why the existing mempolicies are AND'd 
+with the cpuset's mems_allowed to represent the current nodemask that the 
+mempolicy is effecting.  If none of them are available because of cpusets, 
+the mempolicy is invalidated and MPOL_DEFAULT is used.  If access to some 
+nodes from the mempolicy's nodemask become available once again, the 
+policy is again effected.
 
-Multiple interrupt messages are supported by Linux via MSI-X (which
-allows each message to have completely different data).
+I'm arguing that remapping a policy's nodemask, although that is what 
+currently is done, is troublesome because it can use a policy such as 
+MPOL_PREFERRED to work on a node for which it was never intended.
 
- > The way drivers are written, you are typically must touch a few key
- > hardware registers _anyway_, so the multiple messages in practice are
- > not much more useful than the simple fact that your MSI irq handler
- > function was called (with all that indicates and implies).
-
-For high-performance devices this is not really true.  The InfiniBand
-mthca driver can use MSI to get a single interrupt, or MSI-X to get
-different interrupts for different types of events.  MSI-X allows the
-read of the "interrupt cause register" to be avoided, and this ends up
-making a measurable performance difference for the fast path.
-
-Also, obviously, having multiple interrupts means you can bind
-different interrupts to different CPUs, which will become very
-important if/when things like multi-queue NICs are supported.
-
- - R.
+		David
