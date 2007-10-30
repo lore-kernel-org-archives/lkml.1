@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbXJ3KcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXJ3Kg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbXJ3KcM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 06:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXJ3Kb7
+	id S1754016AbXJ3Kg5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 06:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXJ3Kgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 06:31:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50941 "EHLO mail.dvmed.net"
+	Tue, 30 Oct 2007 06:36:50 -0400
+Received: from kassel160.server4you.de ([62.75.246.160]:57305 "EHLO csgraf.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752017AbXJ3Kb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 06:31:58 -0400
-Message-ID: <4727081B.7020508@garzik.org>
-Date: Tue, 30 Oct 2007 06:31:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com
-CC: akpm@linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [PATCH 3/12] ACPI sbs: fix retval warning
-References: <tueoct232007613pm.likjasfdlkjdas987@havoc.gtf.org> <20071023223636.D6D6B1F81A2@havoc.gtf.org>
-In-Reply-To: <20071023223636.D6D6B1F81A2@havoc.gtf.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1752135AbXJ3Kgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 06:36:49 -0400
+X-Greylist: delayed 2042 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Oct 2007 06:36:49 EDT
+In-Reply-To: <4726FE2A.1040607@siemens.com>
+References: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>	<4726B088.1010709@qumranet.com> <4726DF66.4000000@osadl.org> <4726FE2A.1040607@siemens.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <ED9A6D69-650B-47D3-A305-91D947925F5F@csgraf.de>
+Cc: kvm-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Carsten Emde <Carsten.Emde@osadl.org>
+Content-Transfer-Encoding: 7bit
+From: Alexander Graf <alex@csgraf.de>
+Subject: Re: [kvm-devel] 2.6.23.1-rt4 and kvm 48
+Date: Tue, 30 Oct 2007 11:02:43 +0100
+To: Jan Kiszka <jan.kiszka@siemens.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> drivers/acpi/sbs.c: In function ‘acpi_battery_add’:
-> drivers/acpi/sbs.c:811: warning: ignoring return value of ‘device_create_file’, declared with attribute warn_unused_result
-> 
-> Additional cleanups:
-> * use struct acpi_battery in acpi_battery_remove() to clean up function
-> calls, just like acpi_battery_add() already does.
-> 
-> * un-indent unregister call, as it mistakenly gives the impression that
-> it belongs inside the 'if' test
-> 
-> * remove unneeded braces
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
-> 
-> diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
-> index 90fd09c..c5c011b 100644
-> --- a/drivers/acpi/sbs.c
-> +++ b/drivers/acpi/sbs.c
-> @@ -113,6 +113,7 @@ struct acpi_battery {
->  	u16 spec;
->  	u8 id;
->  	u8 present:1;
-> +	u8 have_sysfs:1;
->  };
->  
->  #define to_acpi_battery(x) container_of(x, struct acpi_battery, bat);
-> @@ -808,7 +809,8 @@ static int acpi_battery_add(struct acpi_sbs *sbs, int id)
->  	}
->  	battery->bat.get_property = acpi_sbs_battery_get_property;
->  	result = power_supply_register(&sbs->device->dev, &battery->bat);
-> -	device_create_file(battery->bat.dev, &alarm_attr);
-> +	if (device_create_file(battery->bat.dev, &alarm_attr) == 0)
-> +		battery->have_sysfs = 1;
->  	printk(KERN_INFO PREFIX "%s [%s]: Battery Slot [%s] (battery %s)\n",
->  	       ACPI_SBS_DEVICE_NAME, acpi_device_bid(sbs->device),
->  	       battery->name, sbs->battery->present ? "present" : "absent");
-> @@ -817,14 +819,16 @@ static int acpi_battery_add(struct acpi_sbs *sbs, int id)
->  
->  static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
->  {
-> -	if (sbs->battery[id].bat.dev)
-> -		device_remove_file(sbs->battery[id].bat.dev, &alarm_attr);
-> -		power_supply_unregister(&sbs->battery[id].bat);
-> +	struct acpi_battery *battery = &sbs->battery[id];
-> +
-> +	if (battery->have_sysfs)
-> +		device_remove_file(battery->bat.dev, &alarm_attr);
-> +
-> +	power_supply_unregister(&battery->bat);
-> +
->  #ifdef CONFIG_ACPI_PROCFS
-> -	if (sbs->battery[id].proc_entry) {
-> -		acpi_sbs_remove_fs(&(sbs->battery[id].proc_entry),
-> -				   acpi_battery_dir);
-> -	}
-> +	if (sbs->battery[id].proc_entry)
-> +		acpi_sbs_remove_fs(&battery->proc_entry, acpi_battery_dir);
 
-Len, this seems to have been missed in the recent ACPI push.
+On Oct 30, 2007, at 10:49 AM, Jan Kiszka wrote:
 
-Can you queue this, or a similar fix, for the recently-added compiler 
-warning (at the top of this email)?
+> Carsten Emde wrote:
+>> Avi Kivity wrote:
+>>> David Brown wrote:
+>>>> I thought I'd try out the realtime patch set and it didn't work  
+>>>> at all
+>>>> with kvm. The console didn't dump anything and the system  
+>>>> completely
+>>>> locked up.
+>> Up to now, the unmodified kvm module never worked with any RT kernel.
+>> This would only change, if RT patched kernels were routinely used  
+>> in the
+>> kvm release tests which is, for the time being, not the case.
+>
+> As far as I understood (but didn't re-test yet), latest kvm release  
+> does
+> include all features required to run over -rt. This was at least the
+> case for kvm-git I picked up last week and merged into 2.6.23-rt1. The
+> only issue is that out-of-tree kvm doesn't enable the preemption
+> notifiers (maybe there were one or two further minor issues, I  
+> think to
+> recall missing smp_ops exports being one, but these were not -rt  
+> related).
+>
+>>
+>> However, tglx once provided a hand-crafted kvm version that can be  
+>> used
+>> together with a selected RT kernel -> see "Latest Stable"
+>> (http://www.osadl.org/Latest-Stable.latest-stable-realtime-kernel. 
+>> 0.html)
+>> realtime kernel. It is based on kernel 2.6.21.6-rt21 and kvm-28.
+>>
+>> We used these modules to carry out a number of "proof of concept"  
+>> tests
+>> which were very successful. The realtime capabilities of the host  
+>> system
+>> remained unchanged irrespective of whether the kvm guest system (no
+>> graphics) was running or not. This was even the case while the guest
+>> system was booting.
+>
+> Interesting result - you've read about the wbinvd issues? Is there no
+> wbinvd in the bios shipped with older kvm? Which VM extension did you
+> test, both Intel and AMD? I would bet that your X issues are due to  
+> the
+> same effect. X startup/shutdown involves a lot of wbinvd calls on my
+> test boxes.
+>
+> To sum up my findings: kvm over whatever RT kernel is risky
+> (latency-wise) unless you can audit or even para-virtualise your guest
+> OS /wrt wbinvd. Maybe we can discuss this also in Linz by the end  
+> of the
+> week. :)
 
-	Jeff
+As I will be in Linz by the end of the week as well, could you please  
+try to do any coordination as to when you meet on the lists (or CC  
+me)? I'd like to get the chance to join you on this :-).
 
+Thanks,
 
+Alex
