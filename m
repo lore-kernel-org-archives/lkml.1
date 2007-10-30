@@ -1,179 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbXJ3TZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbXJ3TZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbXJ3TZa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbXJ3TVv
+	id S1758857AbXJ3TZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbXJ3TVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:51 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54015 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:52 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54035 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757720AbXJ3TVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:49 -0400
-Message-Id: <20071030192105.986117390@polymtl.ca>
+	id S1757746AbXJ3TVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:50 -0400
+Message-Id: <20071030192104.252451521@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:11 -0400
+Date: Tue, 30 Oct 2007 15:16:06 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org
-Subject: [patch 14/28] New cmpxchg_local (optimized for UP case) for m32r
-Content-Disposition: inline; filename=add-cmpxchg-local-to-m32r.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:06 +0000
+       michael.frysinger@analog.com
+Subject: [patch 09/28] Add cmpxchg_local to blackfin, replace __cmpxchg by generic cmpxchg
+Content-Disposition: inline; filename=add-cmpxchg-local-to-blackfin.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __xchg_local, xchg_local (define), __cmpxchg_local_u32, __cmpxchg_local,
-cmpxchg_local(macro).
-
-cmpxchg_local and cmpxchg64_local will use the architecture specific
-__cmpxchg_local_u32 for 32 bits arguments, and use the generic
-__cmpxchg_local_generic for 8, 16 and 64 bits arguments.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set since nobody seems to know why __cmpxchg
+has been implemented in assembly in the first place thather than in plain C.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
 CC: clameter@sgi.com
-CC: linux-m32r@ml.linux-m32r.org
+CC: michael.frysinger@analog.com
 ---
- include/asm-m32r/system.h |  103 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 97 insertions(+), 6 deletions(-)
+ include/asm-blackfin/system.h |   59 ++++++++----------------------------------
+ 1 file changed, 12 insertions(+), 47 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-m32r/system.h
+Index: linux-2.6-lttng/include/asm-blackfin/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-07 14:31:52.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-07 14:55:02.000000000 -0400
-@@ -123,6 +123,9 @@ static inline void local_irq_disable(voi
- 
- #define xchg(ptr,x) \
- 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
-+#define xchg_local(ptr,x) \
-+	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
-+			sizeof(*(ptr))))
- 
- #ifdef CONFIG_SMP
- extern void  __xchg_called_with_bad_pointer(void);
-@@ -196,6 +199,42 @@ __xchg(unsigned long x, volatile void * 
- 	return (tmp);
+--- linux-2.6-lttng.orig/include/asm-blackfin/system.h	2007-08-07 14:31:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-blackfin/system.h	2007-08-07 14:47:31.000000000 -0400
+@@ -176,55 +176,20 @@ static inline unsigned long __xchg(unsig
+ 	return tmp;
  }
  
-+static __always_inline unsigned long
-+__xchg_local(unsigned long x, volatile void * ptr, int size)
-+{
-+	unsigned long flags;
-+	unsigned long tmp = 0;
-+
-+	local_irq_save(flags);
-+
-+	switch (size) {
-+	case 1:
-+		__asm__ __volatile__ (
-+			"ldb	%0, @%2 \n\t"
-+			"stb	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	case 2:
-+		__asm__ __volatile__ (
-+			"ldh	%0, @%2 \n\t"
-+			"sth	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	case 4:
-+		__asm__ __volatile__ (
-+			"ld	%0, @%2 \n\t"
-+			"st	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	default:
-+		__xchg_called_with_bad_pointer();
-+	}
-+
-+	local_irq_restore(flags);
-+
-+	return (tmp);
-+}
-+
- #define __HAVE_ARCH_CMPXCHG	1
- 
- static inline unsigned long
-@@ -228,6 +267,37 @@ __cmpxchg_u32(volatile unsigned int *p, 
- 	return retval;
- }
- 
-+static inline unsigned long
-+__cmpxchg_local_u32(volatile unsigned int *p, unsigned int old,
-+			unsigned int new)
-+{
-+	unsigned long flags;
-+	unsigned int retval;
-+
-+	local_irq_save(flags);
-+	__asm__ __volatile__ (
-+			DCACHE_CLEAR("%0", "r4", "%1")
-+			"ld %0, @%1;		\n"
-+		"	bne	%0, %2, 1f;	\n"
-+			"st %3, @%1;		\n"
-+		"	bra	2f;		\n"
-+                "       .fillinsn		\n"
-+		"1:"
-+			"st %0, @%1;		\n"
-+                "       .fillinsn		\n"
-+		"2:"
-+			: "=&r" (retval)
-+			: "r" (p), "r" (old), "r" (new)
-+			: "cbit", "memory"
-+#ifdef CONFIG_CHIP_M32700_TS1
-+			, "r4"
-+#endif  /* CONFIG_CHIP_M32700_TS1 */
-+		);
-+	local_irq_restore(flags);
-+
-+	return retval;
-+}
-+
- /* This function doesn't exist, so you'll get a linker error
-    if something tries to do an invalid cmpxchg().  */
- extern void __cmpxchg_called_with_bad_pointer(void);
-@@ -248,12 +318,33 @@ __cmpxchg(volatile void *ptr, unsigned l
- }
- 
- #define cmpxchg(ptr,o,n)						 \
--  ({									 \
--     __typeof__(*(ptr)) _o_ = (o);					 \
--     __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
--  })
-+     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)(o),		 \
-+				    (unsigned long)(n), sizeof(*(ptr)))
-+
 +#include <asm-generic/cmpxchg-local.h>
 +
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_local_u32(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+/*
+ /*
+- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+- * store NEW in MEM.  Return the initial value in MEM.  Success is
+- * indicated by comparing RETURN with OLD.
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
-+ */
+  */
+-static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
+-				      unsigned long new, int size)
+-{
+-	unsigned long tmp = 0;
+-	unsigned long flags = 0;
+-
+-	local_irq_save(flags);
+-
+-	switch (size) {
+-	case 1:
+-		__asm__ __volatile__
+-			("%0 = b%3 (z);\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "b%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
+-	case 2:
+-		__asm__ __volatile__
+-			("%0 = w%3 (z);\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "w%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
+-	case 4:
+-		__asm__ __volatile__
+-			("%0 = %3;\n\t"
+-			 "CC = %1 == %0;\n\t"
+-			 "IF !CC JUMP 1f;\n\t"
+-			 "%3 = %2;\n\t"
+-			 "1:\n\t"
+-			 : "=&d" (tmp) : "d" (old), "d" (new), "m" (*__xg(ptr)) : "memory");
+-		break;
+-	}
+-	local_irq_restore(flags);
+-	return tmp;
+-}
+-
+-#define cmpxchg(ptr,o,n)\
+-        ((__typeof__(*(ptr)))__cmpxchg((ptr),(unsigned long)(o),\
+-                                        (unsigned long)(n),sizeof(*(ptr))))
 +#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
++
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
  
- #endif  /* __KERNEL__ */
+ #define prepare_to_switch()     do { } while(0)
  
 
 -- 
