@@ -1,137 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXJ3Xjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbXJ3Xo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbXJ3Xjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXJ3Xjj
+	id S1756503AbXJ3Xo2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXJ3XoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:39:39 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53942 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbXJ3Xji (ORCPT
+	Tue, 30 Oct 2007 19:44:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42479 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753495AbXJ3XoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:39:38 -0400
-Date: Tue, 30 Oct 2007 17:41:26 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-In-reply-to: <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <4727C126.8070000@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
- <200710251622.36773.jbarnes@virtuousgeek.org>
- <20071026025407.GA21408@kroah.com>
- <200710260959.46811.jbarnes@virtuousgeek.org>
- <20071027024140.GC29039@kroah.com> <47267232.3020506@shaw.ca>
- <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
- <20071030094756.779ac5c0@laptopd505.fenrus.org>
- <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 30 Oct 2007 19:44:18 -0400
+Date: Tue, 30 Oct 2007 16:44:14 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071030164414.b353e41c.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710301607430.19750@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<20071026180713.aeedfac2.pj@sgi.com>
+	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+	<20071026194144.6042316a.pj@sgi.com>
+	<alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
+	<20071027161955.e9d4d2db.pj@sgi.com>
+	<alpine.DEB.0.9999.0710272231170.23796@chino.kir.corp.google.com>
+	<20071028164637.8d1b45b0.pj@sgi.com>
+	<alpine.DEB.0.9999.0710281742090.26837@chino.kir.corp.google.com>
+	<20071028212745.57a7db67.pj@sgi.com>
+	<alpine.DEB.0.9999.0710282130320.32474@chino.kir.corp.google.com>
+	<20071029001554.c12b6b6c.pj@sgi.com>
+	<alpine.DEB.0.9999.0710301607430.19750@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 30 Oct 2007, Arjan van de Ven wrote:
->> the problem is... you're not supposed to mix both types of accesses.
-> 
-> You have to, anyway. Even now the MMCONFIG stuff uses CONF1 cycles for 
-> startup.
+David wrote:
+> If your argument is that most applications are written to implement 
+> mempolicies without necessarily thinking too much about its cpuset 
+> placement or interactions with cpusets, then the requirement of remapping 
+> nodes when a cpuset changes for effected mempolicies isn't actually that 
+> important.
 
-If it does, it's not by necessity. As soon as you read the table 
-location out of the ACPI tables you can start using it, and that 
-shouldn't require any config space accesses.
+Just because they didn't think about cpuset remapping when they coded
+their mempolicy calls, doesn't mean they wouldn't be broken by changes
+in how mempolicy numbers nodes.  Often, it's the other way around:
+the less they though of it, the more likely changing it would break
+them.
 
-> 
-> Also, there's reason to believe that mixing things up _has_ to work 
-> anyway, and if the issue is between "works in practice" and "theory says 
-> that you shouldn't mix", I'll take practice every time.
-> 
-> Especially since we *know* that the theory is broken. Right now MMCONFIG 
-> is effectively disabled very aggressively because it's simply unusably 
-> flaky. So the choice is between:
-> 
->  - don't use MMCONFIG at all, because it has so many problems
->  - use MMCONFIG sparingly enough to hide the problems
+> In other words, my Choice C with AND'd behavior as opposed to 
+> remapping behavior could be introduced as a replacement for Choice A.
 
-Fact is, we don't really know how many of these systems with supposedly 
-"broken" MMCONFIG were really just suffering from the overlapping 
-PCI/MMCONFIG address space problem, which is entirely the fault of the 
-way we do PCI probing. I would bet quite a few of them.
+No - I will not agree to changing the default mempolicy kernel API node
+numbering at this time.  Period.  Full stop.  We can add non-default
+choices for now, and perhaps in the light of future experience, we
+may choose to do more later.
 
-> 
-> and what "you're supposed to do" is simply trumped by Real Life(tm). 
-> Because Intel screwed up so badly when they designed that piece of shit.
-> 
-> (Where "screwed up badly" is the usual "left it to firmware people" thing, 
-> of course. Dammit, Intel *could* have just made it a real PCI BAR in the 
-> Northbridge, and specified it as such, and we wouldn't have these 
-> problems! But no, it had to be another idiotic "firmware tells where it 
-> is" thing)
+> Those applications that currently rely on the remapping are going to be 
+> broken anyway because they are unknowingly receiving different nodes than 
+> they intended, this is the objection to remapping that Lee agreed with.
 
-This wouldn't have helped anything with the problem in question.
+No, they may or may not be broken.  That depends on whether or not they had
+specific hardware locality or affinity needs.
 
-> 
->>> The fact is, CONF1 style accesses are just safer, and *work*. 
->> I would suggest a slight twist then: use CONF1 *until* you're using
->> something above 256, and then and only then switch to MMCONFIG from
->> then on for all accesses.
-> 
-> No.
-> 
-> Maybe if you do it per-device, and only *after* probing (ie we have seen 
-> multiple, and successful, accesses), but globally, absolutely not. That 
-> would be useless. The bugs we have had in this area have been exactly the 
-> kinds of things like "we don't know the real size of the MMCONFIG areas" 
-> etc.
-> 
-> I could easily see device driver writers probing to see if something 
-> works, and I absolutely don't think we should just automatically enable 
-> MMCONFIG from then on.
+> The remap doesn't take into account any notion of locality or affinity to 
+> physical controllers and seems to be merely a convenience of not 
+> invalidating the entire mempolicy in light of an ever-changing cpuset 
+> policy.
 
-Why per device? It's not like the MSI case where both the platform and 
-the device are potentially busted. Whether or not MMCONFIG works has 
-nothing to do with the device, all that matters is whether it works on 
-the platform. It shouldn't be the driver's responsibility to know this.
+If you're running apps that have specific hardware affinity requirements,
+then perhaps you shouldn't be moving them about in the first place ;).
+And if they did have such needs, aren't they just as likely to be busted
+by AND'ing off some of their nodes as they are by remapping those nodes?
 
-> 
-> But maybe we could have a per-device flag that a driver *can* set. Ie have 
-> the logic be:
-> 
->  - use MMCONFIG if we have to (reg >= 256)
-> 
-> OR
-> 
->  - use MMCONFIG if the driver specifically asked us to
-> 
-> and then drivers that absolutely need it, and know they do, can set that 
-> flag. Preferably after they actually verified that it works.
+I sure wish I knew what real world, actual, not hypothetical, situations
+were motivating this.
 
-How will they verify that it works? If it works, then verifying it works 
-is all well and good. If it doesn't work, trying to verify if it does 
-could very well blow up the machine.
-
-I've made the point before that if we're going to allow using it at all, 
-we'd better find out if it works or not early on, not after we've been 
-running and somebody decides it's a good idea to try using it and 
-causing a lockup or something.
-
-> 
-> That way you _can_ get the "this is how you're supposed to do it" 
-> behaviour, but you get it when there is a reasonable chance that it 
-> actually works.
-> 
-> And quite frankly, if you're not supposed to mix these things even across 
-> devices, then I think we are better off just doing what we effectively do 
-> now: mostly ignore the damn thing because it's too broken to use.
-> 
-> Maybe somebody inside Intel could just clarify the documentation, and 
-> change it from "you're not supposed to mix" to "mix all you want". 
-
-Intel could say what they want on the subject.. but that doesn't 
-necessarily reflect what happens with anyone else's chipset implementations.
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
