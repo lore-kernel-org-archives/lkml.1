@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXJ3FvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbXJ3Fxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbXJ3FvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 01:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXJ3FvA
+	id S1754304AbXJ3Fxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 01:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXJ3FxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 01:51:00 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27368 "EHLO kernel.dk"
+	Tue, 30 Oct 2007 01:53:20 -0400
+Received: from mga03.intel.com ([143.182.124.21]:36669 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbXJ3FvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 01:51:00 -0400
-Date: Tue, 30 Oct 2007 06:50:58 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] [CRYPTO] tcrypt: Move sg_init_table out of timing loops
-Message-ID: <20071030055056.GG7499@kernel.dk>
-References: <20071026145905.GA13850@gondor.apana.org.au> <E1IlQfM-0003cO-00@gondolin.me.apana.org.au> <20071029201627.GD7499@kernel.dk> <20071030000827.GA9037@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030000827.GA9037@gondor.apana.org.au>
+	id S1752868AbXJ3FxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 01:53:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,345,1188802800"; 
+   d="scan'208";a="308136287"
+Subject: [PATCH 0/4 -v5] x86_64 EFI runtime service support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 30 Oct 2007 13:55:34 +0800
+Message-Id: <1193723734.23935.345.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 30 Oct 2007 05:52:33.0345 (UTC) FILETIME=[10D0CB10:01C81AB9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30 2007, Herbert Xu wrote:
-> On Mon, Oct 29, 2007 at 09:16:27PM +0100, Jens Axboe wrote:
-> > On Fri, Oct 26 2007, Herbert Xu wrote:
-> > > [CRYPTO] tcrypt: Move sg_init_table out of timing loops
-> > > 
-> > > This patch moves the sg_init_table out of the timing loops for hash
-> > > algorithms so that it doesn't impact on the speed test results.
-> > 
-> > Wouldn't it be better to just make sg_init_one() call sg_init_table?
-> 
-> This looks fine to me although I think it's orthogonal to the
-> patch you were quoting :)
+Following patchset adds EFI/UEFI (Unified Extensible Firmware
+Interface) runtime services support to x86_64 architecture.
 
-How so? The reason you changed it to sg_init_table() + sg_set_buf() is
-exactly because sg_init_one() didn't properly init the entry (as they
-name promised).
+The patchset have been tested against 2.6.24-rc1 kernel on Intel
+platforms with 64-bit EFI1.10 and UEFI2.0 firmware. Because the
+duplicated code between efi_32.c and efi_64.c is removed, the patchset
+is also tested on Intel platform with 32-bit EFI firmware.
 
--- 
-Jens Axboe
 
+v5:
+
+- Remove the duplicated code between efi_32.c and efi_64.c.
+
+- Rename lin2win<x> to efi_call<x>.
+
+- Make EFI time runtime service default to off.
+
+- Use different bootloader signature for EFI32 and EFI64, so that
+  kernel can know whether underlaying EFI firmware is 64-bit or
+  32-bit.
+
+v4:
+
+- EFI boot parameters are extended for 64-bit EFI in a 32-bit EFI
+  compatible way.
+
+- Add EFI runtime services document.
+
+v3:
+
+- Remove E820_RUNTIME_CODE, the EFI memory map is used to deal with
+  EFI runtime code area.
+
+- The method used to make EFI runtime code area executable is change:
+
+  a. Before page allocation is usable, the PMD of direct mapping is
+     changed temporarily before and after each EFI call.
+
+  b. After page allocation is usable, change_page_attr_addr is used to
+     change corresponding page attribute.
+
+- Use fixmap to map EFI memory mapped IO memory area to make kexec
+  workable.
+
+- Add a kernel command line option "noefi" to make it possible to turn
+  off EFI runtime services support.
+
+- Function pointers are used for EFI time runtime service.
+
+- EFI reboot runtime service is embedded into the framework of
+  reboot_type.
+
+- A kernel command line option "noefi_time" is added to make it
+  possible to fall back to CMOS based implementation.
+
+v2:
+
+- The EFI callwrapper is re-implemented in assembler.
+
+
+Best Regards,
+Huang Ying
