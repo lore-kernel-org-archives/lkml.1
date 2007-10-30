@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbXJ3Sfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXJ3SjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbXJ3Sfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXJ3Sfe
+	id S1755175AbXJ3SjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXJ3SjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:35:34 -0400
-Received: from rhineheart.priorweb.be ([213.193.229.215]:44539 "HELO
-	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751997AbXJ3Sfe (ORCPT
+	Tue, 30 Oct 2007 14:39:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42907 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753835AbXJ3SjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:35:34 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Oct 2007 14:35:33 EDT
-Date: Tue, 30 Oct 2007 19:28:32 +0100
-From: Kristof Provost <Kristof@provost-engineering.be>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] several returns before unlocking in lmc_ioctl
-Message-ID: <20071030182832.GI32270@berith>
-References: <471D4763.60604@tiscali.nl> <471D52C4.1050701@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
-Content-Disposition: inline
-In-Reply-To: <471D52C4.1050701@tiscali.nl>
-X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Spam-Scanned: 2.0
+	Tue, 30 Oct 2007 14:39:04 -0400
+Date: Tue, 30 Oct 2007 11:38:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: matthew@wil.cx, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       penberg@cs.helsinki.fi
+Subject: Re: [patch 07/10] SLUB: Avoid referencing kmem_cache structure in
+ __slab_alloc
+Message-Id: <20071030113848.930471e6.akpm@linux-foundation.org>
+In-Reply-To: <20071028033259.992768446@sgi.com>
+References: <20071028033156.022983073@sgi.com>
+	<20071028033259.992768446@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 27 Oct 2007 20:32:03 -0700
+Christoph Lameter <clameter@sgi.com> wrote:
 
---6sX45UoQRIJXqkqR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 2007-10-23 03:47:48 (+0200), Roel Kluin <12o3l@tiscali.nl> wrote:
-> I think we should keep the lmc_tracing. Use this patch instead.
->=20
-> --
->     Several returns before unlocking in lmc_ioctl
->    =20
->     Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> There is the need to use the objects per slab in the first part of
+> __slab_alloc() which is still pretty hot. Copy the number of objects
+> per slab into the kmem_cache_cpu structure. That way we can get the
+> value from a cache line that we already need to touch. This brings
+> the kmem_cache_cpu structure up to 4 even words.
+> 
+> There is no increase in the size of kmem_cache_cpu since the size of object
+> is rounded to the next word.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
 > ---
-> diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_mai=
-n.c
-> index 5ea8772..64eb578 100644
-<snip>
-> @@ -229,9 +234,10 @@ int lmc_ioctl (struct net_device *dev, struct ifreq =
-*ifr, int cmd) /*fold00*/
->          sc->lmc_xinfo.Magic1 =3D 0xDEADBEEF;
-> =20
->          if (copy_to_user(ifr->ifr_data, &sc->lmc_xinfo,
-> -                         sizeof (struct lmc_xinfo)))
-> -            return -EFAULT;
-> -        ret =3D 0;
-> +					sizeof(struct lmc_xinfo))) {
-> +		ret =3D -EFAULT;
-> +	else
-> +		ret =3D 0;
-I think you have an extra curly brace there. It breaks compile on my
-system.
+>  include/linux/slub_def.h |    1 +
+>  mm/slub.c                |    3 ++-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/slub_def.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/slub_def.h	2007-10-26 19:09:16.000000000 -0700
+> +++ linux-2.6/include/linux/slub_def.h	2007-10-27 07:55:12.000000000 -0700
+> @@ -17,6 +17,7 @@ struct kmem_cache_cpu {
+>  	int node;
+>  	unsigned int offset;
+>  	unsigned int objsize;
+> +	unsigned int objects;
+>  };
 
-Kristof
-=20
+mutter.  nr_objects would be a better name, but then one should rename
+kmem_cache.objects too.
 
---6sX45UoQRIJXqkqR
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHJ3fQUEZ9DhGwDugRAmcnAJ9q1J7ivdo3UtaurjIaEfjAs9tVTACfdjMO
-dPPFUfU2vHRM9JqK6bR07Lk=
-=QOpv
------END PGP SIGNATURE-----
-
---6sX45UoQRIJXqkqR--
+Better would be to comment the field.  Please devote extra care to commenting
+data structures.
