@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbXJ3Kwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbXJ3KyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbXJ3Kwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 06:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXJ3Kw1
+	id S1755215AbXJ3KyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 06:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXJ3KyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 06:52:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:54763 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbXJ3Kw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 06:52:26 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] raise tsc clocksource rating
-Date: Tue, 30 Oct 2007 21:52:26 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, avi@quramnet.com,
-       kvm-devel@lists.sourceforge.net, John Stultz <johnstul@us.ibm.com>
-References: <11936994092607-git-send-email-gcosta@redhat.com> <200710301339.23628.rusty@rustcorp.com.au> <20071030073736.GA21843@elte.hu>
-In-Reply-To: <20071030073736.GA21843@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710302152.27077.rusty@rustcorp.com.au>
+	Tue, 30 Oct 2007 06:54:14 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:46743 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbXJ3KyN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 06:54:13 -0400
+Date: Tue, 30 Oct 2007 11:54:07 +0100 (MET)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: len.brown@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20071030104750.30935.5409.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] acpi: 'acpi_gbl_system_awake_and_running' is no longer used, only assigned.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 18:37:36 Ingo Molnar wrote:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > No.  tsc is very good, it's not perfect.  If a paravirt clock
-> > registers 400 it really means "pick me over the tsc".
->
-> often the TSC is not perfect, but _IF_ it's perfect, using the paravirt
-> driver is a pessimisation in performance.
->
-> the main problem at the moment is that there's no mechanism at the
-> moment to convey to the guest the information that the TSC is "perfect",
-> and to convey the calibration values.
+'acpi_gbl_system_awake_and_running' is no longer used, only assigned.
 
-The host can communicate to the guest what clock to use: the guest can decide 
-to register a paravirt clock or not depending on whether it wants to leave it 
-to the TSC.
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Diffed against linus-git
+Checked with script/checkpatch.pl
 
-For a while we couldn't remove the TSC cpuid capability in the guest, because 
-if you configured your kernel in some ways it was hardcoded on.  I think 
-the "all 686+ have a tsc" assumption has now been fixed, so I should change 
-the lguest clock to do as you said: register its clock at lower prio to the 
-TSC and then the host can simply remove the TSC cpuid if it isn't suitable 
-for the guest to use.
+ drivers/acpi/hardware/hwsleep.c   |    5 -----
+ drivers/acpi/utilities/utglobal.c |    1 -
+ include/acpi/acglobal.h           |    1 -
+ 3 files changed, 7 deletions(-)
 
-ISTR the core TSC timing code (which lguest could use) and various hardware 
-manipulations (which lguest couldn't) were intertwined, but I'll have to go 
-back and check exactly what the issue was.
 
-> and just in case it's not obvious: i am not arguing for the inclusion of
-> the patch
-
-Unfortunately, you and Thomas both acked the patch.  This says v bad things 
-about how much review kernel patches get.
-
-Cheers,
-Rusty.
+diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
+index 81b2484..e020e50 100644
+--- a/drivers/acpi/hardware/hwsleep.c
++++ b/drivers/acpi/hardware/hwsleep.c
+@@ -300,8 +300,6 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
+ 		return_ACPI_STATUS(status);
+ 	}
+ 
+-	acpi_gbl_system_awake_and_running = FALSE;
+-
+ 	status = acpi_hw_enable_all_wakeup_gpes();
+ 	if (ACPI_FAILURE(status)) {
+ 		return_ACPI_STATUS(status);
+@@ -446,7 +444,6 @@ acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void)
+ 	if (ACPI_FAILURE(status)) {
+ 		return_ACPI_STATUS(status);
+ 	}
+-	acpi_gbl_system_awake_and_running = FALSE;
+ 
+ 	status = acpi_hw_enable_all_wakeup_gpes();
+ 	if (ACPI_FAILURE(status)) {
+@@ -587,8 +584,6 @@ acpi_status acpi_leave_sleep_state(u8 sleep_state)
+ 	}
+ 	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
+ 
+-	acpi_gbl_system_awake_and_running = TRUE;
+-
+ 	/* Enable power button */
+ 
+ 	(void)
+diff --git a/drivers/acpi/utilities/utglobal.c b/drivers/acpi/utilities/utglobal.c
+index 93ea829..f2ba315 100644
+--- a/drivers/acpi/utilities/utglobal.c
++++ b/drivers/acpi/utilities/utglobal.c
+@@ -709,7 +709,6 @@ void acpi_ut_init_globals(void)
+ 	/* Hardware oriented */
+ 
+ 	acpi_gbl_events_initialized = FALSE;
+-	acpi_gbl_system_awake_and_running = TRUE;
+ 
+ 	/* Namespace */
+ 
+diff --git a/include/acpi/acglobal.h b/include/acpi/acglobal.h
+index 347a911..ae0fc0a 100644
+--- a/include/acpi/acglobal.h
++++ b/include/acpi/acglobal.h
+@@ -236,7 +236,6 @@ ACPI_EXTERN u8 acpi_gbl_step_to_next_call;
+ ACPI_EXTERN u8 acpi_gbl_acpi_hardware_present;
+ ACPI_EXTERN u8 acpi_gbl_global_lock_present;
+ ACPI_EXTERN u8 acpi_gbl_events_initialized;
+-ACPI_EXTERN u8 acpi_gbl_system_awake_and_running;
+ 
+ extern u8 acpi_gbl_shutdown;
+ extern u32 acpi_gbl_startup_flags;
