@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbXJ3WCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbXJ3WDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756484AbXJ3WCl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXJ3WCe
+	id S1758041AbXJ3WDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXJ3WDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:02:34 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37126 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751878AbXJ3WCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:02:33 -0400
-Date: Tue, 30 Oct 2007 23:02:09 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, benjamin.serebrin@amd.com
-Subject: Re: Whats the purpose of get_cycles_sync()
-Message-ID: <20071030220209.GA21142@suse.cz>
-References: <20071030174452.GA18619@amd.com> <p73sl3s2w29.fsf@bingen.suse.de>
+	Tue, 30 Oct 2007 18:03:13 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:55176 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbXJ3WDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 18:03:12 -0400
+Date: Tue, 30 Oct 2007 23:03:10 +0100
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: Huawei E220 and usb storage
+Message-ID: <20071030220310.GD14449@gamma.logic.tuwien.ac.at>
+References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030150043.0ac65133.zaitcev@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73sl3s2w29.fsf@bingen.suse.de>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
+In-Reply-To: <20071030150043.0ac65133.zaitcev@redhat.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 09:21:02PM +0100, Andi Kleen wrote:
-> "Joerg Roedel" <joerg.roedel@amd.com> writes:
-> 
-> > I would like to answer what the special purpose of the get_cycles_sync()
-> > function is in the x86 architecture. In special I ask myself why
-> > this function has to be *sync*?
-> 
-> Vojtech had one test that tested time monotonicity over CPUs 
-> and it constantly failed until we added the CPUID on K8 C stepping. 
-> He can give details on the test.
-> 
-> I suspect the reason was because the CPU reordered the RDTSCs so that
-> a later RDTSC could return a value before an earlier one. This can
-> happen because gettimeofday() is so fast that a tight loop calling it can
-> fit more than one iteration into the CPU's reordering window.
+On Di, 30 Okt 2007, Pete Zaitcev wrote:
+> Please post your /proc/bus/usb/devices. Maybe it just fails to match.
 
-The K8's still guarantee that subsequent RDTSCs return increasing
-values, even if the processor reorders them.
+Here is the relevant part:
+T:  Bus=02 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#= 25 Spd=12  MxCh= 0
+D:  Ver= 1.10 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=12d1 ProdID=1003 Rev= 0.00
+S:  Manufacturer=HUAWEI Technologies
+S:  Product=HUAWEI Mobile
+C:* #Ifs= 1 Cfg#= 1 Atr=a0 MxPwr=500mA
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+E:  Ad=83(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=04(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
 
-What could have been happening then was that the RDTSC instruction might
-have been reordered by the CPU out of the seqlock, causing trouble in
-the calculation.
+The VendorID and ProductID do match, the strings seem to be different
+(HUAWEI MOBILE in the patch, in the usb/devices "HUAWEI Mobile")., but I
+don't know what counts here.
 
-Anyway, adding the CPUID didn't solve all the problems we've seen back
-then, and so far none of the approaches for using TSC without acquiring
-a spinlock on multi-socket AMD boxes worked 100% correctly.
+Best wishes
 
-> That is why newer kernels use RDTSCP if available which doesn't need
-> to be intercepted and is synchronous.  And since all AMD SVM systems
-> have RDTSCP they are fine.
-> 
-> On Intel Core2 without RDTSCP the CPUID can be still intercepted right
-> now, but the real fix there is to readd FEATURE_SYNC_TSC for Core2 --
-> the RDTSC there is always monotonic per CPU and the patch that changed
-> that (f3d73707a1e84f0687a05144b70b660441e999c7) was bogus and must be
-> reverted. I didn't catch that in time unfortunately.
+Norbert
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+TINGRITH (n.)
+The feeling of silver paper against your fillings.
+			--- Douglas Adams, The Meaning of Liff
