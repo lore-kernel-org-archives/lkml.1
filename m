@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbXJ3T4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbXJ3UCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757438AbXJ3T4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbXJ3T4p
+	id S1757666AbXJ3UCN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXJ3UB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:56:45 -0400
-Received: from smtp4.netcabo.pt ([212.113.174.31]:48051 "EHLO
-	exch01smtp09.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753146AbXJ3T4o (ORCPT
+	Tue, 30 Oct 2007 16:01:58 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39339 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbXJ3UB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:56:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAKYpJ0dViqaH/2dsb2JhbAAMkCY
-Message-ID: <47278BE5.9070401@rncbc.org>
-Date: Tue, 30 Oct 2007 19:54:13 +0000
-From: Rui Nuno Capela <rncbc@rncbc.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23.1-rt5 (was 2.6.23-rt1 trouble)
-References: <1192154640.15992.10.camel@localhost.localdomain>          <38542.213.58.131.130.1192445349.squirrel@www.rncbc.org> <471648B8.1030007@rncbc.org> <47234EA1.4050006@rncbc.org> <Pine.LNX.4.58.0710271203170.28617@gandalf.stny.rr.com> <47239A37.8000401@rncbc.org> <472781E3.7010103@rncbc.org> <Pine.LNX.4.58.0710301526480.30690@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0710301526480.30690@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Oct 2007 19:56:04.0402 (UTC) FILETIME=[E75B3920:01C81B2E]
+	Tue, 30 Oct 2007 16:01:58 -0400
+Date: Tue, 30 Oct 2007 20:00:40 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Kumar Gala <galak@kernel.crashing.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
+Message-ID: <20071030200040.GA13999@flint.arm.linux.org.uk>
+Mail-Followup-To: Matthew Wilcox <matthew@wil.cx>,
+	Ralf Baechle <ralf@linux-mips.org>,
+	Kumar Gala <galak@kernel.crashing.org>,
+	Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20071028201549.GA23138@fattire.cabal.ca> <20071030024801.GA19417@linux-mips.org> <AFC1DED8-E331-420C-940E-9CF849630F0B@kernel.crashing.org> <20071030083719.GJ32359@parisc-linux.org> <20071030114221.GA24392@linux-mips.org> <20071030121315.GK32359@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030121315.GK32359@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> --
-> On Tue, 30 Oct 2007, Rui Nuno Capela wrote:
+On Tue, Oct 30, 2007 at 06:13:16AM -0600, Matthew Wilcox wrote:
+> On Tue, Oct 30, 2007 at 11:42:21AM +0000, Ralf Baechle wrote:
+> > On Tue, Oct 30, 2007 at 02:37:19AM -0600, Matthew Wilcox wrote:
+> > > On Mon, Oct 29, 2007 at 10:03:16PM -0500, Kumar Gala wrote:
+> > > > same HW platform that you want to run with just 32-bit phys (for  
+> > > > performance).
+> > > 
+> > > Have you measured what the performance difference is?
+> > 
+> > So that's 5668, 256 bytes data and 128 bytes of bss for a total of 6052
+> > bytes.  Not a whole lot but I still fear some users on the most
+> > claustrophobic systems will mind.
 > 
->> still in trouble with 2.6.23.1-rt5 :(
->>
->> .config:
->>   http://www.rncbc.org/datahub/config-2.6.23.1-rt5.0
->>
->> serial console capture:
->>   http://www.rncbc.org/datahub/console-2.6.23.1-rt5.0-1.log
+> Oh, sure, I'm not saying I thought there would be no size difference; I
+> was just bemused at the suggestion there was a performance difference.
 > 
-> "NVRM: loading NVIDIA UNIX x86 Kernel Module  100.14.19  Wed Sep 12
->  14:12:24 PDT 2007"
-> 
-> Is that the nVidia module? Showing a date of Sept 12th also makes this
-> look suspicious.
-> 
-> If this is the case, could you run without that module to see if we get
-> the same freezes.
-> 
+> Unless "won't fit in ROM any more" is considered a performance problem ;-)
 
-yes, running without the *cough* nvidia module is under way. but do you
-remember that on my other laptop the freezes also happen and on that one
-there's no single proprietary modules in it? (same .config btw) problem
-is, like most modern laptops, it doesn't come bundled with a serial port
-so that can't give you a serial console evidence ...
+I think we've gone way past that that issue NetWinders long ago... in the
+2.4 days iirc.
 
-thanks for the reminder, anyway ;)
-
-> Thanks,
-> 
-> -- Steve
-> 
->> one thing about SysRq-T: while in the middle of a freeze it just doesn't
->> dump anything, just the 'SysRq : Show State' line. you can see that
->> several times on the console output above.
->>
->> only when it is somewhat recovering, as said, by making some last resort
->> measures like SysRq-E as in 'SysRq: terminate All Tasks' for instance,
->> then SysRq-T will dump something. my guess is that this later dump will
->> be moot :/
->>
->> back to production with 2.6.22.1-rt9 ;)
-
-bye now
 -- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
