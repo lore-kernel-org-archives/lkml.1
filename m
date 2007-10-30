@@ -1,255 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbXJ3SuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXJ3SvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbXJ3SuA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXJ3Stu
+	id S1755400AbXJ3SvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXJ3SvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:49:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41988 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbXJ3Sts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:49:48 -0400
-Date: Tue, 30 Oct 2007 11:49:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: matthew@wil.cx, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi, linux-arch@vger.kernel.org
-Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
-Message-Id: <20071030114933.904a4cf8.akpm@linux-foundation.org>
-In-Reply-To: <20071028033300.240703208@sgi.com>
-References: <20071028033156.022983073@sgi.com>
-	<20071028033300.240703208@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Oct 2007 14:51:09 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50686 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752933AbXJ3SvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 14:51:08 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+Date: Tue, 30 Oct 2007 19:50:58 +0100
+User-Agent: KMail/1.9.6
+Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
+       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <47267232.3020506@shaw.ca> <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710301950.58519.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007 20:32:04 -0700
-Christoph Lameter <clameter@sgi.com> wrote:
 
-> Provide an alternate implementation of the SLUB fast paths for alloc
-> and free using cmpxchg_local. The cmpxchg_local fast path is selected
-> for arches that have CONFIG_FAST_CMPXCHG_LOCAL set. An arch should only
-> set CONFIG_FAST_CMPXCHG_LOCAL if the cmpxchg_local is faster than an
-> interrupt enable/disable sequence. This is known to be true for both
-> x86 platforms so set FAST_CMPXCHG_LOCAL for both arches.
-> 
-> Not all arches can support fast cmpxchg operations. Typically the
-> architecture must have an optimized cmpxchg instruction. The
-> cmpxchg fast path makes no sense on platforms whose cmpxchg is
-> slower than interrupt enable/disable (like f.e. IA64).
-> 
-> The advantages of a cmpxchg_local based fast path are:
-> 
-> 1. Lower cycle count (30%-60% faster)
-> 
-> 2. There is no need to disable and enable interrupts on the fast path.
->    Currently interrupts have to be disabled and enabled on every
->    slab operation. This is likely saving a significant percentage
->    of interrupt off / on sequences in the kernel.
-> 
-> 3. The disposal of freed slabs can occur with interrupts enabled.
-> 
-> The alternate path is realized using #ifdef's. Several attempts to do the
-> same with macros and in line functions resulted in a mess (in particular due
-> to the strange way that local_interrupt_save() handles its argument and due
-> to the need to define macros/functions that sometimes disable interrupts
-> and sometimes do something else. The macro based approaches made it also
-> difficult to preserve the optimizations for the non cmpxchg paths).
-> 
-> #ifdef seems to be the way to go here to have a readable source.
-> 
-> 
-> ---
->  arch/x86/Kconfig.i386   |    4 ++
->  arch/x86/Kconfig.x86_64 |    4 ++
->  mm/slub.c               |   71 ++++++++++++++++++++++++++++++++++++++++++++++--
+> At that point, almost all the issues with mmconfig just go away, BECAUSE 
+> NOBODY USES IT, so it doesn't matter if it's broken?
 
-Let's cc linux-arch: presumably other architectures can implement cpu-local
-cmpxchg and would see some benefit from doing so.
-
-The semantics are "atomic wrt interrutps on this cpu, not atomic wrt other
-cpus", yes?
-
-Do you have a feel for how useful it would be for arch maintainers to implement
-this?  IOW, is it worth their time?
-
+We seem to slowly grow more uses of registers > 256, but yes it's still mostly 
+non critical stuff.
+ 
+> The fact is, CONF1 style accesses are just safer, and *work*. 
 > 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2007-10-27 10:39:07.583665939 -0700
-> +++ linux-2.6/mm/slub.c	2007-10-27 10:40:19.710415861 -0700
-> @@ -1496,7 +1496,12 @@ static void *__slab_alloc(struct kmem_ca
->  {
->  	void **object;
->  	struct page *new;
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	unsigned long flags;
->  
-> +	local_irq_save(flags);
-> +	preempt_enable_no_resched();
-> +#endif
->  	if (!c->page)
->  		goto new_slab;
->  
-> @@ -1518,6 +1523,10 @@ load_freelist:
->  unlock_out:
->  	slab_unlock(c->page);
->  out:
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	preempt_disable();
-> +	local_irq_restore(flags);
-> +#endif
->  	return object;
->  
->  another_slab:
-> @@ -1592,9 +1601,26 @@ static void __always_inline *slab_alloc(
->  		gfp_t gfpflags, int node, void *addr)
->  {
->  	void **object;
-> -	unsigned long flags;
->  	struct kmem_cache_cpu *c;
->  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	c = get_cpu_slab(s, get_cpu());
-> +	do {
-> +		object = c->freelist;
-> +		if (unlikely(is_end(object) || !node_match(c, node))) {
-> +			object = __slab_alloc(s, gfpflags, node, addr, c);
-> +			if (unlikely(!object)) {
-> +				put_cpu();
-> +				goto out;
-> +			}
-> +			break;
-> +		}
-> +	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
-> +								!= object);
-> +	put_cpu();
-> +#else
-> +	unsigned long flags;
-> +
->  	local_irq_save(flags);
->  	c = get_cpu_slab(s, smp_processor_id());
->  	if (unlikely((is_end(c->freelist)) || !node_match(c, node))) {
-> @@ -1609,6 +1635,7 @@ static void __always_inline *slab_alloc(
->  		c->freelist = object[c->offset];
->  	}
->  	local_irq_restore(flags);
-> +#endif
->  
->  	if (unlikely((gfpflags & __GFP_ZERO)))
->  		memset(object, 0, c->objsize);
-> @@ -1644,6 +1671,11 @@ static void __slab_free(struct kmem_cach
->  	void *prior;
->  	void **object = (void *)x;
->  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +#endif
->  	slab_lock(page);
->  
->  	if (unlikely(SlabDebug(page)))
-> @@ -1669,6 +1701,9 @@ checks_ok:
->  
->  out_unlock:
->  	slab_unlock(page);
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	local_irq_restore(flags);
-> +#endif
->  	return;
->  
->  slab_empty:
-> @@ -1679,6 +1714,9 @@ slab_empty:
->  		remove_partial(s, page);
->  
->  	slab_unlock(page);
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	local_irq_restore(flags);
-> +#endif
->  	discard_slab(s, page);
->  	return;
->  
-> @@ -1703,9 +1741,37 @@ static void __always_inline slab_free(st
->  			struct page *page, void *x, void *addr)
->  {
->  	void **object = (void *)x;
-> -	unsigned long flags;
->  	struct kmem_cache_cpu *c;
->  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	void **freelist;
-> +
-> +	c = get_cpu_slab(s, get_cpu());
-> +	debug_check_no_locks_freed(object, s->objsize);
-> +	do {
-> +		freelist = c->freelist;
-> +		barrier();
-> +		/*
-> +		 * If the compiler would reorder the retrieval of c->page to
-> +		 * come before c->freelist then an interrupt could
-> +		 * change the cpu slab before we retrieve c->freelist. We
-> +		 * could be matching on a page no longer active and put the
-> +		 * object onto the freelist of the wrong slab.
-> +		 *
-> +		 * On the other hand: If we already have the freelist pointer
-> +		 * then any change of cpu_slab will cause the cmpxchg to fail
-> +		 * since the freelist pointers are unique per slab.
-> +		 */
-> +		if (unlikely(page != c->page || c->node < 0)) {
-> +			__slab_free(s, page, x, addr, c->offset);
-> +			break;
-> +		}
-> +		object[c->offset] = freelist;
-> +	} while (cmpxchg_local(&c->freelist, freelist, object) != freelist);
-> +	put_cpu();
-> +#else
-> +	unsigned long flags;
-> +
->  	local_irq_save(flags);
->  	debug_check_no_locks_freed(object, s->objsize);
->  	c = get_cpu_slab(s, smp_processor_id());
-> @@ -1716,6 +1782,7 @@ static void __always_inline slab_free(st
->  		__slab_free(s, page, x, addr, c->offset);
->  
->  	local_irq_restore(flags);
-> +#endif
->  }
->  
->  void kmem_cache_free(struct kmem_cache *s, void *x)
-> Index: linux-2.6/arch/x86/Kconfig.i386
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig.i386	2007-10-27 10:38:33.630415778 -0700
-> +++ linux-2.6/arch/x86/Kconfig.i386	2007-10-27 10:40:19.710415861 -0700
-> @@ -51,6 +51,10 @@ config X86
->  	bool
->  	default y
->  
-> +config FAST_CMPXCHG_LOCAL
-> +	bool
-> +	default y
-> +
->  config MMU
->  	bool
->  	default y
-> Index: linux-2.6/arch/x86/Kconfig.x86_64
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig.x86_64	2007-10-27 10:38:33.630415778 -0700
-> +++ linux-2.6/arch/x86/Kconfig.x86_64	2007-10-27 10:40:19.710415861 -0700
-> @@ -97,6 +97,10 @@ config X86_CMPXCHG
->  	bool
->  	default y
->  
-> +config FAST_CMPXCHG_LOCAL
-> +	bool
-> +	default y
-> +
->  config EARLY_PRINTK
->  	bool
->  	default y
-> 
-> -- 
+> Can we please just do that? 
+
+At least for the AMD GART IOMMU I would prefer if that was not done.
+It has a pci config space access in a time critical path (flush).
+And Family10h supports accessing the northbridge using mmconfig.
+
+I believe the tigon3 driver also does config space access frequently
+on some chips.
+
+Also there are still the old x86 Macs where conf1 doesn't work.
+
+-Andi
