@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbXJ3LoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbXJ3Ltz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbXJ3LoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 07:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXJ3LoK
+	id S1754973AbXJ3Ltz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 07:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXJ3Lts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 07:44:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:59008 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752978AbXJ3LoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 07:44:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=QGtPz+yKDgmlvn7WtABL/uy3ZY6ImcC4fSZhHHOzA5tHp56q6lgGwDY2atgnJAI5S99wmLvi0s7TdwUoJMTik2moLHMt3L/q0bpdyuj9c+aJAcxfOBvEeh4PUmrNBdAnh/PhfmN1UFIHf++1o75n9Ny/JKTRSLROwkhrWxnDbsg=
-Date: Tue, 30 Oct 2007 14:44:01 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Clean up scatterlist.h and introduce macros for
-	readability.
-Message-ID: <20071030114401.GA7252@cvg>
-References: <Pine.LNX.4.64.0710291234560.20259@localhost.localdomain> <20071029185803.GA7499@kernel.dk> <aa79d98a0710291320r5412ebcboc90234cc2ac56102@mail.gmail.com> <20071029202352.GF7499@kernel.dk> <20071029133707.a53aa406.randy.dunlap@oracle.com>
+	Tue, 30 Oct 2007 07:49:48 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:44802 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751262AbXJ3Ltr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 07:49:47 -0400
+Message-ID: <393744987.14537@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 30 Oct 2007 19:49:41 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Florin Iucha <florin@iucha.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: pdflush stuck in D state with v2.6.24-rc1-192-gef49c32
+References: <20071028152428.GJ7918@iucha.net> <E1ImlvH-0003YH-Qf@localhost> <20071030114250.GL25561@iucha.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071029133707.a53aa406.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071030114250.GL25561@iucha.net>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <E1ImpbK-0000l3-1u@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Randy Dunlap - Mon, Oct 29, 2007 at 01:37:07PM -0700]
-| On Mon, 29 Oct 2007 21:23:52 +0100 Jens Axboe wrote:
-| 
-| > On Mon, Oct 29 2007, Cyrill Gorcunov wrote:
-| > > Could you please give a link to that explanation? It seems I've missed
-| > > it somehow. Thanks.
-| > 
-| > (don't top post)
-| > 
-| > It was on linux-kernel, message id:
-| > 
-| > Message-ID: <20071023202017.GI14671@kernel.dk>
-| 
-| which can be seen at marc.info by using this URL:
-| 
-| http://marc.info/?i=20071023202017.GI14671@kernel.dk
-| 
-| ---
-| ~Randy
-| 
+On Tue, Oct 30, 2007 at 06:42:50AM -0500, Florin Iucha wrote:
+> On Tue, Oct 30, 2007 at 03:54:03PM +0800, Fengguang Wu wrote:
+> > It could be triggered by the more aggressive writeback behavior - the
+> > new code will keep on retrying as long as there are dirty inodes pending.
+> > 
+> > Florin, would you try the attached patches against 2.6.24-git?
+> > They may generate big traffic of printk messages, but will help
+> > debug the problem.
+> 
+> I have updated to v2.6.24-rc1-334-g82798a1.  After using my computer
+> for two hours, I left the computer idle overnight.  This morning,
+> pdflushd is again consuming 25% of a CPU.  I will try Fengguang's
+> patches today.
 
-Thanks
+Thank you.
 
-		Cyrill
+Be sure to stop klogd ;-)
+A `dmesg` will be sufficient for debugging.
+
+btw, I cannot reproduce it with simple NFSv3 tests.
+
+Fengguang
 
