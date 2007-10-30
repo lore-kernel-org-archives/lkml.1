@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbXJ3PyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbXJ3Pzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbXJ3PyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXJ3PyF
+	id S1757171AbXJ3Pzf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbXJ3Pz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:54:05 -0400
-Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:47042 "EHLO
-	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbXJ3PyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:54:04 -0400
-X-Greylist: delayed 2353 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Oct 2007 11:54:04 EDT
-Message-ID: <47274A5F.6070409@gentoo.org>
-Date: Tue, 30 Oct 2007 15:14:39 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
+	Tue, 30 Oct 2007 11:55:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:47174 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753892AbXJ3Pz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 11:55:27 -0400
+Date: Tue, 30 Oct 2007 16:55:25 +0100
+From: Jan Kara <jack@suse.cz>
+To: Rik van Riel <riel@redhat.com>
+Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+Subject: Re: OOM notifications
+Message-ID: <20071030155525.GF9702@duck.suse.cz>
+References: <20071018201531.GA5938@dmt> <20071030145720.GB27039@atrey.karlin.mff.cuni.cz> <20071030112346.4b48bfe5@cuia.boston.redhat.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: "Fix ATAPI transfer lengths" causes CD writing regression
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030112346.4b48bfe5@cuia.boston.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Tue 30-10-07 11:23:46, Rik van Riel wrote:
+> On Tue, 30 Oct 2007 15:57:20 +0100
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> >   Hello,
+> > 
+> > > AIX contains the SIGDANGER signal to notify applications to free up some
+> > > unused cached memory:
+> > > 
+> > > http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
+> > > 
+> > > There have been a few discussions on implementing such an idea on Linux,
+> > > but nothing concrete has been achieved.
+> > > 
+> > > On the kernel side Rik suggested two notification points: "about to
+> > > swap" (for desktop scenarios) and "about to OOM" (for embedded-like
+> > > scenarios).
+> > > 
+> > > With that assumption in mind it would be necessary to either have two
+> > > special devices for notification, or somehow indicate both events
+> > > through the same file descriptor.
+> >   Actually, wouldn't a generic netlink interface be more elegant? Then
+> > we could connect it with DBUS and it would be much easier for
+> > applications (Desktop) to handle such events.
+> >   I agree that near-to-oom conditions are quite volatile and maybe we
+> > want a technically simple (and thus more reliable) mechanism for the
+> > notification but I anyway wanted to point to this possibility.
+> 
+> There's nothing wrong with being able to get this info via DBUS,
+> but we cannot expect every database and JVM out there (big targets
+> for the "reduce your memory footprint" thing on servers) to grow
+> a DBUS interface.
+  Hmm, that's right, but still the kernel->userspace interface could be via
+netlink (which is much more flexible than signals etc.) and then in userspace
+we could implement also some simple interface (UNIX socket?) for server like
+apps...
 
-In 2.6.23 and previous, CD writing works fine on my system. I'm using 
-ata_piix on:
-
-00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA 
-IDE Controller (rev 01)
-
-When I'm running CD writing utilities, I sometimes see this message in 
-the kernel logs:
-	ata2.00: 66 bytes trailing data
-Things do work fine though.
-
-With 2.6.24-rc1, I can't write CDs. Instead of the above message, I get:
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd a0/00:00:00:0a:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 10 in
-          res 58/00:02:00:0a:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
-ata2.00: status: { DRDY DRQ }
-ata2: soft resetting link
-ata2.00: configured for UDMA/33
-ata2: EH complete
-
-and the software acts oddly - for example Brasero tells me that the 
-blank CD I have inserted has a capacity of 17,179,869,184gb and it 
-doesn't let me write CDs as it says the medium is not writable.
-
-git bisect lead me to commit 2db78dd302d26d242d3e8e5c4c5024b6c3ea93c2 as 
-the culprit.
-
-Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date:   Tue Oct 2 13:53:04 2007 -0700
-
-     libata_scsi: Fix ATAPI transfer lengths
-
-     Some controller variants snoop the ATAPI length value for Packet
-     transfers to do state machine and FIFO management. Thus we want to
-     set it properly, even for cases where it is otherwise meaningless.
-
-Any ideas?
-
-Thanks!
-Daniel
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
