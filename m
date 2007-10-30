@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbXJ3PoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbXJ3Psh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbXJ3PoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXJ3PoM
+	id S1756169AbXJ3Psh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXJ3Psa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:44:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:41501 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbXJ3PoL (ORCPT
+	Tue, 30 Oct 2007 11:48:30 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34653 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbXJ3Ps3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PwEHeB6O9AyfthP5KII06qB3JOhCTS28n/m/VkO7IOCf12l35Q4E9oLc0/ojIQ8vN3wNQnKfFccqHVwYXmW5vrfLoGBotickihN3MBLgJXi+fpijic1bHB8CxrKcyxIguAB+bt7rjlD4wxnnGFw7uAN1Q8MuyQLB/7T/2KaHhnQ=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Subject: Re: [PATCH] drivers/scsi/lpfc/lpfc_hw.h: Some minor cleanup.
-Date: Tue, 30 Oct 2007 15:44:02 +0000
-User-Agent: KMail/1.9.1
-Cc: James.Bottomley@steeleye.com, James.Smart@emulex.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <20071030104816.30937.77821.sendpatchset@thinktank.campus.ltu.se>
-In-Reply-To: <20071030104816.30937.77821.sendpatchset@thinktank.campus.ltu.se>
+	Tue, 30 Oct 2007 11:48:29 -0400
+Date: Tue, 30 Oct 2007 15:47:40 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, stefani@seibold.net,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       linux-mm@kvack.org
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+In-Reply-To: <1193750751.27652.86.camel@twins>
+Message-ID: <Pine.LNX.4.64.0710301535270.9322@blonde.wat.veritas.com>
+References: <1193064057.16541.1.camel@matrix>  <20071029004002.60c7182a.akpm@linux-foundation.org>
+  <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com> 
+ <1193677302.27652.56.camel@twins>  <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
+  <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy> 
+ <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com> 
+ <1193738177.27652.69.camel@twins>  <45a44e480710300616p34b0a159m87de78d0a4d43028@mail.gmail.com>
+ <1193750751.27652.86.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710301544.02765.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 10:54, Richard Knutsson wrote:
-> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-> ---
-> Diffed against linus-git
-> Checked with script/checkpatch.pl
+On Tue, 30 Oct 2007, Peter Zijlstra wrote:
+> On Tue, 2007-10-30 at 09:16 -0400, Jaya Kumar wrote:
+...
+> > - defio mmap adds this vma to private list (equivalent of
+> > address_space or anon_vma)
+...
+> > - foreach vma { foreach page { page_mkclean_one(page, vma) }
 > 
-> 
-> diff --git a/drivers/scsi/lpfc/lpfc_hw.h b/drivers/scsi/lpfc/lpfc_hw.h
-> index 451accd..6f56528 100644
-> --- a/drivers/scsi/lpfc/lpfc_hw.h
-> +++ b/drivers/scsi/lpfc/lpfc_hw.h
-> @@ -3158,31 +3158,30 @@ struct lpfc_sli2_slim {
->   *
->   * Parameters:
->   * device : struct pci_dev 's device field
-> - *
-> - * return 1 => TRUE
-> - *        0 => FALSE
->   */
-> -static inline int
-> +static inline bool
->  lpfc_is_LC_HBA(unsigned short device)
->  {
-> -	if ((device == PCI_DEVICE_ID_TFLY) ||
-> -	    (device == PCI_DEVICE_ID_PFLY) ||
-> -	    (device == PCI_DEVICE_ID_LP101) ||
-> -	    (device == PCI_DEVICE_ID_BMID) ||
-> -	    (device == PCI_DEVICE_ID_BSMB) ||
-> -	    (device == PCI_DEVICE_ID_ZMID) ||
-> -	    (device == PCI_DEVICE_ID_ZSMB) ||
-> -	    (device == PCI_DEVICE_ID_RFLY))
-> -		return 1;
-> -	else
-> -		return 0;
-> +	switch (device) {
-> +	case PCI_DEVICE_ID_TFLY:
-> +	case PCI_DEVICE_ID_PFLY:
-> +	case PCI_DEVICE_ID_LP101:
-> +	case PCI_DEVICE_ID_BMID:
-> +	case PCI_DEVICE_ID_BSMB:
-> +	case PCI_DEVICE_ID_ZMID:
-> +	case PCI_DEVICE_ID_ZSMB:
-> +	case PCI_DEVICE_ID_RFLY:
-> +		return true;
-> +	}
-> +
-> +	return false;
->  }
+> Yeah, page_mkclean_one(page, vma) will use vma_address() to obtain an
+> user-space address for the page in this vma using page->index and the
+> formula from the last email, this address is then used to walk the page
+> tables and obtain a pte.
 
-Why is this patch useful? I'd rather do this instead:
+I don't understand why you suggested an anon_vma, nor why Jaya is
+suggesting a private list.  All vmas mapping /dev/fb0 will be kept
+in the prio_tree rooted in its struct address_space (__vma_link_file
+in mm/mmap.c).  And page_mkclean gets page_mkclean_file to walk that
+very tree.  The missing part is just the setting of page->mapping to
+point to that struct address_space (and clearing it before finally
+freeing the pages), and the setting of page->index as you described.
+Isn't it?
 
--static inline int
-+static int
-
-(this function has three callsites, thus de-inlining will
-make code smaller)
---
-vda
+Hugh
