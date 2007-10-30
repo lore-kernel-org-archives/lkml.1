@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXJ3O5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbXJ3PAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbXJ3O5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbXJ3O5W
+	id S1754549AbXJ3PAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXJ3PA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:57:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46630 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbXJ3O5V (ORCPT
+	Tue, 30 Oct 2007 11:00:28 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:63761 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752287AbXJ3PA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:57:21 -0400
-Date: Tue, 30 Oct 2007 15:57:20 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: linux-kernel@vger.kernel.org, drepper@redhat.com, riel@redhat.com
-Subject: Re: OOM notifications
-Message-ID: <20071030145720.GB27039@atrey.karlin.mff.cuni.cz>
-References: <20071018201531.GA5938@dmt>
-MIME-Version: 1.0
+	Tue, 30 Oct 2007 11:00:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAJLjJkdMQWvU/2dsb2JhbACBWg
+Date: Tue, 30 Oct 2007 10:55:23 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add asm-compat.h to x86
+Message-ID: <20071030145523.GA28026@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071018201531.GA5938@dmt>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:48:58 up 92 days, 15:07,  4 users,  load average: 1.09, 0.96, 0.96
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+Add asm-compat.h to x86
 
-> AIX contains the SIGDANGER signal to notify applications to free up some
-> unused cached memory:
-> 
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0007.0/0901.html
-> 
-> There have been a few discussions on implementing such an idea on Linux,
-> but nothing concrete has been achieved.
-> 
-> On the kernel side Rik suggested two notification points: "about to
-> swap" (for desktop scenarios) and "about to OOM" (for embedded-like
-> scenarios).
-> 
-> With that assumption in mind it would be necessary to either have two
-> special devices for notification, or somehow indicate both events
-> through the same file descriptor.
-  Actually, wouldn't a generic netlink interface be more elegant? Then
-we could connect it with DBUS and it would be much easier for
-applications (Desktop) to handle such events.
-  I agree that near-to-oom conditions are quite volatile and maybe we
-want a technically simple (and thus more reliable) mechanism for the
-notification but I anyway wanted to point to this possibility.
+In assembly code and in gcc inline assembly, we need .long to express a "c long"
+type on i386 and a .quad to express the same on x86_64. Use macros similar to
+powerpc "PPC_LONG" to express those. Name chosen: ASM_LONG. (didn't feel like
+X86_LONG was required).
 
-								Honza
+This is useful in inline assembly within code shared between 32 and 64
+bits architectures in x86.
+
+More compatible assembly macros could be added in this header later when
+needed.
+
+I had to create this to implement a merged optimized immediate values
+header for x86.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+---
+ include/asm-x86/asm-compat.h |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+Index: linux-2.6-lttng/include/asm-x86/asm-compat.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-x86/asm-compat.h	2007-10-24 09:41:09.000000000 -0400
+@@ -0,0 +1,29 @@
++#ifndef _ASM_X86_ASM_COMPAT_H
++#define _ASM_X86_ASM_COMPAT_H
++
++#include <asm/types.h>
++
++#ifdef __ASSEMBLY__
++#  define stringify_in_c(...)	__VA_ARGS__
++#  define ASM_CONST(x)		x
++#else
++/* This version of stringify will deal with commas... */
++#  define __stringify_in_c(...)	#__VA_ARGS__
++#  define stringify_in_c(...)	__stringify_in_c(__VA_ARGS__) " "
++#  define __ASM_CONST(x)	x##UL
++#  define ASM_CONST(x)		__ASM_CONST(x)
++#endif
++
++#ifdef CONFIG_X86_64
++
++/* operations for longs and pointers */
++#define ASM_LONG	stringify_in_c(.quad)
++
++#else /* 32-bit */
++
++/* operations for longs and pointers */
++#define ASM_LONG	stringify_in_c(.long)
++
++#endif
++
++#endif /* _ASM_X86_ASM_COMPAT_H */
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
