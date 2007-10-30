@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbXJ3MNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXJ3Mac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbXJ3MNi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbXJ3MNZ
+	id S1752448AbXJ3Mac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJ3MaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:13:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40408 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 08:30:23 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:38697 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755552AbXJ3MNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:13:24 -0400
-Message-ID: <47272007.8000108@redhat.com>
-Date: Tue, 30 Oct 2007 10:13:59 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+	id S1752209AbXJ3MaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 08:30:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
+	b=Ap79c27eOJRGznuFyDK3ybeVClsUDfEitm4g+5eGt6j69g4dI5+kGSbhX2UcYJbNujGqFZbKzKT5b/yS8OlEOEmkNmjXtpuHGr58wyolafmdHZac4o4PzedIR/N4i+ij;
+Message-ID: <29685.simon.1193747418@5ec7c279.invalid>
+In-Reply-To: <4726D9D9.2000909@ii.net>
+References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
+    <4726377A.4080807@crispincowan.com>
+    <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
+    <4726D9D9.2000909@ii.net>
+Date: Tue, 30 Oct 2007 12:30:18 -0000
+Subject: Re: Defense in depth: LSM *modules*, not a static interface
+From: "Simon Arlott" <simon@fire.lp0.eu>
+To: "Cliffe" <cliffe@ii.net>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, --cc@redhat.com,
-       avi@quramnet.com, kvm-devel@lists.sourceforge.net,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] raise tsc clocksource rating
-References: <11936994092607-git-send-email-gcosta@redhat.com> <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain> <200710301339.23628.rusty@rustcorp.com.au> <20071030073736.GA21843@elte.hu>
-In-Reply-To: <20071030073736.GA21843@elte.hu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, October 30, 2007 07:14, Cliffe wrote:
+> And while I acknowledge that many of these layers are currently buried
+> within the kernel (netfilter...) they are security layers which in many
+> cases would probably make sense as stackable security modules.
+>
+> Making the interface static forces mammoth solutions which then must
+> attempt to solve all of the above in one ls*m*. What happened to
+> dividing tasks into easy to manage chunks?
 
-Ingo Molnar escreveu:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> and just in case it's not obvious: i am not arguing for the inclusion of 
-> the patch, i'm just pointing out the plain fact that in the case where 
-> the TSC _is_ reliable, 5 different clocksource drivers for has obvious 
-> disadvantages. Anyone arguing against that simple point needs his head 
-> examined :) Once we can pass around calibration information from the 
-> host to the guest (which we dont do at the moment) there will be reason 
-> not to use the native clocksource driver in the guest.
-If you sustain that we cannot have a reliable synchronization test
-mechanism, neither do I. All this is based in the assumption that a bad
-tsc will fail such tests.
+Would it be possible to have Kconfig select which LSM should handle each
+area of security? Selecting LSM A would automatically disable LSM B and
+C since they both implement the same security functions, while LSM D
+would still be selectable since it implements something else. The default
+capabilities code would then turn off parts of itself that another LSM
+is handling.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
+Alternatively the M in LSM can be restored and modules can be stacked.
+It should be possible for the primary LSM to check the security_ops of the
+secondary LSM(s) and complain if it considers there to be an incompatiblity.
 
-iD8DBQFHJyAHjYI8LaFUWXMRAtYoAJ9l5kNodRLfTsNHDvyioufM7SQzTACfarEy
-XXq3sDq9uxZ/72hhA46YmgM=
-=DwN/
------END PGP SIGNATURE-----
+-- 
+Simon Arlott
