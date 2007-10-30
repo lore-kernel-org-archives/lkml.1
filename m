@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbXJ3GOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbXJ3GiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbXJ3GOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 02:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbXJ3GOD
+	id S1754065AbXJ3GiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 02:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJ3GiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 02:14:03 -0400
-Received: from fep02.mfe.bur.connect.com.au ([203.63.86.22]:53786 "EHLO
-	fep02.mfe.bur.connect.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751011AbXJ3GOA (ORCPT
+	Tue, 30 Oct 2007 02:38:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:13460 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXJ3GiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 02:14:00 -0400
-Message-ID: <4726D9D9.2000909@ii.net>
-Date: Tue, 30 Oct 2007 15:14:33 +0800
-From: Cliffe <cliffe@ii.net>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 30 Oct 2007 02:38:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fwodHJctgj5NaqCXzDD7frTvtikI4crn9oVyUMlB1e/YkKTkozt/OQdcq0VSPJ+8qsyUe1GBYE7wm9x01T6/TjnFt7GPRYUwjPT55OUBg5Jtj0CNbtteIeUWeAFnYMjt1FacTWwEp6kChW0g+PlICoJs2RYdvSWQdj6VAwUntGM=
+Message-ID: <91b13c310710292338o3d4bf147lcae153eca30784e8@mail.gmail.com>
+Date: Tue, 30 Oct 2007 14:38:02 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/5] update boot spec to 2.07
+Cc: "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Vivek Goyal" <vgoyal@in.ibm.com>,
+       lguest <lguest@ozlabs.org>, "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <1191368106.17826.43.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Defense in depth: LSM *modules*, not a static interface
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>	 <4726377A.4080807@crispincowan.com> <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
-In-Reply-To: <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1191368052.17826.40.camel@localhost.localdomain>
+	 <1191368106.17826.43.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Defense in depth has long been recognised as an important secure design 
-principle. Security is best achieved using a layered approach.
+On 10/3/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Proposed updates for version 2.07 of the boot protocol.  This includes:
+>
+...
+> Signed-off-by: Jeremy Fitzhardinge < jeremy@xensource.com>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: "Eric W. Biederman" < ebiederm@xmission.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Vivek Goyal <vgoyal@in.ibm.com >
+>
+> ---
+>  Documentation/i386/boot.txt    |   34
+Sugguestion is you also add an entry to the header of the file
+(Documentation/i386/boot.txt):
 
-On a single system it makes sense to have a layered approach such as:
+something like this:
 
-Standard DAC (where users are in control of permissions)
-Some form of user-based non-DAC (where admins can specify what users can 
-specifically do) such as SELinux or SMACK
-System-wide firewall (netfilter)
-Some form of sandboxes/namespace isolation (chroot, jails...)
-General application confinement such as DTE (SELinux), or Capability 
-lists (AppArmor, systrace ...)
-Application network confinement - firewall to confine individual apps 
-(maybe included in the above)
-IDS or IPS
-Malware scanner
-Posix Capabilities
-Pax/RaceGuard
-...[insert innovation here]...
+diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
+index fc49b79..645bbd7 100644
+--- a/Documentation/i386/boot.txt
++++ b/Documentation/i386/boot.txt
+@@ -42,6 +42,9 @@ Protocol 2.05:	(Kernel 2.6.20) Make protected mode
+kernel relocatable.
+ Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
+ 		the boot command line
 
-And while I acknowledge that many of these layers are currently buried 
-within the kernel (netfilter...) they are security layers which in many 
-cases would probably make sense as stackable security modules.
++Protocol 2.07:	(Kernel 2.6.23) Added two fields hardware_subarch and
++		hardware_subarch_data to describe the paravirtualized
++		environment.
 
-Making the interface static forces mammoth solutions which then must 
-attempt to solve all of the above in one ls*m*. What happened to 
-dividing tasks into easy to manage chunks?
+ **** MEMORY LAYOUT
 
-Regards,
+-- 
+Denis Cheng
+Linux Application Developer
 
-Z. Cliffe Schreuders
-BSc Comp Sci (Hons) & Int Comp
-PhD Candidate, Casual Tutor
-School of IT
-Murdoch University
-
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
