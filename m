@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXJ3MB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbXJ3MLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbXJ3MB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXJ3MBS
+	id S1754005AbXJ3MLh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXJ3MLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:01:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36622 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbXJ3MBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:01:18 -0400
-Message-ID: <47271D4A.8030707@redhat.com>
-Date: Tue, 30 Oct 2007 10:02:18 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+	Tue, 30 Oct 2007 08:11:30 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:42142 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbXJ3MLa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 08:11:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, rusty@rustcorp.com.au, jeremy@goop.org,
-       --cc@redhat.com, avi@quramnet.com, kvm-devel@lists.sourceforge.net,
-       Glauber de Oliveira Costa <glauber@t60.localdomain>,
-       Dan Hecht <dhecht@vmware.com>, Garrett Smith <garrett@vmware.com>
-Subject: Re: [PATCH] raise tsc clocksource rating
-References: <11936994092607-git-send-email-gcosta@redhat.com>	 <1193697734.9793.86.camel@bodhitayantram.eng.vmware.com>	 <20071029224852.GA27547@elte.hu>	 <1193698505.9793.90.camel@bodhitayantram.eng.vmware.com>	 <20071029230213.GA1982@elte.hu> <1193699638.9793.97.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1193699638.9793.97.camel@bodhitayantram.eng.vmware.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH resend] Make the dev_*() family of macros in device.hcomplete
+Date: Tue, 30 Oct 2007 05:11:24 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E27016E5FCB@az33exm24.fsl.freescale.net>
+In-Reply-To: <20071030000054.GA19022@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH resend] Make the dev_*() family of macros in device.hcomplete
+Thread-Index: AcgahzXXAQAhv/L3TdGe3jHEKteUyQAZK9VA
+References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com> <20071030000054.GA19022@suse.de>
+From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
+To: "Greg KH" <gregkh@suse.de>
+Cc: <mochel@osdl.org>, <linux-kernel@vger.kernel.org>, <hjlipp@web.de>,
+       <tilman@imap.cc>, <gigaset307x-common@lists.sourceforge.net>,
+       <kkeil@suse.de>, <isdn4linux@listserv.isdn4linux.de>, <mac@melware.de>,
+       <linux-omap-open-source@linux.omap.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi Greg K-H,
 
-Zachary Amsden escreveu:
-> On Tue, 2007-10-30 at 00:02 +0100, Ingo Molnar wrote:
->> * Zachary Amsden <zach@vmware.com> wrote:
+
+> > +#define dev_info(dev, format, arg...)		\
+> > +	dev_printk(KERN_INFO, dev, format, ## arg)
+> > +
+> >  #ifdef DEBUG
+> >  #define dev_dbg(dev, format, arg...)		\
+> > -	dev_printk(KERN_DEBUG , dev , format , ## arg)
+> > +	dev_printk(KERN_DEBUG, dev, format, ## arg)
 > 
->>> Not every guest support paravirt, but for correctness, all guests 
->>> require TSC, which must be exposed all the way up to userspace, no 
->>> matter what the efficiency or accuracy may be.
->> but if there's a perfect TSC available (there is such hardware) then the 
->> TSC _is_ the best clocksource. Paravirt now turns it off unconditionally 
->> in essence.
-> 
-> No, if no paravirt clocksource is detected, nothing can override the
-> perfect TSC hardware clocksource rating of 400.  And if a paravirt
-> clocksource is detected, it is always better than TSC.
+> Those extra spaces are there for a good reason, older versions of gcc
+> are broken without it.  So please, put them all back...
 
-Why always? tsc is the best possible alternative the _platform_ can
-provide. So the paravirt clocksource will be at best, as good as tsc.
-And if it is the case: why bother with communication mechanisms of all
-kinds, calculations, etc, if we can just read the tsc?
-
-Noting again: If the tsc does not arrive accurate to the guest, it will
-fail the tsc clocksource tests. So it will be rated zero anyway
+You mean I should add spaces before commas only where they were
+initially or to all new code and/or macros? I've observed other kernel
+code and more often there are no spaces before commas. I'm asking
+because the CodingStyle document is not very explicit about this rule.
 
 
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
-
-iD8DBQFHJx1KjYI8LaFUWXMRAv0hAJ4sj0Z1FraYrgbU5Mj0pWOJGk6jtwCfc5xL
-jpTC273X0oqPTCR7NcVHJOI=
-=WPzV
------END PGP SIGNATURE-----
+Thank you,
+Emil.
