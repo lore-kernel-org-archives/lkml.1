@@ -1,199 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbXJ3QPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbXJ3QPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756304AbXJ3QPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbXJ3QNq
+	id S1752771AbXJ3QPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbXJ3QNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:13:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46995 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:13:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46994 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752287AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752448AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Oct 2007 12:13:39 -0400
-Message-Id: <20071030160914.849009000@chello.nl>
+Message-Id: <20071030160910.813944000@chello.nl>
 References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:25 +0100
+Date: Tue, 30 Oct 2007 17:04:04 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 24/33] mm: prepare swap entry methods for use in page methods
-Content-Disposition: inline; filename=mm-swap_entry_methods.patch
+Subject: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+Content-Disposition: inline; filename=reserve-slab.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move around the swap entry methods in preparation for use from
-page methods.
+Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+contexts that are entitled to it.
 
-Also provide a function to obtain the swap_info_struct backing
-a swap cache page.
+Care is taken to only touch the SLUB slow path.
+
+This is done to ensure reserve pages don't leak out and get consumed.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm.h      |    8 ++++++++
- include/linux/swap.h    |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/swapops.h |   44 --------------------------------------------
- mm/swapfile.c           |    1 +
- 4 files changed, 57 insertions(+), 44 deletions(-)
+ include/linux/slub_def.h |    1 +
+ mm/slub.c                |   31 +++++++++++++++++++++++--------
+ 2 files changed, 24 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/include/linux/mm.h
+Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -12,6 +12,7 @@
- #include <linux/prio_tree.h>
- #include <linux/debug_locks.h>
- #include <linux/mm_types.h>
-+#include <linux/swap.h>
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -20,11 +20,12 @@
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
++#include "internal.h"
  
- struct mempolicy;
- struct anon_vma;
-@@ -573,6 +574,13 @@ static inline struct address_space *page
- 	return mapping;
+ /*
+  * Lock order:
+  *   1. slab_lock(page)
+- *   2. slab->list_lock
++ *   2. node->list_lock
+  *
+  *   The slab_lock protects operations on the object of a particular
+  *   slab and its metadata in the page struct. If the slab lock
+@@ -1074,7 +1075,7 @@ static void setup_object(struct kmem_cac
+ 		s->ctor(s, object);
  }
  
-+static inline struct swap_info_struct *page_swap_info(struct page *page)
-+{
-+	swp_entry_t swap = { .val = page_private(page) };
-+	BUG_ON(!PageSwapCache(page));
-+	return get_swap_info_struct(swp_type(swap));
-+}
-+
- static inline int PageAnon(struct page *page)
+-static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
++static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node, int *reserve)
  {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-Index: linux-2.6/include/linux/swap.h
-===================================================================
---- linux-2.6.orig/include/linux/swap.h
-+++ linux-2.6/include/linux/swap.h
-@@ -80,6 +80,50 @@ typedef struct {
- } swp_entry_t;
+ 	struct page *page;
+ 	struct kmem_cache_node *n;
+@@ -1090,6 +1091,7 @@ static struct page *new_slab(struct kmem
+ 	if (!page)
+ 		goto out;
  
- /*
-+ * swapcache pages are stored in the swapper_space radix tree.  We want to
-+ * get good packing density in that tree, so the index should be dense in
-+ * the low-order bits.
-+ *
-+ * We arrange the `type' and `offset' fields so that `type' is at the five
-+ * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-+ * remaining bits.
-+ *
-+ * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-+ */
-+#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
-+#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
-+
-+/*
-+ * Store a type+offset into a swp_entry_t in an arch-independent format
-+ */
-+static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
-+{
-+	swp_entry_t ret;
-+
-+	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
-+			(offset & SWP_OFFSET_MASK(ret));
-+	return ret;
-+}
-+
-+/*
-+ * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline unsigned swp_type(swp_entry_t entry)
-+{
-+	return (entry.val >> SWP_TYPE_SHIFT(entry));
-+}
-+
-+/*
-+ * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline pgoff_t swp_offset(swp_entry_t entry)
-+{
-+	return entry.val & SWP_OFFSET_MASK(entry);
-+}
-+
-+/*
-  * current->reclaim_state points to one of these when a task is running
-  * memory reclaim
-  */
-@@ -326,6 +370,10 @@ static inline int valid_swaphandles(swp_
- 	return 0;
- }
- 
-+static inline struct swap_info_struct *get_swap_info_struct(unsigned type)
-+{
-+	return NULL;
-+}
- #define can_share_swap_page(p)			(page_mapcount(p) == 1)
- 
- static inline int move_to_swap_cache(struct page *page, swp_entry_t entry)
-Index: linux-2.6/include/linux/swapops.h
-===================================================================
---- linux-2.6.orig/include/linux/swapops.h
-+++ linux-2.6/include/linux/swapops.h
-@@ -1,48 +1,4 @@
- /*
-- * swapcache pages are stored in the swapper_space radix tree.  We want to
-- * get good packing density in that tree, so the index should be dense in
-- * the low-order bits.
-- *
-- * We arrange the `type' and `offset' fields so that `type' is at the five
-- * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-- * remaining bits.
-- *
-- * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-- */
--#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
--#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
--
--/*
-- * Store a type+offset into a swp_entry_t in an arch-independent format
-- */
--static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
--{
--	swp_entry_t ret;
--
--	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
--			(offset & SWP_OFFSET_MASK(ret));
--	return ret;
--}
--
--/*
-- * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline unsigned swp_type(swp_entry_t entry)
--{
--	return (entry.val >> SWP_TYPE_SHIFT(entry));
--}
--
--/*
-- * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline pgoff_t swp_offset(swp_entry_t entry)
--{
--	return entry.val & SWP_OFFSET_MASK(entry);
--}
--
--/*
-  * Convert the arch-dependent pte representation of a swp_entry_t into an
-  * arch-independent swp_entry_t.
-  */
-Index: linux-2.6/mm/swapfile.c
-===================================================================
---- linux-2.6.orig/mm/swapfile.c
-+++ linux-2.6/mm/swapfile.c
-@@ -1768,6 +1768,7 @@ get_swap_info_struct(unsigned type)
++	*reserve = page->reserve;
+ 	n = get_node(s, page_to_nid(page));
+ 	if (n)
+ 		atomic_long_inc(&n->nr_slabs);
+@@ -1468,10 +1470,22 @@ static void *__slab_alloc(struct kmem_ca
  {
- 	return &swap_info[type];
- }
-+EXPORT_SYMBOL_GPL(get_swap_info_struct);
+ 	void **object;
+ 	struct page *new;
++	int reserve = 0;
  
- /*
-  * swap_lock prevents swap_map being freed. Don't grab an extra
+ 	if (!c->page)
+ 		goto new_slab;
+ 
++	if (unlikely(c->reserve)) {
++		/*
++		 * If the current slab is a reserve slab and the current
++		 * allocation context does not allow access to the reserves
++		 * we must force an allocation to test the current levels.
++		 */
++		if (!(gfp_to_alloc_flags(gfpflags) & ALLOC_NO_WATERMARKS))
++			goto alloc_slab;
++		reserve = 1;
++	}
++
+ 	slab_lock(c->page);
+ 	if (unlikely(!node_match(c, node)))
+ 		goto another_slab;
+@@ -1479,10 +1493,9 @@ load_freelist:
+ 	object = c->page->freelist;
+ 	if (unlikely(!object))
+ 		goto another_slab;
+-	if (unlikely(SlabDebug(c->page)))
++	if (unlikely(SlabDebug(c->page) || reserve))
+ 		goto debug;
+ 
+-	object = c->page->freelist;
+ 	c->freelist = object[c->offset];
+ 	c->page->inuse = s->objects;
+ 	c->page->freelist = NULL;
+@@ -1500,16 +1513,18 @@ new_slab:
+ 		goto load_freelist;
+ 	}
+ 
++alloc_slab:
+ 	if (gfpflags & __GFP_WAIT)
+ 		local_irq_enable();
+ 
+-	new = new_slab(s, gfpflags, node);
++	new = new_slab(s, gfpflags, node, &reserve);
+ 
+ 	if (gfpflags & __GFP_WAIT)
+ 		local_irq_disable();
+ 
+ 	if (new) {
+ 		c = get_cpu_slab(s, smp_processor_id());
++		c->reserve = reserve;
+ 		if (c->page) {
+ 			/*
+ 			 * Someone else populated the cpu_slab while we
+@@ -1537,8 +1552,7 @@ new_slab:
+ 	}
+ 	return NULL;
+ debug:
+-	object = c->page->freelist;
+-	if (!alloc_debug_processing(s, c->page, object, addr))
++	if (SlabDebug(c->page) && !alloc_debug_processing(s, c->page, object, addr))
+ 		goto another_slab;
+ 
+ 	c->page->inuse++;
+@@ -2010,10 +2024,11 @@ static struct kmem_cache_node *early_kme
+ {
+ 	struct page *page;
+ 	struct kmem_cache_node *n;
++	int reserve;
+ 
+ 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
+ 
+-	page = new_slab(kmalloc_caches, gfpflags, node);
++	page = new_slab(kmalloc_caches, gfpflags, node, &reserve);
+ 
+ 	BUG_ON(!page);
+ 	if (page_to_nid(page) != node) {
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h
++++ linux-2.6/include/linux/slub_def.h
+@@ -17,6 +17,7 @@ struct kmem_cache_cpu {
+ 	int node;
+ 	unsigned int offset;
+ 	unsigned int objsize;
++	int reserve;
+ };
+ 
+ struct kmem_cache_node {
 
 --
 
