@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXJ3EzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXJ3FHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbXJ3EzW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXJ3EzI
+	id S1753886AbXJ3FHt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 01:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXJ3FHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:55:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53429
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752685AbXJ3EzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:55:06 -0400
-Date: Mon, 29 Oct 2007 21:55:00 -0700 (PDT)
-Message-Id: <20071029.215500.114909860.davem@davemloft.net>
-To: cebbert@redhat.com
-Cc: socketpair_bug@rich-paul.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk
-Subject: Re: BUG in sys_socketpair
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4720E424.7060509@redhat.com>
-References: <20071025141107.GA19437@dragon.rich-paul.net>
-	<4720E424.7060509@redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 01:07:41 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:60790 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752774AbXJ3FHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 01:07:41 -0400
+Date: Tue, 30 Oct 2007 14:07:36 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] ia64/mm/init.c: fix section mismatches
+Message-ID: <20071030050734.GD5361@verge.net.au>
+References: <20071029124947.GM7227@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029124947.GM7227@stusta.de>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <cebbert@redhat.com>
-Date: Thu, 25 Oct 2007 14:44:52 -0400
-
-> On 10/25/2007 10:11 AM, Rich Paul wrote:
-> > In 2.6.23, there seems to be a minor bug in sys_socketpair.  When the
-> > calls to sock_alloc_fd fail, it aborts the routine, but it returns the
-> > variable err, which is not set in this case.
-> > 
-> > The result is a silent failure if you have too many files open and call
-> > socketpair.
-> > 
-> > Here is a simple UNTESTED patch (not even compiled) which should resolve the
-> > issue.
-> > 
-> > 
-> > --- net/socket.c.orig   2007-10-25 10:03:56.000000000 -0400
-> > +++ net/socket.c        2007-10-25 10:04:00.000000000 -0400
-> Should be "err = fd1" (spaces), otherwise looks good.
+On Mon, Oct 29, 2007 at 01:49:47PM +0100, Adrian Bunk wrote:
+> This patch fixes the following section mismatches:
 > 
-> Original did:
+> <--  snip  -->
 > 
-> 	err = sock_map_fd(sock1);
-> 	if (err < 0)
-> 		goto out_release_both;
-> 	fd1 = err;
+> ...
+> WARNING: vmlinux.o(.text+0x5b5c2): Section mismatch: reference to .init.text:memmap_init_zone (between 'memmap_init' and 'virtual_memmap_init')
+> WARNING: vmlinux.o(.text+0x5b842): Section mismatch: reference to .init.text:memmap_init_zone (between 'virtual_memmap_init' and 'ia64_mmu_init')
+> ...
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Thanks everyone, I'll commit the following both to 2.6.x GIT
-and -stable.
+That seems correct me and makes the warnings go away in my build.
 
->From 42f3fc7e989554e9952bdf28af137e4e4570f067 Mon Sep 17 00:00:00 2001
-From: David S. Miller <davem@sunset.davemloft.net>
-Date: Mon, 29 Oct 2007 21:54:02 -0700
-Subject: [PATCH] [NET]: Fix error reporting in sys_socketpair().
+Acked-by: Simon Horman <horms@verge.net.au>
 
-If either of the two sock_alloc_fd() calls fail, we
-forget to update 'err' and thus we'll erroneously
-return zero in these cases.
-
-Based upon a report and patch from Rich Paul, and
-commentary from Chuck Ebbert.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/socket.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/net/socket.c b/net/socket.c
-index 540013e..5d879fd 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1250,11 +1250,14 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
- 		goto out_release_both;
- 
- 	fd1 = sock_alloc_fd(&newfile1);
--	if (unlikely(fd1 < 0))
-+	if (unlikely(fd1 < 0)) {
-+		err = fd1;
- 		goto out_release_both;
-+	}
- 
- 	fd2 = sock_alloc_fd(&newfile2);
- 	if (unlikely(fd2 < 0)) {
-+		err = fd2;
- 		put_filp(newfile1);
- 		put_unused_fd(fd1);
- 		goto out_release_both;
--- 
-1.5.2.5
+> 
+> ---
+> 
+>  arch/ia64/mm/init.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> 45c99ede63b0f76fe3dcc906ae550193a4d41626 
+> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+> index c6c19bf..25aef62 100644
+> --- a/arch/ia64/mm/init.c
+> +++ b/arch/ia64/mm/init.c
+> @@ -472,7 +472,7 @@ struct memmap_init_callback_data {
+>  	unsigned long zone;
+>  };
+>  
+> -static int
+> +static int __meminit
+>  virtual_memmap_init (u64 start, u64 end, void *arg)
+>  {
+>  	struct memmap_init_callback_data *args;
+> @@ -503,7 +503,7 @@ virtual_memmap_init (u64 start, u64 end, void *arg)
+>  	return 0;
+>  }
+>  
+> -void
+> +void __meminit
+>  memmap_init (unsigned long size, int nid, unsigned long zone,
+>  	     unsigned long start_pfn)
+>  {
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
