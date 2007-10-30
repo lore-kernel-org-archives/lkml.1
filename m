@@ -1,42 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbXJ3OwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbXJ3O45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbXJ3OwO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXJ3Ov5
+	id S1754453AbXJ3O45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJ3O4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:51:57 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:33674 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752990AbXJ3Ov4 (ORCPT
+	Tue, 30 Oct 2007 10:56:50 -0400
+Received: from hartman.uits.indiana.edu ([129.79.1.194]:33260 "EHLO
+	hartman.uits.indiana.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbXJ3O4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:51:56 -0400
-Date: Tue, 30 Oct 2007 08:51:55 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-Message-ID: <20071030145155.GL32359@parisc-linux.org>
-References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
+	Tue, 30 Oct 2007 10:56:49 -0400
+From: CSights <csights@fastmail.fm>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: cannot "hibernate" if program being debugged in gdb is paused after SIGABRT in linux 2.6.23 (but can in 2.6.22.7)
+Date: Tue, 30 Oct 2007 10:34:08 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200710252103.27675.csights@fastmail.fm> <200710281133.36995.csights@fastmail.fm> <200710281958.57460.rjw@sisk.pl>
+In-Reply-To: <200710281958.57460.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710301034.08268.csights@fastmail.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 11:54:22AM +0100, Richard Knutsson wrote:
-> Convert to use the generic boolean.
-> -	u8 initialized;
-> -	u8 in_use;		/* is the management node open*/
-> +	bool initialized:8;
-> +	bool in_use:8;		/* is the management node open*/
+>
+> Thanks, I'll try to reproduce the problem here and fix it.
 
-Are you serious?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+No really, thank you!
+C.
