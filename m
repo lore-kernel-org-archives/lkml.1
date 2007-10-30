@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXJ3SjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbXJ3Smr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbXJ3SjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXJ3SjG
+	id S1755497AbXJ3Smr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXJ3Smj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:39:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42907 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753835AbXJ3SjE (ORCPT
+	Tue, 30 Oct 2007 14:42:39 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:47879 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbXJ3Smi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:39:04 -0400
-Date: Tue, 30 Oct 2007 11:38:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: matthew@wil.cx, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi
-Subject: Re: [patch 07/10] SLUB: Avoid referencing kmem_cache structure in
- __slab_alloc
-Message-Id: <20071030113848.930471e6.akpm@linux-foundation.org>
-In-Reply-To: <20071028033259.992768446@sgi.com>
-References: <20071028033156.022983073@sgi.com>
-	<20071028033259.992768446@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 14:42:38 -0400
+Date: Tue, 30 Oct 2007 19:42:37 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Peter Dolding <oiaohm@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0710301136560.31325@fbirervta.pbzchgretzou.qr>
+References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl> 
+ <4726377A.4080807@crispincowan.com> <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Oct 2007 20:32:03 -0700
-Christoph Lameter <clameter@sgi.com> wrote:
 
-> There is the need to use the objects per slab in the first part of
-> __slab_alloc() which is still pretty hot. Copy the number of objects
-> per slab into the kmem_cache_cpu structure. That way we can get the
-> value from a cache line that we already need to touch. This brings
-> the kmem_cache_cpu structure up to 4 even words.
-> 
-> There is no increase in the size of kmem_cache_cpu since the size of object
-> is rounded to the next word.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  include/linux/slub_def.h |    1 +
->  mm/slub.c                |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slub_def.h	2007-10-26 19:09:16.000000000 -0700
-> +++ linux-2.6/include/linux/slub_def.h	2007-10-27 07:55:12.000000000 -0700
-> @@ -17,6 +17,7 @@ struct kmem_cache_cpu {
->  	int node;
->  	unsigned int offset;
->  	unsigned int objsize;
-> +	unsigned int objects;
->  };
+(please do not drop Cc, or I would have lost this thread part if I had 
+not been on lkml. And sometimes I am not because of the volume. Thanks.)
 
-mutter.  nr_objects would be a better name, but then one should rename
-kmem_cache.objects too.
+On Oct 30 2007 15:13, Peter Dolding wrote:
+>On 10/30/07, Crispin Cowan <crispin@crispincowan.com> wrote:
+>
+>>     * I have no clue what family to put MultiADM or Dazuko into
+>
+>MultiADMIN falls under o my god head ache.  This is more a posix
+>standard feature altered ie 1 root user turned into many.  This really
+>risks breaking the other models as a LSM.
 
-Better would be to comment the field.  Please devote extra care to commenting
-data structures.
+I disagree.
+
+Traditionally, Linux has given a process all capabilities when the
+UID changed to 0 (either by setuid(2) or executing a SUID binary).
+This has been relieved over the years, and right now with LSMs in the
+field, it is possible to 'deactivate' this special case for UID 0.
+
+SELinux does not have this special case for UID 0. Neither does it
+seem to use capabilities (quick grep through the source). So
+basically, all users are the same, and no one has capabilities by
+default. Does SELinux thus break with other LSMs?
+
+Now assume a SELinux system where all users have all capabilities
+(and the policy that is in place restricts the use of these
+capabilities then) -- should not be that unlikely. Does that break
+with other LSMs?
