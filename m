@@ -1,119 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbXJ3Tvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXJ3TyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759132AbXJ3Tvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbXJ3Tvc
+	id S1758117AbXJ3TyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXJ3TyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:51:32 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:57081 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755643AbXJ3Tvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:51:31 -0400
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: mochel@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       hjlipp@web.de, tilman@imap.cc, gigaset307x-common@lists.sourceforge.net,
-       kkeil@suse.de, isdn4linux@listserv.isdn4linux.de, mac@melware.de,
-       linux-omap-open-source@linux.omap.com
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: [PATCH v2] Make the dev_*() family of macros in device.h complete
-Date: Tue, 30 Oct 2007 14:37:14 -0500
-Message-Id: <1193773034-4588-1-git-send-email-Emilian.Medve@Freescale.com>
-X-Mailer: git-send-email 1.5.3.GIT
+	Tue, 30 Oct 2007 15:54:10 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:45979 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752489AbXJ3TyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:54:09 -0400
+Message-ID: <47278BE8.6010901@oracle.com>
+Date: Tue, 30 Oct 2007 12:54:16 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+CC: apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch bug: space between left parenthesis and asterisk
+References: <47278591.90305@freescale.com>
+In-Reply-To: <47278591.90305@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed duplicates defined elsewhere
+Timur Tabi wrote:
+> I'm running checkpatch.pl (dated 10/17), and it complains about this line:
+> 
+> crc = __be32_to_cpu(* ((__be32 *) ((void *) firmware + calc_size)));
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+Well, that is a bit of a stinker.  Maybe it could be reworked a little
+to make it easier for humans and checkpatch to understand?
 
-The macros are defined in the relative order KERN_* are defined in kernel.h
+  __be32 *crazy_pointer = (void *)firmware + calc_size;
+  crc = be32_to_cpu(*crazy_pointer);
 
-linux-2.6> scripts/checkpatch.pl 0001-Make-the-dev_-family-of-macros-in-device.h-comple.patch 
-Your patch has no obvious style problems and is ready for submission.
+(Does this need to worry about get_unaligned() at all?)
 
- drivers/i2c/chips/isp1301_omap.c |    6 ------
- drivers/isdn/gigaset/gigaset.h   |    6 ------
- include/linux/device.h           |   24 +++++++++++++++---------
- 3 files changed, 15 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/i2c/chips/isp1301_omap.c b/drivers/i2c/chips/isp1301_omap.c
-index fe04e46..35b9909 100644
---- a/drivers/i2c/chips/isp1301_omap.c
-+++ b/drivers/i2c/chips/isp1301_omap.c
-@@ -259,12 +259,6 @@ static inline const char *state_name(struct isp1301 *isp)
- 	return state_string(isp->otg.state);
- }
- 
--#ifdef	VERBOSE
--#define	dev_vdbg			dev_dbg
--#else
--#define	dev_vdbg(dev, fmt, arg...)	do{}while(0)
--#endif
--
- /*-------------------------------------------------------------------------*/
- 
- /* NOTE:  some of this ISP1301 setup is specific to H2 boards;
-diff --git a/drivers/isdn/gigaset/gigaset.h b/drivers/isdn/gigaset/gigaset.h
-index a0317ab..02bdaf2 100644
---- a/drivers/isdn/gigaset/gigaset.h
-+++ b/drivers/isdn/gigaset/gigaset.h
-@@ -106,12 +106,6 @@ enum debuglevel {
- 					 activated */
- };
- 
--/* missing from linux/device.h ... */
--#ifndef dev_notice
--#define dev_notice(dev, format, arg...)		\
--	dev_printk(KERN_NOTICE , dev , format , ## arg)
--#endif
--
- /* Kernel message macros for situations where dev_printk and friends cannot be
-  * used for lack of reliable access to a device structure.
-  * linux/usb.h already contains these but in an obsolete form which clutters
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2e15822..99a6b7f 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -557,6 +557,21 @@ extern const char *dev_driver_string(struct device *dev);
- #define dev_printk(level, dev, format, arg...)	\
- 	printk(level "%s %s: " format , dev_driver_string(dev) , (dev)->bus_id , ## arg)
- 
-+#define dev_emerg(dev, format, arg...)		\
-+	dev_printk(KERN_EMERG , dev , format , ## arg)
-+#define dev_alert(dev, format, arg...)		\
-+	dev_printk(KERN_ALERT , dev , format , ## arg)
-+#define dev_crit(dev, format, arg...)		\
-+	dev_printk(KERN_CRIT , dev , format , ## arg)
-+#define dev_err(dev, format, arg...)		\
-+	dev_printk(KERN_ERR , dev , format , ## arg)
-+#define dev_warn(dev, format, arg...)		\
-+	dev_printk(KERN_WARNING , dev , format , ## arg)
-+#define dev_notice(dev, format, arg...)		\
-+	dev_printk(KERN_NOTICE , dev , format , ## arg)
-+#define dev_info(dev, format, arg...)		\
-+	dev_printk(KERN_INFO , dev , format , ## arg)
-+
- #ifdef DEBUG
- #define dev_dbg(dev, format, arg...)		\
- 	dev_printk(KERN_DEBUG , dev , format , ## arg)
-@@ -578,15 +593,6 @@ dev_vdbg(struct device * dev, const char * fmt, ...)
- }
- #endif
- 
--#define dev_err(dev, format, arg...)		\
--	dev_printk(KERN_ERR , dev , format , ## arg)
--#define dev_info(dev, format, arg...)		\
--	dev_printk(KERN_INFO , dev , format , ## arg)
--#define dev_warn(dev, format, arg...)		\
--	dev_printk(KERN_WARNING , dev , format , ## arg)
--#define dev_notice(dev, format, arg...)		\
--	dev_printk(KERN_NOTICE , dev , format , ## arg)
--
- /* Create alias, so I can be autoloaded. */
- #define MODULE_ALIAS_CHARDEV(major,minor) \
- 	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
--- 
-1.5.3.GIT
-
+- z
