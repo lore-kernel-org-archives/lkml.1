@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbXJ3Mra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXJ3Mt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbXJ3Mra (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXJ3MrW
+	id S1753665AbXJ3Mt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXJ3MtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:47:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42034 "EHLO
+	Tue, 30 Oct 2007 08:49:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42057 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbXJ3MrW (ORCPT
+	with ESMTP id S1752037AbXJ3MtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:47:22 -0400
-Subject: Re: [PATCH 0/4] Unexport several headers and cleanup
+	Tue, 30 Oct 2007 08:49:18 -0400
+Subject: Re: [PATCH 11/16] CRIS architecture: Correct compile errors
 From: David Woodhouse <dwmw2@infradead.org>
-To: "Kirill A. Shutemov" <k.shutemov@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1193742139-29738-1-git-send-email-k.shutemov@gmail.com>
-References: <1193742139-29738-1-git-send-email-k.shutemov@gmail.com>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071030093353.GN11960@axis.com>
+References: <20071030093353.GN11960@axis.com>
 Content-Type: text/plain
-Date: Tue, 30 Oct 2007 08:47:37 -0400
-Message-Id: <1193748457.2915.163.camel@shinybook.infradead.org>
+Date: Tue, 30 Oct 2007 08:49:32 -0400
+Message-Id: <1193748572.2915.165.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
@@ -28,18 +28,18 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-30 at 13:02 +0200, Kirill A. Shutemov wrote:
-> This series of patches unexport several unneeded(I guess) headers from 
-> userspace. Patches based on patch posted to linux-kernel@ by Mike Frysinger
-> in July.
 
-Looks OK to me, in general. How much userspace have you tested building
-with this? Does it include stuff like gdb?
+On Tue, 2007-10-30 at 10:33 +0100, Jesper Nilsson wrote:
+> Add include file with prototype for mtdram_init_device from
+> drivers/mtd/devices/mtdram.c.
+> Used by axisflashmap.c to boot from ram.
+> 
+> Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-Not that I necessarily care about the answer in the normal way -- it's
-just that if userspace will need to adapt, I'd like to get them moving
-ASAP. One option for easing that might be to export stuff like page.h
-but _empty_.
+Reviewed-by: David Woodhouse <dwmw2@infradead.org>
+
+You want this to go via the mtd git tree, or with the rest of your
+patches?
 
 -- 
 dwmw2
