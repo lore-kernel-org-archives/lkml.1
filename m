@@ -1,67 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbXJ3VXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbXJ3V1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbXJ3VXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJ3VXR
+	id S1754738AbXJ3V1i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXJ3V1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:23:17 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:49978 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbXJ3VXQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:23:16 -0400
-X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
-X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
-X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
-X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
-X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
-To: Stefan Roese <stefan.roese@gmail.com>
-cc: Josh Boyer <jwboyer@gmail.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Bootup support for watchdog with short timeout (touch_nmi_watchdog()?)
-Mime-version: 1.0
+	Tue, 30 Oct 2007 17:27:30 -0400
+Received: from main.gmane.org ([80.91.229.2]:48327 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbXJ3V13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 17:27:29 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 23/33] netvm: skb processing
+Date: Tue, 30 Oct 2007 14:26:34 -0700
+Organization: Linux Foundation
+Message-ID: <20071030142634.0f00b492@freepuppy.rosehill>
+References: <20071030160401.296770000@chello.nl>
+	<20071030160914.749995000@chello.nl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-In-reply-to: Your message of "Tue, 30 Oct 2007 12:16:14 +0100."
-             <200710301216.15033.stefan.roese@gmail.com>
-Date: Tue, 30 Oct 2007 22:23:13 +0100
-Message-Id: <20071030212313.D4CB8247F3@gemini.denx.de>
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <20071030160914.749995000@chello.nl>
+X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Cc: linux-mm@kvack.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Stefan,
+On Tue, 30 Oct 2007 17:04:24 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-In message <200710301216.15033.stefan.roese@gmail.com> you wrote:
->
-> I already have it running on my system using a quick hack (see patch below) in 
-> include/asm-ppc/nmi.h (yes, still arch/ppc for now :-( ). But for a clean 
-> implementation, that has chances for upstream merge (in arch/powerpc later), 
-> I would really like to hear if I should move on further this way. 
+> In order to make sure emergency packets receive all memory needed to proceed
+> ensure processing of emergency SKBs happens under PF_MEMALLOC.
 > 
-> My impression is, that changing the name from touch_nmi_watchdog() to 
-> something like touch_watchdog(), and therefore touching lots of files, makes 
-> it more unlikely that this resulting patch will get accepted. But 
-> implementing this bootup watchdog support in asm-ppc(asm-powerpc)/nmi.h 
-> header seems also not totally correct, since it's not really an NMI in this 
-> case.
+> Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
+> 
+> Skip taps, since those are user-space again.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/net/sock.h |    5 +++++
+>  net/core/dev.c     |   44 ++++++++++++++++++++++++++++++++++++++------
+>  net/core/sock.c    |   18 ++++++++++++++++++
+>  3 files changed, 61 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6/net/core/dev.c
+> ===================================================================
+> --- linux-2.6.orig/net/core/dev.c
+> +++ linux-2.6/net/core/dev.c
+> @@ -1976,10 +1976,23 @@ int netif_receive_skb(struct sk_buff *sk
+>  	struct net_device *orig_dev;
+>  	int ret = NET_RX_DROP;
+>  	__be16 type;
+> +	unsigned long pflags = current->flags;
+> +
+> +	/* Emergency skb are special, they should
+> +	 *  - be delivered to SOCK_MEMALLOC sockets only
+> +	 *  - stay away from userspace
+> +	 *  - have bounded memory usage
+> +	 *
+> +	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
+> +	 * This saves us from propagating the allocation context down to all
+> +	 * allocation sites.
+> +	 */
+> +	if (skb_emergency(skb))
+> +		current->flags |= PF_MEMALLOC;
+>  
+>  	/* if we've gotten here through NAPI, check netpoll */
+>  	if (netpoll_receive_skb(skb))
+> -		return NET_RX_DROP;
+> +		goto out;
 
-Indeed. Using the header file <asm/nmi.h> is seriously misleading for
-the PowerPC version, as is the function name touch_nmi_watchdog() -
-thius has nothing to do with NMIs on PowerPC, and most probably not on
-any other non-x86 architecture as well. 
+Why the change? doesn't gcc optimize the common exit case anyway?
 
-To make this mechanism generally usable (which is a good idea IMO) the
-names should be changed to get rid of the "nmi" reference.
+>  
+>  	if (!skb->tstamp.tv64)
+>  		net_timestamp(skb);
+> @@ -1990,7 +2003,7 @@ int netif_receive_skb(struct sk_buff *sk
+>  	orig_dev = skb_bond(skb);
+>  
+>  	if (!orig_dev)
+> -		return NET_RX_DROP;
+> +		goto out;
+>  
+>  	__get_cpu_var(netdev_rx_stat).total++;
+>  
+> @@ -2009,6 +2022,9 @@ int netif_receive_skb(struct sk_buff *sk
+>  	}
+>  #endif
+>  
+> +	if (skb_emergency(skb))
+> +		goto skip_taps;
+> +
+>  	list_for_each_entry_rcu(ptype, &ptype_all, list) {
+>  		if (!ptype->dev || ptype->dev == skb->dev) {
+>  			if (pt_prev)
+> @@ -2017,6 +2033,7 @@ int netif_receive_skb(struct sk_buff *sk
+>  		}
+>  	}
+>  
+> +skip_taps:
+>  #ifdef CONFIG_NET_CLS_ACT
+>  	if (pt_prev) {
+>  		ret = deliver_skb(skb, pt_prev, orig_dev);
+> @@ -2029,19 +2046,31 @@ int netif_receive_skb(struct sk_buff *sk
+>  
+>  	if (ret == TC_ACT_SHOT || (ret == TC_ACT_STOLEN)) {
+>  		kfree_skb(skb);
+> -		goto out;
+> +		goto unlock;
+>  	}
+>  
+>  	skb->tc_verd = 0;
+>  ncls:
+>  #endif
+>  
+> +	if (skb_emergency(skb))
+> +		switch(skb->protocol) {
+> +			case __constant_htons(ETH_P_ARP):
+> +			case __constant_htons(ETH_P_IP):
+> +			case __constant_htons(ETH_P_IPV6):
+> +			case __constant_htons(ETH_P_8021Q):
+> +				break;
 
-Best regards,
+Indentation is wrong, and hard coding protocol values as spcial case
+seems bad here. What about vlan's, etc?
 
-Wolfgang Denk
+> +			default:
+> +				goto drop;
+> +		}
+> +
+>  	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
+>  	if (!skb)
+> -		goto out;
+> +		goto unlock;
+>  	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
+>  	if (!skb)
+> -		goto out;
+> +		goto unlock;
+>  
+>  	type = skb->protocol;
+>  	list_for_each_entry_rcu(ptype, &ptype_base[ntohs(type)&15], list) {
+> @@ -2056,6 +2085,7 @@ ncls:
+>  	if (pt_prev) {
+>  		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+>  	} else {
+> +drop:
+>  		kfree_skb(skb);
+>  		/* Jamal, now you will not able to escape explaining
+>  		 * me how you were going to use this. :-)
+> @@ -2063,8 +2093,10 @@ ncls:
+>  		ret = NET_RX_DROP;
+>  	}
+>  
+> -out:
+> +unlock:
+>  	rcu_read_unlock();
+> +out:
+> +	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+>  	return ret;
+>  }
+>  
+> Index: linux-2.6/include/net/sock.h
+> ===================================================================
+> --- linux-2.6.orig/include/net/sock.h
+> +++ linux-2.6/include/net/sock.h
+> @@ -523,8 +523,13 @@ static inline void sk_add_backlog(struct
+>  	skb->next = NULL;
+>  }
+>  
+> +extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
+> +
+>  static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+>  {
+> +	if (skb_emergency(skb))
+> +		return __sk_backlog_rcv(sk, skb);
+> +
+>  	return sk->sk_backlog_rcv(sk, skb);
+>  }
+>  
+> Index: linux-2.6/net/core/sock.c
+> ===================================================================
+> --- linux-2.6.orig/net/core/sock.c
+> +++ linux-2.6/net/core/sock.c
+> @@ -319,6 +319,24 @@ int sk_clear_memalloc(struct sock *sk)
+>  }
+>  EXPORT_SYMBOL_GPL(sk_clear_memalloc);
+>  
+> +#ifdef CONFIG_NETVM
+> +int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+> +{
+> +	int ret;
+> +	unsigned long pflags = current->flags;
+> +
+> +	/* these should have been dropped before queueing */
+> +	BUG_ON(!sk_has_memalloc(sk));
+> +
+> +	current->flags |= PF_MEMALLOC;
+> +	ret = sk->sk_backlog_rcv(sk, skb);
+> +	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(__sk_backlog_rcv);
+> +#endif
+> +
+>  static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+>  {
+>  	struct timeval tv;
+
+
+I am still not convinced that this solves the problem well enough
+to be useful.  Can you really survive a heavy memory overcommit?
+In other words, can you prove that the added complexity causes the system
+to survive a real test where otherwise it would not?
+
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It may be that your whole purpose in life is simply  to  serve  as  a
-warning to others.
+Stephen Hemminger <shemminger@linux-foundation.org>
+
