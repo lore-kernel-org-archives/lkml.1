@@ -1,130 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbXJ3UXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXJ3UYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbXJ3UXh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbXJ3UX2
+	id S1758251AbXJ3UYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXJ3UYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:23:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:52488 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753693AbXJ3UX1 (ORCPT
+	Tue, 30 Oct 2007 16:24:24 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:44651 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753002AbXJ3UYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:23:27 -0400
-Message-ID: <472792CC.7090009@anagramm.de>
-Date: Tue, 30 Oct 2007 21:23:40 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 30 Oct 2007 16:24:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=AUpBWJogZ2i349jsjjEEDxKn3jfnz4CdWOIVm164KF7sdco4zaPNTDo+Tom2zK++nT+tYNgGc7TWaArALU26QOwyMn4TvtGCLDB/Xw9OeQtderQTEo3oOy1X0HP0UVDYdlr5RADSHh1rxy78U0ZLbPnLvFwV8j4voafBxGiSHJY=  ;
+X-YMail-OSG: 1xv8KaEVM1kKa00hBydzH8rgUVS.topdUkad0z1Y4Q.81Wjh7ZAYpUsMGc3_63GoPVYaqzVpyQ--
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH 09/14] Blackfin SPI driver: Fix SPI driver to work with SPI flash ST25P16 on bf548
+Date: Tue, 30 Oct 2007 13:05:02 -0700
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Sonic Zhang <sonic.zhang@analog.com>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <1193735885-8202-10-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1193735885-8202-10-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
-To: saeed bishara <saeed.bishara@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: system stops sending IOs for long time
-References: <c70ff3ad0710300959t2bb5f1ebp7abb51992738a08c@mail.gmail.com>
-In-Reply-To: <c70ff3ad0710300959t2bb5f1ebp7abb51992738a08c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX18u7N75VMHjy08ua4ZCMXSA4opEamVMs9R0XEY
- yNCUZDezpQyk/MqPfaR4GD2Fj2d+OHMJhlVg/2/uyXNrGb2B1l
- aHVW+T6UfkgHINZR+YaaQ==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710301305.02640.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-saeed bishara schrieb:
- > Hi,
- > I have a performance issue with my system that runs samba server, once
- > in a while (6 seconds) I see that the throughput falls almost to to
- > zero when doing read for large file. I'm running kernel 2.6.22.10. I
- > don't see this issue when using kernel 2.6.12.
- >
- > when observing the activity leds on my sata controller, I see that it
- > get off for about 1 second meaning no commands sent to the HDD for
- > that long time. I used the blktrace in order to have a look into the
- > IOs, and found that the system really stops sending commands for long
- > periods, here is the section of the blkparse that shows this problem:
- >   8,2    0    12747     5.550000000   328  D   R 108068834 + 512 [smbd]
- >   8,2    0    12748     5.550000000   328  D   R 108069346 + 512 [smbd]
- >   8,2    0    12749     5.550000000   328  D   R 108069858 + 512 [smbd]
- >   8,2    0    12750     5.550000000   328  D   R 108070370 + 512 [smbd]
- >   8,2    0    12751     5.550000000   328  U   N [smbd] 5
- >   8,2    0    12752     5.550000000     0  C   R 108068834 + 512 [0]
- >   8,2    0    12753     5.560000000     0  C   R 108069346 + 512 [0]
- >   8,2    0    12754     5.570000000     0  C   R 108069858 + 512 [0]
- >   8,2    0    12755     5.570000000     0  C   R 108070370 + 512 [0]
- >   8,2    0    12756     6.570000000     0  C   R 108066786 + 512 [0]
- >   8,2    0    12757     6.590000000   328  Q   R 108070882 + 8 [smbd]
- >   8,2    0    12758     6.590000000   328  G   R 108070882 + 8 [smbd]
- >   8,2    0    12759     6.590000000   328  P   N [smbd]
- >   8,2    0    12760     6.590000000   328  I   R 108070882 + 8 [smbd]
- >   8,2    0    12761     6.590000000   328  Q   R 108070890 + 8 [smbd]
- >   8,2    0    12762     6.590000000   328  M   R 108070890 + 8 [smbd]
- >
- > any idea how to fix this issue?
+On Tuesday 30 October 2007, Bryan Wu wrote:
+> Current SPI driver enables SPI controller and set the SPI baud register
+> for each SPI transfer. But, they should never be changed within a SPI
+> message session, in which seveal SPI transfers are pumped.
+
+That's actually not true.  If a driver sets spi_transfer.max_speed_hz
+to a nonzero value that's different from the previous bit rate (which
+may be spi_device.max_speed_hz), it should be updated before that
+transfer segment.  Example, sometimes data can't be clocked out at
+the same rate commands can be clocked in.
+
+Similarly with spi_transfer.bits_per_word ... again, it's very possible
+that commands and data have different sizes.
+
+Of course, if those values don't change, there'd be no point in
+reconfiguring any aspect of those communications parameters...
 
 
-Not really.
+I'll be forwarding this patch, since this looks like another case
+where the main effect of the patch doesn't match its description
+and since this patch series has taken too long already.  (Does this
+patch even really relate primarily to working with an ST M25P16
+flash part??)  Though it'd be reasonable to be more hard-nosed
+about this and insist on another go-around for thesse patches.
+(Making this the fifth one??)
 
-I've had a similar looking problem with a md raid-1 set of harddisks
-running 2.6.18. md0_raid1 took every 10 seconds all of the cpu blocking other
-stuff on the machine for some other 2 secons doing no disk writes.
+But I *STRONGLY* suggest someone revisit the issue of whether those
+two per-transfer options are now being handled correctly.  As well
+as update procedures so that the patch comments start to have a
+direct correspondence to what the patches have changed...
 
-$ uname -a
-Linux rio 2.6.22.9 #1 Mon Oct 1 19:48:54 CEST 2007 i686 pentium3 i386 GNU/Linux
+- Dave
 
-$ lspci
-00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX Host bridge (rev 03)
-00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 03)
-00:04.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
-00:04.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
-00:04.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
-00:04.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 02)
-00:0a.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
-00:0b.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 50)
-00:0b.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 50)
-00:0b.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 51)
-00:0c.0 Mass storage controller: Promise Technology, Inc. 20269 (rev 02)
-01:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G100 [Productiva] AGP (rev 01)
 
-The raid is on the Promise PDC20269
+> This patch 
+> move move SPI setting to the begining of a message session. And never
+> disables SPI controller until an error occurs.
 
-$ mdadm --misc --detail /dev/md0
-/dev/md0:
-         Version : 00.90.03
-   Creation Time : Sat Oct 29 20:51:41 2005
-      Raid Level : raid1
-      Array Size : 293049600 (279.47 GiB 300.08 GB)
-   Used Dev Size : 293049600 (279.47 GiB 300.08 GB)
-    Raid Devices : 2
-   Total Devices : 2
-Preferred Minor : 0
-     Persistence : Superblock is persistent
 
-     Update Time : Tue Oct 30 19:20:12 2007
-           State : clean
-  Active Devices : 2
-Working Devices : 2
-  Failed Devices : 0
-   Spare Devices : 0
 
-            UUID : b2d7f60d:008fa0df:136207f1:ae0e7a9e
-          Events : 0.432306
-
-     Number   Major   Minor   RaidDevice State
-        0      33        1        0      active sync   /dev/hde1
-        1      34        1        1      active sync   /dev/hdg1
-
-I didn't dare to report a bug against the old kernel. I moved to
-2.6.22.9 and the problem disappeared...
-Any ways to debug that (non-intrusive on a production machine)?
-
-Regards,
-
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
 
