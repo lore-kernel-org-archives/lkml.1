@@ -1,105 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbXJ3Taq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbXJ3TbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759761AbXJ3Taq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXJ3TWJ
+	id S1759877AbXJ3TbL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757896AbXJ3TWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:22:09 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54140 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757873AbXJ3TWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:22:05 -0400
-Message-Id: <20071030192109.036627614@polymtl.ca>
-References: <20071030191557.947156623@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:20 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
-       linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
-       Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, lethal@linux-sh.org
-Subject: [patch 23/28] Add cmpxchg_local to sh, use generic cmpxchg() instead of cmpxchg_u32
-Content-Disposition: inline; filename=add-cmpxchg-local-to-sh.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:09 +0000
+	Tue, 30 Oct 2007 15:22:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46196 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755940AbXJ3TWE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:22:04 -0400
+Date: Mon, 29 Oct 2007 23:21:58 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, kkeil@suse.de
+Subject: Re: [RFC / git patch] Move pci_find_* under CONFIG_PCI_LEGACY
+Message-ID: <20071030062158.GA7187@kroah.com>
+References: <20071029185047.GA4951@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029185047.GA4951@havoc.gtf.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+On Mon, Oct 29, 2007 at 02:50:48PM -0400, Jeff Garzik wrote:
+> I am actively working on killing the remaining users of
+> pci_find_device().  The results can be found in the 'isdn-pci' and
+> 'warnings' branches of jgarzik/misc-2.6.git.  Time consuming work
+> converting ancient drivers to PCI hotplug API, but it's almost done.
+> 
+> HOWEVER, given the limited number of drivers that are turned off when
+> that API is disabled, I felt it would be nice to provide the option
+> of eliminating the pci_find_* warnings that emit on every build (due
+> to presence in drivers/pci/search.c).
+> 
+> Please consider pulling from 'pci-legacy' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git pci-legacy
 
-Since cmpxchg_u32 is _exactly_ the cmpxchg_local generic implementation, remove
-it and use the generic version instead.
+Now pulled and placed in my quilt tree.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: lethal@linux-sh.org
----
- include/asm-sh/system.h |   48 ++++++++++++------------------------------------
- 1 file changed, 12 insertions(+), 36 deletions(-)
+thanks,
 
-Index: linux-2.6-lttng/include/asm-sh/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-sh/system.h	2007-08-07 14:31:51.000000000 -0400
-+++ linux-2.6-lttng/include/asm-sh/system.h	2007-08-07 15:08:10.000000000 -0400
-@@ -201,44 +201,20 @@ extern void __xchg_called_with_bad_point
- #define xchg(ptr,x)	\
- 	((__typeof__(*(ptr)))__xchg((ptr),(unsigned long)(x), sizeof(*(ptr))))
- 
--static inline unsigned long __cmpxchg_u32(volatile int * m, unsigned long old,
--	unsigned long new)
--{
--	__u32 retval;
--	unsigned long flags;
--
--	local_irq_save(flags);
--	retval = *m;
--	if (retval == old)
--		*m = new;
--	local_irq_restore(flags);       /* implies memory barrier  */
--	return retval;
--}
--
--/* This function doesn't exist, so you'll get a linker error
-- * if something tries to do an invalid cmpxchg(). */
--extern void __cmpxchg_called_with_bad_pointer(void);
--
--#define __HAVE_ARCH_CMPXCHG 1
-+#include <asm-generic/cmpxchg-local.h>
- 
--static inline unsigned long __cmpxchg(volatile void * ptr, unsigned long old,
--		unsigned long new, int size)
--{
--	switch (size) {
--	case 4:
--		return __cmpxchg_u32(ptr, old, new);
--	}
--	__cmpxchg_called_with_bad_pointer();
--	return old;
--}
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
--#define cmpxchg(ptr,o,n)						 \
--  ({									 \
--     __typeof__(*(ptr)) _o_ = (o);					 \
--     __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
--  })
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
- 
- extern void die(const char *str, struct pt_regs *regs, long err) __attribute__ ((noreturn));
- 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
