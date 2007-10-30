@@ -1,73 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbXJ3GiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXJ3Gy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbXJ3GiS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 02:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJ3GiH
+	id S1753892AbXJ3Gy2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 02:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXJ3GyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 02:38:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:13460 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbXJ3GiE (ORCPT
+	Tue, 30 Oct 2007 02:54:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48594 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbXJ3GyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 02:38:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fwodHJctgj5NaqCXzDD7frTvtikI4crn9oVyUMlB1e/YkKTkozt/OQdcq0VSPJ+8qsyUe1GBYE7wm9x01T6/TjnFt7GPRYUwjPT55OUBg5Jtj0CNbtteIeUWeAFnYMjt1FacTWwEp6kChW0g+PlICoJs2RYdvSWQdj6VAwUntGM=
-Message-ID: <91b13c310710292338o3d4bf147lcae153eca30784e8@mail.gmail.com>
-Date: Tue, 30 Oct 2007 14:38:02 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/5] update boot spec to 2.07
-Cc: "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Vivek Goyal" <vgoyal@in.ibm.com>,
-       lguest <lguest@ozlabs.org>, "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <1191368106.17826.43.camel@localhost.localdomain>
+	Tue, 30 Oct 2007 02:54:19 -0400
+Message-ID: <4726D4BA.9040304@oracle.com>
+Date: Tue, 30 Oct 2007 12:22:42 +0530
+From: Gurudas Pai <gurudas.pai@oracle.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] nfs: readv/writev with O_DIRECT fails on  2.6.24-rc1
+References: <47258C0A.2040603@oracle.com> <1193687977.7497.45.camel@heimdal.trondhjem.org>
+In-Reply-To: <1193687977.7497.45.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1191368052.17826.40.camel@localhost.localdomain>
-	 <1191368106.17826.43.camel@localhost.localdomain>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/3/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Proposed updates for version 2.07 of the boot protocol.  This includes:
->
-...
-> Signed-off-by: Jeremy Fitzhardinge < jeremy@xensource.com>
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: "Eric W. Biederman" < ebiederm@xmission.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Vivek Goyal <vgoyal@in.ibm.com >
->
-> ---
->  Documentation/i386/boot.txt    |   34
-Sugguestion is you also add an entry to the header of the file
-(Documentation/i386/boot.txt):
+Trond Myklebust wrote:
 
-something like this:
+> On Mon, 2007-10-29 at 13:00 +0530, gurudas pai wrote:
+>> Hi,
+>>
+>> While running olt kit on 2.6.24-rc1 over nfs , Oracle reported I/O 
+>> errors. I debugged little more and found that readv/writev are failing 
+>> with O_DIRECT on nfs ( netapp's filer).
+>>
+>> I am able to re-produce same error using ltp/diotest5.
+>>
+>> ./diotest5  -f /storage/nas/testfile -v 5
+>>
+>> diotest05 1953719669  FAIL  :  readv failed: Invalid argument
+>> diotest05 1953719670  FAIL  :  Read with Direct IO, Write without
+>> diotest05 1953719671  FAIL  :  writev failed: Invalid argument
+>> diotest05 1953719672  FAIL  :  Write with Direct IO, Read without
+>> diotest05 1953719673  FAIL  :  writev failed: Invalid argument
+>> diotest05 1953719674  FAIL  :  Read, Write with Direct IO
+>> diotest05    0  INFO  :  3/3 testblocks failed
+>>
+>>  >strace -e readv,writev ./diotest5  -f /storage/nas/testfile -v 5
+>> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}], 5) = 20480
+>> readv(4, 0x8051000, 5)                  = -1 EINVAL (Invalid argument)
+>> diotest05 1953719669  FAIL  :  readv failed: Invalid argument
+>> diotest05 1953719670  FAIL  :  Read with Direct IO, Write without
+>> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}], 5) = -1 EINVAL(Invalid argument)
+>> diotest05 1953719671  FAIL  :  writev failed: Invalid argument
+>> diotest05 1953719672  FAIL  :  Write with Direct IO, Read without
+>> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+>> 4096}], 5) = -1 EINVAL(Invalid argument)
+>> diotest05 1953719673  FAIL  :  writev failed: Invalid argument
+>> diotest05 1953719674  FAIL  :  Read, Write with Direct IO
+>> diotest05    0  INFO  :  3/3 testblocks failed
+>> Process 4749 detached
+>>
+>>
+>> mount options:
+>> rw,bg,nointr,hard,timeo=600,wsize=32768,rsize=32768,nfsvers=3,tcp,actimeo=0
+>>
+>>
+>> Please let me know if I have to try test/debug patch.
+> 
+> Nobody has yet added support for nvec>1.
+> 
 
-diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
-index fc49b79..645bbd7 100644
---- a/Documentation/i386/boot.txt
-+++ b/Documentation/i386/boot.txt
-@@ -42,6 +42,9 @@ Protocol 2.05:	(Kernel 2.6.20) Make protected mode
-kernel relocatable.
- Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
- 		the boot command line
+Tried with old kernel 2.6.18-8 (RHEL5), test passed with nvec=5.
 
-+Protocol 2.07:	(Kernel 2.6.23) Added two fields hardware_subarch and
-+		hardware_subarch_data to describe the paravirtualized
-+		environment.
+ >strace -fff -e readv,writev,open  ./diotest5 -f /storage/nas/testfile -v 5
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+open("/lib/libc.so.6", O_RDONLY)        = 3
+open("/storage/nas/ca-ostest184.us.oracle.com/testfile", 
+O_RDONLY|O_CREAT|O_DIRECT, 0666) = 3
+open("/storage/nas/testfile", O_WRONLY|O_CREAT, 0666) = 3
+open("/storage/nas//testfile", O_RDONLY|O_CREAT|O_DIRECT|O_LARGEFILE, 
+0666) = 4
+writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}], 5) = 20480
+readv(4, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
+4096}], 5) = 20480
+writev(3, [{"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}], 5) = 20480
+readv(4, [{"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
+4096}], 5) = 20480
+writev(3, [{"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}], 5) = 20480
+readv(4, [{"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
+4096}], 5) = 20480
+writev(3, [{"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}], 5) = 20480
+readv(4, [{"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
+4096}], 5) = 20480
+writev(3, [{"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}], 5) = 20480
+readv(4, [{"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
+4096}], 5) = 20480
 
- **** MEMORY LAYOUT
 
--- 
-Denis Cheng
-Linux Application Developer
-
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
+Thanks,
+-Guru
