@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbXJ3Eos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbXJ3EpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbXJ3Eos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbXJ3Emy
+	id S1755003AbXJ3EpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 00:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbXJ3Em6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:42:54 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:37134 "EHLO snapgear.com"
+	Tue, 30 Oct 2007 00:42:58 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:37135 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752902AbXJ3Emw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:42:52 -0400
-Date: Tue, 30 Oct 2007 14:41:51 +1000
+	id S1754758AbXJ3Em5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 00:42:57 -0400
+Date: Tue, 30 Oct 2007 14:41:56 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710300441.l9U4fpcl032230@goober>
+Message-Id: <200710300441.l9U4fuuI032236@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: platform setup for 5206 ColdFire UARTs
+Subject: [M68KNOMMU]: platform setup for 5206e ColdFire UARTs
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch to platform style configuration for 5206 ColdFire UARTs.
+Switch to platform style configuration for 5206e ColdFire UARTs.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
-diff -Naurp linux-2.6.23-rc1/arch/m68knommu/platform/5206/config.c linux-2.6.23-rc1.platform/arch/m68knommu/platform/5206/config.c
---- linux-2.6.23-rc1/arch/m68knommu/platform/5206/config.c	2007-10-25 10:48:36.000000000 +1000
-+++ linux-2.6.23-rc1.platform/arch/m68knommu/platform/5206/config.c	2007-10-30 14:18:24.000000000 +1000
-@@ -13,12 +13,12 @@
+diff -Naurp linux-2.6.23-rc1/arch/m68knommu/platform/5206e/config.c linux-2.6.23-rc1.platform/arch/m68knommu/platform/5206e/config.c
+--- linux-2.6.23-rc1/arch/m68knommu/platform/5206e/config.c	2007-10-25 10:48:36.000000000 +1000
++++ linux-2.6.23-rc1.platform/arch/m68knommu/platform/5206e/config.c	2007-10-30 14:18:24.000000000 +1000
+@@ -10,9 +10,11 @@
+ 
+ #include <linux/kernel.h>
  #include <linux/param.h>
- #include <linux/init.h>
++#include <linux/init.h>
  #include <linux/interrupt.h>
 -#include <asm/dma.h>
  #include <asm/machdep.h>
 +#include <asm/dma.h>
 +#include <asm/io.h>
  #include <asm/coldfire.h>
--#include <asm/mcftimer.h>
  #include <asm/mcfsim.h>
--#include <asm/mcfdma.h>
-+#include <asm/mcfuart.h>
- 
- /***************************************************************************/
- 
-@@ -38,6 +38,54 @@ unsigned int dma_device_address[MAX_M68K
+ #include <asm/mcfdma.h>
+@@ -35,6 +37,54 @@ unsigned int dma_device_address[MAX_M68K
  
  /***************************************************************************/
  
@@ -97,7 +94,7 @@ diff -Naurp linux-2.6.23-rc1/arch/m68knommu/platform/5206/config.c linux-2.6.23-
  void mcf_autovector(unsigned int vec)
  {
  	volatile unsigned char  *mbar;
-@@ -88,10 +136,21 @@ int mcf_timerirqpending(int timer)
+@@ -85,7 +135,7 @@ int mcf_timerirqpending(int timer)
  
  /***************************************************************************/
  
@@ -105,7 +102,8 @@ diff -Naurp linux-2.6.23-rc1/arch/m68knommu/platform/5206/config.c linux-2.6.23-
 +void __init config_BSP(char *commandp, int size)
  {
  	mcf_setimr(MCFSIM_IMR_MASKALL);
- 	mach_reset = coldfire_reset;
+ 
+@@ -99,3 +149,14 @@ void config_BSP(char *commandp, int size
  }
  
  /***************************************************************************/
