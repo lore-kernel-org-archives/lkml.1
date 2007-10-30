@@ -1,96 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbXJ3OdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXJ3OlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754385AbXJ3OdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXJ3OdH
+	id S1753997AbXJ3OlK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbXJ3Ok4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:33:07 -0400
-Received: from mailout02.sul.t-online.de ([194.25.134.17]:36011 "EHLO
-	mailout02.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753068AbXJ3OdG (ORCPT
+	Tue, 30 Oct 2007 10:40:56 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:38076 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbXJ3Ok4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:33:06 -0400
-X-Greylist: delayed 1407 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Oct 2007 10:33:05 EDT
-Message-ID: <47273B13.5060603@t-online.de>
-Date: Tue, 30 Oct 2007 15:09:23 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070919)
+	Tue, 30 Oct 2007 10:40:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YXkAgdWx95PxmKueV+83RhGZhz0hj+B8lQa98H1xnZHg+n1QkgaObPJH0yQsOnfoXXWcO2LyT9+k+mZyppRnxGPGnOJeSGgLK1kX1Cin44gmFO2Is/aTWavve38B6p6m9tryzp2WrTDQ88esO7h03Tj0jYL2zH1Ky505qh0n/p8=
+Message-ID: <b1c6420f0710300740t5c708933x7ab1716c76504c57@mail.gmail.com>
+Date: Tue, 30 Oct 2007 23:40:55 +0900
+From: "Suzuki Takashi" <suzuki.takashi@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [Linux-am33-list] [PATCH 2/2] MN10300: Add the MN10300/AM33 architecture to the kernel [try #2]
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071029122809.2846.58795.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc1: usb problem?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-ID: Xp+vDsZ6whBOyHoCTdrKbEEtK2jgnfO6arDYaNUW0fFTOLfFEiBxPCmhZ0xl9Ylw5S
-X-TOI-MSGID: 0bde1797-efce-4fa4-8c98-c13009606c9e
+Content-Disposition: inline
+References: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
+	 <20071029122809.2846.58795.stgit@warthog.procyon.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+On 10/29/07, David Howells <dhowells@redhat.com> wrote:
+> diff --git a/Documentation/mn10300/compartmentalisation.txt b/Documentation/mn10300/compartmentalisation.txt
+(snip)
+> + (1) CPU level
+> +
+> +     This involves support for a specific set of registers and instructions and
+> +     some very low-level peripherals.
+> +
+> +     CPU-specific constants, definitions and sources are segregated by having
+> +     the header files divided into CPU specific directories under the asm
+> +     headers directory:
+> +
+> +       (*) include/asm-mn10300/cpu-am33v2/
+> +
+> +           Support for the AM33v2 CPU core.
+> +
+> +     The appropriate CPU is selected by a CONFIG_MN10300_CPU_XXXX option from
+> +     the "Processor core support" choice menu in the arch/mn10300/Kconfig file.
 
-I found this call trace in /var/kern.log:
+Does this mean cpu-am33v3, cpu-am33v4, etc. will be created
+when a new core comes up?
 
-:
-:
-Oct 30 14:59:36 pluto kernel: usb 1-2: config 1 descriptor has 1 excess byte, ignoring
-Oct 30 14:59:36 pluto kernel: usb 1-2: configuration #1 chosen from 1 choice
-Oct 30 14:59:36 pluto kernel: usb 1-3: new high speed USB device using ehci_hcd and address 4
-Oct 30 14:59:36 pluto kernel: usb 1-3: configuration #1 chosen from 1 choice
-Oct 30 14:59:36 pluto kernel: ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-Oct 30 14:59:36 pluto kernel: ata3.00: ATA-7: SAMSUNG SP2504C, VT100-41, max UDMA7
-Oct 30 14:59:36 pluto kernel: ata3.00: 488397168 sectors, multi 16: LBA48 NCQ (depth 0/32)
-Oct 30 14:59:36 pluto kernel: ata3.00: configured for UDMA/100
-Oct 30 14:59:36 pluto kernel: usb 1-5: new high speed USB device using ehci_hcd and address 5
-Oct 30 14:59:36 pluto kernel: usb 1-5: configuration #1 chosen from 1 choice
-Oct 30 14:59:36 pluto kernel: usb 1-1.1: new high speed USB device using ehci_hcd and address 6
-Oct 30 14:59:36 pluto kernel: usb 1-1.1: configuration #1 chosen from 1 choice
-Oct 30 14:59:36 pluto kernel: hub 1-1.1:1.0: USB hub found
-Oct 30 14:59:36 pluto kernel: ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-Oct 30 14:59:36 pluto kernel: hub 1-1.1:1.0: 4 ports detected
-Oct 30 14:59:36 pluto kernel: sysfs: duplicate filename 'bInterfaceNumber' can not be created
-Oct 30 14:59:36 pluto kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-Oct 30 14:59:36 pluto kernel:
-Oct 30 14:59:36 pluto kernel: Call Trace:
-Oct 30 14:59:36 pluto kernel:  [<ffffffff802d250e>] sysfs_add_one+0xae/0xe0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff802d1dff>] sysfs_add_file+0x5f/0xb0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff802d3dfc>] sysfs_create_group+0x6c/0x120
-Oct 30 14:59:36 pluto kernel:  [<ffffffff880283e6>] :usbcore:usb_create_sysfs_intf_files+0x46/0x100
-Oct 30 14:59:36 pluto kernel:  [<ffffffff88023e76>] :usbcore:usb_set_configuration+0x336/0x5f0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8802cd8c>] :usbcore:generic_probe+0x7c/0xb0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8037875b>] driver_probe_device+0x9b/0x1c0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80378880>] __device_attach+0x0/0x10
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80377828>] bus_for_each_drv+0x58/0x80
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80378958>] device_attach+0x88/0x90
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80377785>] bus_attach_device+0x55/0xa0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80376468>] device_add+0x528/0x690
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8801e2e5>] :usbcore:usb_new_device+0x55/0xa0
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8801f759>] :usbcore:hub_thread+0x749/0xe10
-Oct 30 14:59:36 pluto kernel:  [<ffffffff80229083>] set_next_entity+0x23/0x50
-Oct 30 14:59:36 pluto kernel:  [<ffffffff802456b0>] autoremove_wake_function+0x0/0x30
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8801f010>] :usbcore:hub_thread+0x0/0xe10
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8024523b>] kthread+0x4b/0x80
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8020c538>] child_rip+0xa/0x12
-Oct 30 14:59:36 pluto kernel:  [<ffffffff802451f0>] kthread+0x0/0x80
-Oct 30 14:59:36 pluto kernel:  [<ffffffff8020c52e>] child_rip+0x0/0x12
-Oct 30 14:59:36 pluto kernel:
-Oct 30 14:59:36 pluto kernel: ata4.00: ATAPI: TSSTcorpCD/DVDW SH-S183A, SB02, max UDMA/33
-Oct 30 14:59:36 pluto kernel: ata4.00: applying bridge limits
-Oct 30 14:59:36 pluto kernel: ata4.00: configured for UDMA/33
-Oct 30 14:59:36 pluto kernel: scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG SP2504C  VT10 PQ: 0 ANSI: 5
-Oct 30 14:59:36 pluto kernel: usb 1-1.1.1: new high speed USB device using ehci_hcd and address 7
-Oct 30 14:59:36 pluto kernel: scsi 3:0:0:0: CD-ROM            TSSTcorp CD/DVDW SH-S183A SB02 PQ: 0 ANSI: 5
-Oct 30 14:59:36 pluto kernel: ACPI: PCI Interrupt Link [APC3] enabled at IRQ 18
-Oct 30 14:59:36 pluto kernel: ACPI: PCI Interrupt 0000:01:06.0[A] -> Link [APC3] -> GSI 18 (level, low) -> IRQ 18
-:
-:
+Isn't it possible to split codes by features, instead of target cores?
 
-uname says:
-Linux pluto 2.6.24-rc1 #1 PREEMPT Sat Oct 27 22:56:02 CEST 2007 x86_64 GNU/Linux
+If the AM33v2 is the base architecture and a new core feature comes up
+on AM33v3,
+that core feature should be enabled by a new CONFIG_* or a dynamic switch.
+Generally, drastic changes won't come up
+as long as the new CPU core is on the same architecture.
+Whole directory separation would be inappropriate for the CPU cores on
+the same arch.
+If similar codes were in multiple files and directories, it would be
+hard to maintain them.
 
-Is this anything to worry about? Please mail if I can help to track this
-down.
+> + (2) Processor level
+> +
+> +     The "processor level" is a CPU core plus the other on-silicon
+> +     peripherals.
+> +
+> +     Processor-specific header files are divided among directories in a similar
+> +     way to the CPU level:
+> +
+> +       (*) include/asm-mn10300/proc-mn103e010/
+> +
+> +           Support for the AM33v2 CPU core.
+> +
+> +     The appropriate processor is selected by a CONFIG_MN10300_PROC_YYYY option
+> +     from the "Processor support" choice menu in the arch/mn10300/Kconfig file.
+
+Ditto. Splitting by features would be better.
+
+> diff --git a/arch/mn10300/kernel/fpu-low.S b/arch/mn10300/kernel/fpu-low.S
+(snip)
+> +       .globl  fpu_init_state
+> +       .type   fpu_init_state,@function
+> +fpu_init_state:
+> +       mov     epsw,d0
+> +       or      EPSW_FE,epsw
+> +
+> +#ifdef CONFIG_MN10300_PROC_MN103E010
+> +       nop
+> +       nop
+> +       nop
+> +#endif
+
+This should be conditioned by a feature.
+Isn't it a feature or a limitation that several non-FPU instructions are
+necessary just after the EPSW_FE is set?
+
+> diff --git a/arch/mn10300/kernel/mn103e010-debug.c b/arch/mn10300/kernel/mn103e010-debug.c
+(snip)
+> diff --git a/arch/mn10300/kernel/mn103e010-serial-low.S b/arch/mn10300/kernel/mn103e010-serial-low.S
+(snip)
+> diff --git a/arch/mn10300/kernel/mn103e010-serial.c b/arch/mn10300/kernel/mn103e010-serial.c
+(snip)
+> diff --git a/arch/mn10300/kernel/mn103e010-serial.h b/arch/mn10300/kernel/mn103e010-serial.h
+(snip)
+> diff --git a/arch/mn10300/kernel/mn103e010-watchdog-low.S b/arch/mn10300/kernel/mn103e010-watchdog-low.S
+(snip)
+> diff --git a/arch/mn10300/kernel/mn103e010-watchdog.c b/arch/mn10300/kernel/mn103e010-watchdog.c
+
+Are these specific to MN103E010, or applicable to some other LSIs?
+If they are not specific to MN103E010, the file names aren't good.
+
+> diff --git a/include/asm-mn10300/cpu-am33v2/dmactl-regs.h b/include/asm-mn10300/cpu-am33v2/dmactl-regs.h
+(snip)
+> +struct mn103e010_dmactl_regs {
+> +       u32             ctr;
+> +       const void      *src;
+> +       void            *dst;
+> +       u32             siz;
+> +       u32             cyc;
+> +} __attribute__((aligned(0x100)));
+> +
+> +extern volatile struct mn103e010_dmactl_regs mn103e010_dmactl_regs[4];
+
+Stranger names here.
 
 
-Regards
-
-Harri
-
+-- 
+Suzuki Takashi
+Japan
