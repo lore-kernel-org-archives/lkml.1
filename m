@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbXJ3W2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbXJ3WcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbXJ3W2L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXJ3W15
+	id S1755277AbXJ3WcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXJ3WcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:27:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52520 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbXJ3W15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:27:57 -0400
-Date: Tue, 30 Oct 2007 15:28:16 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Norbert Preining <preining@logic.at>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: Huawei E220 and usb storage
-Message-Id: <20071030152816.f2e8dd7c.zaitcev@redhat.com>
-In-Reply-To: <20071030212213.GA13410@gamma.logic.tuwien.ac.at>
-References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at>
-	<20071030211729.6a80a93a.Kristoffer.ericson@gmail.com>
-	<20071030204720.GI8479@gamma.logic.tuwien.ac.at>
-	<47279EF7.3040406@redhat.com>
-	<20071030212213.GA13410@gamma.logic.tuwien.ac.at>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Tue, 30 Oct 2007 18:32:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36060
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751377AbXJ3WcK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 18:32:10 -0400
+Date: Tue, 30 Oct 2007 15:31:54 -0700 (PDT)
+Message-Id: <20071030.153154.241148799.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: raa.lkml@gmail.com, linux-kernel@vger.kernel.org, per.liden@ericsson.com,
+       allan.stephens@windriver.com
+Subject: Re: tipc_config.h requires linux/string.h, which does not exist in
+ exported headers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071030222025.GA19792@uranus.ravnborg.org>
+References: <20071030.145926.219328422.davem@davemloft.net>
+	<20071030.150537.240140474.davem@davemloft.net>
+	<20071030222025.GA19792@uranus.ravnborg.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 22:22:13 +0100, Norbert Preining <preining@logic.at> wrote:
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 30 Oct 2007 23:20:25 +0100
 
-> I tried the attached patch which I found on the usb list, but it didn't
-> work, the cdrom was still always found, and it was
-> connected/disconnected permanently.
+> On Tue, Oct 30, 2007 at 03:05:37PM -0700, David Miller wrote:
+> > From: David Miller <davem@davemloft.net>
+> > Date: Tue, 30 Oct 2007 14:59:26 -0700 (PDT)
+> > 
+> > > I think the thing to do is just __KERNEL__ protect the
+> > > <linux/string.h> include and require userspace to
+> > > include <string.h> itself when using these headers.
+> > > 
+> > > That's what I'm testing right now.
+> > > 
+> > > I'm pretty sure those inlines are indeed used by userspace.
+> > 
+> > Actually, I'm tempted to put <string.h> in the ifndef __KERNEL__
+> > block of that header.
+> 
+> Something like this..
+> I like it - much better than adding string.h to unidef-y.
+> PS - had not pulled latest -linus - so you must update Kbuild.
+> PPS - tipc.h should be exported too as I understood Stephen.
 
-The difference with huaweiAktBbo.c seems that kernel uses a nonzero length.
-Can you try zero length with the kernel? It's the second argument to the last.
+tipc.h is already listed in header-y.
 
--- Pete
+I'll merge your patch, thanks Sam.
