@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXJ3FdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXJ3Fro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbXJ3FdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 01:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXJ3FdO
+	id S1753412AbXJ3Fro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 01:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbXJ3Frh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 01:33:14 -0400
-Received: from 1wt.eu ([62.212.114.60]:3602 "EHLO 1wt.eu"
+	Tue, 30 Oct 2007 01:47:37 -0400
+Received: from sandeen.net ([209.173.210.139]:23939 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbXJ3FdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 01:33:14 -0400
-Date: Tue, 30 Oct 2007 06:33:07 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Wijnand Rietman <wijnand.rietman@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_IDEDMA_AUTO & 2.4.32 & hdparm -d1
-Message-ID: <20071030053307.GA1045@1wt.eu>
-References: <b3790d380710290605g5d1770fao675418f062f111b9@mail.gmail.com> <20071029194241.GA27646@csclub.uwaterloo.ca> <b3790d380710291352k83e04ebl331f8bb784ba218c@mail.gmail.com> <20071029214551.GB27643@csclub.uwaterloo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029214551.GB27643@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.11
+	id S1752527AbXJ3Frg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 01:47:36 -0400
+Message-ID: <4726C577.9000209@sandeen.net>
+Date: Tue, 30 Oct 2007 00:47:35 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: David Miller <davem@davemloft.net>, byron.bbradley@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: XFS Fails Quality Assurance Tests on ARM
+References: <fb80ve$i5q$1@sea.gmane.org>	<20070830.213901.48806818.davem@davemloft.net> <p73ps12vxrl.fsf@bingen.suse.de>
+In-Reply-To: <p73ps12vxrl.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 05:45:52PM -0400, Lennart Sorensen wrote:
-> On Mon, Oct 29, 2007 at 09:52:35PM +0100, Wijnand Rietman wrote:
-> > Thanks Lens for the suggestion!
-> > 
-> > Unfortunately this option doesn't work either. When I pass the "nodma"
-> > paramater to the kernel, it boots with DMA disabled (like it should),
-> > but doesn't allow DMA to be enabled anymore with hdparm.
+Andi Kleen wrote:
+> David Miller <davem@davemloft.net> writes:
 > 
-> Hmm, I was pretty sure I had the ability to turn it on after the fact
-> before.  Perhaps I was wrong.  That would be silly.  There has to be
-> some option to do what you want.
+>> From: Byron Bradley <byron.bbradley@gmail.com>
+>> Date: Fri, 31 Aug 2007 03:12:46 +0000 (UTC)
+>>
+>>> Anybody got any ideas of how we fix this?
+>> I don't know how much testing XFS gets on ARM, but one thing that some
+>> ARM chips have is D-cache aliasing problems and one thing XFS uses a
+>> lot is virtual remapping of various data structures via vmap().
+>>
+>> This might be what is causing the problems.
 
-I too had to completely disable the config option with some CF which
-caused long timeouts at boot time. I don't remember having been able
-to re-enable anything afterwards (including other hard disks).
+Sorry, I lost the original to reply to, but stumbled on this thread
+looking for something else.  :)
 
-Willy
+Anyway, from the assertion:
 
+Assertion failed: (char *)sfep - (char *)sfp == dp->i_d.di_size, file:
+fs/xfs/xfs_dir2_sf.c, line: 647 kernel BUG at fs/xfs/support/debug.c:82!
+
+this is almost certainly a result of xfs_dir2_sf_off_t,
+xfs_dir2_sf_hdr_t, and/or xfs_dir2_sf_entry_t or others not being
+"properly" aligned on arm.
+
+There was a patch floating around to "fix" it but it's not on-disk
+compatible w/ x86 & friends, it just makes things consistent for arm.  I
+think packing some of these structures would take care of it, but this
+problem could use some attention & testing I think, it's been floating
+around a long time.
+
+-Eric
