@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXJ3Rij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbXJ3RjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbXJ3Rij (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXJ3Ria
+	id S1757303AbXJ3RjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXJ3RjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:38:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36931 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbXJ3Ri3 (ORCPT
+	Tue, 30 Oct 2007 13:39:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36837 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753529AbXJ3Ri7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:38:29 -0400
-Date: Tue, 30 Oct 2007 11:38:28 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-Message-ID: <20071030173828.GB15111@parisc-linux.org>
-References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org> <47274781.3030606@student.ltu.se> <20071030151121.GM32359@parisc-linux.org> <47275FD0.4010400@student.ltu.se>
-MIME-Version: 1.0
+	Tue, 30 Oct 2007 13:38:59 -0400
+Date: Tue, 30 Oct 2007 17:38:58 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: bo yang <bo.yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
+Subject: Re: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors, cmd_per_lun
+Message-ID: <20071030173858.GB16455@infradead.org>
+References: <1191253908.5850.12.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47275FD0.4010400@student.ltu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1191253908.5850.12.camel@dhcp-75-534.se.lsil.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 05:46:08PM +0100, Richard Knutsson wrote:
-> I just don't see the reason why expressing a boolean as an integer. Some 
-> advantage?
+On Mon, Oct 01, 2007 at 11:51:48AM -0400, bo yang wrote:
+> +/*
+> + * Number of sectors per IO command will be set in megasas_init_mfi
+> + * if user does not provide
+> + */
+> +static unsigned int max_sectors;
+> +module_param_named(max_sectors, max_sectors, int, 0);
+> +MODULE_PARM_DESC(max_sectors,
+> +	"Maximum number of sectors per IO command");
+> +
+> +/*
+> + * Number of cmds per logical unit
+> + */
+> +static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
+> +module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
+> +MODULE_PARM_DESC(cmd_per_lun,
+> +	"Maximum number of commands per logical unit (default=128)");
 
-This is C, not Java, or some other highly-typed language.
-if (int) and if (ptr) are perfectly acceptable in C.
+I don't think this should be in drivers.  cmd_per_lun is a scsi_host
+attribute already and you should change the mid-layer to add an
+optional host template method that allows the sysfs file to be writeable.
+max_sectors should be handled similar although we don't seem to have
+an attribute for it yet (maybe the block layer does?)
 
-> (also helps us if someone does: 'if (var == true)', even thou we should 
-> try to avoid them)
-
-I have no idea what you mean.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
