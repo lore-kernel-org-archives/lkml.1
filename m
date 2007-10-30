@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbXJ3Qwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbXJ3Qx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384AbXJ3Qwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXJ3Qwd
+	id S1756612AbXJ3Qx3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXJ3QxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:52:33 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:40426 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752264AbXJ3Qwc (ORCPT
+	Tue, 30 Oct 2007 12:53:21 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:54212 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbXJ3QxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:52:32 -0400
-Message-ID: <47275FD0.4010400@student.ltu.se>
-Date: Tue, 30 Oct 2007 17:46:08 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 30 Oct 2007 12:53:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Co5zdc+DEpnZY9aROCohoftMazUThFx2ztStKbmYXOszC49VpTZ5cF5eL/Uz3McOMTdK+HXqWPuBYlVHfjOiN4yRQxWriRr5ib6J1RMVauc0jhv1YObC5UlxTr7SrhFNkoeUin/uceGvbRp3UpNEGsUvHBM7icbF7RlZ6VC7Imk=
+Message-ID: <d120d5000710300953kd145c7fg53f4fa4d41fbc9c3@mail.gmail.com>
+Date: Tue, 30 Oct 2007 12:53:17 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "H.J. Lu" <hjl@lucon.org>
+Subject: Re: PATCH: PR Input Devives/2082: PS/2 mouse out of sync after switching with KVM switch
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071030135304.GA24688@lucon.org>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org> <47274781.3030606@student.ltu.se> <20071030151121.GM32359@parisc-linux.org>
-In-Reply-To: <20071030151121.GM32359@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071030135304.GA24688@lucon.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Oct 30, 2007 at 04:02:25PM +0100, Richard Knutsson wrote:
->   
->> Matthew Wilcox wrote:
->>     
->>> On Tue, Oct 30, 2007 at 11:54:22AM +0100, Richard Knutsson wrote:
->>>  
->>>       
->>>> Convert to use the generic boolean.
->>>> -	u8 initialized;
->>>> -	u8 in_use;		/* is the management node open*/
->>>> +	bool initialized:8;
->>>> +	bool in_use:8;		/* is the management node open*/
->>>>    
->>>>         
->>> Are you serious?
->>>  
->>>       
->> Well, yes. It is since it was defined to really be 8 bits before, and 
->> there is no reason why a boolean would be 8 bits and not 1 or 16.
->> If it is overly cautious/not needed, then I don't mind removing the ':8'...
->>     
->
-> What's wrong with leaving it as 'u8'?
->   
-I just don't see the reason why expressing a boolean as an integer. Some 
-advantage?
-(also helps us if someone does: 'if (var == true)', even thou we should 
-try to avoid them)
+Hi,
 
+On 10/30/07, H.J. Lu <hjl@lucon.org> wrote:
+> The bug report is at
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=2082
+>
+> Problem Description: When switching to another machine with a KVM
+> switch and back, the mouse is out of control, with X.Org.  To recover,
+>  I have to unplug the mouse cable and plug it back.
+>
+> Steps to reproduce: Have a wheel mouse connected and X.Org.  Keyboard,
+> Mouse and Video are connected to a KVM switch. Switch to another
+> machine and back.  You have lost the usage of wheel on mouse.
+>
+> This patch for 2.6.23 tries to reconnect the mouse after KVM switch.
+> It doesn't completely solve the problem. Mouse still got a few random
+> bytes after KVM switch.
+
+Have you tried psmouse.resync_time=5 option?
+
+Any change you coudl do
+
+echo 1 > /sys/module/i8042/parameters/debug
+
+before switrching KVM back and forth and send me dmesg?
+
+> But it recovers with kernel message:
+>
+> psmouse.c: Wheel Mouse at isa0060/serio1/input0 lost synchronization, issuing reconnect request.
+>
+> instead of
+>
+> psmouse.c: Wheel Mouse at isa0060/serio1/input0 lost synchronization, throwing 3 bytes away.
+>
+> and never recovering from it.
+>
+
+I am hesitant queuing reconnect immediately - if the byte was delayed
+because embedded controller was busy doing something else and we start
+querying mouse at the wrong time we might lose mouse altogether.
+
+-- 
+Dmitry
