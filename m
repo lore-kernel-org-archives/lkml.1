@@ -1,238 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbXJ3QQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbXJ3QQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756441AbXJ3QQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXJ3QN4
+	id S1757579AbXJ3QQx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXJ3QOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:13:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46998 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:14:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47032 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:13:39 -0400
-Message-Id: <20071030160912.039926000@chello.nl>
+	id S1755010AbXJ3QN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:13:56 -0400
+Message-Id: <20071030160915.636328000@chello.nl>
 References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:09 +0100
+Date: Tue, 30 Oct 2007 17:04:31 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 08/33] mm: emergency pool
-Content-Disposition: inline; filename=mm-page_alloc-emerg.patch
+Subject: [PATCH 30/33] nfs: swap vs nfs_writepage
+Content-Disposition: inline; filename=nfs-fix-writepage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide means to reserve a specific amount of pages.
-
-The emergency pool is separated from the min watermark because ALLOC_HARDER
-and ALLOC_HIGH modify the watermark in a relative way and thus do not ensure
-a strict minimum.
+For now just use the ->writepage() path for swap traffic. Trond would like
+to see ->swap_page() or some such additional a_op.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mmzone.h |    3 +
- mm/page_alloc.c        |   82 +++++++++++++++++++++++++++++++++++++++++++------
- mm/vmstat.c            |    6 +--
- 3 files changed, 78 insertions(+), 13 deletions(-)
+ fs/nfs/write.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-Index: linux-2.6/include/linux/mmzone.h
+Index: linux-2.6/fs/nfs/write.c
 ===================================================================
---- linux-2.6.orig/include/linux/mmzone.h
-+++ linux-2.6/include/linux/mmzone.h
-@@ -213,7 +213,7 @@ enum zone_type {
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -336,6 +336,29 @@ static int nfs_do_writepage(struct page 
+ 	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGE);
+ 	nfs_add_stats(inode, NFSIOS_WRITEPAGES, 1);
  
- struct zone {
- 	/* Fields commonly accessed by the page allocator */
--	unsigned long		pages_min, pages_low, pages_high;
-+	unsigned long		pages_emerg, pages_min, pages_low, pages_high;
- 	/*
- 	 * We don't know if the memory that we're going to allocate will be freeable
- 	 * or/and it will be released eventually, so to avoid totally wasting several
-@@ -682,6 +682,7 @@ int sysctl_min_unmapped_ratio_sysctl_han
- 			struct file *, void __user *, size_t *, loff_t *);
- int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
- 			struct file *, void __user *, size_t *, loff_t *);
-+int adjust_memalloc_reserve(int pages);
- 
- extern int numa_zonelist_order_handler(struct ctl_table *, int,
- 			struct file *, void __user *, size_t *, loff_t *);
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -118,6 +118,8 @@ static char * const zone_names[MAX_NR_ZO
- 
- static DEFINE_SPINLOCK(min_free_lock);
- int min_free_kbytes = 1024;
-+static DEFINE_MUTEX(var_free_mutex);
-+int var_free_kbytes;
- 
- unsigned long __meminitdata nr_kernel_pages;
- unsigned long __meminitdata nr_all_pages;
-@@ -1252,7 +1254,7 @@ int zone_watermark_ok(struct zone *z, in
- 	if (alloc_flags & ALLOC_HARDER)
- 		min -= min / 4;
- 
--	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
-+	if (free_pages <= min + z->lowmem_reserve[classzone_idx] + z->pages_emerg)
- 		return 0;
- 	for (o = 0; o < order; o++) {
- 		/* At the next order, this order's pages become unavailable */
-@@ -1733,8 +1735,8 @@ nofail_alloc:
- nopage:
- 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
- 		printk(KERN_WARNING "%s: page allocation failure."
--			" order:%d, mode:0x%x\n",
--			p->comm, order, gfp_mask);
-+			" order:%d, mode:0x%x, alloc_flags:0x%x, pflags:0x%x\n",
-+			p->comm, order, gfp_mask, alloc_flags, p->flags);
- 		dump_stack();
- 		show_mem();
- 	}
-@@ -1952,9 +1954,9 @@ void show_free_areas(void)
- 			"\n",
- 			zone->name,
- 			K(zone_page_state(zone, NR_FREE_PAGES)),
--			K(zone->pages_min),
--			K(zone->pages_low),
--			K(zone->pages_high),
-+			K(zone->pages_emerg + zone->pages_min),
-+			K(zone->pages_emerg + zone->pages_low),
-+			K(zone->pages_emerg + zone->pages_high),
- 			K(zone_page_state(zone, NR_ACTIVE)),
- 			K(zone_page_state(zone, NR_INACTIVE)),
- 			K(zone->present_pages),
-@@ -4113,7 +4115,7 @@ static void calculate_totalreserve_pages
- 			}
- 
- 			/* we treat pages_high as reserved pages. */
--			max += zone->pages_high;
-+			max += zone->pages_high + zone->pages_emerg;
- 
- 			if (max > zone->present_pages)
- 				max = zone->present_pages;
-@@ -4170,7 +4172,8 @@ static void setup_per_zone_lowmem_reserv
-  */
- static void __setup_per_zone_pages_min(void)
- {
--	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
-+	unsigned pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
-+	unsigned pages_emerg = var_free_kbytes >> (PAGE_SHIFT - 10);
- 	unsigned long lowmem_pages = 0;
- 	struct zone *zone;
- 	unsigned long flags;
-@@ -4182,11 +4185,13 @@ static void __setup_per_zone_pages_min(v
- 	}
- 
- 	for_each_zone(zone) {
--		u64 tmp;
-+		u64 tmp, tmp_emerg;
- 
- 		spin_lock_irqsave(&zone->lru_lock, flags);
- 		tmp = (u64)pages_min * zone->present_pages;
- 		do_div(tmp, lowmem_pages);
-+		tmp_emerg = (u64)pages_emerg * zone->present_pages;
-+		do_div(tmp_emerg, lowmem_pages);
- 		if (is_highmem(zone)) {
- 			/*
- 			 * __GFP_HIGH and PF_MEMALLOC allocations usually don't
-@@ -4205,12 +4210,14 @@ static void __setup_per_zone_pages_min(v
- 			if (min_pages > 128)
- 				min_pages = 128;
- 			zone->pages_min = min_pages;
-+			zone->pages_emerg = 0;
- 		} else {
- 			/*
- 			 * If it's a lowmem zone, reserve a number of pages
- 			 * proportionate to the zone's size.
- 			 */
- 			zone->pages_min = tmp;
-+			zone->pages_emerg = tmp_emerg;
- 		}
- 
- 		zone->pages_low   = zone->pages_min + (tmp >> 2);
-@@ -4232,6 +4239,63 @@ void setup_per_zone_pages_min(void)
- 	spin_unlock_irqrestore(&min_free_lock, flags);
- }
- 
-+static void __adjust_memalloc_reserve(int pages)
-+{
-+	var_free_kbytes += pages << (PAGE_SHIFT - 10);
-+	BUG_ON(var_free_kbytes < 0);
-+	setup_per_zone_pages_min();
-+}
++	if (unlikely(IS_SWAPFILE(inode))) {
++		struct rpc_cred *cred;
++		struct nfs_open_context *ctx;
++		int status;
 +
-+static int test_reserve_limits(void)
-+{
-+	struct zone *zone;
-+	int node;
++		cred = rpcauth_lookupcred(NFS_CLIENT(inode)->cl_auth, 0);
++		if (IS_ERR(cred))
++			return PTR_ERR(cred);
 +
-+	for_each_zone(zone)
-+		wakeup_kswapd(zone, 0);
++		ctx = nfs_find_open_context(inode, cred, FMODE_WRITE);
++		if (!ctx)
++			return -EBADF;
 +
-+	for_each_online_node(node) {
-+		struct page *page = alloc_pages_node(node, GFP_KERNEL, 0);
-+		if (!page)
-+			return -ENOMEM;
++		status = nfs_writepage_setup(ctx, page, 0, nfs_page_length(page));
 +
-+		__free_page(page);
-+	}
++		put_nfs_open_context(ctx);
 +
-+	return 0;
-+}
-+
-+/**
-+ *	adjust_memalloc_reserve - adjust the memalloc reserve
-+ *	@pages: number of pages to add
-+ *
-+ *	It adds a number of pages to the memalloc reserve; if
-+ *	the number was positive it kicks reclaim into action to
-+ *	satisfy the higher watermarks.
-+ *
-+ *	returns -ENOMEM when it failed to satisfy the watermarks.
-+ */
-+int adjust_memalloc_reserve(int pages)
-+{
-+	int err = 0;
-+
-+	mutex_lock(&var_free_mutex);
-+	__adjust_memalloc_reserve(pages);
-+	if (pages > 0) {
-+		err = test_reserve_limits();
-+		if (err) {
-+			__adjust_memalloc_reserve(-pages);
-+			goto unlock;
++		if (status < 0) {
++			nfs_set_pageerror(page);
++			return status;
 +		}
 +	}
-+	printk(KERN_DEBUG "Emergency reserve: %d\n", var_free_kbytes);
 +
-+unlock:
-+	mutex_unlock(&var_free_mutex);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(adjust_memalloc_reserve);
-+
- /*
-  * Initialise min_free_kbytes.
-  *
-Index: linux-2.6/mm/vmstat.c
-===================================================================
---- linux-2.6.orig/mm/vmstat.c
-+++ linux-2.6/mm/vmstat.c
-@@ -752,9 +752,9 @@ static void zoneinfo_show_print(struct s
- 		   "\n        spanned  %lu"
- 		   "\n        present  %lu",
- 		   zone_page_state(zone, NR_FREE_PAGES),
--		   zone->pages_min,
--		   zone->pages_low,
--		   zone->pages_high,
-+		   zone->pages_emerg + zone->pages_min,
-+		   zone->pages_emerg + zone->pages_low,
-+		   zone->pages_emerg + zone->pages_high,
- 		   zone->pages_scanned,
- 		   zone->nr_scan_active, zone->nr_scan_inactive,
- 		   zone->spanned_pages,
+ 	nfs_pageio_cond_complete(pgio, page->index);
+ 	return nfs_page_async_flush(pgio, page);
+ }
 
 --
 
