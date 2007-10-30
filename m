@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbXJ3LCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbXJ3LC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbXJ3LCB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 07:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbXJ3LBO
+	id S1756546AbXJ3LC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 07:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXJ3LBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 07:01:14 -0400
-Received: from partizan.velesys.com ([213.184.230.195]:64121 "EHLO
-	partizan.velesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbXJ3LBN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 07:01:13 -0400
-From: "Kirill A. Shutemov" <k.shutemov@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>
-Subject: [PATCH 3/4] Unexport asm/user.h and linux/user.h
-Date: Tue, 30 Oct 2007 13:02:18 +0200
-Message-Id: <1193742139-29738-4-git-send-email-k.shutemov@gmail.com>
-X-Mailer: git-send-email 1.5.3.4.GIT
-In-Reply-To: <1193742139-29738-1-git-send-email-k.shutemov@gmail.com>
-References: <1193742139-29738-1-git-send-email-k.shutemov@gmail.com>
+	Tue, 30 Oct 2007 07:01:16 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:33460 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753098AbXJ3LBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 07:01:15 -0400
+Date: Tue, 30 Oct 2007 11:59:50 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com, Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [rtc-linux] [PATCH] rtc: m48t59 fix section mismatch warning
+Message-ID: <20071030115950.4a149cb3@i1501.lan.towertech.it>
+In-Reply-To: <20071029112004.de52d9db.randy.dunlap@oracle.com>
+References: <20071029112004.de52d9db.randy.dunlap@oracle.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not export asm/user.h and linux/user.h during make headers_install.
+On Mon, 29 Oct 2007 11:20:04 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Signed-off-by: Kirill A. Shutemov <k.shutemov@gmail.com>
----
- include/asm-generic/Kbuild.asm |    1 -
- include/asm-x86/Kbuild         |    2 --
- include/linux/Kbuild           |    1 -
- include/linux/elfcore.h        |    2 ++
- 4 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Change the name of this data to use a name (suffix) that is whitelisted
+> by MODPOST so that the section warning is fixed (not generated).
+> 
+> WARNING: vmlinux.o(.data+0x1b140): Section mismatch: reference to .init.text:m48t59_rtc_probe (between 'm48t59_rtc_platdrv' and 'm48t59_nvram_attr')
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-diff --git a/include/asm-generic/Kbuild.asm b/include/asm-generic/Kbuild.asm
-index d744ee3..57ba606 100644
---- a/include/asm-generic/Kbuild.asm
-+++ b/include/asm-generic/Kbuild.asm
-@@ -27,4 +27,3 @@ unifdef-y += termbits.h
- unifdef-y += termios.h
- unifdef-y += types.h
- unifdef-y += unistd.h
--unifdef-y += user.h
-diff --git a/include/asm-x86/Kbuild b/include/asm-x86/Kbuild
-index 828f9f8..f1b4dcb 100644
---- a/include/asm-x86/Kbuild
-+++ b/include/asm-x86/Kbuild
-@@ -21,7 +21,5 @@ unifdef-y += posix_types_64.h
- unifdef-y += ptrace.h
- unifdef-y += unistd_32.h
- unifdef-y += unistd_64.h
--unifdef-y += user_32.h
--unifdef-y += user_64.h
- unifdef-y += vm86.h
- unifdef-y += vsyscall.h
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index ee3276c..bace1ba 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -339,7 +339,6 @@ unifdef-y += uinput.h
- unifdef-y += uio.h
- unifdef-y += unistd.h
- unifdef-y += usbdevice_fs.h
--unifdef-y += user.h
- unifdef-y += utsname.h
- unifdef-y += videodev2.h
- unifdef-y += videodev.h
-diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
-index e227719..5ca54d7 100644
---- a/include/linux/elfcore.h
-+++ b/include/linux/elfcore.h
-@@ -4,7 +4,9 @@
- #include <linux/types.h>
- #include <linux/signal.h>
- #include <linux/time.h>
-+#ifdef __KERNEL__
- #include <linux/user.h>
-+#endif
- #include <linux/ptrace.h>
- 
- struct elf_siginfo
+ Thanks Randy!
+
+
+ Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
+
 -- 
-1.5.3.4.GIT
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
