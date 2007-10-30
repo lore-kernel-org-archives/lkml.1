@@ -1,59 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbXJ3EoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbXJ3Eoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbXJ3EoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXJ3Emm
+	id S1753170AbXJ3Eoa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 00:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbXJ3Emv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:42:42 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:37131 "EHLO snapgear.com"
+	Tue, 30 Oct 2007 00:42:51 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:37133 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754385AbXJ3Emk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:42:40 -0400
-Date: Tue, 30 Oct 2007 14:41:46 +1000
+	id S1754700AbXJ3Emu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 00:42:50 -0400
+Date: Tue, 30 Oct 2007 14:42:17 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200710300441.l9U4fk0E032224@goober>
+Message-Id: <200710300442.l9U4gHLt032248@goober>
 To: torvalds@linux-foundation.org
-Subject: [PATCH]: add configure support for new ColdFire serial driver
+Subject: [M68KNOMMU]: platform setup for 5249 ColdFire UARTs
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add configure support for the new style ColdFire serial driver.
+Switch to platform style configuration for 5249 ColdFire UARTs.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
-diff -Naurp linux-2.6.23-rc1/drivers/serial/Kconfig linux-2.6.23-rc1.platform/drivers/serial/Kconfig
---- linux-2.6.23-rc1/drivers/serial/Kconfig	2007-10-25 10:49:13.000000000 +1000
-+++ linux-2.6.23-rc1.platform/drivers/serial/Kconfig	2007-10-30 11:20:44.000000000 +1000
-@@ -960,6 +960,30 @@ config SERIAL_COLDFIRE
- 	  This driver supports the built-in serial ports of the Motorola ColdFire
- 	  family of CPUs.
+diff -Naurp linux-2.6.23-rc1/arch/m68knommu/platform/5249/config.c linux-2.6.23-rc1.platform/arch/m68knommu/platform/5249/config.c
+--- linux-2.6.23-rc1/arch/m68knommu/platform/5249/config.c	2007-10-25 10:48:36.000000000 +1000
++++ linux-2.6.23-rc1.platform/arch/m68knommu/platform/5249/config.c	2007-10-30 14:18:24.000000000 +1000
+@@ -12,11 +12,12 @@
+ #include <linux/param.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <asm/dma.h>
+ #include <asm/machdep.h>
++#include <asm/dma.h>
++#include <asm/io.h>
+ #include <asm/coldfire.h>
+ #include <asm/mcfsim.h>
+-#include <asm/mcfdma.h>
++#include <asm/mcfuart.h>
  
-+config SERIAL_MCF
-+	bool "Coldfire serial support (new style driver)"
-+	depends on COLDFIRE
-+	select SERIAL_CORE
-+	help
-+	  This new serial driver supports the Freescale Coldfire serial ports
-+	  using the new serial driver subsystem.
+ /***************************************************************************/
+ 
+@@ -38,6 +39,54 @@ unsigned int dma_device_address[MAX_M68K
+ 
+ /***************************************************************************/
+ 
++static struct mcf_platform_uart m5249_uart_platform[] = {
++	{
++		.mapbase	= MCF_MBAR + MCFUART_BASE1,
++		.irq		= 73,
++	},
++	{
++		.mapbase 	= MCF_MBAR + MCFUART_BASE2,
++		.irq		= 74,
++	}
++};
 +
-+config SERIAL_MCF_BAUDRATE
-+	int "Default baudrate for Coldfire serial ports"
-+	depends on SERIAL_MCF
-+	default 19200
-+	help
-+	  This setting lets you define what the default baudrate is for the
-+	  ColdFire serial ports. The usual default varies from board to board,
-+	  and this setting is a way of catering for that.
++static struct platform_device m5249_uart = {
++	.name			= "mcfuart",
++	.id			= 0,
++	.dev.platform_data	= m5249_uart_platform,
++};
 +
-+config SERIAL_MCF_CONSOLE
-+	bool "Coldfire serial console support"
-+	depends on SERIAL_MCF
-+	select SERIAL_CORE_CONSOLE
-+	help
-+	  Enable a ColdFire internal serial port to be the system console.
++static struct platform_device *m5249_devices[] __initdata = {
++	&m5249_uart,
++};
 +
- config SERIAL_68360_SMC
- 	bool "68360 SMC uart support"
- 	depends on M68360
++/***************************************************************************/
++
++static void __init m5249_uart_init_line(int line, int irq)
++{
++	if (line == 0) {
++		writel(MCFSIM_ICR_LEVEL6 | MCFSIM_ICR_PRI1, MCF_MBAR + MCFSIM_UART1ICR);
++		writeb(irq, MCFUART_BASE1 + MCFUART_UIVR);
++		mcf_setimr(mcf_getimr() & ~MCFSIM_IMR_UART1);
++	} else if (line == 1) {
++		writel(MCFSIM_ICR_LEVEL6 | MCFSIM_ICR_PRI2, MCF_MBAR + MCFSIM_UART2ICR);
++		writeb(irq, MCFUART_BASE2 + MCFUART_UIVR);
++		mcf_setimr(mcf_getimr() & ~MCFSIM_IMR_UART2);
++	}
++}
++
++static void __init m5249_uarts_init(void)
++{
++	const int nrlines = ARRAY_SIZE(m5249_uart_platform);
++	int line;
++
++	for (line = 0; (line < nrlines); line++)
++		m5249_uart_init_line(line, m5249_uart_platform[line].irq);
++}
++
++
++/***************************************************************************/
++
+ void mcf_autovector(unsigned int vec)
+ {
+ 	volatile unsigned char  *mbar;
+@@ -85,10 +134,21 @@ int mcf_timerirqpending(int timer)
+ 
+ /***************************************************************************/
+ 
+-void config_BSP(char *commandp, int size)
++void __init config_BSP(char *commandp, int size)
+ {
+ 	mcf_setimr(MCFSIM_IMR_MASKALL);
+ 	mach_reset = coldfire_reset;
+ }
+ 
+ /***************************************************************************/
++
++static int __init init_BSP(void)
++{
++	m5249_uarts_init();
++	platform_add_devices(m5249_devices, ARRAY_SIZE(m5249_devices));
++	return 0;
++}
++
++arch_initcall(init_BSP);
++
++/***************************************************************************/
