@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbXJ3Xol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXJ3Xqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbXJ3Xol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXJ3XoV
+	id S1757213AbXJ3Xqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbXJ3Xqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:44:21 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45881 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095AbXJ3XoU (ORCPT
+	Tue, 30 Oct 2007 19:46:31 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43694 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751262AbXJ3Xqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:44:20 -0400
-Date: Tue, 30 Oct 2007 19:44:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Daniel Walker <dwalker@mvista.com>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, kraj@mvista.com
-Subject: Re: [PATCH -rt] remove in_interrupt() BUG_ON in exit path
-In-Reply-To: <20071030224004.417523706@mvista.com>
-Message-ID: <Pine.LNX.4.58.0710301939340.31349@gandalf.stny.rr.com>
-References: <20071030224004.417523706@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Oct 2007 19:46:30 -0400
+Date: Tue, 30 Oct 2007 16:46:28 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Lee.Schermerhorn@hp.com, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071030164628.dcf38c5f.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710301554450.15640@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710251541550.11929@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251635420.9635@schroedinger.engr.sgi.com>
+	<alpine.DEB.0.9999.0710251648430.23810@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0710251725440.10197@schroedinger.engr.sgi.com>
+	<20071025185506.8c373aa8.pj@sgi.com>
+	<alpine.DEB.0.9999.0710251900080.8024@chino.kir.corp.google.com>
+	<1193412644.5032.13.camel@localhost>
+	<alpine.DEB.0.9999.0710261145400.11674@chino.kir.corp.google.com>
+	<20071026120037.7b95a136.pj@sgi.com>
+	<alpine.DEB.0.9999.0710261344180.6249@chino.kir.corp.google.com>
+	<1193433239.5032.95.camel@localhost>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<1193670617.5035.38.camel@localhost>
+	<alpine.DEB.0.9999.0710301554450.15640@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David wrote:
+> but the remap certainly doesn't help respect the intent of the
+> application and the mempolicies they have set up when influenced
+> by an outside entity such as cpusets.
 
---
-On Tue, 30 Oct 2007, Daniel Walker wrote:
+... guess that depends on the intent, doesn't it?
 
-> As you can see from the patch there is already a case to catch this type
-> of problem. This BUG_ON() adds a resursive OOPS , since BUG() causes an OOPS
-> and the OOPS just calls do_exit() , and do_exit() just causes another OOPS with
-> this BUG_ON().. If we call panic() here then it's clear what the problem was,
-> instead of causing an endless recursive crash.
->
-> Signed-off-by: Daniel Walker <dwalker@mvista.com>
->
-> ---
->  kernel/exit.c |    1 -
->  1 file changed, 1 deletion(-)
->
-> Index: linux-2.6.23.1/kernel/exit.c
-> ===================================================================
-> --- linux-2.6.23.1.orig/kernel/exit.c
-> +++ linux-2.6.23.1/kernel/exit.c
-> @@ -895,7 +895,6 @@ fastcall NORET_TYPE void do_exit(long co
->
->  	WARN_ON(atomic_read(&tsk->fs_excl));
->
-> -	BUG_ON(in_interrupt());
->  	if (unlikely(in_interrupt()))
->  		panic("Aiee, killing interrupt handler!");
->  	if (unlikely(!tsk->pid))
-
-I did this change once before, while debugging. I had the same issue. This
-BUG_ON was giving me recursive crashes that prevented me knowing WTF was
-going on.  I thought I even submitted a patch to remove it. Perhaps I
-forgot to. Nope, I did!
-
-http://www.ussg.iu.edu/hypermail/linux/kernel/0707.0/1804.html
-
-Since the change is added by the preempt-realtime-core.patch, I'll just
-remove it from there.
-
-IOW, I'll fold this into that patch.
-
--- Steve
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
