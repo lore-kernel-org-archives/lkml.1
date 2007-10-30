@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXJ3PIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbXJ3PJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbXJ3PIN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbXJ3PH6
+	id S1755874AbXJ3PJE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbXJ3PIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:07:58 -0400
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:34727 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753105AbXJ3PH5 (ORCPT
+	Tue, 30 Oct 2007 11:08:53 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:35750 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbXJ3PIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:07:57 -0400
-X-YMail-OSG: ktLShR8VM1lhf4TEK2yC4dliMnm__Xp2PRC4jImhIgFx7EVla.B_03KUZTUM6l_ZQYTKyF6T.A--
-X-RocketYMMF: rancidfat
-Date: Tue, 30 Oct 2007 08:07:56 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: "Kazuki Omo\(Company\)" <k-omo@sios.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4726ACAC.7060609@sios.com>
+	Tue, 30 Oct 2007 11:08:53 -0400
+Message-ID: <47274781.3030606@student.ltu.se>
+Date: Tue, 30 Oct 2007 16:02:25 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <429123.13355.qm@web36608.mail.mud.yahoo.com>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
+References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org>
+In-Reply-To: <20071030145155.GL32359@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Wilcox wrote:
+> On Tue, Oct 30, 2007 at 11:54:22AM +0100, Richard Knutsson wrote:
+>   
+>> Convert to use the generic boolean.
+>> -	u8 initialized;
+>> -	u8 in_use;		/* is the management node open*/
+>> +	bool initialized:8;
+>> +	bool in_use:8;		/* is the management node open*/
+>>     
+>
+> Are you serious?
+>   
+Well, yes. It is since it was defined to really be 8 bits before, and 
+there is no reason why a boolean would be 8 bits and not 1 or 16.
+If it is overly cautious/not needed, then I don't mind removing the ':8'...
 
---- "Kazuki Omo(Company)" <k-omo@sios.com> wrote:
-
-> Dear, Folks,
-> 
-> Now we are planning to submit LIDS to mainline.
-> (As you know, it already written for supporing LSM for several years.)
-> 
-> When we will finish to re-write documentation and some FAQ, then
-> we will be able to submit the patch.
-> 
-> Sincerely,
-> 
-> OMO
-
-Most excellent. Thank you.
+Richard Knutsson
 
 
-Casey Schaufler
-casey@schaufler-ca.com
