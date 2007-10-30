@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbXJ3Kth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbXJ3Kwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbXJ3Kth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 06:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbXJ3Kt3
+	id S1754645AbXJ3Kwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 06:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXJ3Kw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 06:49:29 -0400
-Received: from server03.ke-net.com ([84.19.168.8]:59451 "EHLO
-	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbXJ3Kt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 06:49:28 -0400
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-From: Stefani Seibold <stefani@seibold.net>
-Reply-To: stefani@seibold.net
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <1193738177.27652.69.camel@twins>
-References: <1193064057.16541.1.camel@matrix>
-	 <20071029004002.60c7182a.akpm@linux-foundation.org>
-	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-	 <1193677302.27652.56.camel@twins>
-	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
-	 <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy>
-	 <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com>
-	 <1193738177.27652.69.camel@twins>
-Content-Type: text/plain
-Date: Tue, 30 Oct 2007 11:49:16 +0100
-Message-Id: <1193741356.13775.2.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 30 Oct 2007 06:52:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:54763 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbXJ3Kw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 06:52:26 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] raise tsc clocksource rating
+Date: Tue, 30 Oct 2007 21:52:26 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, avi@quramnet.com,
+       kvm-devel@lists.sourceforge.net, John Stultz <johnstul@us.ibm.com>
+References: <11936994092607-git-send-email-gcosta@redhat.com> <200710301339.23628.rusty@rustcorp.com.au> <20071030073736.GA21843@elte.hu>
+In-Reply-To: <20071030073736.GA21843@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710302152.27077.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday 30 October 2007 18:37:36 Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > No.  tsc is very good, it's not perfect.  If a paravirt clock
+> > registers 400 it really means "pick me over the tsc".
+>
+> often the TSC is not perfect, but _IF_ it's perfect, using the paravirt
+> driver is a pessimisation in performance.
+>
+> the main problem at the moment is that there's no mechanism at the
+> moment to convey to the guest the information that the TSC is "perfect",
+> and to convey the calibration values.
 
-the question is how can i get all pte's from a vmalloc'ed memory. Due to
-the zeroed mapping pointer i dont see how to do this?
+The host can communicate to the guest what clock to use: the guest can decide 
+to register a paravirt clock or not depending on whether it wants to leave it 
+to the TSC.
 
+For a while we couldn't remove the TSC cpuid capability in the guest, because 
+if you configured your kernel in some ways it was hardcoded on.  I think 
+the "all 686+ have a tsc" assumption has now been fixed, so I should change 
+the lguest clock to do as you said: register its clock at lower prio to the 
+TSC and then the host can simply remove the TSC cpuid if it isn't suitable 
+for the guest to use.
 
-Am Dienstag, den 30.10.2007, 10:56 +0100 schrieb Peter Zijlstra:
-> On Mon, 2007-10-29 at 21:22 -0400, Jaya Kumar wrote:
-> > On 10/29/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > >
-> > > [ also, remap_vmalloc_range() suffers similar issues, only file and anon
-> > >   have proper rmap ]
-> > >
-> > > I'm not sure we want full rmap for remap_pfn/vmalloc_range, but perhaps
-> > > we could assist drivers in maintaining and using vma lists.
-> > >
-> > > I think page_mkclean_one() would work if you'd manually set page->index
-> > > and iterate the vmas yourself. Although atm I'm not sure of anything so
-> > > don't pin me on it.
-> > 
-> > :-) If it's anybody's fault, it's mine for not testing properly. My bad.
-> > 
-> > In the case of defio, I think it's no trouble to build a list of vmas
-> > at mmap time and then to iterate through them when it's ready for
-> > mkclean time as you suggested. I don't fully understand page->index
-> > yet. I had thought it was only used by swap cache or file map.
-> > 
-> > On an unrelated note, I was looking for somewhere to stuff a 16 bit
-> > offset (so that I have a cheap way to know which struct page
-> > corresponds to which framebuffer block or offset) for another driver.
-> > I had thought page->index was it but I think I am wrong now.
-> Yeah, page->index is used along with vma->vmpgoff and vma->vm_start to
-> determine the address of the page in the given vma:
-> 
->   address = vma->vm_start + ((page->index - vma->vm_pgoff) << PAGE_SHIFT);
-> 
-> and from that address the pte can be found by walking the vma->vm_mm
-> page tables.
-> 
-> So page->index does what you want it to, identify which part of the
-> framebuffer this particular page belongs to.
+ISTR the core TSC timing code (which lguest could use) and various hardware 
+manipulations (which lguest couldn't) were intertwined, but I'll have to go 
+back and check exactly what the issue was.
 
+> and just in case it's not obvious: i am not arguing for the inclusion of
+> the patch
+
+Unfortunately, you and Thomas both acked the patch.  This says v bad things 
+about how much review kernel patches get.
+
+Cheers,
+Rusty.
