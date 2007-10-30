@@ -1,165 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXJ3Gy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXJ3Gzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbXJ3Gy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 02:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXJ3GyU
+	id S1754588AbXJ3Gzy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 02:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbXJ3Gzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 02:54:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48594 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbXJ3GyT (ORCPT
+	Tue, 30 Oct 2007 02:55:45 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56846 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbXJ3Gzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 02:54:19 -0400
-Message-ID: <4726D4BA.9040304@oracle.com>
-Date: Tue, 30 Oct 2007 12:22:42 +0530
-From: Gurudas Pai <gurudas.pai@oracle.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] nfs: readv/writev with O_DIRECT fails on  2.6.24-rc1
-References: <47258C0A.2040603@oracle.com> <1193687977.7497.45.camel@heimdal.trondhjem.org>
-In-Reply-To: <1193687977.7497.45.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 30 Oct 2007 02:55:44 -0400
+Date: Tue, 30 Oct 2007 06:55:40 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Cliffe <cliffe@ii.net>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: Defense in depth: LSM *modules*, not a static interface
+Message-ID: <20071030065540.GH8181@ftp.linux.org.uk>
+References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl> <4726377A.4080807@crispincowan.com> <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com> <4726D9D9.2000909@ii.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4726D9D9.2000909@ii.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-
-> On Mon, 2007-10-29 at 13:00 +0530, gurudas pai wrote:
->> Hi,
->>
->> While running olt kit on 2.6.24-rc1 over nfs , Oracle reported I/O 
->> errors. I debugged little more and found that readv/writev are failing 
->> with O_DIRECT on nfs ( netapp's filer).
->>
->> I am able to re-produce same error using ltp/diotest5.
->>
->> ./diotest5  -f /storage/nas/testfile -v 5
->>
->> diotest05 1953719669  FAIL  :  readv failed: Invalid argument
->> diotest05 1953719670  FAIL  :  Read with Direct IO, Write without
->> diotest05 1953719671  FAIL  :  writev failed: Invalid argument
->> diotest05 1953719672  FAIL  :  Write with Direct IO, Read without
->> diotest05 1953719673  FAIL  :  writev failed: Invalid argument
->> diotest05 1953719674  FAIL  :  Read, Write with Direct IO
->> diotest05    0  INFO  :  3/3 testblocks failed
->>
->>  >strace -e readv,writev ./diotest5  -f /storage/nas/testfile -v 5
->> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}], 5) = 20480
->> readv(4, 0x8051000, 5)                  = -1 EINVAL (Invalid argument)
->> diotest05 1953719669  FAIL  :  readv failed: Invalid argument
->> diotest05 1953719670  FAIL  :  Read with Direct IO, Write without
->> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}], 5) = -1 EINVAL(Invalid argument)
->> diotest05 1953719671  FAIL  :  writev failed: Invalid argument
->> diotest05 1953719672  FAIL  :  Write with Direct IO, Read without
->> writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
->> 4096}], 5) = -1 EINVAL(Invalid argument)
->> diotest05 1953719673  FAIL  :  writev failed: Invalid argument
->> diotest05 1953719674  FAIL  :  Read, Write with Direct IO
->> diotest05    0  INFO  :  3/3 testblocks failed
->> Process 4749 detached
->>
->>
->> mount options:
->> rw,bg,nointr,hard,timeo=600,wsize=32768,rsize=32768,nfsvers=3,tcp,actimeo=0
->>
->>
->> Please let me know if I have to try test/debug patch.
-> 
-> Nobody has yet added support for nvec>1.
-> 
-
-Tried with old kernel 2.6.18-8 (RHEL5), test passed with nvec=5.
-
- >strace -fff -e readv,writev,open  ./diotest5 -f /storage/nas/testfile -v 5
-open("/etc/ld.so.cache", O_RDONLY)      = 3
-open("/lib/libc.so.6", O_RDONLY)        = 3
-open("/storage/nas/ca-ostest184.us.oracle.com/testfile", 
-O_RDONLY|O_CREAT|O_DIRECT, 0666) = 3
-open("/storage/nas/testfile", O_WRONLY|O_CREAT, 0666) = 3
-open("/storage/nas//testfile", O_RDONLY|O_CREAT|O_DIRECT|O_LARGEFILE, 
-0666) = 4
-writev(3, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}], 5) = 20480
-readv(4, [{"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}, {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 
-4096}], 5) = 20480
-writev(3, [{"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}], 5) = 20480
-readv(4, [{"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}, {"\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1"..., 
-4096}], 5) = 20480
-writev(3, [{"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}], 5) = 20480
-readv(4, [{"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}, {"\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2"..., 
-4096}], 5) = 20480
-writev(3, [{"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}], 5) = 20480
-readv(4, [{"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}, {"\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3"..., 
-4096}], 5) = 20480
-writev(3, [{"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}], 5) = 20480
-readv(4, [{"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}, {"\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4\4"..., 
-4096}], 5) = 20480
-
-
-Thanks,
--Guru
+On Tue, Oct 30, 2007 at 03:14:33PM +0800, Cliffe wrote:
+> Defense in depth has long been recognised as an important secure design 
+> principle. Security is best achieved using a layered approach.
+ 
+"Layered approach" is not a magic incantation to excuse any bit of snake
+oil.  Homeopathic remedies might not harm (pure water is pure water),
+but that's not an excuse for quackery.  And frankly, most of the
+"security improvement" crowd sound exactly like woo-peddlers.
