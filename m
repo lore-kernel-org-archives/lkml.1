@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbXJ3N7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbXJ3OHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbXJ3N7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 09:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXJ3N70
+	id S1754852AbXJ3OHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbXJ3OHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 09:59:26 -0400
-Received: from zakalwe.fi ([80.83.5.154]:42564 "EHLO zakalwe.fi"
+	Tue, 30 Oct 2007 10:07:44 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:60574 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbXJ3N7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 09:59:25 -0400
-Date: Tue, 30 Oct 2007 15:59:24 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Chris Holvenstot <cholvenstot@comcast.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Major SATA / EXT3 Issue?
-Message-ID: <20071030135923.GA3441@zakalwe.fi>
-References: <1193451712.6639.13.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1193451712.6639.13.camel@localhost>
-User-Agent: Mutt/1.5.11
+	id S1753441AbXJ3OHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 10:07:43 -0400
+Date: Tue, 30 Oct 2007 15:07:20 +0100 (MET)
+Message-Id: <200710301407.l9UE7Kwn028913@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: mikpe@it.uu.se, tglx@linutronix.de
+Subject: Re: [REGRESSION] 2.6.24-rc1 fails to boot on a 486
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@redhat.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 26, 2007 at 09:21:52PM -0500, Chris Holvenstot wrote:
-> In each case the failure mode appears to have been the same ??? the system
-> appears to lock up. When rebooted I get a long string of messages like:
+On Mon, 29 Oct 2007 14:47:49 +0100 (CET), Thomas Gleixner wrote:
+> On Mon, 29 Oct 2007, Mikael Pettersson wrote:
 > 
+> > On Sun, 28 Oct 2007 21:33:02 -0700, H. Peter Anvin wrote:
+> > > Mikael Pettersson wrote:
+> > > > My old 486 fails to boot with the 2.6.24-rc1 kernel.
+> > > > Grub loads it, 4 lines of text appear but not the kernel's
+> > > > "Linux version <blah> greet", and the machine reboots.
+> > > > Double-checked with a serial console: nothing appears
+> > > > before it reboots.
+> > > 
+> > > What four lines of text?
+> > 
+> > They're impossible to capture because they're only visible
+> > on the VGA screen for like 0.2 seconds before the machine
+> > reboots and the screen is blanked; they don't show up on
+> > the serial console.
+> > 
+> > They look like paths to the vmlinuz and initrd surrounded
+> > by [ ] brackets, so I guess they come from grub.
 > 
-> Oct 26 20:07:37 localhost kernel: [ 101.581091] ata2: timeout waiting
-> for ADMA IDLE, stat=0x440
+> Any chance to use serial console ?
 > 
-> Oct 26 20:07:37 localhost kernel: [ 101.581096] sd 1:0:0:0: [sda] Write
-> Protect is off
+> Enable CONFIG_EARLY_PRINTK and add
+>  
+> earlyprintk=serial,ttyS0,115200,keep
 > 
-> Oct 26 20:07:37 localhost kernel: [ 101.581174] res
-> 71/04:08:00:00:00/04:00:1d:00:00/e0 Emask 0x1 (device error)
-> 
-> Oct 26 20:07:37 localhost kernel: [ 101.644992] ata2.00: configured for
-> UDMA/33
-> 
-> Oct 26 20:07:37 localhost kernel: [ 101.644994] ata2: EH complete
-> 
-> Oct 26 20:07:37 localhost kernel: [ 101.645006] sd 1:0:0:0: [sda] Write
-> cache: disabled, read cache: enabled, doesn't support DPO or FUA
+> to the kernel command line.
 
-As it turns out, our organizations version control server just blew up 
-last night. The filesystem is rather corrupt at the moment, fortunately 
-we have backups.
+As I mentioned in my first message, I did hook up
+a serial console except I used the console=ttyS0,115200
+boot parameter, but the kernel rebooted before any
+output appeared. I can try the earlyprintk= version
+above next time I'm near the 486 if you think it will
+make any difference.
 
-We are running 2.6.22.5 (vanilla) on Debian 4.0. It has two SATA devices 
-with Linux software raid mirror (mdadm) on Intel ata_piix chipset.
-The filesystem is EXT3.
+> Can you please provide your .config file ?
 
-1. This happened during nightly backup:
+I posted a link to it in my first message:
 
-init_special_inode: bogus i_mode (177777)
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata1.00: cmd ca/00:68:6f:3a:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 53248 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata1: port is slow to respond, please be patient (Status 0xd0)
-ata1: device not ready (errno=-16), forcing hardreset
-ata1: soft resetting port
-ata1.00: revalidation failed (errno=-2)
-ata1: failed to recover some devices, retrying in 5 secs
-ata1: soft resetting port
-ata1.00: configured for UDMA/133
-ata1: EH complete
-sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-init_special_inode: bogus i_mode (177777)
-init_special_inode: bogus i_mode (177777)
-init_special_inode: bogus i_mode (177777)
-journal_bmap: journal block not found at offset 5133 on md2
-Aborting journal on device md2.
-ext3_abort called.
-EXT3-fs error (device md2): ext3_journal_start_sb: Detected aborted journal
-Remounting filesystem read-only
-__journal_remove_journal_head: freeing b_committed_data
+>Config is at http://user.it.uu.se/~mikpe/linux/tmp/486-config-2.6.24-rc1.
+>The kernel is unpatched 2.6.24-rc1 compiled with gcc-4.2.2.
 
-2. I rebooted
-
-3. fsck -p on boot failed
-
-(it is very probable not many files were corrupted at this stage)
-
-4. I ran fsck.ext3 -y
-
-=> that corrupted lots and lots of files. This went 
-into a loop, the fsck.ext3 restarted checking over and over again.
-
-Heikki Orsila
+/Mikael
