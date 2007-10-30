@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbXJ3UCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbXJ3UDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbXJ3UCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139AbXJ3UCX
+	id S1758167AbXJ3UDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbXJ3UDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:02:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40602 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753975AbXJ3UCV (ORCPT
+	Tue, 30 Oct 2007 16:03:46 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:44198 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753177AbXJ3UDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:02:21 -0400
-Date: Tue, 30 Oct 2007 13:01:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       bernie@codewiz.org
-Subject: Re: [PATCH] Allow auto-destruction of loop devices.
-Message-Id: <20071030130137.3345ae43.akpm@linux-foundation.org>
-In-Reply-To: <1193612911.2915.80.camel@shinybook.infradead.org>
-References: <1193612911.2915.80.camel@shinybook.infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Oct 2007 16:03:45 -0400
+Message-ID: <47278DB8.7000401@freescale.com>
+Date: Tue, 30 Oct 2007 15:02:00 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Zach Brown <zach.brown@oracle.com>
+CC: apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch bug: space between left parenthesis and asterisk
+References: <47278591.90305@freescale.com> <47278BE8.6010901@oracle.com>
+In-Reply-To: <47278BE8.6010901@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 19:08:31 -0400
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> This allows a flag to be set on loop devices so that when they are
-> closed for the last time, they'll self-destruct.
+Zach Brown wrote:
+> Timur Tabi wrote:
+>> I'm running checkpatch.pl (dated 10/17), and it complains about this line:
+>>
+>> crc = __be32_to_cpu(* ((__be32 *) ((void *) firmware + calc_size)));
 > 
-
-Why do we want to do this?
-
+> Well, that is a bit of a stinker.  Maybe it could be reworked a little
+> to make it easier for humans and checkpatch to understand?
 > 
-> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-> index 56e2304..7fae828 100644
-> --- a/drivers/block/loop.c
-> +++ b/drivers/block/loop.c
-> @@ -973,6 +973,10 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
->  	lo->transfer = xfer->transfer;
->  	lo->ioctl = xfer->ioctl;
->  
-> +	if ( (lo->lo_flags & LO_FLAGS_AUTOCLEAR) !=
-> +	     (info->lo_flags & LO_FLAGS_AUTOCLEAR))
-> +		lo->lo_flags ^= LO_FLAGS_AUTOCLEAR;
-> +
->  	lo->lo_encrypt_key_size = info->lo_encrypt_key_size;
->  	lo->lo_init[0] = info->lo_init[0];
->  	lo->lo_init[1] = info->lo_init[1];
-> @@ -1331,6 +1335,10 @@ static int lo_release(struct inode *inode, struct file *file)
->  
->  	mutex_lock(&lo->lo_ctl_mutex);
->  	--lo->lo_refcnt;
-> +
-> +	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !lo->lo_refcnt)
-> +		loop_clr_fd(lo, inode->i_bdev);
-> +
->  	mutex_unlock(&lo->lo_ctl_mutex);
->  
->  	return 0;
-> diff --git a/include/linux/loop.h b/include/linux/loop.h
-> index 26a0a10..46169a7 100644
-> --- a/include/linux/loop.h
-> +++ b/include/linux/loop.h
-> @@ -76,6 +76,7 @@ struct loop_device {
->  enum {
->  	LO_FLAGS_READ_ONLY	= 1,
->  	LO_FLAGS_USE_AOPS	= 2,
-> +	LO_FLAGS_AUTOCLEAR	= 4,
->  };
->  
->  #include <asm/posix_types.h>	/* for __kernel_old_dev_t */
-> 
-> -- 
-> dwmw2
+>   __be32 *crazy_pointer = (void *)firmware + calc_size;
+>   crc = be32_to_cpu(*crazy_pointer);
+
+I admit the code might be convoluted, but it's perfectly valid, and it 
+eliminates the need for "crazy_pointer".  I'm much more inclined to ignore
+the checkpatch error than to redesign my code.
+
+Besides, your argument is a bit of a strawman.  The real problem is with checkpatch.
+
+> (Does this need to worry about get_unaligned() at all?)
+
+Well, I suppose it's technically possible, but only if my data has been corrupted.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
