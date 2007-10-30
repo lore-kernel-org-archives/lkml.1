@@ -1,40 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbXJ3UkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXJ3Uma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbXJ3UkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXJ3UkG
+	id S1756407AbXJ3Uma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXJ3UmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:40:06 -0400
-Received: from www.tglx.de ([62.245.132.106]:41412 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbXJ3UkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:40:04 -0400
-Date: Tue, 30 Oct 2007 21:39:08 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
+	Tue, 30 Oct 2007 16:42:22 -0400
+Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:40713 "HELO
+	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752777AbXJ3UmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 16:42:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=INaFlErqWQGKiEBt+ZmwaDoa1Zo6F/wwnv+n00pLhpj5wWfH3aVTXXFsx+8tsNN+FvKcd+R6hiUPULb9vY9hUCIQ5PDN5tMn6uSIhJaTWwIDZEn9Cp2jdo9lclz+Zz9mDsMP6TbZGLEwWetR7e8PYNjXQtYf7Lapa/9NoVDBAbw=  ;
+X-YMail-OSG: m6PnUL0VM1lXpW0yKosKjiWWJroggkLIviIYzFs0GY4Ddj7SyhPLjqNIJ.md5Nu50fBqPvQDRw--
+From: David Brownell <david-b@pacbell.net>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH 00/14] Blackfin on-chip SPI controller driver updates and bug-fixing
+Date: Tue, 30 Oct 2007 13:42:18 -0700
+User-Agent: KMail/1.9.6
+Cc: "Bryan Wu" <bryan.wu@analog.com>, spi-devel-general@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4 -v5] x86_64 EFI runtime service support: EFI runtime
- services
-In-Reply-To: <200710301558.31443.vda.linux@googlemail.com>
-Message-ID: <alpine.LFD.0.9999.0710302133090.3300@localhost.localdomain>
-References: <1193723743.23935.352.camel@caritas-dev.intel.com> <200710301558.31443.vda.linux@googlemail.com>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <200710301324.07691.david-b@pacbell.net> <8bd0f97a0710301329i8a21b22ncc9f71a81bc06543@mail.gmail.com>
+In-Reply-To: <8bd0f97a0710301329i8a21b22ncc9f71a81bc06543@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710301342.18559.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007, Denys Vlasenko wrote:
-> mach_get_cmos_time() is itself an inline, and a _large_ one
-> (~20 LOC with macro and function calls).
+On Tuesday 30 October 2007, Mike Frysinger wrote:
+> On 10/30/07, David Brownell <david-b@pacbell.net> wrote:
+> > And also, pay closer attention to when you may be making
+> > changes that make device drivers work differently over
+> > your spi_master controller driver than anyone elses ...
+> > such platform-specific behaviors are undesirable, and when
+> > they go against specified behavior they are also bugs.
 > 
-> Same here, only mach_set_rtc_mmss is 50 LOC, not 20.
+> was there something that caught your eye other than the ugly udelay()
+> you mentioned in the other thread ?
 
-It was:) 
+That one was a feature that might be more generally necessary,
+just to meet chip timing specs.  Mostly they're no trouble.
+But sometimes there are constraints around chipselect, or at
+particular points in a protocol exchange ... as you know, SPI
+has no in-band synchronization, so timing delays are about as
+good as any standardized infrastructure can get.  So if that
+particular timing tweak was essential to make that driver work,
+it might be something the API should address -- instead of just
+a particular controller.
 
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commit;h=3ea9de98deb42d9ea6d1add58e01b66676017c00
+The other point was the handling of the two spi_transfer protocol
+tweaking options.  The comment went against the interface spec.
+Now, maybe that was an issue of weak English skills ... but from
+my scanning the patch, I got the impression one intent of that
+patch really was to do what the comment said.  (Of course it did
+a lot of other stuff, which looked less dubious and might have
+had a lot more to do with why the patch made that m25p16 chip
+behave on that new board.)
 
-	tglx
+- Dave
