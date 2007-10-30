@@ -1,38 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbXJ3Rrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXJ3RtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951AbXJ3Rrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXJ3Rrc
+	id S1756894AbXJ3RtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXJ3RtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:47:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33865 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752395AbXJ3Rrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:47:32 -0400
-Date: Tue, 30 Oct 2007 13:47:28 -0400
-Message-Id: <200710301747.l9UHlSMH016352@greed.delorie.com>
-From: DJ Delorie <dj@redhat.com>
-To: dhowells@redhat.com
-CC: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-In-reply-to: <27157.1193763218@redhat.com> (message from David Howells on Tue,
-	30 Oct 2007 16:53:38 +0000)
-Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300
-	architecture to Linux kernel [try #2]
-References: <b1c6420f0710300810g1dbf8142j4c515a9baab4207a@mail.gmail.com>
-	<20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
-	<b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
-	<15631.1193753689@redhat.com> <27157.1193763218@redhat.com>
+	Tue, 30 Oct 2007 13:49:07 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:40239 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752300AbXJ3RtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 13:49:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAC4LJ0dMQWvU/2dsb2JhbACBWg
+Date: Tue, 30 Oct 2007 13:49:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org,
+       "systemtap@sourceware.org" <systemtap@sourceware.org>
+Subject: kallsyms __print_symbol prints first weak symbol encountered
+Message-ID: <20071030174902.GA6513@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:42:44 up 92 days, 18:01,  5 users,  load average: 1.59, 1.20, 0.85
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-> They can if they're told so, plus if they've got the CPU docs to
-> hand, it should be more obvious.  The AM33 is a variant of the
-> MN10300 arch as far as I can tell.
+I am try to see how I can use kallsyms to get the mapping syscall id ->
+syscall name by listing all the symbols corresponding to the function
+pointers present in the sys_call_table.
 
-Right, there's also the AM30, AM31, AM32, and AM34.  Panasonic calls
-the whole series the "AM3" or "MN103 series" although they also have
-MN103E and MN103S series.  MN103E is the AM33/AM34 microprocessors
-(MMU), MN103S is the AM3[012] microcontrollers (no MMU).
+However, I just ran into what I consider an unusual behavior of kallsyms:
+when I list the sys_ni() (not implemented system calls), I get
+compat_sys_futex instead.
 
-http://www.semicon.panasonic.co.jp/e-micom/MicomFamily/roadmap.html
+If I look at System.map, it's explained by this:
+
+c0146630 W compat_sys_futex
+c0146630 W compat_sys_get_mempolicy
+c0146630 W compat_sys_get_robust_list
+c0146630 W compat_sys_ipc
+c0146630 W compat_sys_kexec_load
+c0146630 W compat_sys_keyctl
+...
+c0146630 T sys_ni_syscall
+...
+c0146630 W sys_timerfd
+
+kallsyms returns the first symbol encountered, even though it is weak,
+when it should in fact return sys_ni_syscall.
+
+Is it a concern for anyone else out there ? Would it make sense to fix
+it ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
