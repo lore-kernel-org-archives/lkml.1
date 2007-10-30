@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXJ3P6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbXJ3QC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbXJ3P6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXJ3P6l
+	id S1755928AbXJ3QC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXJ3QCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:58:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:2377 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbXJ3P6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=MzkKWtzx0YV5iSQm+5qLx/C3H6wa6Ns7jilRvJt8XMRTKajUx5lj79fNe/kN6Db31uXzoGt3ags2YCX2bm+RI7PFXzjLr5Fnw9R2A63Sq0IDKBNMaLgSfpB30TYtPat+zmczOZlVno/C2RzlPgD+Uw8oixbsWPGO4yu6+kJ6628=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 2/4 -v5] x86_64 EFI runtime service support: EFI runtime services
-Date: Tue, 30 Oct 2007 15:58:31 +0000
-User-Agent: KMail/1.9.1
-Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-References: <1193723743.23935.352.camel@caritas-dev.intel.com>
-In-Reply-To: <1193723743.23935.352.camel@caritas-dev.intel.com>
+	Tue, 30 Oct 2007 12:02:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34106 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751958AbXJ3QCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:02:48 -0400
+Message-ID: <472755A1.5080703@garzik.org>
+Date: Tue, 30 Oct 2007 12:02:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Daniel Drake <dsd@gentoo.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org>
+In-Reply-To: <47274A5F.6070409@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710301558.31443.vda.linux@googlemail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 05:55, Huang, Ying wrote:
-> +static inline unsigned long native_get_wallclock(void)
-> +{
-> +	unsigned long retval;
-> +
-> +	if (efi_enabled)
-> +		retval = efi_get_time();
-> +	else
-> +		retval = mach_get_cmos_time();
-> +
-> +	return retval;
-> +}
+Daniel Drake wrote:
+> Hi Alan,
+> 
+> In 2.6.23 and previous, CD writing works fine on my system. I'm using 
+> ata_piix on:
+> 
+> 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA 
+> IDE Controller (rev 01)
+> 
+> When I'm running CD writing utilities, I sometimes see this message in 
+> the kernel logs:
+>     ata2.00: 66 bytes trailing data
+> Things do work fine though.
+> 
+> With 2.6.24-rc1, I can't write CDs. Instead of the above message, I get:
+> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata2.00: cmd a0/00:00:00:0a:00/00:00:00:00:00/a0 tag 0 cdb 0x5a data 10 in
+>          res 58/00:02:00:0a:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+> ata2.00: status: { DRDY DRQ }
+> ata2: soft resetting link
+> ata2.00: configured for UDMA/33
+> ata2: EH complete
+> 
+> and the software acts oddly - for example Brasero tells me that the 
+> blank CD I have inserted has a capacity of 17,179,869,184gb and it 
+> doesn't let me write CDs as it says the medium is not writable.
+> 
+> git bisect lead me to commit 2db78dd302d26d242d3e8e5c4c5024b6c3ea93c2 as 
+> the culprit.
+> 
+> Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date:   Tue Oct 2 13:53:04 2007 -0700
+> 
+>     libata_scsi: Fix ATAPI transfer lengths
+> 
+>     Some controller variants snoop the ATAPI length value for Packet
+>     transfers to do state machine and FIFO management. Thus we want to
+>     set it properly, even for cases where it is otherwise meaningless.
+> 
+> Any ideas?
 
-mach_get_cmos_time() is itself an inline, and a _large_ one
-(~20 LOC with macro and function calls).
+hrm
 
-efi_get_time() is an inline too, although strange one:
-it is declared inline *only* in efi.c file:
-      inline unsigned long efi_get_time(void)
-(yes, just inline, not static/extern),
-while efi.h has normal extern for it:
-      extern unsigned long efi_get_time(void);
+we may need to make that controller-specific, given that the code prior 
+to 2db78dd302d26d242d3e8e5c4c5024b6c3ea93c2 was working for most...
 
-Is it supposed to be like that?
+	Jeff
 
-> +static inline int native_set_wallclock(unsigned long nowtime)
-> +{
-> +	int retval;
-> +
-> +	if (efi_enabled)
-> +		retval = efi_set_rtc_mmss(nowtime);
-> +	else
-> +		retval = mach_set_rtc_mmss(nowtime);
-> +
-> +	return retval;
-> +}
 
-Same here, only mach_set_rtc_mmss is 50 LOC, not 20.
---
-vda
+
