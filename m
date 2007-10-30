@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbXJ3Tbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXJ3TcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760007AbXJ3Tbq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbXJ3TW0
+	id S1759228AbXJ3TcI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXJ3TXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:22:26 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54277 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:23:10 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54501 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757522AbXJ3TWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:22:25 -0400
-Message-Id: <20071030192107.805918575@polymtl.ca>
+	id S1757992AbXJ3TXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:23:09 -0400
+Message-Id: <20071030192105.557027608@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:16 -0400
+Date: Tue, 30 Oct 2007 15:16:10 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, gerg@uclinux.org
-Subject: [patch 19/28] Add cmpxchg_local to m68knommu
-Content-Disposition: inline; filename=add-cmpxchg-local-to-m68knommu.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:08 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, tony.luck@intel.com,
+       Keith Owens <kaos@ocs.com.au>
+Subject: [patch 13/28] Add cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64
+Content-Disposition: inline; filename=add-cmpxchg-local-to-ia64.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:06 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+Add the primitives cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64. They
+use cmpxchg_acq as underlying macro, just like the already existing ia64
+cmpxchg().
+
+Changelog:
+
+ia64 cmpxchg_local coding style fix
+Quoting Keith Owens:
+
+As a matter of coding style, I prefer
+
+#define cmpxchg_local   cmpxchg
+#define cmpxchg64_local cmpxchg64
+
+Which makes it absolutely clear that they are the same code.  With your
+patch, humans have to do a string compare of two defines to see if they
+are the same.
+
+Note cmpxchg is *not* a performance win vs interrupt disable / enable on IA64.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: gerg@uclinux.org
+Acked-by: Christoph Lameter <clameter@sgi.com>
+CC: tony.luck@intel.com
+CC: Keith Owens <kaos@ocs.com.au>
 ---
- include/asm-m68knommu/system.h |   28 +++++++++++-----------------
- 1 file changed, 11 insertions(+), 17 deletions(-)
+ include/asm-ia64/intrinsics.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-m68knommu/system.h
+Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-m68knommu/system.h	2007-07-20 18:36:08.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m68knommu/system.h	2007-07-20 19:37:02.000000000 -0400
-@@ -187,26 +187,20 @@ static inline unsigned long __xchg(unsig
- }
- #endif
+--- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-08-12 09:33:57.000000000 -0400
++++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-08-12 15:09:49.000000000 -0400
+@@ -158,6 +158,10 @@ extern long ia64_cmpxchg_called_with_bad
  
-+#include <asm-generic/cmpxchg-local.h>
+ /* for compatibility with other platforms: */
+ #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
++#define cmpxchg64(ptr,o,n)	cmpxchg_acq(ptr,o,n)
 +
- /*
-- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-- * store NEW in MEM.  Return the initial value in MEM.  Success is
-- * indicated by comparing RETURN with OLD.
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-  */
--#define __HAVE_ARCH_CMPXCHG	1
--
--static __inline__ unsigned long
--cmpxchg(volatile int *p, int old, int new)
--{
--	unsigned long flags;
--	int prev;
--
--	local_irq_save(flags);
--	if ((prev = *p) == old)
--		*p = new;
--	local_irq_restore(flags);
--	return(prev);
--}
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
++#define cmpxchg_local		cmpxchg
++#define cmpxchg64_local		cmpxchg64
  
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
- 
- #ifdef CONFIG_M68332
- #define HARD_RESET_NOW() ({		\
+ #ifdef CONFIG_IA64_DEBUG_CMPXCHG
+ # define CMPXCHG_BUGCHECK_DECL	int _cmpxchg_bugcheck_count = 128;
 
 -- 
 Mathieu Desnoyers
