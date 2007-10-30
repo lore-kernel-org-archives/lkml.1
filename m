@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXJ3TcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbXJ3Tc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbXJ3TcI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXJ3TXK
+	id S1760113AbXJ3Tc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbXJ3TX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:23:10 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54501 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:23:59 -0400
+Received: from mx27.mail.ru ([194.67.23.23]:28035 "EHLO mx27.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992AbXJ3TXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:23:09 -0400
-Message-Id: <20071030192105.557027608@polymtl.ca>
-References: <20071030191557.947156623@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:10 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
-       linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
-       Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, tony.luck@intel.com,
-       Keith Owens <kaos@ocs.com.au>
-Subject: [patch 13/28] Add cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64
-Content-Disposition: inline; filename=add-cmpxchg-local-to-ia64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:06 +0000
+	id S1758105AbXJ3TX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:23:57 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.24 - self-destructing sysfs attributes
+Date: Tue, 30 Oct 2007 22:23:47 +0300
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart9404079.ePk1f0kzjC";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710302223.52508.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the primitives cmpxchg_local, cmpxchg64 and cmpxchg64_local to ia64. They
-use cmpxchg_acq as underlying macro, just like the already existing ia64
-cmpxchg().
+--nextPart9404079.ePk1f0kzjC
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Changelog:
+I realized that in patch for ACPI battery I created perfect example of=20
+self-destructing sysfs attributes. Basically, on every access to battery=20
+properties we check battery status. If ACPI reports battery not present, we=
+=20
+remove sysfs power_supply object. I.e.
 
-ia64 cmpxchg_local coding style fix
-Quoting Keith Owens:
+=2D> user space queries e.g. .../PNP0C0A:00/power_supply/BAT1/energy_now
+  -> call acpi_battery_update
+    -> battery gone
+       -> call power_supply_unregister(.../PNP0C0A:00/power_supply)
 
-As a matter of coding style, I prefer
+I remember discussion about this but am not sure what final outcome is. So=
+=20
+questions
 
-#define cmpxchg_local   cmpxchg
-#define cmpxchg64_local cmpxchg64
+=2D is it legal in this form?
+=2D what is the proper way to manage such situation?
+=2D if I move (de-)registering of power_supply out of acpi_battery_update, =
+is=20
+extra locking (refcounting) required to keep attributes alive or sysfs will=
+=20
+ensure this?
 
-Which makes it absolutely clear that they are the same code.  With your
-patch, humans have to do a string compare of two defines to see if they
-are the same.
+TIA
 
-Note cmpxchg is *not* a performance win vs interrupt disable / enable on IA64.
+=2Dandrey
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Christoph Lameter <clameter@sgi.com>
-CC: tony.luck@intel.com
-CC: Keith Owens <kaos@ocs.com.au>
----
- include/asm-ia64/intrinsics.h |    4 ++++
- 1 file changed, 4 insertions(+)
+--nextPart9404079.ePk1f0kzjC
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-08-12 09:33:57.000000000 -0400
-+++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-08-12 15:09:49.000000000 -0400
-@@ -158,6 +158,10 @@ extern long ia64_cmpxchg_called_with_bad
- 
- /* for compatibility with other platforms: */
- #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
-+#define cmpxchg64(ptr,o,n)	cmpxchg_acq(ptr,o,n)
-+
-+#define cmpxchg_local		cmpxchg
-+#define cmpxchg64_local		cmpxchg64
- 
- #ifdef CONFIG_IA64_DEBUG_CMPXCHG
- # define CMPXCHG_BUGCHECK_DECL	int _cmpxchg_bugcheck_count = 128;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+iD8DBQBHJ4TER6LMutpd94wRAoqwAKC2WdNI2CUSN7u7a11MotVbHMeEygCgyln+
+Wqs4RSYvgVouYyzHUBVY76g=
+=P+4d
+-----END PGP SIGNATURE-----
+
+--nextPart9404079.ePk1f0kzjC--
