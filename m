@@ -1,164 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbXJ3N4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbXJ3N7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbXJ3N4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 09:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbXJ3N4a
+	id S1754852AbXJ3N7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 09:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXJ3N70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 09:56:30 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:50449 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752303AbXJ3N4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 09:56:30 -0400
-From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-To: linux-kernel@vger.kernel.org, wim@iguana.be
-Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Subject: [PATCH 1/1] at32ap700x_wdt: add support for boot status and add fix for silicon errata
-Date: Tue, 30 Oct 2007 14:56:20 +0100
-Message-Id: <11937525802277-git-send-email-hcegtvedt@atmel.com>
-X-Mailer: git-send-email 1.5.2.5
+	Tue, 30 Oct 2007 09:59:26 -0400
+Received: from zakalwe.fi ([80.83.5.154]:42564 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752453AbXJ3N7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 09:59:25 -0400
+Date: Tue, 30 Oct 2007 15:59:24 +0200
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Major SATA / EXT3 Issue?
+Message-ID: <20071030135923.GA3441@zakalwe.fi>
+References: <1193451712.6639.13.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1193451712.6639.13.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables the watchdog to read out the reset cause after a boot and
-provide this to the user.
+On Fri, Oct 26, 2007 at 09:21:52PM -0500, Chris Holvenstot wrote:
+> In each case the failure mode appears to have been the same ??? the system
+> appears to lock up. When rebooted I get a long string of messages like:
+> 
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.581091] ata2: timeout waiting
+> for ADMA IDLE, stat=0x440
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.581096] sd 1:0:0:0: [sda] Write
+> Protect is off
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.581174] res
+> 71/04:08:00:00:00/04:00:1d:00:00/e0 Emask 0x1 (device error)
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.644992] ata2.00: configured for
+> UDMA/33
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.644994] ata2: EH complete
+> 
+> Oct 26 20:07:37 localhost kernel: [ 101.645006] sd 1:0:0:0: [sda] Write
+> cache: disabled, read cache: enabled, doesn't support DPO or FUA
 
-The driver will now also return -EIO if probed when booting from a watchdog
-reset. This is due to a silicon errata in the AT32AP700x devices.
+As it turns out, our organizations version control server just blew up 
+last night. The filesystem is rather corrupt at the moment, fortunately 
+we have backups.
 
-Detailed description and work-arounds can be found in the errata section of the
-datasheet avilable from
-http://www.atmel.com/dyn/products/datasheets.asp?family_id=682
+We are running 2.6.22.5 (vanilla) on Debian 4.0. It has two SATA devices 
+with Linux software raid mirror (mdadm) on Intel ata_piix chipset.
+The filesystem is EXT3.
 
-Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
----
- drivers/char/watchdog/at32ap700x_wdt.c |   69 ++++++++++++++++++++++++++++++--
- 1 files changed, 65 insertions(+), 4 deletions(-)
+1. This happened during nightly backup:
 
-diff --git a/drivers/char/watchdog/at32ap700x_wdt.c b/drivers/char/watchdog/at32ap700x_wdt.c
-index 54a5161..fb5ed64 100644
---- a/drivers/char/watchdog/at32ap700x_wdt.c
-+++ b/drivers/char/watchdog/at32ap700x_wdt.c
-@@ -6,6 +6,19 @@
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-+ *
-+ *
-+ * Errata: WDT Clear is blocked after WDT Reset
-+ *
-+ * A watchdog timer event will, after reset, block writes to the WDT_CLEAR
-+ * register, preventing the program to clear the next Watchdog Timer Reset.
-+ *
-+ * If you still want to use the WDT after a WDT reset a small code can be
-+ * insterted at the startup checking the AVR32_PM.rcause register for WDT reset
-+ * and use a GPIO pin to reset the system. This method requires that one of the
-+ * GPIO pins are available and connected externally to the RESET_N pin. After
-+ * the GPIO pin has pulled down the reset line the GPIO will be reset and leave
-+ * the pin tristated with pullup.
-  */
- 
- #include <linux/init.h>
-@@ -44,6 +57,13 @@ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
- 
- #define WDT_CLR			0x04
- 
-+#define WDT_RCAUSE		0x10
-+#define WDT_RCAUSE_POR		   0
-+#define WDT_RCAUSE_EXT		   2
-+#define WDT_RCAUSE_WDT		   3
-+#define WDT_RCAUSE_JTAG		   4
-+#define WDT_RCAUSE_SERP		   5
-+
- #define WDT_BIT(name)		(1 << WDT_##name)
- #define WDT_BF(name, value)	((value) << WDT_##name)
- 
-@@ -56,6 +76,7 @@ struct wdt_at32ap700x {
- 	void __iomem		*regs;
- 	spinlock_t		io_lock;
- 	int			timeout;
-+	int			boot_status;
- 	unsigned long		users;
- 	struct miscdevice	miscdev;
- };
-@@ -126,7 +147,7 @@ static int at32_wdt_close(struct inode *inode, struct file *file)
- 		at32_wdt_stop();
- 	} else {
- 		dev_dbg(wdt->miscdev.parent,
--			"Unexpected close, not stopping watchdog!\n");
-+			"unexpected close, not stopping watchdog!\n");
- 		at32_wdt_pat();
- 	}
- 	clear_bit(1, &wdt->users);
-@@ -154,6 +175,33 @@ static int at32_wdt_settimeout(int time)
- 	return 0;
- }
- 
-+/*
-+ * Get the watchdog status.
-+ */
-+static int at32_wdt_get_status(void)
-+{
-+	int rcause;
-+	int status = 0;
-+
-+	rcause = wdt_readl(wdt, RCAUSE);
-+
-+	switch (rcause) {
-+	case WDT_BIT(RCAUSE_EXT):
-+		status = WDIOF_EXTERN1;
-+		break;
-+	case WDT_BIT(RCAUSE_WDT):
-+		status = WDIOF_CARDRESET;
-+		break;
-+	case WDT_BIT(RCAUSE_POR):  /* fall through */
-+	case WDT_BIT(RCAUSE_JTAG): /* fall through */
-+	case WDT_BIT(RCAUSE_SERP): /* fall through */
-+	default:
-+		break;
-+	}
-+
-+	return status;
-+}
-+
- static struct watchdog_info at32_wdt_info = {
- 	.identity	= "at32ap700x watchdog",
- 	.options	= WDIOF_SETTIMEOUT |
-@@ -194,10 +242,12 @@ static int at32_wdt_ioctl(struct inode *inode, struct file *file,
- 	case WDIOC_GETTIMEOUT:
- 		ret = put_user(wdt->timeout, p);
- 		break;
--	case WDIOC_GETSTATUS: /* fall through */
--	case WDIOC_GETBOOTSTATUS:
-+	case WDIOC_GETSTATUS:
- 		ret = put_user(0, p);
- 		break;
-+	case WDIOC_GETBOOTSTATUS:
-+		ret = put_user(wdt->boot_status, p);
-+		break;
- 	case WDIOC_SETOPTIONS:
- 		ret = get_user(time, p);
- 		if (ret)
-@@ -282,8 +332,19 @@ static int __init at32_wdt_probe(struct platform_device *pdev)
- 		dev_dbg(&pdev->dev, "could not map I/O memory\n");
- 		goto err_free;
- 	}
-+
- 	spin_lock_init(&wdt->io_lock);
--	wdt->users = 0;
-+	wdt->boot_status = at32_wdt_get_status();
-+
-+	/* Work-around for watchdog silicon errata. */
-+	if (wdt->boot_status & WDIOF_CARDRESET) {
-+		dev_info(&pdev->dev, "CPU must be reset with external "
-+				"reset or POR due to silicon errata.\n");
-+		ret = -EIO;
-+		goto err_iounmap;
-+	} else {
-+		wdt->users = 0;
-+	}
- 	wdt->miscdev.minor = WATCHDOG_MINOR;
- 	wdt->miscdev.name = "watchdog";
- 	wdt->miscdev.fops = &at32_wdt_fops;
--- 
-1.5.2.5
+init_special_inode: bogus i_mode (177777)
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata1.00: cmd ca/00:68:6f:3a:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 53248 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata1: port is slow to respond, please be patient (Status 0xd0)
+ata1: device not ready (errno=-16), forcing hardreset
+ata1: soft resetting port
+ata1.00: revalidation failed (errno=-2)
+ata1: failed to recover some devices, retrying in 5 secs
+ata1: soft resetting port
+ata1.00: configured for UDMA/133
+ata1: EH complete
+sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+init_special_inode: bogus i_mode (177777)
+init_special_inode: bogus i_mode (177777)
+init_special_inode: bogus i_mode (177777)
+journal_bmap: journal block not found at offset 5133 on md2
+Aborting journal on device md2.
+ext3_abort called.
+EXT3-fs error (device md2): ext3_journal_start_sb: Detected aborted journal
+Remounting filesystem read-only
+__journal_remove_journal_head: freeing b_committed_data
 
+2. I rebooted
+
+3. fsck -p on boot failed
+
+(it is very probable not many files were corrupted at this stage)
+
+4. I ran fsck.ext3 -y
+
+=> that corrupted lots and lots of files. This went 
+into a loop, the fsck.ext3 restarted checking over and over again.
+
+Heikki Orsila
