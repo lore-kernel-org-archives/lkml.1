@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXJ3WXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbXJ3WX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbXJ3WXN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXJ3WW7
+	id S1754029AbXJ3WX3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXJ3WXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:22:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50762 "EHLO
+	Tue, 30 Oct 2007 18:23:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60601 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbXJ3WW6 (ORCPT
+	by vger.kernel.org with ESMTP id S1758107AbXJ3WXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:22:58 -0400
-Date: Tue, 30 Oct 2007 15:22:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Arjan van de Ven <arjan@infradead.org>, Robert Hancock <hancockr@shaw.ca>,
-       Greg KH <greg@kroah.com>, akpm@linux-foundation.org, ak@suse.de,
-       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-In-Reply-To: <200710301504.36972.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.0.999.0710301518570.30120@woody.linux-foundation.org>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
- <20071030094756.779ac5c0@laptopd505.fenrus.org>
- <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
- <200710301504.36972.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 30 Oct 2007 18:23:15 -0400
+Date: Tue, 30 Oct 2007 15:22:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russ Anderson <rja@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU
+ is set
+Message-Id: <20071030152218.3bd5f6a5.akpm@linux-foundation.org>
+In-Reply-To: <20071030162657.GA21728@sgi.com>
+References: <20071030162657.GA21728@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Oct 2007 11:26:57 -0500
+Russ Anderson <rja@sgi.com> wrote:
 
-
-On Tue, 30 Oct 2007, Jesse Barnes wrote:
->
-> The per-device flag is fine with me, but I should make something clear:
+> [patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU is set
 > 
-> MMCONFIG IS NOT BROKEN!
+> In __do_IRQ(), the normal case is that IRQ_DISABLED is checked and if
+> set the handler (handle_IRQ_event()) is not called.  
+> 
+> Earlier in __do_IRQ(), if IRQ_PER_CPU is set the code does not check
+> IRQ_DISABLED and calls the handler even though IRQ_DISABLED is set.
+> This behavior seems unintentional.
+> 
+> One user encountering this behavior is the CPE handler (in 
+> arch/ia64/kernel/mca.c).  When the CPE handler encounters too many
+> CPEs (such as a solid single bit error), it sets up a polling timer
+> and disables the CPE interrupt (to avoid excessive overhead logging
+> the stream of single bit errors).  disable_irq_nosync() is called
+> which sets IRQ_DISABLED.  The IRQ_PER_CPU flag was previously set
+> (in ia64_mca_late_init()).  The net result is the CPE handler gets
+> called even though it is marked disabled.
+> 
+> If the behavior of not checking IRQ_DISABLED when IRQ_PER_CPU is
+> set is intentional, it would be worthy of a comment describing 
+> the intended behavior.  disable_irq_nosync() does call chip->disable()
+> to provide a chipset specifiec interface for disabling the interrupt,
+> which avoids this issue when used.
+> 
+> Comments???
+> 
 
-Trust me, it is.
+It looks right to me.
 
-The particular problem _you_ had with it is only a small small part of the 
-bugs we have had.
+> 
+> --------------------------------------------------------------------
+> ---
+>  kernel/irq/handle.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> Index: linus/kernel/irq/handle.c
+> ===================================================================
+> --- linus.orig/kernel/irq/handle.c	2007-10-30 09:49:26.000000000 -0500
+> +++ linus/kernel/irq/handle.c	2007-10-30 10:23:52.436719688 -0500
+> @@ -178,9 +178,11 @@ fastcall unsigned int __do_IRQ(unsigned 
+>  		 */
+>  		if (desc->chip->ack)
+>  			desc->chip->ack(irq);
+> -		action_ret = handle_IRQ_event(irq, desc->action);
+> -		if (!noirqdebug)
+> -			note_interrupt(irq, desc, action_ret);
+> +		if (likely(!(desc->status & IRQ_DISABLED))) {
+> +			action_ret = handle_IRQ_event(irq, desc->action);
+> +			if (!noirqdebug)
+> +				note_interrupt(irq, desc, action_ret);
+> +		}
+>  		desc->chip->end(irq);
+>  		return 1;
+>  	}
 
-> What's broken is our PCI probing with certain address space layouts that 
-> include MMCONFIG space.
+Alas, I can't remember who wrote (and cares about) the IRQ_PER_CPU support.
+ Oh well.
 
-No. You really don't see the big picture. There's been tons of problems 
-with MMCONFIG. Like the fact that other devices have their IO regions 
-registered on top of it, because the MMCONFIG thing was done as a hidden 
-resource. Or the fact that the area claimed was too small. Or too large. 
-Or not listed at all.
-
-The whole thing is a total disaster. I told Intel engineers literally 
-*years* ago to not do that idiotic "hidden IO resources that are described 
-by firmware that then inevitably gets things wrong", and yet what happens? 
-Every single time.
-
-			Linus
