@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXJ3Mac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbXJ3MgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752448AbXJ3Mac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJ3MaX
+	id S1753054AbXJ3MgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXJ3MgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:30:23 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:38697 "EHLO proxima.lp0.eu"
+	Tue, 30 Oct 2007 08:36:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35379 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbXJ3MaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:30:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
-	b=Ap79c27eOJRGznuFyDK3ybeVClsUDfEitm4g+5eGt6j69g4dI5+kGSbhX2UcYJbNujGqFZbKzKT5b/yS8OlEOEmkNmjXtpuHGr58wyolafmdHZac4o4PzedIR/N4i+ij;
-Message-ID: <29685.simon.1193747418@5ec7c279.invalid>
-In-Reply-To: <4726D9D9.2000909@ii.net>
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>
-    <4726377A.4080807@crispincowan.com>
-    <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
-    <4726D9D9.2000909@ii.net>
-Date: Tue, 30 Oct 2007 12:30:18 -0000
-Subject: Re: Defense in depth: LSM *modules*, not a static interface
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Cliffe" <cliffe@ii.net>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a
+	id S1751671AbXJ3MgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 08:36:15 -0400
+Message-ID: <4727253D.7000206@garzik.org>
+Date: Tue, 30 Oct 2007 08:36:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10/17] drivers/input/serio/i8042.c: irq handler clean
+References: <lkjvxcz09835mnsdfv0983q4m1234m@havoc.gtf.org> <20071021075237.EC51B19041D@havoc.gtf.org> <200710211357.16794.dmitry.torokhov@gmail.com>
+In-Reply-To: <200710211357.16794.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, October 30, 2007 07:14, Cliffe wrote:
-> And while I acknowledge that many of these layers are currently buried
-> within the kernel (netfilter...) they are security layers which in many
-> cases would probably make sense as stackable security modules.
->
-> Making the interface static forces mammoth solutions which then must
-> attempt to solve all of the above in one ls*m*. What happened to
-> dividing tasks into easy to manage chunks?
+Dmitry Torokhov wrote:
+> Hi Jeff,
+> 
+> On Sunday 21 October 2007, Jeff Garzik wrote:
+>> commit bdf311215ef8dbae0254c092deaed1d5928b013e
+>> Author: Jeff Garzik <jeff@garzik.org>
+>> Date:   Fri Oct 19 19:28:54 2007 -0400
+>>
+>>     drivers/input/serio/i8042.c: irq handler clean
+>>     
+>>     * remove unnecessary prototype
+>>     
+>>     * distinguish between polled and irq-driven event handling
+>>     
+>>     * don't bother worrying about 'irq' function arg
+> 
+> I don't like these 2 changes. When I ask for debug data I really
+> want to know what interrupt (1 or 12) was raised in response to
+> a command. Your changes remove this visibility.
 
-Would it be possible to have Kconfig select which LSM should handle each
-area of security? Selecting LSM A would automatically disable LSM B and
-C since they both implement the same security functions, while LSM D
-would still be selectable since it implements something else. The default
-capabilities code would then turn off parts of itself that another LSM
-is handling.
+So noted...
 
-Alternatively the M in LSM can be restored and modules can be stacked.
-It should be possible for the primary LSM to check the security_ops of the
-secondary LSM(s) and complain if it considers there to be an incompatiblity.
 
--- 
-Simon Arlott
+>>     * dev_id passed to irq handlers is unused, to change the request_irq()
+>>       argument to NULL
+>>     
+> 
+> Does this really matter?
+
+Does it has any effect on the computer?  No.
+
+Does it has any effect on the human reviewer?  IMO yes :)
+
+But it is a trivial matter.
+
+	Jeff
+
+
+
