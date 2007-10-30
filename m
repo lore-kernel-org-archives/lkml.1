@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXJ3Lew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbXJ3LfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbXJ3Lew (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 07:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXJ3Len
+	id S1755701AbXJ3LfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 07:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXJ3Ley
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 07:34:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:47596 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbXJ3Lem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 07:34:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=aMiRP1tzXYdwBbBgy3rX4NDArsMVTiJN0fFQNIV3gd79lDtjZ1eQi5UQ80lCbT+T+/+RHHMCqIb3oE3XguIcsMrh9vM6pnqpNkGG15N1NS56wqB1l9A1i7uMU83F6141csf6KuN5Gp5WxkeGcjLCHwdOp+r+kI3T2pNkObWg4l0=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [IDE] Fix build bug
-Date: Tue, 30 Oct 2007 11:34:29 +0000
-User-Agent: KMail/1.9.1
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-mips@linux-mips.org,
-       Martijn Uffing <mp3project@sarijopen.student.utwente.nl>
-References: <20071025135334.GA23272@linux-mips.org> <200710252341.38902.bzolnier@gmail.com>
-In-Reply-To: <200710252341.38902.bzolnier@gmail.com>
+	Tue, 30 Oct 2007 07:34:54 -0400
+Received: from gecko.sbs.de ([194.138.37.40]:20379 "EHLO gecko.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753926AbXJ3Lew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 07:34:52 -0400
+Message-ID: <472716C1.1090102@siemens.com>
+Date: Tue, 30 Oct 2007 12:34:25 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Avi Kivity <avi@qumranet.com>
+CC: kvm-devel@lists.sourceforge.net, Carsten Emde <Carsten.Emde@osadl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] 2.6.23.1-rt4 and kvm 48
+References: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>	<4726B088.1010709@qumranet.com>	<4726DF66.4000000@osadl.org> <4726FE2A.1040607@siemens.com> <47271057.5040102@qumranet.com>
+In-Reply-To: <47271057.5040102@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710301134.30087.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 October 2007 22:41, Bartlomiej Zolnierkiewicz wrote:
-> > -static const struct ide_port_info generic_chipsets[] __devinitdata = {
-> > +static struct ide_port_info generic_chipsets[] __devinitdata = {
-> >  	/*  0 */ DECLARE_GENERIC_PCI_DEV("Unknown",	0),
-> >  
-> >  	{	/* 1 */
+Avi Kivity wrote:
+> Jan Kiszka wrote:
+>> Interesting result - you've read about the wbinvd issues? Is there no
+>> wbinvd in the bios shipped with older kvm? Which VM extension did you
+>> test, both Intel and AMD? I would bet that your X issues are due to the
+>> same effect. X startup/shutdown involves a lot of wbinvd calls on my
+>> test boxes.
+>>
+>>   
 > 
-> I would prefer to not remove const from generic_chipsets[] so:
-> 
-> [PATCH] drivers/ide/pci/generic: fix build for CONFIG_HOTPLUG=n
-> 
-> It turns out that const and __{dev}initdata cannot be mixed currently
-> and that generic IDE PCI host driver is also affected by the same issue:
-> 
-> On Thursday 25 October 2007, Ralf Baechle wrote:
-> >   CC      drivers/ide/pci/generic.o
-> > drivers/ide/pci/generic.c:52: error: __setup_str_ide_generic_all_on causes a
-> > +section type conflict
-> 
-> [ Also reported by Martijn Uffing <mp3project@sarijopen.student.utwente.nl>. ]
-> 
-> This patch workarounds the problem in a bit hackish way but without
-> removing const from generic_chipsets[] (it adds const to __setup() so
-> __setup_str_ide_generic_all becomes const).
+> kvm.git now traps invd and wbinvd on amd, so there shouldn't be any 
+> issues there. 
 
-You wouldn't believe how much const data is not marked as const because
-we don't have __constinitdata etc. Literally megabytes.
---
-vda
+So kvm can then simply ignore the instructions, or what does it do about
+them? I recall some replies in the related thread that some more work
+may be required.
+
+> I hope that Intel will add similar traps in future 
+> iterations of VT.
+
+Yep.
+
+Jan
+
+-- 
+Siemens AG, Corporate Technology, CT SE 2
+Corporate Competence Center Embedded Linux
