@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbXJ3UYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbXJ3UZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759120AbXJ3UYt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXJ3UY2
+	id S1759315AbXJ3UZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbXJ3UY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:24:28 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:44690 "HELO
+	Tue, 30 Oct 2007 16:24:29 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:44703 "HELO
 	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753973AbXJ3UY1 (ORCPT
+	by vger.kernel.org with SMTP id S1756640AbXJ3UY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:24:27 -0400
+	Tue, 30 Oct 2007 16:24:28 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DNLNMRzmI2i4wPF9B8cmKkUjwNAO6DWc5X262yaVeoKu5i7A6VvzC1DCXkj67Q5vUQaJuNaMtYHn86f11mmmMUnrz9toI0Me/PQm0rouVBkLhNrUfJiwjrrStSHKUFq8hDjtsFHkjTi1yhG1dVKfWPzikYXqsC+QyKoRFRudTh8=  ;
-X-YMail-OSG: ZQ4iARgVM1kFSS1ktM.sYcTP7wo47ZnWFt2Z4Zo4De1FJhZBkRpjlze_9vQ2iyWOWbMKCTW5ZA--
+  b=XJmM5thZKA2//4iYB4pudGFqi7hT229AGD7SOSNI+D7fFvYdNtv4C+1EIgiPMzMULZ0qrer2UrS1VxYkQa4UTaJTd0VxfQXb9di4reKHHoZgdaEKNf6Mqt+LAAOpH2r9ZEAsNUxrOsA+s+2O6SEzRZ67SQGeTqI2AsAhPtHHPGg=  ;
+X-YMail-OSG: 2YdxlZIVM1kc4hgoy7XN2Z5cM6c7MW1elVZpF135iETwvsn0pi0f65SBcvr6yVI0B858cti9QxzZlqUc0IyYY8WjWZx9Wk6USPE2WIHHdKqASF5RGg--
 From: David Brownell <david-b@pacbell.net>
 To: Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 13/14] Blackfin SPI driver: Move cs_chg_udelay to cs_deactive to fix bug when some SPI LCD driver needs delay after cs_deactive
-Date: Tue, 30 Oct 2007 13:18:59 -0700
+Subject: Re: [PATCH 00/14] Blackfin on-chip SPI controller driver updates and bug-fixing
+Date: Tue, 30 Oct 2007 13:24:07 -0700
 User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Cameron Barfield <cbarfield@cyberdata.net>
-References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <1193735885-8202-14-git-send-email-bryan.wu@analog.com>
-In-Reply-To: <1193735885-8202-14-git-send-email-bryan.wu@analog.com>
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1193735885-8202-1-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710301319.00071.david-b@pacbell.net>
+Message-Id: <200710301324.07691.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 30 October 2007, Bryan Wu wrote:
-> @@ -211,6 +211,10 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
->         flag |= (chip->flag << 8);
->  
->         write_FLAG(drv_data, flag);
-> +
-> +       /* Move delay here for consistency */
-> +       if (chip->cs_chg_udelay)
-> +               udelay(chip->cs_chg_udelay);
->  }
->  
+>  - BF54x supported
+>  - multi-port supported
+>  - bunch of bug fixing 
 
-By the way, if this is something needed very often, that mechanism
-should be moved into the SPI framework.  It wouldn't be polite if
-such LCD drivers could only work on Blackfin boards.  :)
+OK, I forwarded these with some more checkpatch.pl fixes.
+
+But as I commented elsewhere, please work harder to make sure
+that your patch comments actually match the patches!!
+
+And also, pay closer attention to when you may be making
+changes that make device drivers work differently over
+your spi_master controller driver than anyone elses ...
+such platform-specific behaviors are undesirable, and when
+they go against specified behavior they are also bugs.
+
+- Dave
+
 
