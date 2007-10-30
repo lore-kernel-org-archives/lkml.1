@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbXJ3Uz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbXJ3U7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbXJ3Uz6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXJ3Uzs
+	id S1754966AbXJ3U7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbXJ3U7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:55:48 -0400
-Received: from rhineheart.priorweb.be ([213.193.229.215]:56433 "HELO
-	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752446AbXJ3Uzr (ORCPT
+	Tue, 30 Oct 2007 16:59:10 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:50001 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752872AbXJ3U7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:55:47 -0400
-Date: Tue, 30 Oct 2007 21:55:25 +0100
-From: Kristof Provost <Kristof@provost-engineering.be>
-To: Oliv?r Pint?r <oliver.pntr@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: compile error in 2.6.24-rc1-git6 HEAD is on
-	ea45d15394c57cb214aef8e6d40976c128995d43
-Message-ID: <20071030205525.GK32270@berith>
-References: <6101e8c40710301344s5061235ej6a8b5558ae93b981@mail.gmail.com>
+	Tue, 30 Oct 2007 16:59:09 -0400
+Message-ID: <47279999.6090002@student.ltu.se>
+Date: Tue, 30 Oct 2007 21:52:41 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SO98HVl1bnMOfKZd"
-Content-Disposition: inline
-In-Reply-To: <6101e8c40710301344s5061235ej6a8b5558ae93b981@mail.gmail.com>
-X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Spam-Scanned: 2.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
+References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org> <47274781.3030606@student.ltu.se> <20071030151121.GM32359@parisc-linux.org> <47275FD0.4010400@student.ltu.se> <20071030173828.GB15111@parisc-linux.org>
+In-Reply-To: <20071030173828.GB15111@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Wilcox wrote:
+> On Tue, Oct 30, 2007 at 05:46:08PM +0100, Richard Knutsson wrote:
+>   
+>> I just don't see the reason why expressing a boolean as an integer. Some 
+>> advantage?
+>>     
+>
+> This is C, not Java, or some other highly-typed language.
+> if (int) and if (ptr) are perfectly acceptable in C.
+>   
+Yes, and it has been "corrected" in the C99-standard (which we are using 
+since the Linux support for the the 2.95 compiler stopped). Is there 
+something wrong in actually typing the variable to the type we want it 
+to be? Or would it be better to regress (becoming like Perl or PHP)[1][2]?
+Btw, I am all for 'if (ptr)' since it rarely (if ever) makes any sense 
+to do 'if (ptr == 0x1234)', which evaluates to ptr == NULL is invalid 
+and otherwise valid. Is it really the same for integers? ;)
+(also just want to add: to the "this is not a highly-typed language" 
+that I have heard many times, it theory, I think it would suffice with 
+just the void-pointer)
+>   
+>> (also helps us if someone does: 'if (var == true)', even thou we should 
+>> try to avoid them)
+>>     
+>
+> I have no idea what you mean.
+>   
+There is some places where things like 'if (var == true)' is done, but 
+what happens when var is not the same number as 'true' (and still != 0)? 
+It is a potential bug if 'var' is an integer and expected to be a 
+boolean in this case. Like in a case of "var = some_var & some_flag;"
 
---SO98HVl1bnMOfKZd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 2007-10-30 21:44:18 (+0100), Oliv?r Pint?r <oliver.pntr@gmail.com> wrote:
->   CHECK   include/linux/tipc_config.h
-> /home/oliver/develop/kernel/v2.6.24-git1-git6+/usr/include/linux/tipc_con=
-fig.h
-> requires linux/string.h, which does not exist in exported headers
-> make[3]: *** [/home/oliver/develop/kernel/v2.6.24-git1-git6+/usr/include/=
-linux/.check.tipc_config.h]
-> Error 1
-> make[2]: *** [linux] Error 2
-> make[1]: *** [headers_check] Error 2
-> make: *** [vmlinux] Error 2
-It was broken in commit 502ef38da15d817f8e67acefc12dc2212f7f8aa1
-Take a look at http://bugzilla.kernel.org/show_bug.cgi?id=3D9260 for more
-details.
-
-Kristof=20
-
---SO98HVl1bnMOfKZd
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHJ5o9UEZ9DhGwDugRAlOeAJsEoSvIotksn35hFbghTFKeurZtXACgkeR4
-ok1PjK0AraoEd8JDHhMahok=
-=y0iw
------END PGP SIGNATURE-----
-
---SO98HVl1bnMOfKZd--
+Best regards
+Richard Knutsson
+[1] Nothing wrong with Perl or PHP, they are suited for the tasks they 
+are meant to solve.
+[2] If I recall correctly, the predecessor 'B' did not have any types.
