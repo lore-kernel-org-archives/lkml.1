@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXJ3NMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXJ3NNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbXJ3NMw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 09:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXJ3NMp
+	id S1754915AbXJ3NNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 09:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXJ3NNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 09:12:45 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:8130 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbXJ3NMo (ORCPT
+	Tue, 30 Oct 2007 09:13:11 -0400
+Received: from mail.softservecom.com ([195.160.232.17]:58112 "EHLO
+	mail.softservecom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbXJ3NNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 09:12:44 -0400
-Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Stefani Seibold <stefani@seibold.net>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0710301232220.9601@blonde.wat.veritas.com>
-References: <1193064057.16541.1.camel@matrix>
-	 <20071029004002.60c7182a.akpm@linux-foundation.org>
-	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
-	 <1193677302.27652.56.camel@twins>
-	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
-	 <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy>
-	 <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com>
-	 <1193738177.27652.69.camel@twins> <1193741356.13775.2.camel@matrix>
-	 <Pine.LNX.4.64.0710301232220.9601@blonde.wat.veritas.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-O8n8cSmG90ndQbmamybl"
-Date: Tue, 30 Oct 2007 14:12:38 +0100
-Message-Id: <1193749958.27652.77.camel@twins>
+	Tue, 30 Oct 2007 09:13:09 -0400
+Subject: Re: USB: FIx locks and urb->status in adutux
+From: Vitaliy Ivanov <vitalivanov@gmail.com>
+Reply-To: vitalivanov@gmail.com
+To: Pete Zaitcev <zaitcev@redhat.com>, vitalivanov@gmail.com
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au
+In-Reply-To: <20071029212433.c9837c4b.zaitcev@redhat.com>
+References: <20071022203447.db6d7950.zaitcev@redhat.com>
+	 <200710231138.38266.oliver@neukum.org>
+	 <20071023185302.5ce9d187.zaitcev@redhat.com>
+	 <1193234987.13750.21.camel@dell1.softservecom.com>
+	 <20071024202555.4f1cd215.zaitcev@redhat.com>
+	 <1193681097.20985.31.camel@dell1.softservecom.com>
+	 <20071029212433.c9837c4b.zaitcev@redhat.com>
+Content-Type: text/plain
+Message-Id: <1193749794.27085.15.camel@dell1.softservecom.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Ximian Evolution 1.4.5 (1.4.5-1) 
+Date: Tue, 30 Oct 2007 15:09:54 +0200
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Oct 2007 13:09:54.0880 (UTC) FILETIME=[29FD4400:01C81AF6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-10-30 at 06:24, Pete Zaitcev wrote:
 
---=-O8n8cSmG90ndQbmamybl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> However, this looks wrong:
+> 
+> > +			 dev->interrupt_in_endpoint->bInterval);
+> > +	dev->read_urb_finished = 0;
+> > +	retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
+> > +	/* we ignore failure */
+> > +	/* end of fixup for first read */
+> > +
+> > +	/* initialize out direction */
+> > +	dev->out_urb_finished = 1;
+> 
+> The finished flag is only set when URB is not in use anymore. Did you
+> observe an anomaly with my code? Any hangs? If so, I assure you this
+> is not the fix. As it's written, even if we ignore the failure (e.g.
+> do not pass it to userland), we sill have to maintain the correct
+> flag state.
 
-On Tue, 2007-10-30 at 12:39 +0000, Hugh Dickins wrote:
-> On Tue, 30 Oct 2007, Stefani Seibold wrote:
-> >=20
-> > the question is how can i get all pte's from a vmalloc'ed memory. Due t=
-o
-> > the zeroed mapping pointer i dont see how to do this?
->=20
-> The mapping pointer is zeroed because you've done nothing to set it.
-> Below is how I answered you a week ago.  But this is new territory
-> (extending page_mkclean to work on more than just pagecache pages),
-> I'm still unsure what would be the safest way to do it.
+As about read_urb_finished probably it's OK. But we shouldn't decrease open_count in the case of error as then we return normal exit value.
+Here is what we had before:
 
-Quite, I think manual usage of page_mkclean_one() on the vma gotten from
-mmap() along with properly setting page->index is the simplest solution
-to make work.
+				 dev->interrupt_in_endpoint->bInterval);
+		dev->read_urb_finished = 0;
+		retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
+		if (retval) {
+			dev->read_urb_finished = 1;
+			--dev->open_count;
+		}
 
-Making page_mkclean(struct page *) work for remap_pfn/vmalloc_range()
-style mmaps would require extending rmap to work with those, which
-includes setting page->mapping to point to a anon_vma like object.
+So I can left it but w/o this line:
+--dev->open_count;
 
-But that sounds like a lot of work, and I'm not sure its worth the
-overhead, because so far all users of remap_pfn/vmalloc_range() have
-survived without.
+What is more critical is that I added:
 
+	/* initialize out direction */
+	dev->out_urb_finished = 1;
 
+Without this we'll always have write timeouts.
 
---=-O8n8cSmG90ndQbmamybl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHJy3GXA2jU0ANEf4RAk2sAJ0ed/uAPzbet9n0PA4BQrLhFMcfWwCeMlwM
-osCzd8nCgUeKIwqzb3RE4QA=
-=j0B/
------END PGP SIGNATURE-----
-
---=-O8n8cSmG90ndQbmamybl--
+		Vitaliy
 
