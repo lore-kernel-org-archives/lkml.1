@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbXJ3RoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbXJ3RqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbXJ3RoW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbXJ3RoN
+	id S1757127AbXJ3RqE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbXJ3Rpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:44:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41273 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756803AbXJ3RoM (ORCPT
+	Tue, 30 Oct 2007 13:45:54 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:40385 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752293AbXJ3Rpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:44:12 -0400
-Date: Tue, 30 Oct 2007 10:43:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
-       ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-In-Reply-To: <20071030102820.47a6e365@laptopd505.fenrus.org>
-Message-ID: <alpine.LFD.0.999.0710301039230.30120@woody.linux-foundation.org>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
- <200710251622.36773.jbarnes@virtuousgeek.org> <20071026025407.GA21408@kroah.com>
- <200710260959.46811.jbarnes@virtuousgeek.org> <20071027024140.GC29039@kroah.com>
- <47267232.3020506@shaw.ca> <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
- <20071030094756.779ac5c0@laptopd505.fenrus.org>
- <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
- <20071030102820.47a6e365@laptopd505.fenrus.org>
+	Tue, 30 Oct 2007 13:45:53 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Date: Tue, 30 Oct 2007 18:44:52 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+cc: linux-kernel@vger.kernel.org, benjamin.serebrin@amd.com
+Subject: Whats the purpose of get_cycles_sync()
+Message-ID: <20071030174452.GA18619@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 30 Oct 2007 17:44:53.0042 (UTC)
+ FILETIME=[93A90120:01C81B1C]
+X-WSS-ID: 6B39B21D0QK588041-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+I would like to answer what the special purpose of the get_cycles_sync()
+function is in the x86 architecture. In special I ask myself why
+this function has to be *sync*?
+
+I mean, the sync should guarantee here that the CPU does not execute the
+RDTSC instruction out-of-order, thats clear. But does that really
+matter? If there is a cache/tlb miss before the function returns all
+accuracy that should be won by the synchronous RDTSC is lost anyway.
+
+The problem here is, that this function executes CPUID if RDTSC itself
+is not a synchronizing instruction and CPUID is very often intercepted
+by hypervisors (KVM intercepts it for example). This makes this function
+very expensive if the kernel is executed as a guest.
+
+But maybe I miss some important things here.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
 
-On Tue, 30 Oct 2007, Arjan van de Ven wrote:
-> 
-> something like
-> int pci_enable_mmconfig(struct pci_dev *pdev) ?
-
-Yes, that looks fine. It also matches the kinds of things drivers already 
-have to do (ie enable DMA, MSI etc), both conceptually and from a purely 
-syntactic/practical standpoint.
-
-I think mmconfig and MSI have a lot in common, in that both are relatively 
-new features and both have had issues that made them not work well.
-
-> sounds like a very solid plan to me...
-> 
-> > Maybe somebody inside Intel could just clarify the documentation, and 
-> > change it from "you're not supposed to mix" to "mix all you want". 
-> 
-> I'll see what I can do ;)
-
-Well, let's see if "pci_enable_mmconfig()" works out first. There probably 
-aren't more than a few drivers that would be interested in this anyway, so 
-it's probably fine.
-
-And by the time mmconfig is commonly used, probably all the teething 
-problems are long gone, so we could plan on a "in five years, maybe we 
-could even enable it by default" thing?
-
-		Linus
