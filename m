@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758438AbXJ3UM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXJ3URw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758438AbXJ3UM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbXJ3UMq
+	id S1756350AbXJ3URw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXJ3URp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:12:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60194 "EHLO
+	Tue, 30 Oct 2007 16:17:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60724 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756692AbXJ3UMo (ORCPT
+	by vger.kernel.org with ESMTP id S1752257AbXJ3URo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:12:44 -0400
-Date: Tue, 30 Oct 2007 13:11:38 -0700
+	Tue, 30 Oct 2007 16:17:44 -0400
+Date: Tue, 30 Oct 2007 13:17:29 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Vasily Averin <vvs@sw.ru>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com, devel@openvz.org,
-       stable@kernel.org
-Subject: Re: dm: bounce_pfn limit added
-Message-Id: <20071030131138.3ba59731.akpm@linux-foundation.org>
-In-Reply-To: <47257E4B.4080904@sw.ru>
-References: <47257E4B.4080904@sw.ru>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bernie@codewiz.org
+Subject: Re: [PATCH] Allow auto-destruction of loop devices.
+Message-Id: <20071030131729.22f2b4b0.akpm@linux-foundation.org>
+In-Reply-To: <1193775171.2651.46.camel@shinybook.infradead.org>
+References: <1193612911.2915.80.camel@shinybook.infradead.org>
+	<20071030130137.3345ae43.akpm@linux-foundation.org>
+	<1193775171.2651.46.camel@shinybook.infradead.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,76 +28,24 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 09:31:39 +0300
-Vasily Averin <vvs@sw.ru> wrote:
+On Tue, 30 Oct 2007 16:12:51 -0400
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-> Device mapper uses its own bounce_pfn that may differ from one on underlying
-> device. In that way dm can build incorrect requests that contain sg elements
-> greater than underlying device is able to handle.
+> On Tue, 2007-10-30 at 13:01 -0700, Andrew Morton wrote:
+> > Why do we want to do this?
 > 
-> This is the cause of slab corruption in i2o layer, occurred on i386 arch when
-> very long direct IO requests are addressed to dm-over-i2o device.
+> In general, so that we can automatically allocate loop devices (as with
+> losetup -f) and have them disappear when we're done with them.
 > 
-> Signed-off-by:	Vasily Averin <vvs@sw.ru>
+> In particular, right now, so that we can stop relying on the hackish
+> special-case in umount(8) which kills off loop devices which were set up
+> by 'mount -oloop'. That means we can stop putting crap in /etc/mtab
+> which doesn't belong there, which means it can be a symlink
+> to /proc/mounts, which means yet another writable file on the root
+> filesystem is eliminated and the 'stateless' folks get happier... and
+> OLPC trac #356 can be closed.
 > 
-> --- a/drivers/md/dm-table.c
-> +++ b/drivers/md/dm-table.c
-> @@ -102,6 +102,8 @@ static void combine_restrictions_low(struct io_restrictions
->  	lhs->seg_boundary_mask =
->  		min_not_zero(lhs->seg_boundary_mask, rhs->seg_boundary_mask);
-> 
-> +	lhs->bounce_pfn = min_not_zero(lhs->bounce_pfn, rhs->bounce_pfn);
-> +
->  	lhs->no_cluster |= rhs->no_cluster;
->  }
-> 
-> @@ -566,6 +568,8 @@ void dm_set_device_limits(struct dm_target *ti, struct
->  		min_not_zero(rs->seg_boundary_mask,
->  			     q->seg_boundary_mask);
-> 
-> +	rs->bounce_pfn = min_not_zero(rs->bounce_pfn, q->bounce_pfn);
-> +
->  	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
->  }
->  EXPORT_SYMBOL_GPL(dm_set_device_limits);
-> @@ -707,6 +711,8 @@ static void check_for_valid_limits(struct io_restrictions
->  		rs->max_segment_size = MAX_SEGMENT_SIZE;
->  	if (!rs->seg_boundary_mask)
->  		rs->seg_boundary_mask = -1;
-> +	if (!rs->bounce_pfn)
-> +		rs->bounce_pfn = -1;
->  }
-> 
->  int dm_table_add_target(struct dm_table *t, const char *type,
-> @@ -891,6 +897,7 @@ void dm_table_set_restrictions(struct dm_table *t, struct
->  	q->hardsect_size = t->limits.hardsect_size;
->  	q->max_segment_size = t->limits.max_segment_size;
->  	q->seg_boundary_mask = t->limits.seg_boundary_mask;
-> +	q->bounce_pfn = t->limits.bounce_pfn;
->  	if (t->limits.no_cluster)
->  		q->queue_flags &= ~(1 << QUEUE_FLAG_CLUSTER);
->  	else
-> --- a/include/linux/device-mapper.h
-> +++ b/include/linux/device-mapper.h
-> @@ -111,6 +111,7 @@ struct target_type {
-> 
->  struct io_restrictions {
->  	unsigned long		seg_boundary_mask;
-> +	unsigned long		bounce_pfn;
->  	unsigned int		max_sectors;
->  	unsigned int		max_segment_size;
->  	unsigned short		max_phys_segments;
+> The mount(8) side of that is at
+> http://marc.info/?l=util-linux-ng&m=119362955431694&w=2
 
-Well that's a rather grave sounding bug.  Two days and nobody from DM land
-has commented?  Hello?
-
-I'll tag this as needed in 2.6.23.x as well.
-
-I'll duck the "dm: struct io_restriction reordered" patch.  People have
-been changing things around in there and I had to fix a reject in "dm:
-bounce_pfn limit added" to make it apply - let's not complicate life.
-
-However it is a good change and hopefully the DM people will pick it up.
-
-
-
+ooh, I spy a changelog.  Thanks.
