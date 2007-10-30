@@ -1,112 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXJ3LQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbXJ3LTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbXJ3LQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 07:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXJ3LQk
+	id S1755771AbXJ3LTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 07:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXJ3LTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 07:16:40 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57451 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbXJ3LQj (ORCPT
+	Tue, 30 Oct 2007 07:19:39 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:38250 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbXJ3LTi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 07:16:39 -0400
-From: Stefan Roese <stefan.roese@gmail.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: Bootup support for watchdog with short timeout (touch_nmi_watchdog()?)
-Date: Tue, 30 Oct 2007 12:16:14 +0100
-User-Agent: KMail/1.9.6
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <200710291522.27311.stefan.roese@gmail.com> <20071029194503.GB27646@csclub.uwaterloo.ca> <20071029215454.0d644ca7@vader.jdub.homelinux.org>
-In-Reply-To: <20071029215454.0d644ca7@vader.jdub.homelinux.org>
+	Tue, 30 Oct 2007 07:19:38 -0400
+From: "Mikael Starvik" <mikael.starvik@axis.com>
+To: "Jesper Nilsson" <Jesper.Nilsson@axis.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "Mikael Starvik" <mikael.starvik@axis.com>,
+       "Jesper Nilsson" <Jesper.Nilsson@axis.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 13/16] CRIS architecture: Correct compile errors
+Date: Tue, 30 Oct 2007 12:19:28 +0100
+Message-ID: <BFECAF9E178F144FAEF2BF4CE739C66804C4014E@exmail1.se.axis.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710301216.15033.stefan.roese@gmail.com>
-X-Provags-ID: V01U2FsdGVkX18TZsGiDR6qZB64QHS8CfkJ9BXi0Km3Jvg6Yis
- UyN5USgNxDJSpjAP9RF3dQkoXwXmRyo0rGsthcdQMpwpiJ69BF
- D0NyFtR0hDRXwkxu1BESUikspYQz9CO
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C6680549C7F1@exmail1.se.axis.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added linuxppc-dev since it's PPC relevant too]
+Signed-off-by: Mikael Starvik <starvik@axis.com>
 
-On Tuesday 30 October 2007, Josh Boyer wrote:
-> On Mon, 29 Oct 2007 15:45:03 -0400
->
-> lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
-> > On Mon, Oct 29, 2007 at 03:22:27PM +0100, Stefan Roese wrote:
-> > > I'm trying to implement support for a board specific watchdog on a
-> > > PPC440EPx board with a very short timeout. In this case, the watchdog
-> > > has to be "kicked" at least every 100ms, even while booting and the
-> > > real watchdog driver not running yet. While looking for trigger places
-> > > in the kernel source, I noticed the already existing
-> > > "touch_nmi_watchdog()" function, which seems to be doing what I need.
-> > > Even if the name not exactly matches my hardware setup.
-> > >
-> > > My question now is, is it recommended to use this
-> > > touch_nmi_watchdog() "infrastructure" for my PPC custom specific
-> > > watchdog during bootup? And if yes, should it perhaps be renamed to a
-> > > more generic name, like "touch_watchdog"?
-> > >
-> > > Please advise. Thanks.
-> >
-> > No idea really.  Who would design a watchdog with such a short trigger
-> > time?  That doesn't seem to be useful in any way.
+-----Original Message-----
+From: Jesper Nilsson [mailto:jespern@axis.com] 
+Sent: Tuesday, October 30, 2007 10:35 AM
+To: Andrew Morton; Mikael Starvik; Jesper Nilsson;
+linux-kernel@vger.kernel.org
+Subject: [PATCH 13/16] CRIS architecture: Correct compile errors
 
-It definitely is useful in our case, since its a requirement for 
-this "critical" project. It's not needed to have such a short trigger time 
-while booting, but unfortunately this external watchdog only supports one 
-fixed timeout.
 
-> To some degree, it's configurable.
+- Remove debug print.
+- Change #if to #ifdef to avoid compile time warning if CONFIG_PROFILING
+  isn't set.
+- Number of parameters to profile_tick has changed, drop the regs parameter.
 
-No, I'm afraid it's not configurable in this case.
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-> But the generic question still 
-> stands.  It seems like a decent idea to me.  Making touch_watchdog (or
-> whatever it winds up being called) nice across arches might be fun.
+---
+ time.c |   10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-I already have it running on my system using a quick hack (see patch below) in 
-include/asm-ppc/nmi.h (yes, still arch/ppc for now :-( ). But for a clean 
-implementation, that has chances for upstream merge (in arch/powerpc later), 
-I would really like to hear if I should move on further this way. 
+diff -urBb -X /h/jespern/.exclude_files
+clean_linux-2.6.23/arch/cris/kernel/time.c
+linux-2.6.23/arch/cris/kernel/time.c
+--- clean_linux-2.6.23/arch/cris/kernel/time.c	2007-10-09
+22:31:38.000000000 +0200
++++ linux-2.6.23/arch/cris/kernel/time.c	2007-10-22
+13:37:20.000000000 +0200
+@@ -171,10 +170,6 @@
+ 	mon = CMOS_READ(RTC_MONTH);
+ 	year = CMOS_READ(RTC_YEAR);
+ 
+-	printk(KERN_DEBUG
+-	       "rtc: sec 0x%x min 0x%x hour 0x%x day 0x%x mon 0x%x year
+0x%x\n",
+-	       sec, min, hour, day, mon, year);
+-
+ 	BCD_TO_BIN(sec);
+ 	BCD_TO_BIN(min);
+ 	BCD_TO_BIN(hour);
+@@ -207,12 +202,12 @@
+ cris_do_profile(struct pt_regs* regs)
+ {
+ 
+-#if CONFIG_SYSTEM_PROFILER
++#ifdef CONFIG_SYSTEM_PROFILER
+         cris_profile_sample(regs);
+ #endif
+ 
+-#if CONFIG_PROFILING
+-        profile_tick(CPU_PROFILING, regs);
++#ifdef CONFIG_PROFILING
++        profile_tick(CPU_PROFILING);
+ #endif
+ }
+ 
 
-My impression is, that changing the name from touch_nmi_watchdog() to 
-something like touch_watchdog(), and therefore touching lots of files, makes 
-it more unlikely that this resulting patch will get accepted. But 
-implementing this bootup watchdog support in asm-ppc(asm-powerpc)/nmi.h 
-header seems also not totally correct, since it's not really an NMI in this 
-case.
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
 
-Any thoughts on this?
-
-Thanks.
-
-Best regards,
-Stefan
-
-diff --git a/include/asm-ppc/nmi.h b/include/asm-ppc/nmi.h
-new file mode 100644
-index 0000000..f18862b
---- /dev/null
-+++ b/include/asm-ppc/nmi.h
-@@ -0,0 +1,16 @@
-+/*
-+ *  linux/include/asm-ppc/nmi.h
-+ */
-+#ifndef ASM_NMI_H
-+#define ASM_NMI_H
-+
-+#ifdef BOARD_WATCHDOG_FUNC
-+#define touch_nmi_watchdog	BOARD_WATCHDOG_FUNC
-+#else
-+static inline void touch_nmi_watchdog(void)
-+{
-+	touch_softlockup_watchdog();
-+}
-+#endif
-+
-+#endif /* ASM_NMI_H */
