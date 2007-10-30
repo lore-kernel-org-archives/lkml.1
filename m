@@ -1,94 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbXJ3Xij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXJ3Xjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbXJ3Xij (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXJ3Xia
+	id S1757451AbXJ3Xjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXJ3Xjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:38:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:58797 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbXJ3Xi3 (ORCPT
+	Tue, 30 Oct 2007 19:39:39 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53942 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbXJ3Xji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:38:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Fk57ZsM2VorFBMxyWjJNhe0KhxyzAEJRlWEjjILIkCkcKcyhJCO7mgAWpPiuY/+DHJyFllDTGqriW9Ldub2uCoQJnYA3J8f2Hjl9fJuw1/x7BeQgTkzezx2psGZo8TV0eoo9HcuM1f5hSq2uIE25rDQ6xNKPV5uy7eZnQg4wAkA=
-Message-ID: <4727C06A.4060005@gmail.com>
-Date: Wed, 31 Oct 2007 09:38:18 +1000
-From: Peter Dolding <oiaohm@gmail.com>
+	Tue, 30 Oct 2007 19:39:38 -0400
+Date: Tue, 30 Oct 2007 17:41:26 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+In-reply-to: <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
+       ak@suse.de, rajesh.shah@intel.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <4727C126.8070000@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
+ <200710251622.36773.jbarnes@virtuousgeek.org>
+ <20071026025407.GA21408@kroah.com>
+ <200710260959.46811.jbarnes@virtuousgeek.org>
+ <20071027024140.GC29039@kroah.com> <47267232.3020506@shaw.ca>
+ <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+ <20071030094756.779ac5c0@laptopd505.fenrus.org>
+ <alpine.LFD.0.999.0710300957260.30120@woody.linux-foundation.org>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>  <4726377A.4080807@crispincowan.com> <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com> <Pine.LNX.4.64.0710301136560.31325@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0710301136560.31325@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> I disagree.
->
-> Traditionally, Linux has given a process all capabilities when the
-> UID changed to 0 (either by setuid(2) or executing a SUID binary).
-> This has been relieved over the years, and right now with LSMs in the
-> field, it is possible to 'deactivate' this special case for UID 0.
->   
-> SELinux does not have this special case for UID 0. Neither does it
-> seem to use capabilities (quick grep through the source). So
-> basically, all users are the same, and no one has capabilities by
-> default. Does SELinux thus break with other LSMs?
->
-> Now assume a SELinux system where all users have all capabilities
-> (and the policy that is in place restricts the use of these
-> capabilities then) -- should not be that unlikely. Does that break
-> with other LSMs?
->   
-MultiAdmin loaded before Selinux breaks Selinux since Multi Admin rules 
-are applied over using Selinux rules.  This is just the way it is 
-stacking LSM's is Just not healthy you always risk on LSM breaking 
-another.  Part of the reason why I have suggested a complete redesign of 
-LSM.  To get away from this problem of stacking.
+Linus Torvalds wrote:
+> 
+> On Tue, 30 Oct 2007, Arjan van de Ven wrote:
+>> the problem is... you're not supposed to mix both types of accesses.
+> 
+> You have to, anyway. Even now the MMCONFIG stuff uses CONF1 cycles for 
+> startup.
 
-I see MultiAdmin purely in the class of posix file capabilities( Fine 
-grained replacement to SUID).
-This is a standard feature fix not part of LSM.  Note it can not replace 
-all SUID bits due to some internals of applications design need to be 
-changed to support posix file capabilities in particular not checking if 
-running as UID 0.  Traditional  UID 0 is already optional for 
-applications without  LSM's.
+If it does, it's not by necessity. As soon as you read the table 
+location out of the ACPI tables you can start using it, and that 
+shouldn't require any config space accesses.
 
-Posix file capabilities only applies to applications only.  MultiAdmin 
-being the user mirror of Posix file capabilities.
+> 
+> Also, there's reason to believe that mixing things up _has_ to work 
+> anyway, and if the issue is between "works in practice" and "theory says 
+> that you shouldn't mix", I'll take practice every time.
+> 
+> Especially since we *know* that the theory is broken. Right now MMCONFIG 
+> is effectively disabled very aggressively because it's simply unusably 
+> flaky. So the choice is between:
+> 
+>  - don't use MMCONFIG at all, because it has so many problems
+>  - use MMCONFIG sparingly enough to hide the problems
 
-MultiAdmin patch to the user side may allow more SUID bits to be killed 
-off from the start line.  So increasing overall system security.
+Fact is, we don't really know how many of these systems with supposedly 
+"broken" MMCONFIG were really just suffering from the overlapping 
+PCI/MMCONFIG address space problem, which is entirely the fault of the 
+way we do PCI probing. I would bet quite a few of them.
 
-Of course MultiAdmin might end up two halfs.   One a standard feature 
-that hands out capabilities to users that LSMs can overrule.  And one a 
-user by user directory access control LSM directory control LSM less 
-likely to cause problems.
+> 
+> and what "you're supposed to do" is simply trumped by Real Life(tm). 
+> Because Intel screwed up so badly when they designed that piece of shit.
+> 
+> (Where "screwed up badly" is the usual "left it to firmware people" thing, 
+> of course. Dammit, Intel *could* have just made it a real PCI BAR in the 
+> Northbridge, and specified it as such, and we wouldn't have these 
+> problems! But no, it had to be another idiotic "firmware tells where it 
+> is" thing)
 
-I really don't see the need for a LSM stacking order.  Some features 
-just should not be LSM's in my eyes.  MultiAdmin is one of them.
+This wouldn't have helped anything with the problem in question.
 
-Traditional way has all ready been expanded for applications without 
-LSM's.  So my call still stand O heck head ache rating.   Because its in 
-the wrong place.  Particularly when you think people will want to use it 
-stacked with other LSM's.   Stacking should be avoided where able.   
-This means at least some of Multiadmin features just have to be done 
-core kernel as a normal kernel module to avoid stacking and breaking the 
-LSM.
+> 
+>>> The fact is, CONF1 style accesses are just safer, and *work*. 
+>> I would suggest a slight twist then: use CONF1 *until* you're using
+>> something above 256, and then and only then switch to MMCONFIG from
+>> then on for all accesses.
+> 
+> No.
+> 
+> Maybe if you do it per-device, and only *after* probing (ie we have seen 
+> multiple, and successful, accesses), but globally, absolutely not. That 
+> would be useless. The bugs we have had in this area have been exactly the 
+> kinds of things like "we don't know the real size of the MMCONFIG areas" 
+> etc.
+> 
+> I could easily see device driver writers probing to see if something 
+> works, and I absolutely don't think we should just automatically enable 
+> MMCONFIG from then on.
 
-Note posix file capabilities was developed as a LSM module too at first 
-the point came where it was going to cause more trouble for other LSMs 
-granting stuff in conflict.    Both Multiadmin and posix file 
-capabilities share a lot in common.  Both developed in the wrong place.  
-Both required to be else where.  Even there function is similar breaking 
-down root powers and handing them out more effectively.  So in my eyes 
-it is a pure Posix extension not a LSM.
+Why per device? It's not like the MSI case where both the platform and 
+the device are potentially busted. Whether or not MMCONFIG works has 
+nothing to do with the device, all that matters is whether it works on 
+the platform. It shouldn't be the driver's responsibility to know this.
 
-Peter Dolding
+> 
+> But maybe we could have a per-device flag that a driver *can* set. Ie have 
+> the logic be:
+> 
+>  - use MMCONFIG if we have to (reg >= 256)
+> 
+> OR
+> 
+>  - use MMCONFIG if the driver specifically asked us to
+> 
+> and then drivers that absolutely need it, and know they do, can set that 
+> flag. Preferably after they actually verified that it works.
+
+How will they verify that it works? If it works, then verifying it works 
+is all well and good. If it doesn't work, trying to verify if it does 
+could very well blow up the machine.
+
+I've made the point before that if we're going to allow using it at all, 
+we'd better find out if it works or not early on, not after we've been 
+running and somebody decides it's a good idea to try using it and 
+causing a lockup or something.
+
+> 
+> That way you _can_ get the "this is how you're supposed to do it" 
+> behaviour, but you get it when there is a reasonable chance that it 
+> actually works.
+> 
+> And quite frankly, if you're not supposed to mix these things even across 
+> devices, then I think we are better off just doing what we effectively do 
+> now: mostly ignore the damn thing because it's too broken to use.
+> 
+> Maybe somebody inside Intel could just clarify the documentation, and 
+> change it from "you're not supposed to mix" to "mix all you want". 
+
+Intel could say what they want on the subject.. but that doesn't 
+necessarily reflect what happens with anyone else's chipset implementations.
