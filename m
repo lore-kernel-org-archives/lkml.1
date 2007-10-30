@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXJ3Fro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXJ3FvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbXJ3Fro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 01:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbXJ3Frh
+	id S1753892AbXJ3FvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 01:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXJ3FvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 01:47:37 -0400
-Received: from sandeen.net ([209.173.210.139]:23939 "EHLO sandeen.net"
+	Tue, 30 Oct 2007 01:51:00 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27368 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbXJ3Frg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 01:47:36 -0400
-Message-ID: <4726C577.9000209@sandeen.net>
-Date: Tue, 30 Oct 2007 00:47:35 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	id S1752727AbXJ3FvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 01:51:00 -0400
+Date: Tue, 30 Oct 2007 06:50:58 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+Message-ID: <20071030055056.GG7499@kernel.dk>
+References: <20071026145905.GA13850@gondor.apana.org.au> <E1IlQfM-0003cO-00@gondolin.me.apana.org.au> <20071029201627.GD7499@kernel.dk> <20071030000827.GA9037@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: David Miller <davem@davemloft.net>, byron.bbradley@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: XFS Fails Quality Assurance Tests on ARM
-References: <fb80ve$i5q$1@sea.gmane.org>	<20070830.213901.48806818.davem@davemloft.net> <p73ps12vxrl.fsf@bingen.suse.de>
-In-Reply-To: <p73ps12vxrl.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030000827.GA9037@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> David Miller <davem@davemloft.net> writes:
+On Tue, Oct 30 2007, Herbert Xu wrote:
+> On Mon, Oct 29, 2007 at 09:16:27PM +0100, Jens Axboe wrote:
+> > On Fri, Oct 26 2007, Herbert Xu wrote:
+> > > [CRYPTO] tcrypt: Move sg_init_table out of timing loops
+> > > 
+> > > This patch moves the sg_init_table out of the timing loops for hash
+> > > algorithms so that it doesn't impact on the speed test results.
+> > 
+> > Wouldn't it be better to just make sg_init_one() call sg_init_table?
 > 
->> From: Byron Bradley <byron.bbradley@gmail.com>
->> Date: Fri, 31 Aug 2007 03:12:46 +0000 (UTC)
->>
->>> Anybody got any ideas of how we fix this?
->> I don't know how much testing XFS gets on ARM, but one thing that some
->> ARM chips have is D-cache aliasing problems and one thing XFS uses a
->> lot is virtual remapping of various data structures via vmap().
->>
->> This might be what is causing the problems.
+> This looks fine to me although I think it's orthogonal to the
+> patch you were quoting :)
 
-Sorry, I lost the original to reply to, but stumbled on this thread
-looking for something else.  :)
+How so? The reason you changed it to sg_init_table() + sg_set_buf() is
+exactly because sg_init_one() didn't properly init the entry (as they
+name promised).
 
-Anyway, from the assertion:
+-- 
+Jens Axboe
 
-Assertion failed: (char *)sfep - (char *)sfp == dp->i_d.di_size, file:
-fs/xfs/xfs_dir2_sf.c, line: 647 kernel BUG at fs/xfs/support/debug.c:82!
-
-this is almost certainly a result of xfs_dir2_sf_off_t,
-xfs_dir2_sf_hdr_t, and/or xfs_dir2_sf_entry_t or others not being
-"properly" aligned on arm.
-
-There was a patch floating around to "fix" it but it's not on-disk
-compatible w/ x86 & friends, it just makes things consistent for arm.  I
-think packing some of these structures would take care of it, but this
-problem could use some attention & testing I think, it's been floating
-around a long time.
-
--Eric
