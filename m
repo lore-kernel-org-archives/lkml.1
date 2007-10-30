@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXJ3FHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbXJ3FMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbXJ3FHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 01:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXJ3FHl
+	id S1754353AbXJ3FMu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 01:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbXJ3FMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 01:07:41 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:60790 "EHLO koto.vergenet.net"
+	Tue, 30 Oct 2007 01:12:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47793 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbXJ3FHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 01:07:41 -0400
-Date: Tue, 30 Oct 2007 14:07:36 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] ia64/mm/init.c: fix section mismatches
-Message-ID: <20071030050734.GD5361@verge.net.au>
-References: <20071029124947.GM7227@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029124947.GM7227@stusta.de>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	id S1752527AbXJ3FMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 01:12:40 -0400
+Date: Tue, 30 Oct 2007 16:12:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: netdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rpc_rdma: we need to cast u64 to unsigned long long for
+ printing
+Message-Id: <20071030161240.bc81cad3.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 01:49:47PM +0100, Adrian Bunk wrote:
-> This patch fixes the following section mismatches:
-> 
-> <--  snip  -->
-> 
-> ...
-> WARNING: vmlinux.o(.text+0x5b5c2): Section mismatch: reference to .init.text:memmap_init_zone (between 'memmap_init' and 'virtual_memmap_init')
-> WARNING: vmlinux.o(.text+0x5b842): Section mismatch: reference to .init.text:memmap_init_zone (between 'virtual_memmap_init' and 'ia64_mmu_init')
-> ...
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+as some architectures have unsigned long for u64.
 
-That seems correct me and makes the warnings go away in my build.
+net/sunrpc/xprtrdma/rpc_rdma.c: In function 'rpcrdma_create_chunks':
+net/sunrpc/xprtrdma/rpc_rdma.c:222: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/sunrpc/xprtrdma/rpc_rdma.c:234: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/sunrpc/xprtrdma/rpc_rdma.c: In function 'rpcrdma_count_chunks':
+net/sunrpc/xprtrdma/rpc_rdma.c:577: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64
 
-Acked-by: Simon Horman <horms@verge.net.au>
+Noticed on PowerPC pseries_defconfig build.
 
-> 
-> ---
-> 
->  arch/ia64/mm/init.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> 45c99ede63b0f76fe3dcc906ae550193a4d41626 
-> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-> index c6c19bf..25aef62 100644
-> --- a/arch/ia64/mm/init.c
-> +++ b/arch/ia64/mm/init.c
-> @@ -472,7 +472,7 @@ struct memmap_init_callback_data {
->  	unsigned long zone;
->  };
->  
-> -static int
-> +static int __meminit
->  virtual_memmap_init (u64 start, u64 end, void *arg)
->  {
->  	struct memmap_init_callback_data *args;
-> @@ -503,7 +503,7 @@ virtual_memmap_init (u64 start, u64 end, void *arg)
->  	return 0;
->  }
->  
-> -void
-> +void __meminit
->  memmap_init (unsigned long size, int nid, unsigned long zone,
->  	     unsigned long start_pfn)
->  {
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ net/sunrpc/xprtrdma/rpc_rdma.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/net/sunrpc/xprtrdma/rpc_rdma.c b/net/sunrpc/xprtrdma/rpc_rdma.c
+index f877b88..9e11ce7 100644
+--- a/net/sunrpc/xprtrdma/rpc_rdma.c
++++ b/net/sunrpc/xprtrdma/rpc_rdma.c
+@@ -221,8 +221,8 @@ rpcrdma_create_chunks(struct rpc_rqst *rqst, struct xdr_buf *target,
+ 					seg->mr_base);
+ 			dprintk("RPC:       %s: read chunk "
+ 				"elem %d@0x%llx:0x%x pos %d (%s)\n", __func__,
+-				seg->mr_len, seg->mr_base, seg->mr_rkey, pos,
+-				n < nsegs ? "more" : "last");
++				seg->mr_len, (unsigned long long)seg->mr_base,
++				seg->mr_rkey, pos, n < nsegs ? "more" : "last");
+ 			cur_rchunk++;
+ 			r_xprt->rx_stats.read_chunk_count++;
+ 		} else {		/* write/reply */
+@@ -234,8 +234,8 @@ rpcrdma_create_chunks(struct rpc_rqst *rqst, struct xdr_buf *target,
+ 			dprintk("RPC:       %s: %s chunk "
+ 				"elem %d@0x%llx:0x%x (%s)\n", __func__,
+ 				(type == rpcrdma_replych) ? "reply" : "write",
+-				seg->mr_len, seg->mr_base, seg->mr_rkey,
+-				n < nsegs ? "more" : "last");
++				seg->mr_len, (unsigned long long)seg->mr_base,
++				seg->mr_rkey, n < nsegs ? "more" : "last");
+ 			cur_wchunk++;
+ 			if (type == rpcrdma_replych)
+ 				r_xprt->rx_stats.reply_chunk_count++;
+@@ -577,7 +577,7 @@ rpcrdma_count_chunks(struct rpcrdma_rep *rep, int max, int wrchunk, __be32 **ipt
+ 			dprintk("RPC:       %s: chunk %d@0x%llx:0x%x\n",
+ 				__func__,
+ 				ntohl(seg->rs_length),
+-				off,
++				(unsigned long long)off,
+ 				ntohl(seg->rs_handle));
+ 		}
+ 		total_len += ntohl(seg->rs_length);
+-- 
+1.5.3.4
 
