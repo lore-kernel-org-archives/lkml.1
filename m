@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbXJ3EYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXJ3E0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbXJ3EYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 00:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXJ3EYl
+	id S1754211AbXJ3E0g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 00:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXJ3E03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 00:24:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41016 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 00:26:29 -0400
+Received: from il.qumranet.com ([82.166.9.18]:35125 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbXJ3EYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 00:24:41 -0400
-Date: Mon, 29 Oct 2007 21:24:33 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: vitalivanov@gmail.com
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au,
-       zaitcev@redhat.com
-Subject: Re: USB: FIx locks and urb->status in adutux
-Message-Id: <20071029212433.c9837c4b.zaitcev@redhat.com>
-In-Reply-To: <1193681097.20985.31.camel@dell1.softservecom.com>
-References: <20071022203447.db6d7950.zaitcev@redhat.com>
-	<200710231138.38266.oliver@neukum.org>
-	<20071023185302.5ce9d187.zaitcev@redhat.com>
-	<1193234987.13750.21.camel@dell1.softservecom.com>
-	<20071024202555.4f1cd215.zaitcev@redhat.com>
-	<1193681097.20985.31.camel@dell1.softservecom.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1750993AbXJ3E02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 00:26:28 -0400
+Message-ID: <4726B218.8010101@qumranet.com>
+Date: Tue, 30 Oct 2007 06:24:56 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Dan Hecht <dhecht@vmware.com>
+CC: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zach@vmware.com>,
+       jeremy@goop.org, avi@quramnet.com, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Glauber de Oliveira Costa <glauber@qumranet.com>, --cc@redhat.com,
+       Garrett Smith <garrett@vmware.com>
+Subject: Re: [kvm-devel] [PATCH] raise tsc clocksource rating
+References: <11936994092607-git-send-email-gcosta@redhat.com>	<1193697734.9793.86.camel@bodhitayantram.eng.vmware.com>	<20071029224852.GA27547@elte.hu>	<1193698505.9793.90.camel@bodhitayantram.eng.vmware.com>	<20071029230213.GA1982@elte.hu> <47266B90.8000008@vmware.com>
+In-Reply-To: <47266B90.8000008@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 20:04:57 +0200, Vitaliy Ivanov <vitalivanov@gmail.com> wrote:
+Dan Hecht wrote:
+> Not really.  In the case hardware TSC is perfect, the paravirt time 
+> counter can be implemented directly in terms of hardware TSC; there is 
+> no loss in optimization.  This is done transparently.  And virtual TSC 
+> can be implemented this way too.
+>
+> The real improvement that a paravirt clocksource offers over the TSC 
+> clocksource is that the guest does not need to measure the TSC frequency 
+> itself against some other constant frequency source (which is 
+> problematic on a virtual machine).  Instead, the paravirt clocksource 
+> queries the hypervisor for the frequency of the counter.  As you know, 
+> with clocksource style kernels, it's important to get this frequency 
+> correct, or else the guest will have long-term time drift.
+>
+>   
 
-> Finally had a time on my weekend to perform tests and fix Pete's patch a little. Now it seems to be correct.
+In addition, a paravirt clocksource can compensate for events like vcpu 
+migration to another host cpu.  So I agree: a paravirt clocksource is 
+always better than or equal to the tsc.
 
-Great!
 
-> 1. One device per user space application. Old driver allowed many users application to work with same device which can lead to IO mess.
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
 
-OK. This trick was popular in UNIX. Personally I think it's in a bad
-taste, because good applications still need to verify if only one
-instance is running, and threfore can use application level locking.
-But if you are gunning for the maintenership I'm not going to argue
-your style. The busy lock-out certainly works better than "/dev/cua" :-)
-
-However, this looks wrong:
-
-> +			 dev->interrupt_in_endpoint->bInterval);
-> +	dev->read_urb_finished = 0;
-> +	retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
-> +	/* we ignore failure */
-> +	/* end of fixup for first read */
-> +
-> +	/* initialize out direction */
-> +	dev->out_urb_finished = 1;
-
-The finished flag is only set when URB is not in use anymore. Did you
-observe an anomaly with my code? Any hangs? If so, I assure you this
-is not the fix. As it's written, even if we ignore the failure (e.g.
-do not pass it to userland), we sill have to maintain the correct
-flag state.
-
--- Pete
