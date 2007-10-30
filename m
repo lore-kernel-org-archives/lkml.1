@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbXJ3QJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbXJ3QN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbXJ3QJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXJ3QJJ
+	id S1755266AbXJ3QN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXJ3QNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:09:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41792 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751011AbXJ3QJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:09:08 -0400
-Date: Tue, 30 Oct 2007 16:10:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Daniel Drake <dsd@gentoo.org>, linux list <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-Message-ID: <20071030161037.54c41fff@the-village.bc.nu>
-In-Reply-To: <472755A1.5080703@garzik.org>
-References: <47274A5F.6070409@gentoo.org>
-	<472755A1.5080703@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 12:13:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46993 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752430AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:13:39 -0400
+Message-Id: <20071030160915.886143000@chello.nl>
+References: <20071030160401.296770000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Tue, 30 Oct 2007 17:04:33 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 32/33] nfs: fix various memory recursions possible with swap over NFS.
+Content-Disposition: inline; filename=nfs-alloc-recursions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Any ideas?
-> 
-> hrm
-> 
-> we may need to make that controller-specific, given that the code prior 
-> to 2db78dd302d26d242d3e8e5c4c5024b6c3ea93c2 was working for most...
+GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
 
-Removing it breaks some devices on any controller.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/pagelist.c |    2 +-
+ fs/nfs/write.c    |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-I don't think this one is a simple compatibility issue - its a behaviour
-we have done for ten years on PIIX/ICH chipsets without problems in the
-old IDE. Also those logs of 66 bytes overrun are worrying - the app is
-either issuing incorrectly sized commands, the drive is providing
-incorrectly sized answers or something really evil is going on in the
-midlayer translations.
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -44,7 +44,7 @@ static struct kmem_cache *nfs_wdata_cach
+ 
+ struct nfs_write_data *nfs_commit_alloc(void)
+ {
+-	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -68,7 +68,7 @@ void nfs_commit_free(struct nfs_write_da
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -77,7 +77,7 @@ struct nfs_write_data *nfs_writedata_all
+ 		if (pagecount <= ARRAY_SIZE(p->page_array))
+ 			p->pagevec = p->page_array;
+ 		else {
+-			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
++			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOIO);
+ 			if (!p->pagevec) {
+ 				kmem_cache_free(nfs_wdata_cachep, p);
+ 				p = NULL;
+Index: linux-2.6/fs/nfs/pagelist.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/pagelist.c
++++ linux-2.6/fs/nfs/pagelist.c
+@@ -27,7 +27,7 @@ static inline struct nfs_page *
+ nfs_page_alloc(void)
+ {
+ 	struct nfs_page	*p;
+-	p = kmem_cache_alloc(nfs_page_cachep, GFP_KERNEL);
++	p = kmem_cache_alloc(nfs_page_cachep, GFP_NOIO);
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+ 		INIT_LIST_HEAD(&p->wb_list);
 
-And the ICH7 is in fact the chipset I did the original testing on ...
+--
 
-Need to work out if this is some nutty gentoo app, a quirky device we need
-to dig into or something else. I've asked Daniel for some first test
-points to try and eliminate the obvious.
-
-Alan
