@@ -1,104 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbXJ3Sa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXJ3Scv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbXJ3Sa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXJ3SaU
+	id S1755897AbXJ3Scv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbXJ3Scl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:30:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37093 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752024AbXJ3SaT (ORCPT
+	Tue, 30 Oct 2007 14:32:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56339 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753952AbXJ3Scl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:30:19 -0400
-Date: Tue, 30 Oct 2007 11:30:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: clameter@sgi.com, matthew@wil.cx, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
-Message-Id: <20071030113005.30d4aa4e.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0710281502480.4207@sbz-30.cs.Helsinki.FI>
-References: <20071028033156.022983073@sgi.com>
-	<20071028033300.240703208@sgi.com>
-	<Pine.LNX.4.64.0710281502480.4207@sbz-30.cs.Helsinki.FI>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 14:32:41 -0400
+Date: Tue, 30 Oct 2007 11:32:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [patch 09/10] SLUB: Do our own locking via slab_lock and
+ slab_unlock.
+In-Reply-To: <200710301550.55199.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0710301124520.11531@schroedinger.engr.sgi.com>
+References: <20071028033156.022983073@sgi.com> <20071028033300.479692380@sgi.com>
+ <200710301550.55199.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Oct 2007 15:05:50 +0200 (EET)
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+On Tue, 30 Oct 2007, Nick Piggin wrote:
 
-> On Sat, 27 Oct 2007, Christoph Lameter wrote:
-> > The alternate path is realized using #ifdef's. Several attempts to do the
-> > same with macros and in line functions resulted in a mess (in particular due
-> > to the strange way that local_interrupt_save() handles its argument and due
-> > to the need to define macros/functions that sometimes disable interrupts
-> > and sometimes do something else. The macro based approaches made it also
-> > difficult to preserve the optimizations for the non cmpxchg paths).
-> 
-> I think at least slub_alloc() and slub_free() can be made simpler. See the 
-> included patch below.
+> Is this actually a speedup on any architecture to roll your own locking
+> rather than using bit spinlock?
 
-Both versions look pretty crappy to me.  The code duplication in the two
-version of do_slab_alloc() could be tidied up considerably.
+It avoids one load from memory when allocating and the release is simply 
+writing the page->flags back. Less instructions.
 
-> +#ifdef CONFIG_FAST_CMPXHG_LOCAL
-> +static __always_inline void *do_slab_alloc(struct kmem_cache *s,
-> +		struct kmem_cache_cpu *c, gfp_t gfpflags, int node, void *addr)
-> +{
-> +	unsigned long flags;
-> +	void **object;
-> +
-> +	do {
-> +		object = c->freelist;
-> +		if (unlikely(is_end(object) || !node_match(c, node))) {
-> +			object = __slab_alloc(s, gfpflags, node, addr, c);
-> +			break;
-> +		}
-> +	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
-> +								!= object);
-> +	put_cpu();
-> +
-> +	return object;
-> +}
+> I am not exactly convinced that smp_wmb() is a good idea to have in your
+> unlock, rather than the normally required smp_mb() that every other open
+> coded lock in the kernel is using today. If you comment every code path
+> where a load leaking out of the critical section would not be a problem,
+> then OK it may be correct, but I still don't think it is worth the
+> maintenance overhead.
 
-Unmatched put_cpu() 
+I thought you agreed that release semantics only require a write barrier? 
+The issue here is that other processors see the updates before the 
+updates to page-flags.
 
-> +
-> +static __always_inline void *do_slab_alloc(struct kmem_cache *s,
-> +		struct kmem_cache_cpu *c, gfp_t gfpflags, int node, void *addr)
-> +{
-> +	unsigned long flags;
-> +	void **object;
-> +
-> +	local_irq_save(flags);
-> +	if (unlikely((is_end(c->freelist)) || !node_match(c, node))) {
-> +		object = __slab_alloc(s, gfpflags, node, addr, c);
-> +	} else {
-> +		object = c->freelist;
-> +		c->freelist = object[c->offset];
-> +	}
-> +	local_irq_restore(flags);
-> +	return object;
-> +}
-> +#endif
-> +
->  /*
->   * Inlined fastpath so that allocation functions (kmalloc, kmem_cache_alloc)
->   * have the fastpath folded into their functions. So no function call
-> @@ -1591,24 +1639,13 @@ debug:
->  static void __always_inline *slab_alloc(struct kmem_cache *s,
->  		gfp_t gfpflags, int node, void *addr)
->  {
-> -	void **object;
-> -	unsigned long flags;
->  	struct kmem_cache_cpu *c;
-> +	void **object;
->  
-> -	local_irq_save(flags);
->  	c = get_cpu_slab(s, smp_processor_id());
+A load leaking out of a critical section would require that the result of 
+the load is not used to update other information before the slab_unlock 
+and that the source of the load is not overwritten in the critical 
+section. That does not happen in sluib.
 
-smp_processor_id() in preemptible code.
