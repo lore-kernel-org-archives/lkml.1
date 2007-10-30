@@ -1,166 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbXJ3QPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbXJ3QP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbXJ3QPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbXJ3QNt
+	id S1757335AbXJ3QP5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbXJ3QNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:13:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46994 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:13:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46996 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752448AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752419AbXJ3QNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Oct 2007 12:13:39 -0400
-Message-Id: <20071030160910.813944000@chello.nl>
+Message-Id: <20071030160913.811204000@chello.nl>
 References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:04 +0100
+Date: Tue, 30 Oct 2007 17:04:17 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 03/33] mm: slub: add knowledge of reserve pages
-Content-Disposition: inline; filename=reserve-slab.patch
+Subject: [PATCH 16/33] netvm: network reserve infrastructure
+Content-Disposition: inline; filename=netvm-reserve.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-contexts that are entitled to it.
+Provide the basic infrastructure to reserve and charge/account network memory.
 
-Care is taken to only touch the SLUB slow path.
+We provide the following reserve tree:
 
-This is done to ensure reserve pages don't leak out and get consumed.
+1)  total network reserve
+2)    network TX reserve
+3)      protocol TX pages
+4)    network RX reserve
+5)      SKB data reserve
+
+[1] is used to make all the network reserves a single subtree, for easy
+manipulation.
+
+[2] and [4] are merely for eastetic reasons.
+
+The TX pages reserve [3] is assumed bounded by it being the upper bound of
+memory that can be used for sending pages (not quite true, but good enough)
+
+The SKB reserve [5] is an aggregate reserve, which is used to charge SKB data
+against in the fallback path.
+
+The consumers for these reserves are sockets marked with:
+  SOCK_MEMALLOC
+
+Such sockets are to be used to service the VM (iow. to swap over). They
+must be handled kernel side, exposing such a socket to user-space is a BUG.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/slub_def.h |    1 +
- mm/slub.c                |   31 +++++++++++++++++++++++--------
- 2 files changed, 24 insertions(+), 8 deletions(-)
+ include/net/sock.h |   35 +++++++++++++++-
+ net/Kconfig        |    3 +
+ net/core/sock.c    |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 150 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/include/net/sock.h
 ===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -20,11 +20,12 @@
- #include <linux/mempolicy.h>
- #include <linux/ctype.h>
- #include <linux/kallsyms.h>
-+#include "internal.h"
+--- linux-2.6.orig/include/net/sock.h
++++ linux-2.6/include/net/sock.h
+@@ -50,6 +50,7 @@
+ #include <linux/skbuff.h>	/* struct sk_buff */
+ #include <linux/mm.h>
+ #include <linux/security.h>
++#include <linux/reserve.h>
  
- /*
-  * Lock order:
-  *   1. slab_lock(page)
-- *   2. slab->list_lock
-+ *   2. node->list_lock
-  *
-  *   The slab_lock protects operations on the object of a particular
-  *   slab and its metadata in the page struct. If the slab lock
-@@ -1074,7 +1075,7 @@ static void setup_object(struct kmem_cac
- 		s->ctor(s, object);
- }
+ #include <linux/filter.h>
  
--static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
-+static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node, int *reserve)
- {
- 	struct page *page;
- 	struct kmem_cache_node *n;
-@@ -1090,6 +1091,7 @@ static struct page *new_slab(struct kmem
- 	if (!page)
- 		goto out;
- 
-+	*reserve = page->reserve;
- 	n = get_node(s, page_to_nid(page));
- 	if (n)
- 		atomic_long_inc(&n->nr_slabs);
-@@ -1468,10 +1470,22 @@ static void *__slab_alloc(struct kmem_ca
- {
- 	void **object;
- 	struct page *new;
-+	int reserve = 0;
- 
- 	if (!c->page)
- 		goto new_slab;
- 
-+	if (unlikely(c->reserve)) {
-+		/*
-+		 * If the current slab is a reserve slab and the current
-+		 * allocation context does not allow access to the reserves
-+		 * we must force an allocation to test the current levels.
-+		 */
-+		if (!(gfp_to_alloc_flags(gfpflags) & ALLOC_NO_WATERMARKS))
-+			goto alloc_slab;
-+		reserve = 1;
-+	}
-+
- 	slab_lock(c->page);
- 	if (unlikely(!node_match(c, node)))
- 		goto another_slab;
-@@ -1479,10 +1493,9 @@ load_freelist:
- 	object = c->page->freelist;
- 	if (unlikely(!object))
- 		goto another_slab;
--	if (unlikely(SlabDebug(c->page)))
-+	if (unlikely(SlabDebug(c->page) || reserve))
- 		goto debug;
- 
--	object = c->page->freelist;
- 	c->freelist = object[c->offset];
- 	c->page->inuse = s->objects;
- 	c->page->freelist = NULL;
-@@ -1500,16 +1513,18 @@ new_slab:
- 		goto load_freelist;
- 	}
- 
-+alloc_slab:
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_enable();
- 
--	new = new_slab(s, gfpflags, node);
-+	new = new_slab(s, gfpflags, node, &reserve);
- 
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_disable();
- 
- 	if (new) {
- 		c = get_cpu_slab(s, smp_processor_id());
-+		c->reserve = reserve;
- 		if (c->page) {
- 			/*
- 			 * Someone else populated the cpu_slab while we
-@@ -1537,8 +1552,7 @@ new_slab:
- 	}
- 	return NULL;
- debug:
--	object = c->page->freelist;
--	if (!alloc_debug_processing(s, c->page, object, addr))
-+	if (SlabDebug(c->page) && !alloc_debug_processing(s, c->page, object, addr))
- 		goto another_slab;
- 
- 	c->page->inuse++;
-@@ -2010,10 +2024,11 @@ static struct kmem_cache_node *early_kme
- {
- 	struct page *page;
- 	struct kmem_cache_node *n;
-+	int reserve;
- 
- 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
- 
--	page = new_slab(kmalloc_caches, gfpflags, node);
-+	page = new_slab(kmalloc_caches, gfpflags, node, &reserve);
- 
- 	BUG_ON(!page);
- 	if (page_to_nid(page) != node) {
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h
-+++ linux-2.6/include/linux/slub_def.h
-@@ -17,6 +17,7 @@ struct kmem_cache_cpu {
- 	int node;
- 	unsigned int offset;
- 	unsigned int objsize;
-+	int reserve;
+@@ -397,6 +398,7 @@ enum sock_flags {
+ 	SOCK_RCVTSTAMPNS, /* %SO_TIMESTAMPNS setting */
+ 	SOCK_LOCALROUTE, /* route locally only, %SO_DONTROUTE setting */
+ 	SOCK_QUEUE_SHRUNK, /* write queue has been shrunk recently */
++	SOCK_MEMALLOC, /* the VM depends on us - make sure we're serviced */
  };
  
- struct kmem_cache_node {
+ static inline void sock_copy_flags(struct sock *nsk, struct sock *osk)
+@@ -419,9 +421,40 @@ static inline int sock_flag(struct sock 
+ 	return test_bit(flag, &sk->sk_flags);
+ }
+ 
++static inline int sk_has_memalloc(struct sock *sk)
++{
++	return sock_flag(sk, SOCK_MEMALLOC);
++}
++
++/*
++ * Guestimate the per request queue TX upper bound.
++ *
++ * Max packet size is 64k, and we need to reserve that much since the data
++ * might need to bounce it. Double it to be on the safe side.
++ */
++#define TX_RESERVE_PAGES DIV_ROUND_UP(2*65536, PAGE_SIZE)
++
++extern atomic_t memalloc_socks;
++
++extern struct mem_reserve net_rx_reserve;
++extern struct mem_reserve net_skb_reserve;
++
++static inline int sk_memalloc_socks(void)
++{
++	return atomic_read(&memalloc_socks);
++}
++
++extern int rx_emergency_get(int bytes);
++extern int rx_emergency_get_overcommit(int bytes);
++extern void rx_emergency_put(int bytes);
++
++extern int sk_adjust_memalloc(int socks, long tx_reserve_pages);
++extern int sk_set_memalloc(struct sock *sk);
++extern int sk_clear_memalloc(struct sock *sk);
++
+ static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
+ {
+-	return gfp_mask;
++	return gfp_mask | (sk->sk_allocation & __GFP_MEMALLOC);
+ }
+ 
+ static inline void sk_acceptq_removed(struct sock *sk)
+Index: linux-2.6/net/core/sock.c
+===================================================================
+--- linux-2.6.orig/net/core/sock.c
++++ linux-2.6/net/core/sock.c
+@@ -112,6 +112,7 @@
+ #include <linux/tcp.h>
+ #include <linux/init.h>
+ #include <linux/highmem.h>
++#include <linux/reserve.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -213,6 +214,111 @@ __u32 sysctl_rmem_default __read_mostly 
+ /* Maximal space eaten by iovec or ancilliary data plus some space */
+ int sysctl_optmem_max __read_mostly = sizeof(unsigned long)*(2*UIO_MAXIOV+512);
+ 
++atomic_t memalloc_socks;
++
++static struct mem_reserve net_reserve;
++struct mem_reserve net_rx_reserve;
++struct mem_reserve net_skb_reserve;
++static struct mem_reserve net_tx_reserve;
++static struct mem_reserve net_tx_pages;
++
++EXPORT_SYMBOL_GPL(net_rx_reserve); /* modular ipv6 only */
++EXPORT_SYMBOL_GPL(net_skb_reserve); /* modular ipv6 only */
++
++/*
++ * is there room for another emergency packet?
++ */
++static int __rx_emergency_get(int bytes, bool overcommit)
++{
++	return mem_reserve_kmalloc_charge(&net_skb_reserve, bytes, overcommit);
++}
++
++int rx_emergency_get(int bytes)
++{
++	return __rx_emergency_get(bytes, false);
++}
++
++int rx_emergency_get_overcommit(int bytes)
++{
++	return __rx_emergency_get(bytes, true);
++}
++
++void rx_emergency_put(int bytes)
++{
++	mem_reserve_kmalloc_charge(&net_skb_reserve, -bytes, 0);
++}
++
++/**
++ *	sk_adjust_memalloc - adjust the global memalloc reserve for critical RX
++ *	@socks: number of new %SOCK_MEMALLOC sockets
++ *	@tx_resserve_pages: number of pages to (un)reserve for TX
++ *
++ *	This function adjusts the memalloc reserve based on system demand.
++ *	The RX reserve is a limit, and only added once, not for each socket.
++ *
++ *	NOTE:
++ *	   @tx_reserve_pages is an upper-bound of memory used for TX hence
++ *	   we need not account the pages like we do for RX pages.
++ */
++int sk_adjust_memalloc(int socks, long tx_reserve_pages)
++{
++	int nr_socks;
++	int err;
++
++	err = mem_reserve_pages_add(&net_tx_pages, tx_reserve_pages);
++	if (err)
++		return err;
++
++	nr_socks = atomic_read(&memalloc_socks);
++	if (!nr_socks && socks > 0)
++		err = mem_reserve_connect(&net_reserve, &mem_reserve_root);
++	nr_socks = atomic_add_return(socks, &memalloc_socks);
++	if (!nr_socks && socks)
++		err = mem_reserve_disconnect(&net_reserve);
++
++	if (err)
++		mem_reserve_pages_add(&net_tx_pages, -tx_reserve_pages);
++
++	return err;
++}
++
++/**
++ *	sk_set_memalloc - sets %SOCK_MEMALLOC
++ *	@sk: socket to set it on
++ *
++ *	Set %SOCK_MEMALLOC on a socket and increase the memalloc reserve
++ *	accordingly.
++ */
++int sk_set_memalloc(struct sock *sk)
++{
++	int set = sock_flag(sk, SOCK_MEMALLOC);
++#ifndef CONFIG_NETVM
++	BUG();
++#endif
++	if (!set) {
++		int err = sk_adjust_memalloc(1, 0);
++		if (err)
++			return err;
++
++		sock_set_flag(sk, SOCK_MEMALLOC);
++		sk->sk_allocation |= __GFP_MEMALLOC;
++	}
++	return !set;
++}
++EXPORT_SYMBOL_GPL(sk_set_memalloc);
++
++int sk_clear_memalloc(struct sock *sk)
++{
++	int set = sock_flag(sk, SOCK_MEMALLOC);
++	if (set) {
++		sk_adjust_memalloc(-1, 0);
++		sock_reset_flag(sk, SOCK_MEMALLOC);
++		sk->sk_allocation &= ~__GFP_MEMALLOC;
++	}
++	return set;
++}
++EXPORT_SYMBOL_GPL(sk_clear_memalloc);
++
+ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ {
+ 	struct timeval tv;
+@@ -919,6 +1025,7 @@ void sk_free(struct sock *sk)
+ 	struct sk_filter *filter;
+ 	struct module *owner = sk->sk_prot_creator->owner;
+ 
++	sk_clear_memalloc(sk);
+ 	if (sk->sk_destruct)
+ 		sk->sk_destruct(sk);
+ 
+@@ -1049,6 +1156,12 @@ void __init sk_init(void)
+ 		sysctl_wmem_max = 131071;
+ 		sysctl_rmem_max = 131071;
+ 	}
++
++	mem_reserve_init(&net_reserve, "total network reserve", NULL);
++	mem_reserve_init(&net_rx_reserve, "network RX reserve", &net_reserve);
++	mem_reserve_init(&net_skb_reserve, "SKB data reserve", &net_rx_reserve);
++	mem_reserve_init(&net_tx_reserve, "network TX reserve", &net_reserve);
++	mem_reserve_init(&net_tx_pages, "protocol TX pages", &net_tx_reserve);
+ }
+ 
+ /*
+Index: linux-2.6/net/Kconfig
+===================================================================
+--- linux-2.6.orig/net/Kconfig
++++ linux-2.6/net/Kconfig
+@@ -237,6 +237,9 @@ endmenu
+ source "net/rfkill/Kconfig"
+ source "net/9p/Kconfig"
+ 
++config NETVM
++	def_bool n
++
+ endif   # if NET
+ endmenu # Networking
+ 
 
 --
 
