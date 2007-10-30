@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXJ3Kg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbXJ3Kth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbXJ3Kg5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 06:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXJ3Kgu
+	id S1753961AbXJ3Kth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 06:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbXJ3Kt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 06:36:50 -0400
-Received: from kassel160.server4you.de ([62.75.246.160]:57305 "EHLO csgraf.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbXJ3Kgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 06:36:49 -0400
-X-Greylist: delayed 2042 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Oct 2007 06:36:49 EDT
-In-Reply-To: <4726FE2A.1040607@siemens.com>
-References: <9c21eeae0710290709x527cf4fcq52bb410907ff496@mail.gmail.com>	<4726B088.1010709@qumranet.com> <4726DF66.4000000@osadl.org> <4726FE2A.1040607@siemens.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <ED9A6D69-650B-47D3-A305-91D947925F5F@csgraf.de>
-Cc: kvm-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Carsten Emde <Carsten.Emde@osadl.org>
+	Tue, 30 Oct 2007 06:49:29 -0400
+Received: from server03.ke-net.com ([84.19.168.8]:59451 "EHLO
+	server03.ke-net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbXJ3Kt2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 06:49:28 -0400
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+From: Stefani Seibold <stefani@seibold.net>
+Reply-To: stefani@seibold.net
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <1193738177.27652.69.camel@twins>
+References: <1193064057.16541.1.camel@matrix>
+	 <20071029004002.60c7182a.akpm@linux-foundation.org>
+	 <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com>
+	 <1193677302.27652.56.camel@twins>
+	 <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
+	 <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy>
+	 <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com>
+	 <1193738177.27652.69.camel@twins>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 11:49:16 +0100
+Message-Id: <1193741356.13775.2.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-From: Alexander Graf <alex@csgraf.de>
-Subject: Re: [kvm-devel] 2.6.23.1-rt4 and kvm 48
-Date: Tue, 30 Oct 2007 11:02:43 +0100
-To: Jan Kiszka <jan.kiszka@siemens.com>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Oct 30, 2007, at 10:49 AM, Jan Kiszka wrote:
+the question is how can i get all pte's from a vmalloc'ed memory. Due to
+the zeroed mapping pointer i dont see how to do this?
 
-> Carsten Emde wrote:
->> Avi Kivity wrote:
->>> David Brown wrote:
->>>> I thought I'd try out the realtime patch set and it didn't work  
->>>> at all
->>>> with kvm. The console didn't dump anything and the system  
->>>> completely
->>>> locked up.
->> Up to now, the unmodified kvm module never worked with any RT kernel.
->> This would only change, if RT patched kernels were routinely used  
->> in the
->> kvm release tests which is, for the time being, not the case.
->
-> As far as I understood (but didn't re-test yet), latest kvm release  
-> does
-> include all features required to run over -rt. This was at least the
-> case for kvm-git I picked up last week and merged into 2.6.23-rt1. The
-> only issue is that out-of-tree kvm doesn't enable the preemption
-> notifiers (maybe there were one or two further minor issues, I  
-> think to
-> recall missing smp_ops exports being one, but these were not -rt  
-> related).
->
->>
->> However, tglx once provided a hand-crafted kvm version that can be  
->> used
->> together with a selected RT kernel -> see "Latest Stable"
->> (http://www.osadl.org/Latest-Stable.latest-stable-realtime-kernel. 
->> 0.html)
->> realtime kernel. It is based on kernel 2.6.21.6-rt21 and kvm-28.
->>
->> We used these modules to carry out a number of "proof of concept"  
->> tests
->> which were very successful. The realtime capabilities of the host  
->> system
->> remained unchanged irrespective of whether the kvm guest system (no
->> graphics) was running or not. This was even the case while the guest
->> system was booting.
->
-> Interesting result - you've read about the wbinvd issues? Is there no
-> wbinvd in the bios shipped with older kvm? Which VM extension did you
-> test, both Intel and AMD? I would bet that your X issues are due to  
-> the
-> same effect. X startup/shutdown involves a lot of wbinvd calls on my
-> test boxes.
->
-> To sum up my findings: kvm over whatever RT kernel is risky
-> (latency-wise) unless you can audit or even para-virtualise your guest
-> OS /wrt wbinvd. Maybe we can discuss this also in Linz by the end  
-> of the
-> week. :)
 
-As I will be in Linz by the end of the week as well, could you please  
-try to do any coordination as to when you meet on the lists (or CC  
-me)? I'd like to get the chance to join you on this :-).
+Am Dienstag, den 30.10.2007, 10:56 +0100 schrieb Peter Zijlstra:
+> On Mon, 2007-10-29 at 21:22 -0400, Jaya Kumar wrote:
+> > On 10/29/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > >
+> > > [ also, remap_vmalloc_range() suffers similar issues, only file and anon
+> > >   have proper rmap ]
+> > >
+> > > I'm not sure we want full rmap for remap_pfn/vmalloc_range, but perhaps
+> > > we could assist drivers in maintaining and using vma lists.
+> > >
+> > > I think page_mkclean_one() would work if you'd manually set page->index
+> > > and iterate the vmas yourself. Although atm I'm not sure of anything so
+> > > don't pin me on it.
+> > 
+> > :-) If it's anybody's fault, it's mine for not testing properly. My bad.
+> > 
+> > In the case of defio, I think it's no trouble to build a list of vmas
+> > at mmap time and then to iterate through them when it's ready for
+> > mkclean time as you suggested. I don't fully understand page->index
+> > yet. I had thought it was only used by swap cache or file map.
+> > 
+> > On an unrelated note, I was looking for somewhere to stuff a 16 bit
+> > offset (so that I have a cheap way to know which struct page
+> > corresponds to which framebuffer block or offset) for another driver.
+> > I had thought page->index was it but I think I am wrong now.
+> Yeah, page->index is used along with vma->vmpgoff and vma->vm_start to
+> determine the address of the page in the given vma:
+> 
+>   address = vma->vm_start + ((page->index - vma->vm_pgoff) << PAGE_SHIFT);
+> 
+> and from that address the pte can be found by walking the vma->vm_mm
+> page tables.
+> 
+> So page->index does what you want it to, identify which part of the
+> framebuffer this particular page belongs to.
 
-Thanks,
-
-Alex
