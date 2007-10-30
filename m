@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbXJ3XGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbXJ3XGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbXJ3XGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 19:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbXJ3XGK
+	id S1758372AbXJ3XGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 19:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXJ3XGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 19:06:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59092 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbXJ3XGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 19:06:09 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <b1c6420f0710301459i147f0f00n1f7009139d3ac31a@mail.gmail.com>
-References: <b1c6420f0710301459i147f0f00n1f7009139d3ac31a@mail.gmail.com> <20071029122759.2846.83510.stgit@warthog.procyon.org.uk> <b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com> <15631.1193753689@redhat.com> <b1c6420f0710300810g1dbf8142j4c515a9baab4207a@mail.gmail.com> <27157.1193763218@redhat.com>
-To: "Suzuki Takashi" <suzuki.takashi@gmail.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux kernel [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 30 Oct 2007 23:06:04 +0000
-Message-ID: <31286.1193785564@redhat.com>
+	Tue, 30 Oct 2007 19:06:23 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41491 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756825AbXJ3XGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 19:06:22 -0400
+Date: Tue, 30 Oct 2007 23:59:17 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: Abit F-190HD Onboard rlt8169 Ethernet Controller
+Message-ID: <20071030225917.GA11411@electric-eye.fr.zoreil.com>
+References: <20071029061532.5d10dfc6@snowcone> <20071029083333.18a4dab7@the-village.bc.nu> <47259CFB.2090106@garzik.org> <20071029120007.GA8571@electric-eye.fr.zoreil.com> <20071030002727.279fb508@snowcone>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030002727.279fb508@snowcone>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suzuki Takashi <suzuki.takashi@gmail.com> wrote:
+Ciaran McCreesh <ciaran.mccreesh@blueyonder.co.uk> :
+> On Mon, 29 Oct 2007 13:00:07 +0100
+> Francois Romieu <romieu@fr.zoreil.com> wrote:
+> > Jeff Garzik <jeff@garzik.org> :
+> > [...]
+> > > Regardless, I agree with your "you...have a return candidate"
+> > > comment.
+> > 
+> > I would welcome a complete lspci -vxx + dmesg before the board is
+> > eventually returned though.
+> 
+> Attached.
 
-> But is there any utility that depends on that uname says mn10300?
+Let aside the strange vendor ID, your 8168b is able to work with
+2.6.24-rc1 when others see their 8168b temporarily disappear (no
+trace in lspci at all). Can you send your (compressed) .config ?
 
-autoconf:-)
+Is there a different OS on this host ?
 
-> I know existing developers should learn the arch name change.
-> But how many developers?
-
-I don't know.  MEI probably does.
-
-> That's the point. They must always be told or consult the documentations.
-> Don't you think an arch name should be natural?
-
-Can you guarantee there won't be any non-AM33 variants of mn10300 that need
-supporting?  An AM34, perhaps?
-
-So basically, the toolchain name should change from am33 to mn10300 by your
-argument.
-
-> People need not to be told on other, at least major, archs.
-
-There are plenty of other complications for other archs, such as 32-bit vs
-64-bit, LE vs BE and other more subtle variants, so your argument isn't that
-compelling.
-
-> - growing new developers will have difficulties in understanding arch
-> name difference,
-
-You tell them, they then know.  It doesn't take long.  Standard practice, I
-suspect, will involve giving them the toolchains and basic root filesystems.
-
-The discrepancy has been around for years, and I suspect it's not going to
-change now.  If MEI ask, I will change it.
-
-David
+-- 
+Ueimor
