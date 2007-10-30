@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbXJ3WX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbXJ3WXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbXJ3WX3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 18:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXJ3WXR
+	id S1758743AbXJ3WXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 18:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbXJ3WXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 18:23:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60601 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758107AbXJ3WXP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 18:23:15 -0400
-Date: Tue, 30 Oct 2007 15:22:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU
- is set
-Message-Id: <20071030152218.3bd5f6a5.akpm@linux-foundation.org>
-In-Reply-To: <20071030162657.GA21728@sgi.com>
-References: <20071030162657.GA21728@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Oct 2007 18:23:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37165 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752979AbXJ3WXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 18:23:16 -0400
+Message-ID: <4727AED2.6010908@garzik.org>
+Date: Tue, 30 Oct 2007 18:23:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Shawn Jin <shawnxjin@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Multiple MSI messages support
+References: <c3d0340b0710301413r2607ee08x8b27c5bffa43f1c4@mail.gmail.com>
+In-Reply-To: <c3d0340b0710301413r2607ee08x8b27c5bffa43f1c4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 11:26:57 -0500
-Russ Anderson <rja@sgi.com> wrote:
+Shawn Jin wrote:
+> Hi,
+> 
+> If this is really off-topic here, I apologize first. But I cannot
+> think a better place to ask this particular question.
+> 
+> I understand that the current PCI subsystem or linux kernel (x86)
+> supports only one message when MSI is enabled even for devices having
+> multiple MSI messages. But why? Is this a limitation solely due to the
+> OS or due to the x86 APIC?
+> 
+> I know the current linux kernel (2.6.23) changed MSI message data
+> format a little bit to support other architectures. But some older
+> version (e.g. 2.6.18) defined a specific format for the MSI msg data
+> in a way that 8 bits contain the irq number and the other 8 bits have
+> the interrupt attributes, which is x86 specific. Why does the msg data
+> need to contain the irq number? Here is my hypothetic explanation. The
+> device writes the MSI msg data to the specified MSI msg address. And
+> APIC uses the irq number in the msg data to generate appropriate
+> interrupt, which of course results in an appropriate ISR invoked. A
+> device having multiple MSI messages typically appends some information
+> of which MSI message to the msg data field. For example, if the system
+> (or OS) configures the MSI msg data as 0x5000, a device having 4 MSI
+> messages could write 0x5000, 0x5001, 0x5002, 0x5003 to differentiate
+> the MSI messages. However this cannot work with the APIC due to the
+> way how APIC asserts interrupts as I described above (if my
+> understanding is correct).
+> 
+> Hence my answer to the question is this is due to the x86 APIC. For
+> other architectures such as powerpc this is probably not a problem
+> since the interrupt controller is different. Am I correct?
 
-> [patch] __do_IRQ does not check IRQ_DISABLED when IRQ_PER_CPU is set
-> 
-> In __do_IRQ(), the normal case is that IRQ_DISABLED is checked and if
-> set the handler (handle_IRQ_event()) is not called.  
-> 
-> Earlier in __do_IRQ(), if IRQ_PER_CPU is set the code does not check
-> IRQ_DISABLED and calls the handler even though IRQ_DISABLED is set.
-> This behavior seems unintentional.
-> 
-> One user encountering this behavior is the CPE handler (in 
-> arch/ia64/kernel/mca.c).  When the CPE handler encounters too many
-> CPEs (such as a solid single bit error), it sets up a polling timer
-> and disables the CPE interrupt (to avoid excessive overhead logging
-> the stream of single bit errors).  disable_irq_nosync() is called
-> which sets IRQ_DISABLED.  The IRQ_PER_CPU flag was previously set
-> (in ia64_mca_late_init()).  The net result is the CPE handler gets
-> called even though it is marked disabled.
-> 
-> If the behavior of not checking IRQ_DISABLED when IRQ_PER_CPU is
-> set is intentional, it would be worthy of a comment describing 
-> the intended behavior.  disable_irq_nosync() does call chip->disable()
-> to provide a chipset specifiec interface for disabling the interrupt,
-> which avoids this issue when used.
-> 
-> Comments???
-> 
+IMO it's more like there has never been enough need for anybody to look 
+into it, I bet...
 
-It looks right to me.
+The way drivers are written, you are typically must touch a few key 
+hardware registers _anyway_, so the multiple messages in practice are 
+not much more useful than the simple fact that your MSI irq handler 
+function was called (with all that indicates and implies).
 
-> 
-> --------------------------------------------------------------------
-> ---
->  kernel/irq/handle.c |    8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
-> Index: linus/kernel/irq/handle.c
-> ===================================================================
-> --- linus.orig/kernel/irq/handle.c	2007-10-30 09:49:26.000000000 -0500
-> +++ linus/kernel/irq/handle.c	2007-10-30 10:23:52.436719688 -0500
-> @@ -178,9 +178,11 @@ fastcall unsigned int __do_IRQ(unsigned 
->  		 */
->  		if (desc->chip->ack)
->  			desc->chip->ack(irq);
-> -		action_ret = handle_IRQ_event(irq, desc->action);
-> -		if (!noirqdebug)
-> -			note_interrupt(irq, desc, action_ret);
-> +		if (likely(!(desc->status & IRQ_DISABLED))) {
-> +			action_ret = handle_IRQ_event(irq, desc->action);
-> +			if (!noirqdebug)
-> +				note_interrupt(irq, desc, action_ret);
-> +		}
->  		desc->chip->end(irq);
->  		return 1;
->  	}
+	Jeff
 
-Alas, I can't remember who wrote (and cares about) the IRQ_PER_CPU support.
- Oh well.
 
