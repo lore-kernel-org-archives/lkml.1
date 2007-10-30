@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbXJ3Tuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbXJ3TvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbXJ3Tuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbXJ3Tud
+	id S1758676AbXJ3TvZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbXJ3TvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:50:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49348 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512AbXJ3Tub (ORCPT
+	Tue, 30 Oct 2007 15:51:17 -0400
+Received: from rhineheart.priorweb.be ([213.193.229.215]:53484 "HELO
+	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755635AbXJ3TvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:50:31 -0400
-Date: Tue, 30 Oct 2007 20:50:30 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Peter Dolding <oiaohm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-In-Reply-To: <281517.30826.qm@web36613.mail.mud.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0710302046440.31325@fbirervta.pbzchgretzou.qr>
-References: <281517.30826.qm@web36613.mail.mud.yahoo.com>
+	Tue, 30 Oct 2007 15:51:16 -0400
+Date: Tue, 30 Oct 2007 20:50:55 +0100
+From: Kristof Provost <Kristof@provost-engineering.be>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] several returns before unlocking in lmc_ioctl
+Message-ID: <20071030195055.GJ32270@berith>
+References: <471D4763.60604@tiscali.nl> <471D52C4.1050701@tiscali.nl> <20071030182832.GI32270@berith> <472782C0.4000807@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yLVHuoLXiP9kZBkt"
+Content-Disposition: inline
+In-Reply-To: <472782C0.4000807@tiscali.nl>
+X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam-Scanned: 2.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Oct 30 2007 12:14, Casey Schaufler wrote:
->
->while others including SELinux will go their own ways. So long
->as LSMs are self contained and strictly restrictive the
->mechanisms they use to modulate their behavior shouldn't be an
->issue. If SELinux chooses to turn its MLS controls off between
->midnight and 3am I can't see how that would be Smack's business,
->even if they were somehow stacked. Multiple LSMs has issues,
->like what should security_secid_to_secctx() return to the audit
->system, but privilege model shouldn't be one of them.
+--yLVHuoLXiP9kZBkt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I am with you on that. And for everybody who missed it: MultiAdmin
-only grants rights at the same time commoncap does (e.g. on setuid
-and bprm_set_security). And all modules DO work with commoncap, now
-don't they?
+On 2007-10-30 20:15:12 (+0100), Roel Kluin <12o3l@tiscali.nl> wrote:
+> Kristof Provost wrote:
+> > I think you have an extra curly brace there. It breaks compile on my
+> > system.
+>=20
+> You are right. thanks for notifying me and sorry for the trouble.
+> please revert my patch (b463d40cdc436a12799a60a1d6ff1941a70a5bb6)
+>=20
+> and try instead:
+This seems to compile just fine. I'm afraid I can't test it though. I
+don't actually have that hardware. I mistakingly left it turned on, so I
+noticed the compile error.
+
+Kristof
+
+
+--yLVHuoLXiP9kZBkt
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHJ4sfUEZ9DhGwDugRAmF2AKCQXAdZOPmR9+hD3KqmhrI3niWfwgCcDiUV
+TDlYT+m7hPZndyziW9WHSyw=
+=NIp3
+-----END PGP SIGNATURE-----
+
+--yLVHuoLXiP9kZBkt--
