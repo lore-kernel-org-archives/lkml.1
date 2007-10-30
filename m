@@ -1,208 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbXJ3Orh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbXJ3OuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbXJ3Orh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXJ3Or1
+	id S1754823AbXJ3OuL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXJ3OuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:47:27 -0400
-Received: from ts.adaptec.com ([162.62.93.58]:57363 "EHLO mail-gw3.adaptec.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbXJ3Or0 convert rfc822-to-8bit (ORCPT
+	Tue, 30 Oct 2007 10:50:00 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:40202 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbXJ3Ot7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:47:26 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 30 Oct 2007 10:49:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Subject: Re: 2.6.24-rc1: usb problem?
+Date: Tue, 30 Oct 2007 15:50:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <47273B13.5060603@t-online.de>
+In-Reply-To: <47273B13.5060603@t-online.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-Date: Tue, 30 Oct 2007 10:47:24 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01F954EE@otce2k301.adaptec.com>
-In-Reply-To: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-Thread-Index: Acga43CogNF9miv6QxG4AzpSRvJVBwAIFCWA
-References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Richard Knutsson" <ricknu-0@student.ltu.se>,
-       <James.Bottomley@SteelEye.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710301550.47593.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK
+Am Dienstag 30 Oktober 2007 schrieb Harald Dunkel:
+> Is this anything to worry about? Please mail if I can help to track this
+> down.
 
-Sincerely -- Mark Salyzyn
- 
+This is a known problem. A fix is in the queue.
 
-> -----Original Message-----
-> From: linux-scsi-owner@vger.kernel.org 
-> [mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of 
-> Richard Knutsson
-> Sent: Tuesday, October 30, 2007 6:54 AM
-> To: James.Bottomley@SteelEye.com
-> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; 
-> Richard Knutsson
-> Subject: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-> 
-> Convert to use the generic boolean.
-> 
-> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-> ---
-> Diffed against linus-git
-> Checked with script/checkpatch.pl
->   (warned about long lines, but it is not introduced by this patch)
-> 
->  dpt_i2o.c |   22 +++++++++++-----------
->  dpti.h    |    9 ++-------
->  2 files changed, 13 insertions(+), 18 deletions(-)
-> 
-> 
-> diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-> index 8258506..bd3a82d 100644
-> --- a/drivers/scsi/dpt_i2o.c
-> +++ b/drivers/scsi/dpt_i2o.c
-> @@ -252,7 +252,7 @@ rebuild_sys_tab:
->  			adpt_i2o_delete_hba(pHba);
->  			continue;
->  		}
-> -		pHba->initialized = TRUE;
-> +		pHba->initialized = true;
->  		pHba->state &= ~DPTI_STATE_RESET;
->  		scsi_scan_host(pHba->host);
->  	}
-> @@ -519,7 +519,7 @@ static int adpt_proc_info(struct 
-> Scsi_Host *host, char *buffer, char **start, of
->  	int unit;
->  
->  	*start = buffer;
-> -	if (inout == TRUE) {
-> +	if (inout) {
->  		/*
->  		 * The user has done a write and wants us to take the
->  		 * data in the buffer and do something with it.
-> @@ -893,7 +893,7 @@ static int adpt_install_hba(struct pci_dev* pDev)
->  	void __iomem *base_addr_virt = NULL;
->  	void __iomem *msg_addr_virt = NULL;
->  
-> -	int raptorFlag = FALSE;
-> +	bool raptorFlag = false;
->  
->  	if(pci_enable_device(pDev)) {
->  		return -EINVAL;
-> @@ -926,7 +926,7 @@ static int adpt_install_hba(struct pci_dev* pDev)
->  		// Use BAR1 in this configuration
->  		base_addr1_phys = pci_resource_start(pDev,1);
->  		hba_map1_area_size = pci_resource_len(pDev,1);
-> -		raptorFlag = TRUE;
-> +		raptorFlag = true;
->  	}
->  
->  	base_addr_virt = ioremap(base_addr0_phys,hba_map0_area_size);
-> @@ -936,7 +936,7 @@ static int adpt_install_hba(struct pci_dev* pDev)
->  		return -EINVAL;
->  	}
->  
-> -        if(raptorFlag == TRUE) {
-> +	if (raptorFlag) {
->  		msg_addr_virt = ioremap(base_addr1_phys, 
-> hba_map1_area_size );
->  		if (!msg_addr_virt) {
->  			PERROR("dpti: adpt_config_hba: io remap 
-> failed on BAR1\n");
-> @@ -996,7 +996,7 @@ static int adpt_install_hba(struct pci_dev* pDev)
->  	spin_lock_init(&pHba->state_lock);
->  	spin_lock_init(&adpt_post_wait_lock);
->  
-> -	if(raptorFlag == 0){
-> +	if (!raptorFlag) {
->  		printk(KERN_INFO"Adaptec I2O RAID controller %d 
-> at %p size=%x irq=%d\n", 
->  			hba_count-1, base_addr_virt, 
-> hba_map0_area_size, pDev->irq);
->  	} else {
-> @@ -1273,7 +1273,7 @@ static s32 adpt_i2o_reset_hba(adpt_hba* pHba)
->  	u32 m = EMPTY_QUEUE ;
->  	ulong timeout = jiffies + (TMOUT_IOPRESET*HZ);
->  
-> -	if(pHba->initialized  == FALSE) {	// First time 
-> reset should be quick
-> +	if (!pHba->initialized) {	/* First time reset 
-> should be quick */
->  		timeout = jiffies + (25*HZ);
->  	} else {
->  		adpt_i2o_quiesce_hba(pHba);
-> @@ -1576,7 +1576,7 @@ static int adpt_open(struct inode 
-> *inode, struct file *file)
->  //		return -EBUSY;
->  //	}
->  
-> -	pHba->in_use = 1;
-> +	pHba->in_use = true;
->  	mutex_unlock(&adpt_configuration_lock);
->  
->  	return 0;
-> @@ -1602,7 +1602,7 @@ static int adpt_close(struct inode 
-> *inode, struct file *file)
->  		return -ENXIO;
->  	}
->  
-> -	pHba->in_use = 0;
-> +	pHba->in_use = false;
->  
->  	return 0;
->  }
-> @@ -2433,8 +2433,8 @@ static s32 adpt_i2o_reparse_lct(adpt_hba* pHba)
->  						pDev->tid = tid;
->  						
-> memcpy(&d->lct_data, &lct->lct_entry[i], sizeof(i2o_lct_entry));
->  						if (pDev->pScsi_dev) {
-> -							
-> pDev->pScsi_dev->changed = TRUE;
-> -							
-> pDev->pScsi_dev->removable = TRUE;
-> +							
-> pDev->pScsi_dev->changed = true;
-> +							
-> pDev->pScsi_dev->removable = true;
->  						}
->  					}
->  					// Found it - mark it scanned
-> diff --git a/drivers/scsi/dpti.h b/drivers/scsi/dpti.h
-> index 0892f6c..5eb7274 100644
-> --- a/drivers/scsi/dpti.h
-> +++ b/drivers/scsi/dpti.h
-> @@ -155,11 +155,6 @@ static int adpt_device_reset(struct 
-> scsi_cmnd* cmd);
->  #define I2O_SCSI_DSC_QUEUE_FROZEN           0x4000
->  
->  
-> -#ifndef TRUE
-> -#define TRUE                  1
-> -#define FALSE                 0
-> -#endif
-> -
->  #define HBA_FLAGS_INSTALLED_B       0x00000001	// 
-> Adapter Was Installed
->  #define HBA_FLAGS_BLINKLED_B        0x00000002	// 
-> Adapter In Blink LED State
->  #define HBA_FLAGS_IN_RESET	0x00000040	/* in reset */
-> @@ -209,8 +204,8 @@ typedef struct _adpt_hba {
->  	spinlock_t state_lock;
->  	int unit;
->  	int host_no;		/* SCSI host number */
-> -	u8 initialized;
-> -	u8 in_use;		/* is the management node open*/
-> +	bool initialized:8;
-> +	bool in_use:8;		/* is the management node open*/
->  
->  	char name[32];
->  	char detail[55];
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+	Regards
+		Oliver
+
