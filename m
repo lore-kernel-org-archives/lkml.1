@@ -1,139 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXJ3SZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXJ3S0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbXJ3SZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXJ3SZs
+	id S1755580AbXJ3S0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 14:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbXJ3S0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:25:48 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:57480 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753289AbXJ3SZr (ORCPT
+	Tue, 30 Oct 2007 14:26:43 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:22888 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752920AbXJ3S0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:25:47 -0400
-Subject: Re: [PATCH] sysfs: add filter function to groups
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <47261F50.3050901@s5r6.in-berlin.de>
-References: <1193671019.3383.13.camel@localhost.localdomain>
-	 <1193676852.2655.21.camel@lov.site>
-	 <1193677071.3383.56.camel@localhost.localdomain>
-	 <47261F50.3050901@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Tue, 30 Oct 2007 13:25:43 -0500
-Message-Id: <1193768743.3321.91.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 14:26:42 -0400
+To: Daniel Drake <dsd@gentoo.org>
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Cc: alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-To: <47276DCA.1000808@gentoo.org>
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org>
+Message-Id: <E1ImvnU-0002Uq-Kh@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Tue, 30 Oct 2007 19:26:40 +0100
+X-OriginalArrivalTime: 30 Oct 2007 18:26:41.0031 (UTC) FILETIME=[6A89C170:01C81B22]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
-> James Bottomley wrote:
-> >> >  struct attribute_group {
-> >> >  	const char		*name;
-> >> > +	int			(*filter_show)(struct kobject *, int);
-> 
-> > Actually, it returns a true/false value indicating whether the given
-> > attribute should be displayed.
-> 
-> How about this:
-> 
-> 	int (*is_visible)(...);
+Daniel Drake wrote:
+> I have narrowed down the exact command submission which causes those
+> nasty messages in dmesg. The function which submits this is named
+> "brasero_medium_get_page_2A_write_speed_desc".
 
-OK, so is this latest revision acceptable to everyone?
+Just as an extra data point...
 
-James
+I've compiled the test program an ran it on my ICH7/Pentium D box running
+2.6.24-rc1-192-gef49c32 (x86_64), but it does not give the error and
+nothing in dmesg. I just get:
+result 0
 
-Index: BUILD-2.6/fs/sysfs/group.c
-===================================================================
---- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
-+++ BUILD-2.6/fs/sysfs/group.c	2007-10-30 12:35:47.000000000 -0500
-@@ -16,25 +16,31 @@
- #include "sysfs.h"
- 
- 
--static void remove_files(struct sysfs_dirent *dir_sd,
-+static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 			 const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
-+	int i;
- 
--	for (attr = grp->attrs; *attr; attr++)
--		sysfs_hash_and_remove(dir_sd, (*attr)->name);
-+	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
-+		if (grp->is_visible &&
-+		    grp->is_visible(kobj, *attr, i))
-+			sysfs_hash_and_remove(dir_sd, (*attr)->name);
- }
- 
--static int create_files(struct sysfs_dirent *dir_sd,
-+static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 			const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
--	int error = 0;
-+	int error = 0, i;
- 
--	for (attr = grp->attrs; *attr && !error; attr++)
--		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-+	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
-+		if (grp->is_visible &&
-+		    grp->is_visible(kobj, *attr, i))
-+			error |=
-+				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
- 	if (error)
--		remove_files(dir_sd, grp);
-+		remove_files(dir_sd, kobj, grp);
- 	return error;
- }
- 
-@@ -54,7 +60,7 @@ int sysfs_create_group(struct kobject * 
- 	} else
- 		sd = kobj->sd;
- 	sysfs_get(sd);
--	error = create_files(sd, grp);
-+	error = create_files(sd, kobj, grp);
- 	if (error) {
- 		if (grp->name)
- 			sysfs_remove_subdir(sd);
-@@ -75,7 +81,7 @@ void sysfs_remove_group(struct kobject *
- 	} else
- 		sd = sysfs_get(dir_sd);
- 
--	remove_files(sd, grp);
-+	remove_files(sd, kobj, grp);
- 	if (grp->name)
- 		sysfs_remove_subdir(sd);
- 
-Index: BUILD-2.6/include/linux/sysfs.h
-===================================================================
---- BUILD-2.6.orig/include/linux/sysfs.h	2007-10-28 17:20:06.000000000 -0500
-+++ BUILD-2.6/include/linux/sysfs.h	2007-10-30 13:24:06.000000000 -0500
-@@ -32,6 +32,8 @@ struct attribute {
- 
- struct attribute_group {
- 	const char		*name;
-+	int			(*is_visible)(struct kobject *,
-+					      struct attribute *, int);
- 	struct attribute	**attrs;
- };
- 
-Index: BUILD-2.6/kernel/params.c
-===================================================================
---- BUILD-2.6.orig/kernel/params.c	2007-10-29 01:18:43.000000000 -0500
-+++ BUILD-2.6/kernel/params.c	2007-10-29 01:18:49.000000000 -0500
-@@ -472,7 +472,7 @@ param_sysfs_setup(struct module_kobject 
- 			sizeof(mp->grp.attrs[0]));
- 	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
- 
--	mp = kmalloc(size[0] + size[1], GFP_KERNEL);
-+	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
- 	if (!mp)
- 		return ERR_PTR(-ENOMEM);
- 
-
-
+My SATA DVD-RW drive is:
+Host: scsi2 Channel: 00 Id: 00 Lun: 00
+  Vendor: Optiarc  Model: DVD RW AD-7170S  Rev: 1.00
+  Type:   CD-ROM                           ANSI  SCSI revision: 05
