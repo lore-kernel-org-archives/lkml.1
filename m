@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbXJ3AqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbXJ3Aro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbXJ3AqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 20:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXJ3AqL
+	id S1753522AbXJ3Aro (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 20:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbXJ3Arg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 20:46:11 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:34447 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbXJ3AqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 20:46:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=cwvr9JDWIjZqUGKkwlNmfB1jCtWtPBFIyMjzrgBSiYAAt/edZPFuXj/xO6ew/nhPnOd7j88MSDlt9U2iKE+Wbad24C+PWUcypvGl7HW30saqbaVzj2fEXkLk5WBghhNTpXNTKz7YtaJ7iCOSi8o3hWYHOqBsC8f86SA7zbmM1qU=
-Message-ID: <75b66ecd0710291746m7aec81bdsb6ddc0822439ff46@mail.gmail.com>
-Date: Mon, 29 Oct 2007 20:46:09 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: Out-of-tree modules [was: Linux Security *Module* Framework]
-Cc: "Greg KH" <greg@kroah.com>, "Tilman Schmidt" <tilman@imap.cc>,
-       "Adrian Bunk" <bunk@kernel.org>, "Simon Arlott" <simon@fire.lp0.eu>,
-       "Chris Wright" <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andreas Gruenbacher" <agruen@suse.de>,
-       "Thomas Fricaccia" <thomas_fricacci@yahoo.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "James Morris" <jmorris@namei.org>,
-       "Crispin Cowan" <crispin@crispincowan.com>,
-       "Giacomo Catenazzi" <cate@debian.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0710260900280.25696@fbirervta.pbzchgretzou.qr>
+	Mon, 29 Oct 2007 20:47:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35310 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752293AbXJ3Arf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 20:47:35 -0400
+Message-ID: <47267F15.9090302@garzik.org>
+Date: Mon, 29 Oct 2007 20:47:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Randy Dunlap <rdunlap@xenotime.net>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Philippe Elie <phil.el@wanadoo.fr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "William L. Irwin" <wli@holomorphy.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Lameter <christoph@lameter.com>, Valdis.Kletnieks@vt.edu
+Subject: Re: [RFC] Create instrumentation directory (git repository)
+References: <20071029215138.GA4233@Krystal> <20071029154741.cb093f55.rdunlap@xenotime.net> <4726649A.5020605@garzik.org> <20071029230409.GB16943@Krystal> <472667F3.3000505@garzik.org> <20071029233515.GA19413@Krystal>
+In-Reply-To: <20071029233515.GA19413@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Xine.LNX.4.64.0710210842540.551@us.intercode.com.au>
-	 <471E9260.6000704@goop.org>
-	 <20071023220649.5a76af82@laptopd505.fenrus.org>
-	 <55615.simon.1193226629@5ec7c279.invalid>
-	 <20071024125533.GE30533@stusta.de>
-	 <471F8AC5.9080300@simon.arlott.org.uk>
-	 <20071024223124.GI30533@stusta.de> <4721221A.1020309@imap.cc>
-	 <20071026025647.GC21408@kroah.com>
-	 <Pine.LNX.4.64.0710260900280.25696@fbirervta.pbzchgretzou.qr>
-X-Google-Sender-Auth: 34f49e711a236f08
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> quad_dsp - http://jengelh.hopto.org/p/quad_dsp/
->
-> Provides a /dev/dsp style node for legacy applications that support
-> neither ALSA nor the AOSS wrapper nor more-than-2-channel sound.
->
+Mathieu Desnoyers wrote:
+> I see no good reason to have so many different adhoc instrumentation
+> mechanisms for profiling (sched, vm, oprofile) and tracing (blktrace,
+> suspend/resume tracing) all over the place. Merging them in a single
+> directory seems like a good step towards a more generic
+> instrumentation/profiling/tracing infrastructure.
 
-(I think that should read "AND more than 2 channel sound")
+Moving files about in directories should be at the /lowest/ end of the 
+priority scale.  It makes diffs unreadable, file histories and diffing 
+difficult, and a host of other problems.
 
-Couldn't ALSA's OSS emulation be extended to support more than 2
-channels per device node?
+Please solve the /real/ problems, and then come back and clean up the 
+file structure after that is done.  Massive file renaming to satisfying 
+some imagined future everything-is-golden scheme is the /last/ step.  It 
+is the last step taken because the previous steps inevitably give you 
+guidance that you otherwise would not have had at the start of the task.
 
->
-> thkd - ftp://ftp5.gwdg.de/pub/linux/misc/suser-jengelh/kernel/linux-2.6.23.1-ccj58/thkd.diff
->
-> Workaround for Toshiba MK2003GAH hard-drive head auto-unloading after
-> 5-15 seconds. (Ref: http://lkml.org/lkml/2006/11/15/100 )
+When I try to diff between old and new alpha oprofile code, I really 
+want to know that the reason why diffing is a pain in the ass is more 
+than "it seemed like a good first step."
 
-It looks like this could be trivially fixed in a mergeable way.  That
-LKML thread petered out before the problem was seriously analyzed.
 
-Did you try the -Z flag of hdparm?
+> Back to "profile" and "probes" directory names, they might be short, but
+> they do not represent the whole markup-profiling-tracing trio,
+> "profile" lacks the tracing part and "probe" lacks the markup part.
 
-Lee
+You can always add more letters (and words) to even reach the desired 
+level of specificity.  That does nothing to help readability though.
+
+Anyway, it should be clear from existing precedent -- existing pathnames 
+-- that "instrumentation" is too long, and really IMO too vague anyway.
+
+	Jeff
+
+
