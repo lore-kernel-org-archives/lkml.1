@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbXJ3Av2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbXJ3BIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbXJ3Av2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Oct 2007 20:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXJ3AvU
+	id S1753123AbXJ3BIj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Oct 2007 21:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbXJ3BIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Oct 2007 20:51:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34649 "EHLO mail.dvmed.net"
+	Mon, 29 Oct 2007 21:08:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:38338 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbXJ3AvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Oct 2007 20:51:19 -0400
-Message-ID: <47268000.4000808@garzik.org>
-Date: Mon, 29 Oct 2007 20:51:12 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1751795AbXJ3BIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Oct 2007 21:08:31 -0400
+Date: Tue, 30 Oct 2007 02:06:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+cc: Arjan van de Ven <arjan@infradead.org>, vgoyal@in.ibm.com,
+       hbabu@us.ibm.com, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] Revert x86: add lapic_shutdown for x86_64
+In-Reply-To: <4726753D.3010601@ct.jp.nec.com>
+Message-ID: <alpine.LFD.0.9999.0710300203040.3186@localhost.localdomain>
+References: <47195763.1090803@ct.jp.nec.com> <47195807.6030809@ct.jp.nec.com> <20071024062933.GA4622@in.ibm.com> <47266132.5050001@ct.jp.nec.com> <20071029161534.6e7f0db6@laptopd505.fenrus.org> <4726753D.3010601@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>, Sam Ravnborg <sam@ravnborg.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Peter Zijlstra <pzijlstr@redhat.com>,
-       Philippe Elie <phil.el@wanadoo.fr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Lameter <christoph@lameter.com>
-Subject: Re: [RFC] Create instrumentation directory (git repository)
-References: <20071029215138.GA4233@Krystal> <Pine.LNX.4.64.0710291619210.4821@schroedinger.engr.sgi.com> <20071029234012.GB19413@Krystal>
-In-Reply-To: <20071029234012.GB19413@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Putting stuff in instrumentation/ by no way means that it becomes
-> optional for a subsystem, but merely that it could either export
-> information useful for kernel instrumentation or have some
-> infrastructure parts merged with others. 
+On Mon, 29 Oct 2007, Hiroshi Shimamoto wrote:
 
-More reason why you should not be moving stuff all around the tree...
+> Arjan van de Ven wrote:
+> > On Mon, 29 Oct 2007 15:39:46 -0700
+> > Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> > 
+> >> lapic_shutdown is useless on x86_64.
+> >>
+> > 
+> > .... but since the goal is to get apic_32.c and apic_64.c to be more
+> > converging (to the point of becoming the same file)... isn't your patch
+> > going in the opposite direction?
+> > 
+> Hmm, I'm not sure that this revert affects x86 unification.
+> Vivek said that probably we don't have to introduce lapic_shutdown() for 64bit.
+> So I submitted this patch which reverts my previous post, it was applied before
+> the comment.
 
-Really, file structure is one of the LEAST important issues around -- 
-while moving files around introduces a non-zero amount of pain.
+Don't worry, we sort this out. There is some inevitable friction loss
+for now, but we are getting closer. I gave the apic code some care to
+get a readable diff out of it. Result is in:
 
-New files -- like that godawful and nearly empty samples/ directory -- 
-sure, fix that up before release.  But let's not break diffs of existing 
-architectures without good reason.
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git cleanup
 
-	Jeff
+Thanks,
 
-
+	tglx
