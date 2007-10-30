@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbXJ3S62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXJ3TA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbXJ3S62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 14:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXJ3S6N
+	id S1756198AbXJ3TA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbXJ3TAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 14:58:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36309 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753398AbXJ3S6J (ORCPT
+	Tue, 30 Oct 2007 15:00:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35651 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753664AbXJ3TAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 14:58:09 -0400
-Date: Tue, 30 Oct 2007 11:58:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: matthew@wil.cx, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       penberg@cs.helsinki.fi,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
-In-Reply-To: <20071030114933.904a4cf8.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0710301155240.12746@schroedinger.engr.sgi.com>
-References: <20071028033156.022983073@sgi.com> <20071028033300.240703208@sgi.com>
- <20071030114933.904a4cf8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Oct 2007 15:00:15 -0400
+Date: Tue, 30 Oct 2007 19:01:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071030190153.373c9347@the-village.bc.nu>
+In-Reply-To: <47276DCA.1000808@gentoo.org>
+References: <47274A5F.6070409@gentoo.org>
+	<20071030153417.59b9182c@the-village.bc.nu>
+	<47276DCA.1000808@gentoo.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007, Andrew Morton wrote:
+> The nutty app I was using for burning is Brasero, a GNOME app which does 
+> some SG_IO directly with the drive. (I guess it has some bad error 
+> handling and doesn't realise when some I/O path has failed)
 
-> Let's cc linux-arch: presumably other architectures can implement cpu-local
-> cmpxchg and would see some benefit from doing so.
+I would guess Brasero is issuing a command with the length of data
+wrongly set. In the old code that might well just produce errors of the
+"Umm wtf is this data left over for ?", with the new code the drive is
+likely to change state as it knows the transfer size and that will
+*correctly* cause an HSM error and what follows.
 
-Matheiu had a whole series of cmpxchg_local patches. Ccing him too. I 
-think he has some numbers for other architectures.
- 
-> The semantics are "atomic wrt interrutps on this cpu, not atomic wrt other
-> cpus", yes?
+Now the question is who gets the length wrong - Brasero or the ata
+translation code in libata
 
-Right.
-
-> Do you have a feel for how useful it would be for arch maintainers to implement
-> this?  IOW, is it worth their time?
-
-That depends on the efficiency of a cmpxchg_local vs. the interrupt 
-enable/ disable sequence on a particular arch. On x86 this yields about 
-50% so it doubles the speed of the fastpath. On other architectures the 
-cmpxchg is so slow that it is not worth it (ia64 f.e.)
+Alan
