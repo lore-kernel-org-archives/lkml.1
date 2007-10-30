@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXJ3OKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbXJ3OOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbXJ3OKU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXJ3OKH
+	id S1754321AbXJ3OOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXJ3OOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:10:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45327 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbXJ3OKG (ORCPT
+	Tue, 30 Oct 2007 10:14:14 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:48148 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbXJ3OON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:10:06 -0400
-Date: Tue, 30 Oct 2007 15:10:04 +0100
-From: Jan Kara <jack@suse.cz>
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: is the inode an orphan?
-Message-ID: <20071030141004.GA27039@atrey.karlin.mff.cuni.cz>
-References: <47179CAE.6010806@yandex.ru> <20071018180152.GO8181@ftp.linux.org.uk> <471857B1.8090709@yandex.ru>
+	Tue, 30 Oct 2007 10:14:13 -0400
+Date: Tue, 30 Oct 2007 14:14:01 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Kumar Gala <galak@kernel.crashing.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
+Message-ID: <20071030141401.GB27615@linux-mips.org>
+References: <20071028201549.GA23138@fattire.cabal.ca> <20071030024801.GA19417@linux-mips.org> <AFC1DED8-E331-420C-940E-9CF849630F0B@kernel.crashing.org> <20071030083719.GJ32359@parisc-linux.org> <20071030114221.GA24392@linux-mips.org> <20071030121315.GK32359@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <471857B1.8090709@yandex.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071030121315.GK32359@parisc-linux.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Al Viro wrote:
-> >Define orphan.  It might very well be still opened after the only link
-> >to it had been removed and you still will get IO on it.
-> 
-> Well, in the mail I called files like open/unlink the last link/do some I/O 
-> orphans. Let me shortly describe the problem I'm trying to solve.
-> 
-> In our FS when we're in ->unlink() and i_nlink becomes 0, we have to record 
-> this inode in the table of orphans, and remove it from there in 
-> ->delete_inode(). This is needed to be able to dispose of orphans in case 
-> of an unclean reboot on the next mount. AFAIK, ext3 has something similar. 
-> I just figured that this could be optimized - in most cases 
-> ->delete_inode() is called right after ->unlink(), and I wanted to avoid 
-> putting the inode to the orphan table in those cases.
-  Yes, ext3 has something similar. But actually ext3 would have to insert
-inode in the orphan list anyway - in delete_inode we do truncate and
-for it we also insert the inode into the orphan list because truncate
-can be too large to fit into a single transaction.
+On Tue, Oct 30, 2007 at 06:13:16AM -0600, Matthew Wilcox wrote:
 
-> I.e., if one just does "unlink file", then it is not going to be an orphan. 
-> And most cases are like this. It is rather rare to open a file, unlink it, 
-> and keep utilizing it.
+> > On Tue, Oct 30, 2007 at 02:37:19AM -0600, Matthew Wilcox wrote:
+> > > On Mon, Oct 29, 2007 at 10:03:16PM -0500, Kumar Gala wrote:
+> > > > same HW platform that you want to run with just 32-bit phys (for  
+> > > > performance).
+> > > 
+> > > Have you measured what the performance difference is?
+> > 
+> > So that's 5668, 256 bytes data and 128 bytes of bss for a total of 6052
+> > bytes.  Not a whole lot but I still fear some users on the most
+> > claustrophobic systems will mind.
 > 
-> So my question was - while I'm in ->unlink(), how do I figure out that this 
-> is not an orphan. So I was thinking about
+> Oh, sure, I'm not saying I thought there would be no size difference; I
+> was just bemused at the suggestion there was a performance difference.
 > 
-> if (atomic_read(&inode->i_count) == 2)
-> 
-> then this is not an orphan and ->delete_inode() will be called straight 
-> away (i_nlink is assumed to be 0).
-> 
-> But I've now also figured that ->unlink() may race with write-back, and 
-> there might be a write-back I/O between ->unlink() (and during it) and 
-> ->delete_inode(), even though the user-space does not have the file in 
-> question opened.
-> 
-> So, at the moment, AFAIU
-> 
-> if (atomic_read(&inode->i_count) == 2 && !(inode->i_state & I_DIRTY))
-> 
-> then there won't be any I/O on the inode between ->unlink() and 
-> ->delete_inode i_nlink is assumed to be 0). Is that right, safe and 
-> acceptable to use such checks in ->unlink() for optimization?
-> 
-> P.S. the code and short description of the FS I refer is here: 
-> http://www.linux-mtd.infradead.org/doc/ubifs.html
-  Hmm, I'm just not sure whether unlink cannot somehow race with open
-(at least I don't see any lock that would prevent open while unlink is
-in progress)...
+> Unless "won't fit in ROM any more" is considered a performance problem ;-)
 
-									Honza
+Linux has traditionally had a paranoid fear of 64-bit datatypes just
+because GCC doesn't generate terribly efficient code for i386.  I think
+that may be the primary reason why CONFIG_RESOURCES_64BIT ever became a
+build option.  I doubt resource_size_t is being used in any critical
+path so the bloat factor will matter much more than the performance
+difference it makes.  Unless you're terribly impatient waiting for your
+PCI bus to complete scan or so ;-)
+
+  Ralf
