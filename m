@@ -1,75 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbXJ3UEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbXJ3UFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbXJ3UEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 16:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbXJ3UEK
+	id S1758360AbXJ3UFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 16:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXJ3UFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 16:04:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51578 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 16:05:33 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:55156 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbXJ3UEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 16:04:09 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <b1c6420f0710300740t5c708933x7ab1716c76504c57@mail.gmail.com>
-References: <b1c6420f0710300740t5c708933x7ab1716c76504c57@mail.gmail.com> <20071029122759.2846.83510.stgit@warthog.procyon.org.uk> <20071029122809.2846.58795.stgit@warthog.procyon.org.uk>
-To: "Suzuki Takashi" <suzuki.takashi@gmail.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-am33-list] [PATCH 2/2] MN10300: Add the MN10300/AM33 architecture to the kernel [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 30 Oct 2007 20:04:05 +0000
-Message-ID: <20112.1193774645@redhat.com>
+	id S1753461AbXJ3UFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 16:05:32 -0400
+Subject: fix marker warnings
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 13:05:25 -0700
+Message-Id: <1193774725.24087.303.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suzuki Takashi <suzuki.takashi@gmail.com> wrote:
+I'm seeing these in the latest git:
 
-> Does this mean cpu-am33v3, cpu-am33v4, etc. will be created
-> when a new core comes up?
+kernel/marker.c: In function `marker_probe_unregister':
+kernel/marker.c:355: warning: `probe_module' might be used uninitialized in this function
+kernel/marker.c: In function `marker_probe_unregister_private_data':
+kernel/marker.c:389: warning: `probe_module' might be used uninitialized in this function
+kernel/marker.c:392: warning: `entry' might be used uninitialized in this function
 
-Yes.  Note that the headers in a later one can 'inherit' from those of an
-earlier one simply by #including that earlier one, much like archs do with
-asm-generic headers.
+It's due to gcc not detecting that the need_update condition is actually
+constant, and will never call marker_update_probes() on an uninitialized
+probe_module.
 
-> Isn't it possible to split codes by features, instead of target cores?
+However, that need_update bit is all due to dropping the mutex before
+calling marker_update_probes().  As far as I can tell, every call to
+marker_update_probes() has this lock dropping behavior just before
+calling it.  So, let's just hold the locks over the
+marker_update_probes() and document that it needs to have a lock taken
+instead.  
 
-Perhaps, but I personally am not in a position to judge what features are
-common to what CPUs.  I'll have to let someone from MEI answer that one.  I'll
-discuss it with them.
+This removes code overall.  Untested except for a quick compile.
+Consider it just a style suggestion. :)
 
-> If similar codes were in multiple files and directories, it would be
-> hard to maintain them.
+marker_probe_unregister_private_data() also has a bit of a goto mess
+that produces similar warnings.  I'll look at it next.
 
-#include is a wonderful thing.
+---
 
-> > +#ifdef CONFIG_MN10300_PROC_MN103E010
-> > +       nop
-> > +       nop
-> > +       nop
-> > +#endif
-> 
-> This should be conditioned by a feature.
-> Isn't it a feature or a limitation that several non-FPU instructions are
-> necessary just after the EPSW_FE is set?
+ linux-2.6.git-dave/kernel/marker.c |   34 +++++++++++-----------------------
+ 1 file changed, 11 insertions(+), 23 deletions(-)
 
-Or it could just be a h/w bug in this particular processor.  I can always
-patch it later to change the name.  Whatever it is, I suspect it will always
-be controlled implicitly.
+diff -puN kernel/marker.c~fix-marker-warnings kernel/marker.c
+--- linux-2.6.git/kernel/marker.c~fix-marker-warnings	2007-10-30 12:54:36.000000000 -0700
++++ linux-2.6.git-dave/kernel/marker.c	2007-10-30 13:03:39.000000000 -0700
+@@ -288,12 +288,13 @@ void marker_update_probe_range(struct ma
+  * Issues a synchronize_sched() when no reference to the module passed
+  * as parameter is found in the probes so the probe module can be
+  * safely unloaded from now on.
++ *
++ * must hold markers_mutex
+  */
+-static void marker_update_probes(struct module *probe_module)
++static void __marker_update_probes(struct module *probe_module)
+ {
+ 	int refcount = 0;
+ 
+-	mutex_lock(&markers_mutex);
+ 	/* Core kernel markers */
+ 	marker_update_probe_range(__start___markers,
+ 			__stop___markers, probe_module, &refcount);
+@@ -303,7 +304,6 @@ static void marker_update_probes(struct 
+ 		synchronize_sched();
+ 		deferred_sync = 0;
+ 	}
+-	mutex_unlock(&markers_mutex);
+ }
+ 
+ /**
+@@ -320,7 +320,7 @@ int marker_probe_register(const char *na
+ 			marker_probe_func *probe, void *private)
+ {
+ 	struct marker_entry *entry;
+-	int ret = 0, need_update = 0;
++	int ret = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker(name);
+@@ -335,11 +335,9 @@ int marker_probe_register(const char *na
+ 	ret = add_marker(name, format, probe, private);
+ 	if (ret)
+ 		goto end;
+-	need_update = 1;
++	__marker_update_probes(NULL);
+ end:
+ 	mutex_unlock(&markers_mutex);
+-	if (need_update)
+-		marker_update_probes(NULL);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(marker_probe_register);
+@@ -355,7 +353,6 @@ void *marker_probe_unregister(const char
+ 	struct module *probe_module;
+ 	struct marker_entry *entry;
+ 	void *private;
+-	int need_update = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker(name);
+@@ -368,11 +365,9 @@ void *marker_probe_unregister(const char
+ 	probe_module = __module_text_address((unsigned long)entry->probe);
+ 	private = remove_marker(name);
+ 	deferred_sync = 1;
+-	need_update = 1;
++	__marker_update_probes(probe_module);
+ end:
+ 	mutex_unlock(&markers_mutex);
+-	if (need_update)
+-		marker_update_probes(probe_module);
+ 	return private;
+ }
+ EXPORT_SYMBOL_GPL(marker_probe_unregister);
+@@ -392,7 +387,6 @@ void *marker_probe_unregister_private_da
+ 	struct marker_entry *entry;
+ 	int found = 0;
+ 	unsigned int i;
+-	int need_update = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	for (i = 0; i < MARKER_TABLE_SIZE; i++) {
+@@ -414,11 +408,9 @@ iter_end:
+ 	probe_module = __module_text_address((unsigned long)entry->probe);
+ 	private = remove_marker(entry->name);
+ 	deferred_sync = 1;
+-	need_update = 1;
++	__marker_update_probes(probe_module);
+ end:
+ 	mutex_unlock(&markers_mutex);
+-	if (need_update)
+-		marker_update_probes(probe_module);
+ 	return private;
+ }
+ EXPORT_SYMBOL_GPL(marker_probe_unregister_private_data);
+@@ -434,7 +426,7 @@ EXPORT_SYMBOL_GPL(marker_probe_unregiste
+ int marker_arm(const char *name)
+ {
+ 	struct marker_entry *entry;
+-	int ret = 0, need_update = 0;
++	int ret = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker(name);
+@@ -447,11 +439,9 @@ int marker_arm(const char *name)
+ 	 */
+ 	if (entry->refcount++)
+ 		goto end;
+-	need_update = 1;
+ end:
++	__marker_update_probes(NULL);
+ 	mutex_unlock(&markers_mutex);
+-	if (need_update)
+-		marker_update_probes(NULL);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(marker_arm);
+@@ -467,7 +457,7 @@ EXPORT_SYMBOL_GPL(marker_arm);
+ int marker_disarm(const char *name)
+ {
+ 	struct marker_entry *entry;
+-	int ret = 0, need_update = 0;
++	int ret = 0;
+ 
+ 	mutex_lock(&markers_mutex);
+ 	entry = get_marker(name);
+@@ -486,11 +476,9 @@ int marker_disarm(const char *name)
+ 		ret = -EPERM;
+ 		goto end;
+ 	}
+-	need_update = 1;
+ end:
++	__marker_update_probes(NULL);
+ 	mutex_unlock(&markers_mutex);
+-	if (need_update)
+-		marker_update_probes(NULL);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(marker_disarm);
+_
 
-> Are these specific to MN103E010, or applicable to some other LSIs?
 
-Yes.
+-- Dave
 
-> If they are not specific to MN103E010, the file names aren't good.
-
-I realise that, but I haven't been able to get any better names for them.
-
-> Stranger names here.
-
-How so?
-
-David
