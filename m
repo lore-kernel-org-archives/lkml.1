@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXJ3Ide@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXJ3Idr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbXJ3Ide (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 04:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXJ3Id0
+	id S1753559AbXJ3Idr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 04:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXJ3Ida
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 04:33:26 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:56012 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbXJ3IdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 04:33:25 -0400
-Message-ID: <4726EBC8.1080806@cn.fujitsu.com>
-Date: Tue, 30 Oct 2007 16:31:04 +0800
-From: lizf <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] time: fix inconsistent function names in comments
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 04:33:30 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:17250 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbXJ3Id2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 04:33:28 -0400
+Date: Tue, 30 Oct 2007 10:33:20 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] iommu-PMEN_REG boot up support
+Message-ID: <20071030083320.GA8727@rhun.ibm.com>
+References: <20071026181849.GA25256@linux.intel.com> <20071027001938.GB10215@rhun.ibm.com> <20071029203130.GA1734@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071029203130.GA1734@linux.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 29, 2007 at 01:31:30PM -0700, Mark Gross wrote:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > What's the value of adding a command line option for this? Under
+> > what circumstances would we want to not clear this bit?
+> 
+> umm, /me asks around and finds out that at this time there isn't
+> much point to having a command line to preserve any protected areas
+> set up at boot time.
 
----
- kernel/time/tick-broadcast.c |    2 +-
- kernel/time/tick-sched.c     |    2 +-
- kernel/timer.c               |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+The society for controlled proliferation of command line options
+thanks you.
 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 8cfb8b2..aa82d7b 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -508,7 +508,7 @@ static void tick_broadcast_clear_oneshot(int cpu)
- }
- 
- /**
-- * tick_broadcast_setup_highres - setup the broadcast device for highres
-+ * tick_broadcast_setup_oneshot - setup the broadcast device
-  */
- void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- {
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 10a1347..fa99734 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -323,7 +323,7 @@ ktime_t tick_nohz_get_sleep_length(void)
- EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
- 
- /**
-- * nohz_restart_sched_tick - restart the idle tick from the idle task
-+ * tick_nohz_restart_sched_tick - restart the idle tick from the idle task
-  *
-  * Restart the idle tick when the CPU is woken up from idle
-  */
-diff --git a/kernel/timer.c b/kernel/timer.c
-index fb4e67d..00e44e2 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -790,7 +790,7 @@ static unsigned long cmp_next_hrtimer_event(unsigned long now,
- }
- 
- /**
-- * next_timer_interrupt - return the jiffy of the next pending timer
-+ * get_next_timer_interrupt - return the jiffy of the next pending timer
-  * @now: current time (in jiffies)
-  */
- unsigned long get_next_timer_interrupt(unsigned long now)
+> Signed-off-by: mark gross <mgross@linux.intel.com>
+
+Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+
+Cheers,
+Muli
 -- 
-1.5.3.rc7
+SYSTOR 2007 --- 1st Annual Haifa Systems and Storage Conference 2007
+http://www.haifa.il.ibm.com/Workshops/systor2007/
 
+Virtualization workshop: Oct 29th, 2007 | Storage workshop: Oct 30th, 2007
