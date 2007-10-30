@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbXJ3ILO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbXJ3IMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbXJ3ILO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 04:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXJ3ILB
+	id S1755351AbXJ3IMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 04:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXJ3IMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 04:11:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34717
+	Tue, 30 Oct 2007 04:12:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38059
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752267AbXJ3IK6 (ORCPT
+	by vger.kernel.org with ESMTP id S1752546AbXJ3IMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 04:10:58 -0400
-Date: Tue, 30 Oct 2007 01:10:36 -0700 (PDT)
-Message-Id: <20071030.011036.43329108.davem@davemloft.net>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, SteveW@ACM.org,
-       dipankar@in.ibm.com
-Subject: Re: dn_route.c momentarily exiting RCU read-side critical section
+	Tue, 30 Oct 2007 04:12:32 -0400
+Date: Tue, 30 Oct 2007 01:12:08 -0700 (PDT)
+Message-Id: <20071030.011208.266664843.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: 12o3l@tiscali.nl
+Subject: Re: + lmc_ioctl-dont-return-with-locks-held.patch added to -mm tree
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071029211540.GA12893@linux.vnet.ibm.com>
-References: <20071029211540.GA12893@linux.vnet.ibm.com>
+In-Reply-To: <200710292100.l9TL0DPg023005@imap1.linux-foundation.org>
+References: <200710292100.l9TL0DPg023005@imap1.linux-foundation.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,30 +25,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Date: Mon, 29 Oct 2007 14:15:40 -0700
+From: akpm@linux-foundation.org
+Date: Mon, 29 Oct 2007 14:00:13 -0700
 
-> net/decnet/dn_route.c in dn_rt_cache_get_next() is as follows:
+> Subject: lmc_ioctl: don't return with locks held
+> From: Roel Kluin <12o3l@tiscali.nl>
 > 
-> static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
-> {
-> 	struct dn_rt_cache_iter_state *s = rcu_dereference(seq->private);
+> (akpm: it's doing copy_to_user() inside spin_lock_irqsave(): this driver
+> appears to be beyond help).
 > 
-> 	rt = rt->u.dst.dn_next;
-> 	while(!rt) {
-> 		rcu_read_unlock_bh();
-> 		if (--s->bucket < 0)
-> 			break;
-> 
-> ...  But what happens if seq->private is freed up right here?
-> ...  Or what prevents this from happening?
- ...
-> Similar code is in rt_cache_get_next().
-> 
-> So, what am I missing here?
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-seq->private is allocated on file open (here via seq_open_private()),
-and freed up on file close (via seq_release_private).
-
-So it cannot be freed up in the middle of an iteration.
-
+This patch is definitely an improvement, applied :-)
