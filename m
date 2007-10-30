@@ -1,223 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbXJ3V1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbXJ3VcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbXJ3V1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXJ3V1a
+	id S1755073AbXJ3VcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXJ3VcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:27:30 -0400
-Received: from main.gmane.org ([80.91.229.2]:48327 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbXJ3V13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:27:29 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 23/33] netvm: skb processing
-Date: Tue, 30 Oct 2007 14:26:34 -0700
-Organization: Linux Foundation
-Message-ID: <20071030142634.0f00b492@freepuppy.rosehill>
-References: <20071030160401.296770000@chello.nl>
-	<20071030160914.749995000@chello.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Oct 2007 17:32:17 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:54506 "EHLO
+	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752835AbXJ3VcQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 17:32:16 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Tue, 30 Oct 2007 15:33:23 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+cc: linux-info@geode.amd.com, linux-kernel@vger.kernel.org,
+       tibor.osztodi@bbraun.com
+Subject: Re: Use the correct MSR number for panel support
+Message-ID: <20071030213323.GE14814@cosmic.amd.com>
+References: <20071026145301.14168.19412.stgit@cosmic.amd.com>
+ <472674B0.9080001@zytor.com>
+MIME-Version: 1.0
+In-Reply-To: <472674B0.9080001@zytor.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 30 Oct 2007 21:32:06.0835 (UTC)
+ FILETIME=[5208B830:01C81B3C]
+X-WSS-ID: 6B397D5D07S877545-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
-In-Reply-To: <20071030160914.749995000@chello.nl>
-X-Newsreader: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Cc: linux-mm@kvack.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 17:04:24 +0100
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> In order to make sure emergency packets receive all memory needed to proceed
-> ensure processing of emergency SKBs happens under PF_MEMALLOC.
+On 29/10/07 17:02 -0700, H. Peter Anvin wrote:
+> Jordan Crouse wrote:
+> > From: Jordan Crouse <jordan.crouse@amd.com>
+> > 
+> > A relatively recent version of the Geode LX datasheet listed the wrong
+> > address for one of the MSRs that controls TFT panels, resulting in 
+> > breakage.  This patch corrects the MSR address.
+> > 
+> > Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+> > ---
+> > 
+> >  drivers/video/geode/lxfb.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
+> > index 6c227f9..ca13c48 100644
+> > --- a/drivers/video/geode/lxfb.h
+> > +++ b/drivers/video/geode/lxfb.h
+> > @@ -33,7 +33,7 @@ void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
+> >  
+> >  #define MSR_LX_GLD_CONFIG    0x48002001
+> >  #define MSR_LX_GLCP_DOTPLL   0x4c000015
+> > -#define MSR_LX_DF_PADSEL     0x48000011
+> > +#define MSR_LX_DF_PADSEL     0x48002011
+> >  #define MSR_LX_DC_SPARE      0x80000011
+> >  #define MSR_LX_DF_GLCONFIG   0x48002001
+> >  
 > 
-> Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
-> 
-> Skip taps, since those are user-space again.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/net/sock.h |    5 +++++
->  net/core/dev.c     |   44 ++++++++++++++++++++++++++++++++++++++------
->  net/core/sock.c    |   18 ++++++++++++++++++
->  3 files changed, 61 insertions(+), 6 deletions(-)
-> 
-> Index: linux-2.6/net/core/dev.c
-> ===================================================================
-> --- linux-2.6.orig/net/core/dev.c
-> +++ linux-2.6/net/core/dev.c
-> @@ -1976,10 +1976,23 @@ int netif_receive_skb(struct sk_buff *sk
->  	struct net_device *orig_dev;
->  	int ret = NET_RX_DROP;
->  	__be16 type;
-> +	unsigned long pflags = current->flags;
-> +
-> +	/* Emergency skb are special, they should
-> +	 *  - be delivered to SOCK_MEMALLOC sockets only
-> +	 *  - stay away from userspace
-> +	 *  - have bounded memory usage
-> +	 *
-> +	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
-> +	 * This saves us from propagating the allocation context down to all
-> +	 * allocation sites.
-> +	 */
-> +	if (skb_emergency(skb))
-> +		current->flags |= PF_MEMALLOC;
->  
->  	/* if we've gotten here through NAPI, check netpoll */
->  	if (netpoll_receive_skb(skb))
-> -		return NET_RX_DROP;
-> +		goto out;
+> Please put MSR indicies in <asm-x86/msr-index.h> and/or a separate 
+> include file.
 
-Why the change? doesn't gcc optimize the common exit case anyway?
+The Geode has zillions upon zillions of MSRs (all of them being Geode 
+specific), so putting them in asm-x86/msr-index.h would be a bad idea
+for both you and me.  But tossing them into a asm-x86/geode-msr.h file
+would be good for 2.6.25.  I'll get working on that.
 
->  
->  	if (!skb->tstamp.tv64)
->  		net_timestamp(skb);
-> @@ -1990,7 +2003,7 @@ int netif_receive_skb(struct sk_buff *sk
->  	orig_dev = skb_bond(skb);
->  
->  	if (!orig_dev)
-> -		return NET_RX_DROP;
-> +		goto out;
->  
->  	__get_cpu_var(netdev_rx_stat).total++;
->  
-> @@ -2009,6 +2022,9 @@ int netif_receive_skb(struct sk_buff *sk
->  	}
->  #endif
->  
-> +	if (skb_emergency(skb))
-> +		goto skip_taps;
-> +
->  	list_for_each_entry_rcu(ptype, &ptype_all, list) {
->  		if (!ptype->dev || ptype->dev == skb->dev) {
->  			if (pt_prev)
-> @@ -2017,6 +2033,7 @@ int netif_receive_skb(struct sk_buff *sk
->  		}
->  	}
->  
-> +skip_taps:
->  #ifdef CONFIG_NET_CLS_ACT
->  	if (pt_prev) {
->  		ret = deliver_skb(skb, pt_prev, orig_dev);
-> @@ -2029,19 +2046,31 @@ int netif_receive_skb(struct sk_buff *sk
->  
->  	if (ret == TC_ACT_SHOT || (ret == TC_ACT_STOLEN)) {
->  		kfree_skb(skb);
-> -		goto out;
-> +		goto unlock;
->  	}
->  
->  	skb->tc_verd = 0;
->  ncls:
->  #endif
->  
-> +	if (skb_emergency(skb))
-> +		switch(skb->protocol) {
-> +			case __constant_htons(ETH_P_ARP):
-> +			case __constant_htons(ETH_P_IP):
-> +			case __constant_htons(ETH_P_IPV6):
-> +			case __constant_htons(ETH_P_8021Q):
-> +				break;
+In the mean time, this particular #define is already in the tree, and this
+patch fixes serious breakage, so I would really like to see it hit 2.6.24,
+if we can.
 
-Indentation is wrong, and hard coding protocol values as spcial case
-seems bad here. What about vlan's, etc?
-
-> +			default:
-> +				goto drop;
-> +		}
-> +
->  	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
->  	if (!skb)
-> -		goto out;
-> +		goto unlock;
->  	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
->  	if (!skb)
-> -		goto out;
-> +		goto unlock;
->  
->  	type = skb->protocol;
->  	list_for_each_entry_rcu(ptype, &ptype_base[ntohs(type)&15], list) {
-> @@ -2056,6 +2085,7 @@ ncls:
->  	if (pt_prev) {
->  		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
->  	} else {
-> +drop:
->  		kfree_skb(skb);
->  		/* Jamal, now you will not able to escape explaining
->  		 * me how you were going to use this. :-)
-> @@ -2063,8 +2093,10 @@ ncls:
->  		ret = NET_RX_DROP;
->  	}
->  
-> -out:
-> +unlock:
->  	rcu_read_unlock();
-> +out:
-> +	tsk_restore_flags(current, pflags, PF_MEMALLOC);
->  	return ret;
->  }
->  
-> Index: linux-2.6/include/net/sock.h
-> ===================================================================
-> --- linux-2.6.orig/include/net/sock.h
-> +++ linux-2.6/include/net/sock.h
-> @@ -523,8 +523,13 @@ static inline void sk_add_backlog(struct
->  	skb->next = NULL;
->  }
->  
-> +extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
-> +
->  static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
->  {
-> +	if (skb_emergency(skb))
-> +		return __sk_backlog_rcv(sk, skb);
-> +
->  	return sk->sk_backlog_rcv(sk, skb);
->  }
->  
-> Index: linux-2.6/net/core/sock.c
-> ===================================================================
-> --- linux-2.6.orig/net/core/sock.c
-> +++ linux-2.6/net/core/sock.c
-> @@ -319,6 +319,24 @@ int sk_clear_memalloc(struct sock *sk)
->  }
->  EXPORT_SYMBOL_GPL(sk_clear_memalloc);
->  
-> +#ifdef CONFIG_NETVM
-> +int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
-> +{
-> +	int ret;
-> +	unsigned long pflags = current->flags;
-> +
-> +	/* these should have been dropped before queueing */
-> +	BUG_ON(!sk_has_memalloc(sk));
-> +
-> +	current->flags |= PF_MEMALLOC;
-> +	ret = sk->sk_backlog_rcv(sk, skb);
-> +	tsk_restore_flags(current, pflags, PF_MEMALLOC);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(__sk_backlog_rcv);
-> +#endif
-> +
->  static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
->  {
->  	struct timeval tv;
-
-
-I am still not convinced that this solves the problem well enough
-to be useful.  Can you really survive a heavy memory overcommit?
-In other words, can you prove that the added complexity causes the system
-to survive a real test where otherwise it would not?
-
+Jordan
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
 
