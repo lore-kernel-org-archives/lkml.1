@@ -1,83 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXJ3VIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbXJ3VIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbXJ3VIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXJ3VHx
+	id S1757045AbXJ3VIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXJ3VI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:07:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52617 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753287AbXJ3VHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:07:53 -0400
-Date: Tue, 30 Oct 2007 22:08:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Message-ID: <20071030210801.GA1767@elf.ucw.cz>
-References: <20071029201955.GA1955@titan.lahn.de> <20071029212414.GD3692@elf.ucw.cz> <20071029201955.GA1955@titan.lahn.de> <200710292205.11459.rjw@sisk.pl> <20071030083537.GA2797@titan.lahn.de>
+	Tue, 30 Oct 2007 17:08:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42129 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751944AbXJ3VI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 17:08:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [2.6.24-rc1 regression] AC adapter state does not change after resume
+Date: Tue, 30 Oct 2007 22:24:55 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200710302324.52822.arvidjaar@mail.ru>
+In-Reply-To: <200710302324.52822.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071030083537.GA2797@titan.lahn.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200710302224.55947.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-10-30 09:35:37, Philipp Matthias Hahn wrote:
-> Hello Rafael, Pavel!
+On Tuesday, 30 October 2007 21:24, Andrey Borzenkov wrote:
+> I suspect new ACPI AC adapter code but have to add some printk's to be sure.
 > 
-> Thank you both for the fast help.
-> 
-> On Mon, Oct 29, 2007 at 10:05:10PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
-> > > I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> > > Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> > > /sys/power/state), the notebook hangs showing the following lines:
-> ...
-> > >         Suspending console(s)
-> > > 
-> > > When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> > > continues and the notebook powers off.
-> > > On reboot, the notebook resumes but hangs showing the following screen:
-> ...
-> > >         Suspending console(s)
-> > > 
-> > > Generating interrupts by pressing keys or moving the TrackPoints makes
-> > > the resume continue. But after that, the notebook looses time, xterms
-> > > don't get updated until I press a key, the beeper beeps until I press a
-> > > key, etc.
-> ...
-> > Please try to do "echo shutdown > /sys/power/disk" before hibernation and
-> > see what happens.
-> 
-> I'm already doing that.
-> 
-> > Also, is it an SMP kernel or UP?
-> 
-> UP.
-> 
-> 
-> On Mon, Oct 29, 2007 at 10:24:14PM +0100, Pavel Machek wrote:
-> > Yep, I seen that before. Try "nohz=off".
-> 
-> Okay, that seems to solve the "timer loosing time after resume" problem.
-> 
-> 
-> But I still need to press some keys on suspend (7-12 key presses and
-> releases) to unhang it. On resume not key presses are needed any
-> more.
+> To reproduce - plug in AC cord, suspend, unplug, resume - kpowersave and sysfs 
+> still show AC adapter online. Or other way round.
 
-So it fixed resume but not suspend? strange. Try highres=off, too. And
-maybe irqpoll?
+Is this a resume from RAM or from disk?
 
-You may want to try cpu hotplug separately...
+Does 2.6.23 work correctly?
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
