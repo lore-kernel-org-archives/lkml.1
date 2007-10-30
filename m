@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXJ3Rg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXJ3Rij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXJ3Rg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 13:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXJ3Rgt
+	id S1756046AbXJ3Rij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 13:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXJ3Ria
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 13:36:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51324 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbXJ3Rgs (ORCPT
+	Tue, 30 Oct 2007 13:38:30 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:36931 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbXJ3Ri3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 13:36:48 -0400
-Date: Tue, 30 Oct 2007 17:36:45 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: bo yang <bo.yang@lsi.com>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
-Subject: Re: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
-Message-ID: <20071030173645.GA16455@infradead.org>
-References: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
-Mime-Version: 1.0
+	Tue, 30 Oct 2007 13:38:29 -0400
+Date: Tue, 30 Oct 2007 11:38:28 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
+Message-ID: <20071030173828.GB15111@parisc-linux.org>
+References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org> <47274781.3030606@student.ltu.se> <20071030151121.GM32359@parisc-linux.org> <47275FD0.4010400@student.ltu.se>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1191253611.5850.8.camel@dhcp-75-534.se.lsil.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <47275FD0.4010400@student.ltu.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 11:46:51AM -0400, bo yang wrote:
-> +/*
-> + * Fast driver load option, skip scanning for physical devices during
-> + * load.  This would result in physical devices being skipped during
-> + * driver load time. These can be later added though,
-> + * using /proc/scsi/scsi
-> + */
+On Tue, Oct 30, 2007 at 05:46:08PM +0100, Richard Knutsson wrote:
+> I just don't see the reason why expressing a boolean as an integer. Some 
+> advantage?
 
-/proc/scsi/scsi is deprecated, so please don't recommend it here.
-The proper way is the scan attribute of the scsi host.
+This is C, not Java, or some other highly-typed language.
+if (int) and if (ptr) are perfectly acceptable in C.
 
-> +static unsigned int fast_load;
-> +module_param_named(fast_load, fast_load, int, 0);
-> +MODULE_PARM_DESC(fast_load,
-> +	"megasas: Faster loading of the driver, skips physical devices! "\
-> +	"(default = 0)");
+> (also helps us if someone does: 'if (var == true)', even thou we should 
+> try to avoid them)
 
-This should show up in sysfs.
+I have no idea what you mean.
 
-> +static struct megasas_instance *megasas_lookup_instance(u16 host_no)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-> +		if ((megasas_mgmt_info.instance[i]) &&
-> +			(megasas_mgmt_info.instance[i]->host->host_no
-> +			== host_no))
-
-no need for the braces here.  This should be:
-
-		if (megasas_mgmt_info.instance[i] &&
-		    megasas_mgmt_info.instance[i]->host->host_no == host_no)
-
-> +static int megasas_slave_alloc(struct scsi_device *sdev)
-> +{
-> +	struct megasas_instance *instance;
-> +	int tmp_fastload = fast_load;
-> +
-> +	instance = megasas_lookup_instance(sdev->host->host_no);
-> +
-> +	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
-> +		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
-> +			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
-> +
-> +		/*
-> +		 * If fast load option was set and scan for last device is
-> +		 * over, reset the fast_load flag so that during a possible
-> +		 * next scan, devices can be made available
-> +		 */
-> +			fast_load = 0;
-> +		}
-> +		return -ENXIO;
-> +	}
-> +
-> +	return 0;
-> +}
-
-This is a rather complicated and fragile way to implement this feature.
-
-I'd recomment to change the call to scsi_scan_host in megasas_io_attach
-to something like:
-
-	if (fast_load) {
-		int channel;
-
-		for (channel = 0; channel < MEGASAS_MAX_PD_CHANNELS;
-		     channel++) {
-			scsi_scan_host_selected(host, channel, SCAN_WILD_CARD,
-						SCAN_WILD_CARD, 0);
-		}
-	} else {
-		scsi_scan_host(host);
-	}
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
