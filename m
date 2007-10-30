@@ -1,123 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbXJ3VWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbXJ3VXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbXJ3VWY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJ3VWQ
+	id S1755284AbXJ3VXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXJ3VXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:22:16 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:58981 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbXJ3VWP (ORCPT
+	Tue, 30 Oct 2007 17:23:17 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:49978 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752510AbXJ3VXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:22:15 -0400
-Date: Tue, 30 Oct 2007 22:22:13 +0100
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+	Tue, 30 Oct 2007 17:23:16 -0400
+X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
+X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
+X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
+X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
+X-Auth-Info: 2a60crs706dDKZype0Z7x+QZynRukQKIHuzs4D3v6Eo=
+To: Stefan Roese <stefan.roese@gmail.com>
+cc: Josh Boyer <jwboyer@gmail.com>, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: Huawei E220 and usb storage
-Message-ID: <20071030212213.GA13410@gamma.logic.tuwien.ac.at>
-References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="RnlQjJ0d97Da+TV1"
-Content-Disposition: inline
-In-Reply-To: <47279EF7.3040406@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Bootup support for watchdog with short timeout (touch_nmi_watchdog()?)
+Mime-version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+In-reply-to: Your message of "Tue, 30 Oct 2007 12:16:14 +0100."
+             <200710301216.15033.stefan.roese@gmail.com>
+Date: Tue, 30 Oct 2007 22:23:13 +0100
+Message-Id: <20071030212313.D4CB8247F3@gemini.denx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Stefan,
 
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In message <200710301216.15033.stefan.roese@gmail.com> you wrote:
+>
+> I already have it running on my system using a quick hack (see patch below) in 
+> include/asm-ppc/nmi.h (yes, still arch/ppc for now :-( ). But for a clean 
+> implementation, that has chances for upstream merge (in arch/powerpc later), 
+> I would really like to hear if I should move on further this way. 
+> 
+> My impression is, that changing the name from touch_nmi_watchdog() to 
+> something like touch_watchdog(), and therefore touching lots of files, makes 
+> it more unlikely that this resulting patch will get accepted. But 
+> implementing this bootup watchdog support in asm-ppc(asm-powerpc)/nmi.h 
+> header seems also not totally correct, since it's not really an NMI in this 
+> case.
 
-On Di, 30 Okt 2007, Chuck Ebbert wrote:
-> Did you see commit d853d872c14b9adc4adad29e56cd378b291f86e0 ?
+Indeed. Using the header file <asm/nmi.h> is seriously misleading for
+the PowerPC version, as is the function name touch_nmi_watchdog() -
+thius has nothing to do with NMIs on PowerPC, and most probably not on
+any other non-x86 architecture as well. 
 
-No, where can I see that one?
+To make this mechanism generally usable (which is a good idea IMO) the
+names should be changed to get rid of the "nmi" reference.
 
-I tried the attached patch which I found on the usb list, but it didn't
-work, the cdrom was still always found, and it was
-connected/disconnected permanently. Currently I was at:
+Best regards,
 
-...
-Oct 30 22:20:32 mithrandir kernel: usb 2-2: new full speed USB device using uhci_hcd and address 13
-Oct 30 22:20:32 mithrandir kernel: usb 2-2: configuration #1 chosen from 1 choice
-Oct 30 22:20:32 mithrandir kernel: usb-storage: probe of 2-2:1.0 failed with error -5
-Oct 30 22:20:32 mithrandir kernel: option 2-2:1.0: GSM modem (1-port) converter detected
-Oct 30 22:20:32 mithrandir kernel: usb 2-2: GSM modem (1-port) converter now attached to ttyUSB0
-Oct 30 22:20:32 mithrandir kernel: usb-storage: probe of 2-2:1.1 failed with error -5
-Oct 30 22:20:32 mithrandir kernel: option 2-2:1.1: GSM modem (1-port) converter detected
-Oct 30 22:20:32 mithrandir kernel: usb 2-2: GSM modem (1-port) converter now attached to ttyUSB1
-Oct 30 22:20:32 mithrandir kernel: scsi35 : SCSI emulation for USB Mass Storage devices
+Wolfgang Denk
 
-Note the SCSI35 !!!
-
-So is there any other patch I can try?
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-BARSTIBLEY
-A humorous device such as a china horse or small naked porcelain
-infant which jocular hosts use of piss water into your Scotch with.
-			--- Douglas Adams, The Meaning of Liff
-
---RnlQjJ0d97Da+TV1
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="activate_huawei_dev-2.6.23.patch"
-
---- ./drivers/usb/storage/initializers.c.orig	2007-04-26 09:20:58.000000000 +0200
-+++ ./drivers/usb/storage/initializers.c	2007-10-30 22:03:29.000000000 +0100
-@@ -90,3 +90,14 @@
- 
- 	return (res ? -1 : 0);
- }
-+
-+/* This places the HUAWEI E220 devices in multi-port mode */
-+int usb_stor_switch_ports_init(struct us_data *us)
-+{
-+	us->iobuf[0] = 0x1;
-+	(void)usb_control_msg(us->pusb_dev, usb_sndctrlpipe(us->pusb_dev, 0),
-+		USB_REQ_SET_FEATURE, USB_TYPE_STANDARD | USB_RECIP_DEVICE, 
-+		0x01, 0x0, us->iobuf, 0x1, 1000);
-+	return 0;
-+}
-+
---- ./drivers/usb/storage/initializers.h.orig	2006-12-09 15:26:06.000000000 +0100
-+++ ./drivers/usb/storage/initializers.h	2007-10-30 22:03:29.000000000 +0100
-@@ -47,3 +47,6 @@
- /* This function is required to activate all four slots on the UCR-61S2B
-  * flash reader */
- int usb_stor_ucr61s2b_init(struct us_data *us);
-+
-+/* This places the HUAWEI E220 devices in multi-port mode */
-+int usb_stor_switch_ports_init(struct us_data *us);
---- ./drivers/usb/storage/unusual_devs.h.orig	2007-10-30 19:40:17.000000000 +0100
-+++ ./drivers/usb/storage/unusual_devs.h	2007-10-30 22:05:51.000000000 +0100
-@@ -1463,6 +1463,16 @@
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_IGNORE_RESIDUE ),
- 
-+/* This tells the usb driver to place the HUAWEI E220 devices into multi-port mode
-+ * Reported by fangxiaozhi <fangxiaozhi60675@huawei.com>
-+ * and by linlei <linlei83@huawei.com>
-+ */
-+UNUSUAL_DEV( 0x12d1, 0x1003, 0x0000, 0x0000,
-+                "HUAWEI",
-+		"HUAWEI MOBILE Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_switch_ports_init,
-+		0),
-+
- /* Reported by Vilius Bilinkevicius <vilisas AT xxx DOT lt) */
- UNUSUAL_DEV(  0x132b, 0x000b, 0x0001, 0x0001,
- 		"Minolta",
-
---RnlQjJ0d97Da+TV1--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It may be that your whole purpose in life is simply  to  serve  as  a
+warning to others.
