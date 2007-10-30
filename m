@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbXJ3Pet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXJ3PfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbXJ3Pet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXJ3Pei
+	id S1756843AbXJ3PfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbXJ3Pep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:34:38 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:58809 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbXJ3Peh (ORCPT
+	Tue, 30 Oct 2007 11:34:45 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60009 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755547AbXJ3Pen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:34:37 -0400
-Date: Tue, 30 Oct 2007 08:12:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, SteveW@ACM.org,
-       dipankar@in.ibm.com
-Subject: Re: dn_route.c momentarily exiting RCU read-side critical section
-Message-ID: <20071030151254.GA8285@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071029211540.GA12893@linux.vnet.ibm.com> <20071030.011036.43329108.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030.011036.43329108.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 30 Oct 2007 11:34:43 -0400
+Date: Tue, 30 Oct 2007 15:35:56 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH, RESEND] locks: fix possible infinite loop in posix
+ deadlock detection
+Message-ID: <20071030153556.3c6cfa29@the-village.bc.nu>
+In-Reply-To: <20071030152002.GA21595@fieldses.org>
+References: <20071017185157.GC3785@mvista.com>
+	<20071018185759.GU3785@mvista.com>
+	<20071026170750.GC13033@fieldses.org>
+	<20071026224707.GO13033@fieldses.org>
+	<20071028173136.GA16905@fieldses.org>
+	<20071030152002.GA21595@fieldses.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 01:10:36AM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Mon, 29 Oct 2007 14:15:40 -0700
-> 
-> > net/decnet/dn_route.c in dn_rt_cache_get_next() is as follows:
-> > 
-> > static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
-> > {
-> > 	struct dn_rt_cache_iter_state *s = rcu_dereference(seq->private);
-> > 
-> > 	rt = rt->u.dst.dn_next;
-> > 	while(!rt) {
-> > 		rcu_read_unlock_bh();
-> > 		if (--s->bucket < 0)
-> > 			break;
-> > 
-> > ...  But what happens if seq->private is freed up right here?
-> > ...  Or what prevents this from happening?
->  ...
-> > Similar code is in rt_cache_get_next().
-> > 
-> > So, what am I missing here?
-> 
-> seq->private is allocated on file open (here via seq_open_private()),
-> and freed up on file close (via seq_release_private).
-> 
-> So it cannot be freed up in the middle of an iteration.
+On Tue, 30 Oct 2007 11:20:02 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-Thank you for the info!!!
+> From: J. Bruce Fields <bfields@citi.umich.edu>
+> 
+> It's currently possible to send posix_locks_deadlock() into an infinite
+> loop (under the BKL).
+> 
+> For now, fix this just by bailing out after a few iterations.  We may
+> want to fix this in a way that better clarifies the semantics of
+> deadlock detection.  But that will take more time, and this minimal fix
+> is probably adequate for any realistic scenario, and is simple enough to
+> be appropriate for applying to stable kernels now.
+> 
+> Thanks to George Davis for reporting the problem.
+> 
+> Cc: "George G. Davis" <gdavis@mvista.com>
+> Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-OK, for my next stupid question: why is the rcu_dereference(seq->private)
-required, as opposed to simply seq->private?
+Acked-by: Alan Cox <alan@redhat.com>
 
-							Thanx, Paul
+Its a good fix for now and I doubt any real world user has that complex a
+locking pattern to break.
