@@ -1,141 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbXJ3QX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXJ3QYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759652AbXJ3QX6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbXJ3QPe
+	id S1759749AbXJ3QYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXJ3QQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:15:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47019 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:16:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47015 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752861AbXJ3QNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752608AbXJ3QNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Oct 2007 12:13:42 -0400
-Message-Id: <20071030160401.296770000@chello.nl>
+Message-Id: <20071030160915.242314000@chello.nl>
+References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:01 +0100
+Date: Tue, 30 Oct 2007 17:04:28 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 00/33] Swap over NFS -v14
+Subject: [PATCH 27/33] nfs: remove mempools
+Content-Disposition: inline; filename=nfs-no-mempool.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With the introduction of the shared dirty page accounting in .19, NFS should
+not be able to surpise the VM with all dirty pages. Thus it should always be
+able to free some memory. Hence no more need for mempools.
 
-Hi,
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/read.c  |   15 +++------------
+ fs/nfs/write.c |   27 +++++----------------------
+ 2 files changed, 8 insertions(+), 34 deletions(-)
 
-Another posting of the full swap over NFS series. 
+Index: linux-2.6/fs/nfs/read.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/read.c
++++ linux-2.6/fs/nfs/read.c
+@@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
+ static const struct rpc_call_ops nfs_read_full_ops;
+ 
+ static struct kmem_cache *nfs_rdata_cachep;
+-static mempool_t *nfs_rdata_mempool;
+-
+-#define MIN_POOL_READ	(32)
+ 
+ struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
++	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_rdata_mempool);
++				kmem_cache_free(nfs_rdata_cachep, p);
+ 				p = NULL;
+ 			}
+ 		}
+@@ -63,7 +60,7 @@ static void nfs_readdata_rcu_free(struct
+ 	struct nfs_read_data *p = container_of(head, struct nfs_read_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_rdata_mempool);
++	kmem_cache_free(nfs_rdata_cachep, p);
+ }
+ 
+ static void nfs_readdata_free(struct nfs_read_data *rdata)
+@@ -597,16 +594,10 @@ int __init nfs_init_readpagecache(void)
+ 	if (nfs_rdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
+-						     nfs_rdata_cachep);
+-	if (nfs_rdata_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	return 0;
+ }
+ 
+ void nfs_destroy_readpagecache(void)
+ {
+-	mempool_destroy(nfs_rdata_mempool);
+ 	kmem_cache_destroy(nfs_rdata_cachep);
+ }
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -28,9 +28,6 @@
+ 
+ #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
+ 
+-#define MIN_POOL_WRITE		(32)
+-#define MIN_POOL_COMMIT		(4)
+-
+ /*
+  * Local function declarations
+  */
+@@ -44,12 +41,10 @@ static const struct rpc_call_ops nfs_wri
+ static const struct rpc_call_ops nfs_commit_ops;
+ 
+ static struct kmem_cache *nfs_wdata_cachep;
+-static mempool_t *nfs_wdata_mempool;
+-static mempool_t *nfs_commit_mempool;
+ 
+ struct nfs_write_data *nfs_commit_alloc(void)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -63,7 +58,7 @@ static void nfs_commit_rcu_free(struct r
+ 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_commit_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ void nfs_commit_free(struct nfs_write_data *wdata)
+@@ -73,7 +68,7 @@ void nfs_commit_free(struct nfs_write_da
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -84,7 +79,7 @@ struct nfs_write_data *nfs_writedata_all
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_wdata_mempool);
++				kmem_cache_free(nfs_wdata_cachep, p);
+ 				p = NULL;
+ 			}
+ 		}
+@@ -97,7 +92,7 @@ static void nfs_writedata_rcu_free(struc
+ 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_wdata_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ static void nfs_writedata_free(struct nfs_write_data *wdata)
+@@ -1474,16 +1469,6 @@ int __init nfs_init_writepagecache(void)
+ 	if (nfs_wdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
+-						     nfs_wdata_cachep);
+-	if (nfs_wdata_mempool == NULL)
+-		return -ENOMEM;
+-
+-	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
+-						      nfs_wdata_cachep);
+-	if (nfs_commit_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	/*
+ 	 * NFS congestion size, scale with available memory.
+ 	 *
+@@ -1509,8 +1494,6 @@ int __init nfs_init_writepagecache(void)
+ 
+ void nfs_destroy_writepagecache(void)
+ {
+-	mempool_destroy(nfs_commit_mempool);
+-	mempool_destroy(nfs_wdata_mempool);
+ 	kmem_cache_destroy(nfs_wdata_cachep);
+ }
+ 
 
-[ I tried just posting the first part last time around, but
-  that just gets more confusion by lack of a general picture ]
-
-[ patches against 2.6.23-mm1, also to be found online at:
-  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v2.6.23-mm1/ ]
-
-The patch-set can be split in roughtly 5 parts, for each of which I shall give
-a description.
-
-
-  Part 1, patches 1-12
-
-The problem with swap over network is the generic swap problem: needing memory
-to free memory. Normally this is solved using mempools, as can be seen in the
-BIO layer.
-
-Swap over network has the problem that the network subsystem does not use fixed
-sized allocations, but heavily relies on kmalloc(). This makes mempools
-unusable.
-
-This first part provides a generic reserve framework.
-
-Care is taken to only affect the slow paths - when we're low on memory.
-
-Caveats: it is currently SLUB only.
-
- 1 - mm: gfp_to_alloc_flags()
- 2 - mm: tag reseve pages
- 3 - mm: slub: add knowledge of reserve pages
- 4 - mm: allow mempool to fall back to memalloc reserves
- 5 - mm: kmem_estimate_pages()
- 6 - mm: allow PF_MEMALLOC from softirq context
- 7 - mm: serialize access to min_free_kbytes
- 8 - mm: emergency pool
- 9 - mm: system wide ALLOC_NO_WATERMARK
-10 - mm: __GFP_MEMALLOC
-11 - mm: memory reserve management
-12 - selinux: tag avc cache alloc as non-critical
-
-
-  Part 2, patches 13-15
-
-Provide some generic network infrastructure needed later on.
-
-13 - net: wrap sk->sk_backlog_rcv()
-14 - net: packet split receive api
-15 - net: sk_allocation() - concentrate socket related allocations
-
-
-  Part 3, patches 16-23
-
-Now that we have a generic memory reserve system, use it on the network stack.
-The thing that makes this interesting is that, contrary to BIO, both the
-transmit and receive path require memory allocations. 
-
-That is, in the BIO layer write back completion is usually just an ISR flipping
-a bit and waking stuff up. A network write back completion involved receiving
-packets, which when there is no memory, is rather hard. And even when there is
-memory there is no guarantee that the required packet comes in in the window
-that that memory buys us.
-
-The solution to this problem is found in the fact that network is to be assumed
-lossy. Even now, when there is no memory to receive packets the network card
-will have to discard packets. What we do is move this into the network stack.
-
-So we reserve a little pool to act as a receive buffer, this allows us to
-inspect packets before tossing them. This way, we can filter out those packets
-that ensure progress (writeback completion) and disregard the others (as would
-have happened anyway). [ NOTE: this is a stable mode of operation with limited
-memory usage, exactly the kind of thing we need ]
-
-Again, care is taken to keep much of the overhead of this to only affect the
-slow path. Only packets allocated from the reserves will suffer the extra
-atomic overhead needed for accounting.
-
-16 - netvm: network reserve infrastructure
-17 - sysctl: propagate conv errors
-18 - netvm: INET reserves.
-19 - netvm: hook skb allocation to reserves
-20 - netvm: filter emergency skbs.
-21 - netvm: prevent a TCP specific deadlock
-22 - netfilter: NF_QUEUE vs emergency skbs
-23 - netvm: skb processing
-
-
-  Part 4, patches 24-26
-
-Generic vm infrastructure to handle swapping to a filesystem instead of a block
-device. The approach here has been questioned, people would like to see a less
-invasive approach.
-
-One suggestion is to create and use a_ops->swap_{in,out}().
-
-24 - mm: prepare swap entry methods for use in page methods
-25 - mm: add support for non block device backed swap files
-26 - mm: methods for teaching filesystems about PG_swapcache pages
-
-
-  Part 5, patches 27-33
-
-Finally, convert NFS to make use of the new network and vm infrastructure to
-provide swap over NFS.
-
-27 - nfs: remove mempools
-28 - nfs: teach the NFS client how to treat PG_swapcache pages
-29 - nfs: disable data cache revalidation for swapfiles
-30 - nfs: swap vs nfs_writepage
-31 - nfs: enable swap on NFS
-32 - nfs: fix various memory recursions possible with swap over NFS.
-33 - nfs: do not warn on radix tree node allocation failures
-
-
+--
 
