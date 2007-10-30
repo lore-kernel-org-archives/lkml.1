@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbXJ3MLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXJ3MN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbXJ3MLh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXJ3MLa
+	id S1755892AbXJ3MN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXJ3MNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:11:30 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:42142 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbXJ3MLa convert rfc822-to-8bit (ORCPT
+	Tue, 30 Oct 2007 08:13:18 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58685 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752876AbXJ3MNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:11:30 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 30 Oct 2007 08:13:17 -0400
+Date: Tue, 30 Oct 2007 06:13:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
+Message-ID: <20071030121315.GK32359@parisc-linux.org>
+References: <20071028201549.GA23138@fattire.cabal.ca> <20071030024801.GA19417@linux-mips.org> <AFC1DED8-E331-420C-940E-9CF849630F0B@kernel.crashing.org> <20071030083719.GJ32359@parisc-linux.org> <20071030114221.GA24392@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH resend] Make the dev_*() family of macros in device.hcomplete
-Date: Tue, 30 Oct 2007 05:11:24 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E27016E5FCB@az33exm24.fsl.freescale.net>
-In-Reply-To: <20071030000054.GA19022@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH resend] Make the dev_*() family of macros in device.hcomplete
-Thread-Index: AcgahzXXAQAhv/L3TdGe3jHEKteUyQAZK9VA
-References: <1193697795-7823-1-git-send-email-Emilian.Medve@Freescale.com> <20071030000054.GA19022@suse.de>
-From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-To: "Greg KH" <gregkh@suse.de>
-Cc: <mochel@osdl.org>, <linux-kernel@vger.kernel.org>, <hjlipp@web.de>,
-       <tilman@imap.cc>, <gigaset307x-common@lists.sourceforge.net>,
-       <kkeil@suse.de>, <isdn4linux@listserv.isdn4linux.de>, <mac@melware.de>,
-       <linux-omap-open-source@linux.omap.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030114221.GA24392@linux-mips.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg K-H,
-
-
-> > +#define dev_info(dev, format, arg...)		\
-> > +	dev_printk(KERN_INFO, dev, format, ## arg)
-> > +
-> >  #ifdef DEBUG
-> >  #define dev_dbg(dev, format, arg...)		\
-> > -	dev_printk(KERN_DEBUG , dev , format , ## arg)
-> > +	dev_printk(KERN_DEBUG, dev, format, ## arg)
+On Tue, Oct 30, 2007 at 11:42:21AM +0000, Ralf Baechle wrote:
+> On Tue, Oct 30, 2007 at 02:37:19AM -0600, Matthew Wilcox wrote:
+> > On Mon, Oct 29, 2007 at 10:03:16PM -0500, Kumar Gala wrote:
+> > > same HW platform that you want to run with just 32-bit phys (for  
+> > > performance).
+> > 
+> > Have you measured what the performance difference is?
 > 
-> Those extra spaces are there for a good reason, older versions of gcc
-> are broken without it.  So please, put them all back...
+> So that's 5668, 256 bytes data and 128 bytes of bss for a total of 6052
+> bytes.  Not a whole lot but I still fear some users on the most
+> claustrophobic systems will mind.
 
-You mean I should add spaces before commas only where they were
-initially or to all new code and/or macros? I've observed other kernel
-code and more often there are no spaces before commas. I'm asking
-because the CodingStyle document is not very explicit about this rule.
+Oh, sure, I'm not saying I thought there would be no size difference; I
+was just bemused at the suggestion there was a performance difference.
 
+Unless "won't fit in ROM any more" is considered a performance problem ;-)
 
-Thank you,
-Emil.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
