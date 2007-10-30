@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ3TXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbXJ3TYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXJ3TXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbXJ3TVi
+	id S1758241AbXJ3TYX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbXJ3TVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:38 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53926 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757541AbXJ3TVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:36 -0400
-Message-Id: <20071030192106.323961420@polymtl.ca>
-References: <20071030191557.947156623@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:12 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
-       linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
-       Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [patch 15/28] Fix m32r __xchg
-Content-Disposition: inline; filename=fix-m32r-__xchg.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:06 +0000
+	Tue, 30 Oct 2007 15:21:43 -0400
+Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:47048 "EHLO
+	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757626AbXJ3TVl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:41 -0400
+Message-ID: <47278439.4030801@gentoo.org>
+Date: Tue, 30 Oct 2007 19:21:29 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu>
+In-Reply-To: <20071030190153.373c9347@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the #endif  /* CONFIG_SMP */ should cover the default condition, or it may cause
-bad parameter to be silently missed.
+Alan Cox wrote:
+> I would guess Brasero is issuing a command with the length of data
+> wrongly set. In the old code that might well just produce errors of the
+> "Umm wtf is this data left over for ?", with the new code the drive is
+> likely to change state as it knows the transfer size and that will
+> *correctly* cause an HSM error and what follows.
+> 
+> Now the question is who gets the length wrong - Brasero or the ata
+> translation code in libata
 
-To make it work correctly, we have to remove the ifdef CONFIG SMP surrounding 
-__xchg_called_with_bad_pointer declaration. Thanks to Adrian Bunk for detecting
-this.
+Brasero does exactly the same as my test app which I attached to my last 
+mail. Is my test app wrong?
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
-CC: linux-m32r@ml.linux-m32r.org
-CC: Adrian Bunk <bunk@kernel.org>
----
- include/asm-m32r/system.h |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Daniel
 
-Index: linux-2.6-lttng/include/asm-m32r/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-13 18:21:02.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-19 07:08:26.000000000 -0400
-@@ -127,9 +127,7 @@ static inline void local_irq_disable(voi
- 	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
- 			sizeof(*(ptr))))
- 
--#ifdef CONFIG_SMP
- extern void  __xchg_called_with_bad_pointer(void);
--#endif
- 
- #ifdef CONFIG_CHIP_M32700_TS1
- #define DCACHE_CLEAR(reg0, reg1, addr)				\
-@@ -189,9 +187,9 @@ __xchg(unsigned long x, volatile void * 
- #endif	/* CONFIG_CHIP_M32700_TS1 */
- 		);
- 		break;
-+#endif  /* CONFIG_SMP */
- 	default:
- 		__xchg_called_with_bad_pointer();
--#endif  /* CONFIG_SMP */
- 	}
- 
- 	local_irq_restore(flags);
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
