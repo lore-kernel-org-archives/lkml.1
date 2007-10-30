@@ -1,177 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXJ3QWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbXJ3QW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbXJ3QWB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbXJ3QO5
+	id S1759279AbXJ3QW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXJ3QO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:14:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47088 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:14:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47083 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbXJ3QOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:14:18 -0400
-Message-Id: <20071030160913.688222000@chello.nl>
+	id S1756127AbXJ3QOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:14:15 -0400
+Message-Id: <20071030160911.788985000@chello.nl>
 References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:16 +0100
+Date: Tue, 30 Oct 2007 17:04:08 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 15/33] net: sk_allocation() - concentrate socket related allocations
-Content-Disposition: inline; filename=net-sk_allocation.patch
+Subject: [PATCH 07/33] mm: serialize access to min_free_kbytes
+Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce sk_allocation(), this function allows to inject sock specific
-flags to each sock related allocation.
+There is a small race between the procfs caller and the memory hotplug caller
+of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
+another caller. Time to close the gap.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h    |    7 ++++++-
- net/ipv4/tcp_output.c |   11 ++++++-----
- net/ipv6/tcp_ipv6.c   |   14 +++++++++-----
- 3 files changed, 21 insertions(+), 11 deletions(-)
+ mm/page_alloc.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/net/ipv4/tcp_output.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/net/ipv4/tcp_output.c
-+++ linux-2.6/net/ipv4/tcp_output.c
-@@ -2081,7 +2081,7 @@ void tcp_send_fin(struct sock *sk)
- 	} else {
- 		/* Socket is locked, keep trying until memory is available. */
- 		for (;;) {
--			skb = alloc_skb_fclone(MAX_TCP_HEADER, GFP_KERNEL);
-+			skb = alloc_skb_fclone(MAX_TCP_HEADER, sk->sk_allocation);
- 			if (skb)
- 				break;
- 			yield();
-@@ -2114,7 +2114,7 @@ void tcp_send_active_reset(struct sock *
- 	struct sk_buff *skb;
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -116,6 +116,7 @@ static char * const zone_names[MAX_NR_ZO
+ 	 "Movable",
+ };
  
- 	/* NOTE: No TCP options attached and we never retransmit this. */
--	skb = alloc_skb(MAX_TCP_HEADER, priority);
-+	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, priority));
- 	if (!skb) {
- 		NET_INC_STATS(LINUX_MIB_TCPABORTFAILED);
- 		return;
-@@ -2187,7 +2187,8 @@ struct sk_buff * tcp_make_synack(struct 
- 	__u8 *md5_hash_location;
- #endif
++static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
  
--	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
-+	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1,
-+			sk_allocation(sk, GFP_ATOMIC));
- 	if (skb == NULL)
- 		return NULL;
- 
-@@ -2446,7 +2447,7 @@ void tcp_send_ack(struct sock *sk)
- 		 * tcp_transmit_skb() will set the ownership to this
- 		 * sock.
- 		 */
--		buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
-+		buff = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
- 		if (buff == NULL) {
- 			inet_csk_schedule_ack(sk);
- 			inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
-@@ -2488,7 +2489,7 @@ static int tcp_xmit_probe_skb(struct soc
- 	struct sk_buff *skb;
- 
- 	/* We don't queue it, tcp_transmit_skb() sets ownership. */
--	skb = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
-+	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
- 	if (skb == NULL)
- 		return -1;
- 
-Index: linux-2.6/include/net/sock.h
-===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -419,6 +419,11 @@ static inline int sock_flag(struct sock 
- 	return test_bit(flag, &sk->sk_flags);
+ unsigned long __meminitdata nr_kernel_pages;
+@@ -4162,12 +4163,12 @@ static void setup_per_zone_lowmem_reserv
  }
  
-+static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
+ /**
+- * setup_per_zone_pages_min - called when min_free_kbytes changes.
++ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
+  *
+  * Ensures that the pages_{min,low,high} values for each zone are set correctly
+  * with respect to min_free_kbytes.
+  */
+-void setup_per_zone_pages_min(void)
++static void __setup_per_zone_pages_min(void)
+ {
+ 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+@@ -4222,6 +4223,15 @@ void setup_per_zone_pages_min(void)
+ 	calculate_totalreserve_pages();
+ }
+ 
++void setup_per_zone_pages_min(void)
 +{
-+	return gfp_mask;
++	unsigned long flags;
++
++	spin_lock_irqsave(&min_free_lock, flags);
++	__setup_per_zone_pages_min();
++	spin_unlock_irqrestore(&min_free_lock, flags);
 +}
 +
- static inline void sk_acceptq_removed(struct sock *sk)
- {
- 	sk->sk_ack_backlog--;
-@@ -1212,7 +1217,7 @@ static inline struct sk_buff *sk_stream_
- 	int hdr_len;
- 
- 	hdr_len = SKB_DATA_ALIGN(sk->sk_prot->max_header);
--	skb = alloc_skb_fclone(size + hdr_len, gfp);
-+	skb = alloc_skb_fclone(size + hdr_len, sk_allocation(sk, gfp));
- 	if (skb) {
- 		skb->truesize += mem;
- 		if (sk_stream_wmem_schedule(sk, skb->truesize)) {
-Index: linux-2.6/net/ipv6/tcp_ipv6.c
-===================================================================
---- linux-2.6.orig/net/ipv6/tcp_ipv6.c
-+++ linux-2.6/net/ipv6/tcp_ipv6.c
-@@ -573,7 +573,8 @@ static int tcp_v6_md5_do_add(struct sock
- 	} else {
- 		/* reallocate new list if current one is full. */
- 		if (!tp->md5sig_info) {
--			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info), GFP_ATOMIC);
-+			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info),
-+					sk_allocation(sk, GFP_ATOMIC));
- 			if (!tp->md5sig_info) {
- 				kfree(newkey);
- 				return -ENOMEM;
-@@ -583,7 +584,8 @@ static int tcp_v6_md5_do_add(struct sock
- 		tcp_alloc_md5sig_pool();
- 		if (tp->md5sig_info->alloced6 == tp->md5sig_info->entries6) {
- 			keys = kmalloc((sizeof (tp->md5sig_info->keys6[0]) *
--				       (tp->md5sig_info->entries6 + 1)), GFP_ATOMIC);
-+				       (tp->md5sig_info->entries6 + 1)),
-+				       sk_allocation(sk, GFP_ATOMIC));
- 
- 			if (!keys) {
- 				tcp_free_md5sig_pool();
-@@ -709,7 +711,7 @@ static int tcp_v6_parse_md5_keys (struct
- 		struct tcp_sock *tp = tcp_sk(sk);
- 		struct tcp_md5sig_info *p;
- 
--		p = kzalloc(sizeof(struct tcp_md5sig_info), GFP_KERNEL);
-+		p = kzalloc(sizeof(struct tcp_md5sig_info), sk->sk_allocation);
- 		if (!p)
- 			return -ENOMEM;
- 
-@@ -1006,7 +1008,7 @@ static void tcp_v6_send_reset(struct soc
- 	 */
- 
- 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
--			 GFP_ATOMIC);
-+			 sk_allocation(sk, GFP_ATOMIC));
- 	if (buff == NULL)
- 		return;
- 
-@@ -1085,10 +1087,12 @@ static void tcp_v6_send_ack(struct tcp_t
- 	struct tcp_md5sig_key *key;
- 	struct tcp_md5sig_key tw_key;
- #endif
-+	gfp_t gfp_mask = GFP_ATOMIC;
- 
- #ifdef CONFIG_TCP_MD5SIG
- 	if (!tw && skb->sk) {
- 		key = tcp_v6_md5_do_lookup(skb->sk, &ipv6_hdr(skb)->daddr);
-+		gfp_mask = sk_allocation(skb->sk, gfp_mask);
- 	} else if (tw && tw->tw_md5_keylen) {
- 		tw_key.key = tw->tw_md5_key;
- 		tw_key.keylen = tw->tw_md5_keylen;
-@@ -1106,7 +1110,7 @@ static void tcp_v6_send_ack(struct tcp_t
- #endif
- 
- 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
--			 GFP_ATOMIC);
-+			 gfp_mask);
- 	if (buff == NULL)
- 		return;
- 
+ /*
+  * Initialise min_free_kbytes.
+  *
+@@ -4257,7 +4267,7 @@ static int __init init_per_zone_pages_mi
+ 		min_free_kbytes = 128;
+ 	if (min_free_kbytes > 65536)
+ 		min_free_kbytes = 65536;
+-	setup_per_zone_pages_min();
++	__setup_per_zone_pages_min();
+ 	setup_per_zone_lowmem_reserve();
+ 	return 0;
+ }
 
 --
 
