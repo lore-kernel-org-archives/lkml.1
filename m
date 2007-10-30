@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXJ3VLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXJ3VM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbXJ3VLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbXJ3VLf
+	id S1757451AbXJ3VM4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXJ3VMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:11:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42155 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753657AbXJ3VLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:11:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.24: (ACPI AC adapter) sending {proc,netlink,kobject}_event from -> resume method?
-Date: Tue, 30 Oct 2007 22:28:24 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-References: <200710302233.31791.arvidjaar@mail.ru>
-In-Reply-To: <200710302233.31791.arvidjaar@mail.ru>
+	Tue, 30 Oct 2007 17:12:49 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:34857 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752681AbXJ3VMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 17:12:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=B0cdIf8nHKwGW9KmOhtJu+Du6hr/Uxnha382zWyYf3OoXi0Z9mZFHkirOmt5R/YJaEUQ2YxqCadeIE7doAqmA5mMBVPKzTbKHGziOFLN6rD/xd4nkrDQyTAvioyN8NBMCH/dCVxbTlfEQlq71MbiwRZZQa+z3DyO8GNI9aNXwPs=  ;
+X-YMail-OSG: Y.j3hskVM1lQp1KsVpJIchcNL85fi1ZQeFfIXeEtV4YbqnHbbrWlMdtHgZEUz.zU7pZ8ZG4Axg--
+From: David Brownell <david-b@pacbell.net>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH 00/14] Blackfin on-chip SPI controller driver updates and bug-fixing
+Date: Tue, 30 Oct 2007 13:54:19 -0700
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, Bryan Wu <bryan.wu@analog.com>,
+       linux-kernel@vger.kernel.org
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <8bd0f97a0710301329i8a21b22ncc9f71a81bc06543@mail.gmail.com> <200710301342.18559.david-b@pacbell.net>
+In-Reply-To: <200710301342.18559.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200710302228.25650.rjw@sisk.pl>
+Message-Id: <200710301354.19440.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 30 October 2007 20:33, Andrey Borzenkov wrote:
-> Is it valid to send events from within ->resume device method?
-
-It is or at least it should be.  The GPEs are supposed to be fully functional
-at this point.
-
-> If not, what is the proper way to notify user space about hardware changes
-> during suspension?  
-> Specifically it seems that new sysfs ACPI power supply interface sometimes 
-> missing plugged in AC cord during suspend. I suspect that no event is 
-> generated for this; I am not sure whether ACPI is required to generate such 
-> events at all in this case.
+On Tuesday 30 October 2007, David Brownell wrote:
+> > 
+> > was there something that caught your eye other than the ugly udelay()
+> > you mentioned in the other thread ?
 > 
-> I'll need some time to get reproducible case so I do not categorize this yet 
-> as regression.
+> That one was a feature that might be more generally necessary,
+> just to meet chip timing specs.  Mostly they're no trouble.
+> 
 
-Is the "[2.6.24-rc1 regression] AC adapter state does not change after resume"
-message a follow-up to this one?
+... although I note that the referenced thread suggested maybe
+the problem there was a missing pullup on the chipselect line.  If
+that was really the cause, then I think that feature would best
+be left out of the framework.  :)
 
-Rafael
+
