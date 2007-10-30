@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757829AbXJ3TYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbXJ3TYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757829AbXJ3TYi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXJ3TVs
+	id S1758336AbXJ3TYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbXJ3TVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:48 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54003 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:50 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54012 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757702AbXJ3TVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:47 -0400
-Message-Id: <20071030192104.900512454@polymtl.ca>
-References: <20071030191557.947156623@polymtl.ca>
+	id S1754784AbXJ3TVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:49 -0400
+Message-Id: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:08 -0400
+Date: Tue, 30 Oct 2007 15:15:57 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 11/28] Add cmpxchg_local to frv
-Content-Disposition: inline; filename=add-cmpxchg-local-to-frv.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:05 +0000
+Subject: [patch 00/28] cmpxchg_local standardization across architectures
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:02 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt) for 8, 16 and 64 bits
-arguments. Use the 32 bits cmpxchg available on the architecture for 32 bits
-arguments.
+Hi,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
----
- include/asm-frv/system.h |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+Here is the patchset that performs cmpxchg_local and cmpxchg64_local
+standardization across architectures. It uses interrupt save/restore to emulate
+the atomic operation on architectures lacking such atomic op.
 
-Index: linux-2.6-lttng/include/asm-frv/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-frv/system.h	2007-08-07 14:51:22.000000000 -0400
-+++ linux-2.6-lttng/include/asm-frv/system.h	2007-08-07 14:51:39.000000000 -0400
-@@ -265,5 +265,29 @@ extern uint32_t __cmpxchg_32(uint32_t *v
- 
- #endif
- 
-+#include <asm-generic/cmpxchg-local.h>
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return cmpxchg(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+#define cmpxchg_local(ptr,o,n)					  	\
-+     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
- #endif /* _ASM_SYSTEM_H */
+We have seen interesing performance gain in slub on architectures where the
+local cmpxchg is faster than interrupt disable, namely x86 and amd64. It becomes
+less interesting on architectures lacking atomic ops and where the only cmpxchg
+primitive available is almost as fast as irq disable/enable (ia64); a small
+performance hit can be expected, mostly due to the additionnal memory barriers
+it adds to the code (and the fact that it is faster to disable interrupts once
+for a longer time rather than multiple times).
+
+It applies in this order on 2.6.23-mm1 :
+
+add-cmpxchg-local-to-generic-for-up.patch
+i386-cmpxchg64-80386-80486-fallback.patch
+add-cmpxchg64-to-alpha.patch
+add-cmpxchg64-to-mips.patch
+add-cmpxchg64-to-powerpc.patch
+add-cmpxchg64-to-x86_64.patch
+#
+add-cmpxchg-local-to-arm.patch
+add-cmpxchg-local-to-avr32.patch
+add-cmpxchg-local-to-blackfin.patch
+add-cmpxchg-local-to-cris.patch
+add-cmpxchg-local-to-frv.patch
+add-cmpxchg-local-to-h8300.patch
+add-cmpxchg-local-to-ia64.patch
+add-cmpxchg-local-to-m32r.patch
+fix-m32r-__xchg.patch
+fix-m32r-include-sched-h-in-smpboot.patch
+local_t_m32r_optimized.patch
+add-cmpxchg-local-to-m68k.patch
+add-cmpxchg-local-to-m68knommu.patch
+add-cmpxchg-local-to-parisc.patch
+add-cmpxchg-local-to-ppc.patch
+add-cmpxchg-local-to-s390.patch
+add-cmpxchg-local-to-sh.patch
+add-cmpxchg-local-to-sh64.patch
+add-cmpxchg-local-to-sparc.patch
+add-cmpxchg-local-to-sparc64.patch
+add-cmpxchg-local-to-v850.patch
+add-cmpxchg-local-to-xtensa.patch
+
+Mathieu
 
 -- 
 Mathieu Desnoyers
