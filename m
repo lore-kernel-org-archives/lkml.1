@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760457AbXJ3TeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbXJ3Tee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760457AbXJ3TeO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbXJ3TcB
+	id S1760214AbXJ3Tee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbXJ3Tdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:32:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40377 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760072AbXJ3Tb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:31:59 -0400
-Date: Tue, 30 Oct 2007 12:31:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-In-Reply-To: <47278206.2080601@garzik.org>
-Message-ID: <alpine.LFD.0.999.0710301225370.30120@woody.linux-foundation.org>
-References: <20071030184502.GA27246@havoc.gtf.org>
- <alpine.LFD.0.999.0710301151000.30120@woody.linux-foundation.org>
- <47278206.2080601@garzik.org>
+	Tue, 30 Oct 2007 15:33:36 -0400
+Received: from mx40.mail.ru ([194.67.23.36]:55488 "EHLO mx40.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760282AbXJ3Tdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:33:35 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.24: (ACPI AC adapter) sending {proc,netlink,kobject}_event from -> resume method?
+Date: Tue, 30 Oct 2007 22:33:30 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart2335885.T9XvSHH5Ht";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710302233.31791.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart2335885.T9XvSHH5Ht
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Is it valid to send events from within ->resume device method? If not, what=
+ is=20
+the proper way to notify user space about hardware changes during suspensio=
+n?=20
+Specifically it seems that new sysfs ACPI power supply interface sometimes=
+=20
+missing plugged in AC cord during suspend. I suspect that no event is=20
+generated for this; I am not sure whether ACPI is required to generate such=
+=20
+events at all in this case.
 
-On Tue, 30 Oct 2007, Jeff Garzik wrote:
-> 
-> Can we change git-am to accept two dashes as well as three?  :)
-> 
-> It seems pretty common, not just with Mikael but several others who send
-> patches to me.
+I'll need some time to get reproducible case so I do not categorize this ye=
+t=20
+as regression.
 
-Well, git-am actually used to be a lot less strict about the dashes, and 
-we've made it *more* strict rather than less, because the more of these 
-breaks we accept, the more likely it is that something that was intended 
-to be part of the message gets thrown out.. So I'll say that I'm a bit 
-nervous about extending it again.
+=2Dandrey
 
-The reason for the three dashes is actually that that is what a *diff* 
-starts with. So if you look at what "closes" a description as far as 
-git-am is concerned, they are currently all things that are likely to 
-start a patch: "Index: " or "diff -" or "--- <filename>", and that last 
-case was then extended to be "manual break" even without the filename 
-information.
+--nextPart2335885.T9XvSHH5Ht
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-See git/builtin-mailinfo.c: patchbreak().
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-But you could try to sell it to Junio. He's the maintainer, and while I 
-care about some other things and will argue violently against them, when 
-it comes to something like this, Junio is the guy to go to.
+iD8DBQBHJ4cLR6LMutpd94wRAmgkAKC4x7oyGD4MC7JxirA686r9K9TAdACgo4OX
+PFwOpEHZ4Ix5L0opsoflI7U=
+=Qf0i
+-----END PGP SIGNATURE-----
 
-That said, I really think you could just try to educate the people you 
-work with. Maybe they just never even realized that "three dashes" is what 
-you're supposed to use!
-
-		Linus
+--nextPart2335885.T9XvSHH5Ht--
