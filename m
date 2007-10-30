@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXJ3MvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXJ3MyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbXJ3MvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXJ3MvK
+	id S1752249AbXJ3MyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbXJ3MyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:51:10 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58600 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751757AbXJ3MvJ (ORCPT
+	Tue, 30 Oct 2007 08:54:16 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:57930 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbXJ3MyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:51:09 -0400
-Date: Tue, 30 Oct 2007 08:51:08 -0400
-To: Josh Boyer <jwboyer@gmail.com>
-Cc: Stefan Roese <stefan.roese@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Bootup support for watchdog with short timeout (touch_nmi_watchdog()?)
-Message-ID: <20071030125108.GC27643@csclub.uwaterloo.ca>
-References: <200710291522.27311.stefan.roese@gmail.com> <20071029194503.GB27646@csclub.uwaterloo.ca> <20071029215454.0d644ca7@vader.jdub.homelinux.org>
+	Tue, 30 Oct 2007 08:54:15 -0400
+Date: Tue, 30 Oct 2007 12:39:20 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Stefani Seibold <stefani@seibold.net>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org
+Subject: Re: vm_ops.page_mkwrite() fails with vmalloc on 2.6.23
+In-Reply-To: <1193741356.13775.2.camel@matrix>
+Message-ID: <Pine.LNX.4.64.0710301232220.9601@blonde.wat.veritas.com>
+References: <1193064057.16541.1.camel@matrix>  <20071029004002.60c7182a.akpm@linux-foundation.org>
+  <45a44e480710290117u492dbe82ra6344baf8bb1e370@mail.gmail.com> 
+ <1193677302.27652.56.camel@twins>  <45a44e480710291051s7ffbb582x64ea9524c197b48a@mail.gmail.com>
+  <1193681839.27652.60.camel@twins> <1193696211.5644.100.camel@lappy> 
+ <45a44e480710291822w5864b3beofcf432930d3e68d3@mail.gmail.com> 
+ <1193738177.27652.69.camel@twins> <1193741356.13775.2.camel@matrix>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071029215454.0d644ca7@vader.jdub.homelinux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 29, 2007 at 09:54:54PM -0500, Josh Boyer wrote:
-> To some degree, it's configurable.  But the generic question still
-> stands.  It seems like a decent idea to me.  Making touch_watchdog (or
-> whatever it winds up being called) nice across arches might be fun.
+On Tue, 30 Oct 2007, Stefani Seibold wrote:
+> 
+> the question is how can i get all pte's from a vmalloc'ed memory. Due to
+> the zeroed mapping pointer i dont see how to do this?
 
-It always seemed to me that it was userspace that should poke the
-watchdog as an indication user space still works on the system.  That's
-how my watchdogs are managed.  I do initialize them in the boot loader
-with a 3 minute timeout which is more than long enough for the system to
-boot, load the driver and change the timeout to 60 seconds or whatever
-I want at runtime and start the watchdog daemon.
+The mapping pointer is zeroed because you've done nothing to set it.
+Below is how I answered you a week ago.  But this is new territory
+(extending page_mkclean to work on more than just pagecache pages),
+I'm still unsure what would be the safest way to do it.
 
-If the kernel hangs at initializing some driver, I do NOT want the
-kernel to automatically be poking the watchdog.  I want it to time out
-so to me the kernel should not be able to kick the watchdog at all by
-itself.
+On Mon, 22 Oct 2007, Stefani Seibold wrote:
+> 
+> i have a problem with vmalloc() and vm_ops.page_mkwrite().
+> 
+> ReadOnly access works, but on a write access the VM will
+> endless invoke the vm_ops.page_mkwrite() handler.
+> 
+> I tracked down the problem to the
+> 	struct page.mapping pointer,
+> which is NULL.
+> 
+> The problem original occurs with the fb_defio driver (driver/video/fb_defio.c).
+> This driver use the vm_ops.page_mkwrite() handler for tracking the modified pages,
+> which will be in an extra thread handled, to perform the IO and clean and
+> write protect all pages with page_clean().
 
---
-Len Sorensen
+Interesting.  You need to ask Jaya (CC'ed) since he's the one
+who put that code into fb_defio.c, exported page_mkclean, and
+should have tested it.
+
+> 
+> I am not sure if the is a feature of the new rmap code or a bug.
+
+page_mkclean was written in the belief that it was being used on
+pagecache pages.  I'm not sure how deeply engrained that belief is.
+
+If it can easily and safely be used on something else, that may be
+nice: though there's a danger we'll keep breaking and re-breaking
+it if there's only one driver using it in an unusual way.  CC'ed
+Peter since he's the one who most needs to be aware of this.
+
+> 
+> Is there an way to get a similar functionality? Currently, i have no
+> idea
+> how to get the ptep from a page alloced with vmalloc().
+
+A pagecache page would have page->mapping initialized to point to
+the struct address_space of the vma, and page->index to the offset
+(in PAGE_SIZE units): see mm/filemap.c:add_to_page_cache.  Without
+page->mapping set, page_mkclean_file won't be able to find the vmas
+in which the page might appear; and without page->index set, it
+won't be able to find where the page should be in those vmas.
+
+If such a driver does not put its pages into the page cache (the
+safer course? I'm unsure), then it needs to set page->mapping and
+page->index appropriately (and reset page->mapping to NULL before
+freeing).
+
+Hugh
