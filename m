@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbXJ3TlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbXJ3Tlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbXJ3TlG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXJ3Tkw
+	id S1757178AbXJ3Tlc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXJ3Tk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:40:52 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45011 "EHLO
+	Tue, 30 Oct 2007 15:40:59 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45018 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbXJ3Tkv (ORCPT
+	with ESMTP id S1753997AbXJ3Tk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:40:51 -0400
+	Tue, 30 Oct 2007 15:40:57 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
        randy.dunlap@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH v3] 0/4 fs/ioctl.c coding style, function renaming/factoring
-Date: Tue, 30 Oct 2007 15:39:55 -0400
-Message-Id: <11937731993134-git-send-email-ezk@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 4/4] Unionfs: use vfs_ioctl
+Date: Tue, 30 Oct 2007 15:39:59 -0400
+Message-Id: <11937732011790-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
+In-Reply-To: <11937731993134-git-send-email-ezk@cs.sunysb.edu>
+References: <11937731993134-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+---
+ fs/unionfs/commonfops.c |   36 ++++++------------------------------
+ 1 files changed, 6 insertions(+), 30 deletions(-)
 
-This series of 4 proposed patches (take 3) changes fs/ioctl.c and Unionfs as
-follows.  This series is against v2.6.24-rc1-423-g97855b4.
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 7654bcb..c99b519 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -661,35 +661,6 @@ out:
+ 	return err;
+ }
+ 
+-/* pass the ioctl to the lower fs */
+-static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-{
+-	struct file *lower_file;
+-	int err;
+-
+-	lower_file = unionfs_lower_file(file);
+-
+-	err = security_file_ioctl(lower_file, cmd, arg);
+-	if (err)
+-		goto out;
+-
+-	err = -ENOTTY;
+-	if (!lower_file || !lower_file->f_op)
+-		goto out;
+-	if (lower_file->f_op->unlocked_ioctl) {
+-		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
+-	} else if (lower_file->f_op->ioctl) {
+-		lock_kernel();
+-		err = lower_file->f_op->ioctl(
+-			lower_file->f_path.dentry->d_inode,
+-			lower_file, cmd, arg);
+-		unlock_kernel();
+-	}
+-
+-out:
+-	return err;
+-}
+-
+ /*
+  * return to user-space the branch indices containing the file in question
+  *
+@@ -756,6 +727,7 @@ out:
+ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	long err;
++	struct file *lower_file;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 
+@@ -779,7 +751,11 @@ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 
+ 	default:
+ 		/* pass the ioctl down */
+-		err = do_ioctl(file, cmd, arg);
++		lower_file = unionfs_lower_file(file);
++		if (lower_file)
++			err = vfs_ioctl(lower_file, cmd, arg);
++		else
++			err = -ENOTTY;
+ 		break;
+ 	}
+ 
+-- 
+1.5.2.2
 
-Patch 1: just applies coding standards to fs/ioctl.c (while I'm at it, I
-figured it's worth cleaning VFS files one at a time).
-
-Patch 2: does two things:
-
-(a) Renames the old vfs_ioctl to do_ioctl, because the comment above it
-    clearly indicates that it is an internal function not to be exported to
-    modules; therefore it should have a more traditional do_XXX "internal
-    function" name.  The new do_ioctl is exported in fs.h but not to
-    modules.
-
-(b) Renames the old (static) do_ioctl to vfs_ioctl because the names vfs_XXX
-    should preferably be reserved to callable VFS functions which modules
-    may call, as other vfs_XXX functions already do.  Export the new
-    vfs_ioctl to (GPL) modules so others can use it (including Unionfs and
-    eCryptfs).
-
-Patch 3: factors out the switch statements' cases for
-FIBMAP/FIONBIO/FIOASYNC, into three small static helper functions.
-
-Patch 4: demonstrates how Unionfs can use the new vfs_ioctl.  I successfully
-tested unionfs with this new exported vfs_ioctl.  (eCryptfs could do the
-same.)
-
-I'd like to propose that the first 3 patches be merged in -mm and even
-mainline, pending review.
-
-Erez Zadok (4):
-      VFS: apply coding standards to fs/ioctl.c
-      VFS: swap do_ioctl and vfs_ioctl names
-      VFS: factor out three helpers for FIBMAP/FIONBIO/FIOASYNC file ioctls
-      Unionfs: use vfs_ioctl
-
- fs/compat_ioctl.c       |    2 
- fs/ioctl.c              |  224 ++++++++++++++++++++++++++++--------------------
- fs/unionfs/commonfops.c |   36 +------
- include/linux/fs.h      |    4 
- 4 files changed, 141 insertions(+), 125 deletions(-)
-
-Cheers,
-Erez.
