@@ -1,200 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXJ3QUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbXJ3QUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbXJ3QUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXJ3QOp
+	id S1758714AbXJ3QUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbXJ3QOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:14:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47089 "EHLO mx1.redhat.com"
+	Tue, 30 Oct 2007 12:14:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47085 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbXJ3QOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:14:18 -0400
-Message-Id: <20071030160914.749995000@chello.nl>
+	id S1753336AbXJ3QOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 12:14:19 -0400
+Message-Id: <20071030160914.987987000@chello.nl>
 References: <20071030160401.296770000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Oct 2007 17:04:24 +0100
+Date: Tue, 30 Oct 2007 17:04:26 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 23/33] netvm: skb processing
-Content-Disposition: inline; filename=netvm.patch
+Subject: [PATCH 25/33] mm: add support for non block device backed swap files
+Content-Disposition: inline; filename=mm-swapfile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to make sure emergency packets receive all memory needed to proceed
-ensure processing of emergency SKBs happens under PF_MEMALLOC.
+A new addres_space_operations method is added:
+  int swapfile(struct address_space *, int)
 
-Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
+When during sys_swapon() this method is found and returns no error the 
+swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops.
 
-Skip taps, since those are user-space again.
+The swapfile method will be used to communicate to the address_space that the
+VM relies on it, and the address_space should take adequate measures (like 
+reserving memory for mempools or the like).
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h |    5 +++++
- net/core/dev.c     |   44 ++++++++++++++++++++++++++++++++++++++------
- net/core/sock.c    |   18 ++++++++++++++++++
- 3 files changed, 61 insertions(+), 6 deletions(-)
+ Documentation/filesystems/Locking |    9 +++++
+ include/linux/buffer_head.h       |    2 -
+ include/linux/fs.h                |    1 
+ include/linux/swap.h              |    3 +
+ mm/Kconfig                        |    3 +
+ mm/page_io.c                      |   58 ++++++++++++++++++++++++++++++++++++++
+ mm/swap_state.c                   |    5 +++
+ mm/swapfile.c                     |   22 +++++++++++++-
+ 8 files changed, 101 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/net/core/dev.c
+Index: linux-2.6/include/linux/swap.h
 ===================================================================
---- linux-2.6.orig/net/core/dev.c
-+++ linux-2.6/net/core/dev.c
-@@ -1976,10 +1976,23 @@ int netif_receive_skb(struct sk_buff *sk
- 	struct net_device *orig_dev;
- 	int ret = NET_RX_DROP;
- 	__be16 type;
-+	unsigned long pflags = current->flags;
-+
-+	/* Emergency skb are special, they should
-+	 *  - be delivered to SOCK_MEMALLOC sockets only
-+	 *  - stay away from userspace
-+	 *  - have bounded memory usage
-+	 *
-+	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
-+	 * This saves us from propagating the allocation context down to all
-+	 * allocation sites.
-+	 */
-+	if (skb_emergency(skb))
-+		current->flags |= PF_MEMALLOC;
+--- linux-2.6.orig/include/linux/swap.h
++++ linux-2.6/include/linux/swap.h
+@@ -164,6 +164,7 @@ enum {
+ 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
+ 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
+ 	SWP_ACTIVE	= (SWP_USED | SWP_WRITEOK),
++	SWP_FILE	= (1 << 2),	/* file swap area */
+ 					/* add others here before... */
+ 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+ };
+@@ -264,6 +265,8 @@ extern void swap_unplug_io_fn(struct bac
+ /* linux/mm/page_io.c */
+ extern int swap_readpage(struct file *, struct page *);
+ extern int swap_writepage(struct page *page, struct writeback_control *wbc);
++extern void swap_sync_page(struct page *page);
++extern int swap_set_page_dirty(struct page *page);
+ extern void end_swap_bio_read(struct bio *bio, int err);
  
- 	/* if we've gotten here through NAPI, check netpoll */
- 	if (netpoll_receive_skb(skb))
--		return NET_RX_DROP;
-+		goto out;
+ /* linux/mm/swap_state.c */
+Index: linux-2.6/mm/page_io.c
+===================================================================
+--- linux-2.6.orig/mm/page_io.c
++++ linux-2.6/mm/page_io.c
+@@ -17,6 +17,7 @@
+ #include <linux/bio.h>
+ #include <linux/swapops.h>
+ #include <linux/writeback.h>
++#include <linux/buffer_head.h>
+ #include <asm/pgtable.h>
  
- 	if (!skb->tstamp.tv64)
- 		net_timestamp(skb);
-@@ -1990,7 +2003,7 @@ int netif_receive_skb(struct sk_buff *sk
- 	orig_dev = skb_bond(skb);
- 
- 	if (!orig_dev)
--		return NET_RX_DROP;
-+		goto out;
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
- 
-@@ -2009,6 +2022,9 @@ int netif_receive_skb(struct sk_buff *sk
+ static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+@@ -102,6 +103,18 @@ int swap_writepage(struct page *page, st
+ 		unlock_page(page);
+ 		goto out;
  	}
- #endif
- 
-+	if (skb_emergency(skb))
-+		goto skip_taps;
-+
- 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
- 		if (!ptype->dev || ptype->dev == skb->dev) {
- 			if (pt_prev)
-@@ -2017,6 +2033,7 @@ int netif_receive_skb(struct sk_buff *sk
- 		}
- 	}
- 
-+skip_taps:
- #ifdef CONFIG_NET_CLS_ACT
- 	if (pt_prev) {
- 		ret = deliver_skb(skb, pt_prev, orig_dev);
-@@ -2029,19 +2046,31 @@ int netif_receive_skb(struct sk_buff *sk
- 
- 	if (ret == TC_ACT_SHOT || (ret == TC_ACT_STOLEN)) {
- 		kfree_skb(skb);
--		goto out;
-+		goto unlock;
- 	}
- 
- 	skb->tc_verd = 0;
- ncls:
- #endif
- 
-+	if (skb_emergency(skb))
-+		switch(skb->protocol) {
-+			case __constant_htons(ETH_P_ARP):
-+			case __constant_htons(ETH_P_IP):
-+			case __constant_htons(ETH_P_IPV6):
-+			case __constant_htons(ETH_P_8021Q):
-+				break;
-+
-+			default:
-+				goto drop;
++#ifdef CONFIG_SWAP_FILE
++	{
++		struct swap_info_struct *sis = page_swap_info(page);
++		if (sis->flags & SWP_FILE) {
++			ret = sis->swap_file->f_mapping->
++				a_ops->writepage(page, wbc);
++			if (!ret)
++				count_vm_event(PSWPOUT);
++			return ret;
 +		}
-+
- 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- 	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- 
- 	type = skb->protocol;
- 	list_for_each_entry_rcu(ptype, &ptype_base[ntohs(type)&15], list) {
-@@ -2056,6 +2085,7 @@ ncls:
- 	if (pt_prev) {
- 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
- 	} else {
-+drop:
- 		kfree_skb(skb);
- 		/* Jamal, now you will not able to escape explaining
- 		 * me how you were going to use this. :-)
-@@ -2063,8 +2093,10 @@ ncls:
- 		ret = NET_RX_DROP;
- 	}
- 
--out:
-+unlock:
- 	rcu_read_unlock();
-+out:
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
++	}
++#endif
+ 	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
+ 				end_swap_bio_write);
+ 	if (bio == NULL) {
+@@ -120,6 +133,39 @@ out:
  	return ret;
  }
  
-Index: linux-2.6/include/net/sock.h
-===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -523,8 +523,13 @@ static inline void sk_add_backlog(struct
- 	skb->next = NULL;
- }
- 
-+extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
-+
- static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
- {
-+	if (skb_emergency(skb))
-+		return __sk_backlog_rcv(sk, skb);
-+
- 	return sk->sk_backlog_rcv(sk, skb);
- }
- 
-Index: linux-2.6/net/core/sock.c
-===================================================================
---- linux-2.6.orig/net/core/sock.c
-+++ linux-2.6/net/core/sock.c
-@@ -319,6 +319,24 @@ int sk_clear_memalloc(struct sock *sk)
- }
- EXPORT_SYMBOL_GPL(sk_clear_memalloc);
- 
-+#ifdef CONFIG_NETVM
-+int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
++#ifdef CONFIG_SWAP_FILE
++void swap_sync_page(struct page *page)
 +{
-+	int ret;
-+	unsigned long pflags = current->flags;
++	struct swap_info_struct *sis = page_swap_info(page);
 +
-+	/* these should have been dropped before queueing */
-+	BUG_ON(!sk_has_memalloc(sk));
-+
-+	current->flags |= PF_MEMALLOC;
-+	ret = sk->sk_backlog_rcv(sk, skb);
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
-+
-+	return ret;
++	if (sis->flags & SWP_FILE) {
++		const struct address_space_operations * a_ops =
++			sis->swap_file->f_mapping->a_ops;
++		if (a_ops->sync_page)
++			a_ops->sync_page(page);
++	} else
++		block_sync_page(page);
 +}
-+EXPORT_SYMBOL(__sk_backlog_rcv);
++
++int swap_set_page_dirty(struct page *page)
++{
++	struct swap_info_struct *sis = page_swap_info(page);
++
++	if (sis->flags & SWP_FILE) {
++		const struct address_space_operations * a_ops =
++			sis->swap_file->f_mapping->a_ops;
++		int (*spd)(struct page *) = a_ops->set_page_dirty;
++#ifdef CONFIG_BLOCK
++		if (!spd)
++			spd = __set_page_dirty_buffers;
++#endif
++		return (*spd)(page);
++	}
++
++	return __set_page_dirty_nobuffers(page);
++}
 +#endif
 +
- static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ int swap_readpage(struct file *file, struct page *page)
  {
- 	struct timeval tv;
+ 	struct bio *bio;
+@@ -127,6 +173,18 @@ int swap_readpage(struct file *file, str
+ 
+ 	BUG_ON(!PageLocked(page));
+ 	ClearPageUptodate(page);
++#ifdef CONFIG_SWAP_FILE
++	{
++		struct swap_info_struct *sis = page_swap_info(page);
++		if (sis->flags & SWP_FILE) {
++			ret = sis->swap_file->f_mapping->
++				a_ops->readpage(sis->swap_file, page);
++			if (!ret)
++				count_vm_event(PSWPIN);
++			return ret;
++		}
++	}
++#endif
+ 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
+ 				end_swap_bio_read);
+ 	if (bio == NULL) {
+Index: linux-2.6/mm/swap_state.c
+===================================================================
+--- linux-2.6.orig/mm/swap_state.c
++++ linux-2.6/mm/swap_state.c
+@@ -27,8 +27,13 @@
+  */
+ static const struct address_space_operations swap_aops = {
+ 	.writepage	= swap_writepage,
++#ifdef CONFIG_SWAP_FILE
++	.sync_page	= swap_sync_page,
++	.set_page_dirty	= swap_set_page_dirty,
++#else
+ 	.sync_page	= block_sync_page,
+ 	.set_page_dirty	= __set_page_dirty_nobuffers,
++#endif
+ 	.migratepage	= migrate_page,
+ };
+ 
+Index: linux-2.6/mm/swapfile.c
+===================================================================
+--- linux-2.6.orig/mm/swapfile.c
++++ linux-2.6/mm/swapfile.c
+@@ -988,6 +988,13 @@ static void destroy_swap_extents(struct 
+ 		list_del(&se->list);
+ 		kfree(se);
+ 	}
++#ifdef CONFIG_SWAP_FILE
++	if (sis->flags & SWP_FILE) {
++		sis->flags &= ~SWP_FILE;
++		sis->swap_file->f_mapping->a_ops->
++			swapfile(sis->swap_file->f_mapping, 0);
++	}
++#endif
+ }
+ 
+ /*
+@@ -1080,6 +1087,19 @@ static int setup_swap_extents(struct swa
+ 		goto done;
+ 	}
+ 
++#ifdef CONFIG_SWAP_FILE
++	if (sis->swap_file->f_mapping->a_ops->swapfile) {
++		ret = sis->swap_file->f_mapping->a_ops->
++			swapfile(sis->swap_file->f_mapping, 1);
++		if (!ret) {
++			sis->flags |= SWP_FILE;
++			ret = add_swap_extent(sis, 0, sis->max, 0);
++			*span = sis->pages;
++		}
++		goto done;
++	}
++#endif
++
+ 	blkbits = inode->i_blkbits;
+ 	blocks_per_page = PAGE_SIZE >> blkbits;
+ 
+@@ -1644,7 +1664,7 @@ asmlinkage long sys_swapon(const char __
+ 
+ 	mutex_lock(&swapon_mutex);
+ 	spin_lock(&swap_lock);
+-	p->flags = SWP_ACTIVE;
++	p->flags |= SWP_WRITEOK;
+ 	nr_swap_pages += nr_good_pages;
+ 	total_swap_pages += nr_good_pages;
+ 
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -485,6 +485,7 @@ struct address_space_operations {
+ 	int (*migratepage) (struct address_space *,
+ 			struct page *, struct page *);
+ 	int (*launder_page) (struct page *);
++	int (*swapfile)(struct address_space *, int);
+ };
+ 
+ /*
+Index: linux-2.6/Documentation/filesystems/Locking
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/Locking
++++ linux-2.6/Documentation/filesystems/Locking
+@@ -174,6 +174,7 @@ prototypes:
+ 	int (*direct_IO)(int, struct kiocb *, const struct iovec *iov,
+ 			loff_t offset, unsigned long nr_segs);
+ 	int (*launder_page) (struct page *);
++	int (*swapfile) (struct address_space *, int);
+ 
+ locking rules:
+ 	All except set_page_dirty may block
+@@ -195,6 +196,7 @@ invalidatepage:		no	yes
+ releasepage:		no	yes
+ direct_IO:		no
+ launder_page:		no	yes
++swapfile		no
+ 
+ 	->prepare_write(), ->commit_write(), ->sync_page() and ->readpage()
+ may be called from the request handler (/dev/loop).
+@@ -294,6 +296,13 @@ cleaned, or an error value if not. Note 
+ getting mapped back in and redirtied, it needs to be kept locked
+ across the entire operation.
+ 
++	->swapfile() will be called with a non zero argument on address spaces
++backing non block device backed swapfiles. A return value of zero indicates
++success. In which case this address space can be used for backing swapspace.
++The swapspace operations will be proxied to the address space operations.
++Swapoff will call this method with a zero argument to release the address
++space.
++
+ 	Note: currently almost all instances of address_space methods are
+ using BKL for internal serialization and that's one of the worst sources
+ of contention. Normally they are calling library functions (in fs/buffer.c)
+Index: linux-2.6/mm/Kconfig
+===================================================================
+--- linux-2.6.orig/mm/Kconfig
++++ linux-2.6/mm/Kconfig
+@@ -186,6 +186,9 @@ config BOUNCE
+ 	def_bool y
+ 	depends on BLOCK && MMU && (ZONE_DMA || HIGHMEM)
+ 
++config SWAP_FILE
++	def_bool n
++
+ config NR_QUICK
+ 	int
+ 	depends on QUICKLIST
+Index: linux-2.6/include/linux/buffer_head.h
+===================================================================
+--- linux-2.6.orig/include/linux/buffer_head.h
++++ linux-2.6/include/linux/buffer_head.h
+@@ -329,7 +329,7 @@ static inline void invalidate_inode_buff
+ static inline int remove_inode_buffers(struct inode *inode) { return 1; }
+ static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
+ static inline void invalidate_bdev(struct block_device *bdev) {}
+-
++static inline void block_sync_page(struct page *) { }
+ 
+ #endif /* CONFIG_BLOCK */
+ #endif /* _LINUX_BUFFER_HEAD_H */
 
 --
 
