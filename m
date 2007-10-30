@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXJ3M57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbXJ3NA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbXJ3M57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXJ3M5w
+	id S1754317AbXJ3NA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 09:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXJ3NAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:57:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:4125 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbXJ3M5v (ORCPT
+	Tue, 30 Oct 2007 09:00:15 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:18154 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbXJ3NAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:57:51 -0400
+	Tue, 30 Oct 2007 09:00:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QCZ0K7HP+NfKceFzaK+AeO8mTTENWWOeaiQamwLUlUXJXDz8ZlQnhZ3b4yWU2lmnfOwH9qF/2jwkJ9uZtmDH2kAIM9nJPBINwMJ3RUAP4rg3ebr1X+OVDBORuvj/GMuGWXNx8bUvtNfIs1jOjzL8+gLjjLPnxrywzg0zQFvdhfM=
-Message-ID: <b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
-Date: Tue, 30 Oct 2007 21:57:50 +0900
-From: "Suzuki Takashi" <suzuki.takashi@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux kernel [try #2]
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Q8z5+srlK/Q+uLlpdu4ifqzdFAyx7cEqSLfL1cezPAdI+TLdY96FkFPNX1QYnQN4HWzFbaIA6E7t28W3uJ6T1bEs5QESoDK39LoC7vdVVUh5etNkxso8DnR7Eq5lNlb/rpgg0Lf9JlXDyf9eSctMIJGre5wwIT1yLJ0IQx2CCZA=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [GIT PATCH] final SCSI pieces for the merge window
+Date: Tue, 30 Oct 2007 13:00:03 +0000
+User-Agent: KMail/1.9.1
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <471E6313.1040704@garzik.org> <1193232490.3396.10.camel@localhost.localdomain> <20071024142729.GZ27248@parisc-linux.org>
+In-Reply-To: <20071024142729.GZ27248@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
+Message-Id: <200710301300.03996.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/29/07, David Howells <dhowells@redhat.com> wrote:
-> The second patch adds the architecture itself, to be selected by ARCH=mn10300
-> on the make command line.
+On Wednesday 24 October 2007 15:27, Matthew Wilcox wrote:
+> On Wed, Oct 24, 2007 at 09:28:10AM -0400, James Bottomley wrote:
+> > OK, so it's no secret that I'm the last of the subsystem maintainers
+> > whose day job isn't working on the linux kernel.  If you want a full
+> > time person, who did you have in mind?
+> 
+> I'm willing to take on the role of scsi git-monkey.  Alternatively, we
+> could split the scsi maintainer role the same way that Dave and Jeff
+> do for net where Dave handles the core and Jeff handles the drivers.
+> Or we can negotiate some other arrangement.
 
-Why don't you use `am33' for the arch name?
-Do you have any plans to support am30 (mn10300) or any pre-am33 processor cores?
-
-I know the mn10300-* target configurations are also available for toolchains,
-but it is for historical reasons.
-Even the GNUPro packages have the release name am33-04r2-5 instead of mn10300-*.
-
-The same arch name would be better for the same architecture
-among the toolchains, the kernel and the library, not to confuse contributors.
-GNU libc has used am33 for the machine name since the architecture was
-supported.
-
-
--- 
-Suzuki Takashi
-Japan
+That would be great. Maybe my aic7xxx debloating patches
+which were submitted four times already (IIRC)
+will be looked at at last.
+--
+vda
