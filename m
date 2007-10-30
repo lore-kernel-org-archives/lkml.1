@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbXJ3PQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXJ3PU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbXJ3PQD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXJ3PPx
+	id S1754706AbXJ3PU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXJ3PUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:15:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33267 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753672AbXJ3PPw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:15:52 -0400
-Date: Tue, 30 Oct 2007 08:15:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       akpm@linux-foundation.org, ak@suse.de, rajesh.shah@intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
-In-Reply-To: <47267232.3020506@shaw.ca>
-Message-ID: <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
-References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
- <200710251622.36773.jbarnes@virtuousgeek.org> <20071026025407.GA21408@kroah.com>
- <200710260959.46811.jbarnes@virtuousgeek.org> <20071027024140.GC29039@kroah.com>
- <47267232.3020506@shaw.ca>
+	Tue, 30 Oct 2007 11:20:18 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:54467 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752560AbXJ3PUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 11:20:16 -0400
+Date: Tue, 30 Oct 2007 11:20:02 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, "George G. Davis" <gdavis@mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: [PATCH, RESEND] locks: fix possible infinite loop in posix
+	deadlock detection
+Message-ID: <20071030152002.GA21595@fieldses.org>
+References: <20071017185157.GC3785@mvista.com> <20071018185759.GU3785@mvista.com> <20071026170750.GC13033@fieldses.org> <20071026224707.GO13033@fieldses.org> <20071028173136.GA16905@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071028173136.GA16905@fieldses.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
+It's currently possible to send posix_locks_deadlock() into an infinite
+loop (under the BKL).
 
-On Mon, 29 Oct 2007, Robert Hancock wrote:
-> 
-> The other possible workaround would be to avoid using MMCONFIG until the BAR
-> sizing is done. 
+For now, fix this just by bailing out after a few iterations.  We may
+want to fix this in a way that better clarifies the semantics of
+deadlock detection.  But that will take more time, and this minimal fix
+is probably adequate for any realistic scenario, and is simple enough to
+be appropriate for applying to stable kernels now.
 
-The only sane solution is the one that people constantly seem to ignore:
+Thanks to George Davis for reporting the problem.
 
- - only use MMCONFIG if absolutely required by the access itself
+Cc: "George G. Davis" <gdavis@mvista.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ fs/locks.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-In other words, make the MMCONFIG code fall back on old-style accesses for 
-any register access to a word with reg+size <= 256.
+I didn't see objections to this quick fix (just to the followup that
+attempts to rip out posix deadlock detection entirely), so I'm
+resending with just comment modifications.
 
-At that point, almost all the issues with mmconfig just go away, BECAUSE 
-NOBODY USES IT, so it doesn't matter if it's broken?
+I haven't given up on a more comprehensive solution, but I think we
+really need to apply some fix now.
 
-The fact is, CONF1 style accesses are just safer, and *work*. 
+--b.
 
-Can we please just do that? 
+diff --git a/fs/locks.c b/fs/locks.c
+index 0127a28..8b8388e 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -696,17 +696,28 @@ EXPORT_SYMBOL(posix_test_lock);
+  * Note: the above assumption may not be true when handling lock requests
+  * from a broken NFS client. But broken NFS clients have a lot more to
+  * worry about than proper deadlock detection anyway... --okir
++ *
++ * However, the failure of this assumption (also possible in the case of
++ * multiple tasks sharing the same open file table) also means there's no
++ * guarantee that the loop below will terminate.  As a hack, we give up
++ * after a few iterations.
+  */
++
++#define MAX_DEADLK_ITERATIONS 10
++
+ static int posix_locks_deadlock(struct file_lock *caller_fl,
+ 				struct file_lock *block_fl)
+ {
+ 	struct file_lock *fl;
++	int i = 0;
+ 
+ next_task:
+ 	if (posix_same_owner(caller_fl, block_fl))
+ 		return 1;
+ 	list_for_each_entry(fl, &blocked_list, fl_link) {
+ 		if (posix_same_owner(fl, block_fl)) {
++			if (i++ > MAX_DEADLK_ITERATIONS)
++				return 0;
+ 			fl = fl->fl_next;
+ 			block_fl = fl;
+ 			goto next_task;
+-- 
+1.5.3.4.208.gc990
 
-		Linus
