@@ -1,578 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbXJ3Vyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXJ3V7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbXJ3Vyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 17:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbXJ3Vyj
+	id S1755281AbXJ3V7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 17:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbXJ3V7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 17:54:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33434 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXJ3Vyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 17:54:38 -0400
-Date: Tue, 30 Oct 2007 14:54:21 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: vitalivanov@gmail.com
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au,
-       zaitcev@redhat.com
-Subject: Re: USB: FIx locks and urb->status in adutux
-Message-Id: <20071030145421.f1f0aa53.zaitcev@redhat.com>
-In-Reply-To: <1193749794.27085.15.camel@dell1.softservecom.com>
-References: <20071022203447.db6d7950.zaitcev@redhat.com>
-	<200710231138.38266.oliver@neukum.org>
-	<20071023185302.5ce9d187.zaitcev@redhat.com>
-	<1193234987.13750.21.camel@dell1.softservecom.com>
-	<20071024202555.4f1cd215.zaitcev@redhat.com>
-	<1193681097.20985.31.camel@dell1.softservecom.com>
-	<20071029212433.c9837c4b.zaitcev@redhat.com>
-	<1193749794.27085.15.camel@dell1.softservecom.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Oct 2007 17:59:34 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:50793 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbXJ3V7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 17:59:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JSOLHjkd4CKXi31pz05jmSRk6kUfIXKfrywgPnUaVMVR8UL/T7TLmQ1jCZVWSQkILq5wwNyUDE3G4h+uudVOYnV2MejzhnVWyiETQCS0lQtGoFaauhUW/ngeb/NBgT4EZvtUDb2qRXAE2UNpVv4ppt/QzKo7xJvRAxXAttIoCAw=
+Message-ID: <b1c6420f0710301459i147f0f00n1f7009139d3ac31a@mail.gmail.com>
+Date: Wed, 31 Oct 2007 06:59:32 +0900
+From: "Suzuki Takashi" <suzuki.takashi@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300 architecture to Linux kernel [try #2]
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <27157.1193763218@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
+	 <b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
+	 <15631.1193753689@redhat.com>
+	 <b1c6420f0710300810g1dbf8142j4c515a9baab4207a@mail.gmail.com>
+	 <27157.1193763218@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 15:09:54 +0200, Vitaliy Ivanov <vitalivanov@gmail.com> wrote:
+On 10/31/07, David Howells <dhowells@redhat.com> wrote:
+> > But the arch name change does not affect running kernels on consumer devices.
+>
+> uname says mn10300.
 
-> As about read_urb_finished probably it's OK. But we shouldn't decrease
-> open_count in the case of error as then we return normal exit value.
+Oh, I forgot.
+But is there any utility that depends on that uname says mn10300?
 
-Oh, thanks. I fixed that.
+> > Drastic changes in the directory and file structures will have
+> > a much greater impact than that.
+>
+> Like renaming the arch/mn10300 and include/asm-mn10300 directories and having
+> to tell people already using ARCH=mn10300 that they've got to change.
 
-One other small thing. I see you dropped the dev->mtx bracket that
-I added around the initialization and submission. Notice that the
-dev->udev is zeroed under dev->mtx, not the static lock. This is because
-it has to be seen in read and write paths. If you don't like taking
-across the submission, how about testing for it ahead of time?
+I know existing developers should learn the arch name change.
+But how many developers?
 
-Here's what I've got now:
+> > New contributors cannot recognize the am33 glibc is for the mn10300 Linux.
+>
+> They can if they're told so, plus if they've got the CPU docs to hand, it
+> should be more obvious.  The AM33 is a variant of the MN10300 arch as far as I
+> can tell.
 
-diff --git a/drivers/usb/misc/adutux.c b/drivers/usb/misc/adutux.c
-index c567aa7..5a2c44e 100644
---- a/drivers/usb/misc/adutux.c
-+++ b/drivers/usb/misc/adutux.c
-@@ -79,12 +79,22 @@ MODULE_DEVICE_TABLE(usb, device_table);
- 
- #define COMMAND_TIMEOUT	(2*HZ)	/* 60 second timeout for a command */
- 
-+/*
-+ * The locking scheme is a vanilla 3-lock:
-+ *   adu_device.buflock: A spinlock, covers what IRQs touch.
-+ *   adutux_mutex:       A Static lock to cover open_count. It would also cover
-+ *                       any globals, but we don't have them in 2.6.
-+ *   adu_device.mtx:     A mutex to hold across sleepers like copy_from_user.
-+ *                       It covers all of adu_device, except the open_count
-+ *                       and what .buflock covers.
-+ */
-+
- /* Structure to hold all of our device specific stuff */
- struct adu_device {
--	struct mutex		mtx; /* locks this structure */
-+	struct mutex		mtx;
- 	struct usb_device*	udev; /* save off the usb device pointer */
- 	struct usb_interface*	interface;
--	unsigned char		minor; /* the starting minor number for this device */
-+	unsigned int		minor; /* the starting minor number for this device */
- 	char			serial_number[8];
- 
- 	int			open_count; /* number of times this port has been opened */
-@@ -107,8 +117,11 @@ struct adu_device {
- 	char*			interrupt_out_buffer;
- 	struct usb_endpoint_descriptor* interrupt_out_endpoint;
- 	struct urb*		interrupt_out_urb;
-+	int			out_urb_finished;
- };
- 
-+static DEFINE_MUTEX(adutux_mutex);
-+
- static struct usb_driver adu_driver;
- 
- static void adu_debug_data(int level, const char *function, int size,
-@@ -132,27 +145,31 @@ static void adu_debug_data(int level, const char *function, int size,
-  */
- static void adu_abort_transfers(struct adu_device *dev)
- {
--	dbg(2," %s : enter", __FUNCTION__);
-+	unsigned long flags;
- 
--	if (dev == NULL) {
--		dbg(1," %s : dev is null", __FUNCTION__);
--		goto exit;
--	}
-+	dbg(2," %s : enter", __FUNCTION__);
- 
- 	if (dev->udev == NULL) {
- 		dbg(1," %s : udev is null", __FUNCTION__);
- 		goto exit;
- 	}
- 
--	dbg(2," %s : udev state %d", __FUNCTION__, dev->udev->state);
--	if (dev->udev->state == USB_STATE_NOTATTACHED) {
--		dbg(1," %s : udev is not attached", __FUNCTION__);
--		goto exit;
--	}
--
- 	/* shutdown transfer */
--	usb_unlink_urb(dev->interrupt_in_urb);
--	usb_unlink_urb(dev->interrupt_out_urb);
-+
-+	/* XXX Anchor these instead */
-+	spin_lock_irqsave(&dev->buflock, flags);
-+	if (!dev->read_urb_finished) {
-+		spin_unlock_irqrestore(&dev->buflock, flags);
-+		usb_kill_urb(dev->interrupt_in_urb);
-+	} else
-+		spin_unlock_irqrestore(&dev->buflock, flags);
-+
-+	spin_lock_irqsave(&dev->buflock, flags);
-+	if (!dev->out_urb_finished) {
-+		spin_unlock_irqrestore(&dev->buflock, flags);
-+		usb_kill_urb(dev->interrupt_out_urb);
-+	} else
-+		spin_unlock_irqrestore(&dev->buflock, flags);
- 
- exit:
- 	dbg(2," %s : leave", __FUNCTION__);
-@@ -162,8 +179,6 @@ static void adu_delete(struct adu_device *dev)
- {
- 	dbg(2, "%s enter", __FUNCTION__);
- 
--	adu_abort_transfers(dev);
--
- 	/* free data structures */
- 	usb_free_urb(dev->interrupt_in_urb);
- 	usb_free_urb(dev->interrupt_out_urb);
-@@ -239,7 +254,10 @@ static void adu_interrupt_out_callback(struct urb *urb)
- 		goto exit;
- 	}
- 
--	wake_up_interruptible(&dev->write_wait);
-+	spin_lock(&dev->buflock);
-+	dev->out_urb_finished = 1;
-+	wake_up(&dev->write_wait);
-+	spin_unlock(&dev->buflock);
- exit:
- 
- 	adu_debug_data(5, __FUNCTION__, urb->actual_length,
-@@ -252,12 +270,17 @@ static int adu_open(struct inode *inode, struct file *file)
- 	struct adu_device *dev = NULL;
- 	struct usb_interface *interface;
- 	int subminor;
--	int retval = 0;
-+	int retval;
- 
- 	dbg(2,"%s : enter", __FUNCTION__);
- 
- 	subminor = iminor(inode);
- 
-+	if ((retval = mutex_lock_interruptible(&adutux_mutex))) {
-+		dbg(2, "%s : mutex lock failed", __FUNCTION__);
-+		goto exit_no_lock;
-+	}
-+
- 	interface = usb_find_interface(&adu_driver, subminor);
- 	if (!interface) {
- 		err("%s - error, can't find device for minor %d",
-@@ -267,54 +290,54 @@ static int adu_open(struct inode *inode, struct file *file)
- 	}
- 
- 	dev = usb_get_intfdata(interface);
--	if (!dev) {
-+	if (!dev || !dev->udev) {
- 		retval = -ENODEV;
- 		goto exit_no_device;
- 	}
- 
--	/* lock this device */
--	if ((retval = mutex_lock_interruptible(&dev->mtx))) {
--		dbg(2, "%s : mutex lock failed", __FUNCTION__);
-+	/* check that nobody else is using the device */
-+	if (dev->open_count) {
-+		retval = -EBUSY;
- 		goto exit_no_device;
- 	}
- 
--	/* increment our usage count for the device */
- 	++dev->open_count;
- 	dbg(2,"%s : open count %d", __FUNCTION__, dev->open_count);
- 
- 	/* save device in the file's private structure */
- 	file->private_data = dev;
- 
--	if (dev->open_count == 1) {
--		/* initialize in direction */
--		dev->read_buffer_length = 0;
-+	/* initialize in direction */
-+	dev->read_buffer_length = 0;
- 
--		/* fixup first read by having urb waiting for it */
--		usb_fill_int_urb(dev->interrupt_in_urb,dev->udev,
--				 usb_rcvintpipe(dev->udev,
--				 		dev->interrupt_in_endpoint->bEndpointAddress),
--				 dev->interrupt_in_buffer,
--				 le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
--				 adu_interrupt_in_callback, dev,
--				 dev->interrupt_in_endpoint->bInterval);
--		/* dev->interrupt_in_urb->transfer_flags |= URB_ASYNC_UNLINK; */
--		dev->read_urb_finished = 0;
--		retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
--		if (retval)
--			--dev->open_count;
--	}
--	mutex_unlock(&dev->mtx);
-+	/* fixup first read by having urb waiting for it */
-+	usb_fill_int_urb(dev->interrupt_in_urb,dev->udev,
-+			 usb_rcvintpipe(dev->udev,
-+					dev->interrupt_in_endpoint->bEndpointAddress),
-+			 dev->interrupt_in_buffer,
-+			 le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
-+			 adu_interrupt_in_callback, dev,
-+			 dev->interrupt_in_endpoint->bInterval);
-+	dev->read_urb_finished = 0;
-+	if (usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL))
-+		dev->read_urb_finished = 1;
-+	/* we ignore failure */
-+	/* end of fixup for first read */
-+
-+	/* initialize out direction */
-+	dev->out_urb_finished = 1;
-+
-+	retval = 0;
- 
- exit_no_device:
-+	mutex_unlock(&adutux_mutex);
-+exit_no_lock:
- 	dbg(2,"%s : leave, return value %d ", __FUNCTION__, retval);
--
- 	return retval;
- }
- 
--static int adu_release_internal(struct adu_device *dev)
-+static void adu_release_internal(struct adu_device *dev)
- {
--	int retval = 0;
--
- 	dbg(2," %s : enter", __FUNCTION__);
- 
- 	/* decrement our usage count for the device */
-@@ -326,12 +349,11 @@ static int adu_release_internal(struct adu_device *dev)
- 	}
- 
- 	dbg(2," %s : leave", __FUNCTION__);
--	return retval;
- }
- 
- static int adu_release(struct inode *inode, struct file *file)
- {
--	struct adu_device *dev = NULL;
-+	struct adu_device *dev;
- 	int retval = 0;
- 
- 	dbg(2," %s : enter", __FUNCTION__);
-@@ -343,15 +365,13 @@ static int adu_release(struct inode *inode, struct file *file)
- 	}
- 
- 	dev = file->private_data;
--
- 	if (dev == NULL) {
-  		dbg(1," %s : object is NULL", __FUNCTION__);
- 		retval = -ENODEV;
- 		goto exit;
- 	}
- 
--	/* lock our device */
--	mutex_lock(&dev->mtx); /* not interruptible */
-+	mutex_lock(&adutux_mutex); /* not interruptible */
- 
- 	if (dev->open_count <= 0) {
- 		dbg(1," %s : device not opened", __FUNCTION__);
-@@ -359,19 +379,15 @@ static int adu_release(struct inode *inode, struct file *file)
- 		goto exit;
- 	}
- 
-+	adu_release_internal(dev);
- 	if (dev->udev == NULL) {
- 		/* the device was unplugged before the file was released */
--		mutex_unlock(&dev->mtx);
--		adu_delete(dev);
--		dev = NULL;
--	} else {
--		/* do the work */
--		retval = adu_release_internal(dev);
-+		if (!dev->open_count)	/* ... and we're the last user */
-+			adu_delete(dev);
- 	}
- 
- exit:
--	if (dev)
--		mutex_unlock(&dev->mtx);
-+	mutex_unlock(&adutux_mutex);
- 	dbg(2," %s : leave, return value %d", __FUNCTION__, retval);
- 	return retval;
- }
-@@ -393,12 +409,12 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 
- 	dev = file->private_data;
- 	dbg(2," %s : dev=%p", __FUNCTION__, dev);
--	/* lock this object */
-+
- 	if (mutex_lock_interruptible(&dev->mtx))
- 		return -ERESTARTSYS;
- 
- 	/* verify that the device wasn't unplugged */
--	if (dev->udev == NULL || dev->minor == 0) {
-+	if (dev->udev == NULL) {
- 		retval = -ENODEV;
- 		err("No device or device unplugged %d", retval);
- 		goto exit;
-@@ -452,7 +468,7 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 				should_submit = 1;
- 			} else {
- 				/* even the primary was empty - we may need to do IO */
--				if (dev->interrupt_in_urb->status == -EINPROGRESS) {
-+				if (!dev->read_urb_finished) {
- 					/* somebody is doing IO */
- 					spin_unlock_irqrestore(&dev->buflock, flags);
- 					dbg(2," %s : submitted already", __FUNCTION__);
-@@ -460,6 +476,7 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 					/* we must initiate input */
- 					dbg(2," %s : initiate input", __FUNCTION__);
- 					dev->read_urb_finished = 0;
-+					spin_unlock_irqrestore(&dev->buflock, flags);
- 
- 					usb_fill_int_urb(dev->interrupt_in_urb,dev->udev,
- 							 usb_rcvintpipe(dev->udev,
-@@ -469,15 +486,12 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 							 adu_interrupt_in_callback,
- 							 dev,
- 							 dev->interrupt_in_endpoint->bInterval);
--					retval = usb_submit_urb(dev->interrupt_in_urb, GFP_ATOMIC);
--					if (!retval) {
--						spin_unlock_irqrestore(&dev->buflock, flags);
--						dbg(2," %s : submitted OK", __FUNCTION__);
--					} else {
-+					retval = usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
-+					if (retval) {
-+						dev->read_urb_finished = 1;
- 						if (retval == -ENOMEM) {
- 							retval = bytes_read ? bytes_read : -ENOMEM;
- 						}
--						spin_unlock_irqrestore(&dev->buflock, flags);
- 						dbg(2," %s : submit failed", __FUNCTION__);
- 						goto exit;
- 					}
-@@ -486,10 +500,14 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 				/* we wait for I/O to complete */
- 				set_current_state(TASK_INTERRUPTIBLE);
- 				add_wait_queue(&dev->read_wait, &wait);
--				if (!dev->read_urb_finished)
-+				spin_lock_irqsave(&dev->buflock, flags);
-+				if (!dev->read_urb_finished) {
-+					spin_unlock_irqrestore(&dev->buflock, flags);
- 					timeout = schedule_timeout(COMMAND_TIMEOUT);
--				else
-+				} else {
-+					spin_unlock_irqrestore(&dev->buflock, flags);
- 					set_current_state(TASK_RUNNING);
-+				}
- 				remove_wait_queue(&dev->read_wait, &wait);
- 
- 				if (timeout <= 0) {
-@@ -509,19 +527,23 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
- 
- 	retval = bytes_read;
- 	/* if the primary buffer is empty then use it */
--	if (should_submit && !dev->interrupt_in_urb->status==-EINPROGRESS) {
-+	spin_lock_irqsave(&dev->buflock, flags);
-+	if (should_submit && dev->read_urb_finished) {
-+		dev->read_urb_finished = 0;
-+		spin_unlock_irqrestore(&dev->buflock, flags);
- 		usb_fill_int_urb(dev->interrupt_in_urb,dev->udev,
- 				 usb_rcvintpipe(dev->udev,
- 				 		dev->interrupt_in_endpoint->bEndpointAddress),
--						dev->interrupt_in_buffer,
--						le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
--						adu_interrupt_in_callback,
--						dev,
--						dev->interrupt_in_endpoint->bInterval);
--		/* dev->interrupt_in_urb->transfer_flags |= URB_ASYNC_UNLINK; */
--		dev->read_urb_finished = 0;
--		usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL);
-+				dev->interrupt_in_buffer,
-+				le16_to_cpu(dev->interrupt_in_endpoint->wMaxPacketSize),
-+				adu_interrupt_in_callback,
-+				dev,
-+				dev->interrupt_in_endpoint->bInterval);
-+		if (usb_submit_urb(dev->interrupt_in_urb, GFP_KERNEL) != 0)
-+			dev->read_urb_finished = 1;
- 		/* we ignore failure */
-+	} else {
-+		spin_unlock_irqrestore(&dev->buflock, flags);
- 	}
- 
- exit:
-@@ -535,24 +557,24 @@ exit:
- static ssize_t adu_write(struct file *file, const __user char *buffer,
- 			 size_t count, loff_t *ppos)
- {
-+	DECLARE_WAITQUEUE(waita, current);
- 	struct adu_device *dev;
- 	size_t bytes_written = 0;
- 	size_t bytes_to_write;
- 	size_t buffer_size;
-+	unsigned long flags;
- 	int retval;
--	int timeout = 0;
- 
- 	dbg(2," %s : enter, count = %Zd", __FUNCTION__, count);
- 
- 	dev = file->private_data;
- 
--	/* lock this object */
- 	retval = mutex_lock_interruptible(&dev->mtx);
- 	if (retval)
- 		goto exit_nolock;
- 
- 	/* verify that the device wasn't unplugged */
--	if (dev->udev == NULL || dev->minor == 0) {
-+	if (dev->udev == NULL) {
- 		retval = -ENODEV;
- 		err("No device or device unplugged %d", retval);
- 		goto exit;
-@@ -564,42 +586,37 @@ static ssize_t adu_write(struct file *file, const __user char *buffer,
- 		goto exit;
- 	}
- 
--
- 	while (count > 0) {
--		if (dev->interrupt_out_urb->status == -EINPROGRESS) {
--			timeout = COMMAND_TIMEOUT;
-+		add_wait_queue(&dev->write_wait, &waita);
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		spin_lock_irqsave(&dev->buflock, flags);
-+		if (!dev->out_urb_finished) {
-+			spin_unlock_irqrestore(&dev->buflock, flags);
- 
--			while (timeout > 0) {
--				if (signal_pending(current)) {
-+			mutex_unlock(&dev->mtx);
-+			if (signal_pending(current)) {
- 				dbg(1," %s : interrupted", __FUNCTION__);
-+				set_current_state(TASK_RUNNING);
- 				retval = -EINTR;
--				goto exit;
-+				goto exit_onqueue;
- 			}
--			mutex_unlock(&dev->mtx);
--			timeout = interruptible_sleep_on_timeout(&dev->write_wait, timeout);
-+			if (schedule_timeout(COMMAND_TIMEOUT) == 0) {
-+				dbg(1, "%s - command timed out.", __FUNCTION__);
-+				retval = -ETIMEDOUT;
-+				goto exit_onqueue;
-+			}
-+			remove_wait_queue(&dev->write_wait, &waita);
- 			retval = mutex_lock_interruptible(&dev->mtx);
- 			if (retval) {
- 				retval = bytes_written ? bytes_written : retval;
- 				goto exit_nolock;
- 			}
--			if (timeout > 0) {
--				break;
--			}
--			dbg(1," %s : interrupted timeout: %d", __FUNCTION__, timeout);
--		}
--
--
--		dbg(1," %s : final timeout: %d", __FUNCTION__, timeout);
--
--		if (timeout == 0) {
--			dbg(1, "%s - command timed out.", __FUNCTION__);
--			retval = -ETIMEDOUT;
--			goto exit;
--		}
--
--		dbg(4," %s : in progress, count = %Zd", __FUNCTION__, count);
- 
-+			dbg(4," %s : in progress, count = %Zd", __FUNCTION__, count);
- 		} else {
-+			spin_unlock_irqrestore(&dev->buflock, flags);
-+			set_current_state(TASK_RUNNING);
-+			remove_wait_queue(&dev->write_wait, &waita);
- 			dbg(4," %s : sending, count = %Zd", __FUNCTION__, count);
- 
- 			/* write the data into interrupt_out_buffer from userspace */
-@@ -622,11 +639,12 @@ static ssize_t adu_write(struct file *file, const __user char *buffer,
- 				bytes_to_write,
- 				adu_interrupt_out_callback,
- 				dev,
--				dev->interrupt_in_endpoint->bInterval);
--			/* dev->interrupt_in_urb->transfer_flags |= URB_ASYNC_UNLINK; */
-+				dev->interrupt_out_endpoint->bInterval);
- 			dev->interrupt_out_urb->actual_length = bytes_to_write;
-+			dev->out_urb_finished = 0;
- 			retval = usb_submit_urb(dev->interrupt_out_urb, GFP_KERNEL);
- 			if (retval < 0) {
-+				dev->out_urb_finished = 1;
- 				err("Couldn't submit interrupt_out_urb %d", retval);
- 				goto exit;
- 			}
-@@ -637,16 +655,17 @@ static ssize_t adu_write(struct file *file, const __user char *buffer,
- 			bytes_written += bytes_to_write;
- 		}
- 	}
--
--	retval = bytes_written;
-+	mutex_unlock(&dev->mtx);
-+	return bytes_written;
- 
- exit:
--	/* unlock the device */
- 	mutex_unlock(&dev->mtx);
- exit_nolock:
--
- 	dbg(2," %s : leave, return value %d", __FUNCTION__, retval);
-+	return retval;
- 
-+exit_onqueue:
-+	remove_wait_queue(&dev->write_wait, &waita);
- 	return retval;
- }
- 
-@@ -831,25 +850,22 @@ static void adu_disconnect(struct usb_interface *interface)
- 	dbg(2," %s : enter", __FUNCTION__);
- 
- 	dev = usb_get_intfdata(interface);
--	usb_set_intfdata(interface, NULL);
- 
-+	mutex_lock(&dev->mtx);	/* not interruptible */
-+	dev->udev = NULL;	/* poison */
- 	minor = dev->minor;
--
--	/* give back our minor */
- 	usb_deregister_dev(interface, &adu_class);
--	dev->minor = 0;
-+	mutex_unlock(&dev->mtx);
- 
--	mutex_lock(&dev->mtx); /* not interruptible */
-+	mutex_lock(&adutux_mutex);
-+	usb_set_intfdata(interface, NULL);
- 
- 	/* if the device is not opened, then we clean up right now */
- 	dbg(2," %s : open count %d", __FUNCTION__, dev->open_count);
--	if (!dev->open_count) {
--		mutex_unlock(&dev->mtx);
-+	if (!dev->open_count)
- 		adu_delete(dev);
--	} else {
--		dev->udev = NULL;
--		mutex_unlock(&dev->mtx);
--	}
-+
-+	mutex_unlock(&adutux_mutex);
- 
- 	dev_info(&interface->dev, "ADU device adutux%d now disconnected\n",
- 		 (minor - ADU_MINOR_BASE));
+That's the point. They must always be told or consult the documentations.
+Don't you think an arch name should be natural?
+People need not to be told on other, at least major, archs.
 
--- Pete
+It's
+- growing new developers will have difficulties in understanding arch
+name difference,
+versus
+- fewer people have to learn the arch name change.
+I vote the latter now.
+
+
+-- 
+Suzuki Takashi
+Japan
