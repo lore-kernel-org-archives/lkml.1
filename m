@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbXJ3Ovl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbXJ3OwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbXJ3Ovl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 10:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbXJ3Ove
+	id S1755560AbXJ3OwO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 10:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXJ3Ov5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 10:51:34 -0400
-Received: from nebuchadnezzar.smejdil.cz ([195.122.194.203]:62341 "EHLO
-	nebuchadnezzar.smejdil.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbXJ3Ovd convert rfc822-to-8bit (ORCPT
+	Tue, 30 Oct 2007 10:51:57 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33674 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbXJ3Ov4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 10:51:33 -0400
-From: CIJOML <cijoml@volny.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: Phis in /proc/bus/input/devices same for all devices?
-Date: Tue, 30 Oct 2007 15:51:13 +0100
-User-Agent: KMail/1.9.7
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-References: <200702212313.30359.cijoml@volny.cz> <200710292329.54895.cijoml@volny.cz> <200710292352.39396.dmitry.torokhov@gmail.com>
-In-Reply-To: <200710292352.39396.dmitry.torokhov@gmail.com>
+	Tue, 30 Oct 2007 10:51:56 -0400
+Date: Tue, 30 Oct 2007 08:51:55 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
+Message-ID: <20071030145155.GL32359@parisc-linux.org>
+References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710301551.14377.cijoml@volny.cz>
+In-Reply-To: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel,
+On Tue, Oct 30, 2007 at 11:54:22AM +0100, Richard Knutsson wrote:
+> Convert to use the generic boolean.
+> -	u8 initialized;
+> -	u8 in_use;		/* is the management node open*/
+> +	bool initialized:8;
+> +	bool in_use:8;		/* is the management node open*/
 
-are there any patches available to support uniq? I really want to have easy 
-setup of my 2 same diNovo desktops keyboarad sets each with different keymap 
-etc...
+Are you serious?
 
-Dimitri thank you a lot for support so I can push Xguys now ;)
-
-Michal
-
-Dne út 30. øíjna 2007 Dmitry Torokhov napsal(a):
-> Hi Michal,
->
-> On Monday 29 October 2007, CIJOML wrote:
-> > Dne èt 22. února 2007 Dmitry Torokhov napsal(a):
-> > > Plus I
-> > > will export uniq in /proc/bus/input/devices and then yo can ask X guys
-> > > to allow matching on uniq as well.
-> >
-> > Hi Dmitri,
-> >
-> > I watched at 2.6.23 and this is still not done yet. Are there any patches
-> > available to use???
->
-> Input core does export uniq in /proc/bus/input/devices so now it is
-> up to individual drivers to populate this field in input_dev
-> structure.
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
