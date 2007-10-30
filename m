@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbXJ3Qu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXJ3QwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbXJ3Qu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 12:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXJ3Quv
+	id S1755606AbXJ3QwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 12:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbXJ3QwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 12:50:51 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:60849 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752029AbXJ3Quu (ORCPT
+	Tue, 30 Oct 2007 12:52:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39609 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbXJ3QwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 12:50:50 -0400
-Date: Tue, 30 Oct 2007 12:50:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: Greg KH <greg@kroah.com>, Pete Zaitcev <zaitcev@redhat.com>,
-       <linux-usb-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: Oops in make_class_name in 2.6.22.1 on Fedora
-In-Reply-To: <471D1EF6.6030503@redhat.com>
-Message-ID: <Pine.LNX.4.44L0.0710301249180.5321-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Oct 2007 12:52:04 -0400
+Date: Tue, 30 Oct 2007 09:47:56 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, akpm@linux-foundation.org,
+       ak@suse.de, rajesh.shah@intel.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+Message-ID: <20071030094756.779ac5c0@laptopd505.fenrus.org>
+In-Reply-To: <alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org>
+	<200710251622.36773.jbarnes@virtuousgeek.org>
+	<20071026025407.GA21408@kroah.com>
+	<200710260959.46811.jbarnes@virtuousgeek.org>
+	<20071027024140.GC29039@kroah.com>
+	<47267232.3020506@shaw.ca>
+	<alpine.LFD.0.999.0710300811230.30120@woody.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Oct 2007, Chuck Ebbert wrote:
+On Tue, 30 Oct 2007 08:15:46 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On 09/11/2007 11:11 AM, Alan Stern wrote:
-> >>>
-> >>> I do not seem to be able to find an answer, sorry.
-> >>> Do you happen to remember if this was fixed after 2.6.22.1:
-> >>>
-> >>> localhost kernel: EIP is at make_class_name+0x27/0x7a
-> >>> localhost kernel:  [<c05586f1>] class_device_del+0x97/0x119
-> >>> localhost kernel:  [<c055877b>] class_device_unregister+0x8/0x10
-> >>> localhost kernel:  [<e08735f4>] __scsi_remove_device+0x1d/0x60 [scsi_mod]
-> >>> localhost kernel:  [<e08711ae>] scsi_forget_host+0x2d/0x4a [scsi_mod]
-> >>> localhost kernel:  [<e086c49c>] scsi_remove_host+0x65/0xd5 [scsi_mod]
-> >>> localhost kernel:  [<e0e76775>] storage_disconnect+0xe/0x16 [usb_storage]
-> >>> localhost kernel:  [<c056f8b8>] usb_unbind_interface+0x44/0x85
-> >>> localhost kernel:  [<c0557df7>] __device_release_driver+0x6e/0x8b
-> >>>
-> >>> Obviously a known bug but all I see is users reporting it. In my case
-> >>> it's this:
-> >>>  https://bugzilla.redhat.com/show_bug.cgi?id=253424
-> >>> I saw Alan giving it a try here:
-> >>>  http://lkml.org/lkml/2007/7/12/259
-> >> I think this was a scsi problem that has been fixed, but don't really
-> >> remember the exact commit.
-> > 
-> > Yes.  There are some bugs in the SCSI async-scanning code, and there is
-> > a patch to fix them:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=a93a091df8232fad60867d41fbc3be855a0b78f2
-> > 
-> > It is scheduled for 2.6.24.  For now, people can work around the bug by 
-> > disabling CONFIG_SCSI_SCAN_ASYNC.
-> > 
 > 
-> The bug still happens with that patch applied and CONFIG_SCSI_SCAN_ASYNC
-> enabled. In the marked line, class_dev->class->name is NULL and this causes
-> the oops in make_class_name().
+> 
+> On Mon, 29 Oct 2007, Robert Hancock wrote:
+> > 
+> > The other possible workaround would be to avoid using MMCONFIG
+> > until the BAR sizing is done. 
+> 
+> The only sane solution is the one that people constantly seem to
+> ignore:
+> 
+>  - only use MMCONFIG if absolutely required by the access itself
+> 
+> In other words, make the MMCONFIG code fall back on old-style
+> accesses for any register access to a word with reg+size <= 256.
 
-Can anybody provide a dmesg log showing the error on a system with 
-CONFIG_USB_DEBUG and CONFIG_USB_STORAGE_DEBUG enabled?
+the problem is... you're not supposed to mix both types of accesses.
+ 
+> At that point, almost all the issues with mmconfig just go away,
+> BECAUSE NOBODY USES IT, so it doesn't matter if it's broken?
+> 
+> The fact is, CONF1 style accesses are just safer, and *work*. 
 
-Does it still occur with 2.6.24-rc1?
+I would suggest a slight twist then: use CONF1 *until* you're using
+something above 256, and then and only then switch to MMCONFIG from
+then on for all accesses.
 
-Alan Stern
+That should solve the spec issue (yes I know about specs, but this is
+one of those things that will bite us in the future if we're not
+careful)
 
