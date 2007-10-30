@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXJ3HmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXJ3HpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbXJ3HmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 03:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbXJ3HmS
+	id S1754830AbXJ3HpV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 03:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXJ3HpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 03:42:18 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:45158 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991AbXJ3HmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 03:42:17 -0400
-Date: Tue, 30 Oct 2007 08:42:10 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: =?ISO-8859-2?Q?Marcin_=A6lusarz?= <marcin.slusarz@gmail.com>
-cc: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: usbserial.ko/option.ko on 2.6.23: Unable to handle kernel paging
- request && inconsistent lock state
-In-Reply-To: <4bacf17f0710291526l6be89bd9o33f02c33186d57b7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0710300838280.18815@twin.jikos.cz>
-References: <4bacf17f0710291526l6be89bd9o33f02c33186d57b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-1356621543-1193729941=:18815"
-Content-ID: <Pine.LNX.4.64.0710300841550.18815@twin.jikos.cz>
+	Tue, 30 Oct 2007 03:45:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47545
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752958AbXJ3HpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 03:45:05 -0400
+Date: Tue, 30 Oct 2007 00:44:46 -0700 (PDT)
+Message-Id: <20071030.004446.219023926.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rpc_rdma: we need to cast u64 to unsigned long long
+ for printing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071030161240.bc81cad3.sfr@canb.auug.org.au>
+References: <20071030161240.bc81cad3.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 30 Oct 2007 16:12:40 +1100
 
----1747641777-1356621543-1193729941=:18815
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.LNX.4.64.0710300841551.18815@twin.jikos.cz>
+> as some architectures have unsigned long for u64.
+> 
+> net/sunrpc/xprtrdma/rpc_rdma.c: In function 'rpcrdma_create_chunks':
+> net/sunrpc/xprtrdma/rpc_rdma.c:222: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+> net/sunrpc/xprtrdma/rpc_rdma.c:234: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+> net/sunrpc/xprtrdma/rpc_rdma.c: In function 'rpcrdma_count_chunks':
+> net/sunrpc/xprtrdma/rpc_rdma.c:577: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64
+> 
+> Noticed on PowerPC pseries_defconfig build.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Mon, 29 Oct 2007, Marcin =A6lusarz wrote:
-
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [ INFO: inconsistent lock state ]
-> 2.6.23 #8
-> ---------------------------------
-> inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
-> swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
->  (&port->lock){+...}, at: [<ffffffff880e212c>]
-> usb_serial_generic_read_bulk_callback+0x6c/0x1c0 [usbserial]
-> {hardirq-on-W} state was registered at:
-
-The fix for this one has already been submitted to Greg --=20
-http://lkml.org/lkml/2007/10/28/38
-
---=20
-Jiri Kosina
----1747641777-1356621543-1193729941=:18815--
+I've applied this, thanks Stephen.
