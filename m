@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbXJ3TX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXJ3TXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441AbXJ3TX4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 15:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbXJ3TVj
+	id S1758266AbXJ3TXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 15:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbXJ3TVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 15:21:39 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:53927 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 15:21:38 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:53926 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757553AbXJ3TVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 15:21:37 -0400
-Message-Id: <20071030192109.356783587@polymtl.ca>
+	id S1757541AbXJ3TVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 15:21:36 -0400
+Message-Id: <20071030192106.323961420@polymtl.ca>
 References: <20071030191557.947156623@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 15:16:21 -0400
+Date: Tue, 30 Oct 2007 15:16:12 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
        linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
        Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, lethal@linux-sh.org
-Subject: [patch 24/28] Add cmpxchg_local to sh64
-Content-Disposition: inline; filename=add-cmpxchg-local-to-sh64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:09 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 15/28] Fix m32r __xchg
+Content-Disposition: inline; filename=fix-m32r-__xchg.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 30 Oct 2007 19:21:06 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+the #endif  /* CONFIG_SMP */ should cover the default condition, or it may cause
+bad parameter to be silently missed.
+
+To make it work correctly, we have to remove the ifdef CONFIG SMP surrounding 
+__xchg_called_with_bad_pointer declaration. Thanks to Adrian Bunk for detecting
+this.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: lethal@linux-sh.org
+Acked-by: Hirokazu Takata <takata@linux-m32r.org>
+CC: linux-m32r@ml.linux-m32r.org
+CC: Adrian Bunk <bunk@kernel.org>
 ---
- include/asm-sh64/system.h |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ include/asm-m32r/system.h |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-sh64/system.h
+Index: linux-2.6-lttng/include/asm-m32r/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-sh64/system.h	2007-07-23 11:01:16.000000000 -0400
-+++ linux-2.6-lttng/include/asm-sh64/system.h	2007-07-23 11:01:20.000000000 -0400
-@@ -164,6 +164,21 @@ static __inline__ unsigned long __xchg(u
- 	return x;
- }
+--- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-13 18:21:02.000000000 -0400
++++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-19 07:08:26.000000000 -0400
+@@ -127,9 +127,7 @@ static inline void local_irq_disable(voi
+ 	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
+ 			sizeof(*(ptr))))
  
-+#include <asm-generic/cmpxchg-local.h>
-+
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
-+
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
-+
- /* XXX
-  * disable hlt during certain critical i/o operations
-  */
+-#ifdef CONFIG_SMP
+ extern void  __xchg_called_with_bad_pointer(void);
+-#endif
+ 
+ #ifdef CONFIG_CHIP_M32700_TS1
+ #define DCACHE_CLEAR(reg0, reg1, addr)				\
+@@ -189,9 +187,9 @@ __xchg(unsigned long x, volatile void * 
+ #endif	/* CONFIG_CHIP_M32700_TS1 */
+ 		);
+ 		break;
++#endif  /* CONFIG_SMP */
+ 	default:
+ 		__xchg_called_with_bad_pointer();
+-#endif  /* CONFIG_SMP */
+ 	}
+ 
+ 	local_irq_restore(flags);
 
 -- 
 Mathieu Desnoyers
