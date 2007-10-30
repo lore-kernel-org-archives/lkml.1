@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbXJ3PLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbXJ3POT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbXJ3PLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbXJ3PLX
+	id S1755486AbXJ3POT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXJ3POK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:11:23 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41469 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753521AbXJ3PLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:11:22 -0400
-Date: Tue, 30 Oct 2007 09:11:21 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/dpt_i2o: Convert to generic boolean
-Message-ID: <20071030151121.GM32359@parisc-linux.org>
-References: <20071030104806.30936.13253.sendpatchset@thinktank.campus.ltu.se> <20071030145155.GL32359@parisc-linux.org> <47274781.3030606@student.ltu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47274781.3030606@student.ltu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 30 Oct 2007 11:14:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42269 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752847AbXJ3POI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 11:14:08 -0400
+Subject: Re: Licensing of IS89C35 WLAN USB driver [was Re: rt73usb: support
+	for wireless in Kohjinsha subnotebook]
+From: Dan Williams <dcbw@redhat.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Lee <YY_Lee@issc.com.tw>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Ivo van Doorn <ivdoorn@gmail.com>,
+       Luis Correia <luis.f.correia@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
+In-Reply-To: <20071030112221.GA17586@elf.ucw.cz>
+References: <20071023090808.GB19758@infradead.org>
+	 <20071030112221.GA17586@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 11:11:59 -0400
+Message-Id: <1193757119.29187.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 04:02:25PM +0100, Richard Knutsson wrote:
-> Matthew Wilcox wrote:
-> >On Tue, Oct 30, 2007 at 11:54:22AM +0100, Richard Knutsson wrote:
-> >  
-> >>Convert to use the generic boolean.
-> >>-	u8 initialized;
-> >>-	u8 in_use;		/* is the management node open*/
-> >>+	bool initialized:8;
-> >>+	bool in_use:8;		/* is the management node open*/
-> >>    
-> >
-> >Are you serious?
-> >  
-> Well, yes. It is since it was defined to really be 8 bits before, and 
-> there is no reason why a boolean would be 8 bits and not 1 or 16.
-> If it is overly cautious/not needed, then I don't mind removing the ':8'...
+On Tue, 2007-10-30 at 12:22 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> You are listed as author of IS89C35 802.11bg WLAN USB Driver. That
+> driver has clear MODULE_LICENSE("GPL") tag, but not other notices.
+> 
+> Is it safe to assume whole sources are to be distributed under GPLv2?
+> (Or is it GPLv2 or later?)
 
-What's wrong with leaving it as 'u8'?
+Pavel,
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I sent mail as you requested on Sunday to Jeff Lee but haven't heard
+back yet.  I can't find any generic contact email addresses for ISSC
+Taiwan or the Italian company that produced the adapter in question,
+unfortunately.
+
+Dan
+
+> 								Pavel
+> 
+> > > there's nothing to suggest otherwise, and there's explicit:
+> > > 
+> > > #define DRIVER_AUTHOR                   "Jeff Lee<YY_Lee@issc.com.tw>"
+> > > #define DRIVER_DESC                             "IS89C35 802.11bg WLAN USB Driver"
+> > > MODULE_LICENSE("GPL");
+> > 
+> > So what about contacting the vendor and asking?
+> 
+
