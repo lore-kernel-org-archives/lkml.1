@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbXJ3Pcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbXJ3PdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbXJ3Pcx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 11:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXJ3Pcq
+	id S1754571AbXJ3PdN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 11:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXJ3Pcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 11:32:46 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:54809 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753513AbXJ3Pcp (ORCPT
+	Tue, 30 Oct 2007 11:32:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54037 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756505AbXJ3Pcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 11:32:45 -0400
-Message-ID: <47274E93.9030403@tiscali.nl>
-Date: Tue, 30 Oct 2007 16:32:35 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: Re: [PATCH 9/16] CRIS architecture: Correct compile errors
-References: <20071030093231.GL11960@axis.com>
-In-Reply-To: <20071030093231.GL11960@axis.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Oct 2007 11:32:53 -0400
+Date: Tue, 30 Oct 2007 15:34:17 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071030153417.59b9182c@the-village.bc.nu>
+In-Reply-To: <47274A5F.6070409@gentoo.org>
+References: <47274A5F.6070409@gentoo.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Nilsson wrote:
+On Tue, 30 Oct 2007 15:14:39 +0000
+Daniel Drake <dsd@gentoo.org> wrote:
 
->  static int
->  e100_probe_transceiver(struct net_device* dev)
->  {
-> +#if !defined(CONFIG_ETRAX_NO_PHY)
->  	unsigned int phyid_high;
->  	unsigned int phyid_low;
->  	unsigned int oui;
->  	struct transceiver_ops* ops = NULL;
-> +	struct net_local *np = netdev_priv(dev);
-> +
-> +	spin_lock(&np->transceiver_lock);
->  
->  	/* Probe MDIO physical address */
-> -	for (mdio_phy_addr = 0; mdio_phy_addr <= 31; mdio_phy_addr++) {
-> -		if (e100_get_mdio_reg(dev, mdio_phy_addr, MII_BMSR) != 0xffff)
-> +	for (np->mii_if.phy_id = 0; np->mii_if.phy_id <= 31; 
-> +	     np->mii_if.phy_id++) {
-> +		if (e100_get_mdio_reg(dev, 
-> +				      np->mii_if.phy_id, MII_BMSR) != 0xffff)
->  			break;
->  	}
-> -	if (mdio_phy_addr == 32)
-> +	if (np->mii_if.phy_id == 32)
->  		 return -ENODEV;
-You need to unlock before this return.
->  
->  	/* Get manufacturer */
-> -	phyid_high = e100_get_mdio_reg(dev, mdio_phy_addr, MII_PHYSID1);
-> -	phyid_low = e100_get_mdio_reg(dev, mdio_phy_addr, MII_PHYSID2);
-> +	phyid_high = e100_get_mdio_reg(dev, np->mii_if.phy_id, MII_PHYSID1);
-> +	phyid_low = e100_get_mdio_reg(dev, np->mii_if.phy_id, MII_PHYSID2);
->  	oui = (phyid_high << 6) | (phyid_low >> 10);
->  
->  	for (ops = &transceivers[0]; ops->oui; ops++) {
-> @@ -998,6 +912,8 @@
->  	}
->  	transceiver = ops;
->  
-> +	spin_unlock(&np->transceiver_lock);
-> +#endif
->  	return 0;
->  }
+> Hi Alan,
+> 
+> In 2.6.23 and previous, CD writing works fine on my system. I'm using 
+> ata_piix on:
+> 
+> 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA 
+> IDE Controller (rev 01)
+> 
+> When I'm running CD writing utilities, I sometimes see this message in 
+> the kernel logs:
+> 	ata2.00: 66 bytes trailing data
+> Things do work fine though.
+
+By luck in part I suspect. That shouldn't be happening and indicates
+something is very wrong. With the fifo buffers set right that may well
+get worse.
+
+> git bisect lead me to commit 2db78dd302d26d242d3e8e5c4c5024b6c3ea93c2 as 
+> the culprit.
+> 
+> Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date:   Tue Oct 2 13:53:04 2007 -0700
+> 
+>      libata_scsi: Fix ATAPI transfer lengths
+> 
+>      Some controller variants snoop the ATAPI length value for Packet
+>      transfers to do state machine and FIFO management. Thus we want to
+>      set it properly, even for cases where it is otherwise meaningless.
+> 
+> Any ideas?
+
+Not immediately - but if you've got wrong transfer lengths its a
+candidate for this.
+
+Ok lets start with the basics
+
+If you mount a CD and use it does it work
+If you use cdrecord does it work ?
+
+What vendor drive and does it seem to be a specific box/drive that
+triggers this ?
+
+Alan
