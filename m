@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXJ3MN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbXJ3MNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbXJ3MN0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 08:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXJ3MNS
+	id S1756371AbXJ3MNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 08:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbXJ3MNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 08:13:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58685 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752876AbXJ3MNR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 08:13:17 -0400
-Date: Tue, 30 Oct 2007 06:13:16 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Only show RESOURCES_64BIT on relevant architectures
-Message-ID: <20071030121315.GK32359@parisc-linux.org>
-References: <20071028201549.GA23138@fattire.cabal.ca> <20071030024801.GA19417@linux-mips.org> <AFC1DED8-E331-420C-940E-9CF849630F0B@kernel.crashing.org> <20071030083719.GJ32359@parisc-linux.org> <20071030114221.GA24392@linux-mips.org>
+	Tue, 30 Oct 2007 08:13:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40408 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755552AbXJ3MNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 08:13:24 -0400
+Message-ID: <47272007.8000108@redhat.com>
+Date: Tue, 30 Oct 2007 10:13:59 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030114221.GA24392@linux-mips.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, --cc@redhat.com,
+       avi@quramnet.com, kvm-devel@lists.sourceforge.net,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] raise tsc clocksource rating
+References: <11936994092607-git-send-email-gcosta@redhat.com> <alpine.LFD.0.9999.0710292315280.3186@localhost.localdomain> <200710301339.23628.rusty@rustcorp.com.au> <20071030073736.GA21843@elte.hu>
+In-Reply-To: <20071030073736.GA21843@elte.hu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 11:42:21AM +0000, Ralf Baechle wrote:
-> On Tue, Oct 30, 2007 at 02:37:19AM -0600, Matthew Wilcox wrote:
-> > On Mon, Oct 29, 2007 at 10:03:16PM -0500, Kumar Gala wrote:
-> > > same HW platform that you want to run with just 32-bit phys (for  
-> > > performance).
-> > 
-> > Have you measured what the performance difference is?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Ingo Molnar escreveu:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> So that's 5668, 256 bytes data and 128 bytes of bss for a total of 6052
-> bytes.  Not a whole lot but I still fear some users on the most
-> claustrophobic systems will mind.
+> and just in case it's not obvious: i am not arguing for the inclusion of 
+> the patch, i'm just pointing out the plain fact that in the case where 
+> the TSC _is_ reliable, 5 different clocksource drivers for has obvious 
+> disadvantages. Anyone arguing against that simple point needs his head 
+> examined :) Once we can pass around calibration information from the 
+> host to the guest (which we dont do at the moment) there will be reason 
+> not to use the native clocksource driver in the guest.
+If you sustain that we cannot have a reliable synchronization test
+mechanism, neither do I. All this is based in the assumption that a bad
+tsc will fail such tests.
 
-Oh, sure, I'm not saying I thought there would be no size difference; I
-was just bemused at the suggestion there was a performance difference.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-Unless "won't fit in ROM any more" is considered a performance problem ;-)
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+iD8DBQFHJyAHjYI8LaFUWXMRAtYoAJ9l5kNodRLfTsNHDvyioufM7SQzTACfarEy
+XXq3sDq9uxZ/72hhA46YmgM=
+=DwN/
+-----END PGP SIGNATURE-----
