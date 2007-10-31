@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759423AbXJaQW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXJaQYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759423AbXJaQW3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXJaQWW
+	id S1759636AbXJaQYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbXJaQYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:22:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25525 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753878AbXJaQWV (ORCPT
+	Wed, 31 Oct 2007 12:24:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:33735 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929AbXJaQYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:22:21 -0400
-Date: Wed, 31 Oct 2007 09:19:06 -0700
+	Wed, 31 Oct 2007 12:24:32 -0400
+Date: Wed, 31 Oct 2007 09:23:50 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/5] The config option itself
-Message-Id: <20071031091906.dd84761a.randy.dunlap@oracle.com>
-In-Reply-To: <4728615D.5070700@openvz.org>
-References: <47285FEE.9030001@openvz.org>
-	<4728615D.5070700@openvz.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org
+Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
+Message-Id: <20071031092350.91eae067.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
+References: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
+	<Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -34,41 +31,45 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007 14:05:01 +0300 Pavel Emelyanov wrote:
+On Wed, 31 Oct 2007 04:51:45 -0700 (PDT) Trent Piepho wrote:
 
-> The option is called NAMESPACES. It can be selectable only
-> if EMBEDDED is chosen (this was Eric's requisition). When
-> the EMBEDDED is off namespaces will be on automatically.
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
-
-and when EMBEDDED is on, it looks like NAMESPACES will be off
-automatically (but user-changeable)?  Is that intended?
-
-
-> ---
+> On Tue, 30 Oct 2007, Randy Dunlap wrote:
+> > drivers/media/video/bt8xx/bttv-cards.c calls ip_compute_csum().
+> > However, when CONFIG_NET=n, that produces:
+> >
+> > ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
+> >
+> > Config symbol VIDEO_BT848 can be made to depend on NET, or the
+> > osprey_eeprom() function can be built depending on some new config
+> > symbol, or bttv could have its own checksum function...
 > 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index c3de3ed..fc76773 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -400,6 +400,15 @@ config RELAY
->  
->  	  If unsure, say N.
->  
-> +config NAMESPACES
-> +	bool "Namespaces support" if EMBEDDED
-> +	default !EMBEDDED
-> +	help
-> +	  Provides the way to make tasks work with different objects using
-> +	  the same id. For example same IPC id may refer to different objects
-> +	  or same user id or pid may refer to different tasks when used in
-> +	  different namespaces.
-> +
->  config BLK_DEV_INITRD
->  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
->  	depends on BROKEN || !FRV
+> The real problem here is that ip_compute_csum is part of lib-y, but is also
+> exported for modules.  This problem has come up before, for instance your
+> patch for csum_partial()
+> http://lkml.org/lkml/2007/4/3/209
+> 
+> Or the problem with kasprintf and the lg module:
+> http://lkml.org/lkml/2007/9/24/15
+> 
+> The general lib-y vs EXPORT_SYMBOL problem:
+> http://lkml.org/lkml/2007/9/25/17
+> 
+> The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
+> which can't be compiled as a module.  That means ip_compute_csum() will get
+> pulled out of the lib.a file for igmp, and thus be present for the net modules
+> that use it too.  If igmp could be turned off, made a module, or stopped using
+> ip_compute_csum(), then the users of ip_compute_csum() that do depend on
+> CONFIG_NET would have the same problem as bttv does.
 
+Thanks for the analysis and summary.
+(I'm still waiting for those lkml.org links to load... timed out)
+
+> It seems a shame to create a new ip checksum function in the bttv driver when
+> a perfectly good one already exists and will already be present in just about
+> every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
+> outside of randconfig?
+
+so just adding "depends on NET" should be OK then?
 
 ---
 ~Randy
