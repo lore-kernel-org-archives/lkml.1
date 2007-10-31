@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXJaQBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXJaQGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbXJaQBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbXJaQBo
+	id S1759342AbXJaQGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbXJaQF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:01:44 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42008 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756989AbXJaQBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:01:43 -0400
-Date: Wed, 31 Oct 2007 17:01:42 +0100
-From: Jan Kara <jack@suse.cz>
-To: Ram <vshrirama@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel processes - are they really needed?
-Message-ID: <20071031160142.GC28809@atrey.karlin.mff.cuni.cz>
-References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
+	Wed, 31 Oct 2007 12:05:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56238 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755295AbXJaQF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 12:05:57 -0400
+Message-ID: <4728A7D4.8050008@garzik.org>
+Date: Wed, 31 Oct 2007 12:05:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@gentoo.org>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk> <472872F6.70802@garzik.org> <20071031122639.GN5059@kernel.dk>
+In-Reply-To: <20071031122639.GN5059@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Jens Axboe wrote:
+> Right, that's of course problematic... There has to be a way to recover
+> that situation though, or you can't export any user command issue
+> facility.
 
->     When i do ps -l. i see the following processes which are obviously
-> started by kernel.
-> 
->    Could any one tell me what each of these processes do and can
-> anyone of them can be removed.?
-  I'll write what I know :)
+You cannot hope to handle all possible effects arising from an app 
+providing an invalid sg header / cdb.
 
-> PID  Uid     VmSize Stat Command
->     1 root        584 S   init
->     2 root            SWN [ksoftirqd/0]
->     3 root            SW  [watchdog/0]
->     4 root            SW< [events/0]
->     5 root            SW< [khelper]
->     6 root            SW< [kthread]
->    23 root            SW< [kblockd/0]
-  This one has something to do with block layer - like unplugging
-request queue after a certain timeout etc.
+Once you start talking "recovery" you are already screwed:  we are 
+talking about low-level hardware commands that are passed straight to 
+the hardware.  It is trivial to lock up hardware, brick hardware, and 
+corrupt data at that level.
 
->    38 root            SW  [pdflush]
->    39 root            SW  [pdflush]
-  Doing writeback of dirty data.
 
->    40 root            SW< [kswapd0]
-  Swapping pages in and out.
+If this is NOT a privileged app, we must update the command validation 
+to ensure that invalid commands are not transported to the hardware.
 
->    41 root            SW< [aio/0]
-  Kernel thread handling asynchronous IO.
+If this is a privileged app, our work is done.  Fix the app.  We gave 
+root rope, and he took it.
 
->    85 root            SW  [mtdblockd]
->   116 root            SWN [jffs2_gcd_mtd9]
-  jffs2 specific - ask a maintainer :) (and mtdblockd has something to
-do with MTD devices so he may know that one as well).
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+I even venture to say that "accept anything, clean up afterwards" is 
+/impossible/ to implement, in addition to being dangerous.
+
+	Jeff
+
+
