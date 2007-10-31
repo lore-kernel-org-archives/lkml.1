@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXJaEd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbXJaEei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbXJaEd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXJaEdR
+	id S1754698AbXJaEei (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXJaEe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:33:17 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:48342 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751216AbXJaEdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:33:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fbYv4pM1Nod+XJFn5o24hZ07b5emxfoYQwmNVGbMG8ok+2VtthHGop2Gs6xfnTF6q7sjyYmvVkJi5HPegoEtR3K+1k2/7DjOuR48Bo+Ak0/KBDW9QStMiszwGLB+rwdfSjdJWbYD3W3eZez2F7ZPW9SYgCCpw3EWnbdILyf8kyM=  ;
-X-YMail-OSG: QSNV5eoVM1mv1I7A7f.oX342.GESpVlGwpTD7P7TxhmNmc9gOQjHZNjKGQbY2RwkpS0Wfbvn0g--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-Date: Wed, 31 Oct 2007 14:26:32 +1100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-References: <20071030160401.296770000@chello.nl>
-In-Reply-To: <20071030160401.296770000@chello.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710311426.33223.nickpiggin@yahoo.com.au>
+	Wed, 31 Oct 2007 00:34:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55536 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752551AbXJaEe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 00:34:27 -0400
+Date: Wed, 31 Oct 2007 15:34:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] af_key: suppress a warning for 64k pages.
+Message-Id: <20071031153422.44f864e8.sfr@canb.auug.org.au>
+In-Reply-To: <20071030.210846.215166155.davem@davemloft.net>
+References: <20071031145954.fe106f73.sfr@canb.auug.org.au>
+	<20071030.210846.215166155.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__31_Oct_2007_15_34_22_+1100_lJyi_Hp4mHRoTj/n"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> Hi,
+--Signature=_Wed__31_Oct_2007_15_34_22_+1100_lJyi_Hp4mHRoTj/n
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 30 Oct 2007 21:08:46 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
 >
-> Another posting of the full swap over NFS series.
+> I'm not so sure ifdef'ing things up all over the place is the way to
+> solve this.  It makes the code ultra ugly.
 
-Hi,
+I agree.
 
-Is it really worth all the added complexity of making swap
-over NFS files work, given that you could use a network block
-device instead?
+> I think we should retain the check, but modify it so that GCC knows we
+> understand that it's OK if it is always false.  Perhaps a simple (u32)
+> cast on the left branch of the comparison is sufficient?
 
-Also, have you ensured that page_file_index, page_file_mapping
-and page_offset are only ever used on anonymous pages when the
-page is locked? (otherwise PageSwapCache could change)
+Unfortunately, that does not suppress the warning (gcc is getting too
+smart :-().
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__31_Oct_2007_15_34_22_+1100_lJyi_Hp4mHRoTj/n
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHKAXTTgG2atn1QN8RAl6uAKCbPK8T9c19p0gt8G87cHdTzbms3gCgmnVQ
+keMMWIcxb2zk01vSvB74B0U=
+=gOq/
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__31_Oct_2007_15_34_22_+1100_lJyi_Hp4mHRoTj/n--
