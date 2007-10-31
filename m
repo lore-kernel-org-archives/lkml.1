@@ -1,270 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbXJaC2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbXJaCdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234AbXJaC2X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 22:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXJaC2P
+	id S1753830AbXJaCdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 22:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXJaCdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 22:28:15 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:33112 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752571AbXJaC2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 22:28:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FANOEJ0dMQWvU/2dsb2JhbACBWo5c
-Date: Tue, 30 Oct 2007 22:28:10 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
-Message-ID: <20071031022810.GA2323@Krystal>
-References: <20071028033156.022983073@sgi.com> <20071028033300.240703208@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Oct 2007 22:33:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57997 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752081AbXJaCdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 22:33:37 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH] acpi: 'acpi_gbl_system_awake_and_running' is no longer used, only assigned.
+Date: Tue, 30 Oct 2007 22:33:20 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20071030104750.30935.5409.sendpatchset@thinktank.campus.ltu.se>
+In-Reply-To: <20071030104750.30935.5409.sendpatchset@thinktank.campus.ltu.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071028033300.240703208@sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:24:22 up 93 days,  2:43,  2 users,  load average: 0.80, 0.89, 0.99
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710302233.20440.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> Provide an alternate implementation of the SLUB fast paths for alloc
-> and free using cmpxchg_local. The cmpxchg_local fast path is selected
-> for arches that have CONFIG_FAST_CMPXCHG_LOCAL set. An arch should only
-> set CONFIG_FAST_CMPXCHG_LOCAL if the cmpxchg_local is faster than an
-> interrupt enable/disable sequence. This is known to be true for both
-> x86 platforms so set FAST_CMPXCHG_LOCAL for both arches.
-> 
-> Not all arches can support fast cmpxchg operations. Typically the
-> architecture must have an optimized cmpxchg instruction. The
-> cmpxchg fast path makes no sense on platforms whose cmpxchg is
-> slower than interrupt enable/disable (like f.e. IA64).
-> 
-> The advantages of a cmpxchg_local based fast path are:
-> 
-> 1. Lower cycle count (30%-60% faster)
-> 
-> 2. There is no need to disable and enable interrupts on the fast path.
->    Currently interrupts have to be disabled and enabled on every
->    slab operation. This is likely saving a significant percentage
->    of interrupt off / on sequences in the kernel.
-> 
-> 3. The disposal of freed slabs can occur with interrupts enabled.
-> 
+Bob reports that this is used in a pending version of ACPICA,
+so we'll leave the code alone.
 
-It would require some testing, but I suspect that powerpc, mips and m32r
-are three other architectures that could benefit from this (from the top
-of my head)
+thanks,
+-Len
 
-Mathieu
-
-> The alternate path is realized using #ifdef's. Several attempts to do the
-> same with macros and in line functions resulted in a mess (in particular due
-> to the strange way that local_interrupt_save() handles its argument and due
-> to the need to define macros/functions that sometimes disable interrupts
-> and sometimes do something else. The macro based approaches made it also
-> difficult to preserve the optimizations for the non cmpxchg paths).
+On Tuesday 30 October 2007 06:54, Richard Knutsson wrote:
+> 'acpi_gbl_system_awake_and_running' is no longer used, only assigned.
 > 
-> #ifdef seems to be the way to go here to have a readable source.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
+> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
 > ---
->  arch/x86/Kconfig.i386   |    4 ++
->  arch/x86/Kconfig.x86_64 |    4 ++
->  mm/slub.c               |   71 ++++++++++++++++++++++++++++++++++++++++++++++--
->  3 files changed, 77 insertions(+), 2 deletions(-)
+> Diffed against linus-git
+> Checked with script/checkpatch.pl
 > 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2007-10-27 10:39:07.583665939 -0700
-> +++ linux-2.6/mm/slub.c	2007-10-27 10:40:19.710415861 -0700
-> @@ -1496,7 +1496,12 @@ static void *__slab_alloc(struct kmem_ca
->  {
->  	void **object;
->  	struct page *new;
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	unsigned long flags;
->  
-> +	local_irq_save(flags);
-> +	preempt_enable_no_resched();
-> +#endif
->  	if (!c->page)
->  		goto new_slab;
->  
-> @@ -1518,6 +1523,10 @@ load_freelist:
->  unlock_out:
->  	slab_unlock(c->page);
->  out:
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	preempt_disable();
-> +	local_irq_restore(flags);
-> +#endif
->  	return object;
->  
->  another_slab:
-> @@ -1592,9 +1601,26 @@ static void __always_inline *slab_alloc(
->  		gfp_t gfpflags, int node, void *addr)
->  {
->  	void **object;
-> -	unsigned long flags;
->  	struct kmem_cache_cpu *c;
->  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	c = get_cpu_slab(s, get_cpu());
-> +	do {
-> +		object = c->freelist;
-> +		if (unlikely(is_end(object) || !node_match(c, node))) {
-> +			object = __slab_alloc(s, gfpflags, node, addr, c);
-> +			if (unlikely(!object)) {
-> +				put_cpu();
-> +				goto out;
-> +			}
-> +			break;
-> +		}
-> +	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
-> +								!= object);
-> +	put_cpu();
-> +#else
-> +	unsigned long flags;
-> +
->  	local_irq_save(flags);
->  	c = get_cpu_slab(s, smp_processor_id());
->  	if (unlikely((is_end(c->freelist)) || !node_match(c, node))) {
-> @@ -1609,6 +1635,7 @@ static void __always_inline *slab_alloc(
->  		c->freelist = object[c->offset];
+>  drivers/acpi/hardware/hwsleep.c   |    5 -----
+>  drivers/acpi/utilities/utglobal.c |    1 -
+>  include/acpi/acglobal.h           |    1 -
+>  3 files changed, 7 deletions(-)
+> 
+> 
+> diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
+> index 81b2484..e020e50 100644
+> --- a/drivers/acpi/hardware/hwsleep.c
+> +++ b/drivers/acpi/hardware/hwsleep.c
+> @@ -300,8 +300,6 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
+>  		return_ACPI_STATUS(status);
 >  	}
->  	local_irq_restore(flags);
-> +#endif
 >  
->  	if (unlikely((gfpflags & __GFP_ZERO)))
->  		memset(object, 0, c->objsize);
-> @@ -1644,6 +1671,11 @@ static void __slab_free(struct kmem_cach
->  	void *prior;
->  	void **object = (void *)x;
+> -	acpi_gbl_system_awake_and_running = FALSE;
+> -
+>  	status = acpi_hw_enable_all_wakeup_gpes();
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
+> @@ -446,7 +444,6 @@ acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void)
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
+>  	}
+> -	acpi_gbl_system_awake_and_running = FALSE;
 >  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +#endif
->  	slab_lock(page);
+>  	status = acpi_hw_enable_all_wakeup_gpes();
+>  	if (ACPI_FAILURE(status)) {
+> @@ -587,8 +584,6 @@ acpi_status acpi_leave_sleep_state(u8 sleep_state)
+>  	}
+>  	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
 >  
->  	if (unlikely(SlabDebug(page)))
-> @@ -1669,6 +1701,9 @@ checks_ok:
+> -	acpi_gbl_system_awake_and_running = TRUE;
+> -
+>  	/* Enable power button */
 >  
->  out_unlock:
->  	slab_unlock(page);
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	local_irq_restore(flags);
-> +#endif
->  	return;
+>  	(void)
+> diff --git a/drivers/acpi/utilities/utglobal.c b/drivers/acpi/utilities/utglobal.c
+> index 93ea829..f2ba315 100644
+> --- a/drivers/acpi/utilities/utglobal.c
+> +++ b/drivers/acpi/utilities/utglobal.c
+> @@ -709,7 +709,6 @@ void acpi_ut_init_globals(void)
+>  	/* Hardware oriented */
 >  
->  slab_empty:
-> @@ -1679,6 +1714,9 @@ slab_empty:
->  		remove_partial(s, page);
+>  	acpi_gbl_events_initialized = FALSE;
+> -	acpi_gbl_system_awake_and_running = TRUE;
 >  
->  	slab_unlock(page);
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	local_irq_restore(flags);
-> +#endif
->  	discard_slab(s, page);
->  	return;
+>  	/* Namespace */
 >  
-> @@ -1703,9 +1741,37 @@ static void __always_inline slab_free(st
->  			struct page *page, void *x, void *addr)
->  {
->  	void **object = (void *)x;
-> -	unsigned long flags;
->  	struct kmem_cache_cpu *c;
+> diff --git a/include/acpi/acglobal.h b/include/acpi/acglobal.h
+> index 347a911..ae0fc0a 100644
+> --- a/include/acpi/acglobal.h
+> +++ b/include/acpi/acglobal.h
+> @@ -236,7 +236,6 @@ ACPI_EXTERN u8 acpi_gbl_step_to_next_call;
+>  ACPI_EXTERN u8 acpi_gbl_acpi_hardware_present;
+>  ACPI_EXTERN u8 acpi_gbl_global_lock_present;
+>  ACPI_EXTERN u8 acpi_gbl_events_initialized;
+> -ACPI_EXTERN u8 acpi_gbl_system_awake_and_running;
 >  
-> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
-> +	void **freelist;
-> +
-> +	c = get_cpu_slab(s, get_cpu());
-> +	debug_check_no_locks_freed(object, s->objsize);
-> +	do {
-> +		freelist = c->freelist;
-> +		barrier();
-> +		/*
-> +		 * If the compiler would reorder the retrieval of c->page to
-> +		 * come before c->freelist then an interrupt could
-> +		 * change the cpu slab before we retrieve c->freelist. We
-> +		 * could be matching on a page no longer active and put the
-> +		 * object onto the freelist of the wrong slab.
-> +		 *
-> +		 * On the other hand: If we already have the freelist pointer
-> +		 * then any change of cpu_slab will cause the cmpxchg to fail
-> +		 * since the freelist pointers are unique per slab.
-> +		 */
-> +		if (unlikely(page != c->page || c->node < 0)) {
-> +			__slab_free(s, page, x, addr, c->offset);
-> +			break;
-> +		}
-> +		object[c->offset] = freelist;
-> +	} while (cmpxchg_local(&c->freelist, freelist, object) != freelist);
-> +	put_cpu();
-> +#else
-> +	unsigned long flags;
-> +
->  	local_irq_save(flags);
->  	debug_check_no_locks_freed(object, s->objsize);
->  	c = get_cpu_slab(s, smp_processor_id());
-> @@ -1716,6 +1782,7 @@ static void __always_inline slab_free(st
->  		__slab_free(s, page, x, addr, c->offset);
->  
->  	local_irq_restore(flags);
-> +#endif
->  }
->  
->  void kmem_cache_free(struct kmem_cache *s, void *x)
-> Index: linux-2.6/arch/x86/Kconfig.i386
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig.i386	2007-10-27 10:38:33.630415778 -0700
-> +++ linux-2.6/arch/x86/Kconfig.i386	2007-10-27 10:40:19.710415861 -0700
-> @@ -51,6 +51,10 @@ config X86
->  	bool
->  	default y
->  
-> +config FAST_CMPXCHG_LOCAL
-> +	bool
-> +	default y
-> +
->  config MMU
->  	bool
->  	default y
-> Index: linux-2.6/arch/x86/Kconfig.x86_64
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig.x86_64	2007-10-27 10:38:33.630415778 -0700
-> +++ linux-2.6/arch/x86/Kconfig.x86_64	2007-10-27 10:40:19.710415861 -0700
-> @@ -97,6 +97,10 @@ config X86_CMPXCHG
->  	bool
->  	default y
->  
-> +config FAST_CMPXCHG_LOCAL
-> +	bool
-> +	default y
-> +
->  config EARLY_PRINTK
->  	bool
->  	default y
-> 
-> -- 
+>  extern u8 acpi_gbl_shutdown;
+>  extern u32 acpi_gbl_startup_flags;
 > -
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
 > 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
