@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbXJaQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbXJaQgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbXJaQfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXJaQfe
+	id S1760579AbXJaQgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbXJaQgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:35:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:35489 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbXJaQfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:35:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dBkfxqO0ZPHh0yIMNFSKvnSI3uuqQViJK49AtKpMEQaKb8yYYqI9nRiZgPIVA+rc7w1sRPU69y3cV9wHzzvZJDgr/agTY0OcpeyHjPATSmwUtoj6wyOTYQVo+0ksBRE1+fl9kLIzEVH5VDVVXAh8tjSUzXbWPNeCNakDKMYqBcY=
-Message-ID: <d120d5000710310935i13629beahdc01e775e3cf6aa@mail.gmail.com>
-Date: Wed, 31 Oct 2007 12:35:31 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: kernel processes - are they really needed?
-Cc: Ram <vshrirama@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <p73hckgqoxg.fsf@bingen.suse.de>
+	Wed, 31 Oct 2007 12:36:03 -0400
+Received: from sacred.ru ([62.205.161.221]:41528 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753512AbXJaQgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 12:36:01 -0400
+Message-ID: <4728BCBC.8030007@openvz.org>
+Date: Wed, 31 Oct 2007 20:34:52 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] The config option itself
+References: <47285FEE.9030001@openvz.org>	<4728615D.5070700@openvz.org> <20071031091906.dd84761a.randy.dunlap@oracle.com>
+In-Reply-To: <20071031091906.dd84761a.randy.dunlap@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
-	 <p73hckgqoxg.fsf@bingen.suse.de>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 31 Oct 2007 19:32:28 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/07, Andi Kleen <andi@firstfloor.org> wrote:
->
-> My favourite for a ridiculous thread was and is "kpsmoused"
->
+Randy Dunlap wrote:
+> On Wed, 31 Oct 2007 14:05:01 +0300 Pavel Emelyanov wrote:
+> 
+>> The option is called NAMESPACES. It can be selectable only
+>> if EMBEDDED is chosen (this was Eric's requisition). When
+>> the EMBEDDED is off namespaces will be on automatically.
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> 
+> and when EMBEDDED is on, it looks like NAMESPACES will be off
+> automatically (but user-changeable)?  Is that intended?
 
-Mouse querying can take significant amount of time. Do you really want
-all your other events to be delayed just because kernel tries to get
-mouse back in order?
+Yes. The namespaces are likely not needed on cell-phones or similar,
+but if the user does want them - he may turn them on.
 
-Although I probably want to kill it if mouse resync is disabled...
+This was one of Eric's wishes to give only the embedded people the
+choice.
 
--- 
-Dmitry
+> 
+>> ---
+>>
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index c3de3ed..fc76773 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -400,6 +400,15 @@ config RELAY
+>>  
+>>  	  If unsure, say N.
+>>  
+>> +config NAMESPACES
+>> +	bool "Namespaces support" if EMBEDDED
+>> +	default !EMBEDDED
+>> +	help
+>> +	  Provides the way to make tasks work with different objects using
+>> +	  the same id. For example same IPC id may refer to different objects
+>> +	  or same user id or pid may refer to different tasks when used in
+>> +	  different namespaces.
+>> +
+>>  config BLK_DEV_INITRD
+>>  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+>>  	depends on BROKEN || !FRV
+> 
+> 
+> ---
+> ~Randy
+> 
+
