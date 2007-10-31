@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXJaLvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXJaLxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbXJaLvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXJaLvr
+	id S1757980AbXJaLxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXJaLxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:51:47 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:36055 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbXJaLvq (ORCPT
+	Wed, 31 Oct 2007 07:53:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40769 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481AbXJaLxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:51:46 -0400
-Date: Wed, 31 Oct 2007 04:51:45 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: lkml <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org
-Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
-In-Reply-To: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
-References: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Oct 2007 07:53:11 -0400
+Date: Wed, 31 Oct 2007 12:53:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] dump_stack on panic
+Message-ID: <20071031115308.GC27084@one.firstfloor.org>
+References: <1193788979.5623.43.camel@localhost.localdomain> <p73odeg2l9v.fsf@bingen.suse.de> <20071031081513.GB3810@infradead.org> <20071031104147.GA27084@one.firstfloor.org> <Pine.LNX.4.58.0710310653190.12724@gandalf.stny.rr.com> <20071031111724.GB27084@one.firstfloor.org> <Pine.LNX.4.58.0710310729130.13523@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0710310729130.13523@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007, Randy Dunlap wrote:
-> drivers/media/video/bt8xx/bttv-cards.c calls ip_compute_csum().
-> However, when CONFIG_NET=n, that produces:
->
-> ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
->
-> Config symbol VIDEO_BT848 can be made to depend on NET, or the
-> osprey_eeprom() function can be built depending on some new config
-> symbol, or bttv could have its own checksum function...
 
-The real problem here is that ip_compute_csum is part of lib-y, but is also
-exported for modules.  This problem has come up before, for instance your
-patch for csum_partial()
-http://lkml.org/lkml/2007/4/3/209
+I suspect most of the panics you cited are unnecessary and should
+be revisited anyways. Linux should be far beyond the "we left out error
+handling and put in panic instead" philosophy of classical Unix now
+and those are mostly just some left overs.  But that's a different issue.
 
-Or the problem with kasprintf and the lg module:
-http://lkml.org/lkml/2007/9/24/15
+> IMHO I believe we should do the dump_stack now, and come up with another
+> solution to the mount root panic.
 
-The general lib-y vs EXPORT_SYMBOL problem:
-http://lkml.org/lkml/2007/9/25/17
+You mean never. You want the change, you do it please properly the first
+time. Doing stack dumps on no root or machine check is utterly wrong.
 
-The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
-which can't be compiled as a module.  That means ip_compute_csum() will get
-pulled out of the lib.a file for igmp, and thus be present for the net modules
-that use it too.  If igmp could be turned off, made a module, or stopped using
-ip_compute_csum(), then the users of ip_compute_csum() that do depend on
-CONFIG_NET would have the same problem as bttv does.
+It is bad enough we always get them on OOM events where they are also
+mostly pointless.
 
-It seems a shame to create a new ip checksum function in the bttv driver when
-a perfectly good one already exists and will already be present in just about
-every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
-outside of randconfig?
+-Andi
