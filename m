@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbXJaBa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbXJaBan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbXJaBa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 21:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXJaBaV
+	id S1751955AbXJaBan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 21:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXJaBac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 21:30:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:51631 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbXJaBaU (ORCPT
+	Tue, 30 Oct 2007 21:30:32 -0400
+Received: from outbound-mail-56.bluehost.com ([69.89.20.36]:54973 "HELO
+	outbound-mail-56.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753245AbXJaBab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 21:30:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nt8N+nB7wPd/cIZtyN3mtj4WbrDaG744O39Nr11GkZZXKMiC3OKe2kZsVF7qsdvieTS+1mpXnv2fXQGXcRZ5eR5TuTnLR4MskaGXlq73HrNw7ONAtZT2lz4p63NK0D+Af20v323QFl8s3jDw/oI5iQs3SxwaM+TVbYTj7ITD6CI=
-Message-ID: <5d6222a80710301830u7976d3eemdd1ed622d59c0a48@mail.gmail.com>
-Date: Tue, 30 Oct 2007 23:30:18 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] Add asm-compat.h to x86
-Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4727DA13.9080904@goop.org>
+	Tue, 30 Oct 2007 21:30:31 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: pci-disable-decode-of-io-memory-during-bar-sizing.patch
+Date: Tue, 30 Oct 2007 18:30:13 -0700
+User-Agent: KMail/1.9.7
+Cc: Robert Hancock <hancockr@shaw.ca>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, akpm@linux-foundation.org, ak@suse.de,
+       rajesh.shah@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
+References: <200708151919.l7FJJfUE010966@imap1.linux-foundation.org> <4727C126.8070000@shaw.ca> <alpine.LFD.0.999.0710301653330.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710301653330.30120@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071030145523.GA28026@Krystal> <4727DA13.9080904@goop.org>
+Message-Id: <200710301830.14429.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/30/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Mathieu Desnoyers wrote:
-> > Add asm-compat.h to x86
-> >
-> > In assembly code and in gcc inline assembly, we need .long to express a "c long"
-> > type on i386 and a .quad to express the same on x86_64. Use macros similar to
-> > powerpc "PPC_LONG" to express those. Name chosen: ASM_LONG. (didn't feel like
-> > X86_LONG was required).
-> >
-> > This is useful in inline assembly within code shared between 32 and 64
-> > bits architectures in x86.
-> >
-> > More compatible assembly macros could be added in this header later when
-> > needed.
-> >
-> > I had to create this to implement a merged optimized immediate values
-> > header for x86.
-> >
+On Tuesday, October 30, 2007 4:59 pm Linus Torvalds wrote:
+> Also, there are several devices that don't show up in the MMCFG
+> things, or just otherwise get it wrong.
 >
-> Seems sound to me, and this header might be a useful place to put other
-> things, like macros to emit exceptions, etc...
+> So just take a look at arch/x86/pci/mmconfig-shared.c and look for
+> "conf1".
 >
-I have already done similar things in the unified pvops patch. But it
-was just a few locations, and I didn't fell the need for a common
-thing. But it is definitely useful.
+> Really. Damn, I'm nervous taking any MMCFG patches that has you as an
+> author, if you aren't even aware of these kinds of fundamnetal
+> issues. You probably read the standards about how things are
+> "supposed" to work, and then just believed them?
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+We have a few bits of code in there to look at the actual MMCONFIG base 
+register, which is good since we can sanity check it against the 
+firmware.  However, by itself it's not enough since we may end up using 
+it even though the BIOS didn't tell us about an overlap that really 
+does exist.  Robert recognized this and added checks to make sure the 
+values read from the base regs actually matched what the firmware was 
+telling us in the ACPI tables (at least iirc, it's been awhile since I 
+looked at the patch).
 
-"The less confident you are, the more serious you have to act."
+So don't be too nervous. :)
+
+Jesse
