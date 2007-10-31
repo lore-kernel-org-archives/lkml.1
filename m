@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXJaPZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbXJaPZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbXJaPZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759752AbXJaPYR
+	id S1759994AbXJaPZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759797AbXJaPYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:24:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33421 "EHLO
+	Wed, 31 Oct 2007 11:24:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33429 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759728AbXJaPYP (ORCPT
+	with ESMTP id S1759774AbXJaPYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:24:15 -0400
-Date: Wed, 31 Oct 2007 08:11:17 -0700
+	Wed, 31 Oct 2007 11:24:19 -0400
+Date: Wed, 31 Oct 2007 08:11:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Brian Haley <brian.haley@hp.com>,
-       David L Stevens <dlstevens@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 06/26] Fix ipv6 redirect processing, leads to TAHI failures.
-Message-ID: <20071031151117.GG2437@kroah.com>
+Subject: [patch 07/26] Fix ROSE module unload oops.
+Message-ID: <20071031151121.GH2437@kroah.com>
 References: <20071031150535.967437651@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-ipv6-redirect-processing-leads-to-tahi-failures.patch"
+Content-Disposition: inline; filename="fix-rose-module-unload-oops.patch"
 In-Reply-To: <20071031151015.GA2437@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -40,82 +39,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-From: Brian Haley <brian.haley@hp.com>
+changeset 891e6a931255238dddd08a7b306871240961a27f from mainline.
 
-changeset bf0b48dfc368c07c42b5a3a5658c8ee81b4283ac from mainline.
+Commit a3d384029aa304f8f3f5355d35f0ae274454f7cd aka
+"[AX.25]: Fix unchecked rose_add_loopback_neigh uses"
+transformed rose_loopback_neigh var into statically allocated one.
+However, on unload it will be kfree's which can't work.
 
-When the ICMPv6 Target address is multicast, Linux processes the
-redirect instead of dropping it.  The problem is in this code in
-ndisc_redirect_rcv():
+Steps to reproduce:
 
-         if (ipv6_addr_equal(dest, target)) {
-                 on_link = 1;
-         } else if (!(ipv6_addr_type(target) & IPV6_ADDR_LINKLOCAL)) {
-                 ND_PRINTK2(KERN_WARNING
-                            "ICMPv6 Redirect: target address is not
-link-local.\n");
-                 return;
-         }
+	modprobe rose
+	rmmod rose
 
-This second check will succeed if the Target address is, for example,
-FF02::1 because it has link-local scope.  Instead, it should be checking
-if it's a unicast link-local address, as stated in RFC 2461/4861 Section
-8.1:
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000008
+ printing eip:
+c014c664
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT DEBUG_PAGEALLOC
+Modules linked in: rose ax25 fan ufs loop usbhid rtc snd_intel8x0 snd_ac97_codec ehci_hcd ac97_bus uhci_hcd thermal usbcore button processor evdev sr_mod cdrom
+CPU:    0
+EIP:    0060:[<c014c664>]    Not tainted VLI
+EFLAGS: 00210086   (2.6.23-rc9 #3)
+EIP is at kfree+0x48/0xa1
+eax: 00000556   ebx: c1734aa0   ecx: f6a5e000   edx: f7082000
+esi: 00000000   edi: f9a55d20   ebp: 00200287   esp: f6a5ef28
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process rmmod (pid: 1823, ti=f6a5e000 task=f7082000 task.ti=f6a5e000)
+Stack: f9a55d20 f9a5200c 00000000 00000000 00000000 f6a5e000 f9a5200c f9a55a00
+       00000000 bf818cf0 f9a51f3f f9a55a00 00000000 c0132c60 65736f72 00000000
+       f69f9630 f69f9528 c014244a f6a4e900 00200246 f7082000 c01025e6 00000000
+Call Trace:
+ [<f9a5200c>] rose_rt_free+0x1d/0x49 [rose]
+ [<f9a5200c>] rose_rt_free+0x1d/0x49 [rose]
+ [<f9a51f3f>] rose_exit+0x4c/0xd5 [rose]
+ [<c0132c60>] sys_delete_module+0x15e/0x186
+ [<c014244a>] remove_vma+0x40/0x45
+ [<c01025e6>] sysenter_past_esp+0x8f/0x99
+ [<c012bacf>] trace_hardirqs_on+0x118/0x13b
+ [<c01025b6>] sysenter_past_esp+0x5f/0x99
+ =======================
+Code: 05 03 1d 80 db 5b c0 8b 03 25 00 40 02 00 3d 00 40 02 00 75 03 8b 5b 0c 8b 73 10 8b 44 24 18 89 44 24 04 9c 5d fa e8 77 df fd ff <8b> 56 08 89 f8 e8 84 f4 fd ff e8 bd 32 06 00 3b 5c 86 60 75 0f
+EIP: [<c014c664>] kfree+0x48/0xa1 SS:ESP 0068:f6a5ef28
 
-       - The ICMP Target Address is either a link-local address (when
-         redirected to a router) or the same as the ICMP Destination
-         Address (when redirected to the on-link destination).
-
-I know this doesn't explicitly say unicast link-local address, but it's
-implied.
-
-This bug is preventing Linux kernels from achieving IPv6 Logo Phase II
-certification because of a recent error that was found in the TAHI test
-suite - Neighbor Disovery suite test 206 (v6LC.2.3.6_G) had the
-multicast address in the Destination field instead of Target field, so
-we were passing the test.  This won't be the case anymore.
-
-The patch below fixes this problem, and also fixes ndisc_send_redirect()
-to not send an invalid redirect with a multicast address in the Target
-field.  I re-ran the TAHI Neighbor Discovery section to make sure Linux
-passes all 245 tests now.
-
-Signed-off-by: Brian Haley <brian.haley@hp.com>
-Acked-by: David L Stevens <dlstevens@us.ibm.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ndisc.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ include/net/rose.h       |    2 +-
+ net/rose/rose_loopback.c |    4 ++--
+ net/rose/rose_route.c    |   15 ++++++++++-----
+ 3 files changed, 13 insertions(+), 8 deletions(-)
 
---- a/net/ipv6/ndisc.c
-+++ b/net/ipv6/ndisc.c
-@@ -1268,9 +1268,10 @@ static void ndisc_redirect_rcv(struct sk
+--- a/include/net/rose.h
++++ b/include/net/rose.h
+@@ -188,7 +188,7 @@ extern void rose_kick(struct sock *);
+ extern void rose_enquiry_response(struct sock *);
  
- 	if (ipv6_addr_equal(dest, target)) {
- 		on_link = 1;
--	} else if (!(ipv6_addr_type(target) & IPV6_ADDR_LINKLOCAL)) {
-+	} else if (ipv6_addr_type(target) !=
-+		   (IPV6_ADDR_UNICAST|IPV6_ADDR_LINKLOCAL)) {
- 		ND_PRINTK2(KERN_WARNING
--			   "ICMPv6 Redirect: target address is not link-local.\n");
-+			   "ICMPv6 Redirect: target address is not link-local unicast.\n");
- 		return;
- 	}
+ /* rose_route.c */
+-extern struct rose_neigh rose_loopback_neigh;
++extern struct rose_neigh *rose_loopback_neigh;
+ extern const struct file_operations rose_neigh_fops;
+ extern const struct file_operations rose_nodes_fops;
+ extern const struct file_operations rose_routes_fops;
+--- a/net/rose/rose_loopback.c
++++ b/net/rose/rose_loopback.c
+@@ -79,7 +79,7 @@ static void rose_loopback_timer(unsigned
  
-@@ -1344,9 +1345,9 @@ void ndisc_send_redirect(struct sk_buff 
- 	}
+ 		skb_reset_transport_header(skb);
  
- 	if (!ipv6_addr_equal(&ipv6_hdr(skb)->daddr, target) &&
--	    !(ipv6_addr_type(target) & IPV6_ADDR_LINKLOCAL)) {
-+	    ipv6_addr_type(target) != (IPV6_ADDR_UNICAST|IPV6_ADDR_LINKLOCAL)) {
- 		ND_PRINTK2(KERN_WARNING
--			"ICMPv6 Redirect: target address is not link-local.\n");
-+			"ICMPv6 Redirect: target address is not link-local unicast.\n");
- 		return;
- 	}
+-		sk = rose_find_socket(lci_o, &rose_loopback_neigh);
++		sk = rose_find_socket(lci_o, rose_loopback_neigh);
+ 		if (sk) {
+ 			if (rose_process_rx_frame(sk, skb) == 0)
+ 				kfree_skb(skb);
+@@ -88,7 +88,7 @@ static void rose_loopback_timer(unsigned
  
+ 		if (frametype == ROSE_CALL_REQUEST) {
+ 			if ((dev = rose_dev_get(dest)) != NULL) {
+-				if (rose_rx_call_request(skb, dev, &rose_loopback_neigh, lci_o) == 0)
++				if (rose_rx_call_request(skb, dev, rose_loopback_neigh, lci_o) == 0)
+ 					kfree_skb(skb);
+ 			} else {
+ 				kfree_skb(skb);
+--- a/net/rose/rose_route.c
++++ b/net/rose/rose_route.c
+@@ -45,7 +45,7 @@ static DEFINE_SPINLOCK(rose_neigh_list_l
+ static struct rose_route *rose_route_list;
+ static DEFINE_SPINLOCK(rose_route_list_lock);
+ 
+-struct rose_neigh rose_loopback_neigh;
++struct rose_neigh *rose_loopback_neigh;
+ 
+ /*
+  *	Add a new route to a node, and in the process add the node and the
+@@ -362,7 +362,12 @@ out:
+  */
+ void rose_add_loopback_neigh(void)
+ {
+-	struct rose_neigh *sn = &rose_loopback_neigh;
++	struct rose_neigh *sn;
++
++	rose_loopback_neigh = kmalloc(sizeof(struct rose_neigh), GFP_KERNEL);
++	if (!rose_loopback_neigh)
++		return;
++	sn = rose_loopback_neigh;
+ 
+ 	sn->callsign  = null_ax25_address;
+ 	sn->digipeat  = NULL;
+@@ -417,13 +422,13 @@ int rose_add_loopback_node(rose_address 
+ 	rose_node->mask         = 10;
+ 	rose_node->count        = 1;
+ 	rose_node->loopback     = 1;
+-	rose_node->neighbour[0] = &rose_loopback_neigh;
++	rose_node->neighbour[0] = rose_loopback_neigh;
+ 
+ 	/* Insert at the head of list. Address is always mask=10 */
+ 	rose_node->next = rose_node_list;
+ 	rose_node_list  = rose_node;
+ 
+-	rose_loopback_neigh.count++;
++	rose_loopback_neigh->count++;
+ 
+ out:
+ 	spin_unlock_bh(&rose_node_list_lock);
+@@ -454,7 +459,7 @@ void rose_del_loopback_node(rose_address
+ 
+ 	rose_remove_node(rose_node);
+ 
+-	rose_loopback_neigh.count--;
++	rose_loopback_neigh->count--;
+ 
+ out:
+ 	spin_unlock_bh(&rose_node_list_lock);
 
 -- 
