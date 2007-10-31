@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbXJaAZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbXJaA3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbXJaAZX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXJaAZL
+	id S1755880AbXJaA3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXJaA32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:25:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42097 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbXJaAZJ (ORCPT
+	Tue, 30 Oct 2007 20:29:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55041 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752608AbXJaA31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:25:09 -0400
-Date: Wed, 31 Oct 2007 01:25:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jeff Lee <YY_Lee@issc.com.tw>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, mwallis@serialmonkey.com
-Subject: Re: Licensing of IS89C35 WLAN USB driver [was Re: rt73usb: support
-	for wireless in Kohjinsha subnotebook]
-Message-ID: <20071031002512.GB1887@elf.ucw.cz>
-References: <20071023090808.GB19758@infradead.org> <20071030112221.GA17586@elf.ucw.cz> <1193757119.29187.17.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193757119.29187.17.camel@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 30 Oct 2007 20:29:27 -0400
+Date: Tue, 30 Oct 2007 17:29:23 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
+Message-Id: <20071030172923.d5d8dac3.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0710301648540.28111@chino.kir.corp.google.com>
+References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
+	<alpine.DEB.0.9999.0710261416160.11594@chino.kir.corp.google.com>
+	<1193434278.5032.106.camel@localhost>
+	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
+	<20071026180713.aeedfac2.pj@sgi.com>
+	<Pine.LNX.4.64.0710261823210.30012@schroedinger.engr.sgi.com>
+	<20071026194144.6042316a.pj@sgi.com>
+	<alpine.DEB.0.9999.0710262149090.26464@chino.kir.corp.google.com>
+	<20071027161955.e9d4d2db.pj@sgi.com>
+	<alpine.DEB.0.9999.0710272231170.23796@chino.kir.corp.google.com>
+	<20071028164637.8d1b45b0.pj@sgi.com>
+	<alpine.DEB.0.9999.0710281742090.26837@chino.kir.corp.google.com>
+	<20071028212745.57a7db67.pj@sgi.com>
+	<alpine.DEB.0.9999.0710282130320.32474@chino.kir.corp.google.com>
+	<20071029001554.c12b6b6c.pj@sgi.com>
+	<alpine.DEB.0.9999.0710301607430.19750@chino.kir.corp.google.com>
+	<20071030164414.b353e41c.pj@sgi.com>
+	<alpine.DEB.0.9999.0710301648540.28111@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+David wrote:
+> Of course they have specific affinity needs, that's why they used 
+> mempolicies.
 
-> > You are listed as author of IS89C35 802.11bg WLAN USB Driver. That
-> > driver has clear MODULE_LICENSE("GPL") tag, but not other notices.
-> > 
-> > Is it safe to assume whole sources are to be distributed under GPLv2?
-> > (Or is it GPLv2 or later?)
-> 
-> Pavel,
-> 
-> I sent mail as you requested on Sunday to Jeff Lee but haven't heard
-> back yet.  
+No.  Good grief.  If they are just looking for some set of memory
+banks, not to other node-specific hardware, then they might not need
+a specific node.
 
-Oops, sorry for confusion.
+Consider for example a multi-threaded, compute bound, long running
+scientific computation that has a substantial and fussy memory layout.
+Remapping it from one cpuset to another having the same NUMA topology
+may well work fine, once its memory caches recover.  Reverting it to
+the lowest common denominator MPOL_DEFAULT policy because (Choice C) it
+no longer has access to its initial nodes might devastate its
+performance.
 
-> I can't find any generic contact email addresses for ISSC
-> Taiwan or the Italian company that produced the adapter in question,
-> unfortunately.
+pj wrote:
+> I sure wish I knew what real world, actual, not hypothetical, situations
+> were motivating this.
 
-http://www.issc.com.tw/contact.htm seems to be web based form. I
-clicked something into it, lets see what happens.
+I'm still wishing ...
 
-(They ask for details like my fax number/phone number, and they can't
-even spell :-().
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
