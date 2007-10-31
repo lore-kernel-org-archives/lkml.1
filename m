@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbXJaAEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbXJaAF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbXJaAEd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbXJaADx
+	id S1759400AbXJaAF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXJaAFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:03:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54248 "EHLO
+	Tue, 30 Oct 2007 20:05:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40547 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759591AbXJaADv (ORCPT
+	with ESMTP id S1752066AbXJaAFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:03:51 -0400
-Date: Tue, 30 Oct 2007 17:03:49 -0700
+	Tue, 30 Oct 2007 20:05:48 -0400
+Date: Tue, 30 Oct 2007 17:05:45 -0700
 From: Paul Jackson <pj@sgi.com>
 To: David Rientjes <rientjes@google.com>
 Cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
        ak@suse.de, linux-kernel@vger.kernel.org
 Subject: Re: [patch 2/2] cpusets: add interleave_over_allowed option
-Message-Id: <20071030170349.11f3aa4a.pj@sgi.com>
+Message-Id: <20071030170545.f16bdae7.pj@sgi.com>
 In-Reply-To: <alpine.DEB.0.9999.0710301618590.19750@chino.kir.corp.google.com>
 References: <alpine.DEB.0.9999.0710251540210.11929@chino.kir.corp.google.com>
 	<alpine.DEB.0.9999.0710261436140.16966@chino.kir.corp.google.com>
@@ -45,14 +45,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 David wrote:
-> Of course there's actual and real world examples of this, because right 
-> now we're not meeting the full intent of the application.
+> But, with Choice C, my intent is still preserved in the mempolicy even 
+> though it's not effected because my access rights to the node has changed.  
 
-Please describe one, an actual one, not a hypothetical one, of which you
-have personal knowledge.
-
-There are many refinements we could add, an endless stream of them.
-Each one adds a burden to those who didn't need it.
+Choice B, as I'm coding it, has this property as well.
 
 -- 
                   I won't rest till it's the best ...
