@@ -1,181 +1,359 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXJaAjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbXJaAkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbXJaAjV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXJaAjN
+	id S1759189AbXJaAkZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbXJaAkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:39:13 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51333 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbXJaAjM (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:39:12 -0400
-Date: Tue, 30 Oct 2007 17:38:50 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linux Netdev <linux-netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <Linux-Kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: dev_ifname32() fails on 32->64bit calls in copy_in_user().
-Message-ID: <20071031003850.GE7517@tasint.org>
-Mail-Followup-To: Linux Netdev <linux-netdev@vger.kernel.org>,
-	Linux Kernel Mailing List <Linux-Kernel@vger.kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 30 Oct 2007 20:40:12 -0400
+Received: from mx3.palmsource.com ([12.7.175.31]:57589 "EHLO
+	mx3.access-company.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbXJaAkK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:40:10 -0400
+Subject: Re: [PATCH 1/2 ] Add support LZO in cramfs
+From: vince kim <vince.kim@access-company.com>
+Reply-To: vince.kim@access-company.com
+To: Michael Tokarev <mjt@tls.msk.ru>, Vince Kim <Vince.Kim@access-company.com>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@openedhand.com>
+In-Reply-To: <1193683508.27074.19.camel@vince-desktop>
+References: <1193441153.17726.17.camel@vince-desktop>
+	 <47230059.80202@msgid.tls.msk.ru> <1193683508.27074.19.camel@vince-desktop>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: ACCESS-AMERICA
+Date: Tue, 30 Oct 2007 17:39:08 -0700
+Message-Id: <1193791148.29935.8.camel@vince-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+X-Proofpoint-Virus-Version: vendor=fsecure engine=4.65.5502:2.3.11,1.2.37,4.0.164 definitions=2007-10-30_04:2007-10-30,2007-10-30,2007-10-30 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0708230000 definitions=main-0710300193
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello folks,
-	I've been using a nice program on ppc32 with a ppc64
-system+kernel.  It uses netlink to determine some network interface
-information.  Recent kernels cause it to exit at the netlink stage.  At
-first, I thought it was a bug in the program.  Now I'm not so sure.
-	The situation is specifically the use of SIOCGIFNAME in 32bit
-binaries on 64 bit platforms+kernels.  I've tested ppc32 on ppc64 and 
-ia32 on amd64.  amd64 on amd64, ia32 on ia32,and ppc64 on ppc64
-all work fine.
-	I've cooked up a test program to evince the problem.  It just
-asks netlink for an interface list, then uses SIOCGIFNAME to get the
-interface name.  On kernels before commit 
-32da477a5bfe96b6dfc8960e0d22d89ca09fd10a [NET]: Don't implement
-dev_ifname32 inline, the test program runs fine.  Kernels after, I get
-EFAULT.  This behavior is the same as the original program. 
-	Instrumenting the kernel with printks, the EFAULT comes from
-the first copy_in_user() at line 325 of fs/compat_ioctl.c (in
-dev_ifname32()).  I put some access_ok() checks in, and they do not
-trigger (access is ok).  The call never even gets into sys_ioctl().
-	I'm assuming at this point that copy_in_user() for ia32/amd64
-and ppc32/ppc64 is what is having trouble.  Test program follows.
+The function pointer cramfs_uncompress_block is added inside the
+cramfs_sb_info struct, so each mountpoint has its own
+cramfs_uncompress_block depends on compression type.
 
-Joel
+I did some test, and verified multiple cramfs images mounted
+successfully regardless of compression(either ZLIB or LZO).
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <unistd.h>
+Here is the patch.
 
-#include <net/if.h>
-#include <asm/types.h>
-#include <linux/rtnetlink.h>
+diff -Naur linux-2.6.23/fs/cramfs/inode.c linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c
+--- linux-2.6.23/fs/cramfs/inode.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c	2007-10-30 17:15:34.000000000 -0700
+@@ -274,7 +274,17 @@
+ 		printk(KERN_ERR "cramfs: unsupported filesystem features\n");
+ 		goto out;
+ 	}
+-
++	
++	/* check flag to see if LZO compression is used */
++	if (super.flags & CRAMFS_FLAG_LZO_COMPRESSION) {
++		sbi->cramfs_uncompress_block = &cramfs_uncompress_block_lzo;
++		printk("cramfs: LZO compression\n");
++	}
++	else {
++		sbi->cramfs_uncompress_block = &cramfs_uncompress_block_zlib;
++		printk("cramfs: ZLIB compression\n");
++	}
++	
+ 	/* Check that the root inode is in a sane state */
+ 	if (!S_ISDIR(super.root.mode)) {
+ 		printk(KERN_ERR "cramfs: root is not a directory\n");
+@@ -486,7 +496,7 @@
+ 			printk(KERN_ERR "cramfs: bad compressed blocksize %u\n", compr_len);
+ 		else {
+ 			mutex_lock(&read_mutex);
+-			bytes_filled = cramfs_uncompress_block(pgdata,
++			bytes_filled = ((struct cramfs_sb_info *)(sb->s_fs_info))->cramfs_uncompress_block(pgdata,
+ 				 PAGE_CACHE_SIZE,
+ 				 cramfs_read(sb, start_offset, compr_len),
+ 				 compr_len);
+diff -Naur linux-2.6.23/fs/cramfs/uncompress.c linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c
+--- linux-2.6.23/fs/cramfs/uncompress.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c	2007-10-26 14:19:01.000000000 -0700
+@@ -20,12 +20,16 @@
+ #include <linux/vmalloc.h>
+ #include <linux/zlib.h>
+ #include <linux/cramfs_fs.h>
++#include <linux/lzo.h>
+ 
+ static z_stream stream;
+ static int initialized;
+ 
+-/* Returns length of decompressed data. */
+-int cramfs_uncompress_block(void *dst, int dstlen, void *src, int srclen)
++/* 
++ * uncompress with ZLIB
++ * Returns length of decompressed data. 
++ */
++int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int srclen)
+ {
+ 	int err;
+ 
+@@ -48,7 +52,26 @@
+ 	return stream.total_out;
+ 
+ err:
+-	printk("Error %d while decompressing!\n", err);
++	printk("ZLIB Error %d while decompressing!\n", err);
++	printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
++	return 0;
++}
++
++/* 
++ * uncompress with LZO
++ * Returns length of decompressed data. 
++ */
++int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int srclen)
++{
++	int err;
++
++	err = lzo1x_decompress_safe(src,srclen,dst,(unsigned int *)&dstlen);
++        if (err != LZO_E_OK)
++                goto err;
++        return dstlen;
++
++err:
++	printk("LZO Error %d while decompressing!\n", err);
+ 	printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
+ 	return 0;
+ }
+diff -Naur linux-2.6.23/fs/Kconfig linux-2.6.23_cramfs_lzo/fs/Kconfig
+--- linux-2.6.23/fs/Kconfig	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/fs/Kconfig	2007-10-26 14:19:01.000000000 -0700
+@@ -1348,6 +1348,7 @@
+ 	tristate "Compressed ROM file system support (cramfs)"
+ 	depends on BLOCK
+ 	select ZLIB_INFLATE
++	select LZO_DECOMPRESS
+ 	help
+ 	  Saying Y here includes support for CramFs (Compressed ROM File
+ 	  System).  CramFs is designed to be a simple, small, and compressed
+diff -Naur linux-2.6.23/include/linux/cramfs_fs.h linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h
+--- linux-2.6.23/include/linux/cramfs_fs.h	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h	2007-10-26 14:19:01.000000000 -0700
+@@ -73,6 +73,7 @@
+ #define CRAMFS_FLAG_HOLES		0x00000100	/* support for holes */
+ #define CRAMFS_FLAG_WRONG_SIGNATURE	0x00000200	/* reserved */
+ #define CRAMFS_FLAG_SHIFTED_ROOT_OFFSET	0x00000400	/* shifted root fs */
++#define CRAMFS_FLAG_LZO_COMPRESSION	0x00000800	/* LZO compression is used */
+ 
+ /*
+  * Valid values in super.flags.  Currently we refuse to mount
+@@ -82,11 +83,16 @@
+ #define CRAMFS_SUPPORTED_FLAGS	( 0x000000ff \
+ 				| CRAMFS_FLAG_HOLES \
+ 				| CRAMFS_FLAG_WRONG_SIGNATURE \
+-				| CRAMFS_FLAG_SHIFTED_ROOT_OFFSET )
++				| CRAMFS_FLAG_SHIFTED_ROOT_OFFSET \
++				| CRAMFS_FLAG_LZO_COMPRESSION )
++
++/* function pointer for uncompress function */
+ 
+ /* Uncompression interfaces to the underlying zlib */
+-int cramfs_uncompress_block(void *dst, int dstlen, void *src, int srclen);
++int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int srclen);
+ int cramfs_uncompress_init(void);
+ void cramfs_uncompress_exit(void);
+ 
++/* Uncompression interfaces to the underlying lzo */
++int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int srclen);
+ #endif
+diff -Naur linux-2.6.23/include/linux/cramfs_fs_sb.h linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs_sb.h
+--- linux-2.6.23/include/linux/cramfs_fs_sb.h	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs_sb.h	2007-10-30 17:17:19.000000000 -0700
+@@ -10,6 +10,8 @@
+ 			unsigned long blocks;
+ 			unsigned long files;
+ 			unsigned long flags;
++			/* function pointer to uncompress block */
++			int (* cramfs_uncompress_block) (void *dst, int dstlen, void *src, int srclen);
+ };
+ 
+ static inline struct cramfs_sb_info *CRAMFS_SB(struct super_block *sb)
 
-#define NETLINK_BUFSIZE 16384
 
-static void bail(int rc, char *fmt, ...)
-{
-    va_list args;
-
-    if (fmt) {
-        va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
-        va_end(args);
-    }
-
-    exit(rc);
-}
-
-int main(int argc, char *argv[])
-{
-    int fd, ioctl_fd, rc, len;
-    struct {
-        struct nlmsghdr nlh;
-        struct rtgenmsg g;
-    } req;
-    struct sockaddr_nl nladdr;
-    static char rcvbuf[NETLINK_BUFSIZE];
-    struct nlmsghdr *h;
-    struct iovec iov = {rcvbuf, sizeof(rcvbuf) };
-    struct msghdr msg = {
-        (void *)&nladdr, sizeof(nladdr),
-        &iov, 1,
-        NULL, 0,
-        0
-    };
-    struct ifreq ifr;
-    struct ifaddrmsg *ifa;
-
-    fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-    if (fd < 0)
-        bail(1, "Unable to open netlink socket: %s\n", strerror(errno));
-
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)))
-        bail(1, "Unable to set socket options: %s\n", strerror(errno));
-
-    memset(&nladdr, 0, sizeof(nladdr));
-    nladdr.nl_family = AF_NETLINK;
-    req.nlh.nlmsg_len = sizeof(req);
-    req.nlh.nlmsg_type = RTM_GETADDR;
-    req.nlh.nlmsg_flags = NLM_F_ROOT|NLM_F_MATCH|NLM_F_REQUEST;
-    req.nlh.nlmsg_pid = 0;
-    req.nlh.nlmsg_seq = 1;
-    req.g.rtgen_family = AF_INET;
-
-    if (sendto(fd, (void *)&req, sizeof(req), 0,
-               (struct sockaddr *)&nladdr, sizeof(nladdr)) < 0)
-        bail(1, "Unable to send netlink request: %s\n", strerror(errno));
-
-    while (1)
-    {
-        rc = recvmsg(fd, &msg, 0);
-        if (!rc)
-            bail(1, "Netlink socket closed\n");
-
-        h = (struct nlmsghdr *)rcvbuf;
-        if (h->nlmsg_type == NLMSG_DONE)
-            break;
-
-        if (h->nlmsg_type == NLMSG_ERROR)
-            bail(1, "Error from netlink socket\n");
-
-        len = rc;
-        for (; NLMSG_OK(h, len); h = NLMSG_NEXT(h, len)) {
-            if (h->nlmsg_type != RTM_NEWADDR)
-                continue;
-
-            ioctl_fd = socket(AF_INET, SOCK_STREAM, 0);
-            if (ioctl_fd < 0)
-                bail(1, "Unable to create ioctl socket: %s\n",
-                     strerror(errno));
-
-            ifa = NLMSG_DATA(h);
-            memset(&ifr, 0, sizeof(ifr));
-            ifr.ifr_ifindex = ifa->ifa_index;
-
-            rc = ioctl(ioctl_fd, SIOCGIFNAME, &ifr);
-            if (rc)
-                bail(1, "Unable to get name: %s\n", strerror(errno));
-
-            fprintf(stdout, "Interface %d, %s\n", ifr.ifr_ifindex,
-                    ifr.ifr_ifrn.ifrn_name);
-        }
-    }
-
-    return 0;
-}
-
--- 
-
-"What no boss of a programmer can ever understand is that a programmer
- is working when he's staring out of the window"
-	- With apologies to Burton Rascoe
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+On Mon, 2007-10-29 at 11:45 -0700, vince kim wrote:
+> Thanks for your comment.
+> I can't hardly imagine there would be a lot of cases to mount two
+> different images with different compression, but if they did, then they
+> would not work at the same time.
+> 
+> For modular decompression, it would be out of my scope to modularize lzo
+> or zlib. I will think about anyway.
+> 
+> I used Evolution to submit patch, and it word-wrapped the patch.
+> 
+> This must be clean.
+> 
+> diff -Naur linux-2.6.23/fs/cramfs/inode.c linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c
+> --- linux-2.6.23/fs/cramfs/inode.c	2007-10-09 13:31:38.000000000 -0700
+> +++ linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c	2007-10-26 14:35:59.000000000 -0700
+> @@ -31,6 +31,8 @@
+>  static const struct inode_operations cramfs_dir_inode_operations;
+>  static const struct file_operations cramfs_directory_operations;
+>  static const struct address_space_operations cramfs_aops;
+> +/* function pointer to uncompress block */
+> +static int (* cramfs_uncompress_block) (void *dst, int dstlen, void *src, int srclen);
+>  
+>  static DEFINE_MUTEX(read_mutex);
+>  
+> @@ -274,7 +276,17 @@
+>  		printk(KERN_ERR "cramfs: unsupported filesystem features\n");
+>  		goto out;
+>  	}
+> -
+> +	
+> +	/* check flag to see if LZO compression is used */
+> +	if (super.flags & CRAMFS_FLAG_LZO_COMPRESSION) {
+> +		cramfs_uncompress_block = &cramfs_uncompress_block_lzo;
+> +		printk("cramfs: LZO compression\n");
+> +	}
+> +	else {
+> +		cramfs_uncompress_block = &cramfs_uncompress_block_zlib;
+> +		printk("cramfs: ZLIB compression\n");
+> +	}
+> +	
+>  	/* Check that the root inode is in a sane state */
+>  	if (!S_ISDIR(super.root.mode)) {
+>  		printk(KERN_ERR "cramfs: root is not a directory\n");
+> diff -Naur linux-2.6.23/fs/cramfs/uncompress.c linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c
+> --- linux-2.6.23/fs/cramfs/uncompress.c	2007-10-09 13:31:38.000000000 -0700
+> +++ linux-2.6.23_cramfs_lzo/fs/cramfs/uncompress.c	2007-10-26 14:19:01.000000000 -0700
+> @@ -20,12 +20,16 @@
+>  #include <linux/vmalloc.h>
+>  #include <linux/zlib.h>
+>  #include <linux/cramfs_fs.h>
+> +#include <linux/lzo.h>
+>  
+>  static z_stream stream;
+>  static int initialized;
+>  
+> -/* Returns length of decompressed data. */
+> -int cramfs_uncompress_block(void *dst, int dstlen, void *src, int srclen)
+> +/* 
+> + * uncompress with ZLIB
+> + * Returns length of decompressed data. 
+> + */
+> +int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int srclen)
+>  {
+>  	int err;
+>  
+> @@ -48,7 +52,26 @@
+>  	return stream.total_out;
+>  
+>  err:
+> -	printk("Error %d while decompressing!\n", err);
+> +	printk("ZLIB Error %d while decompressing!\n", err);
+> +	printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
+> +	return 0;
+> +}
+> +
+> +/* 
+> + * uncompress with LZO
+> + * Returns length of decompressed data. 
+> + */
+> +int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int srclen)
+> +{
+> +	int err;
+> +
+> +	err = lzo1x_decompress_safe(src,srclen,dst,(unsigned int *)&dstlen);
+> +        if (err != LZO_E_OK)
+> +                goto err;
+> +        return dstlen;
+> +
+> +err:
+> +	printk("LZO Error %d while decompressing!\n", err);
+>  	printk("%p(%d)->%p(%d)\n", src, srclen, dst, dstlen);
+>  	return 0;
+>  }
+> diff -Naur linux-2.6.23/fs/Kconfig linux-2.6.23_cramfs_lzo/fs/Kconfig
+> --- linux-2.6.23/fs/Kconfig	2007-10-09 13:31:38.000000000 -0700
+> +++ linux-2.6.23_cramfs_lzo/fs/Kconfig	2007-10-26 14:19:01.000000000 -0700
+> @@ -1348,6 +1348,7 @@
+>  	tristate "Compressed ROM file system support (cramfs)"
+>  	depends on BLOCK
+>  	select ZLIB_INFLATE
+> +	select LZO_DECOMPRESS
+>  	help
+>  	  Saying Y here includes support for CramFs (Compressed ROM File
+>  	  System).  CramFs is designed to be a simple, small, and compressed
+> diff -Naur linux-2.6.23/include/linux/cramfs_fs.h linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h
+> --- linux-2.6.23/include/linux/cramfs_fs.h	2007-10-09 13:31:38.000000000 -0700
+> +++ linux-2.6.23_cramfs_lzo/include/linux/cramfs_fs.h	2007-10-26 14:19:01.000000000 -0700
+> @@ -73,6 +73,7 @@
+>  #define CRAMFS_FLAG_HOLES		0x00000100	/* support for holes */
+>  #define CRAMFS_FLAG_WRONG_SIGNATURE	0x00000200	/* reserved */
+>  #define CRAMFS_FLAG_SHIFTED_ROOT_OFFSET	0x00000400	/* shifted root fs */
+> +#define CRAMFS_FLAG_LZO_COMPRESSION	0x00000800	/* LZO compression is used */
+>  
+>  /*
+>   * Valid values in super.flags.  Currently we refuse to mount
+> @@ -82,11 +83,16 @@
+>  #define CRAMFS_SUPPORTED_FLAGS	( 0x000000ff \
+>  				| CRAMFS_FLAG_HOLES \
+>  				| CRAMFS_FLAG_WRONG_SIGNATURE \
+> -				| CRAMFS_FLAG_SHIFTED_ROOT_OFFSET )
+> +				| CRAMFS_FLAG_SHIFTED_ROOT_OFFSET \
+> +				| CRAMFS_FLAG_LZO_COMPRESSION )
+> +
+> +/* function pointer for uncompress function */
+>  
+>  /* Uncompression interfaces to the underlying zlib */
+> -int cramfs_uncompress_block(void *dst, int dstlen, void *src, int srclen);
+> +int cramfs_uncompress_block_zlib(void *dst, int dstlen, void *src, int srclen);
+>  int cramfs_uncompress_init(void);
+>  void cramfs_uncompress_exit(void);
+>  
+> +/* Uncompression interfaces to the underlying lzo */
+> +int cramfs_uncompress_block_lzo(void *dst, int dstlen, void *src, int srclen);
+>  #endif
+> 
+> 
+>   
+> 
+> On Sat, 2007-10-27 at 13:09 +0400, Michael Tokarev wrote:
+> > vince kim wrote:
+> > > This is a kernel patch to add support LZO compression in cramfs. 
+> > []
+> > > --- linux-2.6.23/fs/cramfs/inode.c      2007-10-09 13:31:38.000000000 -0700
+> > > +++ linux-2.6.23_cramfs_lzo/fs/cramfs/inode.c    2007-10-26 14:35:59.000000000 -0700
+> > > @@ -31,6 +31,8 @@
+> > >  static const struct inode_operations cramfs_dir_inode_operations;
+> > >  static const struct file_operations cramfs_directory_operations;
+> > >  static const struct address_space_operations cramfs_aops; 
+> > > +/* function pointer to uncompress block */
+> > > +static int (* cramfs_uncompress_block) (void *dst, int dstlen, void *src, int srclen);
+> > 
+> > Shouldn't this pointer be mountpoint-specific?  I mean,
+> > if I've two cramfs images, one using zlib and another
+> > using lzo, the two will not work at the same time.
+> > 
+> > []
+> > > --- linux-2.6.23/fs/Kconfig     2007-10-09 13:31:38.000000000 -0700
+> > > +++ linux-2.6.23_cramfs_lzo/fs/Kconfig  2007-10-26 14:19:01.000000000 -0700
+> > > @@ -1348,6 +1348,7 @@
+> > >         tristate "Compressed ROM file system support (cramfs)" 
+> > >         depends on BLOCK
+> > >         select ZLIB_INFLATE
+> > > +       select LZO_DECOMPRESS
+> > >         help
+> > >           Saying Y here includes support for CramFs (Compressed ROM File
+> > >           System).  CramFs is designed to be a simple, small, and compressed 
+> > 
+> > Hmm.  How about using modular decompressor? I mean,
+> > it isn't really necessary for a given config to handle
+> > both lzo- and zlib-compressed cramfs images, only one
+> > may be needed, so the other compression library becomes
+> > a useless dependency.  This is especially important for
+> > embedded environments where memory/disk space is limited.
+> > Since you're using a pointer-to-function anyway, it can
+> > be done fully dynamically, by requesting a module to de-
+> > compress the thing at runtime.  Pretty much like it's
+> > done f.e. in crypto/ipsec layer currently.
+> > 
+> > By the way, your patch is word-wrapped.
+> > 
+> > /mjt
