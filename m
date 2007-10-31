@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbXJaLso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXJaLvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbXJaLso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXJaLsg
+	id S1757283AbXJaLvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXJaLvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:48:36 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:35166 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753481AbXJaLsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:48:35 -0400
-Date: Wed, 31 Oct 2007 11:49:58 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-Message-ID: <20071031114958.210bd7cc@the-village.bc.nu>
-In-Reply-To: <47278439.4030801@gentoo.org>
-References: <47274A5F.6070409@gentoo.org>
-	<20071030153417.59b9182c@the-village.bc.nu>
-	<47276DCA.1000808@gentoo.org>
-	<20071030190153.373c9347@the-village.bc.nu>
-	<47278439.4030801@gentoo.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 07:51:47 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:36055 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbXJaLvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 07:51:46 -0400
+Date: Wed, 31 Oct 2007 04:51:45 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: lkml <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org
+Subject: Re: [v4l-dvb-maintainer] bttv build error (CONFIG_NET=n)
+In-Reply-To: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.58.0710310345160.19072@shell4.speakeasy.net>
+References: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Oct 2007 19:21:29 +0000
-Daniel Drake <dsd@gentoo.org> wrote:
+On Tue, 30 Oct 2007, Randy Dunlap wrote:
+> drivers/media/video/bt8xx/bttv-cards.c calls ip_compute_csum().
+> However, when CONFIG_NET=n, that produces:
+>
+> ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
+>
+> Config symbol VIDEO_BT848 can be made to depend on NET, or the
+> osprey_eeprom() function can be built depending on some new config
+> symbol, or bttv could have its own checksum function...
 
-> Alan Cox wrote:
-> > I would guess Brasero is issuing a command with the length of data
-> > wrongly set. In the old code that might well just produce errors of the
-> > "Umm wtf is this data left over for ?", with the new code the drive is
-> > likely to change state as it knows the transfer size and that will
-> > *correctly* cause an HSM error and what follows.
-> > 
-> > Now the question is who gets the length wrong - Brasero or the ata
-> > translation code in libata
-> 
-> Brasero does exactly the same as my test app which I attached to my last 
-> mail. Is my test app wrong?
+The real problem here is that ip_compute_csum is part of lib-y, but is also
+exported for modules.  This problem has come up before, for instance your
+patch for csum_partial()
+http://lkml.org/lkml/2007/4/3/209
 
-Would need to double check the SCSI specificatons to be sure but I think
-you are asking for less data than the drive wishes to provide. You
-aren't allowed to do that with ATA.
+Or the problem with kasprintf and the lg module:
+http://lkml.org/lkml/2007/9/24/15
 
-Alan
+The general lib-y vs EXPORT_SYMBOL problem:
+http://lkml.org/lkml/2007/9/25/17
+
+The only reason the net stuff works, is because CONFIG_NET includes igmp.c,
+which can't be compiled as a module.  That means ip_compute_csum() will get
+pulled out of the lib.a file for igmp, and thus be present for the net modules
+that use it too.  If igmp could be turned off, made a module, or stopped using
+ip_compute_csum(), then the users of ip_compute_csum() that do depend on
+CONFIG_NET would have the same problem as bttv does.
+
+It seems a shame to create a new ip checksum function in the bttv driver when
+a perfectly good one already exists and will already be present in just about
+every kernel out there.  Honestly, how common is NET=n and VIDEO_BT848=m
+outside of randconfig?
