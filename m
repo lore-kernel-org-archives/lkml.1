@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXJaUY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbXJaUcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbXJaUY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXJaUYw
+	id S1756255AbXJaUcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXJaUcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:24:52 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:37995 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754402AbXJaUYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:24:51 -0400
-Subject: Re: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
-From: Richard Purdie <rpurdie@rpsys.net>
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
-In-Reply-To: <472470DC.3080809@freemail.hu>
-References: <4718FD04.3080602@freemail.hu>
-	 <20071019133607.3419b00a.randy.dunlap@oracle.com>
-	 <471B4BA5.30100@freemail.hu>  <471B4C46.9030502@freemail.hu>
-	 <1193176104.5709.137.camel@localhost.localdomain>
-	 <472470DC.3080809@freemail.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 31 Oct 2007 15:14:21 +0100
-Message-Id: <1193840061.12294.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 31 Oct 2007 16:32:12 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:56338 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbXJaUcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 16:32:12 -0400
+Message-ID: <4728E4AC.7010009@student.ltu.se>
+Date: Wed, 31 Oct 2007 21:25:16 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Paul Jimenez <pj@place.org>, rgooch@atnf.csiro.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mtrr use type bool
+References: <20071031035718.A1D9E8B2A@place.org> <47289EE3.8080706@student.ltu.se> <20071031162016.GD27646@csclub.uwaterloo.ca>
+In-Reply-To: <20071031162016.GD27646@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-10-28 at 12:22 +0100, Németh Márton wrote:
-> Richard Purdie wrote:
-> > Hmm, there really is no way to just turn the LED on? :(
-> 
-> Unfortunately I do not have these optional modules so I never saw the LED
-> just on without blinking. I don't know if there is any hardware limitation
-> turning on the LED without the optional modules.
+Lennart Sorensen wrote:
+> On Wed, Oct 31, 2007 at 04:27:31PM +0100, Richard Knutsson wrote:
+>   
+>> Paul Jimenez wrote:
+>>     
+> ....
+>   
+>>> -			usage_table[i] = usage_table[replace] + !!increment;
+>>> +			usage_table[i] = usage_table[replace] + increment;
+>>>  
+>>>       
+>> This seems a bit strange, using a boolean as an integer (yes I know, it 
+>> works but semantically...). What about:
+>>
+>> +			usage_table[i] = usage_table[replace];
+>> +			usage_table[i] += increment ? 1 : 0;
+>>     
+>
+> What is wrong with:
+> usage_table[i] = usage_table[replace];
+> if (increment)
+> 	usage_table[i]++;
+>
+> I hate code with the '?' operator in general.  It's a conditional either
+> way, and at least this way you wouldn't even have to do a store in one
+> of the two cases 9although if the compiler can't figure out that is the
+> case already, then it really sucks).
+>   
+I kind of like them :)
+But you are right, since the 'else' doesn't do anything, an if() is more 
+clear.
+> Pauls code at least didn't involve a conditional at all, but on the
+> other hand is less clear to read.
+>   
+Mm, I know. But on the upside, many places had/have some sort of a = b ? 
+TRUE : FALSE, which are getting cleaned out.
 
-Ok, if we don't know how to do it or even if its possible, so be it. If
-you ever do find out please do update the driver.
-
-> I will send a new patch collection which addresses the other mentioned topics.
-
-Thanks, I've applied the patches although I've rewritten the second one
-to update the drivers with LED names that don't match the naming
-convention. They'll appear in the led git tree and hence -mm.
-
-Thanks,
-
-Richard
+Richard Knutsson
 
