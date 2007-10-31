@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbXJaP2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbXJaP2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760428AbXJaP2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759479AbXJaPYu
+	id S1760492AbXJaP2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbXJaPYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:24:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33559 "EHLO
+	Wed, 31 Oct 2007 11:24:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33569 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759982AbXJaPYs (ORCPT
+	with ESMTP id S1760004AbXJaPYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:24:48 -0400
-Date: Wed, 31 Oct 2007 08:11:55 -0700
+	Wed, 31 Oct 2007 11:24:52 -0400
+Date: Wed, 31 Oct 2007 08:11:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       warmcat <andy@warmcat.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 16/26] Add get_unaligned to ieee80211_get_radiotap_len
-Message-ID: <20071031151155.GQ2437@kroah.com>
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 17/26] firewire: fix unloading of fw-ohci while devices are
+	attached
+Message-ID: <20071031151158.GR2437@kroah.com>
 References: <20071031150535.967437651@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-get_unaligned-to-ieee80211_get_radiotap_len.patch"
+Content-Disposition: inline; filename="firewire-fix-unloading-of-fw-ohci-while-devices-are-attached.patch"
 In-Reply-To: <20071031151015.GA2437@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,41 +39,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-From: Andy Green <andy@warmcat.com>
+Fix panic in run_timer_softirq right after "modprobe -r firewire-ohci"
+if a FireWire disk was attached and firewire-sbp2 loaded.
 
-patch dfe6e81deaa79c85086c0cc8d85b229e444ab97f in mainline.
+Same as commit 8a2d9ed3210464d22fccb9834970629c1c36fa36.
 
-ieee80211_get_radiotap_len() tries to dereference radiotap length without
-taking care that it is completely unaligned and get_unaligned()
-is required.
-
-Signed-off-by: Andy Green <andy@warmcat.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/ieee80211.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/firewire/fw-card.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/net/mac80211/ieee80211.c
-+++ b/net/mac80211/ieee80211.c
-@@ -24,6 +24,7 @@
- #include <linux/compiler.h>
- #include <linux/bitmap.h>
- #include <net/cfg80211.h>
-+#include <asm/unaligned.h>
+--- a/drivers/firewire/fw-card.c
++++ b/drivers/firewire/fw-card.c
+@@ -507,9 +507,11 @@ fw_core_remove_card(struct fw_card *card
+ 	/* Set up the dummy driver. */
+ 	card->driver = &dummy_driver;
  
- #include "ieee80211_common.h"
- #include "ieee80211_i.h"
-@@ -338,7 +339,7 @@ static int ieee80211_get_radiotap_len(st
- 	struct ieee80211_radiotap_header *hdr =
- 		(struct ieee80211_radiotap_header *) skb->data;
+-	fw_flush_transactions(card);
+-
+ 	fw_destroy_nodes(card);
++	flush_scheduled_work();
++
++	fw_flush_transactions(card);
++	del_timer_sync(&card->flush_timer);
  
--	return le16_to_cpu(hdr->it_len);
-+	return le16_to_cpu(get_unaligned(&hdr->it_len));
+ 	fw_card_put(card);
  }
- 
- #ifdef CONFIG_MAC80211_LOWTX_FRAME_DUMP
 
 -- 
