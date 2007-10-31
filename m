@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbXJaUKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXJaUNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbXJaUKG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXJaUJz
+	id S1759637AbXJaUNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbXJaUNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:09:55 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40369 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754145AbXJaUJz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:09:55 -0400
-Message-ID: <4728E0DE.7080702@zytor.com>
-Date: Wed, 31 Oct 2007 13:09:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 31 Oct 2007 16:13:14 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:28306 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754288AbXJaUNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 16:13:14 -0400
+Date: Wed, 31 Oct 2007 21:13:09 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Subject: Suspend to ram regression (2.6.24-rc1-git)
+Message-ID: <20071031201308.GK11514@kernel.dk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Huang, Ying" <ying.huang@intel.com>, tglx@linutronix.de, mingo@redhat.com,
-       torvalds@linux-foundation.org, adaplas@pol.net, ak@suse.de,
-       ebiederm@xmission.com, mouli@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-References: <1193218342.23935.147.camel@caritas-dev.intel.com>	<1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org>
-In-Reply-To: <20071031125907.ba953d4a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I stopped paying attention, sorry.  Have all the outstanding issues been
-> addressed?
+Hi,
 
-The "EFI boot" patchset looks fairly unobtrusive to me.  One objection: 
-the VIDEO_TYPE_ numbers appear split up into groups; and the EFI one 
-probably should be 0x70 instead of 0x24.
+My x60 stopped suspending about two days ago. It just freezes after
+printing
 
-Other than that, I just need to verify it doesn't break anything.
+Suspending console(s)
 
-"EFI runtime" I have not had time to review yet.
+where it would normally turn everything off and the 'moon' light would
+go on. Posting this message in case somebody else knows what is up, if
+not I'll do a bisect on it tomorrow.
 
-	-hpa
+-- 
+Jens Axboe
 
