@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXJaG3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXJaGac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbXJaG3j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbXJaG33
+	id S1755459AbXJaGac (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXJaGaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:29:29 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45823 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755232AbXJaG32 (ORCPT
+	Wed, 31 Oct 2007 02:30:11 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:6993 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbXJaGaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:29:28 -0400
-Date: Wed, 31 Oct 2007 00:28:48 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/2] [POWERPC] Fix region size check in mpc5200 FEC driver
-In-reply-to: <20071031062842.7966.99739.stgit@trillian.cg.shawcable.net>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-id: <20071031062848.7966.35512.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-References: <20071031062842.7966.99739.stgit@trillian.cg.shawcable.net>
-User-Agent: StGIT/0.12.1
+	Wed, 31 Oct 2007 02:30:09 -0400
+X-IronPort-AV: i="4.21,350,1188792000"; 
+   d="scan'208"; a="42760323:sNHT27327727"
+Subject: Re: [PATCH 13/14] Blackfin SPI driver: Move cs_chg_udelay to
+	cs_deactive to fix bug when some SPI LCD driver needs delay after
+	cs_deactive
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: David Brownell <david-b@pacbell.net>,
+       Cameron Barfield <cbarfield@cyberdata.net>
+Cc: Bryan Wu <bryan.wu@analog.com>, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200710301319.00071.david-b@pacbell.net>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com>
+	 <1193735885-8202-14-git-send-email-bryan.wu@analog.com>
+	 <200710301319.00071.david-b@pacbell.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Wed, 31 Oct 2007 14:30:04 +0800
+Message-Id: <1193812204.6971.14.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+X-OriginalArrivalTime: 31 Oct 2007 06:30:07.0893 (UTC) FILETIME=[7B0B4450:01C81B87]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-Driver shouldn't complain if the register range is larger than what
-it expects.  This works around failures with some device trees.
+On Tue, 2007-10-30 at 13:18 -0700, David Brownell wrote:
+> On Tuesday 30 October 2007, Bryan Wu wrote:
+> > @@ -211,6 +211,10 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
+> >         flag |= (chip->flag << 8);
+> >  
+> >         write_FLAG(drv_data, flag);
+> > +
+> > +       /* Move delay here for consistency */
+> > +       if (chip->cs_chg_udelay)
+> > +               udelay(chip->cs_chg_udelay);
+> >  }
+> >  
+> 
+> By the way, if this is something needed very often, that mechanism
+> should be moved into the SPI framework.  It wouldn't be polite if
+> such LCD drivers could only work on Blackfin boards.  :)
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+I am not sure whether this LCD needs cs_chg_udelay on other boards.
+It is found by Cameron Barfield. Maybe it is some timing requirement for
+specific hardware.
 
- drivers/net/fec_mpc52xx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index fc1cf0b..a8a0ee2 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -879,9 +879,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 				"Error while parsing device node resource\n" );
- 		return rv;
- 	}
--	if ((mem.end - mem.start + 1) != sizeof(struct mpc52xx_fec)) {
-+	if ((mem.end - mem.start + 1) < sizeof(struct mpc52xx_fec)) {
- 		printk(KERN_ERR DRIVER_NAME
--			" - invalid resource size (%lx != %x), check mpc52xx_devices.c\n",
-+			" - invalid resource size (%lx < %x), check mpc52xx_devices.c\n",
- 			(unsigned long)(mem.end - mem.start + 1), sizeof(struct mpc52xx_fec));
- 		return -EINVAL;
- 	}
-
+-Bryan Wu
