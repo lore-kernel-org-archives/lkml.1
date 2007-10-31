@@ -1,199 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbXJaVQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbXJaVQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbXJaVQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 17:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbXJaVO2
+	id S1760270AbXJaVQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 17:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbXJaVOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:14:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44871 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 17:14:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44879 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758719AbXJaVO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:14:26 -0400
-Message-Id: <20071031211249.377363000@chello.nl>
+	id S1759611AbXJaVOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:14:33 -0400
+Message-Id: <20071031211248.440554000@chello.nl>
 References: <20071031211030.310581000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 31 Oct 2007 22:10:34 +0100
+Date: Wed, 31 Oct 2007 22:10:31 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: [PATCH 4/6] sched: sched_rt_entity
-Content-Disposition: inline; filename=sched-rt-entity.patch
+Subject: [PATCH 1/6] sched: move the group scheduling primitives around
+Content-Disposition: inline; filename=sched-move-group.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the task_struct members specific to rt scheduling together.
-A future optimization could be to put sched_entity and sched_rt_entity
-into a union.
+The next patch will make sched_slice group aware, reorder the group scheduling
+primitives so that they don't need fwd declarations.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 ---
- include/linux/init_task.h |    5 +++--
- include/linux/sched.h     |    8 ++++++--
- kernel/sched.c            |    2 +-
- kernel/sched_rt.c         |   18 +++++++++---------
- mm/oom_kill.c             |    2 +-
- 5 files changed, 20 insertions(+), 15 deletions(-)
+ kernel/sched_fair.c |  190 +++++++++++++++++++++++++---------------------------
+ 1 file changed, 92 insertions(+), 98 deletions(-)
 
-Index: linux-2.6/include/linux/init_task.h
+Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
---- linux-2.6.orig/include/linux/init_task.h
-+++ linux-2.6/include/linux/init_task.h
-@@ -132,9 +132,10 @@ extern struct group_info init_groups;
- 	.cpus_allowed	= CPU_MASK_ALL,					\
- 	.mm		= NULL,						\
- 	.active_mm	= &init_mm,					\
--	.run_list	= LIST_HEAD_INIT(tsk.run_list),			\
-+	.rt		= {						\
-+		.run_list	= LIST_HEAD_INIT(tsk.rt.run_list),	\
-+		.time_slice	= HZ, },				\
- 	.ioprio		= 0,						\
--	.time_slice	= HZ,						\
- 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
- 	.ptrace_children= LIST_HEAD_INIT(tsk.ptrace_children),		\
- 	.ptrace_list	= LIST_HEAD_INIT(tsk.ptrace_list),		\
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -911,6 +911,11 @@ struct sched_entity {
- #endif
- };
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -80,6 +80,11 @@ const_debug unsigned int sysctl_sched_mi
+  * CFS operations on generic schedulable entities:
+  */
  
-+struct sched_rt_entity {
-+	struct list_head run_list;
-+	unsigned int time_slice;
-+};
++static inline struct task_struct *task_of(struct sched_entity *se)
++{
++	return container_of(se, struct task_struct, se);
++}
 +
- struct task_struct {
- 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
- 	void *stack;
-@@ -927,9 +932,9 @@ struct task_struct {
- #endif
+ #ifdef CONFIG_FAIR_GROUP_SCHED
  
- 	int prio, static_prio, normal_prio;
--	struct list_head run_list;
- 	const struct sched_class *sched_class;
- 	struct sched_entity se;
-+	struct sched_rt_entity rt;
+ /* cpu runqueue to which this cfs_rq is attached */
+@@ -91,6 +96,54 @@ static inline struct rq *rq_of(struct cf
+ /* An entity is a task if it doesn't "own" a runqueue */
+ #define entity_is_task(se)	(!se->my_q)
  
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	/* list of struct preempt_notifier: */
-@@ -953,7 +958,6 @@ struct task_struct {
++/* Walk up scheduling entities hierarchy */
++#define for_each_sched_entity(se) \
++		for (; se; se = se->parent)
++
++static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
++{
++	return p->se.cfs_rq;
++}
++
++/* runqueue on which this entity is (to be) queued */
++static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
++{
++	return se->cfs_rq;
++}
++
++/* runqueue "owned" by this group */
++static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
++{
++	return grp->my_q;
++}
++
++/* Given a group's cfs_rq on one cpu, return its corresponding cfs_rq on
++ * another cpu ('this_cpu')
++ */
++static inline struct cfs_rq *cpu_cfs_rq(struct cfs_rq *cfs_rq, int this_cpu)
++{
++	return cfs_rq->tg->cfs_rq[this_cpu];
++}
++
++/* Iterate thr' all leaf cfs_rq's on a runqueue */
++#define for_each_leaf_cfs_rq(rq, cfs_rq) \
++	list_for_each_entry(cfs_rq, &rq->leaf_cfs_rq_list, leaf_cfs_rq_list)
++
++/* Do the two (enqueued) entities belong to the same group ? */
++static inline int
++is_same_group(struct sched_entity *se, struct sched_entity *pse)
++{
++	if (se->cfs_rq == pse->cfs_rq)
++		return 1;
++
++	return 0;
++}
++
++static inline struct sched_entity *parent_entity(struct sched_entity *se)
++{
++	return se->parent;
++}
++
+ #else	/* CONFIG_FAIR_GROUP_SCHED */
  
- 	unsigned int policy;
- 	cpumask_t cpus_allowed;
--	unsigned int time_slice;
+ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+@@ -100,13 +153,49 @@ static inline struct rq *rq_of(struct cf
  
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	struct sched_info sched_info;
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -29,7 +29,7 @@ static void enqueue_task_rt(struct rq *r
+ #define entity_is_task(se)	1
+ 
+-#endif	/* CONFIG_FAIR_GROUP_SCHED */
++#define for_each_sched_entity(se) \
++		for (; se; se = NULL)
+ 
+-static inline struct task_struct *task_of(struct sched_entity *se)
++static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
  {
- 	struct rt_prio_array *array = &rq->rt.active;
- 
--	list_add_tail(&p->run_list, array->queue + p->prio);
-+	list_add_tail(&p->rt.run_list, array->queue + p->prio);
- 	__set_bit(p->prio, array->bitmap);
+-	return container_of(se, struct task_struct, se);
++	return &task_rq(p)->cfs;
  }
  
-@@ -42,7 +42,7 @@ static void dequeue_task_rt(struct rq *r
++static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
++{
++	struct task_struct *p = task_of(se);
++	struct rq *rq = task_rq(p);
++
++	return &rq->cfs;
++}
++
++/* runqueue "owned" by this group */
++static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
++{
++	return NULL;
++}
++
++static inline struct cfs_rq *cpu_cfs_rq(struct cfs_rq *cfs_rq, int this_cpu)
++{
++	return &cpu_rq(this_cpu)->cfs;
++}
++
++#define for_each_leaf_cfs_rq(rq, cfs_rq) \
++		for (cfs_rq = &rq->cfs; cfs_rq; cfs_rq = NULL)
++
++static inline int
++is_same_group(struct sched_entity *se, struct sched_entity *pse)
++{
++	return 1;
++}
++
++static inline struct sched_entity *parent_entity(struct sched_entity *se)
++{
++	return NULL;
++}
++
++#endif	/* CONFIG_FAIR_GROUP_SCHED */
++
  
- 	update_curr_rt(rq);
+ /**************************************************************
+  * Scheduling class tree data structure manipulation methods:
+@@ -626,101 +715,6 @@ static void entity_tick(struct cfs_rq *c
+  * CFS operations on tasks:
+  */
  
--	list_del(&p->run_list);
-+	list_del(&p->rt.run_list);
- 	if (list_empty(array->queue + p->prio))
- 		__clear_bit(p->prio, array->bitmap);
- }
-@@ -55,7 +55,7 @@ static void requeue_task_rt(struct rq *r
- {
- 	struct rt_prio_array *array = &rq->rt.active;
- 
--	list_move_tail(&p->run_list, array->queue + p->prio);
-+	list_move_tail(&p->rt.run_list, array->queue + p->prio);
- }
- 
- static void
-@@ -85,7 +85,7 @@ static struct task_struct *pick_next_tas
- 		return NULL;
- 
- 	queue = array->queue + idx;
--	next = list_entry(queue->next, struct task_struct, run_list);
-+	next = list_entry(queue->next, struct task_struct, rt.run_list);
- 
- 	next->se.exec_start = rq->clock;
- 
-@@ -121,7 +121,7 @@ static struct task_struct *load_balance_
- 	head = array->queue + idx;
- 	curr = head->prev;
- 
--	p = list_entry(curr, struct task_struct, run_list);
-+	p = list_entry(curr, struct task_struct, rt.run_list);
- 
- 	curr = curr->prev;
- 
-@@ -162,7 +162,7 @@ static struct task_struct *load_balance_
- 		rq->rt.rt_load_balance_head = head;
- 	}
- 
--	p = list_entry(curr, struct task_struct, run_list);
-+	p = list_entry(curr, struct task_struct, rt.run_list);
- 
- 	curr = curr->prev;
- 
-@@ -214,16 +214,16 @@ static void task_tick_rt(struct rq *rq, 
- 	if (p->policy != SCHED_RR)
- 		return;
- 
--	if (--p->time_slice)
-+	if (--p->rt.time_slice)
- 		return;
- 
--	p->time_slice = DEF_TIMESLICE;
-+	p->rt.time_slice = DEF_TIMESLICE;
- 
- 	/*
- 	 * Requeue to the end of queue if we are not the only element
- 	 * on the queue:
- 	 */
--	if (p->run_list.prev != p->run_list.next) {
-+	if (p->rt.run_list.prev != p->rt.run_list.next) {
- 		requeue_task_rt(rq, p);
- 		set_tsk_need_resched(p);
- 	}
-Index: linux-2.6/mm/oom_kill.c
-===================================================================
---- linux-2.6.orig/mm/oom_kill.c
-+++ linux-2.6/mm/oom_kill.c
-@@ -286,7 +286,7 @@ static void __oom_kill_task(struct task_
- 	 * all the memory it needs. That way it should be able to
- 	 * exit() and clear out its resources quickly...
- 	 */
--	p->time_slice = HZ;
-+	p->rt.time_slice = HZ;
- 	set_tsk_thread_flag(p, TIF_MEMDIE);
- 
- 	force_sig(SIGKILL, p);
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -1838,7 +1838,7 @@ static void __sched_fork(struct task_str
- 	p->se.wait_max			= 0;
- #endif
- 
--	INIT_LIST_HEAD(&p->run_list);
-+	INIT_LIST_HEAD(&p->rt.run_list);
- 	p->se.on_rq = 0;
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-
+-/* Walk up scheduling entities hierarchy */
+-#define for_each_sched_entity(se) \
+-		for (; se; se = se->parent)
+-
+-static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
+-{
+-	return p->se.cfs_rq;
+-}
+-
+-/* runqueue on which this entity is (to be) queued */
+-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
+-{
+-	return se->cfs_rq;
+-}
+-
+-/* runqueue "owned" by this group */
+-static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
+-{
+-	return grp->my_q;
+-}
+-
+-/* Given a group's cfs_rq on one cpu, return its corresponding cfs_rq on
+- * another cpu ('this_cpu')
+- */
+-static inline struct cfs_rq *cpu_cfs_rq(struct cfs_rq *cfs_rq, int this_cpu)
+-{
+-	return cfs_rq->tg->cfs_rq[this_cpu];
+-}
+-
+-/* Iterate thr' all leaf cfs_rq's on a runqueue */
+-#define for_each_leaf_cfs_rq(rq, cfs_rq) \
+-	list_for_each_entry(cfs_rq, &rq->leaf_cfs_rq_list, leaf_cfs_rq_list)
+-
+-/* Do the two (enqueued) entities belong to the same group ? */
+-static inline int
+-is_same_group(struct sched_entity *se, struct sched_entity *pse)
+-{
+-	if (se->cfs_rq == pse->cfs_rq)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static inline struct sched_entity *parent_entity(struct sched_entity *se)
+-{
+-	return se->parent;
+-}
+-
+-#else	/* CONFIG_FAIR_GROUP_SCHED */
+-
+-#define for_each_sched_entity(se) \
+-		for (; se; se = NULL)
+-
+-static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
+-{
+-	return &task_rq(p)->cfs;
+-}
+-
+-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
+-{
+-	struct task_struct *p = task_of(se);
+-	struct rq *rq = task_rq(p);
+-
+-	return &rq->cfs;
+-}
+-
+-/* runqueue "owned" by this group */
+-static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
+-{
+-	return NULL;
+-}
+-
+-static inline struct cfs_rq *cpu_cfs_rq(struct cfs_rq *cfs_rq, int this_cpu)
+-{
+-	return &cpu_rq(this_cpu)->cfs;
+-}
+-
+-#define for_each_leaf_cfs_rq(rq, cfs_rq) \
+-		for (cfs_rq = &rq->cfs; cfs_rq; cfs_rq = NULL)
+-
+-static inline int
+-is_same_group(struct sched_entity *se, struct sched_entity *pse)
+-{
+-	return 1;
+-}
+-
+-static inline struct sched_entity *parent_entity(struct sched_entity *se)
+-{
+-	return NULL;
+-}
+-
+-#endif	/* CONFIG_FAIR_GROUP_SCHED */
+-
+ /*
+  * The enqueue_task method is called before nr_running is
+  * increased. Here we update the fair scheduling stats and
 
 --
 
