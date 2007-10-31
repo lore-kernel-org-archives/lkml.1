@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbXJaKX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbXJaKYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758717AbXJaKX4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXJaKXt
+	id S1758937AbXJaKYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbXJaKYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:23:49 -0400
-Received: from 8bytes.org ([88.198.83.132]:54601 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbXJaKXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:23:48 -0400
-Date: Wed, 31 Oct 2007 11:23:46 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Vojtech Pavlik <vojtech@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Joerg Roedel <joerg.roedel@amd.com>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, benjamin.serebrin@amd.com
-Subject: Re: Whats the purpose of get_cycles_sync()
-Message-ID: <20071031102346.GE29700@8bytes.org>
-References: <20071030174452.GA18619@amd.com> <p73sl3s2w29.fsf@bingen.suse.de> <20071030220209.GA21142@suse.cz>
+	Wed, 31 Oct 2007 06:24:47 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35882 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755680AbXJaKYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 06:24:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wWQAuwwFU3+ChMX0QtixUsgt/y6z6clxHNO9hMbjMzQ+VWRNfI6rENgkVVNNV/FcaGHMprCaYBfgXvlpuYXpKoE4i/DxKShQ+hNqdVFYLoSoS1L/FfLt+FfCK+0TprOokAtP/0woJrBY0oZvXyNODiBWUN7NcOEmnN1OxumKHxE=  ;
+X-YMail-OSG: OWyHNnUVM1kvBMmPpf0mZVj5chDclHow4idmVsSLBxrw75VHjxrRNDxOcpw_RQCzkzP8w2ejrw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Swap delay accounting, include lock_page() delays
+Date: Wed, 31 Oct 2007 20:10:33 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20071031075243.22225.53636.sendpatchset@balbir-laptop> <200710311841.53671.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710311841.53671.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071030220209.GA21142@suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200710312010.33833.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vojtech,
+On Wednesday 31 October 2007 18:41, Nick Piggin wrote:
+> On Wednesday 31 October 2007 18:52, Balbir Singh wrote:
+> > Reported-by: Nick Piggin <nickpiggin@yahoo.com.au>
+> >
+> > The delay incurred in lock_page() should also be accounted in swap delay
+> > accounting
+> >
+> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>
+> Ah right, I forgot to resend this one, sorry. Thanks for remembering.
 
-On Tue, Oct 30, 2007 at 11:02:09PM +0100, Vojtech Pavlik wrote:
-> The K8's still guarantee that subsequent RDTSCs return increasing
-> values, even if the processor reorders them.
-> 
-> What could have been happening then was that the RDTSC instruction might
-> have been reordered by the CPU out of the seqlock, causing trouble in
-> the calculation.
-> 
-> Anyway, adding the CPUID didn't solve all the problems we've seen back
-> then, and so far none of the approaches for using TSC without acquiring
-> a spinlock on multi-socket AMD boxes worked 100% correctly.
+Although, I think I had a bit more detail in the changelog which
+I think should be kept.
 
-Can you tell me more about the problems you have seen or give me a
-pointer to a mail discussion regarding that problems? Can you also
-provide your test program to me please? I want to understand these
-problems a bit better.
+Basically, swap delay accounting seems quite broken as of now,
+because what it is counting is the time required to allocate a new
+page and submit the IO, but not actually the time to perform the IO
+at all (which I'd expect will be significant, although possibly in
+some workloads the actual page allocation will dominate).
 
-Joerg
+>
+> > ---
+> >
+> >  mm/memory.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff -puN mm/swapfile.c~fix-delay-accounting-swap-accounting
+> > mm/swapfile.c diff -puN mm/memory.c~fix-delay-accounting-swap-accounting
+> > mm/memory.c ---
+> > linux-2.6-latest/mm/memory.c~fix-delay-accounting-swap-accounting	2007-10
+> >-3 1 12:58:05.000000000 +0530 +++
+> > linux-2.6-latest-balbir/mm/memory.c	2007-10-31 13:02:50.000000000 +0530
+> > @@ -2084,9 +2084,9 @@ static int do_swap_page(struct mm_struct
+> >  		count_vm_event(PGMAJFAULT);
+> >  	}
+> >
+> > -	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+> >  	mark_page_accessed(page);
+> >  	lock_page(page);
+> > +	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+> >
+> >  	/*
+> >  	 * Back out if somebody else already faulted in this pte.
+> > _
+
