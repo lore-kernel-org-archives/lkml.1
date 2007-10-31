@@ -1,121 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXJaPTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbXJaPUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbXJaPTo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbXJaPTg
+	id S1759482AbXJaPUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXJaPUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:19:36 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49850 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756060AbXJaPTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:19:36 -0400
-Date: Wed, 31 Oct 2007 16:19:34 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Duane Griffin <duaneg@dghda.com>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
-Message-ID: <20071031151934.GA19211@wotan.suse.de>
-References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com> <20071031041932.GA12189@wotan.suse.de> <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Wed, 31 Oct 2007 11:20:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35727 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756526AbXJaPUY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 11:20:24 -0400
+Date: Wed, 31 Oct 2007 08:10:44 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 01/26] ACPI: disable lower idle C-states across
+	suspend/resume
+Message-ID: <20071031151044.GB2437@kroah.com>
+References: <20071031150535.967437651@mini.kroah.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Disposition: inline; filename="acpi-disable-lower-idle-c-states-across-suspend-resume.patch"
+In-Reply-To: <20071031151015.GA2437@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 08:11:10AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 31 Oct 2007, Nick Piggin wrote:
-> > 
-> > However I actually don't really like how this all works. I don't like that
-> > filemap.c should have to know about ptrace, or exactly what ptrace wants here.
-> 
-> It shouldn't. It should just fail when it fails. Then, handle_mm_fault() 
-> should return an error code, which should cause get_user_pages() to return 
-> an error code. Which should make ptrace just stop.
-> 
-> So I think your patch is wrong. mm/filemap.c should *not* care about who 
-> does the fault.  I think the proper patch is something untested like the 
-> appended...
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
-Well the patch is right, in the context of the regression I introduced
-(and so it should probably go into 2.6.23).
+------------------
+From: Thomas Gleixner <tglx@linutronix.de>
 
-I'd love to get rid of that outside data content crap if possible in
-2.6.24. I think you're the one who has the best feeling for the ptrace
-cases we have in the VM, so I trust you ;)
+changeset b04e7bdb984e3b7f62fb7f44146a529f88cc7639 from mainline.
 
+device_suspend() calls ACPI suspend functions, which seems to have undesired
+side effects on lower idle C-states. It took me some time to realize that
+especially the VAIO BIOSes (both Andrews jinxed UP and my elfstruck SMP one)
+show this effect. I'm quite sure that other bug reports against suspend/resume
+about turning the system into a brick have the same root cause.
 
-> > It's a bit hairy to force insert page into pagecache and pte into pagetables
-> > here, given the races.
-> 
-> It's also wrong. They shouldn't be in the page cache, since that can cause 
-> problems with truncate etc. Maybe it doesn't any more, but it's reasonable 
-> to believe that a page outside of i_size should not exist.
+After fishing in the dark for quite some time, I realized that removing the ACPI
+processor module before suspend (this removes the lower C-state functionality)
+made the problem disappear. Interestingly enough the propability of having a
+bricked box is influenced by various factors (interrupts, size of the ram image,
+...). Even adding a bunch of printks in the wrong places made the problem go
+away. The previous periodic tick implementation simply pampered over the
+problem, which explains why the dyntick / clockevents changes made this more
+prominent.
 
-No I believe it could still be a problem (and at least, it is quite
-fragile).
+We avoid complex functionality during the boot process and we have to do the
+same during suspend/resume. It is a similar scenario and equaly fragile.
 
+Add suspend / resume functions to the ACPI processor code and disable the lower
+idle C-states across suspend/resume. Fall back to the default idle
+implementation (halt) instead.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/acpi/processor_core.c |    2 ++
+ drivers/acpi/processor_idle.c |   19 ++++++++++++++++++-
+ include/acpi/processor.h      |    2 ++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
+
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -93,6 +93,8 @@ static struct acpi_driver acpi_processor
+ 		.add = acpi_processor_add,
+ 		.remove = acpi_processor_remove,
+ 		.start = acpi_processor_start,
++		.suspend = acpi_processor_suspend,
++		.resume = acpi_processor_resume,
+ 		},
+ };
  
-> > In access_process_vm, can't we just zero fill in the case of a sigbus? Linus?
-> > That will also avoid changing applicatoin behaviour due to a gdb read...
-> 
-> access_process_vm() should just return how many bytes it could fill (which 
-> means a truncated copy - very including zero bytes - for an error), and 
-> the caller should decide what the right thing to do is.
-> 
-> But who knows, maybe I missed something.
-
-I hope it works.
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -324,6 +324,23 @@ static void acpi_state_timer_broadcast(s
  
+ #endif
+ 
++/*
++ * Suspend / resume control
++ */
++static int acpi_idle_suspend;
++
++int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
++{
++	acpi_idle_suspend = 1;
++	return 0;
++}
++
++int acpi_processor_resume(struct acpi_device * device)
++{
++	acpi_idle_suspend = 0;
++	return 0;
++}
++
+ static void acpi_processor_idle(void)
+ {
+ 	struct acpi_processor *pr = NULL;
+@@ -354,7 +371,7 @@ static void acpi_processor_idle(void)
+ 	}
+ 
+ 	cx = pr->power.state;
+-	if (!cx) {
++	if (!cx || acpi_idle_suspend) {
+ 		if (pm_idle_save)
+ 			pm_idle_save();
+ 		else
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -279,6 +279,8 @@ int acpi_processor_power_init(struct acp
+ int acpi_processor_cst_has_changed(struct acpi_processor *pr);
+ int acpi_processor_power_exit(struct acpi_processor *pr,
+ 			      struct acpi_device *device);
++int acpi_processor_suspend(struct acpi_device * device, pm_message_t state);
++int acpi_processor_resume(struct acpi_device * device);
+ 
+ /* in processor_thermal.c */
+ int acpi_processor_get_limit_info(struct acpi_processor *pr);
 
-> Duane? Does this fix things for you?
-> 
-> 			Linus
-> 
-> ---
->  mm/filemap.c |   13 ++-----------
->  1 files changed, 2 insertions(+), 11 deletions(-)
-> 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 9940895..188cf5f 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1300,7 +1300,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
->  
->  	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->  	if (vmf->pgoff >= size)
-> -		goto outside_data_content;
-> +		return VM_FAULT_SIGBUS;
->  
->  	/* If we don't want any read-ahead, don't bother */
->  	if (VM_RandomReadHint(vma))
-> @@ -1377,7 +1377,7 @@ retry_find:
->  	if (unlikely(vmf->pgoff >= size)) {
->  		unlock_page(page);
->  		page_cache_release(page);
-> -		goto outside_data_content;
-> +		return VM_FAULT_SIGBUS;
->  	}
->  
->  	/*
-> @@ -1388,15 +1388,6 @@ retry_find:
->  	vmf->page = page;
->  	return ret | VM_FAULT_LOCKED;
->  
-> -outside_data_content:
-> -	/*
-> -	 * An external ptracer can access pages that normally aren't
-> -	 * accessible..
-> -	 */
-> -	if (vma->vm_mm == current->mm)
-> -		return VM_FAULT_SIGBUS;
-> -
-> -	/* Fall through to the non-read-ahead case */
->  no_cached_page:
->  	/*
->  	 * We're only likely to ever get here if MADV_RANDOM is in
+-- 
