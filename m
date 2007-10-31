@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbXJaApq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbXJaAta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbXJaApq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXJaAph
+	id S1757004AbXJaAta (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbXJaAtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:45:37 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:14291 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753485AbXJaApg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:45:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=sd2by20Y3QdPIpO94unY4tnLekGUOwEYEFACweROcW9sMkv3yCA8arTrBbhQbR4Vt/xq14Y3yyB/ZqQ7i+KDJZRwqRco4v6POhlk8nHnxG6+bPiZNkp867DhPmGWqTZ2JbD85weOoYsytO/CEblDRz9e9OUeh2YQSQIYX49g6/M=
-Message-ID: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
-Date: Wed, 31 Oct 2007 00:45:35 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
-Cc: "Nick Piggin" <npiggin@suse.de>
+	Tue, 30 Oct 2007 20:49:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:48459 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbXJaAtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:49:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Fix boot protocol KEEP_SEGMENTS check.
+Date: Wed, 31 Oct 2007 11:49:22 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Zachary Amsden <zach@vmware.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6jh3hun.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 5dd1cb949e030ba2
+Message-Id: <200710311149.23006.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Accessing a memory mapped region past the last page containing a valid
-file mapping produces a SIGBUS fault (as it should). Running a program
-that does this under gdb, then accessing the invalid memory from gdb,
-causes it to start consuming 100% CPU and become unkillable. Once in
-that state, SysRq-T doesn't show a stack trace for gdb, although it is
-shown as running and stack traces are dumped for other tasks.
+On Saturday 27 October 2007 03:29:04 Eric W. Biederman wrote:
+> The kernel only ever supports 1 version of the boot protocol
+> so there is no need to check the boot protocol revision to
+> see if a feature is supported.
 
-2.6.22 does not have this bug (gdb just prints '\0' as the contents,
-although arguably that is also a bug, and it should instead report the
-SIGBUS).
+OK, I'm completely confused, so this is probably a v. dumb question.  Doesn't 
+this boot header come from the boot loader?
 
-Bisection indicates the problem was introduced by:
-
-54cb8821de07f2ffcd28c380ce9b93d5784b40d7
-"mm: merge populate and nopage into fault (fixes nonlinear)"
-
-The following program demonstrates the issue:
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-
-int main(int argc, char *argv[])
-{
-        int fd;
-        struct stat buf;
-
-        if (argc != 2) {
-                fprintf(stderr, "usage: %s <filename>\n", argv[0]);
-                exit(1);
-        }
-
-        fd = open(argv[1], O_RDONLY);
-        fstat(fd, &buf);
-        int count = buf.st_size + sysconf(_SC_PAGE_SIZE);
-        char *file = (char *) mmap(NULL, count, PROT_READ, MAP_PRIVATE, fd, 0);
-        if (file == MAP_FAILED) {
-                fprintf(stderr, "mmap failed: %s\n", strerror(errno));
-        } else {
-                char ch;
-                fprintf(stderr, "using offset %d\n", (count - 1));
-                ch = file[count - 1];
-                munmap(file, count);
-        }
-        close(fd);
-        return 0;
-}
-
-To reproduce the bug, run it under gdb, go up a couple of frames to
-the main function, then access invalid memory, for e.g. with: "print
-file[4095]", or whatever offset was reported.
-
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Rusty.
