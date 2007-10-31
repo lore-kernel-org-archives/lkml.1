@@ -1,31 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbXJaAdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbXJaAeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbXJaAdj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXJaAdc
+	id S1758196AbXJaAeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXJaAeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:33:32 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:50316 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 20:34:09 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:42681 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753485AbXJaAdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:33:31 -0400
-Message-Id: <20071031003140.904670073@polymtl.ca>
+	id S1753983AbXJaAeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:34:08 -0400
+Message-Id: <20071031003329.657257216@polymtl.ca>
+References: <20071031003140.904670073@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 20:31:40 -0400
+Date: Tue, 30 Oct 2007 20:31:41 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 0/4] Creation of arch/Kconfig for ARCH_SUPPORTS_* options
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [patch 1/4] Create arch/Kconfig
+Content-Disposition: inline; filename=add-kconfig-to-arch.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 00:33:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Puts the content of arch/Kconfig in the "General setup" menu.
 
-Here is the implementation of the arch/Kconfig, meant to keep archtecture
-specific menu entries repeated across many (but not all) architectures.
-ARCH_SUPPORTS_* should be defined in architectures that supports the option.
+Linus:
 
-Mathieu
+> Should it come with a re-duplication of it's content into each
+> architecture, which was the case previously ? The oprofile and kprobes
+> menu entries were litteraly cut and pasted from one architecture to
+> another. Should we put its content in init/Kconfig then ?
+
+I don't think it's a good idea to go back to making it per-architecture,
+although that extensive "depends on <list-of-archiectures-here>" might
+indicate that there certainly is room for cleanup there.
+
+And I don't think it's wrong keeping it in kernel/Kconfig.xyz per se, I
+just think it's wrong to (a) lump the code together when it really doesn't
+necessarily need to and (b) show it to users as some kind of choice that
+is tied together (whether it then has common code or not).
+
+On the per-architecture side, I do think it would be better to *not* have
+internal architecture knowledge in a generic file, and as such a line like
+
+        depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
+
+really shouldn't exist in a file like kernel/Kconfig.instrumentation.
+
+It would be much better to do
+
+        depends on ARCH_SUPPORTS_KPROBES
+
+in that generic file, and then architectures that do support it would just
+have a
+
+        bool ARCH_SUPPORTS_KPROBES
+                default y
+
+in *their* architecture files. That would seem to be much more logical,
+and is readable both for arch maintainers *and* for people who have no
+clue - and don't care - about which architecture is supposed to support
+which interface...
+                   
+
+Sam Ravnborg:
+
+Stuff it into a new file: arch/Kconfig
+We can then extend this file to include all the 'trailing'
+Kconfig things that are anyway equal for all ARCHs.
+
+But it should be kept clean - so if we introduce such a file
+then we should use ARCH_HAS_whatever in the arch specific Kconfig
+files to enable stuff that is not shared.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/Kconfig |    3 +++
+ init/Kconfig |    2 ++
+ 2 files changed, 5 insertions(+)
+
+Index: linux-2.6-lttng.stable/init/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/init/Kconfig	2007-10-30 20:20:28.000000000 -0400
++++ linux-2.6-lttng.stable/init/Kconfig	2007-10-30 20:21:04.000000000 -0400
+@@ -644,6 +644,8 @@ config SLOB
+ 
+ endchoice
+ 
++source "arch/Kconfig"
++
+ endmenu		# General setup
+ 
+ config RT_MUTEXES
+Index: linux-2.6-lttng.stable/arch/Kconfig
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.stable/arch/Kconfig	2007-10-30 20:20:32.000000000 -0400
+@@ -0,0 +1,3 @@
++#
++# General architecture dependent options
++#
 
 -- 
 Mathieu Desnoyers
