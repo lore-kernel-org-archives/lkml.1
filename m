@@ -1,363 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbXJaVPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbXJaVPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbXJaVPR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 17:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757825AbXJaVOV
+	id S1754448AbXJaVPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 17:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbXJaVOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:14:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54424 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756790AbXJaVOR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:14:17 -0400
-Date: Wed, 31 Oct 2007 14:10:26 -0700
-Message-Id: <200710312110.l9VLAQP1026675@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1193845777-2007-3-git-send-email-k.shutemov@gmail.com>
-Subject: [PATCH] Sanitize the type of struct user.u_ar0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Wed, 31 Oct 2007 17:14:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44848 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757424AbXJaVOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:14:18 -0400
+Message-Id: <20071031211249.531637000@chello.nl>
+References: <20071031211030.310581000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 31 Oct 2007 22:10:35 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Lennart Poettering <mzxreary@0pointer.de>
+Subject: [PATCH 5/6] sched: SCHED_FIFO/SCHED_RR watchdog timer
+Content-Disposition: inline; filename=sched-watchdog.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-struct user.u_ar0 is defined to contain a pointer offset on all
-architectures in which it is defined (all architectures which define
-an a.out format except SPARC.)  However, it has a pointer type in the
-headers, which is pointless -- <asm/user.h> is not exported to
-userspace, and it just makes the code messy.
+Introduce a new rlimit that allows the user to set a runtime timeout
+on real-time tasks. Once this limit is exceeded the task will receive
+SIGXCPU.
 
-Redefine the field as "unsigned long" (which is the same size as a
-pointer on all Linux architectures) and change the setting code to
-user offsetof() instead of hand-coded arithmetic.
+Input and ideas by Thomas Gleixner and Lennart Poettering.
 
-Cc: Linux Arch Mailing List <linux-arch@vger.kernel.org>
-Cc: Bryan Wu <bryan.wu@analog.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: Håvard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Lennart Poettering <mzxreary@0pointer.de>
 ---
- arch/blackfin/kernel/process.c |    2 +-
- arch/m68k/kernel/process.c     |    2 +-
- arch/x86/ia32/ia32_aout.c      |    2 +-
- fs/binfmt_aout.c               |    2 +-
- include/asm-alpha/user.h       |    2 +-
- include/asm-arm/user.h         |    2 +-
- include/asm-avr32/user.h       |    2 +-
- include/asm-blackfin/user.h    |    2 +-
- include/asm-cris/user.h        |    2 +-
- include/asm-h8300/user.h       |    3 +--
- include/asm-ia64/user.h        |    2 +-
- include/asm-m32r/user.h        |    2 +-
- include/asm-m68k/user.h        |    3 +--
- include/asm-mips/user.h        |    2 +-
- include/asm-powerpc/user.h     |    2 +-
- include/asm-s390/user.h        |    3 +--
- include/asm-sh/user.h          |    2 +-
- include/asm-sh64/user.h        |    2 +-
- include/asm-v850/user.h        |    2 +-
- include/asm-x86/user_32.h      |    2 +-
- include/asm-x86/user_64.h      |    2 +-
- 21 files changed, 21 insertions(+), 24 deletions(-)
+ include/asm-generic/resource.h |    5 +++--
+ include/linux/sched.h          |    1 +
+ kernel/sched.c                 |    2 +-
+ kernel/sched_rt.c              |   18 ++++++++++++++++++
+ 4 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 9124467..5c08004 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -257,7 +257,7 @@ void dump_thread(struct pt_regs *regs, struct user *dump)
- 		    ((unsigned long)(TASK_SIZE -
- 				     dump->start_stack)) >> PAGE_SHIFT;
+Index: linux-2.6/include/asm-generic/resource.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/resource.h
++++ linux-2.6/include/asm-generic/resource.h
+@@ -44,8 +44,8 @@
+ #define RLIMIT_NICE		13	/* max nice prio allowed to raise to
+ 					   0-39 for nice level 19 .. -20 */
+ #define RLIMIT_RTPRIO		14	/* maximum realtime priority */
+-
+-#define RLIM_NLIMITS		15
++#define RLIMIT_RTTIME		15	/* timeout for RT tasks in us */
++#define RLIM_NLIMITS		16
  
--	dump->u_ar0 = (struct user_regs_struct *)((int)&dump->regs - (int)dump);
-+	dump->u_ar0 = offsetof(struct user, regs);
+ /*
+  * SuS says limits have to be unsigned.
+@@ -86,6 +86,7 @@
+ 	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
+ 	[RLIMIT_NICE]		= { 0, 0 },				\
+ 	[RLIMIT_RTPRIO]		= { 0, 0 },				\
++	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+ }
  
- 	dump->regs.r0 = regs->r0;
- 	dump->regs.r1 = regs->r1;
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index 3ee9186..f85b928 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -335,7 +335,7 @@ void dump_thread(struct pt_regs * regs, struct user * dump)
- 	if (dump->start_stack < TASK_SIZE)
- 		dump->u_ssize = ((unsigned long) (TASK_SIZE - dump->start_stack)) >> PAGE_SHIFT;
+ #endif	/* __KERNEL__ */
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -31,6 +31,9 @@ static void enqueue_task_rt(struct rq *r
  
--	dump->u_ar0 = (struct user_regs_struct *)((int)&dump->regs - (int)dump);
-+	dump->u_ar0 = offsetof(struct user, regs);
- 	sw = ((struct switch_stack *)regs) - 1;
- 	dump->regs.d1 = regs->d1;
- 	dump->regs.d2 = regs->d2;
-diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
-index 731aac1..c489fee 100644
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -162,7 +162,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- 	has_dumped = 1;
- 	current->flags |= PF_DUMPCORE;
-        	strncpy(dump.u_comm, current->comm, sizeof(current->comm));
--	dump.u_ar0 = (u32)(((unsigned long)(&dump.regs)) - ((unsigned long)(&dump)));
-+	dump.u_ar0 = offsetof(struct user32, regs);
- 	dump.signal = signr;
- 	dump_thread32(regs, &dump);
+ 	list_add_tail(&p->rt.run_list, array->queue + p->prio);
+ 	__set_bit(p->prio, array->bitmap);
++
++	if (wakeup)
++		p->rt.timeout = p->signal->rlim[RLIMIT_RTTIME].rlim_cur;
+ }
  
-diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index e176d19..9a00063 100644
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -115,7 +115,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- 	current->flags |= PF_DUMPCORE;
-        	strncpy(dump.u_comm, current->comm, sizeof(dump.u_comm));
- #ifndef __sparc__
--	dump.u_ar0 = (void *)(((unsigned long)(&dump.regs)) - ((unsigned long)(&dump)));
-+	dump.u_ar0 = offsetof(struct user, regs);
+ /*
+@@ -205,8 +208,23 @@ move_one_task_rt(struct rq *this_rq, int
+ }
  #endif
- 	dump.signal = signr;
- 	dump_thread(regs, &dump);
-diff --git a/include/asm-alpha/user.h b/include/asm-alpha/user.h
-index 7e417fc..a4eb6a4 100644
---- a/include/asm-alpha/user.h
-+++ b/include/asm-alpha/user.h
-@@ -39,7 +39,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
+ 
++#define TICK_US (1000000UL / HZ)
++
++static void watchdog(struct rq *rq, struct task_struct *p)
++{
++	if (p->rt.timeout != RLIM_INFINITY) {
++		if (p->rt.timeout < TICK_US) {
++			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, p);
++			return;
++		}
++		p->rt.timeout -= TICK_US;
++	}
++}
++
+ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ {
++	watchdog(rq, p);
++
+ 	/*
+ 	 * RR tasks need a special form of timeslice management.
+ 	 * FIFO tasks have no timeslices.
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -914,6 +914,7 @@ struct sched_entity {
+ struct sched_rt_entity {
+ 	struct list_head run_list;
+ 	unsigned int time_slice;
++	unsigned long timeout;
  };
-diff --git a/include/asm-arm/user.h b/include/asm-arm/user.h
-index 3e8b0f8..825c1e7 100644
---- a/include/asm-arm/user.h
-+++ b/include/asm-arm/user.h
-@@ -67,7 +67,7 @@ struct user{
- 				   esp register.  */
-   long int signal;     		/* Signal that caused the core dump. */
-   int reserved;			/* No longer used */
--  struct pt_regs * u_ar0;	/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   unsigned long magic;		/* To uniquely identify a core file */
-   char u_comm[32];		/* User command that was responsible */
-diff --git a/include/asm-avr32/user.h b/include/asm-avr32/user.h
-index 060fb3a..7e9152f 100644
---- a/include/asm-avr32/user.h
-+++ b/include/asm-avr32/user.h
-@@ -51,7 +51,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-blackfin/user.h b/include/asm-blackfin/user.h
-index abc3462..afe6a0e 100644
---- a/include/asm-blackfin/user.h
-+++ b/include/asm-blackfin/user.h
-@@ -75,7 +75,7 @@ struct user {
- 					   esp register.  */
- 	long int signal;	/* Signal that caused the core dump. */
- 	int reserved;		/* No longer used */
--	struct user_regs_struct *u_ar0;
-+	unsigned long u_ar0;
- 	/* Used by gdb to help find the values for */
- 	/* the registers. */
- 	unsigned long magic;	/* To uniquely identify a core file */
-diff --git a/include/asm-cris/user.h b/include/asm-cris/user.h
-index 2538e2a..73e60fc 100644
---- a/include/asm-cris/user.h
-+++ b/include/asm-cris/user.h
-@@ -38,7 +38,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-h8300/user.h b/include/asm-h8300/user.h
-index 6c64f99..14a9e18 100644
---- a/include/asm-h8300/user.h
-+++ b/include/asm-h8300/user.h
-@@ -62,8 +62,7 @@ struct user{
- 				   esp register.  */
-   long int signal;     		/* Signal that caused the core dump. */
-   int reserved;			/* No longer used */
--  struct user_regs_struct *u_ar0;
--				/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   unsigned long magic;		/* To uniquely identify a core file */
-   char u_comm[32];		/* User command that was responsible */
-diff --git a/include/asm-ia64/user.h b/include/asm-ia64/user.h
-index 78e5a20..8b98211 100644
---- a/include/asm-ia64/user.h
-+++ b/include/asm-ia64/user.h
-@@ -44,7 +44,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-m32r/user.h b/include/asm-m32r/user.h
-index 035258d..03b3c11 100644
---- a/include/asm-m32r/user.h
-+++ b/include/asm-m32r/user.h
-@@ -38,7 +38,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-m68k/user.h b/include/asm-m68k/user.h
-index 8c56cca..f1f478d 100644
---- a/include/asm-m68k/user.h
-+++ b/include/asm-m68k/user.h
-@@ -72,8 +72,7 @@ struct user{
- 				   esp register.  */
-   long int signal;		/* Signal that caused the core dump. */
-   int reserved;			/* No longer used */
--  struct user_regs_struct *u_ar0;
--				/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   struct user_m68kfp_struct* u_fpstate;	/* Math Co-processor pointer. */
-   unsigned long magic;		/* To uniquely identify a core file */
-diff --git a/include/asm-mips/user.h b/include/asm-mips/user.h
-index 61f2a09..e8ca4d9 100644
---- a/include/asm-mips/user.h
-+++ b/include/asm-mips/user.h
-@@ -46,7 +46,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-powerpc/user.h b/include/asm-powerpc/user.h
-index e59ade4..2f0223c 100644
---- a/include/asm-powerpc/user.h
-+++ b/include/asm-powerpc/user.h
-@@ -40,7 +40,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-s390/user.h b/include/asm-s390/user.h
-index 1dc74ba..1b050e3 100644
---- a/include/asm-s390/user.h
-+++ b/include/asm-s390/user.h
-@@ -63,8 +63,7 @@ struct user {
- 				   the top of the stack is always found in the
- 				   esp register.  */
-   long int signal;     		/* Signal that caused the core dump. */
--  struct user_regs_struct *u_ar0;
--				/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   unsigned long magic;		/* To uniquely identify a core file */
-   char u_comm[32];		/* User command that was responsible */
-diff --git a/include/asm-sh/user.h b/include/asm-sh/user.h
-index d1b8511..a1908c1 100644
---- a/include/asm-sh/user.h
-+++ b/include/asm-sh/user.h
-@@ -45,7 +45,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	struct user_fpu_struct* u_fpstate;	/* Math Co-processor pointer */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
-diff --git a/include/asm-sh64/user.h b/include/asm-sh64/user.h
-index eb3b33e..69b6cb6 100644
---- a/include/asm-sh64/user.h
-+++ b/include/asm-sh64/user.h
-@@ -55,7 +55,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	struct user_fpu_struct* u_fpstate;	/* Math Co-processor pointer */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
-diff --git a/include/asm-v850/user.h b/include/asm-v850/user.h
-index ccf4cea..a915d29 100644
---- a/include/asm-v850/user.h
-+++ b/include/asm-v850/user.h
-@@ -40,7 +40,7 @@ struct user {
- 	unsigned long	start_data;		/* data starting address */
- 	unsigned long	start_stack;		/* stack starting address */
- 	long int	signal;			/* signal causing core dump */
--	struct regs *	u_ar0;			/* help gdb find registers */
-+	unsigned long	u_ar0;			/* help gdb find registers */
- 	unsigned long	magic;			/* identifies a core file */
- 	char		u_comm[32];		/* user command name */
- };
-diff --git a/include/asm-x86/user_32.h b/include/asm-x86/user_32.h
-index 0e85d2a..2373f73 100644
---- a/include/asm-x86/user_32.h
-+++ b/include/asm-x86/user_32.h
-@@ -106,7 +106,7 @@ struct user{
- 				   esp register.  */
-   long int signal;     		/* Signal that caused the core dump. */
-   int reserved;			/* No longer used */
--  struct user_pt_regs * u_ar0;	/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   struct user_i387_struct* u_fpstate;	/* Math Co-processor pointer. */
-   unsigned long magic;		/* To uniquely identify a core file */
-diff --git a/include/asm-x86/user_64.h b/include/asm-x86/user_64.h
-index 12785c6..d7d0e1d 100644
---- a/include/asm-x86/user_64.h
-+++ b/include/asm-x86/user_64.h
-@@ -97,7 +97,7 @@ struct user{
-   long int signal;     		/* Signal that caused the core dump. */
-   int reserved;			/* No longer used */
-   int pad1;
--  struct user_pt_regs * u_ar0;	/* Used by gdb to help find the values for */
-+  unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
-   struct user_i387_struct* u_fpstate;	/* Math Co-processor pointer. */
-   unsigned long magic;		/* To uniquely identify a core file */
--- 
-1.5.3.4
+ 
+ struct task_struct {
+
+--
 
