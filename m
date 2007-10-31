@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXJaK4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbXJaK47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbXJaK4S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXJaK4F
+	id S1758126AbXJaK47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXJaK4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:56:05 -0400
-Received: from nic2.axis.se ([193.13.178.10]:55545 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755587AbXJaK4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:56:04 -0400
-Date: Wed, 31 Oct 2007 11:55:53 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mikael.starvik@axis.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/16] CRIS architecture: Correct compile errors
-Message-ID: <20071031105552.GX11960@axis.com>
-References: <20071030092811.GD11960@axis.com> <20071030151400.e4769e27.akpm@linux-foundation.org> <20071031104738.GW11960@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031104738.GW11960@axis.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 31 Oct 2007 06:56:51 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:47084 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbXJaK4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 06:56:50 -0400
+Subject: Re: [PATCH 00/33] Swap over NFS -v14
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: David Miller <davem@davemloft.net>, nickpiggin@yahoo.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-Reply-To: <20071031085041.GA4362@infradead.org>
+References: <20071030160401.296770000@chello.nl>
+	 <200710311426.33223.nickpiggin@yahoo.com.au>
+	 <20071030.213753.126064697.davem@davemloft.net>
+	 <20071031085041.GA4362@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cUHl4ABf0oLSQQRRgXos"
+Date: Wed, 31 Oct 2007 11:56:46 +0100
+Message-Id: <1193828206.27652.145.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 11:47:38AM +0100, Jesper Nilsson wrote:
-> On Tue, Oct 30, 2007 at 03:14:00PM -0700, Andrew Morton wrote:
-> > On Tue, 30 Oct 2007 10:28:11 +0100
-> > Jesper Nilsson <jesper.nilsson@axis.com> wrote:
-> > > Remove include of asm/bitops.h, not needed here, corrects compilation error
-> > > (__le64 undefined).
-> > [snip]
-> >
-> > This doesn't apply and I'm not sure that it is still needed or correct.
-> > 
-> > I'll drop it.
-> 
-> Unfortunately it is still needed, I'll resend a fresh patch
-> against Linus git tree.
-> 
-> Compile error:
-> 
->   CC      arch/cris/kernel/asm-offsets.s
-> In file included from include/asm/byteorder.h:23,
->                  from include/asm-generic/bitops/le.h:5,
->                  from include/asm-generic/bitops/ext2-non-atomic.h:4,
->                  from include/asm/bitops.h:163,
->                  from include/linux/bitops.h:17,
->                  from include/asm/posix_types.h:55,
->                  from include/linux/posix_types.h:47,
->                  from include/linux/types.h:11,
->                  from include/linux/capability.h:16,
->                  from include/linux/sched.h:49,
->                  from arch/cris/kernel/asm-offsets.c:1:
-> include/linux/byteorder/little_endian.h:43: parse error before "__cpu_to_le64p"
-> include/linux/byteorder/little_endian.h:44: warning: return type defaults to `int'
-> include/linux/byteorder/little_endian.h: In function `__cpu_to_le64p':
-> include/linux/byteorder/little_endian.h:45: `__le64' undeclared (first use in this function)
-> ....
 
-Remove include of asm/bitops.h, not needed here, corrects compilation error
-(__le64 undeclared).
+--=-cUHl4ABf0oLSQQRRgXos
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+On Wed, 2007-10-31 at 08:50 +0000, Christoph Hellwig wrote:
+> On Tue, Oct 30, 2007 at 09:37:53PM -0700, David Miller wrote:
+> > Don't be misled.  Swapping over NFS is just a scarecrow for the
+> > seemingly real impetus behind these changes which is network storage
+> > stuff like iSCSI.
+>=20
+> So can we please do swap over network storage only first?  All these
+> VM bits look conceptually sane to me, while the changes to the swap
+> code to support nfs are real crackpipe material.
 
----
- posix_types.h |    1 -
- 1 file changed, 1 deletion(-)
+Yeah, I know how you stand on that. I just wanted to post all this
+before going off into the woods reworking it all.
 
-diff --git a/include/asm-cris/posix_types.h b/include/asm-cris/posix_types.h
-index 92000d0..3a5e4c4 100644
---- a/include/asm-cris/posix_types.h
-+++ b/include/asm-cris/posix_types.h
-@@ -52,7 +52,6 @@ typedef struct {
- } __kernel_fsid_t;
- 
- #ifdef __KERNEL__
--#include <linux/bitops.h>
- 
- #undef	__FD_SET
- #define __FD_SET(fd,fdsetp) set_bit(fd, (void *)(fdsetp))
+> Then again doing
+> that part properly by adding address_space methods for swap I/O without
+> the abuse might be a really good idea, especially as the way we
+> do swapfiles on block-based filesystems is an horrible hack already.
 
+Is planned. What do you think of the proposed a_ops extension to
+accomplish this? That is,
 
+->swapfile() - is this address space willing to back swap
+->swapout() - write out a page
+->swapin() - read in a page
 
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+> So please get the VM bits for swap over network blockdevices in first,
+
+Trouble with that part is that we don't have any sane network block
+devices atm, NBD is utter crap, and iSCSI is too complex to be called
+sane.
+
+Maybe Evgeniy's Distributed storage thingy would work, will have a look
+at that.
+
+> and then we can look into a complete revamp of the swapfile support
+> that cleans up the current mess and adds support for nfs insted of
+> making the mess even worse.
+
+Sure, concrete suggestion are always welcome. Just being told something
+is utter crap only goes so far.
+
+--=-cUHl4ABf0oLSQQRRgXos
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHKF9uXA2jU0ANEf4RAieaAKCGdTzP/wHrCLDUDz9z475A0L5bVQCbBcEK
+4yhY/VPt+xfs+DU4yvLpMS8=
+=9lsn
+-----END PGP SIGNATURE-----
+
+--=-cUHl4ABf0oLSQQRRgXos--
+
