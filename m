@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbXJaKm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbXJaKnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbXJaKm6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXJaKmn
+	id S1758700AbXJaKnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbXJaKms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:42:43 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:15486 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751024AbXJaKml (ORCPT
+	Wed, 31 Oct 2007 06:42:48 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:31204 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754988AbXJaKmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:42:41 -0400
-Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+	Wed, 31 Oct 2007 06:42:46 -0400
+Subject: Re: [PATCH 05/33] mm: kmem_estimate_pages()
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <200710311437.28630.nickpiggin@yahoo.com.au>
+In-Reply-To: <200710311443.18143.nickpiggin@yahoo.com.au>
 References: <20071030160401.296770000@chello.nl>
-	 <20071030160910.813944000@chello.nl>
-	 <200710311437.28630.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-FT+zCI+A90irqp0ysoO4"
+	 <20071030160911.281698000@chello.nl>
+	 <200710311443.18143.nickpiggin@yahoo.com.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-B/evvxB9qIXk4AH3ka2B"
 Date: Wed, 31 Oct 2007 11:42:38 +0100
-Message-Id: <1193827358.27652.126.camel@twins>
+Message-Id: <1193827358.27652.128.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-FT+zCI+A90irqp0ysoO4
+--=-B/evvxB9qIXk4AH3ka2B
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-10-31 at 14:37 +1100, Nick Piggin wrote:
+On Wed, 2007-10-31 at 14:43 +1100, Nick Piggin wrote:
 > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-> > contexts that are entitled to it.
+> > Provide a method to get the upper bound on the pages needed to allocate
+> > a given number of objects from a given kmem_cache.
 > >
-> > Care is taken to only touch the SLUB slow path.
-> >
-> > This is done to ensure reserve pages don't leak out and get consumed.
 >=20
-> I think this is generally a good idea (to prevent slab allocators
-> from stealing reserve). However I naively think the implementation
-> is a bit overengineered and thus has a few holes.
->=20
-> Humour me, what was the problem with failing the slab allocation
-> (actually, not fail but just call into the page allocator to do
-> correct waiting  / reclaim) in the slowpath if the process fails the
-> watermark checks?
+> Fair enough, but just to make it a bit easier, can you provide a
+> little reason of why in this patch (or reference the patch number
+> where you use it, or put it together with the patch where you use
+> it, etc.).
 
-Ah, we actually need slabs below the watermarks. Its just that once I
-allocated those slabs using __GFP_MEMALLOC/PF_MEMALLOC I don't want
-allocation contexts that do not have rights to those pages to walk off
-with objects.
+A generic reserve framework, as seen in patch 11/23, needs to be able
+convert from a object demand (kmalloc() bytes, kmem_cache_alloc()
+objects) to a page reserve.
 
-So, this generic reserve framework still uses the slab allocator to
-provide certain kind of objects (kmalloc, kmem_cache_alloc), it just
-separates those that are and are not entitled to the reserves.
 
---=-FT+zCI+A90irqp0ysoO4
+--=-B/evvxB9qIXk4AH3ka2B
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHKFweXA2jU0ANEf4RAi7hAJ9NcZFgKlpbDF0l5r2ZdGlxPyGB0ACfYutM
-wzNhYh+DCVlsSEe0s5P2XBQ=
-=9k+N
+iD8DBQBHKFweXA2jU0ANEf4RAg3yAJ40xHIOL90VMpb0RQnEM1N4VoRmRgCfUuHc
+jGUE2pI/amo9+MDzmA9+R3k=
+=lGAV
 -----END PGP SIGNATURE-----
 
---=-FT+zCI+A90irqp0ysoO4--
+--=-B/evvxB9qIXk4AH3ka2B--
 
