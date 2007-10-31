@@ -1,125 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbXJaWZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXJaW3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbXJaWZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXJaWZQ
+	id S1756181AbXJaW3d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXJaW30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:25:16 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:47065 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754393AbXJaWZN (ORCPT
+	Wed, 31 Oct 2007 18:29:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38653 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751323AbXJaW3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:25:13 -0400
-Message-ID: <47290096.7080207@oracle.com>
-Date: Wed, 31 Oct 2007 15:24:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Andreas Mohr <andi@lisas.de>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
-References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
-In-Reply-To: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 31 Oct 2007 18:29:25 -0400
+Date: Wed, 31 Oct 2007 15:29:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: ebiederm@xmission.com, clg@fr.ibm.com, serue@us.ibm.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] The config option itself
+Message-Id: <20071031152915.c0b57c73.akpm@linux-foundation.org>
+In-Reply-To: <4728615D.5070700@openvz.org>
+References: <47285FEE.9030001@openvz.org>
+	<4728615D.5070700@openvz.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Mohr wrote:
-> Hello,
-> 
-> I was non-mildly horrified to find that the rather widely used patch-kernel
-> script seems to rely on bash despite specifying the interpreter as #!/bin/sh,
-> since my dash-using Debian install choked on it.
-> 
-> Thus I'm delivering a first, preliminary, non-reviewed change to make
-> patch-kernel (a little bit more?) POSIX-compatible. It now survives both
-> a dash and a bash run.
-> 
-> If this mail goes through relatively unscathed, then it might be a good
-> idea to plant it into -mm via a follow-up mail.
-> 
-> Comments?
-> 
-> - replaced "==" by "="
+On Wed, 31 Oct 2007 14:05:01 +0300
+Pavel Emelyanov <xemul@openvz.org> wrote:
 
-Those are OK.
+> The option is called NAMESPACES. It can be selectable only
+> if EMBEDDED is chosen (this was Eric's requisition). When
+> the EMBEDDED is off namespaces will be on automatically.
 
-> - the "source" statement most likely needs the ./ prepended, as can be
-> gathered from e.g. http://osdir.com/ml/colinux.devel/2005-12/msg00036.html
+I'm thinking that Eric's pidns-place-under-config_experimental.patch is for
+2.6.24, so I attempted to rework your patches atop that but gave up on the
+last one.
 
-That email isn't very convincing to me.
+So if we're agreeeable, can you please redo these against next -mm, thanks.
 
-http://www.opengroup.org/onlinepubs/009695399/utilities/dot.html just says that
-if <filename> does not contain a slash, the search PATH shall be used (searched).
-If you want to prevent that, it's OK to use ./, but at least say that in the
-patch description, please.
+Also, please do put a little thought into the choice of patch subjects. 
+"the config option itself" will look rather dopey if it goes into the
+permanent kernel record under that name.
 
+Probably putting "CONFIG_NAMESPACES: " in front of each of these would
+suit.
 
-> - the newly replaced sed expression below: is it ok? correct? strict enough?
-> 
-> Thanks,
-> 
-> Andreas Mohr
-> 
-> (who's strongly hoping that submitting a patch for this thingy doesn't
-> automatically equal becoming "maintainer for life" for it ;)
-
-Be careful.
-
-> --- linux-2.6.23/scripts/patch-kernel	2007-10-31 21:55:26.000000000 +0100
-> +++ linux-2.6.23/scripts/patch-kernel.dash	2007-10-31 21:58:37.000000000 +0100
-
-
-> @@ -202,13 +202,7 @@
->  EXTRAVER=
->  if [ x$EXTRAVERSION != "x" ]
->  then
-> -	if [ ${EXTRAVERSION:0:1} == "." ]; then
-> -		EXTRAVER=${EXTRAVERSION:1}
-> -	else
-> -		EXTRAVER=$EXTRAVERSION
-> -	fi
-> -	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
-> -	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
-
-What's the problem above?
-
-> +	EXTRAVER=`echo $EXTRAVERSION|sed -s 's/^[\.]\?\([^[:punct:]]*\).*/\1/'`
->  fi
->  
->  #echo "stopvers=$stopvers"
-> @@ -251,16 +245,16 @@
->  do
->      CURRENTFULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
->      EXTRAVER=
-
->  
-> -    SUBLEVEL=$((SUBLEVEL + 1))
-> +    SUBLEVEL=$(( $SUBLEVEL + 1 ))
-
-Why are the added spaces needed?
-
-Did you look at
-http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html ?
-
->      FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
->      #echo "#___ trying $FULLVERSION ___"
->  
-> -    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
-> +    if [ $SUBLEVEL -gt $STOPSUBLEVEL ]; then
-
-What's the problem here?
-
->  	echo "Stopping since sublevel ($SUBLEVEL) is beyond stop-sublevel ($STOPSUBLEVEL)"
->  	exit 1
->      fi
-
-
--- 
-~Randy
