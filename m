@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbXJaFM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXJaFNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbXJaFM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 01:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbXJaFM0
+	id S1755655AbXJaFNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 01:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbXJaFMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 01:12:26 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34762 "EHLO mx2.suse.de"
+	Wed, 31 Oct 2007 01:12:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34766 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756026AbXJaFMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 01:12:24 -0400
+	id S1756223AbXJaFM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 01:12:29 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/6] sysfs: make sysfs_{get,put}_active() static
-Date: Tue, 30 Oct 2007 22:11:42 -0700
-Message-Id: <1193807505-3821-3-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 4/6] Driver Core: fix bug in device_rename() for SYSFS_DEPRECATED=y
+Date: Tue, 30 Oct 2007 22:11:43 -0700
+Message-Id: <1193807505-3821-4-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1193807505-3821-2-git-send-email-gregkh@suse.de>
+In-Reply-To: <1193807505-3821-3-git-send-email-gregkh@suse.de>
 References: <20071031050954.GA3791@kroah.com>
  <1193807505-3821-1-git-send-email-gregkh@suse.de>
  <1193807505-3821-2-git-send-email-gregkh@suse.de>
+ <1193807505-3821-3-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-sysfs_{get,put}_active() can now become static.
+This should fix the sysfs warnings that renaming network devices is
+causing to show up with CONFIG_SYSFS_DEPRECATED=y
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+The code just shouldn't run if class devices are real directories, it's
+an update for the symlink in the class directory. Nobody noticed that as
+long as the creation of sysfs files silently failed, and we both missed
+it before the merge, because we don't run SYSFS_DEPRECATED=y.
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: David Miller <davem@davemloft.net>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |    4 ++--
- fs/sysfs/sysfs.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/base/core.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 7a8ce9e..3371629 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -132,7 +132,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
-  *	RETURNS:
-  *	Pointer to @sd on success, NULL on failure.
-  */
--struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
-+static struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
- {
- 	if (unlikely(!sd))
- 		return NULL;
-@@ -161,7 +161,7 @@ struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
-  *	Put an active reference to @sd.  This function is noop if @sd
-  *	is NULL.
-  */
--void sysfs_put_active(struct sysfs_dirent *sd)
-+static void sysfs_put_active(struct sysfs_dirent *sd)
- {
- 	struct completion *cmpl;
- 	int v;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index f841798..ff17f8d 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -103,8 +103,6 @@ extern const struct file_operations sysfs_dir_operations;
- extern const struct inode_operations sysfs_dir_inode_operations;
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index c134341..3f4d6aa 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1228,18 +1228,18 @@ int device_rename(struct device *dev, char *new_name)
+ 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+ 		}
+ 	}
+-#endif
+-
++#else
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+ 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+ 					  dev->bus_id);
+ 		if (error) {
+-			/* Uh... how to unravel this if restoring can fail? */
+ 			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+ 				__FUNCTION__, error);
+ 		}
+ 	}
++#endif
++
+ out:
+ 	put_device(dev);
  
- struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
--struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
--void sysfs_put_active(struct sysfs_dirent *sd);
- struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
- void sysfs_put_active_two(struct sysfs_dirent *sd);
- void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
 -- 
 1.5.3.4
 
