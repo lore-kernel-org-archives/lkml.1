@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbXJaEm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXJaEmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbXJaEm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXJaEmP
+	id S1755190AbXJaEmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbXJaEmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:42:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41734 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751503AbXJaEmO (ORCPT
+	Wed, 31 Oct 2007 00:42:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60349
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753057AbXJaEmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:42:14 -0400
-Date: Tue, 30 Oct 2007 21:42:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Stiller <ms@2scale.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.22.7 Machine Check Exception
-Message-Id: <20071030214205.b55e0688.akpm@linux-foundation.org>
-In-Reply-To: <1193308858.3808.2.camel@blackberry>
-References: <1193308858.3808.2.camel@blackberry>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 31 Oct 2007 00:42:20 -0400
+Date: Tue, 30 Oct 2007 21:42:19 -0700 (PDT)
+Message-Id: <20071030.214219.256397507.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] af_key: suppress a warning for 64k pages.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071031153422.44f864e8.sfr@canb.auug.org.au>
+References: <20071031145954.fe106f73.sfr@canb.auug.org.au>
+	<20071030.210846.215166155.davem@davemloft.net>
+	<20071031153422.44f864e8.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Oct 2007 12:40:58 +0200 Michael Stiller <ms@2scale.net> wrote:
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 31 Oct 2007 15:34:22 +1100
 
-> Hi,
+> On Tue, 30 Oct 2007 21:08:46 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> > I think we should retain the check, but modify it so that GCC knows we
+> > understand that it's OK if it is always false.  Perhaps a simple (u32)
+> > cast on the left branch of the comparison is sufficient?
 > 
-> i encountered the following machine check exceptions (and hangs) with
-> 2.6.22.7 on an Dual Core-2 Xeon System. It occurs if i try to use the
-> PCI-X Intel Gigabit Ethernet card after some minutes:
-> 
-> CPU 3: Machine Check Exception 0000000000000005
-> Bank 0: b200004010000400
-> Bank 5: b200121020000400
-> 
-> or
-> 
-> CPU 1: Machine Check Exception 0000000000000005
-> Bank 0: b200004010000400
-> Bank 5: b200121020000400
-> 
-> What is the cause? How can this be debugged?
-> 
+> Unfortunately, that does not suppress the warning (gcc is getting too
+> smart :-().
 
-I guess it means your hardware is sick.  Presumably those two
-numbers were supposed to be the same.
+It seems if you break the comparison out into a function which
+takes a u32, that's enough to get rid of the warning.
 
-I assume this is the same machine as in your "2.6.22.7 reboots if PCI-X eth
-card is used for capture" report?
+I can't figure out a way to make this prettier, can you?
 
+#define PAGE_SIZE	(64 * 1024)
+
+typedef unsigned int u32;
+typedef unsigned short u16;
+
+int compare(u32 val)
+{
+	if (val >= PAGE_SIZE)
+		return -1;
+	return 0;
+}
+
+int foo(u16 val)
+{
+#if 1
+	return compare(val);
+#else
+	if (val >= PAGE_SIZE)
+		return -1;
+	return 0;
+#endif
+}
