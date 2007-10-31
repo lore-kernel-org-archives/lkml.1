@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbXJaCCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXJaCCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbXJaCCP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 22:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXJaCB6
+	id S1754048AbXJaCCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 22:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXJaCCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 22:01:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:21030 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbXJaCB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 22:01:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CWh7dPdCQUkx0F2N9G4IXFoEt5PQAp7txOJ3tk2ikvbBk5+jIGwghPtkBB3UffshpkPJdK9JU4Z9CkKQQCViBm0/7HdLqcRgmC9Rz8oKVjJjp+6Uwu4CJVjkE7qJBBWgSiSik7SiNbQkrFEcaA61IfLBv8nhlGHi75lVaQGRqa8=
-Message-ID: <3ae72650710301901r5cda1fb7i5e31fd9b7f8855de@mail.gmail.com>
-Date: Wed, 31 Oct 2007 03:01:56 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Subject: Re: [PATCH] sysfs: add filter function to groups
-Cc: "James Bottomley" <James.Bottomley@steeleye.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Greg KH" <greg@kroah.com>, linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071031004011.GA8309@jupiter.solarsys.private>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Oct 2007 22:02:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33395 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752699AbXJaCCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 22:02:45 -0400
+Date: Wed, 31 Oct 2007 02:01:33 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Vasily Averin <vvs@sw.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, devel@openvz.org, stable@kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Milan Broz <mbroz@redhat.com>
+Subject: Re: [dm-devel] Re: dm: bounce_pfn limit added
+Message-ID: <20071031020133.GL10006@agk.fab.redhat.com>
+Mail-Followup-To: Vasily Averin <vvs@sw.ru>,
+	Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org, devel@openvz.org, stable@kernel.org,
+	Jens Axboe <jens.axboe@oracle.com>, Milan Broz <mbroz@redhat.com>
+References: <47257E4B.4080904@sw.ru> <20071030131138.3ba59731.akpm@linux-foundation.org> <20071030232617.GJ10006@agk.fab.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1193671019.3383.13.camel@localhost.localdomain>
-	 <1193676852.2655.21.camel@lov.site>
-	 <1193677071.3383.56.camel@localhost.localdomain>
-	 <47261F50.3050901@s5r6.in-berlin.de>
-	 <1193768743.3321.91.camel@localhost.localdomain>
-	 <20071031004011.GA8309@jupiter.solarsys.private>
-X-Google-Sender-Auth: 59cef9f26abcd777
+In-Reply-To: <20071030232617.GJ10006@agk.fab.redhat.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 31, 2007 1:40 AM, Mark M. Hoffman <mhoffman@lightlink.com> wrote:
-> * James Bottomley <James.Bottomley@SteelEye.com> [2007-10-30 13:25:43 -0500]:
-> > On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
-> > > James Bottomley wrote:
-> > > >> >  struct attribute_group {
-> > > >> >        const char              *name;
-> > > >> > +      int                     (*filter_show)(struct kobject *, int);
-> > >
-> > > > Actually, it returns a true/false value indicating whether the given
-> > > > attribute should be displayed.
-> > >
-> > > How about this:
-> > >
-> > >     int (*is_visible)(...);
-> >
-> > OK, so is this latest revision acceptable to everyone?
->
-> I've just been hacking around in this area a bit, for a completely different
-> reason: there are literally 1000's of attributes in drivers/hwmon/*.c that
-> really want to be const, but which cannot be due to the current API.  I was
-> about to propose some patches that move in a different direction...
+On Tue, Oct 30, 2007 at 11:26:17PM +0000, Alasdair G Kergon wrote:
+> ) DM doesn't need to bounce bio's on its own, but the block layer defaults
+> ) to that in blk_queue_make_request(). The lower level drivers should
+> ) bounce ios themselves, that is what they need to do if not layered below
+> ) dm anyways.
 
-That isn't related to "dynamic attributes", right?
+So currently we treat bounce_pfn as a property that does not need to be
+propagated through the stack.
 
-> IMHO the fundamental problem is struct attribute_group itself.  This structure
-> is nothing but a convenience for packaging the arguments to sysfs_create_group
-> and sysfs_remove_group.
+But is that the right approach?
+- Is there a blk_queue_bounce() missing either from dm or elsewhere?
+  (And BTW can the bio_alloc() that lurks within lead to deadlock?)
 
-That "problem" is actually a good thing. If you look at the change
-rate of the internal kernel API, it saves us so much trouble. Like in
-this case, James can just add a callback without caring about any
-(almost :)) of the current users.
+Firstly, what's going wrong?
+- What is the dm table you are using?  (output of 'dmsetup table')
+  - Which dm targets and with how many underlying devices?
+- Which underlying driver?
+- Is this direct I/O to the block device from userspace, or via some
+filesystem or what?
 
-> Those functions should take the contents of that
-> struct as direct arguments.
-
-I think we should move in the opposite direction. You are right, it
-isn't neccessarily pretty, but having encapsulations like this saves
-us a lot of trouble while interacting with so many other people and
-extending API's all the time. It's a trade, and it's a good one, if
-you need to maintain code that has so many callers, and  so many
-architectures, you can't even check that you don't break them.
-
-> I haven't finished the patch series to implement
-> this, but since I noticed your patch I thought I'd better speak up now.  Here's
-> the first... the idea is to eventually deprecate sysfs_[create|remove]_group()
-> altogether.
-
-Again, I don't think, that we want to get rid of the struct container
-housing all the parameters and beeing open for future extensions
-without changing all the callers.
-
->     The current declaration of struct attribute_group prevents long lists of
->     attributes from being marked const.  Ideally, the second argument to the
->     sysfs_create_group() and sysfs_remove_group() functions would be marked "deep"
->     const, but C has no such construct.  This patch provides a parallel set of
->     functions with the desired decoration.
-
-What do we get out of this constification compared to the current code?
-
-Thanks,
-Kay
+Presumably you've shown the problem goes away when the dm device is
+removed from the stack.
+What if you swap in alternative dm targets, e.g. if it's linear,
+try multipath (round-robin, one path)?
+ 
+Alasdair
+-- 
+agk@redhat.com
