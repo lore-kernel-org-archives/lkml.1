@@ -1,55 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXJaAgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXJaAjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXJaAgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXJaAfv
+	id S1758582AbXJaAjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXJaAjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:35:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:31286 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754035AbXJaAft (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:35:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pZ/na6UooUevT9vZZqeAWWfR/TyaftxJ3Dmp3ei4x4zGfrld7co3/FI9ZPx6MVR8xMoq7hR6T6nFYTxDp4e9e05GkcJaFQxNO2OhWLo6Bn29tJLTClMHYlApmEqOXuvnQ0K1CFVrvQp91hUZo2vecX8l/rReFS0RefwcJ30PUHk=
-Message-ID: <5a4c581d0710301735h1682a30bvfbee632c118556d8@mail.gmail.com>
-Date: Wed, 31 Oct 2007 01:35:47 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [possibly OT] for_each_netdev() in 2.6.23-gitX / 2.6.24-rc1-gitY breaks Cisco VPN client
-Cc: netdev@vger.kernel.org
+	Tue, 30 Oct 2007 20:39:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51333 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbXJaAjM (ORCPT
+	<rfc822;Linux-Kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:39:12 -0400
+Date: Tue, 30 Oct 2007 17:38:50 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linux Netdev <linux-netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <Linux-Kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: dev_ifname32() fails on 32->64bit calls in copy_in_user().
+Message-ID: <20071031003850.GE7517@tasint.org>
+Mail-Followup-To: Linux Netdev <linux-netdev@vger.kernel.org>,
+	Linux Kernel Mailing List <Linux-Kernel@vger.kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's been a while I noticed, but I thought someone would as usual
- cook up some fix, while I don't even see the issue been reported...
- if this isn't a Linux kernel/net issue just drop my email, thanks.
+Hello folks,
+	I've been using a nice program on ppc32 with a ppc64
+system+kernel.  It uses netlink to determine some network interface
+information.  Recent kernels cause it to exit at the netlink stage.  At
+first, I thought it was a bug in the program.  Now I'm not so sure.
+	The situation is specifically the use of SIOCGIFNAME in 32bit
+binaries on 64 bit platforms+kernels.  I've tested ppc32 on ppc64 and 
+ia32 on amd64.  amd64 on amd64, ia32 on ia32,and ppc64 on ppc64
+all work fine.
+	I've cooked up a test program to evince the problem.  It just
+asks netlink for an interface list, then uses SIOCGIFNAME to get the
+interface name.  On kernels before commit 
+32da477a5bfe96b6dfc8960e0d22d89ca09fd10a [NET]: Don't implement
+dev_ifname32 inline, the test program runs fine.  Kernels after, I get
+EFAULT.  This behavior is the same as the original program. 
+	Instrumenting the kernel with printks, the EFAULT comes from
+the first copy_in_user() at line 325 of fs/compat_ioctl.c (in
+dev_ifname32()).  I put some access_ok() checks in, and they do not
+trigger (access is ok).  The call never even gets into sys_ioctl().
+	I'm assuming at this point that copy_in_user() for ia32/amd64
+and ppc32/ppc64 is what is having trouble.  Test program follows.
 
-Error message during cisco_vpn.ko build:
+Joel
 
-/download/linux/net/vpnclient/interceptor.c:345:23: error: macro
-"for_each_netdev" requires 2 arguments, but only 1 given
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <unistd.h>
 
- seems like for_each_netdev() now also uses init_net. If there is
- an alternative and somebody could point me to that, it'd be great,
- as understanding the issue is well out of my grasp.
+#include <net/if.h>
+#include <asm/types.h>
+#include <linux/rtnetlink.h>
 
-Patching up the vpnclient source to use init_net gets me to depmod
- complaining it's not allowed to use a GPL-only symbol (init_net)
- in a proprietary module. If this is meant to be - fine, and apologies
- for the waste of bandwidth; but if this is simply an unwanted side
- effect of the recent changes, perhaps it's a good idea to have it
- at least reported.
+#define NETLINK_BUFSIZE 16384
 
---alessandro
+static void bail(int rc, char *fmt, ...)
+{
+    va_list args;
 
- "you feel the sweet breath of time
-  it's whispering, its truth not mine"
+    if (fmt) {
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        va_end(args);
+    }
 
-   (Interpol, 'No I In Threesome')
+    exit(rc);
+}
+
+int main(int argc, char *argv[])
+{
+    int fd, ioctl_fd, rc, len;
+    struct {
+        struct nlmsghdr nlh;
+        struct rtgenmsg g;
+    } req;
+    struct sockaddr_nl nladdr;
+    static char rcvbuf[NETLINK_BUFSIZE];
+    struct nlmsghdr *h;
+    struct iovec iov = {rcvbuf, sizeof(rcvbuf) };
+    struct msghdr msg = {
+        (void *)&nladdr, sizeof(nladdr),
+        &iov, 1,
+        NULL, 0,
+        0
+    };
+    struct ifreq ifr;
+    struct ifaddrmsg *ifa;
+
+    fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    if (fd < 0)
+        bail(1, "Unable to open netlink socket: %s\n", strerror(errno));
+
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)))
+        bail(1, "Unable to set socket options: %s\n", strerror(errno));
+
+    memset(&nladdr, 0, sizeof(nladdr));
+    nladdr.nl_family = AF_NETLINK;
+    req.nlh.nlmsg_len = sizeof(req);
+    req.nlh.nlmsg_type = RTM_GETADDR;
+    req.nlh.nlmsg_flags = NLM_F_ROOT|NLM_F_MATCH|NLM_F_REQUEST;
+    req.nlh.nlmsg_pid = 0;
+    req.nlh.nlmsg_seq = 1;
+    req.g.rtgen_family = AF_INET;
+
+    if (sendto(fd, (void *)&req, sizeof(req), 0,
+               (struct sockaddr *)&nladdr, sizeof(nladdr)) < 0)
+        bail(1, "Unable to send netlink request: %s\n", strerror(errno));
+
+    while (1)
+    {
+        rc = recvmsg(fd, &msg, 0);
+        if (!rc)
+            bail(1, "Netlink socket closed\n");
+
+        h = (struct nlmsghdr *)rcvbuf;
+        if (h->nlmsg_type == NLMSG_DONE)
+            break;
+
+        if (h->nlmsg_type == NLMSG_ERROR)
+            bail(1, "Error from netlink socket\n");
+
+        len = rc;
+        for (; NLMSG_OK(h, len); h = NLMSG_NEXT(h, len)) {
+            if (h->nlmsg_type != RTM_NEWADDR)
+                continue;
+
+            ioctl_fd = socket(AF_INET, SOCK_STREAM, 0);
+            if (ioctl_fd < 0)
+                bail(1, "Unable to create ioctl socket: %s\n",
+                     strerror(errno));
+
+            ifa = NLMSG_DATA(h);
+            memset(&ifr, 0, sizeof(ifr));
+            ifr.ifr_ifindex = ifa->ifa_index;
+
+            rc = ioctl(ioctl_fd, SIOCGIFNAME, &ifr);
+            if (rc)
+                bail(1, "Unable to get name: %s\n", strerror(errno));
+
+            fprintf(stdout, "Interface %d, %s\n", ifr.ifr_ifindex,
+                    ifr.ifr_ifrn.ifrn_name);
+        }
+    }
+
+    return 0;
+}
+
+-- 
+
+"What no boss of a programmer can ever understand is that a programmer
+ is working when he's staring out of the window"
+	- With apologies to Burton Rascoe
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
