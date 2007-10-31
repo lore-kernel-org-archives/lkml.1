@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXJaQ2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbXJaQ2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbXJaQ2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbXJaQ2X
+	id S1760348AbXJaQ2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760207AbXJaQ2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:28:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42868 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755321AbXJaQ2W (ORCPT
+	Wed, 31 Oct 2007 12:28:35 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53634 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760185AbXJaQ2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:28:22 -0400
-Date: Wed, 31 Oct 2007 09:28:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH] dump_stack on panic
-Message-ID: <20071031092803.0048d5d6@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.58.0710311034410.16249@gandalf.stny.rr.com>
-References: <1193788979.5623.43.camel@localhost.localdomain>
-	<20071031071907.2d1b02ed@laptopd505.fenrus.org>
-	<Pine.LNX.4.58.0710311034410.16249@gandalf.stny.rr.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Wed, 31 Oct 2007 12:28:33 -0400
+Date: Wed, 31 Oct 2007 16:29:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Daniel Drake <dsd@gentoo.org>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071031162922.0f9f74f2@the-village.bc.nu>
+In-Reply-To: <4728A7D4.8050008@garzik.org>
+References: <47274A5F.6070409@gentoo.org>
+	<20071030153417.59b9182c@the-village.bc.nu>
+	<47276DCA.1000808@gentoo.org>
+	<20071030190153.373c9347@the-village.bc.nu>
+	<47278439.4030801@gentoo.org>
+	<20071031114958.210bd7cc@the-village.bc.nu>
+	<20071031115754.GK5059@kernel.dk>
+	<472872F6.70802@garzik.org>
+	<20071031122639.GN5059@kernel.dk>
+	<4728A7D4.8050008@garzik.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007 11:00:56 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> I've had too many issues in development where I hit a panic and it
-> gives me nothing to tell me why.
-> 
-> At the very least, we should have a dump_stack in areas that are
-> usually caused by kernel bugs. For example, killing an interrupt
-> handler.
-> 
+> If this is NOT a privileged app, we must update the command validation 
+> to ensure that invalid commands are not transported to the hardware.
 
-here's the deal.... the killing of an interrupt handler because of an
-oops THEN causes a panic. If you dump stack AGAIN, you have 2 stack
-traces, with the first one being the real good one, and the second one
-being.. well more crappy... so you proposal just dropped the good
-stacktrace off the screen in favor of a worse one...
+We allow only a subset of standard commands to be issued by unprivileged
+applications. We don't strictly enforce transfer sizes and its arguable
+on SCSI transports this doesn't matter one iota. On ATA it perhaps
+matters a bit more.
 
+Note btw - the reset sequence cased by excess data off these drives is
+something we jump up and down and trigger. For PIO draining the bits is
+fine, for DMA pretty much all controllers will clean up happily enough.
 
+Its also nothing like the problem you might think as most drives told
+"send me 150 bytes, oh and the transfer length is 40" will in fact send
+40. 
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Alan
