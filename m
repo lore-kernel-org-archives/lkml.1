@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbXJaWAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbXJaWAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758364AbXJaWAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbXJaV7T
+	id S1760658AbXJaWAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759795AbXJaV7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:59:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59926 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 17:59:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59920 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757411AbXJaV7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:59:16 -0400
+	id S1756932AbXJaV7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:59:14 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -18,518 +18,309 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        tglx@linutronix.de, jun.nakajima@intel.com, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 5/7] Add debugreg/load_rsp native hooks
-Date: Wed, 31 Oct 2007 16:13:17 -0300
-Message-Id: <11938580272819-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 4/7] smp x86 consolidation
+Date: Wed, 31 Oct 2007 16:13:16 -0300
+Message-Id: <1193858022794-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1193858022794-git-send-email-gcosta@redhat.com>
-References: <1193857999499-git-send-email-gcosta@redhat.com> <11938580063444-git-send-email-gcosta@redhat.com> <11938580111179-git-send-email-gcosta@redhat.com> <119385801745-git-send-email-gcosta@redhat.com> <1193858022794-git-send-email-gcosta@redhat.com>
+In-Reply-To: <119385801745-git-send-email-gcosta@redhat.com>
+References: <1193857999499-git-send-email-gcosta@redhat.com> <11938580063444-git-send-email-gcosta@redhat.com> <11938580111179-git-send-email-gcosta@redhat.com> <119385801745-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds native hooks for debugreg handling functions,
-and for the native load_rsp0 function. The later also have its
-call sites patched. There's some room for consolidation in the
-processor*.h headers, and it is done, for paravirt related functions
+This patch consolidates part of the pieces of smp for both architectures.
+(i386 and x86_64). It makes part the calls go through smp_ops. Later on,
+making the functions themselves have shared code is doable and a logical
+next step
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- arch/x86/kernel/process_64.c   |    2 +-
- arch/x86/kernel/smpboot_64.c   |    2 +-
- include/asm-x86/msr.h          |   67 ------------------
- include/asm-x86/processor.h    |  146 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/processor_32.h |  138 +-------------------------------------
- include/asm-x86/processor_64.h |   32 ++++-----
- 6 files changed, 165 insertions(+), 222 deletions(-)
+ arch/x86/kernel/smp_64.c     |   23 ++++++++++----
+ arch/x86/kernel/smpboot_64.c |    8 ++--
+ include/asm-x86/smp.h        |   66 ++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/smp_32.h     |   58 ------------------------------------
+ include/asm-x86/smp_64.h     |    4 --
+ 5 files changed, 86 insertions(+), 73 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 6309b27..d7da3e6 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -596,7 +596,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	/*
- 	 * Reload esp0, LDT and the page table pointer:
- 	 */
--	tss->rsp0 = next->rsp0;
-+	load_esp0(tss, next);
+diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
+index ad063a6..9ddcb99 100644
+--- a/arch/x86/kernel/smp_64.c
++++ b/arch/x86/kernel/smp_64.c
+@@ -291,9 +291,9 @@ void flush_tlb_all(void)
+  * anything. Worst case is that we lose a reschedule ...
+  */
  
- 	/* 
- 	 * Switch DS and ES.
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 49036d0..ecd00f6 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -614,7 +614,7 @@ do_rest:
- 	start_rip = setup_trampoline();
+-void smp_send_reschedule(int cpu)
++void native_smp_send_reschedule(int cpu)
+ {
+-	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
++       send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
+ }
  
- 	init_rsp = c_idle.idle->thread.rsp;
--	per_cpu(init_tss,cpu).rsp0 = init_rsp;
-+	load_esp0(&per_cpu(init_tss, cpu), &c_idle.idle->thread);
- 	initial_code = start_secondary;
- 	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
+ /*
+@@ -388,7 +388,7 @@ __smp_call_function_mask(cpumask_t mask,
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int smp_call_function_mask(cpumask_t mask,
++int native_smp_call_function_mask(cpumask_t mask,
+ 			   void (*func)(void *), void *info,
+ 			   int wait)
+ {
+@@ -402,7 +402,6 @@ int smp_call_function_mask(cpumask_t mask,
+ 	spin_unlock(&call_lock);
+ 	return ret;
+ }
+-EXPORT_SYMBOL(smp_call_function_mask);
  
-diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
-index ba4b314..48f73c7 100644
---- a/include/asm-x86/msr.h
-+++ b/include/asm-x86/msr.h
-@@ -253,73 +253,6 @@ static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 			  : "=a" (low), "=d" (high) \
- 			  : "c" (counter))
+ /*
+  * smp_call_function_single - Run a function on a specific CPU
+@@ -418,7 +417,7 @@ EXPORT_SYMBOL(smp_call_function_mask);
+  */
  
--static inline void cpuid(int op, unsigned int *eax, unsigned int *ebx,
--			 unsigned int *ecx, unsigned int *edx)
--{
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op));
--}
--
--/* Some CPUID calls want 'count' to be placed in ecx */
--static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
--			       int *edx)
--{
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (op), "c" (count));
--}
--
--/*
-- * CPUID functions returning a single datum
-- */
--static inline unsigned int cpuid_eax(unsigned int op)
--{
--	unsigned int eax;
--
--	__asm__("cpuid"
--		: "=a" (eax)
--		: "0" (op)
--		: "bx", "cx", "dx");
--	return eax;
--}
--static inline unsigned int cpuid_ebx(unsigned int op)
--{
--	unsigned int eax, ebx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=b" (ebx)
--		: "0" (op)
--		: "cx", "dx" );
--	return ebx;
--}
--static inline unsigned int cpuid_ecx(unsigned int op)
--{
--	unsigned int eax, ecx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=c" (ecx)
--		: "0" (op)
--		: "bx", "dx" );
--	return ecx;
--}
--static inline unsigned int cpuid_edx(unsigned int op)
--{
--	unsigned int eax, edx;
--
--	__asm__("cpuid"
--		: "=a" (eax), "=d" (edx)
--		: "0" (op)
--		: "bx", "cx");
--	return edx;
--}
--
- #ifdef CONFIG_SMP
- void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-index 46e1c04..a576a72 100644
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -1,5 +1,151 @@
-+#ifndef _X86_PROCESSOR_H_
-+#define _X86_PROCESSOR_H_
-+
-+#include <linux/kernel.h>
-+#include <asm/bug.h>
-+
-+static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-+				unsigned int *ecx, unsigned int *edx)
-+{
-+	/* ecx is often an input as well as an output. */
-+	__asm__("cpuid"
-+		: "=a" (*eax),
-+		  "=b" (*ebx),
-+		  "=c" (*ecx),
-+		  "=d" (*edx)
-+		: "0" (*eax), "2" (*ecx));
-+}
-+
-+static inline unsigned long native_get_debugreg(int regno)
-+{
-+	unsigned long val = 0; 	/* Damn you, gcc! */
-+
-+	switch (regno) {
-+	case 0:
-+		asm volatile ("mov %%db0, %0" :"=r" (val)); break;
-+	case 1:
-+		asm volatile ("mov %%db1, %0" :"=r" (val)); break;
-+	case 2:
-+		asm volatile ("mov %%db2, %0" :"=r" (val)); break;
-+	case 3:
-+		asm volatile ("mov %%db3, %0" :"=r" (val)); break;
-+	case 6:
-+		asm volatile ("mov %%db6, %0" :"=r" (val)); break;
-+	case 7:
-+		asm volatile ("mov %%db7, %0" :"=r" (val)); break;
-+	default:
-+		WARN_ON(1);
-+	}
-+	return val;
-+}
-+
-+static inline void native_set_debugreg(int regno, unsigned long value)
-+{
-+	switch (regno) {
-+	case 0:
-+		asm("mov %0,%%db0"	:  :"r" (value) : "memory");
-+		break;
-+	case 1:
-+		asm("mov %0,%%db1"	:  :"r" (value) : "memory");
-+		break;
-+	case 2:
-+		asm("mov %0,%%db2"	:  :"r" (value) : "memory");
-+		break;
-+	case 3:
-+		asm("mov %0,%%db3"	:  :"r" (value) : "memory");
-+		break;
-+	case 6:
-+		asm("mov %0,%%db6"	:  :"r" (value) : "memory");
-+		break;
-+	case 7:
-+		asm("mov %0,%%db7"	:  :"r" (value) : "memory");
-+		break;
-+	default:
-+		WARN_ON(1);
-+	}
-+}
-+
- #ifdef CONFIG_X86_32
- # include "processor_32.h"
- #else
- # include "processor_64.h"
- #endif
-+
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#else
-+#define paravirt_enabled() 0
-+#define __cpuid native_cpuid
-+#define SWAPGS	swapgs
-+
-+static inline void load_esp0(struct tss_struct *tss,
-+			     struct thread_struct *thread)
-+{
-+	native_load_esp0(tss, thread);
-+}
-+
-+/*
-+ * These special macros can be used to get or set a debugging register
-+ */
-+#define get_debugreg(var, register)				\
-+	(var) = native_get_debugreg(register)
-+#define set_debugreg(value, register)				\
-+	native_set_debugreg(register, value)
-+
-+#define set_iopl_mask native_set_iopl_mask
-+#endif /* CONFIG_PARAVIRT */
-+
-+/*
-+ * Generic CPUID function
-+ * clear %ecx since some cpus (Cyrix MII) do not set or clear %ecx
-+ * resulting in stale register contents being returned.
-+ */
-+static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx,
-+			 unsigned int *ecx, unsigned int *edx)
-+{
-+	*eax = op;
-+	*ecx = 0;
-+	__cpuid(eax, ebx, ecx, edx);
-+}
-+
-+/* Some CPUID calls want 'count' to be placed in ecx */
-+static inline void cpuid_count(int op, int count, unsigned *eax,
-+			       unsigned *ebx, unsigned *ecx, unsigned *edx)
-+{
-+	*eax = op;
-+	*ecx = count;
-+	__cpuid(eax, ebx, ecx, edx);
-+}
-+
-+/*
-+ * CPUID functions returning a single datum
-+ */
-+static inline unsigned int cpuid_eax(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return eax;
-+}
-+static inline unsigned int cpuid_ebx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return ebx;
-+}
-+static inline unsigned int cpuid_ecx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return ecx;
-+}
-+static inline unsigned int cpuid_edx(unsigned int op)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+
-+	cpuid(op, &eax, &ebx, &ecx, &edx);
-+	return edx;
-+}
-+#endif
-diff --git a/include/asm-x86/processor_32.h b/include/asm-x86/processor_32.h
-index 13976b0..a081689 100644
---- a/include/asm-x86/processor_32.h
-+++ b/include/asm-x86/processor_32.h
-@@ -134,17 +134,6 @@ extern void detect_ht(struct cpuinfo_x86 *c);
- static inline void detect_ht(struct cpuinfo_x86 *c) {}
- #endif
+ int smp_call_function_single (int cpu, void (*func) (void *info), void *info,
+-	int nonatomic, int wait)
++			      int nonatomic, int wait)
+ {
+ 	/* prevent preemption and reschedule on another processor */
+ 	int ret;
+@@ -458,7 +457,7 @@ EXPORT_SYMBOL(smp_call_function_single);
+  * Actually there are a few legal cases, like panic.
+  */
+ int smp_call_function (void (*func) (void *info), void *info, int nonatomic,
+-			int wait)
++			      int wait)
+ {
+ 	return smp_call_function_mask(cpu_online_map, func, info, wait);
+ }
+@@ -476,7 +475,7 @@ static void stop_this_cpu(void *dummy)
+ 		halt();
+ } 
  
--static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
--					 unsigned int *ecx, unsigned int *edx)
--{
--	/* ecx is often an input as well as an output. */
--	__asm__("cpuid"
--		: "=a" (*eax),
--		  "=b" (*ebx),
--		  "=c" (*ecx),
--		  "=d" (*edx)
--		: "0" (*eax), "2" (*ecx));
--}
- 
- #define load_cr3(pgdir) write_cr3(__pa(pgdir))
- 
-@@ -508,56 +497,6 @@ static inline void native_load_esp0(struct tss_struct *tss, struct thread_struct
+-void smp_send_stop(void)
++void native_smp_send_stop(void)
+ {
+ 	int nolock;
+ 	unsigned long flags;
+@@ -532,3 +531,13 @@ asmlinkage void smp_call_function_interrupt(void)
  	}
  }
  
--
--static inline unsigned long native_get_debugreg(int regno)
++struct smp_ops smp_ops = {
++	.smp_prepare_boot_cpu = native_smp_prepare_boot_cpu,
++	.smp_prepare_cpus = native_smp_prepare_cpus,
++	.cpu_up = native_cpu_up,
++	.smp_cpus_done = native_smp_cpus_done,
++
++	.smp_send_stop = native_smp_send_stop,
++	.smp_send_reschedule = native_smp_send_reschedule,
++	.smp_call_function_mask = native_smp_call_function_mask,
++};
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 500670c..49036d0 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -865,7 +865,7 @@ void __init smp_set_apicids(void)
+  * Prepare for SMP bootup.  The MP table or ACPI has been read
+  * earlier.  Just do some sanity checking here and enable APIC mode.
+  */
+-void __init smp_prepare_cpus(unsigned int max_cpus)
++void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	nmi_watchdog_default();
+ 	current_cpu_data = boot_cpu_data;
+@@ -909,7 +909,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ /*
+  * Early setup to make printk work.
+  */
+-void __init smp_prepare_boot_cpu(void)
++void __init native_smp_prepare_boot_cpu(void)
+ {
+ 	int me = smp_processor_id();
+ 	cpu_set(me, cpu_online_map);
+@@ -920,7 +920,7 @@ void __init smp_prepare_boot_cpu(void)
+ /*
+  * Entry point to boot a CPU.
+  */
+-int __cpuinit __cpu_up(unsigned int cpu)
++int __cpuinit native_cpu_up(unsigned int cpu)
+ {
+ 	int apicid = cpu_present_to_apicid(cpu);
+ 	unsigned long flags;
+@@ -978,7 +978,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ /*
+  * Finish the SMP boot.
+  */
+-void __init smp_cpus_done(unsigned int max_cpus)
++void __init native_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	smp_cleanup_boot();
+ 	setup_ioapic_dest();
+diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
+index f2e8319..b2f99df 100644
+--- a/include/asm-x86/smp.h
++++ b/include/asm-x86/smp.h
+@@ -1,5 +1,71 @@
++#ifndef _X86_SMP_H_
++#define _X86_SMP_H_
++
++#ifndef __ASSEMBLY__
++struct smp_ops
++{
++	void (*smp_prepare_boot_cpu)(void);
++	void (*smp_prepare_cpus)(unsigned max_cpus);
++	int (*cpu_up)(unsigned cpu);
++	void (*smp_cpus_done)(unsigned max_cpus);
++
++	void (*smp_send_stop)(void);
++	void (*smp_send_reschedule)(int cpu);
++	int (*smp_call_function_mask)(cpumask_t mask,
++				      void (*func)(void *info), void *info,
++				      int wait);
++};
++
++extern struct smp_ops smp_ops;
++
++static inline void smp_prepare_boot_cpu(void)
++{
++	smp_ops.smp_prepare_boot_cpu();
++}
++static inline void smp_prepare_cpus(unsigned int max_cpus)
++{
++	smp_ops.smp_prepare_cpus(max_cpus);
++}
++static inline int __cpu_up(unsigned int cpu)
++{
++	return smp_ops.cpu_up(cpu);
++}
++static inline void smp_cpus_done(unsigned int max_cpus)
++{
++	smp_ops.smp_cpus_done(max_cpus);
++}
++
++static inline void smp_send_stop(void)
++{
++	smp_ops.smp_send_stop();
++}
++static inline void smp_send_reschedule(int cpu)
++{
++	smp_ops.smp_send_reschedule(cpu);
++}
++
++static inline int smp_call_function_mask(cpumask_t mask,
++					 void (*func) (void *info),
++					 void *info, int wait)
++{
++	return smp_ops.smp_call_function_mask(mask, func, info, wait);
++}
++
++void native_smp_prepare_boot_cpu(void);
++void native_smp_prepare_cpus(unsigned int max_cpus);
++int native_cpu_up(unsigned int cpunum);
++void native_smp_cpus_done(unsigned int max_cpus);
++
++#ifndef CONFIG_PARAVIRT
++#define startup_ipi_hook(phys_apicid, start_eip, start_esp) 		\
++do { } while (0)
++#endif
++#endif /* __ASSEMBLY__ */
++
+ #ifdef CONFIG_X86_32
+ # include "smp_32.h"
+ #else
+ # include "smp_64.h"
+ #endif
++
++#endif
+diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
+index e10b7af..a53b03f 100644
+--- a/include/asm-x86/smp_32.h
++++ b/include/asm-x86/smp_32.h
+@@ -53,64 +53,6 @@ extern void cpu_uninit(void);
+ extern void remove_siblinginfo(int cpu);
+ #endif
+ 
+-struct smp_ops
 -{
--	unsigned long val = 0; 	/* Damn you, gcc! */
+-	void (*smp_prepare_boot_cpu)(void);
+-	void (*smp_prepare_cpus)(unsigned max_cpus);
+-	int (*cpu_up)(unsigned cpu);
+-	void (*smp_cpus_done)(unsigned max_cpus);
 -
--	switch (regno) {
--	case 0:
--		asm("movl %%db0, %0" :"=r" (val)); break;
--	case 1:
--		asm("movl %%db1, %0" :"=r" (val)); break;
--	case 2:
--		asm("movl %%db2, %0" :"=r" (val)); break;
--	case 3:
--		asm("movl %%db3, %0" :"=r" (val)); break;
--	case 6:
--		asm("movl %%db6, %0" :"=r" (val)); break;
--	case 7:
--		asm("movl %%db7, %0" :"=r" (val)); break;
--	default:
--		BUG();
--	}
--	return val;
+-	void (*smp_send_stop)(void);
+-	void (*smp_send_reschedule)(int cpu);
+-	int (*smp_call_function_mask)(cpumask_t mask,
+-				      void (*func)(void *info), void *info,
+-				      int wait);
+-};
+-
+-extern struct smp_ops smp_ops;
+-
+-static inline void smp_prepare_boot_cpu(void)
+-{
+-	smp_ops.smp_prepare_boot_cpu();
+-}
+-static inline void smp_prepare_cpus(unsigned int max_cpus)
+-{
+-	smp_ops.smp_prepare_cpus(max_cpus);
+-}
+-static inline int __cpu_up(unsigned int cpu)
+-{
+-	return smp_ops.cpu_up(cpu);
+-}
+-static inline void smp_cpus_done(unsigned int max_cpus)
+-{
+-	smp_ops.smp_cpus_done(max_cpus);
 -}
 -
--static inline void native_set_debugreg(int regno, unsigned long value)
+-static inline void smp_send_stop(void)
 -{
--	switch (regno) {
--	case 0:
--		asm("movl %0,%%db0"	: /* no output */ :"r" (value));
--		break;
--	case 1:
--		asm("movl %0,%%db1"	: /* no output */ :"r" (value));
--		break;
--	case 2:
--		asm("movl %0,%%db2"	: /* no output */ :"r" (value));
--		break;
--	case 3:
--		asm("movl %0,%%db3"	: /* no output */ :"r" (value));
--		break;
--	case 6:
--		asm("movl %0,%%db6"	: /* no output */ :"r" (value));
--		break;
--	case 7:
--		asm("movl %0,%%db7"	: /* no output */ :"r" (value));
--		break;
--	default:
--		BUG();
--	}
+-	smp_ops.smp_send_stop();
 -}
+-static inline void smp_send_reschedule(int cpu)
+-{
+-	smp_ops.smp_send_reschedule(cpu);
+-}
+-static inline int smp_call_function_mask(cpumask_t mask,
+-					 void (*func) (void *info), void *info,
+-					 int wait)
+-{
+-	return smp_ops.smp_call_function_mask(mask, func, info, wait);
+-}
+-
+-void native_smp_prepare_boot_cpu(void);
+-void native_smp_prepare_cpus(unsigned int max_cpus);
+-int native_cpu_up(unsigned int cpunum);
+-void native_smp_cpus_done(unsigned int max_cpus);
+-
+-#ifndef CONFIG_PARAVIRT
+-#define startup_ipi_hook(phys_apicid, start_eip, start_esp) 		\
+-do { } while (0)
+-#endif
 -
  /*
-  * Set IOPL bits in EFLAGS from given mask
-  */
-@@ -574,82 +513,9 @@ static inline void native_set_iopl_mask(unsigned mask)
- 				: "i" (~X86_EFLAGS_IOPL), "r" (mask));
- }
+  * This function is needed by all SMP systems. It must _always_ be valid
+  * from the initial startup. We map APIC_BASE very early in page_setup(),
+diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
+index ab612b0..279ff92 100644
+--- a/include/asm-x86/smp_64.h
++++ b/include/asm-x86/smp_64.h
+@@ -36,9 +36,6 @@ extern volatile unsigned long smp_invalidate_needed;
+ extern void lock_ipi_call_lock(void);
+ extern void unlock_ipi_call_lock(void);
+ extern int smp_num_siblings;
+-extern void smp_send_reschedule(int cpu);
+-extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
+-				  void *info, int wait);
  
--#ifdef CONFIG_PARAVIRT
--#include <asm/paravirt.h>
--#else
--#define paravirt_enabled() 0
--#define __cpuid native_cpuid
+ /*
+  * cpu_sibling_map and cpu_core_map now live
+@@ -127,4 +124,3 @@ extern unsigned int boot_cpu_id;
+ #define cpu_physical_id(cpu)		boot_cpu_id
+ #endif /* !CONFIG_SMP */
+ #endif
 -
--static inline void load_esp0(struct tss_struct *tss, struct thread_struct *thread)
--{
--	native_load_esp0(tss, thread);
--}
--
--/*
-- * These special macros can be used to get or set a debugging register
-- */
--#define get_debugreg(var, register)				\
--	(var) = native_get_debugreg(register)
--#define set_debugreg(value, register)				\
--	native_set_debugreg(register, value)
--
--#define set_iopl_mask native_set_iopl_mask
--#endif /* CONFIG_PARAVIRT */
--
--/*
-- * Generic CPUID function
-- * clear %ecx since some cpus (Cyrix MII) do not set or clear %ecx
-- * resulting in stale register contents being returned.
-- */
--static inline void cpuid(unsigned int op,
--			 unsigned int *eax, unsigned int *ebx,
--			 unsigned int *ecx, unsigned int *edx)
--{
--	*eax = op;
--	*ecx = 0;
--	__cpuid(eax, ebx, ecx, edx);
--}
--
--/* Some CPUID calls want 'count' to be placed in ecx */
--static inline void cpuid_count(unsigned int op, int count,
--			       unsigned int *eax, unsigned int *ebx,
--			       unsigned int *ecx, unsigned int *edx)
--{
--	*eax = op;
--	*ecx = count;
--	__cpuid(eax, ebx, ecx, edx);
--}
--
--/*
-- * CPUID functions returning a single datum
-- */
--static inline unsigned int cpuid_eax(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return eax;
--}
--static inline unsigned int cpuid_ebx(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return ebx;
--}
--static inline unsigned int cpuid_ecx(unsigned int op)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return ecx;
--}
--static inline unsigned int cpuid_edx(unsigned int op)
-+/* We don't really have one */
-+static inline void native_swapgs(void)
- {
--	unsigned int eax, ebx, ecx, edx;
--
--	cpuid(op, &eax, &ebx, &ecx, &edx);
--	return edx;
- }
- 
- /* generic versions from gas */
-diff --git a/include/asm-x86/processor_64.h b/include/asm-x86/processor_64.h
-index e4f1997..b1e6c5a 100644
---- a/include/asm-x86/processor_64.h
-+++ b/include/asm-x86/processor_64.h
-@@ -116,21 +116,13 @@ extern unsigned long mmu_cr4_features;
- static inline void set_in_cr4 (unsigned long mask)
- {
- 	mmu_cr4_features |= mask;
--	__asm__("movq %%cr4,%%rax\n\t"
--		"orq %0,%%rax\n\t"
--		"movq %%rax,%%cr4\n"
--		: : "irg" (mask)
--		:"ax");
-+	write_cr4(read_cr4() | mask);
- }
- 
- static inline void clear_in_cr4 (unsigned long mask)
- {
- 	mmu_cr4_features &= ~mask;
--	__asm__("movq %%cr4,%%rax\n\t"
--		"andq %0,%%rax\n\t"
--		"movq %%rax,%%cr4\n"
--		: : "irg" (~mask)
--		:"ax");
-+	write_cr4(read_cr4() & ~mask);
- }
- 
- 
-@@ -251,6 +243,12 @@ struct thread_struct {
- 	.rsp0 = (unsigned long)&init_stack + sizeof(init_stack) \
- }
- 
-+static inline void native_load_esp0(struct tss_struct *tss,
-+				    struct thread_struct *thread)
-+{
-+	tss->rsp0 = thread->rsp0;
-+}
-+
- #define INIT_MMAP \
- { &init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, NULL, NULL }
- 
-@@ -266,13 +264,13 @@ struct thread_struct {
- 	set_fs(USER_DS);							 \
- } while(0) 
- 
--#define get_debugreg(var, register)				\
--		__asm__("movq %%db" #register ", %0"		\
--			:"=r" (var))
--#define set_debugreg(value, register)			\
--		__asm__("movq %0,%%db" #register		\
--			: /* no output */			\
--			:"r" (value))
-+extern void native_swapgs(void);
-+
-+/* We have it for simmetry with i386 code, but we don't really use it */
-+static inline void native_set_iopl_mask(unsigned mask)
-+{
-+
-+}
- 
- struct task_struct;
- struct mm_struct;
 -- 
 1.4.4.2
 
