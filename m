@@ -1,154 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXJaHMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbXJaHN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbXJaHMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 03:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbXJaHMI
+	id S1756213AbXJaHN4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 03:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXJaHNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 03:12:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38880 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752709AbXJaHME (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 03:12:04 -0400
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Andi Kleen <ak@suse.de>
-Date: Wed, 31 Oct 2007 00:12:03 -0700
-Message-Id: <20071031071203.21924.70083.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [RFC] mempolicy minor code cleanups
+	Wed, 31 Oct 2007 03:13:49 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:41797 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752921AbXJaHNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 03:13:48 -0400
+Message-ID: <47282B1D.8030501@sw.ru>
+Date: Wed, 31 Oct 2007 10:13:33 +0300
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: agk@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org, devel@openvz.org,
+       stable@kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: [dm-devel] Re: dm: bounce_pfn limit added
+References: <47257E4B.4080904@sw.ru> <20071030131138.3ba59731.akpm@linux-foundation.org> <20071030232617.GJ10006@agk.fab.redhat.com> <20071031020133.GL10006@agk.fab.redhat.com>
+In-Reply-To: <20071031020133.GL10006@agk.fab.redhat.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+Alasdair G Kergon wrote:
+> So currently we treat bounce_pfn as a property that does not need to be
+> propagated through the stack.
+> 
+> But is that the right approach?
+> - Is there a blk_queue_bounce() missing either from dm or elsewhere?
+>   (And BTW can the bio_alloc() that lurks within lead to deadlock?)
+> 
+> Firstly, what's going wrong?
+> - What is the dm table you are using?  (output of 'dmsetup table')
+>   - Which dm targets and with how many underlying devices?
+> - Which underlying driver?
+> - Is this direct I/O to the block device from userspace, or via some
+> filesystem or what?
 
-Some minor code cleanups for mm/mempolicy.c.
+On my testnode I have  6 Gb memory (1Gb normal zone for i386 kernels),
+i2o hardware and lvm over i2o.
 
-This patch should have been sent out before,
-to be applied first to 2.6.23-mm1, -before-
-another patch I sent out an hour ago:
+[root@ts10 ~]# dmsetup table
+vzvg-vz: 0 10289152 linear 80:5 384
+vzvg-vzt: 0 263127040 linear 80:5 10289536
+[root@ts10 ~]# cat /proc/partitions
+major minor  #blocks  name
 
-    [RFC] cpuset relative memory policies - second choice
+  80     0  143374336 i2o/hda
+  80     1     514048 i2o/hda1
+  80     2    4096575 i2o/hda2
+  80     3    2040255 i2o/hda3
+  80     4          1 i2o/hda4
+  80     5  136721151 i2o/hda5
+ 253     0    5144576 dm-0
+ 253     1  131563520 dm-1
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
+Diotest from LTP test suite with ~1Mb buffer size and files on dm-over-i2o
+paritions corrupts i2o_iop0_msg_inpool slab.
 
----
- include/linux/mempolicy.h |    5 +++--
- mm/mempolicy.c            |   20 ++++++++++----------
- 2 files changed, 13 insertions(+), 12 deletions(-)
+I2o on this node is able to handle only requests with up to 38 segments. Device
+mapper correctly creates such requests and as you know it uses
+max_pfn=BLK_BOUNCE_ANY. When this request translates to underlying device, it
+clones bio and cleans BIO_SEG_VALID flag.
 
---- 2.6.23-mm1.orig/include/linux/mempolicy.h	2007-10-30 03:29:37.000000000 -0700
-+++ 2.6.23-mm1/include/linux/mempolicy.h	2007-10-30 04:14:58.000000000 -0700
-@@ -23,7 +23,8 @@
- 
- /* Flags for mbind */
- #define MPOL_MF_STRICT	(1<<0)	/* Verify existing pages in the mapping */
--#define MPOL_MF_MOVE	(1<<1)	/* Move pages owned by this process to conform to mapping */
-+#define MPOL_MF_MOVE	(1<<1)	/* Move pages owned by this process to conform
-+								to mapping */
- #define MPOL_MF_MOVE_ALL (1<<2)	/* Move every page to conform to mapping */
- #define MPOL_MF_INTERNAL (1<<3)	/* Internal flags start here */
- 
-@@ -48,7 +49,7 @@ struct mm_struct;
-  * the process policy is used. Interrupts ignore the memory policy
-  * of the current process.
-  *
-- * Locking policy for interlave:
-+ * Locking policy for interleave:
-  * In process context there is no locking because only the process accesses
-  * its own state. All vma manipulation is somewhat protected by a down_read on
-  * mmap_sem.
---- 2.6.23-mm1.orig/mm/mempolicy.c	2007-10-30 03:29:37.000000000 -0700
-+++ 2.6.23-mm1/mm/mempolicy.c	2007-10-30 04:15:05.000000000 -0700
-@@ -25,7 +25,7 @@
-  *                to the last. It would be better if bind would truly restrict
-  *                the allocation to memory nodes instead
-  *
-- * preferred       Try a specific node first before normal fallback.
-+ * preferred      Try a specific node first before normal fallback.
-  *                As a special case node -1 here means do the allocation
-  *                on the local CPU. This is normally identical to default,
-  *                but useful to set in a VMA when you have a non default
-@@ -541,7 +541,7 @@ static long do_get_mempolicy(int *policy
- 		if (flags & (MPOL_F_NODE|MPOL_F_ADDR))
- 			return -EINVAL;
- 		*policy = 0;	/* just so it's initialized */
--		*nmask  = cpuset_current_mems_allowed;
-+		*nmask = cpuset_current_mems_allowed;
- 		return 0;
- 	}
- 
-@@ -688,7 +688,7 @@ int do_migrate_pages(struct mm_struct *m
- 
- 	tmp = *from_nodes;
- 	while (!nodes_empty(tmp)) {
--		int s,d;
-+		int s, d;
- 		int source = -1;
- 		int dest = 0;
- 
-@@ -783,6 +783,8 @@ static long do_mbind(unsigned long start
- 	if (mpol_check_policy(mode, nmask))
- 		return -EINVAL;
- 
-+	cpuset_update_task_memory_state();
-+
- 	new = mpol_new(mode, nmask);
- 	if (IS_ERR(new))
- 		return PTR_ERR(new);
-@@ -794,7 +796,7 @@ static long do_mbind(unsigned long start
- 	if (!new)
- 		flags |= MPOL_MF_DISCONTIG_OK;
- 
--	pr_debug("mbind %lx-%lx mode:%ld nodes:%lx\n",start,start+len,
-+	pr_debug("mbind %lx-%lx mode:%ld nodes:%lx\n", start, start+len,
- 		 mode, nmask ? nodes_addr(*nmask)[0] : -1);
- 
- 	down_write(&mm->mmap_sem);
-@@ -898,10 +900,8 @@ asmlinkage long sys_mbind(unsigned long 
- 	err = get_nodes(&nodes, nmask, maxnode);
- 	if (err)
- 		return err;
--#ifdef CONFIG_CPUSETS
- 	/* Restrict the nodes to the allowed nodes in the cpuset */
--	nodes_and(nodes, nodes, current->mems_allowed);
--#endif
-+	nodes_and(nodes, nodes, cpuset_current_mems_allowed);
- 	return do_mbind(start, len, mode, &nodes, flags);
- }
- 
-@@ -1384,7 +1384,7 @@ EXPORT_SYMBOL(alloc_pages_current);
- 
- /*
-  * If mpol_copy() sees current->cpuset == cpuset_being_rebound, then it
-- * rebinds the mempolicy its copying by calling mpol_rebind_policy()
-+ * rebinds the mempolicy it's copying by calling mpol_rebind_policy()
-  * with the mems_allowed returned by cpuset_mems_allowed().  This
-  * keeps mempolicies cpuset relative after its cpuset moves.  See
-  * further kernel/cpuset.c update_nodemask().
-@@ -1741,9 +1741,9 @@ static void mpol_rebind_policy(struct me
- 	case MPOL_INTERLEAVE:
- 		nodes_remap(tmp, pol->v.nodes, *mpolmask, *newmask);
- 		pol->v.nodes = tmp;
--		*mpolmask = *newmask;
- 		current->il_next = node_remap(current->il_next,
- 						*mpolmask, *newmask);
-+		*mpolmask = *newmask;
- 		break;
- 	case MPOL_PREFERRED:
- 		pol->v.preferred_node = node_remap(pol->v.preferred_node,
-@@ -1763,7 +1763,7 @@ static void mpol_rebind_policy(struct me
- 
- 		zonelist = bind_zonelist(&nodes);
- 
--		/* If no mem, then zonelist is NULL and we keep old zonelist.
-+		/* If no mem, then zonelist is -ENOMEM and we keep old zonelist.
- 		 * If that old zonelist has no remaining mems_allowed nodes,
- 		 * then zonelist_policy() will "FALL THROUGH" to MPOL_DEFAULT.
- 		 */
+In this way underlying device calls blk_recalc_rq_segments() to recount number
+of segments. However blk_recalc_rq_segments uses bounce_pfn=BLK_BOUNCE_HIGH
+taken from underlying device. As result number of segments become over than
+max_hw_segments limit.
 
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+Unfortunately there is not any checks and when i2o driver handles this incorrect
+request it fills the memory out of i2o_iop0_msg_inpool slab.
+
+Thank you,
+	Vasily Averin
