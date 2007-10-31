@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXJaLDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXJaLF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbXJaLDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbXJaLDQ
+	id S1758716AbXJaLF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXJaLFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:03:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50528 "EHLO
+	Wed, 31 Oct 2007 07:05:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37354 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755392AbXJaLDP (ORCPT
+	with ESMTP id S1754164AbXJaLFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:03:15 -0400
-Date: Wed, 31 Oct 2007 12:03:22 +0100
+	Wed, 31 Oct 2007 07:05:18 -0400
+Date: Wed, 31 Oct 2007 12:05:11 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Dag-Erling Sm?rgrav <des@linpro.no>
-Cc: Clemens Koller <clemens.koller@anagramm.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC+PATCH] RTC calibration
-Message-ID: <20071031110322.GA2381@elf.ucw.cz>
-References: <ujrmyvt2tyy.fsf@false.linpro.no> <46E6A737.6080805@anagramm.de> <ujrabrt2qkt.fsf@false.linpro.no> <46E6B617.7030106@anagramm.de> <ujr1wd52npl.fsf@false.linpro.no>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: linux-wireless@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: iwl3945 in 2.6.24-rc1 dies under load
+Message-ID: <20071031110511.GA2194@elf.ucw.cz>
+References: <20071031005202.GA1534@elf.ucw.cz> <1193792098.9704.16.camel@debian.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ujr1wd52npl.fsf@false.linpro.no>
+In-Reply-To: <1193792098.9704.16.camel@debian.sh.intel.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-09-11 18:04:06, Dag-Erling Sm?rgrav wrote:
-> Clemens Koller <clemens.koller@anagramm.de> writes:
-> > Dag-Erling Sm?rgrav <des@linpro.no> writes:
-> > > Without knowing exacly which chip is present, there is no way for the
-> > > userland calibration tool to know how big a difference a calibration
-> > > step makes.
-> > I am not talking about the calibration algorithm and it's quality.
+On Wed 2007-10-31 08:54:58, Zhu Yi wrote:
 > 
-> Neither am I.
+> On Wed, 2007-10-31 at 01:52 +0100, Pavel Machek wrote:
+> > tcpspray -n 1 -b 10000000 10.0.0.2
+> > 
+> > Oct 31 01:42:56 amd kernel: iwl3945: Microcode SW error detected.
+> > Restarting 0x82000008.
+> > Oct 31 01:42:56 amd kernel: iwl3945: Error Reply type 0x00000005 cmd
+> > REPLY_TX (0x1C) seq 0x02C7 ser 0x0000004B
+> > Oct 31 01:42:58 amd kernel: iwl3945: Can't stop Rx DMA.
 > 
-> > I am talking about _how_ the calibration register is addressed from
-> > userspace. It's a simple register, some bits at address 7 and I would
-> > expect to read/modify/write registers to do all the things you want
-> > to do. Register access in userspace doesn't put any limitation
-> > to applications.
-> 
-> It requires the application to know the hardware intimately.
-> 
-> Calibration of the M41T11 is implemented using the lower 6 bits of
-> register 7; this is not necessarily the case for other existing or
-> future chips.
+> Please attach the dmesg with module param debug=0x43fff (make sure
+> CONFIG_IWLWIFI_DEBUG is selected). This will dump the firmware event log
+> for debug.
 
-The driver should know the hardware.
+I addded debug=0x43fff to command line, and it produces _incredible_
+ammount of syslog noise... and the error goes away, probably due to
+changed timing :-(. I can now reliably transfer huge files:
 
-> Let's say I normalize this to [-128;127]; an application that tried to
-> speed up the clock would waste several hours increasing the
-> calibration value from 0 to 1, 2, 3 before seeing an effect after
-> increasing it to 4.  And how do I normalize the assymetric range of
-> the M41T11?
+root@amd:/data/l/linux/drivers/net/wireless/iwlwifi# tcpspray -n 1 -b
+10000000 hobit
 
-So you normalize it to -32;32 range, and tell application (using
-ioctl) that range is -32;32? Or you just -EINVAL if it goes out of
-range?
+Transmitted 10000000 bytes in 12.388257 seconds (788.297 kbytes/s)
+root@amd:/data/l/linux/drivers/net/wireless/iwlwifi# tcpspray -n 1 -b
+100000000 hobit
+
+Transmitted 100000000 bytes in 123.807061 seconds (788.778 kbytes/s)
+root@amd:/data/l/linux/drivers/net/wireless/iwlwifi# tcpspray -n 1 -b
+1000000000 hobit
+
+Transmitted 1000000000 bytes in 1265.784625 seconds (771.508 kbytes/s)
+root@amd:/data/l/linux/drivers/net/wireless/iwlwifi#
+
+rmmod/insmod w/o debug=, and ...huh... problem is _still_ away?!
+
+
 								Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
