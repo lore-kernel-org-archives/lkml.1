@@ -1,134 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbXJaETn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbXJaEUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbXJaETn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXJaETg
+	id S1754801AbXJaEUY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXJaEUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:19:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59092 "EHLO mx2.suse.de"
+	Wed, 31 Oct 2007 00:20:11 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:9210 "EHLO mx34.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752481AbXJaETf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:19:35 -0400
-Date: Wed, 31 Oct 2007 05:19:32 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Duane Griffin <duaneg@dghda.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
-Message-ID: <20071031041932.GA12189@wotan.suse.de>
-References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	id S1751216AbXJaEUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 00:20:09 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2.6.24-rc1 regression] AC adapter state does not change after resume
+Date: Wed, 31 Oct 2007 07:20:05 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200710302324.52822.arvidjaar@mail.ru> <200710302224.55947.rjw@sisk.pl>
+In-Reply-To: <200710302224.55947.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1221205.B19QMBgaJ9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200710310720.06521.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 12:45:35AM +0000, Duane Griffin wrote:
-> Accessing a memory mapped region past the last page containing a valid
-> file mapping produces a SIGBUS fault (as it should). Running a program
-> that does this under gdb, then accessing the invalid memory from gdb,
-> causes it to start consuming 100% CPU and become unkillable. Once in
-> that state, SysRq-T doesn't show a stack trace for gdb, although it is
-> shown as running and stack traces are dumped for other tasks.
-> 
-> 2.6.22 does not have this bug (gdb just prints '\0' as the contents,
-> although arguably that is also a bug, and it should instead report the
-> SIGBUS).
-> 
-> Bisection indicates the problem was introduced by:
-> 
-> 54cb8821de07f2ffcd28c380ce9b93d5784b40d7
-> "mm: merge populate and nopage into fault (fixes nonlinear)"
-> 
-> The following program demonstrates the issue:
-> 
-> #include <errno.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <fcntl.h>
-> #include <unistd.h>
-> #include <sys/mman.h>
-> #include <sys/stat.h>
-> 
-> int main(int argc, char *argv[])
-> {
->         int fd;
->         struct stat buf;
-> 
->         if (argc != 2) {
->                 fprintf(stderr, "usage: %s <filename>\n", argv[0]);
->                 exit(1);
->         }
-> 
->         fd = open(argv[1], O_RDONLY);
->         fstat(fd, &buf);
->         int count = buf.st_size + sysconf(_SC_PAGE_SIZE);
->         char *file = (char *) mmap(NULL, count, PROT_READ, MAP_PRIVATE, fd, 0);
->         if (file == MAP_FAILED) {
->                 fprintf(stderr, "mmap failed: %s\n", strerror(errno));
->         } else {
->                 char ch;
->                 fprintf(stderr, "using offset %d\n", (count - 1));
->                 ch = file[count - 1];
->                 munmap(file, count);
->         }
->         close(fd);
->         return 0;
-> }
-> 
-> To reproduce the bug, run it under gdb, go up a couple of frames to
-> the main function, then access invalid memory, for e.g. with: "print
-> file[4095]", or whatever offset was reported.
+--nextPart1221205.B19QMBgaJ9
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+On Wednesday 31 October 2007, Rafael J. Wysocki wrote:
+> On Tuesday, 30 October 2007 21:24, Andrey Borzenkov wrote:
+> > I suspect new ACPI AC adapter code but have to add some printk's to be
+> > sure.
+> >
+> > To reproduce - plug in AC cord, suspend, unplug, resume - kpowersave and
+> > sysfs still show AC adapter online. Or other way round.
+>
+> Is this a resume from RAM or from disk?
+>
 
-Well that's probably the best bug report I've ever had, thanks Duane!
+RAM
 
-The issue is a silly thinko -- I didn't pay enough attention to the ptrace
-rules in filemap_fault :( partly I think that's because I don't understand
-them and am scared of them ;)
+> Does 2.6.23 work correctly?
+>
 
-The following minimal patch fixes it here, and should probably be applied to
-2.6.23 stable as well as 2.6.24. If you could verify it, that would be much
-appreciated.
+yes
 
-However I actually don't really like how this all works. I don't like that
-filemap.c should have to know about ptrace, or exactly what ptrace wants here.
-It's a bit hairy to force insert page into pagecache and pte into pagetables
-here, given the races.
+--nextPart1221205.B19QMBgaJ9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-In access_process_vm, can't we just zero fill in the case of a sigbus? Linus?
-That will also avoid changing applicatoin behaviour due to a gdb read...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-Thanks,
-Nick
+iD8DBQBHKAJ2R6LMutpd94wRAsWuAJ0RxyKl51oExo0gvzO2XIgwTq8MDgCeJvIB
+wZk0whT7GR3e/rXD8o5YLIM=
+=boh1
+-----END PGP SIGNATURE-----
 
---
-Duane Griffin noticed a 2.6.23 regression that will cause gdb to hang when
-it tries to access the memory of another process beyond i_size.
-
-This is because the solution to the fault vs invalidate race requires that
-we recheck i_size after the page lock is taken. However in that case, I
-had not accounted for the fact that ptracers are granted an exception to this
-rule.
-
-Cc: Duane Griffin <duaneg@dghda.com>
-Cc: stable@kernel.org
-Signed-off-by: Nick Piggin <npiggin@suse.de
----
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -1374,7 +1374,7 @@ retry_find:
- 
- 	/* Must recheck i_size under page lock */
- 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
--	if (unlikely(vmf->pgoff >= size)) {
-+	if (unlikely(vmf->pgoff >= size) && vma->vm_mm == current->mm) {
- 		unlock_page(page);
- 		page_cache_release(page);
- 		goto outside_data_content;
+--nextPart1221205.B19QMBgaJ9--
