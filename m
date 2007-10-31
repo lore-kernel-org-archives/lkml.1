@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbXJaQbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbXJaQel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760638AbXJaQbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbXJaQbO
+	id S1760031AbXJaQel (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbXJaQec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:31:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42940 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760562AbXJaQbN (ORCPT
+	Wed, 31 Oct 2007 12:34:32 -0400
+Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:54161 "EHLO
+	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753749AbXJaQeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:31:13 -0400
-Date: Wed, 31 Oct 2007 09:31:00 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use 64bit timer values while calibrating BogoMips
-Message-ID: <20071031093100.3a1542b0@laptopd505.fenrus.org>
-In-Reply-To: <200710311652.16776.ak@suse.de>
-References: <200710311652.16776.ak@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 31 Oct 2007 12:34:31 -0400
+Message-ID: <4728AE87.10004@gentoo.org>
+Date: Wed, 31 Oct 2007 16:34:15 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk> <472872F6.70802@garzik.org> <20071031122639.GN5059@kernel.dk> <4728A7D4.8050008@garzik.org>
+In-Reply-To: <4728A7D4.8050008@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007 16:52:16 +0100
-Andi Kleen <ak@suse.de> wrote:
-
+Jeff Garzik wrote:
+> Jens Axboe wrote:
+>> Right, that's of course problematic... There has to be a way to recover
+>> that situation though, or you can't export any user command issue
+>> facility.
 > 
-> When calibrating BogoMips 32bit architectures using 
-> read_current_timer will truncate the timer value to 32bit.
-> This is a problem on x86 when the TSC timer is already beyond
-> 2^32-1 or wraps during the calibration. The current code
-> has no wrap handling.  
-> 
-> This could potentially lead to wrong BogoMips, causing 
-> incorrect delays e.g. in hardware drivers and then difficult
-> to track down bugs.
+> You cannot hope to handle all possible effects arising from an app 
+> providing an invalid sg header / cdb.
 
-bogomips tends to not be used for that nowadays
-> 
-> Change read_current_timer() to always return a 64bit
-> value even on 32bit and do the computation in 64bit.
-> 
-> Only found by code inspection; i haven't seen a failure 
-> in the wild.
-> 
-> avr32/sparc64 read_current_timer() updated, but I haven't 
-> compiled/tested them.
+Is it "invalid" though? As a SCSI command, it seems perfectly valid to 
+ask for less data than the total amount the drive could possibly send.
 
-one general comment, if you really want 64 bit... you're using
-"unsigned long long" all over, just use u64 instead.
+It's only when we have to translate it to an ATA command in libata that 
+it becomes invalid there, right?
 
+Are you saying that we should limit the SG_IO commands to only ones that 
+are valid both as SCSI *and* as their ATA translations? Would that be 
+for all SCSI devices, or just ones that libata backs?
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Daniel
