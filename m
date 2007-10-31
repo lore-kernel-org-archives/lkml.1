@@ -1,194 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbXJaWwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762563AbXJaWwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbXJaWwN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760308AbXJaWnK
+	id S1762563AbXJaWwe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbXJaWn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:43:10 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:51552 "EHLO smtp.polymtl.ca"
+	Wed, 31 Oct 2007 18:43:29 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51636 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758993AbXJaWnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:43:04 -0400
-Message-Id: <20071031224214.837455258@polymtl.ca>
+	id S1756835AbXJaWn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:43:27 -0400
+Message-Id: <20071031224216.488906618@polymtl.ca>
 References: <20071031223710.099558229@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 31 Oct 2007 18:37:24 -0400
+Date: Wed, 31 Oct 2007 18:37:29 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hirokazu Takata <takata@linux-m32r.org>, clameter@sgi.com,
-       linux-m32r@ml.linux-m32r.org
-Subject: [patch 14/28] New cmpxchg_local (optimized for UP case) for m32r
-Content-Disposition: inline; filename=add-cmpxchg-local-to-m32r.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:15 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
+       gerg@uclinux.org
+Subject: [patch 19/28] Add cmpxchg_local to m68knommu
+Content-Disposition: inline; filename=add-cmpxchg-local-to-m68knommu.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:16 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __xchg_local, xchg_local (define), __cmpxchg_local_u32, __cmpxchg_local,
-cmpxchg_local(macro).
-
-cmpxchg_local and cmpxchg64_local will use the architecture specific
-__cmpxchg_local_u32 for 32 bits arguments, and use the generic
-__cmpxchg_local_generic for 8, 16 and 64 bits arguments.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
 CC: clameter@sgi.com
-CC: linux-m32r@ml.linux-m32r.org
+CC: gerg@uclinux.org
 ---
- include/asm-m32r/system.h |  111 +++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 101 insertions(+), 10 deletions(-)
+ include/asm-m68knommu/system.h |   28 +++++++++++-----------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-m32r/system.h
+Index: linux-2.6-lttng/include/asm-m68knommu/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-10-31 17:32:44.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m32r/system.h	2007-10-31 18:13:20.000000000 -0400
-@@ -121,8 +121,11 @@ static inline void local_irq_disable(voi
- 
- #define nop()	__asm__ __volatile__ ("nop" : : )
- 
--#define xchg(ptr,x) \
--	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
-+#define xchg(ptr, x)							\
-+	((__typeof__(*(ptr)))__xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
-+#define xchg_local(ptr, x)						\
-+	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x), (ptr),	\
-+			sizeof(*(ptr))))
- 
- #ifdef CONFIG_SMP
- extern void  __xchg_called_with_bad_pointer(void);
-@@ -146,7 +149,7 @@ extern void  __xchg_called_with_bad_poin
- #endif	/* CONFIG_CHIP_M32700_TS1 */
- 
- static __always_inline unsigned long
--__xchg(unsigned long x, volatile void * ptr, int size)
-+__xchg(unsigned long x, volatile void *ptr, int size)
- {
- 	unsigned long flags;
- 	unsigned long tmp = 0;
-@@ -196,6 +199,42 @@ __xchg(unsigned long x, volatile void * 
- 	return (tmp);
+--- linux-2.6-lttng.orig/include/asm-m68knommu/system.h	2007-10-31 17:32:43.000000000 -0400
++++ linux-2.6-lttng/include/asm-m68knommu/system.h	2007-10-31 18:17:59.000000000 -0400
+@@ -187,26 +187,20 @@ static inline unsigned long __xchg(unsig
  }
+ #endif
  
-+static __always_inline unsigned long
-+__xchg_local(unsigned long x, volatile void *ptr, int size)
-+{
-+	unsigned long flags;
-+	unsigned long tmp = 0;
-+
-+	local_irq_save(flags);
-+
-+	switch (size) {
-+	case 1:
-+		__asm__ __volatile__ (
-+			"ldb	%0, @%2 \n\t"
-+			"stb	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	case 2:
-+		__asm__ __volatile__ (
-+			"ldh	%0, @%2 \n\t"
-+			"sth	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	case 4:
-+		__asm__ __volatile__ (
-+			"ld	%0, @%2 \n\t"
-+			"st	%1, @%2 \n\t"
-+			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
-+		break;
-+	default:
-+		__xchg_called_with_bad_pointer();
-+	}
-+
-+	local_irq_restore(flags);
-+
-+	return (tmp);
-+}
-+
- #define __HAVE_ARCH_CMPXCHG	1
- 
- static inline unsigned long
-@@ -228,6 +267,37 @@ __cmpxchg_u32(volatile unsigned int *p, 
- 	return retval;
- }
- 
-+static inline unsigned long
-+__cmpxchg_local_u32(volatile unsigned int *p, unsigned int old,
-+			unsigned int new)
-+{
-+	unsigned long flags;
-+	unsigned int retval;
-+
-+	local_irq_save(flags);
-+	__asm__ __volatile__ (
-+			DCACHE_CLEAR("%0", "r4", "%1")
-+			"ld %0, @%1;		\n"
-+		"	bne	%0, %2, 1f;	\n"
-+			"st %3, @%1;		\n"
-+		"	bra	2f;		\n"
-+		"       .fillinsn		\n"
-+		"1:"
-+			"st %0, @%1;		\n"
-+		"       .fillinsn		\n"
-+		"2:"
-+			: "=&r" (retval)
-+			: "r" (p), "r" (old), "r" (new)
-+			: "cbit", "memory"
-+#ifdef CONFIG_CHIP_M32700_TS1
-+			, "r4"
-+#endif  /* CONFIG_CHIP_M32700_TS1 */
-+		);
-+	local_irq_restore(flags);
-+
-+	return retval;
-+}
-+
- /* This function doesn't exist, so you'll get a linker error
-    if something tries to do an invalid cmpxchg().  */
- extern void __cmpxchg_called_with_bad_pointer(void);
-@@ -247,13 +317,34 @@ __cmpxchg(volatile void *ptr, unsigned l
- 	return old;
- }
- 
--#define cmpxchg(ptr,o,n)						 \
--  ({									 \
--     __typeof__(*(ptr)) _o_ = (o);					 \
--     __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
--  })
-+#define cmpxchg(ptr, o, n)						 \
-+	((__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)(o),	 \
-+			(unsigned long)(n), sizeof(*(ptr))))
-+
 +#include <asm-generic/cmpxchg-local.h>
 +
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_local_u32(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+/*
+ /*
+- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+- * store NEW in MEM.  Return the initial value in MEM.  Success is
+- * indicated by comparing RETURN with OLD.
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
-+ */
-+#define cmpxchg_local(ptr, o, n)				  	    \
-+	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	    \
+  */
+-#define __HAVE_ARCH_CMPXCHG	1
+-
+-static __inline__ unsigned long
+-cmpxchg(volatile int *p, int old, int new)
+-{
+-	unsigned long flags;
+-	int prev;
+-
+-	local_irq_save(flags);
+-	if ((prev = *p) == old)
+-		*p = new;
+-	local_irq_restore(flags);
+-	return(prev);
+-}
++#define cmpxchg_local(ptr, o, n)				  	       \
++	((__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o),\
 +			(unsigned long)(n), sizeof(*(ptr))))
 +#define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
  
- #endif  /* __KERNEL__ */
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
  
+ #ifdef CONFIG_M68332
+ #define HARD_RESET_NOW() ({		\
 
 -- 
 Mathieu Desnoyers
