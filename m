@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbXJaIu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbXJaIv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbXJaIu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 04:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXJaIur
+	id S1755375AbXJaIv3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 04:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXJaIvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 04:50:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54079 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbXJaIuq (ORCPT
+	Wed, 31 Oct 2007 04:51:20 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:41402 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753655AbXJaIvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 04:50:46 -0400
-Date: Wed, 31 Oct 2007 08:50:41 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-Message-ID: <20071031085041.GA4362@infradead.org>
-References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au> <20071030.213753.126064697.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Oct 2007 04:51:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=3Kp5/lnL9ylcQcGxNpgA/emzhYJyu+YM7QxB8aXbKMo2Lntx+bm7iMhMajpZsoqvP24KKxAkwad49pvZ/O3l/7cePjhWUmAVaR2t2UUcO/MkL7Qo3gz0BBjAX5ahDCz8df3A4b3rafJd8dzOwgC1HVCZIxQlzQxqr+YOEPGWb9A=  ;
+X-YMail-OSG: 9M9O_ZcVM1kwDC0vfOZ71DJVFObcL8SN0PybKGrhWahunK3D2_ucyZuu1d7K3d5Gj1n36BYlOg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Swap delay accounting, include lock_page() delays
+Date: Wed, 31 Oct 2007 18:41:53 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20071031075243.22225.53636.sendpatchset@balbir-laptop>
+In-Reply-To: <20071031075243.22225.53636.sendpatchset@balbir-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071030.213753.126064697.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200710311841.53671.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 09:37:53PM -0700, David Miller wrote:
-> Don't be misled.  Swapping over NFS is just a scarecrow for the
-> seemingly real impetus behind these changes which is network storage
-> stuff like iSCSI.
+On Wednesday 31 October 2007 18:52, Balbir Singh wrote:
+> Reported-by: Nick Piggin <nickpiggin@yahoo.com.au>
+>
+> The delay incurred in lock_page() should also be accounted in swap delay
+> accounting
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-So can we please do swap over network storage only first?  All these
-VM bits look conceptually sane to me, while the changes to the swap
-code to support nfs are real crackpipe material.   Then again doing
-that part properly by adding address_space methods for swap I/O without
-the abuse might be a really good idea, especially as the way we
-do swapfiles on block-based filesystems is an horrible hack already.
+Ah right, I forgot to resend this one, sorry. Thanks for remembering.
 
-So please get the VM bits for swap over network blockdevices in first,
-and then we can look into a complete revamp of the swapfile support
-that cleans up the current mess and adds support for nfs insted of
-making the mess even worse.
 
+> ---
+>
+>  mm/memory.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff -puN mm/swapfile.c~fix-delay-accounting-swap-accounting mm/swapfile.c
+> diff -puN mm/memory.c~fix-delay-accounting-swap-accounting mm/memory.c
+> ---
+> linux-2.6-latest/mm/memory.c~fix-delay-accounting-swap-accounting	2007-10-3
+>1 12:58:05.000000000 +0530 +++
+> linux-2.6-latest-balbir/mm/memory.c	2007-10-31 13:02:50.000000000 +0530 @@
+> -2084,9 +2084,9 @@ static int do_swap_page(struct mm_struct
+>  		count_vm_event(PGMAJFAULT);
+>  	}
+>
+> -	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+>  	mark_page_accessed(page);
+>  	lock_page(page);
+> +	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+>
+>  	/*
+>  	 * Back out if somebody else already faulted in this pte.
+> _
