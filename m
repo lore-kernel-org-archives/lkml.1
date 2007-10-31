@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbXJaGLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbXJaGLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbXJaGLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbXJaGLP
+	id S1754651AbXJaGLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXJaGLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:11:15 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39589 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbXJaGLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:11:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,350,1188802800"; 
-   d="scan'208";a="192116422"
-Subject: Re: 2.6.23 boot failures on x86-64.
-From: Zou Nan hai <nanhai.zou@intel.com>
-To: Martin Ebourne <martin@zepler.org>
-Cc: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1193692862.3133.14.camel@avenin.ebourne.me.uk>
-References: <20071029175014.GH7793@redhat.com>
-	 <200710291918.43869.ak@suse.de> <20071029184747.GB1650@redhat.com>
-	 <200710292003.09317.ak@suse.de>  <20071029194311.GE1650@redhat.com>
-	 <1193692862.3133.14.camel@avenin.ebourne.me.uk>
-Content-Type: text/plain
-Organization: 
-Message-Id: <1193810651.817.14.camel@linux-znh>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 (1.2.2-4) 
-Date: 31 Oct 2007 14:04:12 +0800
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 02:11:46 -0400
+Received: from gatekeeper.ncic.ac.cn ([159.226.41.188]:63934 "HELO ac.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752499AbXJaGLp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 02:11:45 -0400
+Message-ID: <47281C75.4040106@sina.com.cn>
+Date: Wed, 31 Oct 2007 14:11:01 +0800
+From: tgh <wwwwww4187@sina.com.cn>
+User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morton <akpm@linux-foundation.com>
+Subject: Re: [Xen-devel] [patch 30/44] xen: Add support for preemption
+References: <20070716231536.937393000@xensource.com>>	<20070716232915.672717000@xensource.com>>	<4726F51C.4030709@sina.com.cn>	<4727690F.4030502@goop.org> <4727D926.6050004@sina.com.cn> <4727DC88.2020803@goop.org>
+In-Reply-To: <4727DC88.2020803@goop.org>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-30 at 05:21, Martin Ebourne wrote:
-> On Mon, 2007-10-29 at 15:43 -0400, Dave Jones wrote:
-> > On Mon, Oct 29, 2007 at 08:03:09PM +0100, Andi Kleen wrote:
-> >  > >  > But if allocating bootmem >4G doesn't work on these systems
-> >  > >  > most likely they have more problems anyways. It might be better
-> >  > >  > to find out what goes wrong exactly.
-> >  > > Any ideas on what to instrument ?
-> >  > 
-> >  > See what address the bootmem_alloc_high returns; check if it overlaps
-> >  > with something etc.
-> >  > 
-> >  > Fill the memory on the system and see if it can access all of its memory.
-> > 
-> > Martin, as you have one of the affected systems, do you feel up to this?
-> 
-> Faking a node at 0000000000000000-000000001fff0000
-> Bootmem setup node 0 0000000000000000-000000001fff0000
-> sparse_early_mem_map_alloc: returned address ffff81000070b000
-> 
-> My box has 512MB of RAM.
-> 
-> Cheers,
-> 
-> Martin.
+Thank you for your reply
+and what about the kernel thread in the xen hypervisor,are there some
+instance of kernel threads running in the hypervisor?
+I am not sure ,but somewhere I read that there is no kernel thread in
+the xen hypervisor ,is it true or what about it?
 
-Oops, sorry,
-seem to be a mistake of me.
-I forget to exclude the DMA range.
-
-Does the following patch fix the issue?
-
-Thanks
-Zou Nan hai
-
---- a/arch/x86/mm/init_64.c	2007-10-31 11:24:11.000000000 +0800
-+++ b/arch/x86/mm/init_64.c	2007-10-31 12:31:02.000000000 +0800
-@@ -731,7 +731,7 @@ int in_gate_area_no_task(unsigned long a
- void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
- {
- 	return __alloc_bootmem_core(pgdat->bdata, size,
--			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
-+			SMP_CACHE_BYTES, (4UL*1024*1024*1024), __pa(MAX_DMA_ADDRESS));
- }
- 
- const char *arch_vma_name(struct vm_area_struct *vma)
+Thanks in advance
 
 
+Jeremy Fitzhardinge Ð´µÀ:
+> tgh wrote:
+>   
+>> Thank for your reply
+>> and I still have several questions
+>>   
+>>     
+>>> Yes, that's the normal mode of operation. The hypervisor will timeslice
+>>> multiple vcpus onto a single vcpu.
+>>>   
+>>>     
+>>>       
+>> that is ,the VM could be preempted by xen,and could xen hypervisor also
+>> be preempted to reschedule other vm or xen kernel thread?and are there
+>> the counterpart abstractions in xen for kernel thread in linux?
+>>   
+>>     
+>
+> Yes, a vcpu in Xen is the same as a task in the kernel. In the same way
+> the kernel multiplexes multiple tasks onto your cpu(s), Xen multiplexes
+> multiple vcpus onto your cpu(s). This isn't directly visible to the
+> guest kernel, in the same way that user processes can't generally
+> observe timeslicing.
+>
+>   
+>>> This patch doesn't relate to that; it's whether a Xen Linux guest's
+>>> kernel can be preempted to reschedule processes while running under Xen.
+>>>   
+>>>     
+>>>       
+>> that is ,the patch makes the guest's kernel, rather than xen, be able to
+>> be preempted ,is it right?
+>>   
+>>     
+>
+> Yes. Previous to that change, kernel preemption was disabled when
+> compiling Xen support in.
+>
+> J
+>
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
+>
+>
+>   
 
- 
