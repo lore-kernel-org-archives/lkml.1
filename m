@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbXJaCfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbXJaD0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbXJaCfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 22:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbXJaCfn
+	id S1752967AbXJaD0m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 23:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXJaD0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 22:35:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53003 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751928AbXJaCfm (ORCPT <rfc822;Linux-Kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 22:35:42 -0400
-Subject: Re: dev_ifname32() fails on 32->64bit calls in copy_in_user().
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Linux Netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <Linux-Kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20071031003850.GE7517@tasint.org>
-References: <20071031003850.GE7517@tasint.org>
-Content-Type: text/plain
-Date: Wed, 31 Oct 2007 13:35:24 +1100
-Message-Id: <1193798124.9928.91.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 30 Oct 2007 23:26:35 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:45701 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751944AbXJaD0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 23:26:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lyHEuvOGZEQT3Jhy1jb0lYEpsMWpB4u97enk77p2/XKGtFsPEwcNpg5Xsmp9nUscpPXj41vtjplT4YX5cS8tvZQJYGgD3qIISMATE+vo0URHZph3GjK4zMQuA1g1XD9JEyxmHnCyVwsFUvlyQTjwIRIhHN5Q9KVOPMiLllghKps=  ;
+X-YMail-OSG: ZzK0wVEVM1nl0wCwG6hXku1_2_sAUoE0tpuumiC7blQ6PMd1Z_bYWnkUd2o6XA87ozMNK42Iju..pnVNcYlLk3QTeQ--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Lorenzo Allegrucci" <l.allegrucci@gmail.com>,
+       "=?iso-8859-1?q?Bj=F6rn?=" <askadar@gmail.com>
+Subject: Re: 2.6.23 performance regression
+Date: Wed, 31 Oct 2007 13:19:53 +1100
+User-Agent: KMail/1.9.5
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <4dcf7d360710300054m7ac77445pf786bd9044b572d7@mail.gmail.com>
+In-Reply-To: <4dcf7d360710300054m7ac77445pf786bd9044b572d7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710311319.54210.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bug is in the new dev_ifname32:
+On Tuesday 30 October 2007 18:54, Lorenzo Allegrucci wrote:
+> Hi, sorry if this is a faq but reading
+> http://people.freebsd.org/~kris/scaling/7.0%20Preview.pdf (slides 17,
+> 18)
+> looks like 2.6.23 is having a performance regression on MySQL and
+> PostgreSQL benchmarks.  Has anyone investigated these?
 
-	uifr = compat_alloc_user_space(sizeof(struct ifreq));
-	if (copy_in_user(uifr, compat_ptr(arg), sizeof(struct ifreq32)));
-		return -EFAULT;
+I think Ingo was looking into them. I'm just in the middle of
+building a new setup to investigate some performance issues too,
+so I hope to look at this.
 
-There's a stray ";" after the if statement, that was obviously not
-tested :-)
-
-This fixes it here (tested):
-----------------------------------------------------------------------------
-[PATCH] Fix new dev_ifname32 returning -EFAULT
-
-A stray semicolon slipped in the patch that updated dev_ifname32 to
-not be inline, causing it to always return -EFAULT. This fixes it.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Index: linux-work/fs/compat_ioctl.c
-===================================================================
---- linux-work.orig/fs/compat_ioctl.c	2007-10-31 13:30:42.000000000 +1100
-+++ linux-work/fs/compat_ioctl.c	2007-10-31 13:30:46.000000000 +1100
-@@ -322,7 +322,7 @@ static int dev_ifname32(unsigned int fd,
- 	int err;
- 
- 	uifr = compat_alloc_user_space(sizeof(struct ifreq));
--	if (copy_in_user(uifr, compat_ptr(arg), sizeof(struct ifreq32)));
-+	if (copy_in_user(uifr, compat_ptr(arg), sizeof(struct ifreq32)))
- 		return -EFAULT;
- 
- 	err = sys_ioctl(fd, SIOCGIFNAME, (unsigned long)uifr);
-
-
+Apparently it did go unnoticed during CFS testing, unfortunately.
+Although now it has been brought to light, I think 2.6.24 is
+supposed to be better (although it now gets worse on other things).
