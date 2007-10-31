@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbXJaJSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbXJaJYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbXJaJSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 05:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXJaJS2
+	id S1755851AbXJaJYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 05:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXJaJYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 05:18:28 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4865 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753722AbXJaJS1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 05:18:27 -0400
-Date: Wed, 31 Oct 2007 09:17:39 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 5/6] fix typo in SubmittingPatches
-Message-ID: <20071031091739.GB12619@shadowen.org>
-References: <20071031050954.GA3791@kroah.com> <1193807505-3821-1-git-send-email-gregkh@suse.de> <1193807505-3821-2-git-send-email-gregkh@suse.de> <1193807505-3821-3-git-send-email-gregkh@suse.de> <1193807505-3821-4-git-send-email-gregkh@suse.de> <1193807505-3821-5-git-send-email-gregkh@suse.de>
+	Wed, 31 Oct 2007 05:24:10 -0400
+Received: from zakalwe.fi ([80.83.5.154]:55867 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754231AbXJaJYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 05:24:08 -0400
+Date: Wed, 31 Oct 2007 11:24:07 +0200
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Theodore Tso <tytso@mit.edu>, Chris Holvenstot <cholvenstot@comcast.net>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Major SATA / EXT3 Issue?
+Message-ID: <20071031092407.GB3441@zakalwe.fi>
+References: <1193451712.6639.13.camel@localhost> <20071030135923.GA3441@zakalwe.fi> <20071031072554.GC20965@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1193807505-3821-5-git-send-email-gregkh@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+In-Reply-To: <20071031072554.GC20965@thunk.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 10:11:44PM -0700, Greg Kroah-Hartman wrote:
-> From: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+On Wed, Oct 31, 2007 at 03:25:54AM -0400, Theodore Tso wrote:
+> On Tue, Oct 30, 2007 at 03:59:24PM +0200, Heikki Orsila wrote:
+> > 3. fsck -p on boot failed
+> > 
+> > (it is very probable not many files were corrupted at this stage)
 > 
-> Fix typo.
+> Maybe...
+
+The system wouldn't have worked as it did, if there were so many broken 
+files before fsck. For example, the system booted properly before 
+fsck. After fsck the grub was broken. So, most files that were 
+corrupted, were unrelated to writes that happened that night. For 
+example, many files at .deb cache at /var were corrupted, but it has 
+been a long time since those were touched.
+
+> > 4. I ran fsck.ext3 -y
+> > 
+> > => that corrupted lots and lots of files. This went 
+> > into a loop, the fsck.ext3 restarted checking over and over again.
 > 
-> Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-> Cc: Andy Whitcroft <apw@shadowen.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> It's possible that e2fsck corrupted the files, but they also could
+> have been corrupted earlier by the earlier I/O errors.
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+At least there were no IO errors in log files before that night. The 
+only IO error that happened put filesystem into RO state.
 
-> ---
->  Documentation/SubmittingPatches |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-> index a30dd44..681e2b3 100644
-> --- a/Documentation/SubmittingPatches
-> +++ b/Documentation/SubmittingPatches
-> @@ -464,8 +464,8 @@ section Linus Computer Science 101.
->  Nuff said.  If your code deviates too much from this, it is likely
->  to be rejected without further review, and without comment.
->  
-> -Once significant exception is when moving code from one file to
-> -another in this case you should not modify the moved code at all in
-> +One significant exception is when moving code from one file to
-> +another -- in this case you should not modify the moved code at all in
->  the same patch which moves it.  This clearly delineates the act of
->  moving the code and your changes.  This greatly aids review of the
->  actual differences and allows tools to better track the history of
+> There are some
+> relatively rare filesystem corruptions which e2fsck doesn't handle as
+> gracefully as it should, though, I will admit.  I would need to see
+> the e2fsck transcript to be sure. 
 
--apw
+Unfortunately, I do not have it.
+
+> Were there any messages about needing to relocate inode tables by any
+> chance?
+
+I don't recall. I recall seeing messages about "too many blocks 
+inside inode" and "clearing inodes". There were hundreds or 
+thousands of these messages.
+
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
