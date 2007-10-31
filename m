@@ -1,121 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXJaE40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbXJaE6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbXJaE40 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXJaE4S
+	id S1754961AbXJaE6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbXJaE6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:56:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51972
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751216AbXJaE4R (ORCPT
+	Wed, 31 Oct 2007 00:58:37 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:25087 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751487AbXJaE6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:56:17 -0400
-Date: Tue, 30 Oct 2007 21:56:16 -0700 (PDT)
-Message-Id: <20071030.215616.241765510.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: raa.lkml@gmail.com, linux-kernel@vger.kernel.org, per.liden@ericsson.com,
-       allan.stephens@windriver.com
-Subject: Re: tipc_config.h requires linux/string.h, which does not exist in
- exported headers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071030.211404.43558275.davem@davemloft.net>
-References: <20071030222025.GA19792@uranus.ravnborg.org>
-	<20071030.153154.241148799.davem@davemloft.net>
-	<20071030.211404.43558275.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 31 Oct 2007 00:58:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=O7Ugo8TTSnXWJHk64FKA92lzmSAQQKcG8ad/ILtyFyjEAC0xsusgwGbHrgOJj8RzGdJzGETyo4/FL0C3QbOtODlYZ6cove4nY4W95PogJSZXvJS2TRa+f6u2JuKmdpEvCn0mqJvlNcal60iKgFnMWFyVs5oOQ8I9K70/+j8rPvs=  ;
+X-YMail-OSG: NpmcQEUVM1nzXs0DdnQ1TmGR20rHx22t5ZPK2ao.MWaxwZREJI8bc1Y7vgr06il_P_xoFMlfqw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 06/33] mm: allow PF_MEMALLOC from softirq context
+Date: Wed, 31 Oct 2007 14:51:56 +1100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+References: <20071030160401.296770000@chello.nl> <20071030160911.540148000@chello.nl>
+In-Reply-To: <20071030160911.540148000@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710311451.56747.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 30 Oct 2007 21:14:04 -0700 (PDT)
+On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
+> Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
+> a borrowed context save current->flags, ksoftirqd will have its own
+> task_struct.
 
-> Unfortunately I have to back it out, it breaks the build.
-> 
-> In file included from net/tipc/core.h:41,
->                  from net/tipc/addr.c:37:
-> include/linux/tipc_config.h: In function 'TLV_SET':
-> include/linux/tipc_config.h:306: error: implicit declaration of function 'memcpy'
-> include/linux/tipc_config.h:306: warning: incompatible implicit declaration of built-in function 'memcpy'
-> 
-> I truly think adding linux/string.h to unifdef-y along with:
-> 
-> #ifndef __KERNEL__
-> #include <string.h>
-> #else
->  ...
-> #endif
-> 
-> in linux/string.h is a much cleaner and less error prone solution :-)
 
-Here is what I mean, specifically.  And this is build tested :-)
-
->From 97ef1bb0c8e371b7988287f38bd107c4aa14d78d Mon Sep 17 00:00:00 2001
-From: David S. Miller <davem@sunset.davemloft.net>
-Date: Tue, 30 Oct 2007 21:44:00 -0700
-Subject: [PATCH] [TIPC]: Fix headercheck wrt. tipc_config.h
-
-It wants string functions like memcpy() for inline
-routines, and these define userland interfaces.
-
-The only clean way to deal with this is to simply
-put linux/string.h into unifdef-y and have it
-include <string.h> when not-__KERNEL__.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/Kbuild   |    1 +
- include/linux/string.h |   12 +++---------
- 2 files changed, 4 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index bd33c22..37bfa19 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -326,6 +326,7 @@ unifdef-y += sonypi.h
- unifdef-y += soundcard.h
- unifdef-y += stat.h
- unifdef-y += stddef.h
-+unifdef-y += string.h
- unifdef-y += synclink.h
- unifdef-y += sysctl.h
- unifdef-y += tcp.h
-diff --git a/include/linux/string.h b/include/linux/string.h
-index 836062b..c5d3fca 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -3,16 +3,14 @@
- 
- /* We don't want strings.h stuff being user by user stuff by accident */
- 
--#ifdef __KERNEL__
-+#ifndef __KERNEL__
-+#include <string.h>
-+#else
- 
- #include <linux/compiler.h>	/* for inline */
- #include <linux/types.h>	/* for size_t */
- #include <linux/stddef.h>	/* for NULL */
- 
--#ifdef __cplusplus
--extern "C" {
--#endif
--
- extern char *strndup_user(const char __user *, long);
- 
- /*
-@@ -111,9 +109,5 @@ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
- extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
- extern void argv_free(char **argv);
- 
--#ifdef __cplusplus
--}
--#endif
--
- #endif
- #endif /* _LINUX_STRING_H_ */
--- 
-1.5.2.5
+What's this for? Why would ksoftirqd pick up PF_MEMALLOC? (I guess
+that some networking thing must be picking it up in a subsequent patch,
+but I'm too lazy to look!)... Again, can you have more of a rationale in
+your patch headers, or ref the patch that uses it... thanks
 
