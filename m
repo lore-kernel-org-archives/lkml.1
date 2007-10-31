@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbXJaKt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXJaK4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbXJaKt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXJaKtV
+	id S1757308AbXJaK4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXJaK4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:49:21 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58581 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753712AbXJaKtV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:49:21 -0400
-Date: Wed, 31 Oct 2007 10:50:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: "Suzuki Takashi" <suzuki.takashi@gmail.com>, dhowells@redhat.com,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-am33-list] [PATCH 0/2] MN10300: Add the MN10300
- architecture to Linux kernel [try #2]
-Message-ID: <20071031105048.3d0fbf42@the-village.bc.nu>
-In-Reply-To: <31286.1193785564@redhat.com>
-References: <b1c6420f0710301459i147f0f00n1f7009139d3ac31a@mail.gmail.com>
-	<20071029122759.2846.83510.stgit@warthog.procyon.org.uk>
-	<b1c6420f0710300557j57cfc554m458adc7dbeeed610@mail.gmail.com>
-	<15631.1193753689@redhat.com>
-	<b1c6420f0710300810g1dbf8142j4c515a9baab4207a@mail.gmail.com>
-	<27157.1193763218@redhat.com>
-	<31286.1193785564@redhat.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 06:56:05 -0400
+Received: from nic2.axis.se ([193.13.178.10]:55545 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755587AbXJaK4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 06:56:04 -0400
+Date: Wed, 31 Oct 2007 11:55:53 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mikael.starvik@axis.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/16] CRIS architecture: Correct compile errors
+Message-ID: <20071031105552.GX11960@axis.com>
+References: <20071030092811.GD11960@axis.com> <20071030151400.e4769e27.akpm@linux-foundation.org> <20071031104738.GW11960@axis.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071031104738.GW11960@axis.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can you guarantee there won't be any non-AM33 variants of mn10300 that need
-> supporting?  An AM34, perhaps?
+On Wed, Oct 31, 2007 at 11:47:38AM +0100, Jesper Nilsson wrote:
+> On Tue, Oct 30, 2007 at 03:14:00PM -0700, Andrew Morton wrote:
+> > On Tue, 30 Oct 2007 10:28:11 +0100
+> > Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+> > > Remove include of asm/bitops.h, not needed here, corrects compilation error
+> > > (__le64 undefined).
+> > [snip]
+> >
+> > This doesn't apply and I'm not sure that it is still needed or correct.
+> > 
+> > I'll drop it.
 > 
-> So basically, the toolchain name should change from am33 to mn10300 by your
-> argument.
+> Unfortunately it is still needed, I'll resend a fresh patch
+> against Linus git tree.
+> 
+> Compile error:
+> 
+>   CC      arch/cris/kernel/asm-offsets.s
+> In file included from include/asm/byteorder.h:23,
+>                  from include/asm-generic/bitops/le.h:5,
+>                  from include/asm-generic/bitops/ext2-non-atomic.h:4,
+>                  from include/asm/bitops.h:163,
+>                  from include/linux/bitops.h:17,
+>                  from include/asm/posix_types.h:55,
+>                  from include/linux/posix_types.h:47,
+>                  from include/linux/types.h:11,
+>                  from include/linux/capability.h:16,
+>                  from include/linux/sched.h:49,
+>                  from arch/cris/kernel/asm-offsets.c:1:
+> include/linux/byteorder/little_endian.h:43: parse error before "__cpu_to_le64p"
+> include/linux/byteorder/little_endian.h:44: warning: return type defaults to `int'
+> include/linux/byteorder/little_endian.h: In function `__cpu_to_le64p':
+> include/linux/byteorder/little_endian.h:45: `__le64' undeclared (first use in this function)
+> ....
 
-Given the "i686" toolchain name is wrong (its actually i686 + cmov) there
-is a ton of history for the tool chain name not matching up and its even
-happened on PC - and there are tools like rpm that have to know about the
-mismatches and already cope.
+Remove include of asm/bitops.h, not needed here, corrects compilation error
+(__le64 undeclared).
+
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+
+---
+ posix_types.h |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/asm-cris/posix_types.h b/include/asm-cris/posix_types.h
+index 92000d0..3a5e4c4 100644
+--- a/include/asm-cris/posix_types.h
++++ b/include/asm-cris/posix_types.h
+@@ -52,7 +52,6 @@ typedef struct {
+ } __kernel_fsid_t;
+ 
+ #ifdef __KERNEL__
+-#include <linux/bitops.h>
+ 
+ #undef	__FD_SET
+ #define __FD_SET(fd,fdsetp) set_bit(fd, (void *)(fdsetp))
+
+
+
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
