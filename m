@@ -1,385 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXJaAv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbXJaAwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbXJaAv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbXJaAv1
+	id S1759187AbXJaAwj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbXJaAwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:51:27 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58094 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756153AbXJaAvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:51:25 -0400
-Message-ID: <4727D1D3.7060208@linux.vnet.ibm.com>
-Date: Tue, 30 Oct 2007 17:52:35 -0700
-From: Avantika Mathur <mathur@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+	Tue, 30 Oct 2007 20:52:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47951 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754478AbXJaAw3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:52:29 -0400
+Date: Wed, 31 Oct 2007 01:52:40 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: linux-wireless@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
+Subject: iwl3945 in 2.6.24-rc1 dies under load
+Message-ID: <20071031005202.GA1534@elf.ucw.cz>
 MIME-Version: 1.0
-To: linux-ext4 <linux-ext4@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] ext4_group_t: mballoc changes
-Content-Type: multipart/mixed;
- boundary="------------030305070201080706080909"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030305070201080706080909
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
+Hi!
 
---------------030305070201080706080909
-Content-Type: text/x-patch;
- name="ext4_grpnumt-mballoc-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ext4_grpnumt-mballoc-fix.patch"
+...does not seem to work too well :-(. It connects with the AP
+(good!), and survives some "normal" use, but it died at first big
+tcpspray (baaaad!).
 
-Ext4: change groups to ext4_group_t in mballoc.c
+Oct 31 01:03:57 amd log1n[1411]: ROOT LOGIN on `tty6'
+Oct 31 01:05:06 amd kernel: iwl3945: Intel(R) PRO/Wireless 3945ABG/BG
+Network Connection driver for Linux, 1.1.17kds
+Oct 31 01:05:06 amd kernel: iwl3945: Copyright(c) 2003-2007 Intel
+Corporation
+Oct 31 01:05:06 amd kernel: PCI: Setting latency timer of device
+0000:03:00.0 to 64
+Oct 31 01:05:06 amd kernel: iwl3945: Detected Intel PRO/Wireless
+3945ABG Network Connection
+Oct 31 01:05:07 amd kernel: iwl3945: Tunable channels: 11 802.11bg, 13
+802.11a channels
+Oct 31 01:05:07 amd kernel: phy4: Selected rate control algorithm
+'simple'
+Oct 31 01:06:05 amd kernel: wlan0: Initial auth_alg=0
+Oct 31 01:06:05 amd kernel: wlan0: authenticate with AP
+00:11:2f:0e:95:a0
+Oct 31 01:06:05 amd kernel: wlan0: RX authentication from
+00:11:2f:0e:95:a0 (alg=0 transaction=2 status=0)
+Oct 31 01:06:05 amd kernel: wlan0: authenticated
+Oct 31 01:06:05 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
+Oct 31 01:06:05 amd kernel: wlan0: RX AssocResp from 00:11:2f:0e:95:a0
+(capab=0x401 status=0 aid=1)
+Oct 31 01:06:05 amd kernel: wlan0: associated
+Oct 31 01:06:05 amd kernel: wlan0: switched to short barker preamble
+(BSSID=00:11:2f:0e:95:a0)
+Oct 31 01:06:05 amd kernel: iwl3945: iwl-3945-rs not selected as rate
+control algo!
+Oct 31 01:23:52 amd kernel: wlan0: RX deauthentication from
+00:11:2f:0e:95:a0 (reason=4)
+Oct 31 01:23:52 amd kernel: wlan0: deauthenticated
+Oct 31 01:23:53 amd kernel: wlan0: authenticate with AP
+00:11:2f:0e:95:a0
+Oct 31 01:23:53 amd kernel: wlan0: RX authentication from
+00:11:2f:0e:95:a0 (alg=0 transaction=2 status=0)
+Oct 31 01:23:53 amd kernel: wlan0: authenticated
+Oct 31 01:23:53 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
+Oct 31 01:23:53 amd kernel: wlan0: RX ReassocResp from
+00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=1)
+Oct 31 01:23:53 amd kernel: wlan0: associated
+Oct 31 01:23:53 amd kernel: wlan0: switched to short barker preamble
+(BSSID=00:11:2f:0e:95:a0)
+Oct 31 01:23:53 amd kernel: iwl3945: iwl-3945-rs not selected as rate
+control algo!
+Oct 31 01:23:53 amd kernel: wlan0: CTS protection enabled
+(BSSID=00:11:2f:0e:95:a0)
+Oct 31 01:23:53 amd kernel: wlan0: switched to long barker preamble
+(BSSID=00:11:2f:0e:95:a0)
+Oct 31 01:35:44 amd -- MARK --
+Oct 31 01:38:16 amd kernel: iwl3945: Microcode SW error detected.
+Restarting 0x82000008.
+Oct 31 01:38:16 amd kernel: iwl3945: Error Reply type 0x00000005 cmd
+REPLY_TX (0x1C) seq 0x0267 ser 0x0000004B
+Oct 31 01:38:18 amd kernel: iwl3945: Can't stop Rx DMA.
 
-From: Avantika Mathur <mathur@us.ibm.com>
+...unfortunately, microcode sources are not available so Intel should
+fix this, right?
 
-Signed-off-by: Avantika Mathur <mathur@us.ibm.com>
----
+(Actually, it recovered after 3 minutes):
 
- fs/ext4/mballoc.c |   84 ++++++++++++++++++++++++++++--------------------------
- 1 file changed, 45 insertions(+), 39 deletions(-)
+Oct 31 01:41:15 amd kernel: wlan0: RX deauthentication from
+00:11:2f:0e:95:a0 (reason=4)
+Oct 31 01:41:15 amd kernel: wlan0: deauthenticated
+Oct 31 01:41:16 amd kernel: wlan0: authenticate with AP
+00:11:2f:0e:95:a0
+Oct 31 01:41:16 amd kernel: wlan0: RX authentication from
+00:11:2f:0e:95:a0 (alg=0 transaction=2 status=0)
+Oct 31 01:41:16 amd kernel: wlan0: authenticated
+Oct 31 01:41:16 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
+Oct 31 01:41:16 amd kernel: wlan0: RX ReassocResp from
+00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=1)
+Oct 31 01:41:16 amd kernel: wlan0: associated
+Oct 31 01:41:16 amd kernel: wlan0: CTS protection enabled
+(BSSID=00:11:2f:0e:95:a0)
+Oct 31 01:41:16 amd kernel: iwl3945: iwl-3945-rs not selected as rate
+control algo!
+Oct 31 01:41:16 amd kernel: wlan0: switched to short barker preamble
+(BSSID=00:11:2f:0e:95:a0)
 
+Hmm, and it is pretty reproducible, with:
 
-Index: linux-2.6.24-rc1/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6.24-rc1.orig/fs/ext4/mballoc.c	2007-10-30 11:11:53.000000000 -0700
-+++ linux-2.6.24-rc1/fs/ext4/mballoc.c	2007-10-30 11:19:59.000000000 -0700
-@@ -311,7 +311,7 @@
- #define EXT4_BB_MAX_BLOCKS	30
- 
- struct ext4_free_metadata {
--	unsigned short group;
-+	ext4_group_t group;
- 	unsigned short num;
- 	ext4_grpblk_t  blocks[EXT4_BB_MAX_BLOCKS];
- 	struct list_head list;
-@@ -362,7 +362,7 @@
- struct ext4_free_extent {
- 	ext4_lblk_t fe_logical;
- 	ext4_grpblk_t fe_start;
--	unsigned long fe_group;
-+	ext4_group_t fe_group;
- 	unsigned long fe_len;
- };
- 
-@@ -441,7 +441,7 @@
- 	struct ext4_group_info *bd_info;
- 	struct super_block *bd_sb;
- 	__u16 bd_blkbits;
--	__u16 bd_group;
-+	ext4_group_t bd_group;
- };
- #define EXT4_MB_BITMAP(e4b)	((e4b)->bd_bitmap)
- #define EXT4_MB_BUDDY(e4b)	((e4b)->bd_buddy)
-@@ -455,11 +455,12 @@
- #define in_range(b, first, len)	((b) >= (first) && (b) <= (first) + (len) - 1)
- 
- static struct proc_dir_entry *proc_root_ext4;
--struct buffer_head *read_block_bitmap(struct super_block *, unsigned int);
-+struct buffer_head *read_block_bitmap(struct super_block *, ext4_group_t);
- ext4_fsblk_t ext4_new_blocks_old(handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t goal, unsigned long *count, int *errp);
- 
--static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap, int group);
-+static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
-+					ext4_group_t group);
- static void ext4_mb_poll_new_transaction(struct super_block *, handle_t *);
- static void ext4_mb_free_committed_blocks(struct super_block *);
- static void ext4_mb_return_to_preallocation(struct inode *inode,
-@@ -472,19 +473,21 @@
- static int ext4_mb_destroy_per_dev_proc(struct super_block *sb);
- 
- 
--static inline void ext4_lock_group(struct super_block *sb, int group)
-+static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
- {
- 	bit_spin_lock(EXT4_GROUP_INFO_LOCKED_BIT,
- 		      &EXT4_GROUP_INFO(sb, group)->bb_state);
- }
- 
--static inline void ext4_unlock_group(struct super_block *sb, int group)
-+static inline void ext4_unlock_group(struct super_block *sb,
-+					ext4_group_t group)
- {
- 	bit_spin_unlock(EXT4_GROUP_INFO_LOCKED_BIT,
- 			&EXT4_GROUP_INFO(sb, group)->bb_state);
- }
- 
--static inline int ext4_is_group_locked(struct super_block *sb, int group)
-+static inline int ext4_is_group_locked(struct super_block *sb,
-+					ext4_group_t group)
- {
- 	return bit_spin_is_locked(EXT4_GROUP_INFO_LOCKED_BIT,
- 					&EXT4_GROUP_INFO(sb, group)->bb_state);
-@@ -590,7 +593,7 @@
- 			    le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block);
- 
- 			ext4_error(sb, __FUNCTION__, "double-free of inode"
--				   " %lu's block %lu(bit %u in group %u)\n",
-+				   " %lu's block %lu(bit %u in group %lu)\n",
- 				   inode ? inode->i_ino : 0, blocknr,
- 				   first + i, e4b->bd_group);
- 		}
-@@ -620,8 +623,8 @@
- 		b2 = (unsigned char *) bitmap;
- 		for (i = 0; i < e4b->bd_sb->s_blocksize; i++) {
- 			if (b1[i] != b2[i]) {
--				printk("corruption in group %u at byte %u(%u): "
--				       "%x in copy != %x on disk/prealloc\n",
-+				printk("corruption in group %lu at byte %u(%u):"
-+				       " %x in copy != %x on disk/prealloc\n",
- 					e4b->bd_group, i, i * 8, b1[i], b2[i]);
- 				BUG();
- 			}
-@@ -738,7 +741,7 @@
- 	grp = EXT4_GROUP_INFO(sb, e4b->bd_group);
- 	buddy = mb_find_buddy(e4b, 0, &max);
- 	list_for_each(cur, &grp->bb_prealloc_list) {
--		unsigned long groupnr;
-+		ext4_group_t groupnr;
- 		struct ext4_prealloc_space *pa;
- 		pa = list_entry(cur, struct ext4_prealloc_space, group_list);
- 		ext4_get_group_no_and_offset(sb, pa->pstart, &groupnr, &k);
-@@ -812,7 +815,7 @@
- }
- 
- static void ext4_mb_generate_buddy(struct super_block *sb,
--				void *buddy, void *bitmap, int group)
-+				void *buddy, void *bitmap, ext4_group_t group)
- {
- 	struct ext4_group_info *grp = EXT4_GROUP_INFO(sb, group);
- 	unsigned short max = EXT4_BLOCKS_PER_GROUP(sb);
-@@ -843,7 +846,8 @@
- 	grp->bb_fragments = fragments;
- 
- 	if (free != grp->bb_free) {
--		printk("EXT4-fs: group %u: %u blocks in bitmap, %u in gd\n",
-+		printk(KERN_DEBUG
-+			"EXT4-fs: group %lu: %u blocks in bitmap, %u in gd\n",
- 			group, free, grp->bb_free);
- 		grp->bb_free = free;
- 	}
-@@ -881,7 +885,7 @@
- 	int groups_per_page;
- 	int err = 0;
- 	int i;
--	int first_group;
-+	ext4_group_t first_group;
- 	int first_block;
- 	struct super_block *sb;
- 	struct buffer_head *bhs;
-@@ -1029,7 +1033,7 @@
- 	return err;
- }
- 
--static int ext4_mb_load_buddy(struct super_block *sb, int group,
-+static int ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
- 		struct ext4_buddy *e4b)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
-@@ -1040,7 +1044,7 @@
- 	int poff;
- 	struct page *page;
- 
--	mb_debug("load group %u\n", group);
-+	mb_debug("load group %lu\n", group);
- 
- 	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
- 
-@@ -1229,7 +1233,7 @@
- 			    le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block);
- 
- 			ext4_error(sb, __FUNCTION__, "double-free of inode"
--				   " %lu's block %lu(bit %u in group %u)\n",
-+				   " %lu's block %lu(bit %u in group %lu)\n",
- 				   inode ? inode->i_ino : 0, blocknr, block,
- 				   e4b->bd_group);
- 		}
-@@ -1559,7 +1563,7 @@
- 					struct ext4_buddy *e4b)
- {
- 	struct ext4_free_extent ex = ac->ac_b_ex;
--	int group = ex.fe_group;
-+	ext4_group_t group = ex.fe_group;
- 	int max;
- 	int err;
- 
-@@ -1585,7 +1589,7 @@
- static int ext4_mb_find_by_goal(struct ext4_allocation_context *ac,
- 				struct ext4_buddy *e4b)
- {
--	int group = ac->ac_g_ex.fe_group;
-+	ext4_group_t group = ac->ac_g_ex.fe_group;
- 	int max;
- 	int err;
- 	struct ext4_sb_info *sbi = EXT4_SB(ac->ac_sb);
-@@ -1754,7 +1758,7 @@
- }
- 
- static int ext4_mb_good_group(struct ext4_allocation_context *ac,
--				int group, int cr)
-+				ext4_group_t group, int cr)
- {
- 	unsigned free, fragments;
- 	unsigned i, bits;
-@@ -1803,8 +1807,8 @@
- 
- static int ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
- {
--	int group;
--	int i;
-+	ext4_group_t group;
-+	ext4_group_t i;
- 	int cr;
- 	int err = 0;
- 	struct ext4_sb_info *sbi;
-@@ -2154,7 +2158,7 @@
- {
- 	struct super_block *sb = seq->private;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	long group;
-+	ext4_group_t group;
- 
- 	if (*pos < 0 || *pos >= sbi->s_groups_count)
- 		return NULL;
-@@ -2167,7 +2171,7 @@
- {
- 	struct super_block *sb = seq->private;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	long group;
-+	ext4_group_t group;
- 
- 	++*pos;
- 	if (*pos < 0 || *pos >= sbi->s_groups_count)
-@@ -2330,7 +2334,8 @@
- 
- static int ext4_mb_init_backend(struct super_block *sb)
- {
--	int i, j, len, metalen;
-+	ext4_group_t i;
-+	int j, len, metalen;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	int num_meta_group_infos =
- 		(sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) >>
-@@ -2571,7 +2576,7 @@
- int ext4_mb_release(struct super_block *sb)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	int i;
-+	ext4_group_t i;
- 	int num_meta_group_infos;
- 
- 	if (!test_opt(sb, MBALLOC))
-@@ -3351,12 +3356,13 @@
-  * the function goes through all preallocation in this group and marks them
-  * used in in-core bitmap. buddy must be generated from this bitmap
-  */
--static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap, int group)
-+static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
-+					ext4_group_t group)
- {
- 	struct ext4_group_info *grp = EXT4_GROUP_INFO(sb, group);
- 	struct ext4_prealloc_space *pa;
- 	struct list_head *cur;
--	unsigned long groupnr;
-+	ext4_group_t groupnr;
- 	ext4_grpblk_t start;
- 	int preallocated = 0;
- 	int count = 0;
-@@ -3382,7 +3388,7 @@
- 		preallocated += len;
- 		count++;
- 	}
--	mb_debug("prellocated %u for group %u\n", preallocated, group);
-+	mb_debug("prellocated %u for group %lu\n", preallocated, group);
- }
- 
- static void ext4_mb_pa_callback(struct rcu_head *head)
-@@ -3615,7 +3621,7 @@
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	unsigned long end;
- 	unsigned long next;
--	unsigned long group;
-+	ext4_group_t group;
- 	ext4_grpblk_t bit;
- 	sector_t start;
- 	int err = 0;
-@@ -3671,7 +3677,7 @@
- {
- 	struct ext4_allocation_context ac;
- 	struct super_block *sb = e4b->bd_sb;
--	unsigned long group;
-+	ext4_group_t group;
- 	ext4_grpblk_t bit;
- 
- 	ac.ac_op = EXT4_MB_HISTORY_DISCARD;
-@@ -3703,7 +3709,7 @@
-  *   1) how many requested
-  */
- static int ext4_mb_discard_group_preallocations(struct super_block *sb,
--						int group, int needed)
-+					ext4_group_t group, int needed)
- {
- 	struct ext4_group_info *grp = EXT4_GROUP_INFO(sb, group);
- 	struct buffer_head *bitmap_bh = NULL;
-@@ -3821,7 +3827,7 @@
- 	struct super_block *sb = inode->i_sb;
- 	struct buffer_head *bitmap_bh = NULL;
- 	struct ext4_prealloc_space *pa, *tmp;
--	unsigned long group = 0;
-+	ext4_group_t group = 0;
- 	struct list_head list;
- 	struct ext4_buddy e4b;
- 	int err;
-@@ -3932,7 +3938,7 @@
- {
- #if 0
- 	struct super_block *sb = ac->ac_sb;
--	int i;
-+	ext4_group_t i;
- 
- 	printk(KERN_ERR "EXT4-fs: can't allocate: status %d flags %d\n",
- 			ac->ac_status, ac->ac_flags);
-@@ -4015,7 +4021,7 @@
- 	struct super_block *sb = ar->inode->i_sb;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	struct ext4_super_block *es = sbi->s_es;
--	unsigned long group;
-+	ext4_group_t group;
- 	unsigned long len;
- 	unsigned long goal;
- 	ext4_grpblk_t block;
-@@ -4106,7 +4112,7 @@
- 
- static int ext4_mb_discard_preallocations(struct super_block *sb, int needed)
- {
--	int i;
-+	ext4_group_t i;
- 	int ret;
- 	int freed = 0;
- 
-@@ -4242,7 +4248,7 @@
- }
- 
- static int ext4_mb_free_metadata(handle_t *handle, struct ext4_buddy *e4b,
--			  int group, ext4_grpblk_t block, int count)
-+			  ext4_group_t group, ext4_grpblk_t block, int count)
- {
- 	struct ext4_group_info *db = e4b->bd_info;
- 	struct super_block *sb = e4b->bd_sb;
-@@ -4317,7 +4323,7 @@
- 	unsigned long overflow;
- 	ext4_grpblk_t bit;
- 	struct buffer_head *gd_bh;
--	unsigned long block_group;
-+	ext4_group_t block_group;
- 	struct ext4_sb_info *sbi;
- 	struct ext4_buddy e4b;
- 	int err = 0;
+tcpspray -n 1 -b 10000000 10.0.0.2
 
---------------030305070201080706080909--
+Oct 31 01:42:56 amd kernel: iwl3945: Microcode SW error detected.
+Restarting 0x82000008.
+Oct 31 01:42:56 amd kernel: iwl3945: Error Reply type 0x00000005 cmd
+REPLY_TX (0x1C) seq 0x02C7 ser 0x0000004B
+Oct 31 01:42:58 amd kernel: iwl3945: Can't stop Rx DMA.
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
