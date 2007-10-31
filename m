@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbXJaGLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbXJaGQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbXJaGLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXJaGLq
+	id S1754152AbXJaGQJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXJaGP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:11:46 -0400
-Received: from gatekeeper.ncic.ac.cn ([159.226.41.188]:63934 "HELO ac.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752499AbXJaGLp convert rfc822-to-8bit (ORCPT
+	Wed, 31 Oct 2007 02:15:56 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:39445 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbXJaGP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:11:45 -0400
-Message-ID: <47281C75.4040106@sina.com.cn>
-Date: Wed, 31 Oct 2007 14:11:01 +0800
-From: tgh <wwwwww4187@sina.com.cn>
-User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
+	Wed, 31 Oct 2007 02:15:56 -0400
+Date: Wed, 31 Oct 2007 07:15:52 +0100
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: Huawei E220 and usb storage
+Message-ID: <20071031061552.GH11722@gamma.logic.tuwien.ac.at>
+References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.com>
-Subject: Re: [Xen-devel] [patch 30/44] xen: Add support for preemption
-References: <20070716231536.937393000@xensource.com>>	<20070716232915.672717000@xensource.com>>	<4726F51C.4030709@sina.com.cn>	<4727690F.4030502@goop.org> <4727D926.6050004@sina.com.cn> <4727DC88.2020803@goop.org>
-In-Reply-To: <4727DC88.2020803@goop.org>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030152816.f2e8dd7c.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your reply
-and what about the kernel thread in the xen hypervisor,are there some
-instance of kernel threads running in the hypervisor?
-I am not sure ,but somewhere I read that there is no kernel thread in
-the xen hypervisor ,is it true or what about it?
+On Di, 30 Okt 2007, Pete Zaitcev wrote:
+> The difference with huaweiAktBbo.c seems that kernel uses a nonzero length.
+> Can you try zero length with the kernel? It's the second argument to the last.
 
-Thanks in advance
+I tried with the git patch plus changing the penultimage argument from
+0x1 to 0.
 
+The switch of the modem is still not done automatically, but calling
+huaweiAktBbo does effect the switch.
 
-Jeremy Fitzhardinge Ð´µÀ:
-> tgh wrote:
->   
->> Thank for your reply
->> and I still have several questions
->>   
->>     
->>> Yes, that's the normal mode of operation. The hypervisor will timeslice
->>> multiple vcpus onto a single vcpu.
->>>   
->>>     
->>>       
->> that is ,the VM could be preempted by xen,and could xen hypervisor also
->> be preempted to reschedule other vm or xen kernel thread?and are there
->> the counterpart abstractions in xen for kernel thread in linux?
->>   
->>     
->
-> Yes, a vcpu in Xen is the same as a task in the kernel. In the same way
-> the kernel multiplexes multiple tasks onto your cpu(s), Xen multiplexes
-> multiple vcpus onto your cpu(s). This isn't directly visible to the
-> guest kernel, in the same way that user processes can't generally
-> observe timeslicing.
->
->   
->>> This patch doesn't relate to that; it's whether a Xen Linux guest's
->>> kernel can be preempted to reschedule processes while running under Xen.
->>>   
->>>     
->>>       
->> that is ,the patch makes the guest's kernel, rather than xen, be able to
->> be preempted ,is it right?
->>   
->>     
->
-> Yes. Previous to that change, kernel preemption was disabled when
-> compiling Xen support in.
->
-> J
->
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
->
->
->   
+In my tests I did NOT reboot since usb-storage was compiled as module
+(usbserial and option fix in the kernel). But I made sure that I loaded
+the right (the module with the patched code) after removing the old one.
 
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+GALASHIELS (pl.n.)
+A form of particularly long sparse sideburns which are part of the
+mandatory uniform of British Rail guards.
+			--- Douglas Adams, The Meaning of Liff
