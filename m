@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbXJaP1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760443AbXJaP1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbXJaP1g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbXJaPYl
+	id S1760443AbXJaP1y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758222AbXJaPYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:24:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33515 "EHLO
+	Wed, 31 Oct 2007 11:24:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33536 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759670AbXJaPYk (ORCPT
+	with ESMTP id S1759960AbXJaPYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:24:40 -0400
-Date: Wed, 31 Oct 2007 08:11:48 -0700
+	Wed, 31 Oct 2007 11:24:44 -0400
+Date: Wed, 31 Oct 2007 08:11:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Al Viro <viro@zeniv.linux.org.uk>,
        "John W. Linville" <linville@tuxdriver.com>,
        Al Viro <viro@ftp.linux.org.uk>, Dan Williams <dcbw@redhat.com>
-Subject: [patch 14/26] libertas: fix endianness breakage
-Message-ID: <20071031151148.GO2437@kroah.com>
+Subject: [patch 15/26] libertas: more endianness breakage
+Message-ID: <20071031151151.GP2437@kroah.com>
 References: <20071031150535.967437651@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libertas-fix-endianness-breakage.patch"
+Content-Disposition: inline; filename="libertas-more-endianness-breakage.patch"
 In-Reply-To: <20071031151015.GA2437@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -43,36 +43,58 @@ know.
 
 From: Al Viro <viro@ftp.linux.org.uk>
 
-patch 5707708111ca6c4e9a1160acffdc98a98d95e462 in mainline.
+based on patch 8362cd413e8116306fafbaf414f0419db0595142 in mainline.
 
-	wep->keytype[] is u8
+	domain->header.len is le16 and has just been assigned
+cpu_to_le16(arithmetical expression).  And all fields of adapter->logmsg
+are __le32; not a single 16-bit among them...
+	That's incremental to the previous one
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Dan Williams <dcbw@redhat.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/libertas/cmd.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/wireless/libertas/11d.c  |    2 +-
+ drivers/net/wireless/libertas/wext.c |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/net/wireless/libertas/cmd.c
-+++ b/drivers/net/wireless/libertas/cmd.c
-@@ -185,14 +185,12 @@ static int wlan_cmd_802_11_set_wep(wlan_
+--- a/drivers/net/wireless/libertas/11d.c
++++ b/drivers/net/wireless/libertas/11d.c
+@@ -562,7 +562,7 @@ int libertas_cmd_802_11d_domain_info(wla
+ 		       nr_subband * sizeof(struct ieeetypes_subbandset));
  
- 			switch (pkey->len) {
- 			case KEY_LEN_WEP_40:
--				wep->keytype[i] =
--					cpu_to_le16(cmd_type_wep_40_bit);
-+				wep->keytype[i] = cmd_type_wep_40_bit;
- 				memmove(&wep->keymaterial[i], pkey->key,
- 				        pkey->len);
- 				break;
- 			case KEY_LEN_WEP_104:
--				wep->keytype[i] =
--					cpu_to_le16(cmd_type_wep_104_bit);
-+				wep->keytype[i] = cmd_type_wep_104_bit;
- 				memmove(&wep->keymaterial[i], pkey->key,
- 				        pkey->len);
- 				break;
+ 		cmd->size = cpu_to_le16(sizeof(pdomaininfo->action) +
+-					     domain->header.len +
++					     le16_to_cpu(domain->header.len) +
+ 					     sizeof(struct mrvlietypesheader) +
+ 					     S_DS_GEN);
+ 	} else {
+--- a/drivers/net/wireless/libertas/wext.c
++++ b/drivers/net/wireless/libertas/wext.c
+@@ -973,7 +973,7 @@ static struct iw_statistics *wlan_get_wi
+ 	/* Quality by TX errors */
+ 	priv->wstats.discard.retries = priv->stats.tx_errors;
+ 
+-	tx_retries = le16_to_cpu(adapter->logmsg.retry);
++	tx_retries = le32_to_cpu(adapter->logmsg.retry);
+ 
+ 	if (tx_retries > 75)
+ 		tx_qual = (90 - tx_retries) * POOR / 15;
+@@ -989,10 +989,10 @@ static struct iw_statistics *wlan_get_wi
+ 		    (PERFECT - VERY_GOOD) / 50 + VERY_GOOD;
+ 	quality = min(quality, tx_qual);
+ 
+-	priv->wstats.discard.code = le16_to_cpu(adapter->logmsg.wepundecryptable);
+-	priv->wstats.discard.fragment = le16_to_cpu(adapter->logmsg.rxfrag);
++	priv->wstats.discard.code = le32_to_cpu(adapter->logmsg.wepundecryptable);
++	priv->wstats.discard.fragment = le32_to_cpu(adapter->logmsg.rxfrag);
+ 	priv->wstats.discard.retries = tx_retries;
+-	priv->wstats.discard.misc = le16_to_cpu(adapter->logmsg.ackfailure);
++	priv->wstats.discard.misc = le32_to_cpu(adapter->logmsg.ackfailure);
+ 
+ 	/* Calculate quality */
+ 	priv->wstats.qual.qual = max(quality, (u32)100);
 
 -- 
