@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbXJaNBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbXJaNGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757703AbXJaNBA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 09:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757718AbXJaNAt
+	id S1758136AbXJaNGL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 09:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXJaNF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 09:00:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39734 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 09:05:57 -0400
+Received: from sacred.ru ([62.205.161.221]:59996 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756871AbXJaNAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 09:00:48 -0400
-Date: Wed, 31 Oct 2007 09:00:46 -0400
-Message-Id: <200710311300.l9VD0kKI003594@dantu.rdu.redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: sfrench@samba.org
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH] smbfs: fix calculation of kernel_recvmsg size parameter in smb_receive
+	id S1753512AbXJaNF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 09:05:57 -0400
+Message-ID: <47288B6D.4080703@openvz.org>
+Date: Wed, 31 Oct 2007 17:04:29 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Cedric Le Goater <clg@fr.ibm.com>
+CC: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] Move the UTS namespace under the option
+References: <47285FEE.9030001@openvz.org> <472861D3.4060303@openvz.org> <47287C05.5060903@fr.ibm.com>
+In-Reply-To: <47287C05.5060903@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 31 Oct 2007 16:02:04 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-smb_receive calls kernel_recvmsg with a size that's the minimum of the
-amount of buffer space in the kvec passed in or req->rq_rlen (which
-represents the length of the response). This does not take into account
-any data that was read in a request earlier pass through smb_receive.
+Cedric Le Goater wrote:
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index fc76773..d592aa2 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -409,6 +409,13 @@ config NAMESPACES
+>>  	  or same user id or pid may refer to different tasks when used in
+>>  	  different namespaces.
+>>
+>> +config UTS_NS
+>> +	bool "UTS namespace"
+>> +	depends on NAMESPACES
+> 
+> should we add a 'default y' like in 2.6.23 ?
 
-If the first pass through smb_receive receives some but not all of the
-response, then the next pass can call kernel_recvmsg with a size field
-that's too big. kernel_recvmsg can overrun into the next response,
-throwing off the alignment and making it unrecognizable.
+I think no. This is an experimental stuff, so the ones who really
+need it should better say it explicitly.
 
-This causes messages like this to pop up in the ring buffer:
+> C.
+> 
 
-smb_get_length: Invalid NBT packet, code=69
-
-as well as other errors indicating that the response is unrecognizable.
-Typically this is seen on a smbfs mount under heavy I/O.
-
-This patch changes the code to use (req->rq_rlen - req->rq_bytes_recvd)
-instead instead of just req->rq_rlen, since that should represent the
-amount of unread data in the response.
-
-I think this is correct, but an ACK or NACK from someone more familiar
-with this code would be appreciated...
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/smbfs/sock.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/fs/smbfs/sock.c b/fs/smbfs/sock.c
-index e48bd82..e37fe4d 100644
---- a/fs/smbfs/sock.c
-+++ b/fs/smbfs/sock.c
-@@ -329,9 +329,8 @@ smb_receive(struct smb_sb_info *server, struct smb_request *req)
- 	msg.msg_control = NULL;
- 
- 	/* Dont repeat bytes and count available bufferspace */
--	rlen = smb_move_iov(&p, &num, iov, req->rq_bytes_recvd);
--	if (req->rq_rlen < rlen)
--		rlen = req->rq_rlen;
-+	rlen = min_t(int, smb_move_iov(&p, &num, iov, req->rq_bytes_recvd),
-+			(req->rq_rlen - req->rq_bytes_recvd));
- 
- 	result = kernel_recvmsg(sock, &msg, p, num, rlen, flags);
- 
--- 
-1.5.2.1
-
+Thanks,
+Pavel
