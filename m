@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbXJaRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbXJaRd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbXJaRdT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 13:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXJaRdM
+	id S1758524AbXJaRd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 13:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbXJaRdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 13:33:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35463 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752117AbXJaRdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 13:33:11 -0400
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, Ram <vshrirama@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: kernel processes - are they really needed?
-From: Andi Kleen <andi@firstfloor.org>
-References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
-	<p73hckgqoxg.fsf@bingen.suse.de>
-	<d120d5000710310935i13629beahdc01e775e3cf6aa@mail.gmail.com>
-Date: Wed, 31 Oct 2007 18:33:07 +0100
-In-Reply-To: <d120d5000710310935i13629beahdc01e775e3cf6aa@mail.gmail.com> (Dmitry Torokhov's message of "Wed\, 31 Oct 2007 12\:35\:31 -0400")
-Message-ID: <p73k5p32nqk.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 31 Oct 2007 13:33:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57044 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbXJaRds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 13:33:48 -0400
+Date: Wed, 31 Oct 2007 10:29:43 -0700
+From: Greg KH <greg@kroah.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: add filter function to groups
+Message-ID: <20071031172943.GA29492@kroah.com>
+References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain> <20071031035506.GH14910@kroah.com> <1193841484.3411.8.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193841484.3411.8.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Dmitry Torokhov" <dmitry.torokhov@gmail.com> writes:
+On Wed, Oct 31, 2007 at 09:38:04AM -0500, James Bottomley wrote:
+> On Tue, 2007-10-30 at 20:55 -0700, Greg KH wrote:
+> > OSame problem here, if grp->is_visible is not set, sysfs_add_file() would
+> > never be called, right?
+> > 
+> > Other than the logic problem (I think), I have no issue with this idea
+> > at all.  Care to redo this so it works?
+> 
+> It's a fair cop govenor ... new patch attached.
 
-> On 10/24/07, Andi Kleen <andi@firstfloor.org> wrote:
->>
->> My favourite for a ridiculous thread was and is "kpsmoused"
->>
->
-> Mouse querying can take significant amount of time. Do you really want
-> all your other events to be delayed just because kernel tries to get
-> mouse back in order?
+Much better, thanks :)
 
-How long? 
+I have no problem with this, if you want to take this in your tree,
+please do and feel free to add:
+	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
->
-> Although I probably want to kill it if mouse resync is disabled...
+to it, or I can take it in mine.
 
-How often does that happen? Can't you just start a thread for this
-as needed? Or if it's a simple algorithm you can just use a state machine
-using timers?
+thanks,
 
--Andi
+greg k-h
