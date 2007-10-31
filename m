@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbXJaHxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbXJaH5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbXJaHxF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 03:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbXJaHwz
+	id S1756221AbXJaH5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 03:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXJaH5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 03:52:55 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46497 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbXJaHwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 03:52:54 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 31 Oct 2007 13:22:43 +0530
-Message-Id: <20071031075243.22225.53636.sendpatchset@balbir-laptop>
-Subject: [PATCH] Swap delay accounting, include lock_page() delays
+	Wed, 31 Oct 2007 03:57:08 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:34127 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbXJaH5I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 03:57:08 -0400
+Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for
+	diffrent hci device
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+In-Reply-To: <20071031.000141.241824894.davem@davemloft.net>
+References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
+	 <20071031.000141.241824894.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 08:56:49 +0100
+Message-Id: <1193817409.32459.10.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dave,
+
+> > diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
+> > --- linux/net/bluetooth/hci_sysfs.c	2007-10-31 10:21:00.000000000 +0800
+> > +++ linux.new/net/bluetooth/hci_sysfs.c	2007-10-31 10:21:55.000000000 +0800
+> > @@ -302,7 +302,8 @@ void hci_conn_add_sysfs(struct hci_conn 
+> >  	conn->dev.release = bt_release;
+> >  
+> >  	snprintf(conn->dev.bus_id, BUS_ID_SIZE,
+> > -			"%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > +			"%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
+> > +			hdev->name,
+> >  			conn->type == ACL_LINK ? "acl" : "sco",
+> >  			ba->b[5], ba->b[4], ba->b[3],
+> >  			ba->b[2], ba->b[1], ba->b[0]);
+> 
+> This might not work.
+> 
+> Your device's name is already 15 characters long,
+> BUS_ID_SIZE is 20, and it seems hdev->name could
+> easily overflow the 4 or 5 characters of space
+> remaining.
+
+and should also be not needed since their parents are different. However
+we had to add the connections to a bus. Otherwise the userspace will
+never see them. I have to think about the right solution for this
+problem.
+
+Regards
+
+Marcel
 
 
-Reported-by: Nick Piggin <nickpiggin@yahoo.com.au>
-
-The delay incurred in lock_page() should also be accounted in swap delay
-accounting
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- mm/memory.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN mm/swapfile.c~fix-delay-accounting-swap-accounting mm/swapfile.c
-diff -puN mm/memory.c~fix-delay-accounting-swap-accounting mm/memory.c
---- linux-2.6-latest/mm/memory.c~fix-delay-accounting-swap-accounting	2007-10-31 12:58:05.000000000 +0530
-+++ linux-2.6-latest-balbir/mm/memory.c	2007-10-31 13:02:50.000000000 +0530
-@@ -2084,9 +2084,9 @@ static int do_swap_page(struct mm_struct
- 		count_vm_event(PGMAJFAULT);
- 	}
- 
--	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 	mark_page_accessed(page);
- 	lock_page(page);
-+	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 
- 	/*
- 	 * Back out if somebody else already faulted in this pte.
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
