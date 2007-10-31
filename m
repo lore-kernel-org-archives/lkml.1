@@ -1,105 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbXJaUUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbXJaUUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbXJaUUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXJaUTx
+	id S1755013AbXJaUUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbXJaUT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:19:53 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59449 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752102AbXJaUTw (ORCPT
+	Wed, 31 Oct 2007 16:19:56 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:58515 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754661AbXJaUTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:19:52 -0400
-Date: Wed, 31 Oct 2007 13:19:49 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       ak@suse.de
-Subject: Re: [RFC] cpuset relative memory policies - second choice
-Message-Id: <20071031131949.b91bf383.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
-References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
-	<Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Wed, 31 Oct 2007 16:19:55 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HABOAKEdMQWvU/2dsb2JhbACBWo5b
+Date: Wed, 31 Oct 2007 16:19:52 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: fix marker warnings
+Message-ID: <20071031201952.GA17235@Krystal>
+References: <1193774725.24087.303.camel@localhost> <20071031020830.GA1176@Krystal> <1193859495.6271.21.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1193859495.6271.21.camel@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:18:50 up 93 days, 20:37,  4 users,  load average: 0.42, 0.55, 0.54
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> >  	short policy; 	/* See MPOL_* above */
-> > +	char mpol_nodemask_mode; /* See MPOL_MODE_* above; union c below */
+* Dave Hansen (haveblue@us.ibm.com) wrote:
+> On Tue, 2007-10-30 at 22:08 -0400, Mathieu Desnoyers wrote:
+> > * Dave Hansen (haveblue@us.ibm.com) wrote:
+> > > I'm seeing these in the latest git:
+> > > 
+> > > kernel/marker.c: In function `marker_probe_unregister':
+> > > kernel/marker.c:355: warning: `probe_module' might be used uninitialized in this function
+> > > kernel/marker.c: In function `marker_probe_unregister_private_data':
+> > > kernel/marker.c:389: warning: `probe_module' might be used uninitialized in this function
+> > > kernel/marker.c:392: warning: `entry' might be used uninitialized in this function
+> > > 
+> > > It's due to gcc not detecting that the need_update condition is actually
+> > > constant, and will never call marker_update_probes() on an uninitialized
+> > > probe_module.
+> > > 
+> > > However, that need_update bit is all due to dropping the mutex before
+> > > calling marker_update_probes().  As far as I can tell, every call to
+> > > marker_update_probes() has this lock dropping behavior just before
+> > > calling it.  So, let's just hold the locks over the
+> > > marker_update_probes() and document that it needs to have a lock taken
+> > > instead.  
+> > > 
+> > > This removes code overall.  Untested except for a quick compile.
+> > > Consider it just a style suggestion. :)
+> > > 
+> > 
+> > Ok, just ran it and it seems good. It did not appear as trivial during
+> > development because locking was is a different order until recently.
+> > 
+> > I wonder what gcc version you are using though, because mine does not
+> > warn about anything. I wonder if it is really necessary to "fix" false
+> > gcc warnings like this. Let's take it as a cleanup.
 > 
-> Make both policy and the mode char?
+> dave@kernel:~$ gcc -v
+> Reading specs from /usr/lib/gcc-lib/x86_64-linux-gnu/3.3.6/specs
+> Configured with: ../src/configure -v --enable-languages=c,c++
+> --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
+> --with-gxx-include-dir=/usr/include/c++/3.3 --enable-shared
+> --enable-__cxa_atexit --with-system-zlib --enable-nls
+> --without-included-gettext --enable-clocale=gnu --enable-debug
+> --disable-multilib x86_64-linux-gnu
+> Thread model: posix
+> gcc version 3.3.6 (Ubuntu 1:3.3.6-15ubuntu1)
+> 
+> 
+> > Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> Do you have any other patches with which you would like to forward this
+> one?  Or, shall I send it upstream on its own?
+> 
 
-Well, the mpol_nodemask_mode already is char.  So I guess you're
-asking if we should change 'policy' to type char as well.
+For the marker infrastructure itself, that's the only one. I think
+sending it to Andrew Morton is the correct approach.
 
-Changing 'policy' from a short to a char would reduce the sizeof
-(struct mempolicy) on 16-bit systems, as both chars would fit in one
-word.  But this code doesn't run on 16-bit systems.
+Mathieu
 
-> Could we shorten the mpol_nodemask_mode to mode?
-
-Huh - I don't know what "shorten ... to mode" means.  If it means
-"shorten ... to char", then see my previous comment above.
-
-> Hmmm... I would rather have numactl manage this flag
-
-Well, numactl is a command line utility.  It doesn't manage this flag
-as an -alternative- to some sort of changes to the mbind, set_mempolicy
-and get_mempolicy calls, but rather layers on top of changes to those
-system calls.  So I'm not sure what you mean, but I guess it is not
-relevant to this patch discussion.
-
-> and specify it in calls to set memory policies.
-
-This suggestion I do think I understand - good.  However I disagree.
-Here's what I think you meant, and why I disagree.
-
-My current patch adds a new per-task modal state, that is manipulated
-by additional get_mempolicy calls and options.
-
-I think you are stating a preference for passing an additional flag on
-each mbind, set_mempolicy and get_mempolicy call, to be used when you
-want to use this new way (so called "Choice B") of numbering nodes.
-
-The question is:
-
-    Should this mode be per-task, or per-system call?
-
-The basic reason that I went with an additional per-task modal
-state, rather than a modal flag for each mbind, set_mempolicy and
-get_mempolicy call was to reduce the likely rate of bugs in user
-level C code using this API.
-
-    Programs that code to this API in C usually first spend some number
-    of lines of code preparing bitmasks that represent sets of nodes,
-    which they will then pass into these mempolicy system calls.
-
-    The bits are numbered differently between Choices A and B.    
-
-    If a piece of code adapts Choice B numbering, because it is
-    better suited to that codes needs, and if we used your suggested
-    per-system call flag, then if they miss passing in the new special
-    flag on -even-one- mbind, set_mempolicy or get_mempolicy system
-    call, they have an obscure code bug.  They will be passing in
-    a bitmask that they calculated using Choice B node numbering,
-    but (implicitly) telling the kernel to interpret that bitmask
-    using Choice A semantics.
-
-    Essentially, a per-task modal flag, rather than a per-system call
-    modal flag, is a better fit for the typical C code usage of this
-    Choice, because it will be an entire chunk of user level code
-    manipulating these bitmasks that either has to be all Choice A,
-    or all Choice B (except in special cases, carefully coded.)
-
-Why do you prefer a per-system call modal flag, rather than a per-task
-modal flag?
+> -- Dave
+> 
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
