@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbXJaHBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbXJaHLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbXJaHBu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 03:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXJaHBm
+	id S1754478AbXJaHLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 03:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXJaHLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 03:01:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45802
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752247AbXJaHBm (ORCPT
+	Wed, 31 Oct 2007 03:11:36 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:45634 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752961AbXJaHLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 03:01:42 -0400
-Date: Wed, 31 Oct 2007 00:01:41 -0700 (PDT)
-Message-Id: <20071031.000141.241824894.davem@davemloft.net>
-To: hidave.darkstar@gmail.com
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net
-Subject: Re: [PATCH]bluetooth: hci_sysfs connection bus_id add support for
- diffrent hci device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
-References: <20071031023017.GA3896@darkstar.te-china.tietoenator.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 31 Oct 2007 03:11:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=DqohUjjXt1+Dqopz5pqCnwT4BDFej4Oit6h8626okb3GvehBSHAVPA6z0263Acp0NgjFExIGHOQD8ExpGhj0jVpTA3amseuVqpWWtomsOBvMJkWqR2+xNVH9EoZMX14OZF75Wymrrpj1lyvkku6ARzU+IqnKzsOFYC09S4EcLKk=  ;
+X-YMail-OSG: aEmpZYsVM1m9Fw67iW1HfKRA_iKewAwG.AjAG.bUP2TqJdCB.._Vp2CDRCnsQIyJCFINoAyIuA--
+From: David Brownell <david-b@pacbell.net>
+To: bryan.wu@analog.com
+Subject: Re: [PATCH 09/14] Blackfin SPI driver: Fix SPI driver to work with SPI flash ST25P16 on bf548
+Date: Wed, 31 Oct 2007 00:11:33 -0700
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Sonic Zhang <sonic.zhang@analog.com>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <200710301305.02640.david-b@pacbell.net> <1193813431.6971.24.camel@roc-laptop>
+In-Reply-To: <1193813431.6971.24.camel@roc-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710310011.33545.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Young <hidave.darkstar@gmail.com>
-Date: Wed, 31 Oct 2007 10:30:17 +0800
+On Tuesday 30 October 2007, Bryan Wu wrote:
+> Maybe there are some confusion of mixing up the spi_trasnfer.speed_hz
+> with the spi_device.max_speed_hz.
+> 
+> spi_device.max_speed_hz comes from spi_board_info.max_speed_hz, it is
+> for the default max speed value.
 
-> diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
-> --- linux/net/bluetooth/hci_sysfs.c	2007-10-31 10:21:00.000000000 +0800
-> +++ linux.new/net/bluetooth/hci_sysfs.c	2007-10-31 10:21:55.000000000 +0800
-> @@ -302,7 +302,8 @@ void hci_conn_add_sysfs(struct hci_conn 
->  	conn->dev.release = bt_release;
->  
->  	snprintf(conn->dev.bus_id, BUS_ID_SIZE,
-> -			"%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> +			"%s%s%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X",
-> +			hdev->name,
->  			conn->type == ACL_LINK ? "acl" : "sco",
->  			ba->b[5], ba->b[4], ba->b[3],
->  			ba->b[2], ba->b[1], ba->b[0]);
+It's initialized from board_info, yes.  Drivers can override it
+using spi_setup().
 
-This might not work.
+One would expect they only override _downwards_ but that's not
+guaranteed anywhere.  A driver might have a way to establish that
+this particular board can run faster, for example.
 
-Your device's name is already 15 characters long,
-BUS_ID_SIZE is 20, and it seems hdev->name could
-easily overflow the 4 or 5 characters of space
-remaining.
+
+> spi_transfer.speed_hz comes from upper applications for each spi
+> transfer setting.
+
+Certainly; all spi_transfer records come from applications!
+If that value is zero, that transfer segment uses the limit
+from the spi_device ... otherwise, it can differ.  Again,
+the limits can vary based on devise characteristics; maybe
+it can't feed data as fast for some commands.
+
+(ISTR the M25P16 in $SUBJECT has two read commands, one of
+which is only usable at clock rates below 33 MHz or so, but
+most other commands can work above that speed just fine.)
+
+- Dave
