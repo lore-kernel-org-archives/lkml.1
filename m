@@ -1,72 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbXJaOd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbXJaOiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757703AbXJaOd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 10:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbXJaOdq
+	id S1758179AbXJaOiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 10:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbXJaOiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 10:33:46 -0400
-Received: from winds.org ([68.75.195.9]:44680 "EHLO winds.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754075AbXJaOdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 10:33:45 -0400
-X-Greylist: delayed 1837 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 10:33:45 EDT
-Date: Wed, 31 Oct 2007 10:03:07 -0400 (EDT)
-From: Byron Stanoszek <bstanoszek@comtime.com>
-X-X-Sender: gandalf@winds.org
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-In-Reply-To: <200710311504.24016.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0710310952280.2205@winds.org>
-References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au>
- <20071030.213753.126064697.davem@davemloft.net> <200710311504.24016.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 31 Oct 2007 10:38:08 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40802 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756551AbXJaOiH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 10:38:07 -0400
+Subject: Re: [PATCH] sysfs: add filter function to groups
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Greg KH <greg@kroah.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071031035506.GH14910@kroah.com>
+References: <1193671019.3383.13.camel@localhost.localdomain>
+	 <1193676852.2655.21.camel@lov.site>
+	 <1193677071.3383.56.camel@localhost.localdomain>
+	 <47261F50.3050901@s5r6.in-berlin.de>
+	 <1193768743.3321.91.camel@localhost.localdomain>
+	 <20071031035506.GH14910@kroah.com>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 09:38:04 -0500
+Message-Id: <1193841484.3411.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007, Nick Piggin wrote:
+On Tue, 2007-10-30 at 20:55 -0700, Greg KH wrote:
+> OSame problem here, if grp->is_visible is not set, sysfs_add_file() would
+> never be called, right?
+> 
+> Other than the logic problem (I think), I have no issue with this idea
+> at all.  Care to redo this so it works?
 
-> On Wednesday 31 October 2007 15:37, David Miller wrote:
->> From: Nick Piggin <nickpiggin@yahoo.com.au>
->> Date: Wed, 31 Oct 2007 14:26:32 +1100
->>
->>> Is it really worth all the added complexity of making swap
->>> over NFS files work, given that you could use a network block
->>> device instead?
->>
->> Don't be misled.  Swapping over NFS is just a scarecrow for the
->> seemingly real impetus behind these changes which is network storage
->> stuff like iSCSI.
->
-> Oh, I'm OK with the network reserves stuff (not the actual patch,
-> which I'm not really qualified to review, but at least the idea
-> of it...).
->
-> And also I'm not as such against the idea of swap over network.
->
-> However, specifically the change to make swapfiles work through
-> the filesystem layer (ATM it goes straight to the block layer,
-> modulo some initialisation stuff which uses block filesystem-
-> specific calls).
->
-> I mean, I assume that anybody trying to swap over network *today*
-> has to be using a network block device anyway, so the idea of
-> just being able to transparently improve that case seems better
-> than adding new complexities for seemingly not much gain.
+It's a fair cop govenor ... new patch attached.
 
-I have some embedded diskless devices that have 16 MB of RAM and >500MB of
-swap. Its root fs and swap device are both done over NBD because NFS is too
-expensive in 16MB of RAM. Any memory contention (i.e needing memory to swap
-memory over the network), however infrequent, causes the system to freeze when
-about 50 MB of VM is used up. I would love to see some work done in this area.
+James
 
-  -Byron
+---
+Index: BUILD-2.6/fs/sysfs/group.c
+===================================================================
+--- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
++++ BUILD-2.6/fs/sysfs/group.c	2007-10-31 09:29:14.000000000 -0500
+@@ -16,25 +16,31 @@
+ #include "sysfs.h"
+ 
+ 
+-static void remove_files(struct sysfs_dirent *dir_sd,
++static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			 const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
++	int i;
+ 
+-	for (attr = grp->attrs; *attr; attr++)
+-		sysfs_hash_and_remove(dir_sd, (*attr)->name);
++	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
++		if (!grp->is_visible ||
++		    grp->is_visible(kobj, *attr, i))
++			sysfs_hash_and_remove(dir_sd, (*attr)->name);
+ }
+ 
+-static int create_files(struct sysfs_dirent *dir_sd,
++static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 			const struct attribute_group *grp)
+ {
+ 	struct attribute *const* attr;
+-	int error = 0;
++	int error = 0, i;
+ 
+-	for (attr = grp->attrs; *attr && !error; attr++)
+-		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
++	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
++		if (!grp->is_visible ||
++		    grp->is_visible(kobj, *attr, i))
++			error |=
++				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
+ 	if (error)
+-		remove_files(dir_sd, grp);
++		remove_files(dir_sd, kobj, grp);
+ 	return error;
+ }
+ 
+@@ -54,7 +60,7 @@ int sysfs_create_group(struct kobject * 
+ 	} else
+ 		sd = kobj->sd;
+ 	sysfs_get(sd);
+-	error = create_files(sd, grp);
++	error = create_files(sd, kobj, grp);
+ 	if (error) {
+ 		if (grp->name)
+ 			sysfs_remove_subdir(sd);
+@@ -75,7 +81,7 @@ void sysfs_remove_group(struct kobject *
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
+-	remove_files(sd, grp);
++	remove_files(sd, kobj, grp);
+ 	if (grp->name)
+ 		sysfs_remove_subdir(sd);
+ 
+Index: BUILD-2.6/include/linux/sysfs.h
+===================================================================
+--- BUILD-2.6.orig/include/linux/sysfs.h	2007-10-28 17:20:06.000000000 -0500
++++ BUILD-2.6/include/linux/sysfs.h	2007-10-30 13:24:06.000000000 -0500
+@@ -32,6 +32,8 @@ struct attribute {
+ 
+ struct attribute_group {
+ 	const char		*name;
++	int			(*is_visible)(struct kobject *,
++					      struct attribute *, int);
+ 	struct attribute	**attrs;
+ };
+ 
+Index: BUILD-2.6/kernel/params.c
+===================================================================
+--- BUILD-2.6.orig/kernel/params.c	2007-10-29 01:18:43.000000000 -0500
++++ BUILD-2.6/kernel/params.c	2007-10-29 01:18:49.000000000 -0500
+@@ -472,7 +472,7 @@ param_sysfs_setup(struct module_kobject 
+ 			sizeof(mp->grp.attrs[0]));
+ 	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
+ 
+-	mp = kmalloc(size[0] + size[1], GFP_KERNEL);
++	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
+ 	if (!mp)
+ 		return ERR_PTR(-ENOMEM);
+ 
 
---
-Byron Stanoszek                         Ph: (330) 644-3059
-Systems Programmer                      Fax: (330) 644-8110
-Commercial Timesharing Inc.             Email: byron@comtime.com
+
