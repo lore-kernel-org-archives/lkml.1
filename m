@@ -1,73 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbXJaCYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbXJaC2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbXJaCYX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 22:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXJaCYP
+	id S1754234AbXJaC2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 22:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXJaC2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 22:24:15 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:29028 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751616AbXJaCYO (ORCPT
+	Tue, 30 Oct 2007 22:28:15 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:33112 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752571AbXJaC2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 22:24:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TE3HwlnPWT/8rn6NQQdzRhOAyZdRy6wQkkoZgHYmorGXppy3B3qe69tjPe2kIgct+7FRww/0kCcAyfq27pTd5tsvc8IV5tszGvhRrgTuOlMUJhB7M+JC0JPHghljHg8yGLYm01bz0fn9xNkFhcx9MNiRDyGocp1V201G8h+f7cQ=  ;
-X-YMail-OSG: AdHcLY4VM1mRkHR0diaLPdD1mO7QmLiPDX0AAD4F0lWZwIShgu7hpXnO6teUaBM4CbtrypjLnQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+	Tue, 30 Oct 2007 22:28:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FANOEJ0dMQWvU/2dsb2JhbACBWo5c
+Date: Tue, 30 Oct 2007 22:28:10 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 09/10] SLUB: Do our own locking via slab_lock and slab_unlock.
-Date: Wed, 31 Oct 2007 12:17:33 +1100
-User-Agent: KMail/1.9.5
 Cc: Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
-References: <20071028033156.022983073@sgi.com> <200710301550.55199.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0710301124520.11531@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0710301124520.11531@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [patch 08/10] SLUB: Optional fast path using cmpxchg_local
+Message-ID: <20071031022810.GA2323@Krystal>
+References: <20071028033156.022983073@sgi.com> <20071028033300.240703208@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200710311217.34162.nickpiggin@yahoo.com.au>
+In-Reply-To: <20071028033300.240703208@sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:24:22 up 93 days,  2:43,  2 users,  load average: 0.80, 0.89, 0.99
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 05:32, Christoph Lameter wrote:
-> On Tue, 30 Oct 2007, Nick Piggin wrote:
-> > Is this actually a speedup on any architecture to roll your own locking
-> > rather than using bit spinlock?
->
-> It avoids one load from memory when allocating and the release is simply
-> writing the page->flags back. Less instructions.
+* Christoph Lameter (clameter@sgi.com) wrote:
+> Provide an alternate implementation of the SLUB fast paths for alloc
+> and free using cmpxchg_local. The cmpxchg_local fast path is selected
+> for arches that have CONFIG_FAST_CMPXCHG_LOCAL set. An arch should only
+> set CONFIG_FAST_CMPXCHG_LOCAL if the cmpxchg_local is faster than an
+> interrupt enable/disable sequence. This is known to be true for both
+> x86 platforms so set FAST_CMPXCHG_LOCAL for both arches.
+> 
+> Not all arches can support fast cmpxchg operations. Typically the
+> architecture must have an optimized cmpxchg instruction. The
+> cmpxchg fast path makes no sense on platforms whose cmpxchg is
+> slower than interrupt enable/disable (like f.e. IA64).
+> 
+> The advantages of a cmpxchg_local based fast path are:
+> 
+> 1. Lower cycle count (30%-60% faster)
+> 
+> 2. There is no need to disable and enable interrupts on the fast path.
+>    Currently interrupts have to be disabled and enabled on every
+>    slab operation. This is likely saving a significant percentage
+>    of interrupt off / on sequences in the kernel.
+> 
+> 3. The disposal of freed slabs can occur with interrupts enabled.
+> 
 
-OK, but it probably isn't a measurable speedup, even on microbenchmarks,
-right? And many architectures have to have more barriers around cmpxchg
-than they do around a test_and_set_bit_lock, so it may even be slower
-on some.
+It would require some testing, but I suspect that powerpc, mips and m32r
+are three other architectures that could benefit from this (from the top
+of my head)
 
+Mathieu
 
-> > I am not exactly convinced that smp_wmb() is a good idea to have in your
-> > unlock, rather than the normally required smp_mb() that every other open
-> > coded lock in the kernel is using today. If you comment every code path
-> > where a load leaking out of the critical section would not be a problem,
-> > then OK it may be correct, but I still don't think it is worth the
-> > maintenance overhead.
->
-> I thought you agreed that release semantics only require a write barrier?
+> The alternate path is realized using #ifdef's. Several attempts to do the
+> same with macros and in line functions resulted in a mess (in particular due
+> to the strange way that local_interrupt_save() handles its argument and due
+> to the need to define macros/functions that sometimes disable interrupts
+> and sometimes do something else. The macro based approaches made it also
+> difficult to preserve the optimizations for the non cmpxchg paths).
+> 
+> #ifdef seems to be the way to go here to have a readable source.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> ---
+>  arch/x86/Kconfig.i386   |    4 ++
+>  arch/x86/Kconfig.x86_64 |    4 ++
+>  mm/slub.c               |   71 ++++++++++++++++++++++++++++++++++++++++++++++--
+>  3 files changed, 77 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c	2007-10-27 10:39:07.583665939 -0700
+> +++ linux-2.6/mm/slub.c	2007-10-27 10:40:19.710415861 -0700
+> @@ -1496,7 +1496,12 @@ static void *__slab_alloc(struct kmem_ca
+>  {
+>  	void **object;
+>  	struct page *new;
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	unsigned long flags;
+>  
+> +	local_irq_save(flags);
+> +	preempt_enable_no_resched();
+> +#endif
+>  	if (!c->page)
+>  		goto new_slab;
+>  
+> @@ -1518,6 +1523,10 @@ load_freelist:
+>  unlock_out:
+>  	slab_unlock(c->page);
+>  out:
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	preempt_disable();
+> +	local_irq_restore(flags);
+> +#endif
+>  	return object;
+>  
+>  another_slab:
+> @@ -1592,9 +1601,26 @@ static void __always_inline *slab_alloc(
+>  		gfp_t gfpflags, int node, void *addr)
+>  {
+>  	void **object;
+> -	unsigned long flags;
+>  	struct kmem_cache_cpu *c;
+>  
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	c = get_cpu_slab(s, get_cpu());
+> +	do {
+> +		object = c->freelist;
+> +		if (unlikely(is_end(object) || !node_match(c, node))) {
+> +			object = __slab_alloc(s, gfpflags, node, addr, c);
+> +			if (unlikely(!object)) {
+> +				put_cpu();
+> +				goto out;
+> +			}
+> +			break;
+> +		}
+> +	} while (cmpxchg_local(&c->freelist, object, object[c->offset])
+> +								!= object);
+> +	put_cpu();
+> +#else
+> +	unsigned long flags;
+> +
+>  	local_irq_save(flags);
+>  	c = get_cpu_slab(s, smp_processor_id());
+>  	if (unlikely((is_end(c->freelist)) || !node_match(c, node))) {
+> @@ -1609,6 +1635,7 @@ static void __always_inline *slab_alloc(
+>  		c->freelist = object[c->offset];
+>  	}
+>  	local_irq_restore(flags);
+> +#endif
+>  
+>  	if (unlikely((gfpflags & __GFP_ZERO)))
+>  		memset(object, 0, c->objsize);
+> @@ -1644,6 +1671,11 @@ static void __slab_free(struct kmem_cach
+>  	void *prior;
+>  	void **object = (void *)x;
+>  
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +#endif
+>  	slab_lock(page);
+>  
+>  	if (unlikely(SlabDebug(page)))
+> @@ -1669,6 +1701,9 @@ checks_ok:
+>  
+>  out_unlock:
+>  	slab_unlock(page);
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	local_irq_restore(flags);
+> +#endif
+>  	return;
+>  
+>  slab_empty:
+> @@ -1679,6 +1714,9 @@ slab_empty:
+>  		remove_partial(s, page);
+>  
+>  	slab_unlock(page);
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	local_irq_restore(flags);
+> +#endif
+>  	discard_slab(s, page);
+>  	return;
+>  
+> @@ -1703,9 +1741,37 @@ static void __always_inline slab_free(st
+>  			struct page *page, void *x, void *addr)
+>  {
+>  	void **object = (void *)x;
+> -	unsigned long flags;
+>  	struct kmem_cache_cpu *c;
+>  
+> +#ifdef CONFIG_FAST_CMPXCHG_LOCAL
+> +	void **freelist;
+> +
+> +	c = get_cpu_slab(s, get_cpu());
+> +	debug_check_no_locks_freed(object, s->objsize);
+> +	do {
+> +		freelist = c->freelist;
+> +		barrier();
+> +		/*
+> +		 * If the compiler would reorder the retrieval of c->page to
+> +		 * come before c->freelist then an interrupt could
+> +		 * change the cpu slab before we retrieve c->freelist. We
+> +		 * could be matching on a page no longer active and put the
+> +		 * object onto the freelist of the wrong slab.
+> +		 *
+> +		 * On the other hand: If we already have the freelist pointer
+> +		 * then any change of cpu_slab will cause the cmpxchg to fail
+> +		 * since the freelist pointers are unique per slab.
+> +		 */
+> +		if (unlikely(page != c->page || c->node < 0)) {
+> +			__slab_free(s, page, x, addr, c->offset);
+> +			break;
+> +		}
+> +		object[c->offset] = freelist;
+> +	} while (cmpxchg_local(&c->freelist, freelist, object) != freelist);
+> +	put_cpu();
+> +#else
+> +	unsigned long flags;
+> +
+>  	local_irq_save(flags);
+>  	debug_check_no_locks_freed(object, s->objsize);
+>  	c = get_cpu_slab(s, smp_processor_id());
+> @@ -1716,6 +1782,7 @@ static void __always_inline slab_free(st
+>  		__slab_free(s, page, x, addr, c->offset);
+>  
+>  	local_irq_restore(flags);
+> +#endif
+>  }
+>  
+>  void kmem_cache_free(struct kmem_cache *s, void *x)
+> Index: linux-2.6/arch/x86/Kconfig.i386
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig.i386	2007-10-27 10:38:33.630415778 -0700
+> +++ linux-2.6/arch/x86/Kconfig.i386	2007-10-27 10:40:19.710415861 -0700
+> @@ -51,6 +51,10 @@ config X86
+>  	bool
+>  	default y
+>  
+> +config FAST_CMPXCHG_LOCAL
+> +	bool
+> +	default y
+> +
+>  config MMU
+>  	bool
+>  	default y
+> Index: linux-2.6/arch/x86/Kconfig.x86_64
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig.x86_64	2007-10-27 10:38:33.630415778 -0700
+> +++ linux-2.6/arch/x86/Kconfig.x86_64	2007-10-27 10:40:19.710415861 -0700
+> @@ -97,6 +97,10 @@ config X86_CMPXCHG
+>  	bool
+>  	default y
+>  
+> +config FAST_CMPXCHG_LOCAL
+> +	bool
+> +	default y
+> +
+>  config EARLY_PRINTK
+>  	bool
+>  	default y
+> 
+> -- 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Not in general.
-
-
-> The issue here is that other processors see the updates before the
-> updates to page-flags.
->
-> A load leaking out of a critical section would require that the result of
-> the load is not used to update other information before the slab_unlock
-> and that the source of the load is not overwritten in the critical
-> section. That does not happen in sluib.
-
-That may be the case, but I don't think there is enough performance
-justification to add a hack like this. ia64 for example is going to
-do an mf for smp_wmb so I doubt it is a clear win.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
