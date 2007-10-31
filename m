@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbXJaMwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbXJaMyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbXJaMwF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 08:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXJaMvx
+	id S1758771AbXJaMyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 08:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbXJaMxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 08:51:53 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15021 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756088AbXJaMvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 08:51:52 -0400
-Date: Wed, 31 Oct 2007 13:26:39 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-Message-ID: <20071031122639.GN5059@kernel.dk>
-References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk> <472872F6.70802@garzik.org>
+	Wed, 31 Oct 2007 08:53:50 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:23526 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756044AbXJaMxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 08:53:50 -0400
+Message-ID: <47287AD8.9050607@fr.ibm.com>
+Date: Wed, 31 Oct 2007 13:53:44 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <472872F6.70802@garzik.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] A config option to compile out some namespaces code
+ (v3)
+References: <47285FEE.9030001@openvz.org>
+In-Reply-To: <47285FEE.9030001@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31 2007, Jeff Garzik wrote:
-> Jens Axboe wrote:
->> On Wed, Oct 31 2007, Alan Cox wrote:
->>> On Tue, 30 Oct 2007 19:21:29 +0000
->>> Daniel Drake <dsd@gentoo.org> wrote:
->>>
->>>> Alan Cox wrote:
->>>>> I would guess Brasero is issuing a command with the length of data
->>>>> wrongly set. In the old code that might well just produce errors of the
->>>>> "Umm wtf is this data left over for ?", with the new code the drive is
->>>>> likely to change state as it knows the transfer size and that will
->>>>> *correctly* cause an HSM error and what follows.
->>>>>
->>>>> Now the question is who gets the length wrong - Brasero or the ata
->>>>> translation code in libata
->>>> Brasero does exactly the same as my test app which I attached to my last 
->>>> mail. Is my test app wrong?
->>> Would need to double check the SCSI specificatons to be sure but I think
->>> you are asking for less data than the drive wishes to provide. You
->>> aren't allowed to do that with ATA.
->> ide-cd handles this by throwing the excess away, which I think is the
->> sane way to do this.
->
-> That's easy for the PIO case.  But CD writing is normally DMA, which means 
-> you will get a DMA engine exception if the device wants to give you more 
-> data than the scatter/gather entries permit.
+Pavel Emelyanov wrote:
+> There were some questions like "do I need this on my cellphone"
+> in reply to different namespaces patches. Indeed, the namespaces
+> are not useful for most of the embedded systems, but the code
+> creating and releasing them weights a lot.
+> 
+> So I propose to add a config option which will help embedded
+> people to reduce the vmlinux size. This option simply compiles
+> out the namespaces cloning and releasing code *only*, but keeps
+> all the other logic untouched (e.g. the notion of init_ns).
+> 
+> When someone tries to clone some namespace with their support
+> turned off, he will receive an EINVAL error.
+> 
+> This patchset can save more than 2KB from the vmlinux when
+> turning the config option "NAMESPACES" to "n".
+> 
+> I do not introduce the NAMESPACES_EXPERIMENTAL config option, that
+> switches all the namespaces we consider experimental, but each 
+> namespace has its own config that can be mrked with "depends on
+> EXPERIMENTAL" on demand.
+> 
+> This is mainly done because some people consider pid namespaces broken
+> ant will probably want to make them depend on BROKEN. In this case
+> we'll have to introduce the NAMESPACES_BROKEN option which is not that
+> good.
 
-Right, that's of course problematic... There has to be a way to recover
-that situation though, or you can't export any user command issue
-facility.
+I think the discussion finished with an 'immature' status :)
+  
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
--- 
-Jens Axboe
+I'm fine with all these patches and I have a bunch of patches that
+depend on them already. The sooner they get in the better.
 
+Thanks Pavel !
+
+C.
