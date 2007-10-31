@@ -1,115 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbXJaMSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbXJaMUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbXJaMSP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 08:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbXJaMR6
+	id S1758052AbXJaMUb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 08:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbXJaMUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 08:17:58 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:8204 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755516AbXJaMR5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 08:17:57 -0400
-Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <200710312146.03351.nickpiggin@yahoo.com.au>
-References: <20071030160401.296770000@chello.nl>
-	 <200710311437.28630.nickpiggin@yahoo.com.au>
-	 <1193827358.27652.126.camel@twins>
-	 <200710312146.03351.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e2VI6o49+LBHhnTdwH6G"
-Date: Wed, 31 Oct 2007 13:17:52 +0100
-Message-Id: <1193833072.27652.167.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 31 Oct 2007 08:20:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54386 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755235AbXJaMUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 08:20:18 -0400
+Message-ID: <472872F6.70802@garzik.org>
+Date: Wed, 31 Oct 2007 08:20:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@gentoo.org>,
+       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu> <20071031115754.GK5059@kernel.dk>
+In-Reply-To: <20071031115754.GK5059@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
+> On Wed, Oct 31 2007, Alan Cox wrote:
+>> On Tue, 30 Oct 2007 19:21:29 +0000
+>> Daniel Drake <dsd@gentoo.org> wrote:
+>>
+>>> Alan Cox wrote:
+>>>> I would guess Brasero is issuing a command with the length of data
+>>>> wrongly set. In the old code that might well just produce errors of the
+>>>> "Umm wtf is this data left over for ?", with the new code the drive is
+>>>> likely to change state as it knows the transfer size and that will
+>>>> *correctly* cause an HSM error and what follows.
+>>>>
+>>>> Now the question is who gets the length wrong - Brasero or the ata
+>>>> translation code in libata
+>>> Brasero does exactly the same as my test app which I attached to my last 
+>>> mail. Is my test app wrong?
+>> Would need to double check the SCSI specificatons to be sure but I think
+>> you are asking for less data than the drive wishes to provide. You
+>> aren't allowed to do that with ATA.
+> 
+> ide-cd handles this by throwing the excess away, which I think is the
+> sane way to do this.
 
---=-e2VI6o49+LBHhnTdwH6G
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That's easy for the PIO case.  But CD writing is normally DMA, which 
+means you will get a DMA engine exception if the device wants to give 
+you more data than the scatter/gather entries permit.
 
-On Wed, 2007-10-31 at 21:46 +1100, Nick Piggin wrote:
-> On Wednesday 31 October 2007 21:42, Peter Zijlstra wrote:
-> > On Wed, 2007-10-31 at 14:37 +1100, Nick Piggin wrote:
-> > > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> > > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to alloca=
-tion
-> > > > contexts that are entitled to it.
-> > > >
-> > > > Care is taken to only touch the SLUB slow path.
-> > > >
-> > > > This is done to ensure reserve pages don't leak out and get consume=
-d.
-> > >
-> > > I think this is generally a good idea (to prevent slab allocators
-> > > from stealing reserve). However I naively think the implementation
-> > > is a bit overengineered and thus has a few holes.
-> > >
-> > > Humour me, what was the problem with failing the slab allocation
-> > > (actually, not fail but just call into the page allocator to do
-> > > correct waiting  / reclaim) in the slowpath if the process fails the
-> > > watermark checks?
-> >
-> > Ah, we actually need slabs below the watermarks.
->=20
-> Right, I'd still allow those guys to allocate slabs. Provided they
-> have the right allocation context, right?
->=20
->=20
-> > Its just that once I=20
-> > allocated those slabs using __GFP_MEMALLOC/PF_MEMALLOC I don't want
-> > allocation contexts that do not have rights to those pages to walk off
-> > with objects.
->=20
-> And I'd prevent these ones from doing so.
->=20
-> Without keeping track of "reserve" pages, which doesn't feel
-> too clean.
-
-The problem with that is that once a slab was allocated with the right
-allocation context, anybody can get objects from these slabs.
+	Jeff
 
 
-low memory, and empty slab:
-
-task A                        task B
-
-kmem_cache_alloc() =3D NULL
-
-                              current->flags |=3D PF_MEMALLOC
-                              kmem_cache_alloc() =3D obj
-                              (slab !=3D NULL)
-
-kmem_cache_alloc() =3D obj
-kmem_cache_alloc() =3D obj
-kmem_cache_alloc() =3D obj
-
-
-And now task A, who doesn't have the right permissions walks
-away with all our reserve memory.
-
-So we either reserve a page per object, which for 32 byte objects is a
-large waste, or we stop anybody who doesn't have the right permissions
-from obtaining objects. I took the latter approach.
-
-
---=-e2VI6o49+LBHhnTdwH6G
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHKHJwXA2jU0ANEf4RAi25AJ9u+31qjdHGk55nk3eaiqMPKkO9ywCeKPzr
-by9zgemtfC3t8u8Mc8uwX2k=
-=88Nf
------END PGP SIGNATURE-----
-
---=-e2VI6o49+LBHhnTdwH6G--
 
