@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbXJaVKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXJaVOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbXJaVKi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 17:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXJaVKa
+	id S1757346AbXJaVOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 17:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXJaVOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:10:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48138 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbXJaVK3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:10:29 -0400
-Message-ID: <4728EE43.2080206@zytor.com>
-Date: Wed, 31 Oct 2007 14:06:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "Kirill A. Shutemov" <k.shutemov@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] Unexport asm/user.h and linux/user.h
-References: <1193845777-2007-1-git-send-email-k.shutemov@gmail.com> <1193845777-2007-3-git-send-email-k.shutemov@gmail.com>
-In-Reply-To: <1193845777-2007-3-git-send-email-k.shutemov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 17:14:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44820 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755059AbXJaVOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:14:05 -0400
+Message-Id: <20071031211249.676129000@chello.nl>
+References: <20071031211030.310581000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 31 Oct 2007 22:10:36 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 6/6] sched: place_entity() comments
+Content-Disposition: inline; filename=sched-place-entity.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill A. Shutemov wrote:
-> Do not export asm/user.h and linux/user.h during make headers_install.
-> 
-> Signed-off-by: Kirill A. Shutemov <k.shutemov@gmail.com>
-> Reviewed-By: David Woodhouse <dwmw2@infradead.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
+Add a few comments to place_entity().
 
-The version that is in there is currently broken from a user-space 
-perspective (gdb expects u_ar0 to be struct user_regs_struct *, which it 
-isn't for a bunch of the architectures defined); it *could* be argued 
-the right thing is to fix it up since it *does* export an ABI
--- specifically, the format of a.out core dumps -- but it is probably 
-easier to just axe it; userspace has had to deal with this issue on its 
-own for a long time already.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched_fair.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-As such,
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -582,19 +582,26 @@ place_entity(struct cfs_rq *cfs_rq, stru
+ 	} else if (sched_feat(APPROX_AVG) && cfs_rq->nr_running)
+ 		vruntime += sched_vslice(cfs_rq)/2;
+ 
++	/*
++	 * The 'current' period is already promised to the current tasks,
++	 * however the extra weight of the new task will slow them down a
++	 * little, place the new task so that it fits in the slot that
++	 * stays open at the end.
++	 */
+ 	if (initial && sched_feat(START_DEBIT))
+ 		vruntime += sched_vslice_add(cfs_rq, se);
+ 
+ 	if (!initial) {
++		/* sleeps upto a single latency don't count. */
+ 		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se) &&
+ 				task_of(se)->policy != SCHED_BATCH)
+ 			vruntime -= sysctl_sched_latency;
+ 
+-		vruntime = max_t(s64, vruntime, se->vruntime);
++		/* ensure we never gain time by being placed backwards. */
++		vruntime = max_vruntime(se->vruntime, vruntime);
+ 	}
+ 
+ 	se->vruntime = vruntime;
+-
+ }
+ 
+ static void
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+--
 
