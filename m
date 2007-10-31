@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXJaQ3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760370AbXJaQaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbXJaQ3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbXJaQ3J
+	id S1760370AbXJaQaE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbXJaQ3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:29:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42876 "EHLO
+	Wed, 31 Oct 2007 12:29:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42903 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756214AbXJaQ3H (ORCPT
+	with ESMTP id S1754100AbXJaQ3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:29:07 -0400
-Date: Wed, 31 Oct 2007 09:25:14 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 27/26] lockdep: fix mismatched lockdep_depth/curr_chain_hash
-Message-ID: <20071031162514.GB22117@kroah.com>
-References: <20071031151015.GA2437@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031151015.GA2437@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Wed, 31 Oct 2007 12:29:51 -0400
+Date: Wed, 31 Oct 2007 09:29:07 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: fche@redhat.com (Frank Ch. Eigler)
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       hch@infradead.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Peter Zijlstra <pzijlstr@redhat.com>,
+       Philippe Elie <phil.el@wanadoo.fr>,
+       "William L. Irwin" <wli@holomorphy.com>,
+       Christoph Lameter <christoph@lameter.com>, Valdis.Kletnieks@vt.edu
+Subject: Re: [RFC] Create kinst/ or ki/ directory ?
+Message-ID: <20071031092907.4a026e72@laptopd505.fenrus.org>
+In-Reply-To: <y0mk5p3qo8r.fsf@ton.toronto.redhat.com>
+References: <20071029215138.GA4233@Krystal>
+	<20071029154741.cb093f55.rdunlap@xenotime.net>
+	<4726649A.5020605@garzik.org>
+	<20071029230409.GB16943@Krystal>
+	<472667F3.3000505@garzik.org>
+	<20071030172442.GA4477@Krystal>
+	<alpine.LFD.0.999.0710301044110.30120@woody.linux-foundation.org>
+	<20071030185639.GA9077@Krystal>
+	<alpine.LFD.0.999.0710301214300.30120@woody.linux-foundation.org>
+	<20071030204043.GA13547@Krystal>
+	<y0mk5p3qo8r.fsf@ton.toronto.redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[one more patch added to the 2.6.22-stable queue]
+On Wed, 31 Oct 2007 11:48:20 -0400
+fche@redhat.com (Frank Ch. Eigler) wrote:
+
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> 
+> > [...]  SystemTAP, for instance, does it out of tree by keeping a
+> > separate list of address where kprobes must be installed. It does
+> > the job on a distribution kernel maintainer perspective (Redhat),
+> > since they freeze to a particular kernel version and update this
+> > list every time it breaks, but will always be a source of
+> > frustration for vanilla kernel users and kernel developers.
+> 
+> This misstates the details.  What systemtap has out-of-tree is a list
+> of kernel function names (and parameter names), not addresses.  This
+> list does change somewhat with kernel versions, but we generally keep
+> up.  We do test with vanilla kernels, and several non-RH distributors
+> test with their kernels.  It is a problem, but it is manageable.
+
+yes so please please submit this stuff for mainline inclusion as has
+been asked quite a few times before.
 
 
-From: Gregory Haskins <ghaskins@novell.com>
 
-patch 3aa416b07f0adf01c090baab26fb70c35ec17623 in mainline.
-
-lockdep: fix mismatched lockdep_depth/curr_chain_hash
-
-It is possible for the current->curr_chain_key to become inconsistent with the
-current index if the chain fails to validate.  The end result is that future
-lock_acquire() operations may inadvertently fail to find a hit in the cache
-resulting in a new node being added to the graph for every acquire.
-
-[ peterz: this might explain some of the lockdep is so _slow_ complaints. ]
-[ mingo: this does not impact the correctness of validation, but may slow
-  down future operations significantly, if the chain gets very long. ]
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2166,7 +2166,6 @@ out_calc_hash:
- 	}
- #endif
- 	chain_key = iterate_chain_key(chain_key, id);
--	curr->curr_chain_key = chain_key;
- 
- 	/*
- 	 * Trylock needs to maintain the stack of held locks, but it
-@@ -2215,6 +2214,7 @@ out_calc_hash:
- 		if (unlikely(!debug_locks))
- 			return 0;
- 
-+	curr->curr_chain_key = chain_key;
- 	curr->lockdep_depth++;
- 	check_chain_key(curr);
- #ifdef CONFIG_DEBUG_LOCKDEP
-
-_______________________________________________
-stable mailing list
-stable@linux.kernel.org
-http://linux.kernel.org/mailman/listinfo/stable
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
