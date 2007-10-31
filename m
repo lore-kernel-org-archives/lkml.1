@@ -1,56 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbXJaGYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbXJaG0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbXJaGYM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXJaGX7
+	id S1753654AbXJaG0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXJaG0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:23:59 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:36493 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbXJaGX6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:23:58 -0400
-Date: Wed, 31 Oct 2007 07:23:56 +0100
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: Huawei E220 and usb storage
-Message-ID: <20071031062356.GI11722@gamma.logic.tuwien.ac.at>
-References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com> <20071031061552.GH11722@gamma.logic.tuwien.ac.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031061552.GH11722@gamma.logic.tuwien.ac.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+	Wed, 31 Oct 2007 02:26:23 -0400
+Received: from mga02.intel.com ([134.134.136.20]:64022 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbXJaG0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 02:26:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,350,1188802800"; 
+   d="scan'208";a="259229725"
+Subject: Re: 2.6.23 boot failures on x86-64.
+From: Zou Nan hai <nanhai.zou@intel.com>
+To: Martin Ebourne <martin@zepler.org>
+Cc: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1193810651.817.14.camel@linux-znh>
+References: <20071029175014.GH7793@redhat.com>
+	 <200710291918.43869.ak@suse.de> <20071029184747.GB1650@redhat.com>
+	 <200710292003.09317.ak@suse.de>  <20071029194311.GE1650@redhat.com>
+	 <1193692862.3133.14.camel@avenin.ebourne.me.uk>
+	 <1193810651.817.14.camel@linux-znh>
+Content-Type: text/plain
+Organization: 
+Message-Id: <1193811559.817.36.camel@linux-znh>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.2.2 (1.2.2-4) 
+Date: 31 Oct 2007 14:19:19 +0800
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mi, 31 Okt 2007, preining wrote:
-> On Di, 30 Okt 2007, Pete Zaitcev wrote:
-> > The difference with huaweiAktBbo.c seems that kernel uses a nonzero length.
-> > Can you try zero length with the kernel? It's the second argument to the last.
+On Wed, 2007-10-31 at 14:04, Zou Nan hai wrote:
+> On Tue, 2007-10-30 at 05:21, Martin Ebourne wrote:
+> > On Mon, 2007-10-29 at 15:43 -0400, Dave Jones wrote:
+> > > On Mon, Oct 29, 2007 at 08:03:09PM +0100, Andi Kleen wrote:
+> > >  > >  > But if allocating bootmem >4G doesn't work on these systems
+> > >  > >  > most likely they have more problems anyways. It might be better
+> > >  > >  > to find out what goes wrong exactly.
+> > >  > > Any ideas on what to instrument ?
+> > >  > 
+> > >  > See what address the bootmem_alloc_high returns; check if it overlaps
+> > >  > with something etc.
+> > >  > 
+> > >  > Fill the memory on the system and see if it can access all of its memory.
+> > > 
+> > > Martin, as you have one of the affected systems, do you feel up to this?
+> > 
+> > Faking a node at 0000000000000000-000000001fff0000
+> > Bootmem setup node 0 0000000000000000-000000001fff0000
+> > sparse_early_mem_map_alloc: returned address ffff81000070b000
+> > 
+> > My box has 512MB of RAM.
+> > 
+> > Cheers,
+> > 
+> > Martin.
 > 
-> I tried with the git patch plus changing the penultimage argument from
-> 0x1 to 0.
+> Oops, sorry,
+> seem to be a mistake of me.
+> I forget to exclude the DMA range.
+> 
+> Does the following patch fix the issue?
+> 
+> Thanks
+> Zou Nan hai
+> 
+> --- a/arch/x86/mm/init_64.c	2007-10-31 11:24:11.000000000 +0800
+> +++ b/arch/x86/mm/init_64.c	2007-10-31 12:31:02.000000000 +0800
+> @@ -731,7 +731,7 @@ int in_gate_area_no_task(unsigned long a
+>  void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+>  {
+>  	return __alloc_bootmem_core(pgdat->bdata, size,
+> -			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+> +			SMP_CACHE_BYTES, (4UL*1024*1024*1024), __pa(MAX_DMA_ADDRESS));
+>  }
+>  
+>  const char *arch_vma_name(struct vm_area_struct *vma)
+> 
+> 
+> 
+>  
 
-Hmm, in addition I added a
-	printk(KERN_ERR "ENTERING usb_stor_huawei_e220_init!\n");
-at the beginning of the function but it never showed up in my log files.
-So it seems that the UNUSUAL_DEV entry does not match.
+Please ignore the patch, the patch is wrong.
 
-Best wishes
+However I think the root cause is when __alloc_bootmem_core fail to
+allocate a memory above 4G it will fall back to allocate from the lowest
+page. 
+Then happens to be allocated in DMA region sometimes...
 
-Norbert
+Since this code path is dead, I am OK to revert the patch.
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-TIDPIT (n.)
-The corner of a toenail from which satisfying little black deposits
-may be sprung.
-			--- Douglas Adams, The Meaning of Liff
+Suresh and I will check the CONFIG_SPARSE_VMEMMAP path.
+Thanks
+Zou Nan hai
+
+
+
+
+ 
+ 
+ 
