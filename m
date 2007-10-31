@@ -1,119 +1,706 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbXJaVPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbXJaVPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbXJaVPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 17:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbXJaVOW
+	id S1760568AbXJaVPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 17:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759197AbXJaVOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:14:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44848 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 17:14:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44862 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757424AbXJaVOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:14:18 -0400
-Message-Id: <20071031211249.531637000@chello.nl>
+	id S1758328AbXJaVOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:14:23 -0400
+Message-Id: <20071031211249.142859000@chello.nl>
 References: <20071031211030.310581000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 31 Oct 2007 22:10:35 +0100
+Date: Wed, 31 Oct 2007 22:10:33 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Lennart Poettering <mzxreary@0pointer.de>
-Subject: [PATCH 5/6] sched: SCHED_FIFO/SCHED_RR watchdog timer
-Content-Disposition: inline; filename=sched-watchdog.patch
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 3/6] sched: high-res preemption tick
+Content-Disposition: inline; filename=sched-hrtick.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a new rlimit that allows the user to set a runtime timeout
-on real-time tasks. Once this limit is exceeded the task will receive
-SIGXCPU.
+Use HR-timers (when available) to deliver an accurate preemption tick.
 
-Input and ideas by Thomas Gleixner and Lennart Poettering.
+The regular scheduler tick that runs at 1/HZ can be too coarse when nice
+level are used. The fairness system will still keep the cpu utilisation 'fair'
+by then delaying the task that got an excessive amount of CPU time but try to
+minimize this by delivering preemption points spot-on.
+
+The average frequency of this extra interrupt is sched_latency / nr_latency.
+Which need not be higher than 1/HZ, its just that the distribution within the
+sched_latency period is important.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Lennart Poettering <mzxreary@0pointer.de>
 ---
- include/asm-generic/resource.h |    5 +++--
- include/linux/sched.h          |    1 +
- kernel/sched.c                 |    2 +-
- kernel/sched_rt.c              |   18 ++++++++++++++++++
- 4 files changed, 23 insertions(+), 3 deletions(-)
+ arch/x86/kernel/entry_64.S       |    6 -
+ arch/x86/kernel/signal_32.c      |    3 
+ arch/x86/kernel/signal_64.c      |    3 
+ include/asm-x86/thread_info_32.h |    2 
+ include/asm-x86/thread_info_64.h |    5 
+ include/linux/hrtimer.h          |    9 +
+ include/linux/sched.h            |    3 
+ kernel/Kconfig.hz                |    4 
+ kernel/sched.c                   |  205 ++++++++++++++++++++++++++++++++++++---
+ kernel/sched_fair.c              |   83 +++++++++++++++
+ kernel/sched_idletask.c          |    2 
+ kernel/sched_rt.c                |    2 
+ 12 files changed, 306 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/include/asm-generic/resource.h
+Index: linux-2.6/kernel/sched.c
 ===================================================================
---- linux-2.6.orig/include/asm-generic/resource.h
-+++ linux-2.6/include/asm-generic/resource.h
-@@ -44,8 +44,8 @@
- #define RLIMIT_NICE		13	/* max nice prio allowed to raise to
- 					   0-39 for nice level 19 .. -20 */
- #define RLIMIT_RTPRIO		14	/* maximum realtime priority */
--
--#define RLIM_NLIMITS		15
-+#define RLIMIT_RTTIME		15	/* timeout for RT tasks in us */
-+#define RLIM_NLIMITS		16
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -64,6 +64,7 @@
+ #include <linux/reciprocal_div.h>
+ #include <linux/unistd.h>
+ #include <linux/pagemap.h>
++#include <linux/hrtimer.h>
  
- /*
-  * SuS says limits have to be unsigned.
-@@ -86,6 +86,7 @@
- 	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
- 	[RLIMIT_NICE]		= { 0, 0 },				\
- 	[RLIMIT_RTPRIO]		= { 0, 0 },				\
-+	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
- }
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -338,6 +339,12 @@ struct rq {
+ 	struct list_head migration_queue;
+ #endif
  
- #endif	/* __KERNEL__ */
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -31,6 +31,9 @@ static void enqueue_task_rt(struct rq *r
- 
- 	list_add_tail(&p->rt.run_list, array->queue + p->prio);
- 	__set_bit(p->prio, array->bitmap);
++#ifdef CONFIG_SCHED_HRTICK
++	unsigned long hrtick_flags;
++	ktime_t hrtick_expire;
++	struct hrtimer hrtick_timer;
++#endif
 +
-+	if (wakeup)
-+		p->rt.timeout = p->signal->rlim[RLIMIT_RTTIME].rlim_cur;
- }
+ #ifdef CONFIG_SCHEDSTATS
+ 	/* latency stats */
+ 	struct sched_info rq_sched_info;
+@@ -461,6 +468,8 @@ enum {
+ 	SCHED_FEAT_APPROX_AVG           = 8,
+ 	SCHED_FEAT_WAKEUP_PREEMPT	= 16,
+ 	SCHED_FEAT_PREEMPT_RESTRICT	= 32,
++	SCHED_FEAT_HRTICK		= 64,
++	SCHED_FEAT_DOUBLE_TICK		= 128,
+ };
  
+ const_debug unsigned int sysctl_sched_features =
+@@ -469,7 +478,9 @@ const_debug unsigned int sysctl_sched_fe
+ 		SCHED_FEAT_TREE_AVG		* 0 |
+ 		SCHED_FEAT_APPROX_AVG		* 0 |
+ 		SCHED_FEAT_WAKEUP_PREEMPT	* 1 |
+-		SCHED_FEAT_PREEMPT_RESTRICT	* 1;
++		SCHED_FEAT_PREEMPT_RESTRICT	* 1 |
++		SCHED_FEAT_HRTICK		* 1 |
++		SCHED_FEAT_DOUBLE_TICK		* 0;
+ 
+ #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
+ 
+@@ -669,6 +680,168 @@ void sched_clock_idle_wakeup_event(u64 d
+ }
+ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+ 
++static void __resched_task(struct task_struct *p, int tif_bit);
++
++static inline void resched_task(struct task_struct *p)
++{
++	__resched_task(p, TIF_NEED_RESCHED);
++}
++
++#ifdef CONFIG_SCHED_HRTICK
++/*
++ * Use HR-timers to deliver accurate preemption points.
++ *
++ * Its all a bit involved since we cannot program an hrt while holding the
++ * rq->lock. So what we do is store a state in in rq->hrtick_* and ask for a
++ * reschedule event.
++ *
++ * When we get rescheduled we reprogram the hrtick_timer outside of the
++ * rq->lock.
++ */
++static inline void resched_hrt(struct task_struct *p)
++{
++	__resched_task(p, TIF_HRTICK_RESCHED);
++}
++
++static inline void resched_rq(struct rq *rq)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	resched_task(rq->curr);
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++enum {
++	HRTICK_SET,		/* re-programm hrtick_timer */
++	HRTICK_RESET,		/* not a new slice */
++};
++
++/*
++ * Use hrtick when:
++ *  - enabled by features
++ *  - hrtimer is actually high res
++ */
++static inline int hrtick_enabled(struct rq *rq)
++{
++	if (!sched_feat(HRTICK))
++		return 0;
++	return hrtimer_is_hres_active(&rq->hrtick_timer);
++}
++
++/*
++ * Called to set the hrtick timer state.
++ *
++ * called with rq->lock held and irqs disabled
++ */
++static void hrtick_start(struct rq *rq, u64 delay, int reset)
++{
++	assert_spin_locked(&rq->lock);
++
++	/*
++	 * preempt at: now + delay
++	 */
++	rq->hrtick_expire =
++		ktime_add_ns(rq->hrtick_timer.base->get_time(), delay);
++	/*
++	 * indicate we need to program the timer
++	 */
++	__set_bit(HRTICK_SET, &rq->hrtick_flags);
++	if (reset)
++		__set_bit(HRTICK_RESET, &rq->hrtick_flags);
++
++	/*
++	 * New slices are called from the schedule path and don't need a
++	 * forced reschedule.
++	 */
++	if (reset)
++		resched_hrt(rq->curr);
++}
++
++static void hrtick_clear(struct rq *rq)
++{
++	if (hrtimer_active(&rq->hrtick_timer))
++		hrtimer_cancel(&rq->hrtick_timer);
++}
++
++/*
++ * Update the timer from the possible pending state.
++ */
++static void hrtick_set(struct rq *rq)
++{
++	ktime_t time;
++	int set, reset;
++	unsigned long flags;
++
++	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
++
++	spin_lock_irqsave(&rq->lock, flags);
++	set = __test_and_clear_bit(HRTICK_SET, &rq->hrtick_flags);
++	reset = __test_and_clear_bit(HRTICK_RESET, &rq->hrtick_flags);
++	time = rq->hrtick_expire;
++	clear_thread_flag(TIF_HRTICK_RESCHED);
++	spin_unlock_irqrestore(&rq->lock, flags);
++
++	if (set) {
++		hrtimer_start(&rq->hrtick_timer, time, HRTIMER_MODE_ABS);
++		if (reset && !hrtimer_active(&rq->hrtick_timer))
++			resched_rq(rq);
++	} else hrtick_clear(rq);
++}
++
++/*
++ * High-resolution timer tick.
++ * Runs from hardirq context with interrupts disabled.
++ */
++static enum hrtimer_restart hrtick(struct hrtimer *timer)
++{
++	struct rq *rq = container_of(timer, struct rq, hrtick_timer);
++
++	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
++
++	spin_lock(&rq->lock);
++	__update_rq_clock(rq);
++	rq->curr->sched_class->task_tick(rq, rq->curr, 1);
++	spin_unlock(&rq->lock);
++
++	return HRTIMER_NORESTART;
++}
++
++static inline void init_rq_hrtick(struct rq *rq)
++{
++	rq->hrtick_flags = 0;
++	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	rq->hrtick_timer.function = hrtick;
++	rq->hrtick_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_RESTART;
++}
++#else
++static inline void hrtick_clear(struct rq *rq)
++{
++}
++
++static inline void hrtick_set(struct rq *rq)
++{
++}
++
++static inline void init_rq_hrtick(struct rq *rq)
++{
++}
++#endif
++
++void hrtick_resched(void)
++{
++	struct rq *rq;
++	unsigned long flags;
++
++	if (!test_thread_flag(TIF_HRTICK_RESCHED))
++		return;
++
++	local_irq_save(flags);
++	rq = cpu_rq(smp_processor_id());
++	hrtick_set(rq);
++	local_irq_restore(flags);
++}
++
  /*
-@@ -205,8 +208,23 @@ move_one_task_rt(struct rq *this_rq, int
+  * resched_task - mark a task 'to be rescheduled now'.
+  *
+@@ -682,16 +855,16 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeu
+ #define tsk_is_polling(t) test_tsk_thread_flag(t, TIF_POLLING_NRFLAG)
+ #endif
+ 
+-static void resched_task(struct task_struct *p)
++static void __resched_task(struct task_struct *p, int tif_bit)
+ {
+ 	int cpu;
+ 
+ 	assert_spin_locked(&task_rq(p)->lock);
+ 
+-	if (unlikely(test_tsk_thread_flag(p, TIF_NEED_RESCHED)))
++	if (unlikely(test_tsk_thread_flag(p, tif_bit)))
+ 		return;
+ 
+-	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
++	set_tsk_thread_flag(p, tif_bit);
+ 
+ 	cpu = task_cpu(p);
+ 	if (cpu == smp_processor_id())
+@@ -714,10 +887,10 @@ static void resched_cpu(int cpu)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ #else
+-static inline void resched_task(struct task_struct *p)
++static inline void __resched_task(struct task_struct *p, int tif_bit)
+ {
+ 	assert_spin_locked(&task_rq(p)->lock);
+-	set_tsk_need_resched(p);
++	set_tsk_thread_flag(tsk, tif_bit);
  }
  #endif
  
-+#define TICK_US (1000000UL / HZ)
-+
-+static void watchdog(struct rq *rq, struct task_struct *p)
-+{
-+	if (p->rt.timeout != RLIM_INFINITY) {
-+		if (p->rt.timeout < TICK_US) {
-+			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, p);
-+			return;
-+		}
-+		p->rt.timeout -= TICK_US;
-+	}
-+}
-+
- static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
- {
-+	watchdog(rq, p);
+@@ -3474,7 +3647,7 @@ void scheduler_tick(void)
+ 	rq->tick_timestamp = rq->clock;
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+-		curr->sched_class->task_tick(rq, curr);
++		curr->sched_class->task_tick(rq, curr, 0);
+ 	spin_unlock(&rq->lock);
+ 
+ #ifdef CONFIG_SMP
+@@ -3620,6 +3793,8 @@ need_resched_nonpreemptible:
+ 
+ 	schedule_debug(prev);
+ 
++	hrtick_clear(rq);
 +
  	/*
- 	 * RR tasks need a special form of timeslice management.
- 	 * FIFO tasks have no timeslices.
+ 	 * Do the rq-clock update outside the rq lock:
+ 	 */
+@@ -3652,14 +3827,20 @@ need_resched_nonpreemptible:
+ 		++*switch_count;
+ 
+ 		context_switch(rq, prev, next); /* unlocks the rq */
++		/*
++		 * the context switch might have flipped the stack from under
++		 * us, hence refresh the local variables.
++		 */
++		cpu = smp_processor_id();
++		rq = cpu_rq(cpu);
+ 	} else
+ 		spin_unlock_irq(&rq->lock);
+ 
+-	if (unlikely(reacquire_kernel_lock(current) < 0)) {
+-		cpu = smp_processor_id();
+-		rq = cpu_rq(cpu);
++	hrtick_set(rq);
++
++	if (unlikely(reacquire_kernel_lock(current) < 0))
+ 		goto need_resched_nonpreemptible;
+-	}
++
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
+@@ -6765,6 +6946,8 @@ void __init sched_init(void)
+ 		rq->migration_thread = NULL;
+ 		INIT_LIST_HEAD(&rq->migration_queue);
+ #endif
++		init_rq_hrtick(rq);
++
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
+ 		array = &rq->rt.active;
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -443,6 +443,7 @@ static void update_curr(struct cfs_rq *c
+ static inline void
+ update_stats_wait_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
++	se->exec_start = rq_of(cfs_rq)->clock;
+ 	schedstat_set(se->wait_start, rq_of(cfs_rq)->clock);
+ }
+ 
+@@ -720,13 +721,29 @@ static void put_prev_entity(struct cfs_r
+ 	cfs_rq->curr = NULL;
+ }
+ 
+-static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
++static void
++entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
+ {
+ 	/*
+ 	 * Update run-time statistics of the 'current'.
+ 	 */
+ 	update_curr(cfs_rq);
+ 
++#ifdef CONFIG_SCHED_HRTICK
++	/*
++	 * queued ticks are scheduled to match the slice, so don't bother
++	 * validating it and just reschedule.
++	 */
++	if (queued)
++		return resched_task(rq_of(cfs_rq)->curr);
++	/*
++	 * don't let the period tick interfere with the hrtick preemption
++	 */
++	if (!sched_feat(DOUBLE_TICK) &&
++			hrtimer_active(&rq_of(cfs_rq)->hrtick_timer))
++		return;
++#endif
++
+ 	if (cfs_rq->nr_running > 1 || !sched_feat(WAKEUP_PREEMPT))
+ 		check_preempt_tick(cfs_rq, curr);
+ }
+@@ -735,6 +752,58 @@ static void entity_tick(struct cfs_rq *c
+  * CFS operations on tasks:
+  */
+ 
++#ifdef CONFIG_SCHED_HRTICK
++static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
++{
++	int requeue = rq->curr == p;
++	struct sched_entity *se = &p->se;
++	struct cfs_rq *cfs_rq = cfs_rq_of(se);
++
++	WARN_ON(task_rq(p) != rq);
++
++	if (hrtick_enabled(rq) && cfs_rq->nr_running > 1) {
++		u64 slice = sched_slice(cfs_rq, se);
++		u64 ran = se->sum_exec_runtime - se->prev_sum_exec_runtime;
++		s64 delta = slice - ran;
++
++		if (delta < 0) {
++			if (rq->curr == p)
++				resched_task(p);
++			return;
++		}
++
++		/*
++		 * Don't schedule slices shorter than 10000ns, that just
++		 * doesn't make sense. Rely on vruntime for fairness.
++		 */
++		if (!requeue)
++			delta = max(10000LL, delta);
++
++		if (sched_feat(PREEMPT_RESTRICT) && first_fair(cfs_rq)) {
++			struct sched_entity *next = __pick_next_entity(cfs_rq);
++
++			if (next->vruntime < se->vruntime) {
++				s64 wakeup = sysctl_sched_wakeup_granularity;
++				u64 now = rq->clock;
++
++				wakeup -= now - next->exec_start;
++				if (wakeup < 0)
++					resched_task(rq->curr);
++				else
++					delta = min(delta, wakeup);
++			}
++		}
++
++		hrtick_start(rq, delta, requeue);
++	}
++}
++#else
++static inline void
++hrtick_start_fair(struct rq *rq, struct task_struct *p)
++{
++}
++#endif
++
+ /*
+  * The enqueue_task method is called before nr_running is
+  * increased. Here we update the fair scheduling stats and
+@@ -752,6 +821,7 @@ static void enqueue_task_fair(struct rq 
+ 		enqueue_entity(cfs_rq, se, wakeup);
+ 		wakeup = 1;
+ 	}
++	hrtick_start_fair(rq, rq->curr);
+ }
+ 
+ /*
+@@ -772,6 +842,7 @@ static void dequeue_task_fair(struct rq 
+ 			break;
+ 		sleep = 1;
+ 	}
++	hrtick_start_fair(rq, rq->curr);
+ }
+ 
+ /*
+@@ -862,6 +933,7 @@ static void check_preempt_wakeup(struct 
+ 
+ static struct task_struct *pick_next_task_fair(struct rq *rq)
+ {
++	struct task_struct *p;
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+ 	struct sched_entity *se;
+ 
+@@ -873,7 +945,10 @@ static struct task_struct *pick_next_tas
+ 		cfs_rq = group_cfs_rq(se);
+ 	} while (cfs_rq);
+ 
+-	return task_of(se);
++	p = task_of(se);
++	hrtick_start_fair(rq, p);
++
++	return p;
+ }
+ 
+ /*
+@@ -1028,14 +1103,14 @@ move_one_task_fair(struct rq *this_rq, i
+ /*
+  * scheduler tick hitting a task of our scheduling class:
+  */
+-static void task_tick_fair(struct rq *rq, struct task_struct *curr)
++static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+ {
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &curr->se;
+ 
+ 	for_each_sched_entity(se) {
+ 		cfs_rq = cfs_rq_of(se);
+-		entity_tick(cfs_rq, se);
++		entity_tick(cfs_rq, se, queued);
+ 	}
+ }
+ 
+Index: linux-2.6/kernel/Kconfig.hz
+===================================================================
+--- linux-2.6.orig/kernel/Kconfig.hz
++++ linux-2.6/kernel/Kconfig.hz
+@@ -54,3 +54,7 @@ config HZ
+ 	default 300 if HZ_300
+ 	default 1000 if HZ_1000
+ 
++config SCHED_HRTICK
++	bool "High Resolution Timer preemption tick"
++	depends on HIGH_RES_TIMERS && X86
++	default y
 Index: linux-2.6/include/linux/sched.h
 ===================================================================
 --- linux-2.6.orig/include/linux/sched.h
 +++ linux-2.6/include/linux/sched.h
-@@ -914,6 +914,7 @@ struct sched_entity {
- struct sched_rt_entity {
- 	struct list_head run_list;
- 	unsigned int time_slice;
-+	unsigned long timeout;
+@@ -256,6 +256,7 @@ extern void cpu_init (void);
+ extern void trap_init(void);
+ extern void update_process_times(int user);
+ extern void scheduler_tick(void);
++extern void hrtick_resched(void);
+ 
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ extern void softlockup_tick(void);
+@@ -840,7 +841,7 @@ struct sched_class {
+ #endif
+ 
+ 	void (*set_curr_task) (struct rq *rq);
+-	void (*task_tick) (struct rq *rq, struct task_struct *p);
++	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
+ 	void (*task_new) (struct rq *rq, struct task_struct *p);
  };
  
- struct task_struct {
+Index: linux-2.6/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.orig/include/linux/hrtimer.h
++++ linux-2.6/include/linux/hrtimer.h
+@@ -217,6 +217,11 @@ static inline ktime_t hrtimer_cb_get_tim
+ 	return timer->base->get_time();
+ }
+ 
++static inline int hrtimer_is_hres_active(struct hrtimer *timer)
++{
++	return timer->base->cpu_base->hres_active;
++}
++
+ /*
+  * The resolution of the clocks. The resolution value is returned in
+  * the clock_getres() system call to give application programmers an
+@@ -248,6 +253,10 @@ static inline ktime_t hrtimer_cb_get_tim
+ 	return timer->base->softirq_time;
+ }
+ 
++static inline int hrtimer_is_hres_active(struct hrtimer *timer)
++{
++	return 0;
++}
+ #endif
+ 
+ extern ktime_t ktime_get(void);
+Index: linux-2.6/kernel/sched_idletask.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_idletask.c
++++ linux-2.6/kernel/sched_idletask.c
+@@ -55,7 +55,7 @@ move_one_task_idle(struct rq *this_rq, i
+ }
+ #endif
+ 
+-static void task_tick_idle(struct rq *rq, struct task_struct *curr)
++static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
+ {
+ }
+ 
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -205,7 +205,7 @@ move_one_task_rt(struct rq *this_rq, int
+ }
+ #endif
+ 
+-static void task_tick_rt(struct rq *rq, struct task_struct *p)
++static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ {
+ 	/*
+ 	 * RR tasks need a special form of timeslice management.
+Index: linux-2.6/arch/x86/kernel/signal_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/signal_32.c
++++ linux-2.6/arch/x86/kernel/signal_32.c
+@@ -658,6 +658,9 @@ void do_notify_resume(struct pt_regs *re
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
+ 		do_signal(regs);
++
++	if (thread_info_flags & _TIF_HRTICK_RESCHED)
++		hrtick_resched();
+ 	
+ 	clear_thread_flag(TIF_IRET);
+ }
+Index: linux-2.6/include/asm-x86/thread_info_32.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/thread_info_32.h
++++ linux-2.6/include/asm-x86/thread_info_32.h
+@@ -132,6 +132,7 @@ static inline struct thread_info *curren
+ #define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
+ #define TIF_SECCOMP		7	/* secure computing */
+ #define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal() */
++#define TIF_HRTICK_RESCHED	9	/* reprogram hrtick timer */
+ #define TIF_MEMDIE		16
+ #define TIF_DEBUG		17	/* uses debug registers */
+ #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
+@@ -147,6 +148,7 @@ static inline struct thread_info *curren
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
+ #define _TIF_DEBUG		(1<<TIF_DEBUG)
+ #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+Index: linux-2.6/arch/x86/kernel/signal_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/signal_64.c
++++ linux-2.6/arch/x86/kernel/signal_64.c
+@@ -480,6 +480,9 @@ do_notify_resume(struct pt_regs *regs, v
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
+ 		do_signal(regs);
++
++	if (thread_info_flags & _TIF_HRTICK_RESCHED)
++		hrtick_resched();
+ }
+ 
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+Index: linux-2.6/include/asm-x86/thread_info_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/thread_info_64.h
++++ linux-2.6/include/asm-x86/thread_info_64.h
+@@ -115,6 +115,7 @@ static inline struct thread_info *stack_
+ #define TIF_SECCOMP		8	/* secure computing */
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
+ #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
++#define TIF_HRTICK_RESCHED	11	/* reprogram hrtick timer */
+ /* 16 free */
+ #define TIF_IA32		17	/* 32bit process */ 
+ #define TIF_FORK		18	/* ret_from_fork */
+@@ -133,6 +134,7 @@ static inline struct thread_info *stack_
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
++#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
+ #define _TIF_IA32		(1<<TIF_IA32)
+ #define _TIF_FORK		(1<<TIF_FORK)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+@@ -146,6 +148,9 @@ static inline struct thread_info *stack_
+ /* work to do on any return to user space */
+ #define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
+ 
++#define _TIF_DO_NOTIFY_MASK \
++	(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
++
+ /* flags to check in __switch_to() */
+ #define _TIF_WORK_CTXSW (_TIF_DEBUG|_TIF_IO_BITMAP)
+ 
+Index: linux-2.6/arch/x86/kernel/entry_64.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/entry_64.S
++++ linux-2.6/arch/x86/kernel/entry_64.S
+@@ -283,7 +283,7 @@ sysret_careful:
+ sysret_signal:
+ 	TRACE_IRQS_ON
+ 	sti
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz    1f
+ 
+ 	/* Really a signal */
+@@ -377,7 +377,7 @@ int_very_careful:
+ 	jmp int_restore_rest
+ 	
+ int_signal:
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz 1f
+ 	movq %rsp,%rdi		# &ptregs -> arg1
+ 	xorl %esi,%esi		# oldset -> arg2
+@@ -603,7 +603,7 @@ retint_careful:
+ 	jmp retint_check
+ 	
+ retint_signal:
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz    retint_swapgs
+ 	TRACE_IRQS_ON
+ 	sti
 
 --
 
