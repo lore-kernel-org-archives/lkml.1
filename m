@@ -1,49 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbXJaD0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXJaDcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967AbXJaD0m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 23:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXJaD0f
+	id S1753213AbXJaDcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 23:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbXJaDcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 23:26:35 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:45701 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751944AbXJaD0e (ORCPT
+	Tue, 30 Oct 2007 23:32:07 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:33639 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752113AbXJaDcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 23:26:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=lyHEuvOGZEQT3Jhy1jb0lYEpsMWpB4u97enk77p2/XKGtFsPEwcNpg5Xsmp9nUscpPXj41vtjplT4YX5cS8tvZQJYGgD3qIISMATE+vo0URHZph3GjK4zMQuA1g1XD9JEyxmHnCyVwsFUvlyQTjwIRIhHN5Q9KVOPMiLllghKps=  ;
-X-YMail-OSG: ZzK0wVEVM1nl0wCwG6hXku1_2_sAUoE0tpuumiC7blQ6PMd1Z_bYWnkUd2o6XA87ozMNK42Iju..pnVNcYlLk3QTeQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Lorenzo Allegrucci" <l.allegrucci@gmail.com>,
-       "=?iso-8859-1?q?Bj=F6rn?=" <askadar@gmail.com>
-Subject: Re: 2.6.23 performance regression
-Date: Wed, 31 Oct 2007 13:19:53 +1100
-User-Agent: KMail/1.9.5
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <4dcf7d360710300054m7ac77445pf786bd9044b572d7@mail.gmail.com>
-In-Reply-To: <4dcf7d360710300054m7ac77445pf786bd9044b572d7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 30 Oct 2007 23:32:06 -0400
+Subject: Re: [PATCH RESEND] SCSI not showing tray status correctly
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Maarten Bressers <mbres@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, axboe@kernel.dk,
+       tasio@hierro.tasio.net, dsd@gentoo.org
+In-Reply-To: <20071027225830.585C8657DB@smtp.gentoo.org>
+References: <20071027225830.585C8657DB@smtp.gentoo.org>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 22:32:03 -0500
+Message-Id: <1193801523.3321.138.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710311319.54210.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 October 2007 18:54, Lorenzo Allegrucci wrote:
-> Hi, sorry if this is a faq but reading
-> http://people.freebsd.org/~kris/scaling/7.0%20Preview.pdf (slides 17,
-> 18)
-> looks like 2.6.23 is having a performance regression on MySQL and
-> PostgreSQL benchmarks.  Has anyone investigated these?
+On Sat, 2007-10-27 at 22:58 +0000, Maarten Bressers wrote:
+> > This patch is too simplistic.  ide-cd.c:ide_cdrom_drive_status() looks
+> > to be a reasonable implementation.  However, the worry is that
+> > GET_EVENT_NOTIFICATION is a MMC command; devices not conforming to MMC
+> > won't support it.  In theory, they should just return ILLEGAL_REQUEST,
+> > but USB devices have been known to crash when given commands they don't
+> > understand.  How widely tested has this been (if it's been in Gentoo
+> > since 2004, then it's probably widely tested enough)?
+> >
+> > James
+> >
+> This patch hasn't been tested at all, I'm sorry if I gave you that
+> impression, it isn't in Gentoo's patches, it's just been brought to our
+> attention in the bug I linked too.
+> 
+> I created another patch, based on your recommendations, and with a lot of
+> help from Daniel Drake (dsd@gentoo.org), that's included below. Some
+> changes are made to test_unit_ready() to be able to pass the sense data
+> to sr_drive_status(). Currently, sr_do_ioctl() swallows this data and
+> makes its own interpretations of sense codes, which isn't what we want
+> here.
+> 
+> Is this what you had in mind? Do you think the possible problems with
+> USB drives that you mentioned will prevent this patch from going in? 
+> The patch has only been compile tested right now, we can do some real
+> testing later, for now I'd just like to get your feedback on it.
 
-I think Ingo was looking into them. I'm just in the middle of
-building a new setup to investigate some performance issues too,
-so I hope to look at this.
+In general it looks good ... I suppose the only way to test it is to
+stick it in and see what happens.  However, there are a few rough edges.
 
-Apparently it did go unnoticed during CFS testing, unfortunately.
-Although now it has been brought to light, I think 2.6.24 is
-supposed to be better (although it now gets worse on other things).
+> Maarten
+> 
+> ---
+> 
+> --- a/drivers/scsi/sr_ioctl.c	2007-10-26 22:40:41.000000000 +0200
+> +++ b/drivers/scsi/sr_ioctl.c	2007-10-27 23:56:16.000000000 +0200
+> @@ -275,16 +275,21 @@ int sr_do_ioctl(Scsi_CD *cd, struct pack
+>  /* ---------------------------------------------------------------------- */
+>  /* interface to cdrom.c                                                   */
+>  
+> -static int test_unit_ready(Scsi_CD *cd)
+> +static int test_unit_ready(Scsi_CD *cd, struct request_sense *sense)
+>  {
+> -	struct packet_command cgc;
+> +	struct scsi_device *SDev = cd->device;
+> +	unsigned char cmd[CDROM_PACKET_SIZE] = { GPCMD_TEST_UNIT_READY };
+> +	int result;
+>  
+> -	memset(&cgc, 0, sizeof(struct packet_command));
+> -	cgc.cmd[0] = GPCMD_TEST_UNIT_READY;
+> -	cgc.quiet = 1;
+> -	cgc.data_direction = DMA_NONE;
+> -	cgc.timeout = IOCTL_TIMEOUT;
+> -	return sr_do_ioctl(cd, &cgc);
+> +	if (!scsi_block_when_processing_errors(SDev))
+> +		return -ENODEV;
+> +
+> +	memset(sense, 0, sizeof(*sense));
+> +	result = scsi_execute(SDev, cmd, DMA_NONE,
+> +			      NULL, 0, (char *)sense,
+> +			      IOCTL_TIMEOUT, IOCTL_RETRIES, 0);
+> +
+> +	return driver_byte(result);
+
+This bit isn't quite right ... this will return true if there's a
+collected sense code and false otherwise (so it returns 0 on failure
+that doesn't produce any sense information).
+
+>  }
+>  
+>  int sr_tray_move(struct cdrom_device_info *cdi, int pos)
+> @@ -310,14 +315,41 @@ int sr_lock_door(struct cdrom_device_inf
+>  
+>  int sr_drive_status(struct cdrom_device_info *cdi, int slot)
+>  {
+> +	struct request_sense sense;
+> +	struct media_event_desc med;
+> +
+>  	if (CDSL_CURRENT != slot) {
+>  		/* we have no changer support */
+>  		return -EINVAL;
+>  	}
+> -	if (0 == test_unit_ready(cdi->handle))
+> +	if ((0 == test_unit_ready(cdi->handle, &sense)) || 
+> +	    sense.sense_key == UNIT_ATTENTION)
+
+Unit attention won't necessarily mean the media is OK ... unit attention
+can mean the media or tray status has changed.
+
+>  		return CDS_DISC_OK;
+>  
+> -	return CDS_TRAY_OPEN;
+> +	if (!cdrom_get_media_event(cdi, &med)) {
+> +		if (med.media_present)
+> +			return CDS_DISC_OK;
+> +		else if (med.door_open)
+> +			return CDS_TRAY_OPEN;
+> +		else
+> +			return CDS_NO_DISC;
+> +	}
+> +
+> +	if (sense.sense_key == NOT_READY && sense.asc == 0x04 && sense.ascq == 0x04)
+
+Actually, all asc 0x4 codes are some type of in progress operation,
+format doesn't necessarily have to be treated specially.
+
+> +		return CDS_DISC_OK;
+> +
+> +	/*
+> +	 * If not using Mt Fuji extended media tray reports,
+> +	 * just return TRAY_OPEN since ATAPI doesn't provide
+> +	 * any other way to detect this...
+> +	 */
+> +	if (sense.sense_key == NOT_READY) {
+> +		if (sense.asc == 0x3a && sense.ascq == 1)
+> +			return CDS_NO_DISC;
+> +		else
+> +			return CDS_TRAY_OPEN;
+
+This is also a bit odd.  asc 0x3a ascq 0x2 definitely means tray open,
+but there are a lot of other not ready conditions that don't mean this.
+
+> +	}
+> +	return CDS_DRIVE_NOT_READY;
+>  }
+>  
+>  int sr_disk_status(struct cdrom_device_info *cdi)
+
+James
+
+
