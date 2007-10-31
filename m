@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbXJaApR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbXJaApq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbXJaApR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 20:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXJaApF
+	id S1757926AbXJaApq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 20:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXJaAph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 20:45:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6981 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbXJaApE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 20:45:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,349,1188802800"; 
-   d="scan'208";a="259049461"
-Subject: Re: [PATCH 2/4 -v5] x86_64 EFI runtime service support: EFI
-	runtime services
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200710301558.31443.vda.linux@googlemail.com>
-References: <1193723743.23935.352.camel@caritas-dev.intel.com>
-	 <200710301558.31443.vda.linux@googlemail.com>
-Content-Type: text/plain
+	Tue, 30 Oct 2007 20:45:37 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:14291 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753485AbXJaApg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 20:45:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=sd2by20Y3QdPIpO94unY4tnLekGUOwEYEFACweROcW9sMkv3yCA8arTrBbhQbR4Vt/xq14Y3yyB/ZqQ7i+KDJZRwqRco4v6POhlk8nHnxG6+bPiZNkp867DhPmGWqTZ2JbD85weOoYsytO/CEblDRz9e9OUeh2YQSQIYX49g6/M=
+Message-ID: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
+Date: Wed, 31 Oct 2007 00:45:35 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
+Cc: "Nick Piggin" <npiggin@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 31 Oct 2007 08:47:47 +0800
-Message-Id: <1193791667.23935.383.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 31 Oct 2007 00:44:45.0425 (UTC) FILETIME=[3B7D9610:01C81B57]
+Content-Disposition: inline
+X-Google-Sender-Auth: 5dd1cb949e030ba2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-30 at 15:58 +0000, Denys Vlasenko wrote:
-> On Tuesday 30 October 2007 05:55, Huang, Ying wrote:
-> > +static inline unsigned long native_get_wallclock(void)
-> > +{
-> > +	unsigned long retval;
-> > +
-> > +	if (efi_enabled)
-> > +		retval = efi_get_time();
-> > +	else
-> > +		retval = mach_get_cmos_time();
-> > +
-> > +	return retval;
-> > +}
-> 
-> mach_get_cmos_time() is itself an inline, and a _large_ one
-> (~20 LOC with macro and function calls).
-> 
-> efi_get_time() is an inline too, although strange one:
-> it is declared inline *only* in efi.c file:
->       inline unsigned long efi_get_time(void)
-> (yes, just inline, not static/extern),
-> while efi.h has normal extern for it:
->       extern unsigned long efi_get_time(void);
-> 
-> Is it supposed to be like that?
+Accessing a memory mapped region past the last page containing a valid
+file mapping produces a SIGBUS fault (as it should). Running a program
+that does this under gdb, then accessing the invalid memory from gdb,
+causes it to start consuming 100% CPU and become unkillable. Once in
+that state, SysRq-T doesn't show a stack trace for gdb, although it is
+shown as running and stack traces are dumped for other tasks.
 
-efi_get_time is no longer inline in this patch. See efi.c of this patch.
+2.6.22 does not have this bug (gdb just prints '\0' as the contents,
+although arguably that is also a bug, and it should instead report the
+SIGBUS).
 
-Best Regards,
-Huang Ying
+Bisection indicates the problem was introduced by:
+
+54cb8821de07f2ffcd28c380ce9b93d5784b40d7
+"mm: merge populate and nopage into fault (fixes nonlinear)"
+
+The following program demonstrates the issue:
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+int main(int argc, char *argv[])
+{
+        int fd;
+        struct stat buf;
+
+        if (argc != 2) {
+                fprintf(stderr, "usage: %s <filename>\n", argv[0]);
+                exit(1);
+        }
+
+        fd = open(argv[1], O_RDONLY);
+        fstat(fd, &buf);
+        int count = buf.st_size + sysconf(_SC_PAGE_SIZE);
+        char *file = (char *) mmap(NULL, count, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (file == MAP_FAILED) {
+                fprintf(stderr, "mmap failed: %s\n", strerror(errno));
+        } else {
+                char ch;
+                fprintf(stderr, "using offset %d\n", (count - 1));
+                ch = file[count - 1];
+                munmap(file, count);
+        }
+        close(fd);
+        return 0;
+}
+
+To reproduce the bug, run it under gdb, go up a couple of frames to
+the main function, then access invalid memory, for e.g. with: "print
+file[4095]", or whatever offset was reported.
+
+Cheers,
+Duane.
+
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
