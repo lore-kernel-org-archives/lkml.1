@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXJaSOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbXJaSPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbXJaSOh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 14:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXJaSO3
+	id S1757872AbXJaSPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 14:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXJaSPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 14:14:29 -0400
-Received: from empbedex1.empirix.com ([12.38.203.54]:52748 "EHLO
-	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbXJaSO2 convert rfc822-to-8bit (ORCPT
+	Wed, 31 Oct 2007 14:15:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:40305 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbXJaSPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 14:14:28 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 31 Oct 2007 14:15:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oi8JpyFZ0wT77UnVSQFaD2/K0H2gyS0IXh6umRVxn0+b15B5Ei4OL9I/gbkmUfQQovVcg2monFxecOykScyAH2CNDRxDNB+6kwKW8BsNBVdUzS2jJsWROgfepKjpIiM2WzHUvfecLr7ajrUfhCJLLgpi0yz3Ffov2dsUARrnymI=
+Message-ID: <91b13c310710311115m13f60cecnaffd9c8428d33d05@mail.gmail.com>
+Date: Thu, 1 Nov 2007 02:15:33 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [PATCH] [sysfs]: make readlink result shorter when the symlink and its target shared some base sysfs subdirectory
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071031143441.GA7128@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Update (Now a False Alarm) RE: Other Problems with Marvell Driver - 7042 (2.6.23)...
-Date: Wed, 31 Oct 2007 14:14:18 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010A825872@EMPBEDEX.empirix.com>
-In-Reply-To: <4728A816.8020608@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Update (Now a False Alarm) RE: Other Problems with Marvell Driver - 7042 (2.6.23)...
-Thread-Index: Acgb2OVOCBE2GvRQT0yuQEw5hg7XMAAEDO+Q
-References: <BD261180E6D35F4D9D32F3E44FD3D901053E84BD@EMPBEDEX.empirix.com> <45ED682A.9040408@garzik.org> <BD261180E6D35F4D9D32F3E44FD3D9010A7E1B45@EMPBEDEX.empirix.com> <4728A816.8020608@garzik.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Kumar Gala" <galak@kernel.crashing.org>
-X-OriginalArrivalTime: 31 Oct 2007 18:14:27.0369 (UTC) FILETIME=[DFA79190:01C81BE9]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1193826860-6166-1-git-send-email-crquan@gmail.com>
+	 <20071031143441.GA7128@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff / all -
+On 10/31/07, Greg KH <gregkh@suse.de> wrote:
+> On Wed, Oct 31, 2007 at 06:34:20PM +0800, Denis Cheng wrote:
+> > this is especially useful after /sys/slab introduced, for example:
+> >
+> > $ ls -l /sys/slab/mm_struct
+> > lrwxrwxrwx 1 root root 0 2007-10-31 17:40 /sys/slab/mm_struct -> :0000448
+> >
+> > instead of:
+> >
+> > $ ls -l /sys/slab/mm_struct
+> > lrwxrwxrwx 1 root root 0 2007-10-31 17:40 /sys/slab/mm_struct -> ../slab/:0000448
+> >
+> > Signed-off-by: Denis Cheng <crquan@gmail.com>
+>
+> As pretty as this change is, it's not really necessary, right?
+I don't think so.
 
-Jeff is (again) 100% correct with comments - the sata_mv.c I used 
-from Kumar's 2.6.23 Powerpc tree is very *close*, but not exactly 
-the same as the sata_mv.c in the 'official' 2.6.23.1 tree.
+Suppose to create a symlink on the disk, say /usr/src/linux, that
+points to /usr/src/linux-2.6.23, the best way is:
+# cd /usr/src/
+# ln -s linux-2.6.23 linux
+# ls -l linux
+# ls -l linux
+lrwxrwxrwx 1 root root 14 2007-10-16 19:21 linux -> linux-2.6.23
 
-I have verified that I now can access my disks behind the 7042 chip
-with the 'mainline' 2.6.23.1 (and my bsp)...
+other than:
+# cd /usr/src/
+# ln -s /usr/src/linux-2.6.23 linux
+or
+# ln -s ../../usr/src/linux-2.6.23 linux
+# ls -l linux
+lrwxrwxrwx 1 root root 14 2007-10-16 19:21 linux -> ../../usr/src/linux-2.6.23
 
-Sorry for the false alarm - thank you Jeff for pointing me in the right
-direction with this!
-
-Sincerely,
-
-Tom Morrison
-
-
------Original Message-----
-From: Jeff Garzik [mailto:jeff@garzik.org] 
-Sent: Wednesday, October 31, 2007 12:07 PM
-To: Morrison, Tom
-Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org; Kumar Gala
-Subject: Re: Other Problems with Marvell Driver - 7042 (2.6.23)...
-
-Morrison, Tom wrote:
-
-
-<snip description of problem>
-
-==========Jeff writes=====
-
-First you need to try 2.6.23.1 rather than 2.6.23, because it contains a
-
-critical sata_mv fix.
-
-	Jeff
-
+Anyone know this, since sysfs is also a filesystem, it should conform
+the perfect way.
 
 
+For another point, consider the code in fs/sysfs/symlink.c:
+
+static int sysfs_get_target_path(struct sysfs_dirent * parent_sd,
+                                 struct sysfs_dirent * target_sd, char *path)
+{
+...
+        size = object_path_length(target_sd) + depth * 3 - 1;
+        if (size > PATH_MAX)
+                return -ENAMETOOLONG;
+
+Since having longer readlink result would consume more memory on the
+output parameter path, that is error prone to return -ENAMETOOLONG; we
+just need the shorter readlink result.
+
+>
+> Is there any other place in /sys that would benefit from this?
+Yes. there are already some other symlinks those are also not crossing
+top subdirectory of /sys, they would benefit from this patch:
+
+I have found all of them by this little shell:
+
+$ find /sys -type l -printf '%p -> %l -> ' -exec readlink -f '{}' \; | gawk '{
+        split($1, a, "/");
+        split($5, b, "/");
+        if (a[3] == b[3])
+                print;
+}'
+
+that will print many lines like:
+
+...
+/sys/block/hdd/subsystem -> ../../block -> /sys/block
+/sys/module/snd_mixer_oss/holders/snd_pcm_oss ->
+../../../module/snd_pcm_oss -> /sys/module/snd_pcm_oss
+/sys/class/sound/audio/subsystem -> ../../../class/sound -> /sys/class/sound
+/sys/class/pci_bus/0000:00/subsystem -> ../../../class/pci_bus ->
+/sys/class/pci_bus
+...
+
+>
+> thanks,
+>
+> greg k-h
+>
+
+-- 
+Denis Cheng
+Linux Application Developer
+
+"One of my most productive days was throwing away 1000 lines of code."
+ - Ken Thompson.
