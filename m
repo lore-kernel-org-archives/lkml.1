@@ -1,48 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbXJaUO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbXJaUUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760043AbXJaUO1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXJaUOT
+	id S1758397AbXJaUUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXJaUTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:14:19 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37460 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754067AbXJaUOS (ORCPT
+	Wed, 31 Oct 2007 16:19:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59449 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752102AbXJaUTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:14:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TFOT4Q859zEpwQPuW01Niym/gxhQgseXpQuFHfZLj9C/uCWDrVKw2QT9A6RUrgrM0/fdc8JIdfUT/FfTJIoqec16Sf9n9nDk4flA3P3hkE/l3nR/4acqN6raibHRfSeiYh0s9XWoEE7jmMqhQJ7g46m/wh+gYsm9ODW22lNga+s=  ;
-X-YMail-OSG: VQ4FhgcVM1kAEQBuxjksn6leuYStWYbpWXrjYsfiV.8R4d__pqbskSXNWSRkGXVDCG_ic9tiEw--
-From: David Brownell <david-b@pacbell.net>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 09/14] Blackfin SPI driver: Fix SPI driver to work with SPI flash ST25P16 on bf548
-Date: Wed, 31 Oct 2007 13:14:00 -0700
-User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net, bryan.wu@analog.com,
-       "Sonic Zhang" <sonic.zhang@analog.com>, linux-kernel@vger.kernel.org
-References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com> <200710311201.29643.david-b@pacbell.net> <8bd0f97a0710311216l25f89b37v356fd44d7c1999da@mail.gmail.com>
-In-Reply-To: <8bd0f97a0710311216l25f89b37v356fd44d7c1999da@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 31 Oct 2007 16:19:52 -0400
+Date: Wed, 31 Oct 2007 13:19:49 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+Message-Id: <20071031131949.b91bf383.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
+	<Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710311314.00465.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > pretty much all SPI flashes have two read commands ("slow" and "fast"
-> > > as they're typically called).
-> >
-> > Not DataFlash.
+Christoph wrote:
+> >  	short policy; 	/* See MPOL_* above */
+> > +	char mpol_nodemask_mode; /* See MPOL_MODE_* above; union c below */
 > 
-> doesnt it ?  AT45DB642D says 0x0B is fast (up to 66mhz) while 0x03 (up to 33mhz)
+> Make both policy and the mode char?
 
-And ...041B, ...081B, ...161B, ...321, ...321C, and others don't.
-(From a quick scan of datasheets I have locally...)
+Well, the mpol_nodemask_mode already is char.  So I guess you're
+asking if we should change 'policy' to type char as well.
 
-Those 0x0B and 0x03 commands are "new", and have never been
-used by the Linux DataFlash drivers.
+Changing 'policy' from a short to a char would reduce the sizeof
+(struct mempolicy) on 16-bit systems, as both chars would fit in one
+word.  But this code doesn't run on 16-bit systems.
 
+> Could we shorten the mpol_nodemask_mode to mode?
+
+Huh - I don't know what "shorten ... to mode" means.  If it means
+"shorten ... to char", then see my previous comment above.
+
+> Hmmm... I would rather have numactl manage this flag
+
+Well, numactl is a command line utility.  It doesn't manage this flag
+as an -alternative- to some sort of changes to the mbind, set_mempolicy
+and get_mempolicy calls, but rather layers on top of changes to those
+system calls.  So I'm not sure what you mean, but I guess it is not
+relevant to this patch discussion.
+
+> and specify it in calls to set memory policies.
+
+This suggestion I do think I understand - good.  However I disagree.
+Here's what I think you meant, and why I disagree.
+
+My current patch adds a new per-task modal state, that is manipulated
+by additional get_mempolicy calls and options.
+
+I think you are stating a preference for passing an additional flag on
+each mbind, set_mempolicy and get_mempolicy call, to be used when you
+want to use this new way (so called "Choice B") of numbering nodes.
+
+The question is:
+
+    Should this mode be per-task, or per-system call?
+
+The basic reason that I went with an additional per-task modal
+state, rather than a modal flag for each mbind, set_mempolicy and
+get_mempolicy call was to reduce the likely rate of bugs in user
+level C code using this API.
+
+    Programs that code to this API in C usually first spend some number
+    of lines of code preparing bitmasks that represent sets of nodes,
+    which they will then pass into these mempolicy system calls.
+
+    The bits are numbered differently between Choices A and B.    
+
+    If a piece of code adapts Choice B numbering, because it is
+    better suited to that codes needs, and if we used your suggested
+    per-system call flag, then if they miss passing in the new special
+    flag on -even-one- mbind, set_mempolicy or get_mempolicy system
+    call, they have an obscure code bug.  They will be passing in
+    a bitmask that they calculated using Choice B node numbering,
+    but (implicitly) telling the kernel to interpret that bitmask
+    using Choice A semantics.
+
+    Essentially, a per-task modal flag, rather than a per-system call
+    modal flag, is a better fit for the typical C code usage of this
+    Choice, because it will be an entire chunk of user level code
+    manipulating these bitmasks that either has to be all Choice A,
+    or all Choice B (except in special cases, carefully coded.)
+
+Why do you prefer a per-system call modal flag, rather than a per-task
+modal flag?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
