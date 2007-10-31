@@ -1,77 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbXJaE71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbXJaFAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbXJaE71 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXJaE7S
+	id S1755509AbXJaFAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 01:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXJaFAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:59:18 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:29795 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752979AbXJaE7R (ORCPT
+	Wed, 31 Oct 2007 01:00:37 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:52430
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752961AbXJaFAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:59:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5xUNaSNXZ/nfMm9494NQ1CLr0bIht9eX/eBDffu5cHEZEODGZTQYethBUm0XleaIJ57I41ntMKKWRoiwuhNE50jG6JjzuqeXCGe3Xn0rVm4BB9N20RSoc0qBgQ2/2BhURsoAYP/eE+iwLoHW4cSgk8nFCzLfwaJ7hWvx//nCeJw=  ;
-X-YMail-OSG: pm9y8LwVM1lTP_gwNiXzr9o6_d4Z2X5tR8aVcbh8oxnUa6nApPIBhJxkWUOFUsOaGNNdbomoGhAbc8hahh5PDOp4WVK22hG5Ne9WZWIQ6h02FVoVv4g-
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 09/33] mm: system wide ALLOC_NO_WATERMARK
-Date: Wed, 31 Oct 2007 14:52:35 +1100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-References: <20071030160401.296770000@chello.nl> <20071030160912.283002000@chello.nl>
-In-Reply-To: <20071030160912.283002000@chello.nl>
+	Wed, 31 Oct 2007 01:00:35 -0400
+Date: Tue, 30 Oct 2007 22:08:11 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Peter Dolding <oiaohm@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
+ interface)
+In-Reply-To: <e7d8f83e0710301921m3460f8dfkce72c4fc549ded4a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0710302145480.4780@asgard.lang.hm>
+References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl> 
+ <4726377A.4080807@crispincowan.com>  <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>
+  <Pine.LNX.4.64.0710301136560.31325@fbirervta.pbzchgretzou.qr> 
+ <4727C06A.4060005@gmail.com>  <Pine.LNX.4.64.0710301713260.8703@asgard.lang.hm>
+ <e7d8f83e0710301921m3460f8dfkce72c4fc549ded4a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710311452.36239.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> Change ALLOC_NO_WATERMARK page allocation such that the reserves are system
-> wide - which they are per setup_per_zone_pages_min(), when we scrape the
-> barrel, do it properly.
->
+On Wed, 31 Oct 2007, Peter Dolding wrote:
 
-IIRC it's actually not too uncommon to have allocations coming here via
-page reclaim. It's not exactly clear that you want to break mempolicies
-at this point.
+> On 10/31/07, david@lang.hm <david@lang.hm> wrote:
+>> On Wed, 31 Oct 2007, Peter Dolding wrote:
+>>
+>>> MultiAdmin loaded before Selinux breaks Selinux since Multi Admin rules are
+>>> applied over using Selinux rules.  This is just the way it is stacking LSM's
+>>> is Just not healthy you always risk on LSM breaking another.  Part of the
+>>> reason why I have suggested a complete redesign of LSM.  To get away from
+>>> this problem of stacking.
+>>
+>> since the method of stacking hasn't been determined yet, you can't say
+>> this.
+>
+> I can because that is the current day problem. With many LSM's loaded
+> they stack completely as a complete mess and with problems.  They
+> fight with each other.  Lack of define on stacking equals big
+> problems.   Since you have not created a standard for stacking does
+> not stop the problem from existing.  Nice lack of planing when LSM
+> started or maybe its intentional.  When you need stacking its about
+> time you start moving things into the OS?
 
+the lack of a stacking ability was deliberate (go back and read the 
+archives). basicly no LSM was willing to admit that they weren't the 
+be-all, end-all of security, so nobody was willing to consider that anyone 
+would ever want anything else.
 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  mm/page_alloc.c |    6 ++++++
->  1 file changed, 6 insertions(+)
+one method of doing the stacking would be for the LSM to not know about 
+the stacking, but the kernel takes care of passing all requests through 
+each LSM in order (if the LSMs can be staticly compiled the order should 
+be able to be changed at compile time)
+
+now, the existing policies for some LSM's may need to change, becouse 
+they've been assuming that they only needed to check capabilities for 
+UID=0, when they will now need to check them for everyone, but arguably, 
+this was a bug masquerading as an optimization in the first place.
+
+> There is a way around the problem too without allowing LSM to stack.
+> Good advantage backward compatible  because your are not playing with
+> the LSM standard to do it so no LSM modules should need large
+> alterations.  At worse mirror extensions to handle the new OS feature.
+> Posix File Capabilities provide the solution.   First done as a LSM
+> risked conflict.   Moved in as a operating system extension by by
+> conflict.  Fragments from LSM's should exactly move that way if they
+> expect to be overlapped by other models.
 >
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -1638,6 +1638,12 @@ restart:
->  rebalance:
->  	if (alloc_flags & ALLOC_NO_WATERMARKS) {
->  nofail_alloc:
-> +		/*
-> +		 * break out of mempolicy boundaries
-> +		 */
-> +		zonelist = NODE_DATA(numa_node_id())->node_zonelists +
-> +			gfp_zone(gfp_mask);
-> +
->  		/* go through the zonelist yet again, ignoring mins */
->  		page = get_page_from_freelist(gfp_mask, order, zonelist,
->  				ALLOC_NO_WATERMARKS);
+> Lot of stacking problems can be avoided if segments are complete
+> standard extensions.
+
+which LSM gets to declare the standards?
+
+>>
+>> it would be possible for MultiAdmin to grant additional access, that
+>> SELinux then denies for it's own reasons.
+>>
+>> if the SELinux policy is written so that it ignores capabilities, and
+>> instead just looks at uid0 then that policy is broken in a stacked
+>> environment, but it's the polciy that's broken, not the stacking.
 >
-> --
+> That is not how current day always works.  MultiAdmin grants and that
+> can be the end of the treeing.   Selinux does not get asked if it
+> refuses it or not.  So no matter what was set in the Selinux policy it
+> may never get used.   Adding more layers is also bad for performance
+> to.  Treeing threw modules for rights is a really slow process.  As
+> like a posix feature extension.   Selinux/Other LSM's is at top of
+> allocation no flaw no bypass.
+
+only if the stacking mode permits this. if it always requires passing 
+through all the layers then this wouldn't be a problem.
+
+Besides which, the MultiAdmin authors would probably be willing to make 
+the nessasary changes to their LSM to play nicely with others anyway (but 
+good programming practice would dictate that you don't count on it, and 
+arrange for the other modules to approve as well)
+
+>> yes, there will be interactions that don't make sense, but just becouse
+>> something can be used wrong doesn't mean that there aren't other cases
+>> where it can be used properly.
+>>
+> We are talking security here if its not order safe its not good.
+> MultiAdmin done as a posix feature extension is order safe.
+> MultiAdmin done as a LSM is not order safe.
+
+as things are currently written, it's not possible to stack, so there is 
+no order. change how things are written and you can make them safe.
+
+> System Admins are humans too.  Getting orders backwards does happen.
+> So should be avoided where able.
+
+the sysadmins need to be given enough rope, you don't know everything that 
+they are trying to do, and you don't know what other LSMs going to do. so 
+how can you possibly decide ahead of time what orders are safe?
+
+> This completely avoids the need for adding another layer of stacking
+> and since built inside current day framework.  Does doing this risk
+> the end of LSM's as we know it yes it does.  Since it is not being
+> used as LSM were intended.  LSM is just a addon to standard OS
+> security what is either a testing ground for new features to secure
+> the OS that get build into the OS in time or as location for security
+> modules.
 >
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Somethings should be just done in the Standard OS security nothing to
+> do with LSM.
+>
+> Little bit hard for some I guess to hear that LSM are not all
+> important and not all Security features should be done in them.  Some
+> should be done in the main OS security features.
+>
+> Biggest current day problem with LSM is they have forgot that LSM is
+> only a testing ground or a zone for features that people will only
+> want some of the time.
+
+no, LSM is not just for testing, LSM is an interface so that Linus doesn't 
+need to pick the 'one true security model' and enforce it on everyone.
+
+it's like freedom of religion, each religion belives that they are the one 
+true path, but in exchange for the guarentee that they are not going to be 
+percecuted, they reluctantly allow all other religions equal freedom. when 
+religion passes from mearly strange to activly harmful (i.e. cults) you 
+find the edge of the freedom.
+
+similarly, LSMs need to accept the fact that some people don't want their 
+flavor of security, so to avoid being thrown out entirely they need to 
+allow other LSMs to exist, and use the same kernel hooks, even if they 
+believe that the alturnatives are misguided. as long as an LSM is not 
+activly harmful (as opposed to mearly being snake oil) it should be 
+allowed.
+
+> MultiAdmin is a feature that can enhance means to Audit OS ie who did
+> what.  Enhance security hand outs and can be really handy with almost
+> any LSM on the system.  Its description of what it is sounds very much
+> like every other standard feature.
+>
+> Lets end the bitrot.  Start having bits go into the main OS security
+> features where they should be.
+
+which bits into which security features? Good, knowledgable people can't 
+agree on what's right.
+
+ending the bitrot just requires accepting the LSMs into the kernel as 
+first-class options, it doesn't require declaring any one LSM (or even any 
+part of any one LSM) as being the 'one right way' to do something and 
+force everyone to use that way.
+
+David Lang
