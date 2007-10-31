@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXJaWBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbXJaWBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbXJaWBY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbXJaV7m
+	id S1760912AbXJaWBm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760347AbXJaV7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:59:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59913 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 17:59:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59912 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756158AbXJaV7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756115AbXJaV7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 31 Oct 2007 17:59:09 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
@@ -18,574 +18,298 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        tglx@linutronix.de, jun.nakajima@intel.com, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 1/7] irqflags consolidation
-Date: Wed, 31 Oct 2007 16:13:13 -0300
-Message-Id: <11938580063444-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 3/7] tlb functions consolidation
+Date: Wed, 31 Oct 2007 16:13:15 -0300
+Message-Id: <119385801745-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1193857999499-git-send-email-gcosta@redhat.com>
-References: <1193857999499-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11938580111179-git-send-email-gcosta@redhat.com>
+References: <1193857999499-git-send-email-gcosta@redhat.com> <11938580063444-git-send-email-gcosta@redhat.com> <11938580111179-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch consolidates the irqflags include files containing common
-paravirt definitions. The native definition for interrupt handling, halt,
-and such, are the same for 32 and 64 bit, and they are kept in irqflags.h.
-The differences are split in the arch-specific files.
-
-The syscall function, irq_enable_sysexit, has a very specific i386 naming,
-and its name is then changed to a more general one.
+This patch consolidates part of the tlb handling functions for the x86
+architecture. In this approach, we start by the parts actually used for
+paravirt in i386.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- arch/x86/kernel/asm-offsets_32.c |    2 +-
- arch/x86/kernel/entry_32.S       |    8 ++--
- arch/x86/kernel/paravirt_32.c    |   10 ++--
- arch/x86/kernel/vmi_32.c         |    4 +-
- arch/x86/xen/enlighten.c         |    2 +-
- include/asm-x86/irqflags.h       |  107 ++++++++++++++++++++++++++++++++++++
- include/asm-x86/irqflags_32.h    |  103 +----------------------------------
- include/asm-x86/irqflags_64.h    |  112 +++++++-------------------------------
- include/asm-x86/paravirt.h       |    9 ++--
- 9 files changed, 147 insertions(+), 210 deletions(-)
+ arch/x86/kernel/smp_64.c      |    5 ++-
+ include/asm-x86/tlbflush.h    |   77 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/tlbflush_32.h |   77 -----------------------------------------
+ include/asm-x86/tlbflush_64.h |   43 +++--------------------
+ 4 files changed, 85 insertions(+), 117 deletions(-)
 
-diff --git a/arch/x86/kernel/asm-offsets_32.c b/arch/x86/kernel/asm-offsets_32.c
-index 0e45981..c1ccfab 100644
---- a/arch/x86/kernel/asm-offsets_32.c
-+++ b/arch/x86/kernel/asm-offsets_32.c
-@@ -123,7 +123,7 @@ void foo(void)
- 	OFFSET(PV_IRQ_irq_disable, pv_irq_ops, irq_disable);
- 	OFFSET(PV_IRQ_irq_enable, pv_irq_ops, irq_enable);
- 	OFFSET(PV_CPU_iret, pv_cpu_ops, iret);
--	OFFSET(PV_CPU_irq_enable_sysexit, pv_cpu_ops, irq_enable_sysexit);
-+	OFFSET(PV_CPU_irq_enable_syscall_ret, pv_cpu_ops, irq_enable_syscall_ret);
- 	OFFSET(PV_CPU_read_cr0, pv_cpu_ops, read_cr0);
- #endif
+diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
+index 03fa6ed..ad063a6 100644
+--- a/arch/x86/kernel/smp_64.c
++++ b/arch/x86/kernel/smp_64.c
+@@ -166,11 +166,12 @@ out:
+ 	add_pda(irq_tlb_count, 1);
+ }
  
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index dc7f938..d63609d 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -58,7 +58,7 @@
-  * for paravirtualization.  The following will never clobber any registers:
-  *   INTERRUPT_RETURN (aka. "iret")
-  *   GET_CR0_INTO_EAX (aka. "movl %cr0, %eax")
-- *   ENABLE_INTERRUPTS_SYSEXIT (aka "sti; sysexit").
-+ *   ENABLE_INTERRUPTS_SYSCALL_RET (aka "sti; sysexit").
-  *
-  * For DISABLE_INTERRUPTS/ENABLE_INTERRUPTS (aka "cli"/"sti"), you must
-  * specify what registers can be overwritten (CLBR_NONE, CLBR_EAX/EDX/ECX/ANY).
-@@ -351,7 +351,7 @@ sysenter_past_esp:
- 	xorl %ebp,%ebp
- 	TRACE_IRQS_ON
- 1:	mov  PT_FS(%esp), %fs
--	ENABLE_INTERRUPTS_SYSEXIT
-+	ENABLE_INTERRUPTS_SYSCALL_RET
- 	CFI_ENDPROC
- .pushsection .fixup,"ax"
- 2:	movl $0,PT_FS(%esp)
-@@ -882,10 +882,10 @@ ENTRY(native_iret)
- .previous
- END(native_iret)
- 
--ENTRY(native_irq_enable_sysexit)
-+ENTRY(native_irq_enable_syscall_ret)
- 	sti
- 	sysexit
--END(native_irq_enable_sysexit)
-+END(native_irq_enable_syscall_ret)
- #endif
- 
- KPROBE_ENTRY(int3)
-diff --git a/arch/x86/kernel/paravirt_32.c b/arch/x86/kernel/paravirt_32.c
-index 6a80d67..04f51d0 100644
---- a/arch/x86/kernel/paravirt_32.c
-+++ b/arch/x86/kernel/paravirt_32.c
-@@ -60,7 +60,7 @@ DEF_NATIVE(pv_irq_ops, irq_enable, "sti");
- DEF_NATIVE(pv_irq_ops, restore_fl, "push %eax; popf");
- DEF_NATIVE(pv_irq_ops, save_fl, "pushf; pop %eax");
- DEF_NATIVE(pv_cpu_ops, iret, "iret");
--DEF_NATIVE(pv_cpu_ops, irq_enable_sysexit, "sti; sysexit");
-+DEF_NATIVE(pv_cpu_ops, irq_enable_syscall_ret, "sti; sysexit");
- DEF_NATIVE(pv_mmu_ops, read_cr2, "mov %cr2, %eax");
- DEF_NATIVE(pv_mmu_ops, write_cr3, "mov %eax, %cr3");
- DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
-@@ -88,7 +88,7 @@ static unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
- 	SITE(pv_irq_ops, restore_fl);
- 	SITE(pv_irq_ops, save_fl);
- 	SITE(pv_cpu_ops, iret);
--	SITE(pv_cpu_ops, irq_enable_sysexit);
-+	SITE(pv_cpu_ops, irq_enable_syscall_ret);
- 	SITE(pv_mmu_ops, read_cr2);
- 	SITE(pv_mmu_ops, read_cr3);
- 	SITE(pv_mmu_ops, write_cr3);
-@@ -186,7 +186,7 @@ unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
- 		/* If the operation is a nop, then nop the callsite */
- 		ret = paravirt_patch_nop();
- 	else if (type == PARAVIRT_PATCH(pv_cpu_ops.iret) ||
--		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_sysexit))
-+		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_syscall_ret))
- 		/* If operation requires a jmp, then jmp */
- 		ret = paravirt_patch_jmp(insnbuf, opfunc, addr, len);
- 	else
-@@ -237,7 +237,7 @@ static void native_flush_tlb_single(unsigned long addr)
- 
- /* These are in entry.S */
- extern void native_iret(void);
--extern void native_irq_enable_sysexit(void);
-+extern void native_irq_enable_syscall_ret(void);
- 
- static int __init print_banner(void)
+-static void flush_tlb_others(cpumask_t cpumask, struct mm_struct *mm,
+-						unsigned long va)
++void native_flush_tlb_others(const cpumask_t *cpumaskp,
++			     struct mm_struct *mm, unsigned long va)
  {
-@@ -384,7 +384,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- 	.write_idt_entry = write_dt_entry,
- 	.load_esp0 = native_load_esp0,
+ 	int sender;
+ 	union smp_flush_state *f;
++	cpumask_t cpumask = *cpumaskp;
  
--	.irq_enable_sysexit = native_irq_enable_sysexit,
-+	.irq_enable_syscall_ret = native_irq_enable_syscall_ret,
- 	.iret = native_iret,
- 
- 	.set_iopl_mask = native_set_iopl_mask,
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index f02bad6..aacce42 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -148,7 +148,7 @@ static unsigned vmi_patch(u8 type, u16 clobbers, void *insns,
- 					      insns, eip);
- 		case PARAVIRT_PATCH(pv_cpu_ops.iret):
- 			return patch_internal(VMI_CALL_IRET, len, insns, eip);
--		case PARAVIRT_PATCH(pv_cpu_ops.irq_enable_sysexit):
-+		case PARAVIRT_PATCH(pv_cpu_ops.irq_enable_syscall_ret):
- 			return patch_internal(VMI_CALL_SYSEXIT, len, insns, eip);
- 		default:
- 			break;
-@@ -870,7 +870,7 @@ static inline int __init activate_vmi(void)
- 	 * the backend.  They are performance critical anyway, so requiring
- 	 * a patch is not a big problem.
- 	 */
--	pv_cpu_ops.irq_enable_sysexit = (void *)0xfeedbab0;
-+	pv_cpu_ops.irq_enable_syscall_ret = (void *)0xfeedbab0;
- 	pv_cpu_ops.iret = (void *)0xbadbab0;
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 94c39aa..094b915 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -953,7 +953,7 @@ static const struct pv_cpu_ops xen_cpu_ops __initdata = {
- 	.read_pmc = native_read_pmc,
- 
- 	.iret = (void *)&hypercall_page[__HYPERVISOR_iret],
--	.irq_enable_sysexit = NULL,  /* never called */
-+	.irq_enable_syscall_ret = NULL,  /* never called */
- 
- 	.load_tr_desc = paravirt_nop,
- 	.set_ldt = xen_set_ldt,
-diff --git a/include/asm-x86/irqflags.h b/include/asm-x86/irqflags.h
-index 1b695ff..fd0df93 100644
---- a/include/asm-x86/irqflags.h
-+++ b/include/asm-x86/irqflags.h
-@@ -1,5 +1,112 @@
-+#ifndef _X86_IRQFLAGS_H_
-+#define _X86_IRQFLAGS_H_
-+
-+#include <asm/processor-flags.h>
-+
- #ifdef CONFIG_X86_32
- # include "irqflags_32.h"
- #else
- # include "irqflags_64.h"
- #endif
-+
-+#ifndef __ASSEMBLY__
-+static inline void native_irq_disable(void)
-+{
-+	asm volatile("cli": : :"memory");
-+}
-+
-+static inline void native_irq_enable(void)
-+{
-+	asm volatile("sti": : :"memory");
-+}
-+
-+static inline void native_safe_halt(void)
-+{
-+	asm volatile("sti; hlt": : :"memory");
-+}
-+
-+static inline void native_halt(void)
-+{
-+	asm volatile("hlt": : :"memory");
-+}
-+#endif /* __ASSEMBLY__ */
+ 	/* Caller has disabled preemption */
+ 	sender = smp_processor_id() % NUM_INVALIDATE_TLB_VECTORS;
+diff --git a/include/asm-x86/tlbflush.h b/include/asm-x86/tlbflush.h
+index 9af4cc8..93283cf 100644
+--- a/include/asm-x86/tlbflush.h
++++ b/include/asm-x86/tlbflush.h
+@@ -1,5 +1,82 @@
++#ifndef _X86_TLBFLUSH_H_
++#define _X86_TLBFLUSH_H_
 +
 +#ifdef CONFIG_PARAVIRT
 +#include <asm/paravirt.h>
 +#else
-+#define ENABLE_INTERRUPTS(x)	sti
-+#define DISABLE_INTERRUPTS(x)	cli
-+#ifndef __ASSEMBLY__
-+
-+static inline unsigned long __raw_local_save_flags(void)
-+{
-+	return native_save_fl();
-+}
-+
-+static inline void raw_local_irq_restore(unsigned long flags)
-+{
-+	native_restore_fl(flags);
-+}
-+
-+static inline void raw_local_irq_disable(void)
-+{
-+	native_irq_disable();
-+}
-+
-+static inline void raw_local_irq_enable(void)
-+{
-+	native_irq_enable();
-+}
-+
-+/*
-+ * Used in the idle loop; sti takes one instruction cycle
-+ * to complete:
-+ */
-+static inline void raw_safe_halt(void)
-+{
-+	native_safe_halt();
-+}
-+
-+/*
-+ * Used when interrupts are already enabled or to
-+ * shutdown the processor:
-+ */
-+static inline void halt(void)
-+{
-+	native_halt();
-+}
-+
-+/*
-+ * For spinlocks, etc:
-+ */
-+static inline unsigned long __raw_local_irq_save(void)
-+{
-+	unsigned long flags = __raw_local_save_flags();
-+
-+	raw_local_irq_disable();
-+
-+	return flags;
-+}
-+#endif /* __ASSEMBLY__ */
-+#endif /* CONFIG_PARAVIRT */
-+
-+#ifndef __ASSEMBLY__
-+#define raw_local_save_flags(flags) \
-+		do { (flags) = __raw_local_save_flags(); } while (0)
-+
-+#define raw_local_irq_save(flags) \
-+		do { (flags) = __raw_local_irq_save(); } while (0)
-+
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
-+{
-+	return !(flags & X86_EFLAGS_IF);
-+}
-+
-+static inline int raw_irqs_disabled(void)
-+{
-+	unsigned long flags = __raw_local_save_flags();
-+
-+	return raw_irqs_disabled_flags(flags);
-+}
-+#endif /* __ASSEMBLY__ */
++#define __flush_tlb() __native_flush_tlb()
++#define __flush_tlb_global() __native_flush_tlb_global()
++#define __flush_tlb_single(addr) __native_flush_tlb_single(addr)
 +#endif
-diff --git a/include/asm-x86/irqflags_32.h b/include/asm-x86/irqflags_32.h
-index d058b04..11cfbdd 100644
---- a/include/asm-x86/irqflags_32.h
-+++ b/include/asm-x86/irqflags_32.h
-@@ -26,111 +26,12 @@ static inline void native_restore_fl(unsigned long f)
- 			     :"memory", "cc");
- }
++
++static inline void __native_flush_tlb(void)
++{
++	write_cr3(read_cr3());
++}
++
++static inline void __native_flush_tlb_global(void)
++{
++	unsigned long cr4 = read_cr4();
++	write_cr4(cr4 & ~X86_CR4_PGE);  /* clear PGE */
++	write_cr4(cr4);                 /* write old PGE again and flush TLBs */
++}
++
++#define __native_flush_tlb_single(addr) 				\
++	__asm__ __volatile__("invlpg (%0)" ::"r" (addr) : "memory")
++
++#ifdef CONFIG_SMP
++
++#include <asm/smp.h>
++#include <linux/mm.h>
++
++#define local_flush_tlb() \
++	__flush_tlb()
++
++extern void flush_tlb_all(void);
++extern void flush_tlb_current_task(void);
++extern void flush_tlb_mm(struct mm_struct *);
++extern void flush_tlb_page(struct vm_area_struct *, unsigned long);
++
++#define flush_tlb()	flush_tlb_current_task()
++
++static inline void flush_tlb_range(struct vm_area_struct *vma,
++				   unsigned long start, unsigned long end)
++{
++	flush_tlb_mm(vma->vm_mm);
++}
++
++void native_flush_tlb_others(const cpumask_t *cpumask, struct mm_struct *mm,
++			     unsigned long va);
++
++#define TLBSTATE_OK	1
++#define TLBSTATE_LAZY	2
++
++#ifdef CONFIG_X86_64
++/* Roughly an IPI every 20MB with 4k pages for freeing page table
++   ranges. Cost is about 42k of memory for each CPU. */
++#define ARCH_FREE_PTE_NR 5350
++
++#else /* X86_64 */
++struct tlb_state
++{
++	struct mm_struct *active_mm;
++	int state;
++	char __cacheline_padding[L1_CACHE_BYTES-8];
++};
++DECLARE_PER_CPU(struct tlb_state, cpu_tlbstate);
++#endif /* X86_64 */
++
++#endif
++
++#ifndef CONFIG_PARAVIRT
++#define flush_tlb_others(mask, mm, va)		\
++	native_flush_tlb_others(&mask, mm, va)
++#endif
++
+ #ifdef CONFIG_X86_32
+ # include "tlbflush_32.h"
+ #else
+ # include "tlbflush_64.h"
+ #endif
++
++#endif
+diff --git a/include/asm-x86/tlbflush_32.h b/include/asm-x86/tlbflush_32.h
+index 2bd5b95..07eaf37 100644
+--- a/include/asm-x86/tlbflush_32.h
++++ b/include/asm-x86/tlbflush_32.h
+@@ -1,49 +1,8 @@
+ #ifndef _I386_TLBFLUSH_H
+ #define _I386_TLBFLUSH_H
  
--static inline void native_irq_disable(void)
--{
--	asm volatile("cli": : :"memory");
--}
--
--static inline void native_irq_enable(void)
--{
--	asm volatile("sti": : :"memory");
--}
--
--static inline void native_safe_halt(void)
--{
--	asm volatile("sti; hlt": : :"memory");
--}
--
--static inline void native_halt(void)
--{
--	asm volatile("hlt": : :"memory");
--}
--#endif	/* __ASSEMBLY__ */
--
+-#include <linux/mm.h>
+ #include <asm/processor.h>
+ 
 -#ifdef CONFIG_PARAVIRT
 -#include <asm/paravirt.h>
 -#else
--#ifndef __ASSEMBLY__
--
--static inline unsigned long __raw_local_save_flags(void)
--{
--	return native_save_fl();
--}
--
--static inline void raw_local_irq_restore(unsigned long flags)
--{
--	native_restore_fl(flags);
--}
--
--static inline void raw_local_irq_disable(void)
--{
--	native_irq_disable();
--}
--
--static inline void raw_local_irq_enable(void)
--{
--	native_irq_enable();
--}
--
--/*
-- * Used in the idle loop; sti takes one instruction cycle
-- * to complete:
-- */
--static inline void raw_safe_halt(void)
--{
--	native_safe_halt();
--}
--
--/*
-- * Used when interrupts are already enabled or to
-- * shutdown the processor:
-- */
--static inline void halt(void)
--{
--	native_halt();
--}
--
--/*
-- * For spinlocks, etc:
-- */
--static inline unsigned long __raw_local_irq_save(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	raw_local_irq_disable();
--
--	return flags;
--}
--
--#else
--#define DISABLE_INTERRUPTS(clobbers)	cli
--#define ENABLE_INTERRUPTS(clobbers)	sti
--#define ENABLE_INTERRUPTS_SYSEXIT	sti; sysexit
-+#elif !defined(CONFIG_PARAVIRT)	/* __ASSEMBLY__ */
-+#define ENABLE_INTERRUPTS_SYSCALL_RET	sti; sysexit
- #define INTERRUPT_RETURN		iret
- #define GET_CR0_INTO_EAX		movl %cr0, %eax
--#endif /* __ASSEMBLY__ */
- #endif /* CONFIG_PARAVIRT */
- 
--#ifndef __ASSEMBLY__
--#define raw_local_save_flags(flags) \
--		do { (flags) = __raw_local_save_flags(); } while (0)
--
--#define raw_local_irq_save(flags) \
--		do { (flags) = __raw_local_irq_save(); } while (0)
--
--static inline int raw_irqs_disabled_flags(unsigned long flags)
--{
--	return !(flags & X86_EFLAGS_IF);
--}
--
--static inline int raw_irqs_disabled(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	return raw_irqs_disabled_flags(flags);
--}
--#endif /* __ASSEMBLY__ */
--
- /*
-  * Do the CPU's IRQ-state tracing from assembly code. We call a
-  * C function, so save all the C-clobbered registers:
-diff --git a/include/asm-x86/irqflags_64.h b/include/asm-x86/irqflags_64.h
-index 5341ea1..88eb53f 100644
---- a/include/asm-x86/irqflags_64.h
-+++ b/include/asm-x86/irqflags_64.h
-@@ -16,7 +16,7 @@
-  * Interrupt control:
-  */
- 
--static inline unsigned long __raw_local_save_flags(void)
-+static inline unsigned long native_save_fl(void)
- {
- 	unsigned long flags;
- 
-@@ -31,10 +31,7 @@ static inline unsigned long __raw_local_save_flags(void)
- 	return flags;
- }
- 
--#define raw_local_save_flags(flags) \
--		do { (flags) = __raw_local_save_flags(); } while (0)
--
--static inline void raw_local_irq_restore(unsigned long flags)
-+static inline void native_restore_fl(unsigned long flags)
- {
- 	__asm__ __volatile__(
- 		"pushq %0 ; popfq"
-@@ -43,93 +40,7 @@ static inline void raw_local_irq_restore(unsigned long flags)
- 		:"memory", "cc"
- 	);
- }
--
--#ifdef CONFIG_X86_VSMP
--
--/*
-- * Interrupt control for the VSMP architecture:
-- */
--
--static inline void raw_local_irq_disable(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	raw_local_irq_restore((flags & ~X86_EFLAGS_IF) | X86_EFLAGS_AC);
--}
--
--static inline void raw_local_irq_enable(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	raw_local_irq_restore((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
--}
--
--static inline int raw_irqs_disabled_flags(unsigned long flags)
--{
--	return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
--}
--
--#else /* CONFIG_X86_VSMP */
--
--static inline void raw_local_irq_disable(void)
--{
--	__asm__ __volatile__("cli" : : : "memory");
--}
--
--static inline void raw_local_irq_enable(void)
--{
--	__asm__ __volatile__("sti" : : : "memory");
--}
--
--static inline int raw_irqs_disabled_flags(unsigned long flags)
--{
--	return !(flags & X86_EFLAGS_IF);
--}
--
+-#define __flush_tlb() __native_flush_tlb()
+-#define __flush_tlb_global() __native_flush_tlb_global()
+-#define __flush_tlb_single(addr) __native_flush_tlb_single(addr)
 -#endif
 -
--/*
-- * For spinlocks, etc.:
-- */
--
--static inline unsigned long __raw_local_irq_save(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	raw_local_irq_disable();
--
--	return flags;
--}
--
--#define raw_local_irq_save(flags) \
--		do { (flags) = __raw_local_irq_save(); } while (0)
--
--static inline int raw_irqs_disabled(void)
--{
--	unsigned long flags = __raw_local_save_flags();
--
--	return raw_irqs_disabled_flags(flags);
--}
+-#define __native_flush_tlb()						\
+-	do {								\
+-		unsigned int tmpreg;					\
+-									\
+-		__asm__ __volatile__(					\
+-			"movl %%cr3, %0;              \n"		\
+-			"movl %0, %%cr3;  # flush TLB \n"		\
+-			: "=r" (tmpreg)					\
+-			:: "memory");					\
+-	} while (0)
 -
 -/*
-- * Used in the idle loop; sti takes one instruction cycle
-- * to complete:
+- * Global pages have to be flushed a bit differently. Not a real
+- * performance problem because this does not happen often.
 - */
--static inline void raw_safe_halt(void)
+-#define __native_flush_tlb_global()					\
+-	do {								\
+-		unsigned int tmpreg, cr4, cr4_orig;			\
+-									\
+-		__asm__ __volatile__(					\
+-			"movl %%cr4, %2;  # turn off PGE     \n"	\
+-			"movl %2, %1;                        \n"	\
+-			"andl %3, %1;                        \n"	\
+-			"movl %1, %%cr4;                     \n"	\
+-			"movl %%cr3, %0;                     \n"	\
+-			"movl %0, %%cr3;  # flush TLB        \n"	\
+-			"movl %2, %%cr4;  # turn PGE back on \n"	\
+-			: "=&r" (tmpreg), "=&r" (cr4), "=&r" (cr4_orig)	\
+-			: "i" (~X86_CR4_PGE)				\
+-			: "memory");					\
+-	} while (0)
+-
+ #define __native_flush_tlb_single(addr) 				\
+ 	__asm__ __volatile__("invlpg (%0)" ::"r" (addr) : "memory")
+ 
+@@ -120,44 +79,8 @@ static inline void native_flush_tlb_others(const cpumask_t *cpumask,
+ {
+ }
+ 
+-#else  /* SMP */
+-
+-#include <asm/smp.h>
+-
+-#define local_flush_tlb() \
+-	__flush_tlb()
+-
+-extern void flush_tlb_all(void);
+-extern void flush_tlb_current_task(void);
+-extern void flush_tlb_mm(struct mm_struct *);
+-extern void flush_tlb_page(struct vm_area_struct *, unsigned long);
+-
+-#define flush_tlb()	flush_tlb_current_task()
+-
+-static inline void flush_tlb_range(struct vm_area_struct * vma, unsigned long start, unsigned long end)
 -{
--	__asm__ __volatile__("sti; hlt" : : : "memory");
+-	flush_tlb_mm(vma->vm_mm);
 -}
 -
--/*
-- * Used when interrupts are already enabled or to
-- * shutdown the processor:
-- */
--static inline void halt(void)
+-void native_flush_tlb_others(const cpumask_t *cpumask, struct mm_struct *mm,
+-			     unsigned long va);
+-
+-#define TLBSTATE_OK	1
+-#define TLBSTATE_LAZY	2
+-
+-struct tlb_state
 -{
--	__asm__ __volatile__("hlt": : :"memory");
+-	struct mm_struct *active_mm;
+-	int state;
+-	char __cacheline_padding[L1_CACHE_BYTES-8];
+-};
+-DECLARE_PER_CPU(struct tlb_state, cpu_tlbstate);
+ #endif	/* SMP */
+ 
+-#ifndef CONFIG_PARAVIRT
+-#define flush_tlb_others(mask, mm, va)		\
+-	native_flush_tlb_others(&mask, mm, va)
+-#endif
+ 
+ static inline void flush_tlb_kernel_range(unsigned long start,
+ 					unsigned long end)
+diff --git a/include/asm-x86/tlbflush_64.h b/include/asm-x86/tlbflush_64.h
+index 7731fd2..d1d1097 100644
+--- a/include/asm-x86/tlbflush_64.h
++++ b/include/asm-x86/tlbflush_64.h
+@@ -6,21 +6,8 @@
+ #include <asm/processor.h>
+ #include <asm/system.h>
+ 
+-static inline void __flush_tlb(void)
+-{
+-	write_cr3(read_cr3());
 -}
 -
--#else /* __ASSEMBLY__: */
-+#else /* __ASSEMBLY__ */
- # ifdef CONFIG_TRACE_IRQFLAGS
- #  define TRACE_IRQS_ON		call trace_hardirqs_on_thunk
- #  define TRACE_IRQS_OFF	call trace_hardirqs_off_thunk
-@@ -153,4 +64,21 @@ static inline void halt(void)
- # endif
+-static inline void __flush_tlb_all(void)
+-{
+-	unsigned long cr4 = read_cr4();
+-	write_cr4(cr4 & ~X86_CR4_PGE);	/* clear PGE */
+-	write_cr4(cr4);			/* write old PGE again and flush TLBs */
+-}
+-
+-#define __flush_tlb_one(addr) \
+-	__asm__ __volatile__("invlpg (%0)" :: "r" (addr) : "memory")
+-
++#define __flush_tlb_one(addr) __flush_tlb_single(addr)
++#define __flush_tlb_all() __flush_tlb_global()
+ 
+ /*
+  * TLB flushing:
+@@ -63,32 +50,12 @@ static inline void flush_tlb_range(struct vm_area_struct *vma,
+ 		__flush_tlb();
+ }
+ 
+-#else
+-
+-#include <asm/smp.h>
+-
+-#define local_flush_tlb() \
+-	__flush_tlb()
+-
+-extern void flush_tlb_all(void);
+-extern void flush_tlb_current_task(void);
+-extern void flush_tlb_mm(struct mm_struct *);
+-extern void flush_tlb_page(struct vm_area_struct *, unsigned long);
+-
+-#define flush_tlb()	flush_tlb_current_task()
+-
+-static inline void flush_tlb_range(struct vm_area_struct * vma, unsigned long start, unsigned long end)
++static inline void native_flush_tlb_others(const cpumask_t *cpumask,
++					   struct mm_struct *mm,
++					   unsigned long va)
+ {
+-	flush_tlb_mm(vma->vm_mm);
+ }
+ 
+-#define TLBSTATE_OK	1
+-#define TLBSTATE_LAZY	2
+-
+-/* Roughly an IPI every 20MB with 4k pages for freeing page table
+-   ranges. Cost is about 42k of memory for each CPU. */
+-#define ARCH_FREE_PTE_NR 5350	
+-
  #endif
  
-+#ifndef CONFIG_PARAVIRT
-+#define INTERRUPT_RETURN	iretq
-+#define ENABLE_INTERRUPTS_SYSCALL_RET			\
-+			movq	%gs:pda_oldrsp, %rsp;	\
-+			swapgs;				\
-+			sysretq;
-+#endif
-+/* Currently paravirt can't handle swapgs nicely when we
-+ * don't have a stack we can rely on (such as a user space
-+ * stack).  So we either find a way around these or just fault
-+ * and emulate if a guest tries to call swapgs directly.
-+ *
-+ * Either way, this is a good way to document that we don't
-+ * have a reliable stack.
-+ */
-+#define SWAPGS_UNSAFE_STACK	swapgs
-+
- #endif
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
-index f59d370..d81a361 100644
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -121,7 +121,7 @@ struct pv_cpu_ops {
- 	u64 (*read_pmc)(void);
- 
- 	/* These two are jmp to, not actually called. */
--	void (*irq_enable_sysexit)(void);
-+	void (*irq_enable_syscall_ret)(void);
- 	void (*iret)(void);
- 
- 	struct pv_lazy_ops lazy_mode;
-@@ -1138,9 +1138,10 @@ static inline unsigned long __raw_local_irq_save(void)
- 		  call *%cs:pv_irq_ops+PV_IRQ_irq_enable;		\
- 		  popl %edx; popl %ecx; popl %eax)
- 
--#define ENABLE_INTERRUPTS_SYSEXIT					       \
--	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_irq_enable_sysexit), CLBR_NONE,\
--		  jmp *%cs:pv_cpu_ops+PV_CPU_irq_enable_sysexit)
-+#define ENABLE_INTERRUPTS_SYSCALL_RET					\
-+	PARA_SITE(PARA_PATCH(pv_cpu_ops, PV_CPU_irq_enable_syscall_ret),\
-+		  CLBR_NONE,						\
-+		  jmp *%cs:pv_cpu_ops+PV_CPU_irq_enable_syscall_ret)
- 
- #define GET_CR0_INTO_EAX			\
- 	push %ecx; push %edx;			\
+ static inline void flush_tlb_kernel_range(unsigned long start,
 -- 
 1.4.4.2
 
