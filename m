@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXJaNG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbXJaNJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbXJaNG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 09:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXJaNGl
+	id S1759261AbXJaNJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 09:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXJaNIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 09:06:41 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:55496 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755915AbXJaNGk (ORCPT
+	Wed, 31 Oct 2007 09:08:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33884 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754803AbXJaNIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 09:06:40 -0400
-Date: Wed, 31 Oct 2007 13:06:22 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: veerasena reddy <veerasena_b@yahoo.co.in>
-Cc: linux-mips <linux-mips@linux-mips.org>,
-       "linux-kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: porting KGDB onto MIPS24K processor running linux-2.6.18.8
-Message-ID: <20071031130622.GD14187@linux-mips.org>
-References: <245251.43610.qm@web8413.mail.in.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <245251.43610.qm@web8413.mail.in.yahoo.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Wed, 31 Oct 2007 09:08:50 -0400
+Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-Reply-To: <1193835258.27652.199.camel@twins>
+References: <20071030160401.296770000@chello.nl>
+	 <200710312146.03351.nickpiggin@yahoo.com.au>
+	 <1193833072.27652.167.camel@twins>
+	 <200710312225.07249.nickpiggin@yahoo.com.au>
+	 <1193835258.27652.199.camel@twins>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 14:08:43 +0100
+Message-Id: <1193836123.27652.209.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31, 2007 at 03:32:58PM +0530, veerasena reddy wrote:
+On Wed, 2007-10-31 at 13:54 +0100, Peter Zijlstra wrote:
+> On Wed, 2007-10-31 at 22:25 +1100, Nick Piggin wrote:
 
-> I would like to port KGDB on MIPS24K target processor which is running linux-2.6.18.8 kernel.
-> Could you please guide me, where can I get the appropriate KGDB patch for 2.6.18.8 kernel?
+> > What I'm saying is that the slab allocator slowpath should always
+> > just check watermarks against the current task. Instead of this
+> > ->reserve stuff.
+> 
+> So what you say is to allocate a slab every time we take the slow path,
+> even when we already have one?
 
-Generic MIPS KGDB support is in the kernel.  You will need to add two
-functions getDebugChar and putDebugChar to do the debug I/O plus whatever
-initialization the KGDB serial interface needs and have your platform
-set SYS_SUPPORTS_KGDB in Kconfig to indicate it actually supports KGDB.
+BTW, a task that does not have reserve permissions will already attempt
+to allocate a new slab - this is done to probe the current watermarks.
+If this succeeds the reserve status is lifted.
 
-  Ralf
+
