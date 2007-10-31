@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbXJaRMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbXJaRMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759534AbXJaRMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 13:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbXJaRMa
+	id S1760043AbXJaRMw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 13:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXJaRMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 31 Oct 2007 13:12:31 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:45130 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756881AbXJaRMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 31 Oct 2007 13:12:30 -0400
-Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:21547 "HELO
-	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756592AbXJaRM2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 13:12:28 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 13:12:28 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=0KCc1XPegyQB6ZzNNo4p3MbNn/pWbIhUR3guIJzJKp5ZNnDp7h8By5FzXlazYkWSulpVG93N/irTfGPsV6pWKG5mA6CdKm1XaqHD3Y49aqV12zChFRGj8uoh4vG95/qLYepCmFBpGac2ilN7/ueHRW9kUxmLhwlmzyIvUOAWcyE=;
-X-YMail-OSG: LuQgM6UVM1nzkXWBlat60CoPr1frGs36WHwQYfUsQfYlwxfMUzzC3WmKtOJ1bbyfW6k.y7q4OTas672L.3Vwu8OBxvScTsSonaI66KzfGRB6Ny8RrFk-
-X-Mailer: YahooMailRC/814.06 YahooMailWebService/0.7.134.12
-Date: Wed, 31 Oct 2007 10:05:46 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: [PATCH] telephony: phonedev panics if unregistering device not registered [Bug 9266]
-To: linux-kernel@vger.kernel.org
-Cc: bugme-daemon@kernel-bugs.osdl.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <224028.52554.qm@web52009.mail.re2.yahoo.com>
+Subject: RE: [PATCH 1/8] scsi: megaraid_sas - add hibernation support
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+In-Reply-To: <9738BCBE884FDB42801FAD8A7769C265010A0A11@NAMAIL1.ad.lsil.com>
+References: <1191253256.5850.4.camel@dhcp-75-534.se.lsil.com>
+	 <9738BCBE884FDB42801FAD8A7769C265010A0A09@NAMAIL1.ad.lsil.com>
+	 <1193764692.3321.88.camel@localhost.localdomain>
+	 <9738BCBE884FDB42801FAD8A7769C265010A0A11@NAMAIL1.ad.lsil.com>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 12:12:24 -0500
+Message-Id: <1193850744.3411.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+On Wed, 2007-10-31 at 07:25 -0600, Yang, Bo wrote:
+> James,
+> I did respond to Randy earlier. 
 
-Remove panic from phonedev.
+Sorry, I couldn't find it in the archive when I looked ... although the
+scsi reflector seems to be missing quite a few of your emails for some
+reason.
 
-Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
----
+> About the module params being added : 
+> 
+> The fast_load parameter is for the user to decide at driver load time
+> if (s)he wants to skip scan of devices in PD channels. 
+> 
+> After driver is loaded the user cannot be permitted to modify this
+> value. If the user needs to see the devices in the PD channels, (s)he
+> may initiate a scan via sysfs/proc based on the kernel being used.
+> Once the user has done the scan, the fast_load value does not have any
+> significance and thus not exposed for reading.
+> 
+> cmd_per_lun & max_sectors are also intended to be provided by user
+> only at driver load time. In the current implementation both these do
+> appear as read-only values under host# in sysfs. The current design is
+> not to allow these values to be modified on the fly. 
 
---- a/drivers/telephony/phonedev.c	2007-10-31 17:52:55.784817000 +0200
-+++ linux-2.6.24/drivers/telephony/phonedev.c	2007-10-31 17:55:48.144879000 +0200
-@@ -120,9 +120,8 @@ int phone_register_device(struct phone_d
- void phone_unregister_device(struct phone_device *pfd)
- {
- 	mutex_lock(&phone_lock);
--	if (phone_device[pfd->minor] != pfd)
--		panic("phone: bad unregister");
--	phone_device[pfd->minor] = NULL;
-+	if (likely(phone_device[pfd->minor] == pfd))
-+		phone_device[pfd->minor] = NULL;
- 	mutex_unlock(&phone_lock);
- }
- 
+fastload sounds reasonable.  cmd_per_lun and max_sectors could
+reasonably be altered at runtime ... just execute and unbind and rebind
+operation to make them take effect.
+
+James
 
 
 
-
-      Heute schon einen Blick in die Zukunft von E-Mails wagen? Versuchen Sie´s mit dem neuen Yahoo! Mail. www.yahoo.de/mail
