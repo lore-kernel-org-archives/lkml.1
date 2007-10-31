@@ -1,137 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbXJaOiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbXJaOvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbXJaOiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 10:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbXJaOiI
+	id S1757741AbXJaOvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 10:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXJaOvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 10:38:08 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:40802 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756551AbXJaOiH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 10:38:07 -0400
-Subject: Re: [PATCH] sysfs: add filter function to groups
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Greg KH <greg@kroah.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071031035506.GH14910@kroah.com>
-References: <1193671019.3383.13.camel@localhost.localdomain>
-	 <1193676852.2655.21.camel@lov.site>
-	 <1193677071.3383.56.camel@localhost.localdomain>
-	 <47261F50.3050901@s5r6.in-berlin.de>
-	 <1193768743.3321.91.camel@localhost.localdomain>
-	 <20071031035506.GH14910@kroah.com>
-Content-Type: text/plain
-Date: Wed, 31 Oct 2007 09:38:04 -0500
-Message-Id: <1193841484.3411.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 10:51:41 -0400
+Received: from ns1.suse.de ([195.135.220.2]:46212 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755985AbXJaOvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 10:51:41 -0400
+Date: Wed, 31 Oct 2007 07:34:41 -0700
+From: Greg KH <gregkh@suse.de>
+To: Denis Cheng <crquan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [sysfs]: make readlink result shorter when the symlink
+	and its target shared some base sysfs subdirectory
+Message-ID: <20071031143441.GA7128@suse.de>
+References: <1193826860-6166-1-git-send-email-crquan@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193826860-6166-1-git-send-email-crquan@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-30 at 20:55 -0700, Greg KH wrote:
-> OSame problem here, if grp->is_visible is not set, sysfs_add_file() would
-> never be called, right?
+On Wed, Oct 31, 2007 at 06:34:20PM +0800, Denis Cheng wrote:
+> this is especially useful after /sys/slab introduced, for example:
 > 
-> Other than the logic problem (I think), I have no issue with this idea
-> at all.  Care to redo this so it works?
+> $ ls -l /sys/slab/mm_struct
+> lrwxrwxrwx 1 root root 0 2007-10-31 17:40 /sys/slab/mm_struct -> :0000448
+> 
+> instead of:
+> 
+> $ ls -l /sys/slab/mm_struct
+> lrwxrwxrwx 1 root root 0 2007-10-31 17:40 /sys/slab/mm_struct -> ../slab/:0000448
+> 
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-It's a fair cop govenor ... new patch attached.
+As pretty as this change is, it's not really necessary, right?
 
-James
+Is there any other place in /sys that would benefit from this?
 
----
-Index: BUILD-2.6/fs/sysfs/group.c
-===================================================================
---- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
-+++ BUILD-2.6/fs/sysfs/group.c	2007-10-31 09:29:14.000000000 -0500
-@@ -16,25 +16,31 @@
- #include "sysfs.h"
- 
- 
--static void remove_files(struct sysfs_dirent *dir_sd,
-+static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 			 const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
-+	int i;
- 
--	for (attr = grp->attrs; *attr; attr++)
--		sysfs_hash_and_remove(dir_sd, (*attr)->name);
-+	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
-+		if (!grp->is_visible ||
-+		    grp->is_visible(kobj, *attr, i))
-+			sysfs_hash_and_remove(dir_sd, (*attr)->name);
- }
- 
--static int create_files(struct sysfs_dirent *dir_sd,
-+static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
- 			const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
--	int error = 0;
-+	int error = 0, i;
- 
--	for (attr = grp->attrs; *attr && !error; attr++)
--		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-+	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
-+		if (!grp->is_visible ||
-+		    grp->is_visible(kobj, *attr, i))
-+			error |=
-+				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
- 	if (error)
--		remove_files(dir_sd, grp);
-+		remove_files(dir_sd, kobj, grp);
- 	return error;
- }
- 
-@@ -54,7 +60,7 @@ int sysfs_create_group(struct kobject * 
- 	} else
- 		sd = kobj->sd;
- 	sysfs_get(sd);
--	error = create_files(sd, grp);
-+	error = create_files(sd, kobj, grp);
- 	if (error) {
- 		if (grp->name)
- 			sysfs_remove_subdir(sd);
-@@ -75,7 +81,7 @@ void sysfs_remove_group(struct kobject *
- 	} else
- 		sd = sysfs_get(dir_sd);
- 
--	remove_files(sd, grp);
-+	remove_files(sd, kobj, grp);
- 	if (grp->name)
- 		sysfs_remove_subdir(sd);
- 
-Index: BUILD-2.6/include/linux/sysfs.h
-===================================================================
---- BUILD-2.6.orig/include/linux/sysfs.h	2007-10-28 17:20:06.000000000 -0500
-+++ BUILD-2.6/include/linux/sysfs.h	2007-10-30 13:24:06.000000000 -0500
-@@ -32,6 +32,8 @@ struct attribute {
- 
- struct attribute_group {
- 	const char		*name;
-+	int			(*is_visible)(struct kobject *,
-+					      struct attribute *, int);
- 	struct attribute	**attrs;
- };
- 
-Index: BUILD-2.6/kernel/params.c
-===================================================================
---- BUILD-2.6.orig/kernel/params.c	2007-10-29 01:18:43.000000000 -0500
-+++ BUILD-2.6/kernel/params.c	2007-10-29 01:18:49.000000000 -0500
-@@ -472,7 +472,7 @@ param_sysfs_setup(struct module_kobject 
- 			sizeof(mp->grp.attrs[0]));
- 	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
- 
--	mp = kmalloc(size[0] + size[1], GFP_KERNEL);
-+	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
- 	if (!mp)
- 		return ERR_PTR(-ENOMEM);
- 
+thanks,
 
-
+greg k-h
