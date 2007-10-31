@@ -1,45 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXJaT7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbXJaUAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbXJaT7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 15:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXJaT7k
+	id S1759622AbXJaUAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXJaT76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 15:59:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58353 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753230AbXJaT7j (ORCPT
+	Wed, 31 Oct 2007 15:59:58 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48819 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbXJaT75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 15:59:39 -0400
-Date: Wed, 31 Oct 2007 12:59:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
-       torvalds@linux-foundation.org, adaplas@pol.net, ak@suse.de,
-       ebiederm@xmission.com, mouli@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
-Message-Id: <20071031125907.ba953d4a.akpm@linux-foundation.org>
-In-Reply-To: <1193793701.23935.394.camel@caritas-dev.intel.com>
-References: <1193218342.23935.147.camel@caritas-dev.intel.com>
-	<1193793701.23935.394.camel@caritas-dev.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 31 Oct 2007 15:59:57 -0400
+Date: Wed, 31 Oct 2007 15:59:37 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 0/4] UML - Four fixes for 2.6.24
+Message-ID: <20071031195937.GA9650@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007 09:21:41 +0800
-"Huang, Ying" <ying.huang@intel.com> wrote:
+These four patches are bug and build fixes that should go into 2.6.24.
 
-> Can this patchset be merged into mainline kernel? This patchset has been
-> in -mm tree from 2.6.23-rc2-mm2 on. Andrew Moton has suggested it to be
-> merged into 2.6.24 during early merge window of 2.6.24. It was not
-> merged into mainline because the 32-bit boot protocol has not been done.
-> 
-> But now, the 32-bit boot protocol has been merged into mainline. So can
-> this patchset be merged into mainline kernel now?
-> 
+				Jeff
 
-I stopped paying attention, sorry.  Have all the outstanding issues been
-addressed?
+-- 
+Work email - jdike at linux dot intel dot com
