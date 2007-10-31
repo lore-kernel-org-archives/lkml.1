@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXJaUDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbXJaUKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXJaUDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXJaUDO
+	id S1759385AbXJaUKG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXJaUJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:03:14 -0400
-Received: from mta13.adelphia.net ([68.168.78.44]:36285 "EHLO
-	mta13.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbXJaUDO (ORCPT
+	Wed, 31 Oct 2007 16:09:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40369 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754145AbXJaUJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:03:14 -0400
-Message-ID: <4728DF7E.9090606@rqdq.com>
-Date: Wed, 31 Oct 2007 16:03:10 -0400
-From: Benjamin Yates <benjamin@rqdq.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 31 Oct 2007 16:09:55 -0400
+Message-ID: <4728E0DE.7080702@zytor.com>
+Date: Wed, 31 Oct 2007 13:09:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22+, CONFIG_NO_HZ=n, but irq/s looks like NO_HZ=y
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Huang, Ying" <ying.huang@intel.com>, tglx@linutronix.de, mingo@redhat.com,
+       torvalds@linux-foundation.org, adaplas@pol.net, ak@suse.de,
+       ebiederm@xmission.com, mouli@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+References: <1193218342.23935.147.camel@caritas-dev.intel.com>	<1193793701.23935.394.camel@caritas-dev.intel.com> <20071031125907.ba953d4a.akpm@linux-foundation.org>
+In-Reply-To: <20071031125907.ba953d4a.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> I stopped paying attention, sorry.  Have all the outstanding issues been
+> addressed?
 
-    can't find many references on this one, so posting here...
+The "EFI boot" patchset looks fairly unobtrusive to me.  One objection: 
+the VIDEO_TYPE_ numbers appear split up into groups; and the EFI one 
+probably should be 0x70 instead of 0x24.
 
-    CONFIG_NO_HZ=n, but vmstat output shows int/sec which looks like a 
-dynticks setup.
+Other than that, I just need to verify it doesn't break anything.
 
-    vmstat lies?
+"EFI runtime" I have not had time to review yet.
 
-    vmstat needs an update?
-
-    -benjamin
-
-   
-
-root@blahblah /usr/src/linux # uname -a
-Linux blahblah 2.6.23.1 #2 SMP Sun Oct 14 23:40:05 EDT 2007 i686 Dual 
-Core AMD Opteron(tm) Processor 185 AuthenticAMD GNU/Linux
-
-root@blahblah /usr/src/linux # zcat /proc/config.gz | grep HZ
-# CONFIG_NO_HZ is not set
-CONFIG_HZ_100=y
-# CONFIG_HZ_250 is not set
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=100
-
-root@blahblah /usr/src/linux # vmstat 1
-procs -----------memory---------- ---swap-- -----io---- -system-- 
-----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy 
-id wa
- 3  0      0 265492  85576 105432    0    0    45   153   26  230 24 28 
-47  1
- 0  0      0 265480  85576 105432    0    0     0     0    6   52  0  0 
-100  0
- 0  0      0 264976  85576 105432    0    0     0     0    9   65  1  3 
-96  0
- 0  0      0 265876  85576 105432    0    0     0     0   10   65  1  2 
-97  0
+	-hpa
 
