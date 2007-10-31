@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXJaEmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbXJaEoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbXJaEmj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbXJaEmW
+	id S1755047AbXJaEoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbXJaEoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:42:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60349
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753057AbXJaEmU (ORCPT
+	Wed, 31 Oct 2007 00:44:10 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:28894 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752623AbXJaEoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:42:20 -0400
-Date: Tue, 30 Oct 2007 21:42:19 -0700 (PDT)
-Message-Id: <20071030.214219.256397507.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] af_key: suppress a warning for 64k pages.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071031153422.44f864e8.sfr@canb.auug.org.au>
-References: <20071031145954.fe106f73.sfr@canb.auug.org.au>
-	<20071030.210846.215166155.davem@davemloft.net>
-	<20071031153422.44f864e8.sfr@canb.auug.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 31 Oct 2007 00:44:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GGfNNVWzMfAYOZrpsR7unaPGhNIN1r9tnwH1/3BjX5dc95Q86nBq7qLme6RXomLzdHlUDuMGwSTBZ66835vn2gFt9/xy5WuwIIkJYFYRbnAHirQ0VtV4y40oxe7OSCaxHr/bbFvDSLsIr65Ov7+2V7UTlIBg5JtDG1f2mK5ZTXc=  ;
+X-YMail-OSG: S4OkT_AVM1ldIVngzff0X7Gdrw6TU7wM1NKZP.123MwpYZW17ZLiZLIz4FpyVgltKz3RgwmhEw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+Date: Wed, 31 Oct 2007 14:37:28 +1100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+References: <20071030160401.296770000@chello.nl> <20071030160910.813944000@chello.nl>
+In-Reply-To: <20071030160910.813944000@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200710311437.28630.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 31 Oct 2007 15:34:22 +1100
+On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
+> Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> contexts that are entitled to it.
+>
+> Care is taken to only touch the SLUB slow path.
+>
+> This is done to ensure reserve pages don't leak out and get consumed.
 
-> On Tue, 30 Oct 2007 21:08:46 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> > I think we should retain the check, but modify it so that GCC knows we
-> > understand that it's OK if it is always false.  Perhaps a simple (u32)
-> > cast on the left branch of the comparison is sufficient?
-> 
-> Unfortunately, that does not suppress the warning (gcc is getting too
-> smart :-().
+I think this is generally a good idea (to prevent slab allocators
+from stealing reserve). However I naively think the implementation
+is a bit overengineered and thus has a few holes.
 
-It seems if you break the comparison out into a function which
-takes a u32, that's enough to get rid of the warning.
-
-I can't figure out a way to make this prettier, can you?
-
-#define PAGE_SIZE	(64 * 1024)
-
-typedef unsigned int u32;
-typedef unsigned short u16;
-
-int compare(u32 val)
-{
-	if (val >= PAGE_SIZE)
-		return -1;
-	return 0;
-}
-
-int foo(u16 val)
-{
-#if 1
-	return compare(val);
-#else
-	if (val >= PAGE_SIZE)
-		return -1;
-	return 0;
-#endif
-}
+Humour me, what was the problem with failing the slab allocation
+(actually, not fail but just call into the page allocator to do
+correct waiting  / reclaim) in the slowpath if the process fails the
+watermark checks?
