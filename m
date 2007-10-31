@@ -1,37 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXJaEAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXJaEC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbXJaEAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbXJaEAI
+	id S1753968AbXJaEC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXJaECR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:00:08 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46611 "EHLO mail.dvmed.net"
+	Wed, 31 Oct 2007 00:02:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57793 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbXJaEAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:00:06 -0400
-Message-ID: <4727FDC3.8010407@garzik.org>
-Date: Wed, 31 Oct 2007 00:00:03 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Shawn Jin <shawnxjin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Multiple MSI messages support
-References: <c3d0340b0710301413r2607ee08x8b27c5bffa43f1c4@mail.gmail.com>	<4727AED2.6010908@garzik.org> <adaejfci5cz.fsf@cisco.com>
-In-Reply-To: <adaejfci5cz.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750785AbXJaECQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 00:02:16 -0400
+Date: Wed, 31 Oct 2007 15:02:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: <aacraid@adaptec.com>
+Cc: <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] aacraid: don't assign cpu_to_le32(constant) to u8
+Message-Id: <20071031150216.88cecc21.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Multiple interrupt messages are supported by Linux via MSI-X (which
+Noticed on PowerPC allmod config build:
 
-Absolutely, but the poster seemed to be talking about MSI, not MSI-X.
+drivers/scsi/aacraid/commsup.c:1342: warning: large integer implicitly truncated to unsigned type
+drivers/scsi/aacraid/commsup.c:1343: warning: large integer implicitly truncated to unsigned type
+drivers/scsi/aacraid/commsup.c:1344: warning: large integer implicitly truncated to unsigned type
 
-	Jeff
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/scsi/aacraid/commsup.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+index 240a0bb..b9682a8 100644
+--- a/drivers/scsi/aacraid/commsup.c
++++ b/drivers/scsi/aacraid/commsup.c
+@@ -1339,9 +1339,9 @@ int aac_check_health(struct aac_dev * aac)
+ 			aif = (struct aac_aifcmd *)hw_fib->data;
+ 			aif->command = cpu_to_le32(AifCmdEventNotify);
+ 		 	aif->seqnum = cpu_to_le32(0xFFFFFFFF);
+-		 	aif->data[0] = cpu_to_le32(AifEnExpEvent);
+-			aif->data[1] = cpu_to_le32(AifExeFirmwarePanic);
+-		 	aif->data[2] = cpu_to_le32(AifHighPriority);
++		 	aif->data[0] = AifEnExpEvent;
++			aif->data[1] = AifExeFirmwarePanic;
++		 	aif->data[2] = AifHighPriority;
+ 			aif->data[3] = cpu_to_le32(BlinkLED);
+ 
+ 			/*
+-- 
+1.5.3.4
 
