@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXJaGly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbXJaGmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbXJaGly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXJaGlq
+	id S1755390AbXJaGmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbXJaGmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:41:46 -0400
-Received: from adsl-76-245-85-235.dsl.pltn13.sbcglobal.net ([76.245.85.235]:60524
-	"EHLO cynthia.pants.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbXJaGlp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:41:45 -0400
-X-Greylist: delayed 2534 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 02:41:45 EDT
-Date: Tue, 30 Oct 2007 20:43:05 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Jan Blunck <jblunck@suse.de>, Christoph Hellwig <hch@lst.de>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC 0/2] readdir() as an inode operation
-Message-ID: <20071031034305.GD23984@cynthia.pants.nu>
-References: <20071020100903.717837398@X40.localnet> <20071030152604.GC27039@atrey.karlin.mff.cuni.cz>
+	Wed, 31 Oct 2007 02:42:23 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33087 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbXJaGmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 02:42:23 -0400
+Date: Wed, 31 Oct 2007 07:42:21 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Duane Griffin <duaneg@dghda.com>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
+Message-ID: <20071031064221.GC12189@wotan.suse.de>
+References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071030152604.GC27039@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 04:26:04PM +0100, Jan Kara wrote:
-> > This is a first try to move readdir() to become an inode operation. This is
-> > necessary for a VFS implementation of "something like union-mounts" where a
-> > readdir() needs to read the directory contents of multiple directories.
-> > Besides that the new interface is no longer giving the struct file to the
-> > filesystem implementations anymore.
-> > 
-> > Comments, please?
->   Hmm, are you sure there are no users which keep some per-struct-file
-> information for directories? File offset is one such obvious thing which
-> you've handled but actually filesystem with more complicated structure
-> of directory may remember some hints about where we really are, keep
-> some readahead information or so...
+On Wed, Oct 31, 2007 at 12:45:35AM +0000, Duane Griffin wrote:
+> Accessing a memory mapped region past the last page containing a valid
+> file mapping produces a SIGBUS fault (as it should). Running a program
+> that does this under gdb, then accessing the invalid memory from gdb,
+> causes it to start consuming 100% CPU and become unkillable. Once in
+> that state, SysRq-T doesn't show a stack trace for gdb, although it is
+> shown as running and stack traces are dumped for other tasks.
 
-The hfsplus code keeps some extra data in the ->private_data of directories,
-although I've lost track of the exact benefit from not looking at the code
-in some years. As I recall it was a performance enhancement due to the
-fact that the data for all directories is effectively in a single file.
-I believe it was easier to keep the current position as a structure
-rather than just an offset and be careful about the tracking. The hfs
-code is almost identical to the hfsplus code in this area.
 
-	Brad Boyer
-	flar@allandria.com
+BTW. this has come up for me before, and I have found it useful on
+a number of occasions to print the stack of running tasks when they
+are looping in the kernel...
 
+Any reason we can't do this?
+
+--
+Sysrq+T fails to show the stack trace of a running task. Presumably this
+is to avoid a garbled stack, however it can often be useful, and besides
+there is no guarantee that the task won't start running in the middle of
+show_stack(). If there are any correctness issues, then the archietcture
+would have to take further steps to ensure the task is not running.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c	2007-10-31 06:53:22.000000000 +1100
++++ linux-2.6/kernel/sched.c	2007-10-31 06:56:02.000000000 +1100
+@@ -4900,8 +4900,7 @@
+ 	printk(KERN_CONT "%5lu %5d %6d\n", free,
+ 		task_pid_nr(p), task_pid_nr(p->parent));
+ 
+-	if (state != TASK_RUNNING)
+-		show_stack(p, NULL);
++	show_stack(p, NULL);
+ }
+ 
+ void show_state_filter(unsigned long state_filter)
