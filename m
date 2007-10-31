@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbXJaP3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXJaPa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761041AbXJaP3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759816AbXJaPZL
+	id S1760776AbXJaPa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759781AbXJaPZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:25:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33642 "EHLO
+	Wed, 31 Oct 2007 11:25:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33644 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759825AbXJaPZI (ORCPT
+	with ESMTP id S1759826AbXJaPZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 31 Oct 2007 11:25:08 -0400
-Date: Wed, 31 Oct 2007 08:12:12 -0700
+Date: Wed, 31 Oct 2007 08:12:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Jean Delvare <khali@linux-fr.org>, Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: [patch 21/26] hwmon/lm87: Fix a division by zero
-Message-ID: <20071031151212.GV2437@kroah.com>
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 22/26] hwmon/lm87: Disable VID when it should be
+Message-ID: <20071031151216.GW2437@kroah.com>
 References: <20071031150535.967437651@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hwmon-lm87-fix-a-division-by-zero.patch"
+Content-Disposition: inline; filename="hwmon-lm87-disable-vid-when-it-should-be.patch"
 In-Reply-To: <20071031151015.GA2437@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,13 +42,12 @@ know.
 From: Jean Delvare <khali@linux-fr.org>
 
 Already in Linus' tree:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b965d4b7f614522170af6a7e450be0333792ccd2
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=889af3d5d9586db795a06c619e416b4baee11da8
 
-Missing parentheses in the definition of FAN_FROM_REG cause a
-division by zero for a specific register value.
+A stupid bit shifting bug caused the VID value to be always exported
+even when the hardware is configured for something different.
 
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Hans de Goede <j.w.r.degoede@hhs.nl>
 Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
@@ -58,14 +57,14 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/drivers/hwmon/lm87.c
 +++ b/drivers/hwmon/lm87.c
-@@ -129,7 +129,7 @@ static u8 LM87_REG_TEMP_LOW[3] = { 0x3A,
- 				 (((val) < 0 ? (val)-500 : (val)+500) / 1000))
+@@ -145,7 +145,7 @@ static u8 LM87_REG_TEMP_LOW[3] = { 0x3A,
+ #define CHAN_NO_FAN(nr)		(1 << (nr))
+ #define CHAN_TEMP3		(1 << 2)
+ #define CHAN_VCC_5V		(1 << 3)
+-#define CHAN_NO_VID		(1 << 8)
++#define CHAN_NO_VID		(1 << 7)
  
- #define FAN_FROM_REG(reg,div)	((reg) == 255 || (reg) == 0 ? 0 : \
--				 1350000 + (reg)*(div) / 2) / ((reg)*(div))
-+				 (1350000 + (reg)*(div) / 2) / ((reg)*(div)))
- #define FAN_TO_REG(val,div)	((val)*(div) * 255 <= 1350000 ? 255 : \
- 				 (1350000 + (val)*(div) / 2) / ((val)*(div)))
- 
+ /*
+  * Functions declaration
 
 -- 
