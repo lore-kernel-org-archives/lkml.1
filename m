@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbXJaR0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbXJaRdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbXJaR0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 13:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbXJaR0l
+	id S1755754AbXJaRdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 13:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXJaRdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 13:26:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:59404 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418AbXJaR0k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 13:26:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BzFlVez6ZUsboZX65Kj9wFgqcM9obowebKXsfjGrKfvHXuU2NTtYB/IVx+ulUnlZjMm6mi0L/+qaWdUNQUayqSmx2OwjoNtGvfEFm8df9vihJDz1GlBULsDVGzl1JHjQnGS/5jPwOmbcQNr2NN1zvjAtaGLY/xvd9Z63XtClu2o=
-Message-ID: <12c511ca0710311026v39a91e61o448b340f413e08c0@mail.gmail.com>
-Date: Wed, 31 Oct 2007 10:26:37 -0700
-From: "Tony Luck" <tony.luck@intel.com>
-To: "Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: Re: [PATCH 1/6] Driver core: remove class_device_*_bin_file
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1193807505-3821-1-git-send-email-gregkh@suse.de>
+	Wed, 31 Oct 2007 13:33:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35463 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752117AbXJaRdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 13:33:11 -0400
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>, Ram <vshrirama@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: kernel processes - are they really needed?
+From: Andi Kleen <andi@firstfloor.org>
+References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com>
+	<p73hckgqoxg.fsf@bingen.suse.de>
+	<d120d5000710310935i13629beahdc01e775e3cf6aa@mail.gmail.com>
+Date: Wed, 31 Oct 2007 18:33:07 +0100
+In-Reply-To: <d120d5000710310935i13629beahdc01e775e3cf6aa@mail.gmail.com> (Dmitry Torokhov's message of "Wed\, 31 Oct 2007 12\:35\:31 -0400")
+Message-ID: <p73k5p32nqk.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071031050954.GA3791@kroah.com>
-	 <1193807505-3821-1-git-send-email-gregkh@suse.de>
-X-Google-Sender-Auth: 430eb11663ebbb05
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/30/07, Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> These functions are not used by anyone, so remove them from the tree.
+"Dmitry Torokhov" <dmitry.torokhov@gmail.com> writes:
 
-/me coughs ...
+> On 10/24/07, Andi Kleen <andi@firstfloor.org> wrote:
+>>
+>> My favourite for a ridiculous thread was and is "kpsmoused"
+>>
+>
+> Mouse querying can take significant amount of time. Do you really want
+> all your other events to be delayed just because kernel tries to get
+> mouse back in order?
 
-  CC      drivers/pci/probe.o
-drivers/pci/probe.c: In function `pci_create_legacy_files':
-drivers/pci/probe.c:57: error: implicit declaration of function
-`class_device_create_bin_file'
-drivers/pci/probe.c: In function `pci_remove_legacy_files':
-drivers/pci/probe.c:72: error: implicit declaration of function
-`class_device_remove_bin_file'
+How long? 
 
--Tony
+>
+> Although I probably want to kill it if mouse resync is disabled...
+
+How often does that happen? Can't you just start a thread for this
+as needed? Or if it's a simple algorithm you can just use a state machine
+using timers?
+
+-Andi
