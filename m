@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbXJaWSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbXJaWVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbXJaWSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXJaWRu
+	id S1760076AbXJaWVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbXJaWVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:17:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35106 "EHLO mx1.redhat.com"
+	Wed, 31 Oct 2007 18:21:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60356 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbXJaWRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:17:49 -0400
+	id S1752173AbXJaWVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:21:42 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
@@ -18,197 +18,111 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        tglx@linutronix.de, jun.nakajima@intel.com, glommer@gmail.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 9/16] This patch add provisions for time related functions so they
-Date: Wed, 31 Oct 2007 16:14:54 -0300
-Message-Id: <11938581512730-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 12/16] tweak io_64.h for paravirt.
+Date: Wed, 31 Oct 2007 16:14:57 -0300
+Message-Id: <11938581663639-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11938581451804-git-send-email-gcosta@redhat.com>
-References: <1193858101367-git-send-email-gcosta@redhat.com> <11938581073775-git-send-email-gcosta@redhat.com> <11938581133479-git-send-email-gcosta@redhat.com> <1193858118284-git-send-email-gcosta@redhat.com> <11938581242810-git-send-email-gcosta@redhat.com> <1193858130443-git-send-email-gcosta@redhat.com> <11938581351064-git-send-email-gcosta@redhat.com> <11938581403478-git-send-email-gcosta@redhat.com> <11938581451804-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11938581612389-git-send-email-gcosta@redhat.com>
+References: <1193858101367-git-send-email-gcosta@redhat.com> <11938581073775-git-send-email-gcosta@redhat.com> <11938581133479-git-send-email-gcosta@redhat.com> <1193858118284-git-send-email-gcosta@redhat.com> <11938581242810-git-send-email-gcosta@redhat.com> <1193858130443-git-send-email-gcosta@redhat.com> <11938581351064-git-send-email-gcosta@redhat.com> <11938581403478-git-send-email-gcosta@redhat.com> <11938581451804-git-send-email-gcosta@redhat.com> <11938581512730-git-send-email-gcosta@redhat.com> <11938581562552-git-send-email-gcosta@redhat.com> <11938581612389-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-can be later replaced by paravirt versions.
-
-it basically encloses {g,s}et_wallclock inside the
-already existent functions update_persistent_clock and
-read_persistent_clock, and defines {s,g}et_wallclock
-to the core of such functions.
-
-it also allow for a later-on-game time initialization, as done
-by i386. Paravirt guests can set a function to do their own
-initialization this way.
+We need something here because we can't call in and out instructions
+directly. However, we have to be careful, because no indirections are
+allowed in misc_64.c , and paravirt_ops is a kind of one. So just
+call it directly there
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- arch/x86/kernel/time_64.c |   42 ++++++++++++++++++++++++++++--------------
- include/asm-x86/time.h    |   26 ++++++++++++++++++++++----
- 2 files changed, 50 insertions(+), 18 deletions(-)
+ arch/x86/boot/compressed/misc_64.c |    6 +++++
+ include/asm-x86/io_64.h            |   37 +++++++++++++++++++++++++++++------
+ 2 files changed, 36 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
-index c821edc..85ec401 100644
---- a/arch/x86/kernel/time_64.c
-+++ b/arch/x86/kernel/time_64.c
-@@ -33,9 +33,12 @@
- #include <acpi/acpi_bus.h>
- #endif
- #include <asm/i8253.h>
-+#include <asm/arch_hooks.h>
- #include <asm/pgtable.h>
- #include <asm/vsyscall.h>
-+#include <asm/time.h>
- #include <asm/timex.h>
-+#include <asm/timer.h>
- #include <asm/proto.h>
- #include <asm/hpet.h>
- #include <asm/sections.h>
-@@ -77,18 +80,12 @@ EXPORT_SYMBOL(profile_pc);
-  * sheet for details.
+diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
+index 6ea015a..6640a17 100644
+--- a/arch/x86/boot/compressed/misc_64.c
++++ b/arch/x86/boot/compressed/misc_64.c
+@@ -9,6 +9,12 @@
+  * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
   */
  
--static int set_rtc_mmss(unsigned long nowtime)
-+int do_set_rtc_mmss(unsigned long nowtime)
- {
- 	int retval = 0;
- 	int real_seconds, real_minutes, cmos_minutes;
- 	unsigned char control, freq_select;
++/*
++ * we have to be careful, because no indirections are allowed here, and
++ * paravirt_ops is a kind of one. As it will only run in baremetal anyway,
++ * we just keep it from happening
++ */
++#undef CONFIG_PARAVIRT
+ #define _LINUX_STRING_H_ 1
+ #define __LINUX_BITMAP_H 1
  
--/*
-- * IRQs are disabled when we're called from the timer interrupt,
-- * no need for spin_lock_irqsave()
-- */
--
--	spin_lock(&rtc_lock);
+diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
+index a037b07..57fcdd9 100644
+--- a/include/asm-x86/io_64.h
++++ b/include/asm-x86/io_64.h
+@@ -35,12 +35,24 @@
+   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+   */
+ 
+-#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
++static inline void native_io_delay(void)
++{
++	asm volatile("outb %%al,$0x80" : : : "memory");
++}
+ 
+-#ifdef REALLY_SLOW_IO
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
++#if defined(CONFIG_PARAVIRT)
++#include <asm/paravirt.h>
+ #else
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
++
++static inline void slow_down_io(void)
++{
++	native_io_delay();
++#ifdef REALLY_SLOW_IO
++	native_io_delay();
++	native_io_delay();
++	native_io_delay();
++#endif
++}
+ #endif
  
  /*
-  * Tell the clock it's being set and stop it.
-@@ -138,14 +135,22 @@ static int set_rtc_mmss(unsigned long nowtime)
- 	CMOS_WRITE(control, RTC_CONTROL);
- 	CMOS_WRITE(freq_select, RTC_FREQ_SELECT);
+@@ -52,9 +64,15 @@ static inline void out##s(unsigned x value, unsigned short port) {
+ #define __OUT2(s,s1,s2) \
+ __asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1"
  
--	spin_unlock(&rtc_lock);
--
- 	return retval;
- }
- 
- int update_persistent_clock(struct timespec now)
- {
--	return set_rtc_mmss(now.tv_sec);
-+	int retval;
++#ifndef REALLY_SLOW_IO
++#define REALLY_SLOW_IO
++#define UNSET_REALLY_SLOW_IO
++#endif
 +
-+/*
-+ * IRQs are disabled when we're called from the timer interrupt,
-+ * no need for spin_lock_irqsave()
-+ */
-+	spin_lock(&rtc_lock);
-+	retval = set_wallclock(now.tv_sec);
-+	spin_unlock(&rtc_lock);
+ #define __OUT(s,s1,x) \
+ __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
+-__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
++__OUT1(s##_p, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port)); \
++		slow_down_io(); }
+ 
+ #define __IN1(s) \
+ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
+@@ -63,8 +81,13 @@ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
+ __asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0"
+ 
+ #define __IN(s,s1,i...) \
+-__IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
+-__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
++__IN1(s) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i); return _v; } \
++__IN1(s##_p) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	  \
++				slow_down_io(); return _v; }
 +
-+	return retval;
- }
- 
- static irqreturn_t timer_event_interrupt(int irq, void *dev_id)
-@@ -157,7 +162,7 @@ static irqreturn_t timer_event_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--unsigned long read_persistent_clock(void)
-+unsigned long do_get_cmos_time(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
- 	unsigned long flags;
-@@ -208,10 +213,15 @@ unsigned long read_persistent_clock(void)
- 	return mktime(year, mon, day, hour, min, sec);
- }
- 
-+unsigned long read_persistent_clock(void)
-+{
-+	return get_wallclock();
-+}
-+
- /* calibrate_cpu is used on systems with fixed rate TSCs to determine
-  * processor frequency */
- #define TICK_COUNT 100000000
--static unsigned int __init tsc_calibrate_cpu_khz(void)
-+unsigned long __init native_calculate_cpu_khz(void)
- {
- 	int tsc_start, tsc_now;
- 	int i, no_ctr_free;
-@@ -261,20 +271,23 @@ static struct irqaction irq0 = {
- 	.name		= "timer"
- };
- 
--void __init time_init(void)
-+void __init hpet_time_init(void)
- {
- 	if (!hpet_enable())
- 		setup_pit_timer();
- 
- 	setup_irq(0, &irq0);
-+}
- 
-+void __init time_init(void)
-+{
- 	tsc_calibrate();
- 
- 	cpu_khz = tsc_khz;
- 	if (cpu_has(&boot_cpu_data, X86_FEATURE_CONSTANT_TSC) &&
- 		boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
- 		boot_cpu_data.x86 == 16)
--		cpu_khz = tsc_calibrate_cpu_khz();
-+		cpu_khz = calculate_cpu_khz();
- 
- 	if (unsynchronized_tsc())
- 		mark_tsc_unstable("TSCs unsynchronized");
-@@ -287,4 +300,5 @@ void __init time_init(void)
- 	printk(KERN_INFO "time.c: Detected %d.%03d MHz processor.\n",
- 		cpu_khz / 1000, cpu_khz % 1000);
- 	init_tsc_clocksource();
-+	late_time_init = choose_time_init();
- }
-diff --git a/include/asm-x86/time.h b/include/asm-x86/time.h
-index eac0113..0d18c78 100644
---- a/include/asm-x86/time.h
-+++ b/include/asm-x86/time.h
-@@ -1,6 +1,10 @@
--#ifndef _ASMi386_TIME_H
--#define _ASMi386_TIME_H
-+#ifndef _ASMX86_TIME_H
-+#define _ASMX86_TIME_H
- 
-+extern void (*late_time_init)(void);
-+extern void hpet_time_init(void);
-+
-+#ifndef CONFIG_X86_64
- #include <linux/efi.h>
- #include "mach_time.h"
- 
-@@ -28,8 +32,22 @@ static inline int native_set_wallclock(unsigned long nowtime)
- 	return retval;
- }
- 
--extern void (*late_time_init)(void);
--extern void hpet_time_init(void);
-+#else
-+extern unsigned long do_get_cmos_time(void);
-+extern int do_set_rtc_mmss(unsigned long nowtime);
-+extern void native_time_init_hook(void);
-+
-+static inline unsigned long native_get_wallclock(void)
-+{
-+	return do_get_cmos_time();
-+}
-+
-+static inline int native_set_wallclock(unsigned long nowtime)
-+{
-+	return do_set_rtc_mmss(nowtime);
-+}
-+
++#ifdef UNSET_REALLY_SLOW_IO
++#undef REALLY_SLOW_IO
 +#endif
  
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
+ #define __INS(s) \
+ static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
 -- 
 1.4.4.2
 
