@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbXJaPb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbXJaPdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbXJaPb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbXJaPap
+	id S1760471AbXJaPdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbXJaPdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:30:45 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55921 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761161AbXJaPao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:30:44 -0400
-Date: Wed, 31 Oct 2007 16:30:43 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andy Whitcroft <andyw@uk.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-git18: ext2_check_page: bad entry in directory
-Message-ID: <20071031153043.GA25466@duck.suse.cz>
-References: <20071024131540.GV32058@shadowen.org> <20071024135900.GC2652@duck.suse.cz> <20071024143308.GA23139@shadowen.org> <20071024150302.GD2652@duck.suse.cz> <20071024170729.GC23139@shadowen.org>
+	Wed, 31 Oct 2007 11:33:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47703 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757645AbXJaPdj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 11:33:39 -0400
+Date: Wed, 31 Oct 2007 08:21:09 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/26] 2.6.22-stable review
+Message-ID: <20071031152109.GA5309@kroah.com>
+References: <20071031151015.GA2437@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071024170729.GC23139@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071031151015.GA2437@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 24-10-07 18:07:29, Andy Whitcroft wrote:
-> On Wed, Oct 24, 2007 at 05:03:03PM +0200, Jan Kara wrote:
-> 
-> > e2image -r /dev/sda1 - | gzip -dc root-image.gz
-> 
-> This thing is 27MB, I'll try and find some space to hold it and
-> let you know where it is offlist.
-  The filesystem mounts just fine on my test machine under latest
-kernel tree from git. So, do you still see the problem? What is your
-hardware setup? Anything unusual I should be aware of?
-  It seems (from the error message) as if we simply read a page full
-of zeros from the root directory so it may be also a problem somewhere
-else...
+On Wed, Oct 31, 2007 at 08:10:15AM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.22.11 release.
+> There are 26 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let us know.  If anyone is a maintainer of the proper subsystem, and
+> wants to add a Signed-off-by: line to the patch, please respond with it.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Full, rolled up patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.22.11-rc1.gz
+
+thanks,
+
+greg k-h
