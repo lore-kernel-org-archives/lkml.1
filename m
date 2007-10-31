@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbXJaEJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXJaEOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754850AbXJaEJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbXJaEJM
+	id S1754080AbXJaEOR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXJaEOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 00:09:12 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:11719 "EHLO mx34.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888AbXJaEJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 00:09:11 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.6.24-rc1 regression] AC adapter state does not change after resume
-Date: Wed, 31 Oct 2007 07:09:01 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200710302324.52822.arvidjaar@mail.ru> <47279D8C.5040708@gmail.com>
-In-Reply-To: <47279D8C.5040708@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1606719.XSEWg3VSlV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 31 Oct 2007 00:14:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34451
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752222AbXJaEOF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 00:14:05 -0400
+Date: Tue, 30 Oct 2007 21:14:04 -0700 (PDT)
+Message-Id: <20071030.211404.43558275.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: raa.lkml@gmail.com, linux-kernel@vger.kernel.org, per.liden@ericsson.com,
+       allan.stephens@windriver.com
+Subject: Re: tipc_config.h requires linux/string.h, which does not exist in
+ exported headers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071030.153154.241148799.davem@davemloft.net>
+References: <20071030.150537.240140474.davem@davemloft.net>
+	<20071030222025.GA19792@uranus.ravnborg.org>
+	<20071030.153154.241148799.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200710310709.06621.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1606719.XSEWg3VSlV
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: David Miller <davem@davemloft.net>
+Date: Tue, 30 Oct 2007 15:31:54 -0700 (PDT)
 
-On Wednesday 31 October 2007, Alexey Starikovskiy wrote:
-> Andrey Borzenkov wrote:
-> > I suspect new ACPI AC adapter code but have to add some printk's to be
-> > sure.
-> >
-> > To reproduce - plug in AC cord, suspend, unplug, resume - kpowersave and
-> > sysfs still show AC adapter online. Or other way round.
-> >
-> > -andrey
->
-> Please check if this patch helps.
->
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 30 Oct 2007 23:20:25 +0100
+> 
+> > Something like this..
+> > I like it - much better than adding string.h to unidef-y.
+> > PS - had not pulled latest -linus - so you must update Kbuild.
+> > PPS - tipc.h should be exported too as I understood Stephen.
+> 
+> tipc.h is already listed in header-y.
+> 
+> I'll merge your patch, thanks Sam.
 
-It does not even compile :)
+Unfortunately I have to back it out, it breaks the build.
 
-On serious note (after adding forward declaration) - patch half works. It d=
-oes=20
-make "online" return true value (which confirms that underlying ACPI works=
-=20
-correctly) but HAL still does not notice it.
+In file included from net/tipc/core.h:41,
+                 from net/tipc/addr.c:37:
+include/linux/tipc_config.h: In function 'TLV_SET':
+include/linux/tipc_config.h:306: error: implicit declaration of function 'memcpy'
+include/linux/tipc_config.h:306: warning: incompatible implicit declaration of built-in function 'memcpy'
 
-The problem is, with power_supply interface HAL does not use polling, it=20
-relies on CHANGE event. This event is apparently never generated if AC=20
-adapter state changes on resume. So the obvious fix is to compare AC state=
-=20
-before and after suspend in ->resume function and generate synthetic CHANGE=
-=20
-event if something has changed.
+I truly think adding linux/string.h to unifdef-y along with:
 
-This will also make superfluous polling redundant.
+#ifndef __KERNEL__
+#include <string.h>
+#else
+ ...
+#endif
 
---nextPart1606719.XSEWg3VSlV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHJ//eR6LMutpd94wRAuufAJ9HLSss8laxu5MmxUXEZ8AIZm0guQCeO3vL
-jEbEJr1ZwGWbVG/oGl9SRwI=
-=pzbS
------END PGP SIGNATURE-----
-
---nextPart1606719.XSEWg3VSlV--
+in linux/string.h is a much cleaner and less error prone solution :-)
