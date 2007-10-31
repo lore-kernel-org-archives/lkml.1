@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbXJaTyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXJaT5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbXJaTyw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 15:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXJaTyo
+	id S1759084AbXJaT5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 15:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXJaT5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 15:54:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55261 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbXJaTyo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 15:54:44 -0400
-Date: Wed, 31 Oct 2007 12:54:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Tony Luck <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core fix for previous 2.6.24-rc1 pull
-Message-ID: <20071031195402.GA16583@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 31 Oct 2007 15:57:13 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:46434 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754159AbXJaT5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 15:57:13 -0400
+Date: Wed, 31 Oct 2007 20:55:58 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Roopesh <roopesh@cyberspace.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MMC: CRC Errors with 2GB cards
+Message-ID: <20071031205558.4507a2f0@poseidon.drzeus.cx>
+In-Reply-To: <20071029095015.GA20714@grex.cyberspace.org>
+References: <20071019161700.GA19254@grex.cyberspace.org>
+	<20071027140017.41e9d67f@poseidon.drzeus.cx>
+	<20071029095015.GA20714@grex.cyberspace.org>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I messed up with my previous set of driver core fixes and sent a patch
-that removed some functions that the ia64 arch still uses.
+On Mon, 29 Oct 2007 05:50:15 -0400
+Roopesh <roopesh@cyberspace.org> wrote:
 
-I've now reverted that patch, sorry about that.
+> 
+>  I have purchased 4 Transcend cards, and all of them behave the 
+>  same way.  Just wondering why others dont have this problem, and 
+>  why such a fix hasn't made it to main tree yet.
+> 
 
-Thanks to Tony Luck for pointing out my mistake.
+Odd. I have a whole bunch of transcend cards, and I've never gotten this problem. Perhaps yours are rather recent?
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+>  I have tried the fix, and it works fine.  Thanks.
+> 
 
-thanks,
+Great. I'll queue it up for -mm for some more testing, after which it will get merged.
 
-greg k-h
+Rgds
+-- 
+     -- Pierre Ossman
 
-
- drivers/base/class.c   |   18 ++++++++++++++++++
- include/linux/device.h |    4 ++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
-
----------------
-
-Greg Kroah-Hartman (1):
-      Revert "Driver core: remove class_device_*_bin_file"
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
