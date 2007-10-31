@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbXJaWok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXJaWo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbXJaWok (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759792AbXJaWm0
+	id S1755580AbXJaWo4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbXJaWm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:42:26 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:51382 "EHLO smtp.polymtl.ca"
+	Wed, 31 Oct 2007 18:42:27 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51393 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759000AbXJaWmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:42:23 -0400
-Message-Id: <20071031224211.814532139@polymtl.ca>
+	id S1759467AbXJaWmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:42:25 -0400
+Message-Id: <20071031224214.190466075@polymtl.ca>
 References: <20071031223710.099558229@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 31 Oct 2007 18:37:15 -0400
+Date: Wed, 31 Oct 2007 18:37:22 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [patch 05/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-Content-Disposition: inline; filename=add-cmpxchg64-to-powerpc.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:12 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
+Subject: [patch 12/28] Add cmpxchg_local to h8300
+Content-Disposition: inline; filename=add-cmpxchg-local-to-h8300.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure that at least cmpxchg64_local is available on all architectures to use
-for unsigned long long values.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@ozlabs.org
+CC: clameter@sgi.com
 ---
- include/asm-powerpc/system.h |   18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ include/asm-h8300/system.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-powerpc/system.h
+Index: linux-2.6-lttng/include/asm-h8300/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/system.h	2007-10-31 17:32:44.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/system.h	2007-10-31 17:56:25.000000000 -0400
-@@ -461,7 +461,7 @@ __cmpxchg_local(volatile void *ptr, unsi
- 	return old;
- }
+--- linux-2.6-lttng.orig/include/asm-h8300/system.h	2007-10-31 18:06:31.000000000 -0400
++++ linux-2.6-lttng/include/asm-h8300/system.h	2007-10-31 18:07:30.000000000 -0400
+@@ -139,6 +139,21 @@ static inline unsigned long __xchg(unsig
+         asm("jmp @@0");			\
+ })
  
--#define cmpxchg(ptr,o,n)						 \
-+#define cmpxchg(ptr, o, n)						 \
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-      __typeof__(*(ptr)) _n_ = (n);					 \
-@@ -470,7 +470,7 @@ __cmpxchg_local(volatile void *ptr, unsi
-   })
- 
- 
--#define cmpxchg_local(ptr,o,n)						 \
-+#define cmpxchg_local(ptr, o, n)					 \
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-      __typeof__(*(ptr)) _n_ = (n);					 \
-@@ -490,6 +490,20 @@ __cmpxchg_local(volatile void *ptr, unsi
-  */
- #define NET_IP_ALIGN	0
- #define NET_SKB_PAD	L1_CACHE_BYTES
-+
-+#define cmpxchg64(ptr, o, n)						\
-+  ({									\
-+	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
-+	cmpxchg((ptr), (o), (n));					\
-+  })
-+#define cmpxchg64_local(ptr, o, n)					\
-+  ({									\
-+	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
-+	cmpxchg_local((ptr), (o), (n));					\
-+  })
-+#else
 +#include <asm-generic/cmpxchg-local.h>
++
++/*
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
++ */
++#define cmpxchg_local(ptr, o, n)				  	       \
++	((__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o),\
++			(unsigned long)(n), sizeof(*(ptr))))
 +#define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
- #endif
- 
++
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
++#endif
++
  #define arch_align_stack(x) (x)
+ 
+ #endif /* _H8300_SYSTEM_H */
 
 -- 
 Mathieu Desnoyers
