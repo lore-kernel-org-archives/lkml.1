@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbXJaM5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXJaM64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbXJaM5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 08:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbXJaM46
+	id S1759251AbXJaM64 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 08:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXJaM6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 08:56:58 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:48817 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756384AbXJaM45 (ORCPT
+	Wed, 31 Oct 2007 08:58:49 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:21768 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbXJaM6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 08:56:57 -0400
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <47287220.8050804@garzik.org>
-References: <20071030160401.296770000@chello.nl>
-	 <200710311426.33223.nickpiggin@yahoo.com.au>
-	 <1193830033.27652.159.camel@twins>  <47287220.8050804@garzik.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-OaD2syMtsbYlyGKvRGaF"
-Date: Wed, 31 Oct 2007 13:56:53 +0100
-Message-Id: <1193835413.27652.205.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 31 Oct 2007 08:58:48 -0400
+Message-ID: <47287C05.5060903@fr.ibm.com>
+Date: Wed, 31 Oct 2007 13:58:45 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] Move the UTS namespace under the option
+References: <47285FEE.9030001@openvz.org> <472861D3.4060303@openvz.org>
+In-Reply-To: <472861D3.4060303@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-OaD2syMtsbYlyGKvRGaF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> diff --git a/init/Kconfig b/init/Kconfig
+> index fc76773..d592aa2 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -409,6 +409,13 @@ config NAMESPACES
+>  	  or same user id or pid may refer to different tasks when used in
+>  	  different namespaces.
+> 
+> +config UTS_NS
+> +	bool "UTS namespace"
+> +	depends on NAMESPACES
 
-On Wed, 2007-10-31 at 08:16 -0400, Jeff Garzik wrote:
-> Thoughts:
->=20
-> 1) I absolutely agree that NFS is far more prominent and useful than any=20
-> network block device, at the present time.
->=20
->=20
-> 2) Nonetheless, swap over NFS is a pretty rare case.  I view this work=20
-> as interesting, but I really don't see a huge need, for swapping over=20
-> NBD or swapping over NFS.  I tend to think swapping to a remote resource=20
-> starts to approach "migration" rather than merely swapping.  Yes, we can=20
-> do it...  but given the lack of burning need one must examine the price.
+should we add a 'default y' like in 2.6.23 ?
 
-There is a large corporate demand for this, which is why I'm doing this.
-
-The typical usage scenarios are:
- - cluster/blades, where having local disks is a cost issue (maintenance
-   of failures, heat, etc)
- - virtualisation, where dumping the storage on a networked storage unit
-   makes for trivial migration and what not..
-
-But please, people who want this (I'm sure some of you are reading) do
-speak up. I'm just the motivated corporate drone implementing the
-feature :-)
-
-> 3) You note
-> > Swap over network has the problem that the network subsystem does not u=
-se fixed
-> > sized allocations, but heavily relies on kmalloc(). This makes mempools
-> > unusable.
->=20
-> True, but IMO there are mitigating factors that should be researched and=20
-> taken into account:
->=20
-> a) To give you some net driver background/history, most mainstream net=20
-> drivers were coded to allocate RX skbs of size 1538, under the theory=20
-> that they would all be allocating out of the same underlying slab cache.=20
->   It would not be difficult to update a great many of the [non-jumbo]=20
-> cases to create a fixed size allocation pattern.
-
-One issue that comes to mind is how to ensure we'd still overflow the
-IP-reassembly buffers. Currently those are managed on the number of
-bytes present, not the number of fragments.
-
-One of the goals of my approach was to not rewrite the network subsystem
-to accomodate this feature (and I hope I succeeded).
-
-> b) Spare-time experiments and anecdotal evidence points to RX and TX skb=20
-> recycling as a potentially valuable area of research.  If you are able=20
-> to do something like that, then memory suddenly becomes a lot more=20
-> bounded and predictable.
->=20
->=20
-> So my gut feeling is that taking a hard look at how net drivers function=20
-> in the field should give you a lot of good ideas that approach the=20
-> shared goal of making network memory allocations more predictable and=20
-> bounded.
-
-Note that being bounded only comes from dropping most packets before
-trying them to a socket. That is the crucial part of the RX path, to
-receive all packets from the NIC (regardless their size) but to not pass
-them on to the network stack - unless they belong to a 'special' socket
-that promises undelayed processing.
-
-Thanks for these ideas, I'll look into them.
-
---=-OaD2syMtsbYlyGKvRGaF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHKHuUXA2jU0ANEf4RAsnqAJ94v8DkPq//f0k6nSWC+d/NSdChTQCfbO5f
-R59KUmW5WUpH2o9WuhYgn9I=
-=263P
------END PGP SIGNATURE-----
-
---=-OaD2syMtsbYlyGKvRGaF--
-
+C.
