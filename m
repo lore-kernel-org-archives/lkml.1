@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbXJaGtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbXJaGur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbXJaGtV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXJaGtN
+	id S1755829AbXJaGur (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXJaGuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:49:13 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:44992 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752914AbXJaGtM (ORCPT
+	Wed, 31 Oct 2007 02:50:39 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:4976 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752946AbXJaGui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:49:12 -0400
-Date: Wed, 31 Oct 2007 07:49:09 +0100
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: Huawei E220 and usb storage
-Message-ID: <20071031064909.GJ11722@gamma.logic.tuwien.ac.at>
-References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com> <20071031061552.GH11722@gamma.logic.tuwien.ac.at> <20071031062356.GI11722@gamma.logic.tuwien.ac.at> <20071030234539.aecca9e8.zaitcev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030234539.aecca9e8.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+	Wed, 31 Oct 2007 02:50:38 -0400
+X-IronPort-AV: i="4.21,350,1188792000"; 
+   d="scan'208"; a="42761156:sNHT29138998"
+Subject: Re: [PATCH 09/14] Blackfin SPI driver: Fix SPI driver to work with
+	SPI flash ST25P16 on bf548
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: David Brownell <david-b@pacbell.net>
+Cc: Bryan Wu <bryan.wu@analog.com>, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>
+In-Reply-To: <200710301305.02640.david-b@pacbell.net>
+References: <1193735885-8202-1-git-send-email-bryan.wu@analog.com>
+	 <1193735885-8202-10-git-send-email-bryan.wu@analog.com>
+	 <200710301305.02640.david-b@pacbell.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Wed, 31 Oct 2007 14:50:31 +0800
+Message-Id: <1193813431.6971.24.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+X-OriginalArrivalTime: 31 Oct 2007 06:50:36.0960 (UTC) FILETIME=[57A00200:01C81B8A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Di, 30 Okt 2007, Pete Zaitcev wrote:
-> This doesn't seem to be possible, considering the /proc/bus/usb/devices
-> that you posted. I would rather suspect that you forgot to perform
-> some step in your kernel installation, and end using a stale
-> usb-storage module.
 
-No.
+On Tue, 2007-10-30 at 13:05 -0700, David Brownell wrote:
+> On Tuesday 30 October 2007, Bryan Wu wrote:
+> > Current SPI driver enables SPI controller and set the SPI baud register
+> > for each SPI transfer. But, they should never be changed within a SPI
+> > message session, in which seveal SPI transfers are pumped.
+> 
+> That's actually not true.  If a driver sets spi_transfer.max_speed_hz
+> to a nonzero value that's different from the previous bit rate (which
+> may be spi_device.max_speed_hz), it should be updated before that
+> transfer segment.  Example, sometimes data can't be clocked out at
+> the same rate commands can be clocked in.
+> 
+> Similarly with spi_transfer.bits_per_word ... again, it's very possible
+> that commands and data have different sizes.
+> 
+I agree with you here. 
 
-$ uname -r
-2.6.23
-$ cd /lib/modules/2.6.23
-$ find . -name usb-storage.ko
-./kernel/drivers/usb/storage/usb-storage.ko
-$ strings ./kernel/drivers/usb/storage/usb-storage.ko | grep -i huawei_e22a
-<3>ENTERING usb_stor_huawei_e220_init!
-$
+Maybe there are some confusion of mixing up the spi_trasnfer.speed_hz
+with the spi_device.max_speed_hz.
 
-So it is there ... and it is the only module.
+spi_device.max_speed_hz comes from spi_board_info.max_speed_hz, it is
+for the default max speed value.
+spi_transfer.speed_hz comes from upper applications for each spi
+transfer setting.
 
+Am I right?
 
-Best wishes
+I will fix this later.
 
-Norbert
+> Of course, if those values don't change, there'd be no point in
+> reconfiguring any aspect of those communications parameters...
+> 
+> 
+> I'll be forwarding this patch, since this looks like another case
+> where the main effect of the patch doesn't match its description
+> and since this patch series has taken too long already.  (Does this
+> patch even really relate primarily to working with an ST M25P16
+> flash part??)  Though it'd be reasonable to be more hard-nosed
+> about this and insist on another go-around for thesse patches.
+> (Making this the fifth one??)
+> 
+> But I *STRONGLY* suggest someone revisit the issue of whether those
+> two per-transfer options are now being handled correctly.  As well
+> as update procedures so that the patch comments start to have a
+> direct correspondence to what the patches have changed...
+> 
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-`The first ten million years were the worst,' said Marvin,
-`and the second ten million, they were the worst too. The
-third ten million I didn't enjoy at all. After that I went
-into a bit of a decline.'
-                 --- Marvin reflecting back on his 576,000,003,579 year
-                 --- career as Milliways' car park attendent.
-                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
+OK, we will test this on our hardware.
+Thanks, Dave
+-Bryan Wu
