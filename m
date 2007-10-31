@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbXJaP1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbXJaP1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760583AbXJaP1W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 11:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759917AbXJaPYh
+	id S1759962AbXJaP1g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 11:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbXJaPYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 11:24:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33488 "EHLO
+	Wed, 31 Oct 2007 11:24:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33515 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759911AbXJaPYg (ORCPT
+	with ESMTP id S1759670AbXJaPYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 11:24:36 -0400
-Date: Wed, 31 Oct 2007 08:11:44 -0700
+	Wed, 31 Oct 2007 11:24:40 -0400
+Date: Wed, 31 Oct 2007 08:11:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,16 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Al Viro <viro@zeniv.linux.org.uk>,
        "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Michael Wu <flamingice@sourmilk.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 13/26] mac80211: filter locally-originated multicast frames
-Message-ID: <20071031151144.GN2437@kroah.com>
+       Al Viro <viro@ftp.linux.org.uk>, Dan Williams <dcbw@redhat.com>
+Subject: [patch 14/26] libertas: fix endianness breakage
+Message-ID: <20071031151148.GO2437@kroah.com>
 References: <20071031150535.967437651@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mac80211-filter-locally-originated-multicast-frames.patch"
+Content-Disposition: inline; filename="libertas-fix-endianness-breakage.patch"
 In-Reply-To: <20071031151015.GA2437@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,40 +41,38 @@ know.
 
 ------------------
 
-From: John W. Linville <linville@tuxdriver.com>
+From: Al Viro <viro@ftp.linux.org.uk>
 
-patch b331615722779b078822988843ddffd4eaec9f83 in mainline.
+patch 5707708111ca6c4e9a1160acffdc98a98d95e462 in mainline.
 
-In STA mode, the AP will echo our traffic.  This includes multicast
-traffic.
+	wep->keytype[] is u8
 
-Receiving these frames confuses some protocols and applications,
-notably IPv6 Duplicate Address Detection.
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Dan Williams <dcbw@redhat.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Michael Wu <flamingice@sourmilk.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/ieee80211.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/wireless/libertas/cmd.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
---- a/net/mac80211/ieee80211.c
-+++ b/net/mac80211/ieee80211.c
-@@ -2615,9 +2615,10 @@ ieee80211_rx_h_data(struct ieee80211_txr
- 		memcpy(dst, hdr->addr1, ETH_ALEN);
- 		memcpy(src, hdr->addr3, ETH_ALEN);
+--- a/drivers/net/wireless/libertas/cmd.c
++++ b/drivers/net/wireless/libertas/cmd.c
+@@ -185,14 +185,12 @@ static int wlan_cmd_802_11_set_wep(wlan_
  
--		if (sdata->type != IEEE80211_IF_TYPE_STA) {
-+		if (sdata->type != IEEE80211_IF_TYPE_STA ||
-+		    (is_multicast_ether_addr(dst) &&
-+		     !compare_ether_addr(src, dev->dev_addr)))
- 			return TXRX_DROP;
--		}
- 		break;
- 	case 0:
- 		/* DA SA BSSID */
+ 			switch (pkey->len) {
+ 			case KEY_LEN_WEP_40:
+-				wep->keytype[i] =
+-					cpu_to_le16(cmd_type_wep_40_bit);
++				wep->keytype[i] = cmd_type_wep_40_bit;
+ 				memmove(&wep->keymaterial[i], pkey->key,
+ 				        pkey->len);
+ 				break;
+ 			case KEY_LEN_WEP_104:
+-				wep->keytype[i] =
+-					cpu_to_le16(cmd_type_wep_104_bit);
++				wep->keytype[i] = cmd_type_wep_104_bit;
+ 				memmove(&wep->keymaterial[i], pkey->key,
+ 				        pkey->len);
+ 				break;
 
 -- 
