@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbXJaWn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbXJaWoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761041AbXJaWn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbXJaWmY
+	id S1761220AbXJaWoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759553AbXJaWmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:42:24 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:51352 "EHLO smtp.polymtl.ca"
+	Wed, 31 Oct 2007 18:42:25 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51381 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755244AbXJaWmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:42:20 -0400
-Message-Id: <20071031224213.770854202@polymtl.ca>
+	id S1758364AbXJaWmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:42:23 -0400
+Message-Id: <20071031224211.514698475@polymtl.ca>
 References: <20071031223710.099558229@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 31 Oct 2007 18:37:21 -0400
+Date: Wed, 31 Oct 2007 18:37:14 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
-Subject: [patch 11/28] Add cmpxchg_local to frv
-Content-Disposition: inline; filename=add-cmpxchg-local-to-frv.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:14 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, ralf@linux-mips.org
+Subject: [patch 04/28] Add cmpxchg64 and cmpxchg64_local to mips
+Content-Disposition: inline; filename=add-cmpxchg64-to-mips.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt) for 8, 16 and 64 bits
-arguments. Use the 32 bits cmpxchg available on the architecture for 32 bits
-arguments.
+Make sure that at least cmpxchg64_local is available on all architectures to use
+for unsigned long long values.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
+CC: ralf@linux-mips.org
+CC linux-mips@linux-mips.org
 ---
- include/asm-frv/system.h |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ include/asm-mips/cmpxchg.h |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-frv/system.h
+Index: linux-2.6-lttng/include/asm-mips/cmpxchg.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-frv/system.h	2007-10-31 17:32:44.000000000 -0400
-+++ linux-2.6-lttng/include/asm-frv/system.h	2007-10-31 18:03:56.000000000 -0400
-@@ -265,5 +265,29 @@ extern uint32_t __cmpxchg_32(uint32_t *v
+--- linux-2.6-lttng.orig/include/asm-mips/cmpxchg.h	2007-10-31 17:32:44.000000000 -0400
++++ linux-2.6-lttng/include/asm-mips/cmpxchg.h	2007-10-31 17:54:49.000000000 -0400
+@@ -104,4 +104,21 @@ extern void __cmpxchg_called_with_bad_po
+ #define cmpxchg(ptr, old, new)		__cmpxchg(ptr, old, new, smp_llsc_mb())
+ #define cmpxchg_local(ptr, old, new)	__cmpxchg(ptr, old, new, )
  
- #endif
- 
++#define cmpxchg64(ptr, o, n)						\
++  ({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg((ptr), (o), (n));					\
++  })
++
++#ifdef CONFIG_64BIT
++#define cmpxchg64_local(ptr, o, n)					\
++  ({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg_local((ptr), (o), (n));					\
++  })
++#else
 +#include <asm-generic/cmpxchg-local.h>
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return cmpxchg(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+#define cmpxchg_local(ptr, o, n)				  	\
-+	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
-+			(unsigned long)(n), sizeof(*(ptr))))
 +#define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
- #endif /* _ASM_SYSTEM_H */
++#endif
++
+ #endif /* __ASM_CMPXCHG_H */
 
 -- 
 Mathieu Desnoyers
