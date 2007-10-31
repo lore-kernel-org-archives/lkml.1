@@ -1,128 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbXJaWVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbXJaWZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbXJaWVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbXJaWVm
+	id S1757641AbXJaWZd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXJaWZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:21:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60356 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbXJaWVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:21:42 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
-       mingo@elte.hu, chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, kvm-devel@lists.sourceforge.net, zach@vmware.com,
-       tglx@linutronix.de, jun.nakajima@intel.com, glommer@gmail.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 12/16] tweak io_64.h for paravirt.
-Date: Wed, 31 Oct 2007 16:14:57 -0300
-Message-Id: <11938581663639-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11938581612389-git-send-email-gcosta@redhat.com>
-References: <1193858101367-git-send-email-gcosta@redhat.com> <11938581073775-git-send-email-gcosta@redhat.com> <11938581133479-git-send-email-gcosta@redhat.com> <1193858118284-git-send-email-gcosta@redhat.com> <11938581242810-git-send-email-gcosta@redhat.com> <1193858130443-git-send-email-gcosta@redhat.com> <11938581351064-git-send-email-gcosta@redhat.com> <11938581403478-git-send-email-gcosta@redhat.com> <11938581451804-git-send-email-gcosta@redhat.com> <11938581512730-git-send-email-gcosta@redhat.com> <11938581562552-git-send-email-gcosta@redhat.com> <11938581612389-git-send-email-gcosta@redhat.com>
+	Wed, 31 Oct 2007 18:25:16 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:47065 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754393AbXJaWZN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:25:13 -0400
+Message-ID: <47290096.7080207@oracle.com>
+Date: Wed, 31 Oct 2007 15:24:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Andreas Mohr <andi@lisas.de>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] eradicate bashisms in scripts/patch-kernel
+References: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
+In-Reply-To: <20071031211321.GA8363@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need something here because we can't call in and out instructions
-directly. However, we have to be careful, because no indirections are
-allowed in misc_64.c , and paravirt_ops is a kind of one. So just
-call it directly there
+Andreas Mohr wrote:
+> Hello,
+> 
+> I was non-mildly horrified to find that the rather widely used patch-kernel
+> script seems to rely on bash despite specifying the interpreter as #!/bin/sh,
+> since my dash-using Debian install choked on it.
+> 
+> Thus I'm delivering a first, preliminary, non-reviewed change to make
+> patch-kernel (a little bit more?) POSIX-compatible. It now survives both
+> a dash and a bash run.
+> 
+> If this mail goes through relatively unscathed, then it might be a good
+> idea to plant it into -mm via a follow-up mail.
+> 
+> Comments?
+> 
+> - replaced "==" by "="
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
----
- arch/x86/boot/compressed/misc_64.c |    6 +++++
- include/asm-x86/io_64.h            |   37 +++++++++++++++++++++++++++++------
- 2 files changed, 36 insertions(+), 7 deletions(-)
+Those are OK.
 
-diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
-index 6ea015a..6640a17 100644
---- a/arch/x86/boot/compressed/misc_64.c
-+++ b/arch/x86/boot/compressed/misc_64.c
-@@ -9,6 +9,12 @@
-  * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
-  */
- 
-+/*
-+ * we have to be careful, because no indirections are allowed here, and
-+ * paravirt_ops is a kind of one. As it will only run in baremetal anyway,
-+ * we just keep it from happening
-+ */
-+#undef CONFIG_PARAVIRT
- #define _LINUX_STRING_H_ 1
- #define __LINUX_BITMAP_H 1
- 
-diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
-index a037b07..57fcdd9 100644
---- a/include/asm-x86/io_64.h
-+++ b/include/asm-x86/io_64.h
-@@ -35,12 +35,24 @@
-   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-   */
- 
--#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
-+static inline void native_io_delay(void)
-+{
-+	asm volatile("outb %%al,$0x80" : : : "memory");
-+}
- 
--#ifdef REALLY_SLOW_IO
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
-+#if defined(CONFIG_PARAVIRT)
-+#include <asm/paravirt.h>
- #else
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
-+
-+static inline void slow_down_io(void)
-+{
-+	native_io_delay();
-+#ifdef REALLY_SLOW_IO
-+	native_io_delay();
-+	native_io_delay();
-+	native_io_delay();
-+#endif
-+}
- #endif
- 
- /*
-@@ -52,9 +64,15 @@ static inline void out##s(unsigned x value, unsigned short port) {
- #define __OUT2(s,s1,s2) \
- __asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1"
- 
-+#ifndef REALLY_SLOW_IO
-+#define REALLY_SLOW_IO
-+#define UNSET_REALLY_SLOW_IO
-+#endif
-+
- #define __OUT(s,s1,x) \
- __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
--__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
-+__OUT1(s##_p, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port)); \
-+		slow_down_io(); }
- 
- #define __IN1(s) \
- static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
-@@ -63,8 +81,13 @@ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
- __asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0"
- 
- #define __IN(s,s1,i...) \
--__IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
--__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
-+__IN1(s) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i); return _v; } \
-+__IN1(s##_p) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	  \
-+				slow_down_io(); return _v; }
-+
-+#ifdef UNSET_REALLY_SLOW_IO
-+#undef REALLY_SLOW_IO
-+#endif
- 
- #define __INS(s) \
- static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
+> - the "source" statement most likely needs the ./ prepended, as can be
+> gathered from e.g. http://osdir.com/ml/colinux.devel/2005-12/msg00036.html
+
+That email isn't very convincing to me.
+
+http://www.opengroup.org/onlinepubs/009695399/utilities/dot.html just says that
+if <filename> does not contain a slash, the search PATH shall be used (searched).
+If you want to prevent that, it's OK to use ./, but at least say that in the
+patch description, please.
+
+
+> - the newly replaced sed expression below: is it ok? correct? strict enough?
+> 
+> Thanks,
+> 
+> Andreas Mohr
+> 
+> (who's strongly hoping that submitting a patch for this thingy doesn't
+> automatically equal becoming "maintainer for life" for it ;)
+
+Be careful.
+
+> --- linux-2.6.23/scripts/patch-kernel	2007-10-31 21:55:26.000000000 +0100
+> +++ linux-2.6.23/scripts/patch-kernel.dash	2007-10-31 21:58:37.000000000 +0100
+
+
+> @@ -202,13 +202,7 @@
+>  EXTRAVER=
+>  if [ x$EXTRAVERSION != "x" ]
+>  then
+> -	if [ ${EXTRAVERSION:0:1} == "." ]; then
+> -		EXTRAVER=${EXTRAVERSION:1}
+> -	else
+> -		EXTRAVER=$EXTRAVERSION
+> -	fi
+> -	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+> -	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
+
+What's the problem above?
+
+> +	EXTRAVER=`echo $EXTRAVERSION|sed -s 's/^[\.]\?\([^[:punct:]]*\).*/\1/'`
+>  fi
+>  
+>  #echo "stopvers=$stopvers"
+> @@ -251,16 +245,16 @@
+>  do
+>      CURRENTFULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      EXTRAVER=
+
+>  
+> -    SUBLEVEL=$((SUBLEVEL + 1))
+> +    SUBLEVEL=$(( $SUBLEVEL + 1 ))
+
+Why are the added spaces needed?
+
+Did you look at
+http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html ?
+
+>      FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      #echo "#___ trying $FULLVERSION ___"
+>  
+> -    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
+> +    if [ $SUBLEVEL -gt $STOPSUBLEVEL ]; then
+
+What's the problem here?
+
+>  	echo "Stopping since sublevel ($SUBLEVEL) is beyond stop-sublevel ($STOPSUBLEVEL)"
+>  	exit 1
+>      fi
+
+
 -- 
-1.4.4.2
-
+~Randy
