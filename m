@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXJaKqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbXJaKsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXJaKqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXJaKqA
+	id S1758527AbXJaKsF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXJaKrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:46:00 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:7595 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751015AbXJaKp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:45:59 -0400
-Subject: Re: [PATCH 09/33] mm: system wide ALLOC_NO_WATERMARK
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <200710311452.36239.nickpiggin@yahoo.com.au>
-References: <20071030160401.296770000@chello.nl>
-	 <20071030160912.283002000@chello.nl>
-	 <200710311452.36239.nickpiggin@yahoo.com.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e5tlmua4wL578c6z+yiG"
-Date: Wed, 31 Oct 2007 11:45:55 +0100
-Message-Id: <1193827555.27652.133.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 31 Oct 2007 06:47:55 -0400
+Received: from nic2.axis.se ([193.13.178.10]:58554 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754336AbXJaKry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 06:47:54 -0400
+Date: Wed, 31 Oct 2007 11:47:38 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mikael.starvik@axis.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/16] CRIS architecture: Correct compile errors
+Message-ID: <20071031104738.GW11960@axis.com>
+References: <20071030092811.GD11960@axis.com> <20071030151400.e4769e27.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030151400.e4769e27.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 30, 2007 at 03:14:00PM -0700, Andrew Morton wrote:
+> On Tue, 30 Oct 2007 10:28:11 +0100
+> Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+> 
+> > Remove include of asm/bitops.h, not needed here, corrects compilation error
+> > (__le64 undefined).
+> [snip]
+>
+> This doesn't apply and I'm not sure that it is still needed or correct.
+> 
+> I'll drop it.
 
---=-e5tlmua4wL578c6z+yiG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Unfortunately it is still needed, I'll resend a fresh patch
+against Linus git tree.
 
-On Wed, 2007-10-31 at 14:52 +1100, Nick Piggin wrote:
-> On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> > Change ALLOC_NO_WATERMARK page allocation such that the reserves are sy=
-stem
-> > wide - which they are per setup_per_zone_pages_min(), when we scrape th=
-e
-> > barrel, do it properly.
-> >
->=20
-> IIRC it's actually not too uncommon to have allocations coming here via
-> page reclaim. It's not exactly clear that you want to break mempolicies
-> at this point.
+Compile error:
 
-Hmm, the way I see it is that mempolicies are mainly for user-space
-allocations, reserve allocations are always kernel allocations. These
-already break mempolicies - for example hardirq context allocations.
+  CC      arch/cris/kernel/asm-offsets.s
+In file included from include/asm/byteorder.h:23,
+                 from include/asm-generic/bitops/le.h:5,
+                 from include/asm-generic/bitops/ext2-non-atomic.h:4,
+                 from include/asm/bitops.h:163,
+                 from include/linux/bitops.h:17,
+                 from include/asm/posix_types.h:55,
+                 from include/linux/posix_types.h:47,
+                 from include/linux/types.h:11,
+                 from include/linux/capability.h:16,
+                 from include/linux/sched.h:49,
+                 from arch/cris/kernel/asm-offsets.c:1:
+include/linux/byteorder/little_endian.h:43: parse error before "__cpu_to_le64p"
+include/linux/byteorder/little_endian.h:44: warning: return type defaults to `int'
+include/linux/byteorder/little_endian.h: In function `__cpu_to_le64p':
+include/linux/byteorder/little_endian.h:45: `__le64' undeclared (first use in this function)
+....
 
-Also, as it stands, the reserve is spread out evenly over all
-zones/nodes (excluding highmem), so by restricting ourselves to a
-subset, we don't have access to the full reserve.
+> Please always prepare and test patches against the latest kernel.  2.6.23
+> is very much _not_ the latest kernel - there is a 50MB diff between 2.6.23
+> and 2.6.24-rc1.  That's a lot of difference.
 
+I will do so from now on.
 
---=-e5tlmua4wL578c6z+yiG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHKFzjXA2jU0ANEf4RAoU0AJ0eZtew/3cO5/H6pCLyHNnXKc7hhgCgi54o
-PtDuuGj/tQ4uMH0Vvthjoc4=
-=Y12J
------END PGP SIGNATURE-----
-
---=-e5tlmua4wL578c6z+yiG--
-
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
