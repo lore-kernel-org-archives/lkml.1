@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbXJaUUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXJaUY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbXJaUUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 16:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbXJaUT4
+	id S1759463AbXJaUY7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 16:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXJaUYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 16:19:56 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:58515 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754661AbXJaUTz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 16:19:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HABOAKEdMQWvU/2dsb2JhbACBWo5b
-Date: Wed, 31 Oct 2007 16:19:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: fix marker warnings
-Message-ID: <20071031201952.GA17235@Krystal>
-References: <1193774725.24087.303.camel@localhost> <20071031020830.GA1176@Krystal> <1193859495.6271.21.camel@localhost>
+	Wed, 31 Oct 2007 16:24:52 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:37995 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754402AbXJaUYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 16:24:51 -0400
+Subject: Re: [PATCH 3/3] leds-clevo-mail: driver for Clevo mail LED
+From: Richard Purdie <rpurdie@rpsys.net>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Rodrigo Pereira <rodripe@gmail.com>
+In-Reply-To: <472470DC.3080809@freemail.hu>
+References: <4718FD04.3080602@freemail.hu>
+	 <20071019133607.3419b00a.randy.dunlap@oracle.com>
+	 <471B4BA5.30100@freemail.hu>  <471B4C46.9030502@freemail.hu>
+	 <1193176104.5709.137.camel@localhost.localdomain>
+	 <472470DC.3080809@freemail.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 31 Oct 2007 15:14:21 +0100
+Message-Id: <1193840061.12294.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1193859495.6271.21.camel@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:18:50 up 93 days, 20:37,  4 users,  load average: 0.42, 0.55, 0.54
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Hansen (haveblue@us.ibm.com) wrote:
-> On Tue, 2007-10-30 at 22:08 -0400, Mathieu Desnoyers wrote:
-> > * Dave Hansen (haveblue@us.ibm.com) wrote:
-> > > I'm seeing these in the latest git:
-> > > 
-> > > kernel/marker.c: In function `marker_probe_unregister':
-> > > kernel/marker.c:355: warning: `probe_module' might be used uninitialized in this function
-> > > kernel/marker.c: In function `marker_probe_unregister_private_data':
-> > > kernel/marker.c:389: warning: `probe_module' might be used uninitialized in this function
-> > > kernel/marker.c:392: warning: `entry' might be used uninitialized in this function
-> > > 
-> > > It's due to gcc not detecting that the need_update condition is actually
-> > > constant, and will never call marker_update_probes() on an uninitialized
-> > > probe_module.
-> > > 
-> > > However, that need_update bit is all due to dropping the mutex before
-> > > calling marker_update_probes().  As far as I can tell, every call to
-> > > marker_update_probes() has this lock dropping behavior just before
-> > > calling it.  So, let's just hold the locks over the
-> > > marker_update_probes() and document that it needs to have a lock taken
-> > > instead.  
-> > > 
-> > > This removes code overall.  Untested except for a quick compile.
-> > > Consider it just a style suggestion. :)
-> > > 
-> > 
-> > Ok, just ran it and it seems good. It did not appear as trivial during
-> > development because locking was is a different order until recently.
-> > 
-> > I wonder what gcc version you are using though, because mine does not
-> > warn about anything. I wonder if it is really necessary to "fix" false
-> > gcc warnings like this. Let's take it as a cleanup.
+On Sun, 2007-10-28 at 12:22 +0100, Németh Márton wrote:
+> Richard Purdie wrote:
+> > Hmm, there really is no way to just turn the LED on? :(
 > 
-> dave@kernel:~$ gcc -v
-> Reading specs from /usr/lib/gcc-lib/x86_64-linux-gnu/3.3.6/specs
-> Configured with: ../src/configure -v --enable-languages=c,c++
-> --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
-> --with-gxx-include-dir=/usr/include/c++/3.3 --enable-shared
-> --enable-__cxa_atexit --with-system-zlib --enable-nls
-> --without-included-gettext --enable-clocale=gnu --enable-debug
-> --disable-multilib x86_64-linux-gnu
-> Thread model: posix
-> gcc version 3.3.6 (Ubuntu 1:3.3.6-15ubuntu1)
-> 
-> 
-> > Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
-> Do you have any other patches with which you would like to forward this
-> one?  Or, shall I send it upstream on its own?
-> 
+> Unfortunately I do not have these optional modules so I never saw the LED
+> just on without blinking. I don't know if there is any hardware limitation
+> turning on the LED without the optional modules.
 
-For the marker infrastructure itself, that's the only one. I think
-sending it to Andrew Morton is the correct approach.
+Ok, if we don't know how to do it or even if its possible, so be it. If
+you ever do find out please do update the driver.
 
-Mathieu
+> I will send a new patch collection which addresses the other mentioned topics.
 
-> -- Dave
-> 
+Thanks, I've applied the patches although I've rewritten the second one
+to update the drivers with LED names that don't match the naming
+convention. They'll appear in the led git tree and hence -mm.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks,
+
+Richard
+
