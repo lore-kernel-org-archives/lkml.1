@@ -1,124 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXJaL25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbXJaLgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbXJaL25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbXJaL2s
+	id S1756678AbXJaLgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbXJaLgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:28:48 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:24732 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756152AbXJaL2q (ORCPT
+	Wed, 31 Oct 2007 07:36:36 -0400
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:53458 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752980AbXJaLgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:28:46 -0400
-Date: Wed, 31 Oct 2007 07:28:21 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: add filter function to groups
-Message-ID: <20071031112821.GB8309@jupiter.solarsys.private>
-References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain> <20071031004011.GA8309@jupiter.solarsys.private> <3ae72650710301901r5cda1fb7i5e31fd9b7f8855de@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3ae72650710301901r5cda1fb7i5e31fd9b7f8855de@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 31 Oct 2007 07:36:36 -0400
+From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+To: Philipp Gruber <philipp.gruber@flupps.net>
+Date: Wed, 31 Oct 2007 22:36:23 +1100
+X-Spam-Score: 0.001
+X-CSE-Spam-Checker-Version: SpamAssassin 3.1.3 (2006-06-01) on 
+	note.orchestra.cse.unsw.EDU.AU
+X-CSE-Spam-Level: 
+X-CSE-Spam-Status: No, score=-2.6 required=4.0 tests=BAYES_00,UNPARSEABLE_RELAY 
+	autolearn=ham version=3.1.3
+Message-ID: <472868B7.6010702@gelato.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Need information on elevator_dispatch_fn
+References: <20071031100025.GC16598@mega2000.de>
+In-Reply-To: <20071031100025.GC16598@mega2000.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kay:
+Philipp Gruber wrote:
+> So I need to 'reactivate' the whole dispatching process again. The only
+> way to to this is probably a timer, but I couldn't get this working
+> since I don't understand what calls dispatch_fn.
 
-* Kay Sievers <kay.sievers@vrfy.org> [2007-10-31 03:01:56 +0100]:
-> On Oct 31, 2007 1:40 AM, Mark M. Hoffman <mhoffman@lightlink.com> wrote:
-> > * James Bottomley <James.Bottomley@SteelEye.com> [2007-10-30 13:25:43 -0500]:
-> > > On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
-> > > > James Bottomley wrote:
-> > > > >> >  struct attribute_group {
-> > > > >> >        const char              *name;
-> > > > >> > +      int                     (*filter_show)(struct kobject *, int);
-> > > >
-> > > > > Actually, it returns a true/false value indicating whether the given
-> > > > > attribute should be displayed.
-> > > >
-> > > > How about this:
-> > > >
-> > > >     int (*is_visible)(...);
-> > >
-> > > OK, so is this latest revision acceptable to everyone?
-> >
-> > I've just been hacking around in this area a bit, for a completely different
-> > reason: there are literally 1000's of attributes in drivers/hwmon/*.c that
-> > really want to be const, but which cannot be due to the current API.  I was
-> > about to propose some patches that move in a different direction...
-> 
-> That isn't related to "dynamic attributes", right?
+Hi Philipp,
 
-Right, it's not.  That phrase was coined by the previous maintainer, Jean, to
-describe a specific mechanism which makes for smaller code in drivers/hwmon.
+Take a look how the AS and CFQ schedulers implement this.  In fact, the
+CFQ scheduler implements policy similar to what you described.
+as_work_handler() in block/as-iosched.c might be a good starting point.
 
-> > IMHO the fundamental problem is struct attribute_group itself.  This structure
-> > is nothing but a convenience for packaging the arguments to sysfs_create_group
-> > and sysfs_remove_group.
-> 
-> That "problem" is actually a good thing. If you look at the change
-> rate of the internal kernel API, it saves us so much trouble. Like in
-> this case, James can just add a callback without caring about any
-> (almost :)) of the current users.
-
-Given my patch, he could also just add sysfs_create_attr_group_filtered(...).
-This would affect current users even less than what you suggest because it
-wouldn't bloat the struct that they all use.
-
-> > Those functions should take the contents of that
-> > struct as direct arguments.
-> 
-> I think we should move in the opposite direction. You are right, it
-> isn't neccessarily pretty, but having encapsulations like this saves
-> us a lot of trouble while interacting with so many other people and
-> extending API's all the time. It's a trade, and it's a good one, if
-> you need to maintain code that has so many callers, and  so many
-> architectures, you can't even check that you don't break them.
-
-Again, I don't see how it is better to bloat a struct with many users instead
-of just adding a function for the few that need the extra functionality.  My
-patch also requires 0 change for everyone else.
-
-> > I haven't finished the patch series to implement
-> > this, but since I noticed your patch I thought I'd better speak up now.  Here's
-> > the first... the idea is to eventually deprecate sysfs_[create|remove]_group()
-> > altogether.
-> 
-> Again, I don't think, that we want to get rid of the struct container
-> housing all the parameters and beeing open for future extensions
-> without changing all the callers.
-
-BTW: I hope you're not resisting based on the prospect of deprecating those
-two functions.  I don't really have time to push such a huge patch either.
-It wouldn't hurt just to keep them.
-
-> >     The current declaration of struct attribute_group prevents long lists of
-> >     attributes from being marked const.  Ideally, the second argument to the
-> >     sysfs_create_group() and sysfs_remove_group() functions would be marked "deep"
-> >     const, but C has no such construct.  This patch provides a parallel set of
-> >     functions with the desired decoration.
-> 
-> What do we get out of this constification compared to the current code?
-
-Conceptual correctness, for one, but also it allows hwmon drivers to move as
-much as 1K each out of the data section and into text.  This is useful for the
-embedded XIP scenario.
-
-And please don't underestimate conceptual correctness: at least hwmon (and
-probably many other users) really *rely* on the core not to modify the contents
-of struct attribute_group (specifically, the data to which its members point).
-
-Without the proper const qualifiers, this is not externally guaranteed.
-
-Regards,
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
+-- Aaron
 
