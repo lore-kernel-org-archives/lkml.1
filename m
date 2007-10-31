@@ -1,94 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbXJaLOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbXJaLRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbXJaLOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXJaLOK
+	id S1758291AbXJaLRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXJaLR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:14:10 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:10941 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754755AbXJaLOJ (ORCPT
+	Wed, 31 Oct 2007 07:17:26 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32878 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753641AbXJaLRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:14:09 -0400
-Message-ID: <47286371.70703@panasas.com>
-Date: Wed, 31 Oct 2007 13:13:53 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] "killing" sg_last(), and discussion
-References: <20071031084920.GA25202@havoc.gtf.org> <4728569D.9080502@panasas.com> <47285921.9070105@garzik.org>
-In-Reply-To: <47285921.9070105@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Oct 2007 11:13:14.0411 (UTC) FILETIME=[07CC37B0:01C81BAF]
+	Wed, 31 Oct 2007 07:17:25 -0400
+Date: Wed, 31 Oct 2007 12:17:24 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] dump_stack on panic
+Message-ID: <20071031111724.GB27084@one.firstfloor.org>
+References: <1193788979.5623.43.camel@localhost.localdomain> <p73odeg2l9v.fsf@bingen.suse.de> <20071031081513.GB3810@infradead.org> <20071031104147.GA27084@one.firstfloor.org> <Pine.LNX.4.58.0710310653190.12724@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0710310653190.12724@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 31 2007 at 12:29 +0200, Jeff Garzik <jeff@garzik.org> wrote:
-> Boaz Harrosh wrote:
->> On Wed, Oct 31 2007 at 10:49 +0200, Jeff Garzik <jeff@garzik.org> wrote:
->>> I looked into killing sg_last(), but really, this is the best its gonna
->>> get (moving sg_last to libata-core.c).
->>>
->>> You could maybe kill one use with caching, but in the other sg_last()
->>> callsites there isn't another s/g loop we can stick a "last_sg = sg;"
->>> into.
->>>
->>> libata is stuck because we undertake the highly unusual operation of
->>> fiddling with the final S/G element, to enforce 32-bit alignment.
->>>
->>> Of course we could eliminate all that nasty fiddling/padding
->>> completely, including sg_last(), if other areas of the kernel would
->>> guarantee ahead of time that buffer lengths are always a multiple
->>> of 4........
->>>
->>> 	Jeff
->>>
->> OK Now I'm confused. I thought that ULD's can give you SG's 
->> that are actually longer than bufflen and that, at the end, the 
->> bufflen should govern the transfer length.
->>
->> Now FS_PC commands are sector aligned so you do not have
->> problems with that.
->>
->> The BLOCK_PC commands have 2 main sources that I know of
->> one is sg && bsg from user mode that can easily enforce
->> 4 bytes alignment. The second is kernel services which 80%
->> of these are done by scsi_execute(). All These can be found
->> and fixed. Starting with scsi_execute(). Another place can be
->> blk_rq_map_sg(), since all IO's are bio based. It can enforce 
->> alignment too.
->>
->> I would start by sticking a WARN_ON(qc->pad_len) and
->> see if it triggers, what are the sources of that.
-> 
-> The whole qc->pad_len etc. machinery was added because it solved 
-> problems in the field with ATAPI devices.  So sr or some userland 
-> application is sending lengths that are not padded to 32-bit boundary, 
-> probably because plenty of trivial commands can send or return odd 
-> amounts of data.
-> 
-> This used to be irrelevant, but now with SATA, even PIO data xfer 
-> (normally what is used for non-READ/WRITE CDBs) must be 32-bit aligned 
-> because both SATA DMA and SATA PIO are converted into dword-based SATA 
-> FIS's on the wire.
-> 
-> 	Jeff
-> 
-> 
-> 
-2 things
+> Thinking about this more. Of the Linux users I asked, they think a kernel
+> panic is a bug in the kernel anyway (or at least something in the kernel
+> went wrong).  So if panics will point users to the kernel anyway, then why
+> leave out possible vital information from those panics that were caused by
+> an actual kernel bug.
 
-1. Than why not fix blk_rq_map_sg() to enforce the alignment. Also I bet
-that these "problems in the field" are from pre 2.6.18 kernels, and this
-is no longer the case. Why not put that WARN_ON(qc->pad_len) and prove me
-wrong.
+On a no root found panic (which are likely the majority of all panics) 
+the stack dump is about 100% useless.
 
-2. Just checking bufflen is enough. Since you are already assuming that
-first SG's offset is aligned, than if last SG's length is odd than so is
-bufflen. (You are already assuming that SG's total length matches bufflen)
+I also think it's a very bad idea to add them to machine checks again
+for psychological reasons.
 
-Boaz
+-Andi
+
