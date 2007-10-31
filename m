@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXJaT5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXJaT7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbXJaT5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 15:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXJaT5N
+	id S1759342AbXJaT7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 15:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXJaT7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 15:57:13 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:46434 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754159AbXJaT5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 15:57:13 -0400
-Date: Wed, 31 Oct 2007 20:55:58 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Roopesh <roopesh@cyberspace.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MMC: CRC Errors with 2GB cards
-Message-ID: <20071031205558.4507a2f0@poseidon.drzeus.cx>
-In-Reply-To: <20071029095015.GA20714@grex.cyberspace.org>
-References: <20071019161700.GA19254@grex.cyberspace.org>
-	<20071027140017.41e9d67f@poseidon.drzeus.cx>
-	<20071029095015.GA20714@grex.cyberspace.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Wed, 31 Oct 2007 15:59:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58353 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753230AbXJaT7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 15:59:39 -0400
+Date: Wed, 31 Oct 2007 12:59:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
+       torvalds@linux-foundation.org, adaplas@pol.net, ak@suse.de,
+       ebiederm@xmission.com, mouli@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2 -v2 resend] x86_64 EFI boot support
+Message-Id: <20071031125907.ba953d4a.akpm@linux-foundation.org>
+In-Reply-To: <1193793701.23935.394.camel@caritas-dev.intel.com>
+References: <1193218342.23935.147.camel@caritas-dev.intel.com>
+	<1193793701.23935.394.camel@caritas-dev.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Oct 2007 05:50:15 -0400
-Roopesh <roopesh@cyberspace.org> wrote:
+On Wed, 31 Oct 2007 09:21:41 +0800
+"Huang, Ying" <ying.huang@intel.com> wrote:
 
+> Can this patchset be merged into mainline kernel? This patchset has been
+> in -mm tree from 2.6.23-rc2-mm2 on. Andrew Moton has suggested it to be
+> merged into 2.6.24 during early merge window of 2.6.24. It was not
+> merged into mainline because the 32-bit boot protocol has not been done.
 > 
->  I have purchased 4 Transcend cards, and all of them behave the 
->  same way.  Just wondering why others dont have this problem, and 
->  why such a fix hasn't made it to main tree yet.
-> 
-
-Odd. I have a whole bunch of transcend cards, and I've never gotten this problem. Perhaps yours are rather recent?
-
->  I have tried the fix, and it works fine.  Thanks.
+> But now, the 32-bit boot protocol has been merged into mainline. So can
+> this patchset be merged into mainline kernel now?
 > 
 
-Great. I'll queue it up for -mm for some more testing, after which it will get merged.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+I stopped paying attention, sorry.  Have all the outstanding issues been
+addressed?
