@@ -1,75 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXJaDxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbXJaD52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXJaDxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 23:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXJaDxc
+	id S1754197AbXJaD52 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 23:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXJaD5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 23:53:32 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48708 "EHLO smtps.tip.net.au"
+	Tue, 30 Oct 2007 23:57:20 -0400
+Received: from zachs.place.org ([66.219.59.183]:54297 "EHLO place.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752448AbXJaDxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 23:53:31 -0400
-Date: Wed, 31 Oct 2007 14:53:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] libata: suppress two warnings
-Message-Id: <20071031145332.01529b7d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752259AbXJaD5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 23:57:19 -0400
+To: rgooch@atnf.csiro.au
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mtrr use type bool
+Date: Tue, 30 Oct 2007 22:57:18 -0500
+From: Paul Jimenez <pj@place.org>
+Message-Id: <20071031035718.A1D9E8B2A@place.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/ata/libata-core.c:768: warning: 'ata_lpm_enable' defined but not used
-drivers/ata/libata-core.c:784: warning: 'ata_lpm_disable' defined but not used
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/ata/libata-core.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+This is a janitorish patch to 1) remove private TRUE/FALSE #def's in
+favor of using the standard enum from linux/stddef.h and 2) switch the
+variables holding those values to type 'bool' (from linux/types.h)
+since it both seems more appropriate and allows for potentially better
+optimization.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+As a truly minor aside, I removed a couple of comments documenting
+a 'do_safe' parameter that seems to no longer exist.
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 63035d7..7162645 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -735,6 +735,7 @@ enable_pm_out:
- 	return /* rc */;	/* hopefully we can use 'rc' eventually */
- }
- 
-+#ifdef CONFIG_PM
- /**
-  *	ata_dev_disable_pm - disable SATA interface power management
-  *	@device - device to enable ipm for
-@@ -755,6 +756,7 @@ static void ata_dev_disable_pm(struct ata_device *dev)
- 	if (ap->ops->disable_pm)
- 		ap->ops->disable_pm(ap);
- }
-+#endif	/* CONFIG_PM */
- 
- void ata_lpm_schedule(struct ata_port *ap, enum link_pm policy)
+Signed-off-by: Paul Jimenez <pj@place.org>
+
+
+diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
+index 0949cdb..ee2331b 100644
+--- a/arch/x86/kernel/cpu/mtrr/amd.c
++++ b/arch/x86/kernel/cpu/mtrr/amd.c
+@@ -53,8 +53,6 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
  {
-@@ -764,6 +766,7 @@ void ata_lpm_schedule(struct ata_port *ap, enum link_pm policy)
- 	ata_port_schedule_eh(ap);
- }
- 
-+#ifdef CONFIG_PM
- static void ata_lpm_enable(struct ata_host *host)
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 992f08d..1c331c3 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -188,7 +188,7 @@ static inline void k8_enable_fixed_iorrs(void)
+  * \param changed pointer which indicates whether the MTRR needed to be changed
+  * \param msrwords pointer to the MSR values which the MSR should have
+  */
+-static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
++static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
  {
- 	struct ata_link *link;
-@@ -789,6 +792,7 @@ static void ata_lpm_disable(struct ata_host *host)
- 		ata_lpm_schedule(ap, ap->pm_policy);
+ 	unsigned lo, hi;
+ 
+@@ -200,7 +200,7 @@ static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
+ 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
+ 			k8_enable_fixed_iorrs();
+ 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
+-		*changed = TRUE;
++		*changed = true;
  	}
  }
-+#endif	/* CONFIG_PM */
  
+@@ -260,7 +260,7 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+ static int set_fixed_ranges(mtrr_type * frs)
+ {
+ 	unsigned long long *saved = (unsigned long long *) frs;
+-	int changed = FALSE;
++	bool changed = false;
+ 	int block=-1, range;
  
- /**
--- 
-1.5.3.4
-
+ 	while (fixed_range_blocks[++block].ranges)
+@@ -273,17 +273,17 @@ static int set_fixed_ranges(mtrr_type * frs)
+ 
+ /*  Set the MSR pair relating to a var range. Returns TRUE if
+     changes are made  */
+-static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
++static bool set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ {
+ 	unsigned int lo, hi;
+-	int changed = FALSE;
++	bool changed = false;
+ 
+ 	rdmsr(MTRRphysBase_MSR(index), lo, hi);
+ 	if ((vr->base_lo & 0xfffff0ffUL) != (lo & 0xfffff0ffUL)
+ 	    || (vr->base_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 
+ 	rdmsr(MTRRphysMask_MSR(index), lo, hi);
+@@ -292,7 +292,7 @@ static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ 	    || (vr->mask_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 	return changed;
+ }
+@@ -417,8 +417,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
+ {
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index c7d8f17..1453568 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -37,7 +37,7 @@ const char *mtrr_attrib_to_str(int x)
+ 
+ static int
+ mtrr_file_add(unsigned long base, unsigned long size,
+-	      unsigned int type, char increment, struct file *file, int page)
++	      unsigned int type, bool increment, struct file *file, int page)
+ {
+ 	int reg, max;
+ 	unsigned int *fcount = FILE_FCOUNT(file); 
+@@ -55,7 +55,7 @@ mtrr_file_add(unsigned long base, unsigned long size,
+ 		base >>= PAGE_SHIFT;
+ 		size >>= PAGE_SHIFT;
+ 	}
+-	reg = mtrr_add_page(base, size, type, 1);
++	reg = mtrr_add_page(base, size, type, true);
+ 	if (reg >= 0)
+ 		++fcount[reg];
+ 	return reg;
+@@ -141,7 +141,7 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
+ 		size >>= PAGE_SHIFT;
+ 		err =
+ 		    mtrr_add_page((unsigned long) base, (unsigned long) size, i,
+-				  1);
++				  true);
+ 		if (err < 0)
+ 			return err;
+ 		return len;
+@@ -217,7 +217,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+ 		err =
+-		    mtrr_file_add(sentry.base, sentry.size, sentry.type, 1,
++		    mtrr_file_add(sentry.base, sentry.size, sentry.type, true,
+ 				  file, 0);
+ 		break;
+ 	case MTRRIOC_SET_ENTRY:
+@@ -226,7 +226,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ #endif
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+-		err = mtrr_add(sentry.base, sentry.size, sentry.type, 0);
++		err = mtrr_add(sentry.base, sentry.size, sentry.type, false);
+ 		break;
+ 	case MTRRIOC_DEL_ENTRY:
+ #ifdef CONFIG_COMPAT
+@@ -270,7 +270,7 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+ 		err =
+-		    mtrr_file_add(sentry.base, sentry.size, sentry.type, 1,
++		    mtrr_file_add(sentry.base, sentry.size, sentry.type, true,
+ 				  file, 1);
+ 		break;
+ 	case MTRRIOC_SET_PAGE_ENTRY:
+@@ -279,7 +279,8 @@ mtrr_ioctl(struct file *file, unsigned int cmd, unsigned long __arg)
+ #endif
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+-		err = mtrr_add_page(sentry.base, sentry.size, sentry.type, 0);
++		err =
++		    mtrr_add_page(sentry.base, sentry.size, sentry.type, false);
+ 		break;
+ 	case MTRRIOC_DEL_PAGE_ENTRY:
+ #ifdef CONFIG_COMPAT
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 9abbdf7..591bd96 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -313,7 +313,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+  */
+ 
+ int mtrr_add_page(unsigned long base, unsigned long size, 
+-		  unsigned int type, char increment)
++		  unsigned int type, bool increment)
+ {
+ 	int i, replace, error;
+ 	mtrr_type ltype;
+@@ -396,7 +396,7 @@ int mtrr_add_page(unsigned long base, unsigned long size,
+ 		if (likely(replace < 0))
+ 			usage_table[i] = 1;
+ 		else {
+-			usage_table[i] = usage_table[replace] + !!increment;
++			usage_table[i] = usage_table[replace] + increment;
+ 			if (unlikely(replace != i)) {
+ 				set_mtrr(replace, 0, 0, 0);
+ 				usage_table[replace] = 0;
+@@ -462,7 +462,7 @@ static int mtrr_check(unsigned long base, unsigned long size)
+ 
+ int
+ mtrr_add(unsigned long base, unsigned long size, unsigned int type,
+-	 char increment)
++	 bool increment)
+ {
+ 	if (mtrr_check(base, size))
+ 		return -EINVAL;
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 289dfe6..54347e9 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -2,10 +2,8 @@
+  * local mtrr defines.
+  */
+ 
+-#ifndef TRUE
+-#define TRUE  1
+-#define FALSE 0
+-#endif
++#include <linux/types.h>
++#include <linux/stddef.h>
+ 
+ #define MTRRcap_MSR     0x0fe
+ #define MTRRdefType_MSR 0x2ff
+diff --git a/include/asm-x86/mtrr.h b/include/asm-x86/mtrr.h
+index e8320e4..262670e 100644
+--- a/include/asm-x86/mtrr.h
++++ b/include/asm-x86/mtrr.h
+@@ -89,9 +89,9 @@ struct mtrr_gentry
+ extern void mtrr_save_fixed_ranges(void *);
+ extern void mtrr_save_state(void);
+ extern int mtrr_add (unsigned long base, unsigned long size,
+-		     unsigned int type, char increment);
++		     unsigned int type, bool increment);
+ extern int mtrr_add_page (unsigned long base, unsigned long size,
+-		     unsigned int type, char increment);
++		     unsigned int type, bool increment);
+ extern int mtrr_del (int reg, unsigned long base, unsigned long size);
+ extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
+ extern void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi);
+@@ -101,12 +101,12 @@ extern void mtrr_bp_init(void);
+ #define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #define mtrr_save_state() do {} while (0)
+ static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+-				unsigned int type, char increment)
++				unsigned int type, bool increment)
+ {
+     return -ENODEV;
+ }
+ static __inline__ int mtrr_add_page (unsigned long base, unsigned long size,
+-				unsigned int type, char increment)
++				unsigned int type, bool increment)
+ {
+     return -ENODEV;
+ }
