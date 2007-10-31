@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbXJaNGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758980AbXJaNGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbXJaNGL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 09:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXJaNF5
+	id S1758980AbXJaNGp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 09:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXJaNGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 09:05:57 -0400
-Received: from sacred.ru ([62.205.161.221]:59996 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXJaNF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 09:05:57 -0400
-Message-ID: <47288B6D.4080703@openvz.org>
-Date: Wed, 31 Oct 2007 17:04:29 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] Move the UTS namespace under the option
-References: <47285FEE.9030001@openvz.org> <472861D3.4060303@openvz.org> <47287C05.5060903@fr.ibm.com>
-In-Reply-To: <47287C05.5060903@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 31 Oct 2007 16:02:04 +0300 (MSK)
+	Wed, 31 Oct 2007 09:06:34 -0400
+Received: from viefep32-int.chello.at ([62.179.121.50]:48722 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755541AbXJaNGc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 09:06:32 -0400
+Subject: Re: [PATCH 06/33] mm: allow PF_MEMALLOC from softirq context
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-Reply-To: <200710312149.25296.nickpiggin@yahoo.com.au>
+References: <20071030160401.296770000@chello.nl>
+	 <200710311451.56747.nickpiggin@yahoo.com.au>
+	 <1193827359.27652.129.camel@twins>
+	 <200710312149.25296.nickpiggin@yahoo.com.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oJWUmZ+ktd4FzSg/dIhk"
+Date: Wed, 31 Oct 2007 14:06:29 +0100
+Message-Id: <1193835989.27652.207.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
->> diff --git a/init/Kconfig b/init/Kconfig
->> index fc76773..d592aa2 100644
->> --- a/init/Kconfig
->> +++ b/init/Kconfig
->> @@ -409,6 +409,13 @@ config NAMESPACES
->>  	  or same user id or pid may refer to different tasks when used in
->>  	  different namespaces.
->>
->> +config UTS_NS
->> +	bool "UTS namespace"
->> +	depends on NAMESPACES
-> 
-> should we add a 'default y' like in 2.6.23 ?
 
-I think no. This is an experimental stuff, so the ones who really
-need it should better say it explicitly.
+--=-oJWUmZ+ktd4FzSg/dIhk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> C.
-> 
+On Wed, 2007-10-31 at 21:49 +1100, Nick Piggin wrote:
+> On Wednesday 31 October 2007 21:42, Peter Zijlstra wrote:
+> > On Wed, 2007-10-31 at 14:51 +1100, Nick Piggin wrote:
+> > > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
+> > > > Allow PF_MEMALLOC to be set in softirq context. When running softir=
+qs
+> > > > from a borrowed context save current->flags, ksoftirqd will have it=
+s
+> > > > own task_struct.
+> > >
+> > > What's this for? Why would ksoftirqd pick up PF_MEMALLOC? (I guess
+> > > that some networking thing must be picking it up in a subsequent patc=
+h,
+> > > but I'm too lazy to look!)... Again, can you have more of a rationale=
+ in
+> > > your patch headers, or ref the patch that uses it... thanks
+> >
+> > Right, I knew I was forgetting something in these changelogs.
+> >
+> > The network stack does quite a bit of packet processing from softirq
+> > context. Once you start swapping over network, some of the packets want
+> > to be processed under PF_MEMALLOC.
+>=20
+> Hmm... what about processing from interrupt context?
 
-Thanks,
-Pavel
+=46rom what I could tell that is not done, ISR just fills the skb and
+sticks it on an RX queue to be further processed by the softirq.
+
+--=-oJWUmZ+ktd4FzSg/dIhk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD4DBQBHKH3VXA2jU0ANEf4RAk7BAJj7htMwkY1BLb7w8yuI010D2n0VAJ43nRKw
+mB/wjUygrFJLHmS7R+jffA==
+=19qz
+-----END PGP SIGNATURE-----
+
+--=-oJWUmZ+ktd4FzSg/dIhk--
+
