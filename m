@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXJaMQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbXJaMSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbXJaMQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 08:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXJaMQl
+	id S1758585AbXJaMSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 08:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbXJaMR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 08:16:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37147 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbXJaMQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 08:16:40 -0400
-Message-ID: <47287220.8050804@garzik.org>
-Date: Wed, 31 Oct 2007 08:16:32 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 31 Oct 2007 08:17:58 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:8204 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755516AbXJaMR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 08:17:57 -0400
+Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-References: <20071030160401.296770000@chello.nl>	 <200710311426.33223.nickpiggin@yahoo.com.au> <1193830033.27652.159.camel@twins>
-In-Reply-To: <1193830033.27652.159.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <200710312146.03351.nickpiggin@yahoo.com.au>
+References: <20071030160401.296770000@chello.nl>
+	 <200710311437.28630.nickpiggin@yahoo.com.au>
+	 <1193827358.27652.126.camel@twins>
+	 <200710312146.03351.nickpiggin@yahoo.com.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e2VI6o49+LBHhnTdwH6G"
+Date: Wed, 31 Oct 2007 13:17:52 +0100
+Message-Id: <1193833072.27652.167.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thoughts:
 
-1) I absolutely agree that NFS is far more prominent and useful than any 
-network block device, at the present time.
+--=-e2VI6o49+LBHhnTdwH6G
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2007-10-31 at 21:46 +1100, Nick Piggin wrote:
+> On Wednesday 31 October 2007 21:42, Peter Zijlstra wrote:
+> > On Wed, 2007-10-31 at 14:37 +1100, Nick Piggin wrote:
+> > > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
+> > > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to alloca=
+tion
+> > > > contexts that are entitled to it.
+> > > >
+> > > > Care is taken to only touch the SLUB slow path.
+> > > >
+> > > > This is done to ensure reserve pages don't leak out and get consume=
+d.
+> > >
+> > > I think this is generally a good idea (to prevent slab allocators
+> > > from stealing reserve). However I naively think the implementation
+> > > is a bit overengineered and thus has a few holes.
+> > >
+> > > Humour me, what was the problem with failing the slab allocation
+> > > (actually, not fail but just call into the page allocator to do
+> > > correct waiting  / reclaim) in the slowpath if the process fails the
+> > > watermark checks?
+> >
+> > Ah, we actually need slabs below the watermarks.
+>=20
+> Right, I'd still allow those guys to allocate slabs. Provided they
+> have the right allocation context, right?
+>=20
+>=20
+> > Its just that once I=20
+> > allocated those slabs using __GFP_MEMALLOC/PF_MEMALLOC I don't want
+> > allocation contexts that do not have rights to those pages to walk off
+> > with objects.
+>=20
+> And I'd prevent these ones from doing so.
+>=20
+> Without keeping track of "reserve" pages, which doesn't feel
+> too clean.
+
+The problem with that is that once a slab was allocated with the right
+allocation context, anybody can get objects from these slabs.
 
 
-2) Nonetheless, swap over NFS is a pretty rare case.  I view this work 
-as interesting, but I really don't see a huge need, for swapping over 
-NBD or swapping over NFS.  I tend to think swapping to a remote resource 
-starts to approach "migration" rather than merely swapping.  Yes, we can 
-do it...  but given the lack of burning need one must examine the price.
+low memory, and empty slab:
+
+task A                        task B
+
+kmem_cache_alloc() =3D NULL
+
+                              current->flags |=3D PF_MEMALLOC
+                              kmem_cache_alloc() =3D obj
+                              (slab !=3D NULL)
+
+kmem_cache_alloc() =3D obj
+kmem_cache_alloc() =3D obj
+kmem_cache_alloc() =3D obj
 
 
-3) You note
-> Swap over network has the problem that the network subsystem does not use fixed
-> sized allocations, but heavily relies on kmalloc(). This makes mempools
-> unusable.
+And now task A, who doesn't have the right permissions walks
+away with all our reserve memory.
 
-True, but IMO there are mitigating factors that should be researched and 
-taken into account:
-
-a) To give you some net driver background/history, most mainstream net 
-drivers were coded to allocate RX skbs of size 1538, under the theory 
-that they would all be allocating out of the same underlying slab cache. 
-  It would not be difficult to update a great many of the [non-jumbo] 
-cases to create a fixed size allocation pattern.
-
-b) Spare-time experiments and anecdotal evidence points to RX and TX skb 
-recycling as a potentially valuable area of research.  If you are able 
-to do something like that, then memory suddenly becomes a lot more 
-bounded and predictable.
+So we either reserve a page per object, which for 32 byte objects is a
+large waste, or we stop anybody who doesn't have the right permissions
+from obtaining objects. I took the latter approach.
 
 
-So my gut feeling is that taking a hard look at how net drivers function 
-in the field should give you a lot of good ideas that approach the 
-shared goal of making network memory allocations more predictable and 
-bounded.
+--=-e2VI6o49+LBHhnTdwH6G
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-	Jeff
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBHKHJwXA2jU0ANEf4RAi25AJ9u+31qjdHGk55nk3eaiqMPKkO9ywCeKPzr
+by9zgemtfC3t8u8Mc8uwX2k=
+=88Nf
+-----END PGP SIGNATURE-----
+
+--=-e2VI6o49+LBHhnTdwH6G--
 
