@@ -1,112 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbXJaVBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXJaVF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbXJaVBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 17:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbXJaVBe
+	id S1758154AbXJaVF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 17:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXJaVFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 17:01:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33572 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754326AbXJaVBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 17:01:33 -0400
-Date: Wed, 31 Oct 2007 17:00:16 -0500 (EST)
-Message-Id: <20071031.170016.39152331.k-ueda@ct.jp.nec.com>
-To: dm-devel@redhat.com, hare@suse.de
-Cc: nfbrown@novell.com, linux-kernel@vger.kernel.org, agk@redhat.com,
-       jens.axboe@oracle.com, akpm@linux-foundation.org, stable@kernel.org,
-       devel@openvz.org
-Subject: Re: [dm-devel] Re: dm: bounce_pfn limit added
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <47283061.8080501@suse.de>
-References: <20071031020133.GL10006@agk.fab.redhat.com>
-	<47282B1D.8030501@sw.ru>
-	<47283061.8080501@suse.de>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 17:05:22 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43041 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753985AbXJaVFV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 17:05:21 -0400
+Date: Wed, 31 Oct 2007 14:05:20 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Jackson <pj@sgi.com>
+cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
+       ak@suse.de
+Subject: Re: [RFC] cpuset relative memory policies - second choice
+In-Reply-To: <20071031131949.b91bf383.pj@sgi.com>
+Message-ID: <Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
+References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
+ <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
+ <20071031131949.b91bf383.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 31 Oct 2007, Paul Jackson wrote:
 
-On Wed, 31 Oct 2007 08:36:01 +0100, Hannes Reinecke <hare@suse.de> wrote:
-> Vasily Averin wrote:
-> > Alasdair G Kergon wrote:
-> >> So currently we treat bounce_pfn as a property that does not need to be
-> >> propagated through the stack.
-> >>
-> >> But is that the right approach?
-> >> - Is there a blk_queue_bounce() missing either from dm or elsewhere?
-> >>   (And BTW can the bio_alloc() that lurks within lead to deadlock?)
-> >>
-> >> Firstly, what's going wrong?
-> >> - What is the dm table you are using?  (output of 'dmsetup table')
-> >>   - Which dm targets and with how many underlying devices?
-> >> - Which underlying driver?
-> >> - Is this direct I/O to the block device from userspace, or via some
-> >> filesystem or what?
-> > 
-> > On my testnode I have  6 Gb memory (1Gb normal zone for i386 kernels),
-> > i2o hardware and lvm over i2o.
-> > 
-> > [root@ts10 ~]# dmsetup table
-> > vzvg-vz: 0 10289152 linear 80:5 384
-> > vzvg-vzt: 0 263127040 linear 80:5 10289536
-> > [root@ts10 ~]# cat /proc/partitions
-> > major minor  #blocks  name
-> > 
-> >   80     0  143374336 i2o/hda
-> >   80     1     514048 i2o/hda1
-> >   80     2    4096575 i2o/hda2
-> >   80     3    2040255 i2o/hda3
-> >   80     4          1 i2o/hda4
-> >   80     5  136721151 i2o/hda5
-> >  253     0    5144576 dm-0
-> >  253     1  131563520 dm-1
-> > 
-> > Diotest from LTP test suite with ~1Mb buffer size and files on dm-over-i2o
-> > paritions corrupts i2o_iop0_msg_inpool slab.
-> > 
-> > I2o on this node is able to handle only requests with up to 38 segments. Device
-> > mapper correctly creates such requests and as you know it uses
-> > max_pfn=BLK_BOUNCE_ANY. When this request translates to underlying device, it
-> > clones bio and cleans BIO_SEG_VALID flag.
-> > 
-> > In this way underlying device calls blk_recalc_rq_segments() to recount number
-> > of segments. However blk_recalc_rq_segments uses bounce_pfn=BLK_BOUNCE_HIGH
-> > taken from underlying device. As result number of segments become over than
-> > max_hw_segments limit.
-> > 
-> > Unfortunately there is not any checks and when i2o driver handles this incorrect
-> > request it fills the memory out of i2o_iop0_msg_inpool slab.
-> > 
-> We actually had a similar issue with some raid drivers (gdth iirc), and Neil Brown
-> did a similar patch for it. These were his comments on it:
-> >
-> > dm handles max_hw_segments by using an 'io_restrictions' structure
-> > that keeps the most restrictive values from all component devices.
-> >
-> > So it should not allow more than max_hw_segments.
-> > 
-> > However I just notices that it does not preserve bounce_pfn as a restriction.
-> > So when the request gets down to the driver, it may be split up in to more
-> > segments than was expected up at the dm level.
-> > 
-> So I guess we should take this.
+> > Make both policy and the mode char?
+> 
+> Well, the mpol_nodemask_mode already is char.  So I guess you're
+> asking if we should change 'policy' to type char as well.
 
-How about the case that other dm device is stacked on the dm device?
-(e.g. dm-linear over dm-multipath over i2o with bounce_pfn=64GB, and
-      the multipath table is changed to i2o with bounce_pfn=1GB.)
+Right.
 
-With this example, the patch propagates the restriction of i2o
-to dm-multipath but not to dm-linear.
-So I guess the same problem happens.
-Although it may sound like a corner case, such situation could occur
-with pvmove of LVM2, for example.
-I think we should take care of it too so that system won't be destroyed.
-Rejecting to load such table will at least prevent the problem.
+> > Could we shorten the mpol_nodemask_mode to mode?
+> 
+> Huh - I don't know what "shorten ... to mode" means.  If it means
+> "shorten ... to char", then see my previous comment above.
 
-Thanks,
-Kiyoshi Ueda
+No it means shorted the identifier which is a bit long for a structure 
+member.
+
+> > Hmmm... I would rather have numactl manage this flag
+> 
+> Well, numactl is a command line utility.  It doesn't manage this flag
+> as an -alternative- to some sort of changes to the mbind, set_mempolicy
+> and get_mempolicy calls, but rather layers on top of changes to those
+> system calls.  So I'm not sure what you mean, but I guess it is not
+> relevant to this patch discussion.
+
+s/numactl/libnuma/
+
+> The question is:
+> 
+>     Should this mode be per-task, or per-system call?
+> 
+> The basic reason that I went with an additional per-task modal
+> state, rather than a modal flag for each mbind, set_mempolicy and
+> get_mempolicy call was to reduce the likely rate of bugs in user
+> level C code using this API.
+
+What bugs?
+
+>     Programs that code to this API in C usually first spend some number
+>     of lines of code preparing bitmasks that represent sets of nodes,
+>     which they will then pass into these mempolicy system calls.
+> 
+>     The bits are numbered differently between Choices A and B.    
+
+Right.
+
+>     If a piece of code adapts Choice B numbering, because it is
+>     better suited to that codes needs, and if we used your suggested
+>     per-system call flag, then if they miss passing in the new special
+>     flag on -even-one- mbind, set_mempolicy or get_mempolicy system
+>     call, they have an obscure code bug.  They will be passing in
+>     a bitmask that they calculated using Choice B node numbering,
+>     but (implicitly) telling the kernel to interpret that bitmask
+>     using Choice A semantics.
+
+But that is only done in libnuma. User code does not call this directly.
+
+> Why do you prefer a per-system call modal flag, rather than a per-task
+> modal flag?
+
+It is a change of behavior of the function call. If some mysterious flag 
+somewhere influences that behavior then we have difficulties finding bugs. 
+The presence of the flag makes it obvious to the reviewer that we do 
+something special here.
+
