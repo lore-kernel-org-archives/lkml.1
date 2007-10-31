@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbXJaDnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbXJaDvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbXJaDnx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 23:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXJaDnp
+	id S1753561AbXJaDvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 23:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXJaDvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 23:43:45 -0400
-Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:20637 "HELO
-	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751981AbXJaDno (ORCPT
+	Tue, 30 Oct 2007 23:51:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33368 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbXJaDvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 23:43:44 -0400
-X-YMail-OSG: Wu7JmgUVM1k0tZ4Gvw1dcJ59JbHhe1QmxhUArCa8wxAoPzXSQTHNqS3M6PgV5JG62Lku_QKx.w--
-X-RocketYMMF: rancidfat
-Date: Tue, 30 Oct 2007 20:43:43 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static interface)
-To: Peter Dolding <oiaohm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <e7d8f83e0710301921m3460f8dfkce72c4fc549ded4a@mail.gmail.com>
+	Tue, 30 Oct 2007 23:51:01 -0400
+Date: Tue, 30 Oct 2007 20:55:06 -0700
+From: Greg KH <greg@kroah.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: add filter function to groups
+Message-ID: <20071031035506.GH14910@kroah.com>
+References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <987866.49546.qm@web36615.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193768743.3321.91.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 30, 2007 at 01:25:43PM -0500, James Bottomley wrote:
+> On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
+> > James Bottomley wrote:
+> > >> >  struct attribute_group {
+> > >> >  	const char		*name;
+> > >> > +	int			(*filter_show)(struct kobject *, int);
+> > 
+> > > Actually, it returns a true/false value indicating whether the given
+> > > attribute should be displayed.
+> > 
+> > How about this:
+> > 
+> > 	int (*is_visible)(...);
+> 
+> OK, so is this latest revision acceptable to everyone?
+> 
+> James
+> 
+> Index: BUILD-2.6/fs/sysfs/group.c
+> ===================================================================
+> --- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
+> +++ BUILD-2.6/fs/sysfs/group.c	2007-10-30 12:35:47.000000000 -0500
+> @@ -16,25 +16,31 @@
+>  #include "sysfs.h"
+>  
+>  
+> -static void remove_files(struct sysfs_dirent *dir_sd,
+> +static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+>  			 const struct attribute_group *grp)
+>  {
+>  	struct attribute *const* attr;
+> +	int i;
+>  
+> -	for (attr = grp->attrs; *attr; attr++)
+> -		sysfs_hash_and_remove(dir_sd, (*attr)->name);
+> +	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
+> +		if (grp->is_visible &&
+> +		    grp->is_visible(kobj, *attr, i))
+> +			sysfs_hash_and_remove(dir_sd, (*attr)->name);
 
---- Peter Dolding <oiaohm@gmail.com> wrote:
+Hm, doesn't this break for the zillions of attribute groups that do not
+have the is_visible function set?
 
+> -static int create_files(struct sysfs_dirent *dir_sd,
+> +static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+>  			const struct attribute_group *grp)
+>  {
+>  	struct attribute *const* attr;
+> -	int error = 0;
+> +	int error = 0, i;
+>  
+> -	for (attr = grp->attrs; *attr && !error; attr++)
+> -		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
+> +	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
+> +		if (grp->is_visible &&
+> +		    grp->is_visible(kobj, *attr, i))
+> +			error |=
+> +				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
 
-> Lets end the bitrot.  Start having bits go into the main OS security
-> features where they should be.
+Same problem here, if grp->is_visible is not set, sysfs_add_file() would
+never be called, right?
 
-Gawd. Sorry, but we lost that argument in 1986 and the situation
-hasn't changed a bit since. Most people just don't want what we're
-selling. Do you know why Unix was a success and MULTICS* a failure?
-It's because Unix had mode bits and MULTICS had ACLs. Fortunately
-for those of us who wear titles like "Security Expert" or "Trust
-Technologist" with pride there are enough clinical paranoids in
-positions of authority to keep the Trusted System niche from closing
-up completely and hence supporting our Rock Star Lifestyles. The
-good news is that the situation is no worse than that faced by
-the people who are bringing you Infiniband or Itanium, neither of
-which will ever be the life of the party either. Sure security is
-important, but I learned (in college, and yes they had colleges
-way back then) not to drink too much at parties I'd crashed.
+Other than the logic problem (I think), I have no issue with this idea
+at all.  Care to redo this so it works?
 
-LSM isn't all I want it to be either, but it's better than I ever
-got in the Proprietary OS world, and that includes when the MLS
-systems were bringing in $20million a pop. Trying to force features
-that virtually no one wants into any system is a bad idea. If
-you haven't read Man of LaMancha I strongly suggest you do so.
-Or at least see the play, it's got some catchy songs.
+thanks,
 
------
-* If you don't know what MULTICS was you can buy me a beer and
-  I'll tell you the whole story
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+greg k-h
