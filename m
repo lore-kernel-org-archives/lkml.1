@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbXJaQ2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbXJaQ3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760348AbXJaQ2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760207AbXJaQ2f
+	id S1760227AbXJaQ3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbXJaQ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:28:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53634 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760185AbXJaQ2d (ORCPT
+	Wed, 31 Oct 2007 12:29:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42876 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756214AbXJaQ3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:28:33 -0400
-Date: Wed, 31 Oct 2007 16:29:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-Message-ID: <20071031162922.0f9f74f2@the-village.bc.nu>
-In-Reply-To: <4728A7D4.8050008@garzik.org>
-References: <47274A5F.6070409@gentoo.org>
-	<20071030153417.59b9182c@the-village.bc.nu>
-	<47276DCA.1000808@gentoo.org>
-	<20071030190153.373c9347@the-village.bc.nu>
-	<47278439.4030801@gentoo.org>
-	<20071031114958.210bd7cc@the-village.bc.nu>
-	<20071031115754.GK5059@kernel.dk>
-	<472872F6.70802@garzik.org>
-	<20071031122639.GN5059@kernel.dk>
-	<4728A7D4.8050008@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 12:29:07 -0400
+Date: Wed, 31 Oct 2007 09:25:14 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 27/26] lockdep: fix mismatched lockdep_depth/curr_chain_hash
+Message-ID: <20071031162514.GB22117@kroah.com>
+References: <20071031151015.GA2437@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071031151015.GA2437@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If this is NOT a privileged app, we must update the command validation 
-> to ensure that invalid commands are not transported to the hardware.
+[one more patch added to the 2.6.22-stable queue]
 
-We allow only a subset of standard commands to be issued by unprivileged
-applications. We don't strictly enforce transfer sizes and its arguable
-on SCSI transports this doesn't matter one iota. On ATA it perhaps
-matters a bit more.
 
-Note btw - the reset sequence cased by excess data off these drives is
-something we jump up and down and trigger. For PIO draining the bits is
-fine, for DMA pretty much all controllers will clean up happily enough.
+From: Gregory Haskins <ghaskins@novell.com>
 
-Its also nothing like the problem you might think as most drives told
-"send me 150 bytes, oh and the transfer length is 40" will in fact send
-40. 
+patch 3aa416b07f0adf01c090baab26fb70c35ec17623 in mainline.
 
-Alan
+lockdep: fix mismatched lockdep_depth/curr_chain_hash
+
+It is possible for the current->curr_chain_key to become inconsistent with the
+current index if the chain fails to validate.  The end result is that future
+lock_acquire() operations may inadvertently fail to find a hit in the cache
+resulting in a new node being added to the graph for every acquire.
+
+[ peterz: this might explain some of the lockdep is so _slow_ complaints. ]
+[ mingo: this does not impact the correctness of validation, but may slow
+  down future operations significantly, if the chain gets very long. ]
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2166,7 +2166,6 @@ out_calc_hash:
+ 	}
+ #endif
+ 	chain_key = iterate_chain_key(chain_key, id);
+-	curr->curr_chain_key = chain_key;
+ 
+ 	/*
+ 	 * Trylock needs to maintain the stack of held locks, but it
+@@ -2215,6 +2214,7 @@ out_calc_hash:
+ 		if (unlikely(!debug_locks))
+ 			return 0;
+ 
++	curr->curr_chain_key = chain_key;
+ 	curr->lockdep_depth++;
+ 	check_chain_key(curr);
+ #ifdef CONFIG_DEBUG_LOCKDEP
+
+_______________________________________________
+stable mailing list
+stable@linux.kernel.org
+http://linux.kernel.org/mailman/listinfo/stable
+
