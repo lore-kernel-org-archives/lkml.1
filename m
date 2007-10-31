@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbXJaJo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXJaJqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757081AbXJaJo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 05:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXJaJov
+	id S1757283AbXJaJqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 05:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbXJaJqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 05:44:51 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36741 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752275AbXJaJov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 05:44:51 -0400
-Date: Wed, 31 Oct 2007 10:46:26 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: raa.lkml@gmail.com, linux-kernel@vger.kernel.org, per.liden@ericsson.com,
-       allan.stephens@windriver.com
-Subject: Re: tipc_config.h requires linux/string.h, which does not exist in exported headers
-Message-ID: <20071031094626.GC24100@uranus.ravnborg.org>
-References: <20071030222025.GA19792@uranus.ravnborg.org> <20071030.153154.241148799.davem@davemloft.net> <20071030.211404.43558275.davem@davemloft.net> <20071030.215616.241765510.davem@davemloft.net>
+	Wed, 31 Oct 2007 05:46:08 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:65153 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbXJaJqG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 05:46:06 -0400
+Date: Wed, 31 Oct 2007 10:45:46 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Dirk Hohndel <hohndel@linux.intel.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Andries Brouwer <aeb@cwi.nl>,
+       Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] add_partition silently ignored errors
+Message-ID: <20071031104546.2543fda9@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20071030225635.GA3401@linux.intel.com>
+References: <20071029154339.00512901@gondolin.boeblingen.de.ibm.com>
+	<20071029154849.GA24187@bigserver.hohndel.org>
+	<20071030080742.GE4993@kernel.dk>
+	<20071030100934.6d2a8f12@gondolin.boeblingen.de.ibm.com>
+	<20071030165608.GA2601@linux.intel.com>
+	<20071030183112.7e860c23@gondolin.boeblingen.de.ibm.com>
+	<20071030225635.GA3401@linux.intel.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071030.215616.241765510.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Here is what I mean, specifically.  And this is build tested :-)
-> 
-> From 97ef1bb0c8e371b7988287f38bd107c4aa14d78d Mon Sep 17 00:00:00 2001
-> From: David S. Miller <davem@sunset.davemloft.net>
-> Date: Tue, 30 Oct 2007 21:44:00 -0700
-> Subject: [PATCH] [TIPC]: Fix headercheck wrt. tipc_config.h
-> 
-> It wants string functions like memcpy() for inline
-> routines, and these define userland interfaces.
-> 
-> The only clean way to deal with this is to simply
-> put linux/string.h into unifdef-y and have it
-> include <string.h> when not-__KERNEL__.
+On Tue, 30 Oct 2007 15:56:35 -0700,
+Dirk Hohndel <hohndel@linux.intel.com> wrote:
 
-Hi David.
+> On Tue, Oct 30, 2007 at 06:31:12PM +0100, Cornelia Huck wrote:
+> > On Tue, 30 Oct 2007 09:56:08 -0700,
+> > Dirk Hohndel <hohndel@linux.intel.com> wrote:
+> > 
+> > > > > IIRC, Al recently vetoed a similar patch. As far as I'm concerned, with
+> > > > > the correct return values, the patch then looks fine to me.
+> 
+> So Al, are you ok with this one?
+> 
+> > > > We need some kind of check concerning the kobject to avoid mysterious
+> > > > errors (especially checking for the failed kobject_add() is needed).
+> > > > Whether we want just to inform the user of the failure instead of
+> > > > failing the function is another question.
+> > > 
+> > > What are you suggesting? I'd love to make the behaviour consistent everywhere
+> > > (and am willing to go through things in order to make that happen), but what is
+> > > the consistent behaviour that we'd want?
+> > 
+> > I'd be fine with just propagating the error after cleanup (that is what
+> > for example the driver core usually does), but I don't know the
+> > surrounding code well enough for a definitive answer.
+> 
+> Ok, I think I have it consistent now. I also ran it through checkpatch.pl :-)
+> 
+> /D
+> 
+> 
+> [FILESYSTEM] add_partition ignores errors
+> 
+> Signed-off-by: Dirk Hohndel <hohndel@linux.intel.com>
+> 
+> ---
+>  block/ioctl.c         |    9 +++++++--
+>  fs/partitions/check.c |   36 +++++++++++++++++++++++++++++-------
+>  include/linux/genhd.h |    2 +-
+>  3 files changed, 37 insertions(+), 10 deletions(-)
 
-Thanks for fixing this.
-I will close the bug when the correcting hit mainline.
-
-	Sam
+OK, the kobject error handling looks fine to me.
