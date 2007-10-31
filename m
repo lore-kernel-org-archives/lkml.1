@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762563AbXJaWwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXJaWzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762563AbXJaWwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 18:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbXJaWn3
+	id S1760951AbXJaWzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 18:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXJaWzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 18:43:29 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:51636 "EHLO smtp.polymtl.ca"
+	Wed, 31 Oct 2007 18:55:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33256 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756835AbXJaWn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 18:43:27 -0400
-Message-Id: <20071031224216.488906618@polymtl.ca>
-References: <20071031223710.099558229@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Wed, 31 Oct 2007 18:37:29 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       gerg@uclinux.org
-Subject: [patch 19/28] Add cmpxchg_local to m68knommu
-Content-Disposition: inline; filename=add-cmpxchg-local-to-m68knommu.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 22:42:16 +0000
+	id S1751450AbXJaWzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 18:55:42 -0400
+Date: Wed, 31 Oct 2007 23:55:41 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Duane Griffin <duaneg@dghda.com>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb causes unkillable spinning
+Message-ID: <20071031225541.GA28552@wotan.suse.de>
+References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com> <20071031041932.GA12189@wotan.suse.de> <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org> <20071031151934.GA19211@wotan.suse.de> <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+On Wed, Oct 31, 2007 at 08:59:41AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 31 Oct 2007, Nick Piggin wrote:
+> > 
+> > Well the patch is right, in the context of the regression I introduced
+> > (and so it should probably go into 2.6.23).
+> 
+> Yeah, it probably is fine for -stable.
+> 
+> And if mine (which actually changes behaviour, in that it makes ptrace get 
+> an access error) causes regressions, I guess we'll have to use that 
+> compatible-with-old-behaviour one for 2.6.24 too.
+> 
+> But I just rebooted and tested - the cleaned-up patch does seem to work 
+> fine, and I get "Cannot access memory at address <xyz>" rather than any 
+> reported problem.
+> 
+> So I think I'll commit my version asap, and see if anybody reports that 
+> they have a situation where they use ptrace() and expect zero back from a 
+> shared mapping past the end.. And if there are issues, we can switch back 
+> to the old broken behaviour with your patch,
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: gerg@uclinux.org
----
- include/asm-m68knommu/system.h |   28 +++++++++++-----------------
- 1 file changed, 11 insertions(+), 17 deletions(-)
+No that would be great. Fingers crossed it won't cause any problems.
 
-Index: linux-2.6-lttng/include/asm-m68knommu/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-m68knommu/system.h	2007-10-31 17:32:43.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m68knommu/system.h	2007-10-31 18:17:59.000000000 -0400
-@@ -187,26 +187,20 @@ static inline unsigned long __xchg(unsig
- }
- #endif
- 
-+#include <asm-generic/cmpxchg-local.h>
-+
- /*
-- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-- * store NEW in MEM.  Return the initial value in MEM.  Success is
-- * indicated by comparing RETURN with OLD.
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-  */
--#define __HAVE_ARCH_CMPXCHG	1
--
--static __inline__ unsigned long
--cmpxchg(volatile int *p, int old, int new)
--{
--	unsigned long flags;
--	int prev;
--
--	local_irq_save(flags);
--	if ((prev = *p) == old)
--		*p = new;
--	local_irq_restore(flags);
--	return(prev);
--}
-+#define cmpxchg_local(ptr, o, n)				  	       \
-+	((__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o),\
-+			(unsigned long)(n), sizeof(*(ptr))))
-+#define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
- 
- #ifdef CONFIG_M68332
- #define HARD_RESET_NOW() ({		\
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks, all.
