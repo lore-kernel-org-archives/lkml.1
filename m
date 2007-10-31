@@ -1,611 +1,436 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbXJaFNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbXJaFQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbXJaFNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 01:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbXJaFMp
+	id S1756452AbXJaFQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 01:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbXJaFQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 01:12:45 -0400
-Received: from mail.suse.de ([195.135.220.2]:55714 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756567AbXJaFMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 01:12:42 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 6/6] add SubmittingPatches to Documentation/ja_JP
-Date: Tue, 30 Oct 2007 22:11:45 -0700
-Message-Id: <1193807505-3821-6-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1193807505-3821-5-git-send-email-gregkh@suse.de>
-References: <20071031050954.GA3791@kroah.com>
- <1193807505-3821-1-git-send-email-gregkh@suse.de>
- <1193807505-3821-2-git-send-email-gregkh@suse.de>
- <1193807505-3821-3-git-send-email-gregkh@suse.de>
- <1193807505-3821-4-git-send-email-gregkh@suse.de>
- <1193807505-3821-5-git-send-email-gregkh@suse.de>
+	Wed, 31 Oct 2007 01:16:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:62613 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbXJaFQM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 01:16:12 -0400
+Date: Tue, 30 Oct 2007 22:15:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: v4l-dvb-maintainer@linuxtv.org
+Subject: bttv build error (CONFIG_NET=n)
+Message-Id: <20071030221508.3139ea5c.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Tue__30_Oct_2007_22_15_08_-0700_Obv_8/9QB4Q.CmE."
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+This is a multi-part message in MIME format.
 
-This patch adds SubmittingPatches translated into Japanese to
-Documentation/ja_JP directory.
+--Multipart=_Tue__30_Oct_2007_22_15_08_-0700_Obv_8/9QB4Q.CmE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-I attach the patch because there is a possibility that MUA
-will change the character encoding sometimes.
+drivers/media/video/bt8xx/bttv-cards.c calls ip_compute_csum().
+However, when CONFIG_NET=n, that produces:
 
-Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
+
+Config symbol VIDEO_BT848 can be made to depend on NET, or the
+osprey_eeprom() function can be built depending on some new config
+symbol, or bttv could have its own checksum function...
+
+.config attached.
+
 ---
- Documentation/ja_JP/SubmittingPatches |  556 +++++++++++++++++++++++++++++++++
- 1 files changed, 556 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ja_JP/SubmittingPatches
+~Randy
 
-diff --git a/Documentation/ja_JP/SubmittingPatches b/Documentation/ja_JP/SubmittingPatches
-new file mode 100644
-index 0000000..a9dc124
---- /dev/null
-+++ b/Documentation/ja_JP/SubmittingPatches
-@@ -0,0 +1,556 @@
-+NOTE:
-+This is a version of Documentation/SubmittingPatches into Japanese.
-+This document is maintained by Keiichi KII <k-keiichi@bx.jp.nec.com>
-+and the JF Project team <http://www.linux.or.jp/JF/>.
-+If you find any difference between this document and the original file
-+or a problem with the translation,
-+please contact the maintainer of this file or JF project.
-+
-+Please also note that the purpose of this file is to be easier to read
-+for non English (read: Japanese) speakers and is not intended as a
-+fork. So if you have any comments or updates of this file, please try
-+to update the original English file first.
-+
-+Last Updated: 2007/10/24
-+==================================
-+これは、
-+linux-2.6.23/Documentation/SubmittingPatches の和訳
-+です。
-+翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
-+翻訳日： 2007/10/17
-+翻訳者： Keiichi Kii <k-keiichi at bx dot jp dot nec dot com>
-+校正者： Masanari Kobayashi さん <zap03216 at nifty dot ne dot jp>
-+         Matsukura さん <nbh--mats at nifty dot com>
-+==================================
-+
-+        Linux カーネルに変更を加えるための Howto
-+        又は
-+        かの Linus Torvalds の取り扱い説明書
-+
-+Linux カーネルに変更を加えたいと思っている個人又は会社にとって、パッ
-+チの投稿に関連した仕組みに慣れていなければ、その過程は時々みなさんを
-+おじけづかせることもあります。この文章はあなたの変更を大いに受け入れ
-+てもらえやすくする提案を集めたものです。
-+
-+コードを投稿する前に、Documentation/SubmitChecklist の項目リストに目
-+を通してチェックしてください。もしあなたがドライバーを投稿しようとし
-+ているなら、Documentation/SubmittingDrivers にも目を通してください。
-+
-+--------------------------------------------
-+セクション1 パッチの作り方と送り方
-+--------------------------------------------
-+
-+1) 「 diff -up 」
-+------------
-+
-+パッチの作成には「 diff -up 」又は「 diff -uprN 」を使ってください。
-+
-+Linux カーネルに対する全ての変更は diff(1) コマンドによるパッチの形式で
-+生成してください。パッチを作成するときには、diff(1) コマンドに「 -u 」引
-+数を指定して、unified 形式のパッチを作成することを確認してください。また、
-+変更がどの C 関数で行われたのかを表示する「 -p 」引数を使ってください。
-+この引数は生成した差分をずっと読みやすくしてくれます。パッチは Linux
-+カーネルソースの中のサブディレクトリではなく Linux カーネルソースのルート
-+ディレクトリを基準にしないといけません。
-+
-+1個のファイルについてのパッチを作成するためには、ほとんどの場合、
-+以下の作業を行えば十分です。
-+
-+	SRCTREE= linux-2.6
-+	MYFILE=  drivers/net/mydriver.c
-+
-+	cd $SRCTREE
-+	cp $MYFILE $MYFILE.orig
-+	vi $MYFILE	# make your change
-+	cd ..
-+	diff -up $SRCTREE/$MYFILE{.orig,} > /tmp/patch
-+
-+複数のファイルについてのパッチを作成するためには、素の( vanilla )、す
-+なわち変更を加えてない Linux カーネルを展開し、自分の Linux カーネル
-+ソースとの差分を生成しないといけません。例えば、
-+
-+	MYSRC= /devel/linux-2.6
-+
-+	tar xvfz linux-2.6.12.tar.gz
-+	mv linux-2.6.12 linux-2.6.12-vanilla
-+	diff -uprN -X linux-2.6.12-vanilla/Documentation/dontdiff \
-+		linux-2.6.12-vanilla $MYSRC > /tmp/patch
-+
-+dontdiff ファイルには Linux カーネルのビルドプロセスの過程で生成された
-+ファイルの一覧がのっています。そして、それらはパッチを生成する diff(1)
-+コマンドで無視されるべきです。dontdiff ファイルは 2.6.12 以後のバージョ
-+ンの Linux カーネルソースツリーに含まれています。それより前のバージョン
-+の Linux カーネルソースツリーに対する dontdiff ファイルは、
-+<http://www.xenotime.net/linux/doc/dontdiff>から取得することができます。
-+
-+投稿するパッチの中に関係のない余分なファイルが含まれていないことを確
-+認してください。diff(1) コマンドで生成したパッチがあなたの意図したとお
-+りのものであることを確認してください。
-+
-+もしあなたのパッチが多くの差分を生み出すのであれば、あなたはパッチ
-+を意味のあるひとまとまりごとに分けたいと思うかもしれません。
-+これは他のカーネル開発者にとってレビューしやすくなるので、あなたの
-+パッチを受け入れてもらうためにはとても重要なことです。これを補助でき
-+る多くのスクリプトがあります。
-+
-+Quilt:
-+http://savannah.nongnu.org/projects/quilt
-+
-+Andrew Morton's patch scripts:
-+http://www.zip.com.au/~akpm/linux/patches/
-+このリンクの先のスクリプトの代わりとして、quilt がパッチマネジメント
-+ツールとして推奨されています(上のリンクを見てください)。
-+
-+2) パッチに対する説明
-+
-+パッチの中の変更点に対する技術的な詳細について説明してください。
-+
-+説明はできる限り具体的に。もっとも悪い説明は「ドライバー X を更新」、
-+「ドライバー X に対するバグフィックス」あるいは「このパッチはサブシス
-+テム X に対する更新を含んでいます。どうか取り入れてください。」などです。
-+
-+説明が長くなりだしたのであれば、おそらくそれはパッチを分ける必要がある
-+という兆候です。次の #3 を見てください。
-+
-+3) パッチの分割
-+
-+意味のあるひとまとまりごとに変更を個々のパッチファイルに分けてください。
-+
-+例えば、もし1つのドライバーに対するバグフィックスとパフォーマンス強
-+化の両方の変更を含んでいるのであれば、その変更を2つ以上のパッチに分
-+けてください。もし変更箇所に API の更新と、その新しい API を使う新たな
-+ドライバーが含まれているなら、2つのパッチに分けてください。
-+
-+一方で、もしあなたが多数のファイルに対して意味的に同じ1つの変更を加え
-+るのであれば、その変更を1つのパッチにまとめてください。言いかえると、
-+意味的に同じ1つの変更は1つのパッチの中に含まれます。
-+
-+あるパッチが変更を完結させるために他のパッチに依存していたとしても、
-+それは問題ありません。パッチの説明の中で「このパッチはパッチ X に依存
-+している」と簡単に注意書きをつけてください。
-+
-+もしパッチをより小さなパッチの集合に凝縮することができないなら、まずは
-+15かそこらのパッチを送り、そのレビューと統合を待って下さい。
-+
-+4) パッチのスタイルチェック
-+
-+あなたのパッチが基本的な( Linux カーネルの)コーディングスタイルに違反し
-+ていないかをチェックして下さい。その詳細を Documentation/CodingStyle で
-+見つけることができます。コーディングスタイルの違反はレビューする人の
-+時間を無駄にするだけなので、恐らくあなたのパッチは読まれることすらなく
-+拒否されるでしょう。
-+
-+あなたはパッチを投稿する前に最低限パッチスタイルチェッカー
-+( scripts/patchcheck.pl )を利用してパッチをチェックすべきです。
-+もしパッチに違反がのこっているならば、それらの全てについてあなたは正当な
-+理由を示せるようにしておく必要があります。
-+
-+5) 電子メールの宛先の選び方
-+
-+MAINTAINERS ファイルとソースコードに目を通してください。そして、その変
-+更がメンテナのいる特定のサブシステムに加えられるものであることが分か
-+れば、その人に電子メールを送ってください。
-+
-+もし、メンテナが載っていなかったり、メンテナからの応答がないなら、
-+LKML ( linux-kernel@vger.kernel.org )へパッチを送ってください。ほとんど
-+のカーネル開発者はこのメーリングリストに目を通しており、変更に対して
-+コメントを得ることができます。
-+
-+15個より多くのパッチを同時に vger.kernel.org のメーリングリストへ送らな
-+いでください!!!
-+
-+Linus Torvalds は Linux カーネルに入る全ての変更に対する最終的な意思決定者
-+です。電子メールアドレスは torvalds@linux-foundation.org になります。彼は
-+多くの電子メールを受け取っているため、できる限り彼に電子メールを送るのは
-+避けるべきです。
-+
-+バグフィックスであったり、自明な変更であったり、話し合いをほとんど
-+必要としないパッチは Linus へ電子メールを送るか CC しなければなりません。
-+話し合いを必要としたり、明確なアドバンテージがないパッチは、通常まず
-+は LKML へ送られるべきです。パッチが議論された後にだけ、そのパッチを
-+Linus へ送るべきです。
-+
-+6) CC (カーボンコピー)先の選び方
-+
-+特に理由がないなら、LKML にも CC してください。
-+
-+Linus 以外のカーネル開発者は変更に気づく必要があり、その結果、彼らはそ
-+の変更に対してコメントをくれたり、コードに対してレビューや提案をくれ
-+るかもしれません。LKML とは Linux カーネル開発者にとって一番中心的なメー
-+リングリストです。USB やフレームバッファデバイスや VFS や SCSI サブシステ
-+ムなどの特定のサブシステムに関するメーリングリストもあります。あなた
-+の変更に、はっきりと関連のあるメーリングリストについて知りたければ
-+MAINTAINERS ファイルを参照してください。
-+
-+VGER.KERNEL.ORG でホスティングされているメーリングリストの一覧が下記の
-+サイトに載っています。
-+<http://vger.kernel.org/vger-lists.html>
-+
-+もし、変更がユーザランドのカーネルインタフェースに影響を与え
-+るのであれば、MAN-PAGES のメンテナ( MAINTAINERS ファイルに一覧
-+があります)に man ページのパッチを送ってください。少なくとも
-+情報がマニュアルページの中に入ってくるように、変更が起きたという
-+通知を送ってください。
-+
-+たとえ、メンテナが #4 で反応がなかったとしても、メンテナのコードに変更を
-+加えたときには、いつもメンテナに CC するのを忘れないようにしてください。
-+
-+小さなパッチであれば、Adrian Bunk が管理している Trivial Patch Monkey
-+(ちょっとしたパッチを集めている)<trivial@kernel.org>に CC してもいい
-+です。ちょっとしたパッチとは以下のルールのどれか1つを満たしていなけ
-+ればなりません。
-+ ・ドキュメントのスペルミスの修正
-+ ・grep(1) コマンドによる検索を困難にしているスペルの修正
-+ ・コンパイル時の警告の修正(無駄な警告が散乱することは好ましくないた
-+   めです)
-+ ・コンパイル問題の修正(それらの修正が本当に正しい場合に限る)
-+ ・実行時の問題の修正(それらの修正が本当に問題を修正している場合に限る)
-+ ・廃止予定の関数やマクロを使用しているコードの除去(例 check_region )
-+ ・問い合わせ先やドキュメントの修正
-+ ・移植性のないコードから移植性のあるコードへの置き換え(小さい範囲で
-+   あればアーキテクチャ特有のことでも他の人がコピーできます)
-+ ・作者やメンテナによる修正(すなわち patch monkey の再転送モード)
-+URL: <http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/>
-+
-+7) MIME やリンクや圧縮ファイルや添付ファイルではなくプレインテキストのみ
-+
-+Linus や他のカーネル開発者はあなたが投稿した変更を読んで、コメントでき
-+る必要があります。カーネル開発者にとって、あなたが書いたコードの特定の
-+部分にコメントをするために、標準的な電子メールクライアントで変更が引用
-+できることは重要です。
-+
-+上記の理由で、すべてのパッチは文中に含める形式の電子メールで投稿さ
-+れるべきです。警告：あなたがパッチをコピー&ペーストする際には、パッ
-+チを改悪するエディターの折り返し機能に注意してください。
-+
-+パッチを圧縮の有無に関わらず MIME 形式で添付しないでください。多くのポ
-+ピュラーな電子メールクライアントは MIME 形式の添付ファイルをプレーンテ
-+キストとして送信するとは限らないでしょう。そうなると、電子メールクラ
-+イアントがコードに対するコメントを付けることをできなくします。また、
-+MIME 形式の添付ファイルは Linus に手間を取らせることになり、その変更を
-+受け入れてもらう可能性が低くなってしまいます。
-+
-+例外：お使いの電子メールクライアントがパッチをめちゃくちゃにするので
-+あれば、誰かが MIME 形式のパッチを再送するよう求めるかもしれません。
-+
-+警告： Mozilla のような特定の電子メールクライアントは電子メールの
-+ヘッダに以下のものを付加して送ります。
-+---- message header ----
-+Content-Type: text/plain; charset=us-ascii; format=flowed
-+---- message header ----
-+問題は、「 format=flowed 」が付いた電子メールを特定の受信側の電子メール
-+クライアントがタブをスペースに置き換えるというような変更をすることです。
-+したがって送られてきたパッチは壊れているように見えるでしょう。
-+
-+これを修正するには、mozilla の defaults/pref/mailnews.js ファイルを
-+以下のように修正します。
-+pref("mailnews.send_plaintext_flowed", false); // RFC 2646=======
-+pref("mailnews.display.disable_format_flowed_support", true);
-+
-+8) 電子メールのサイズ
-+
-+パッチを Linus へ送るときは常に #7 の手順に従ってください。
-+
-+大きなパッチはメーリングリストやメンテナにとって不親切です。パッチが
-+未圧縮で 40KB を超えるようであるなら、インターネット上のアクセス可能な
-+サーバに保存し、保存場所を示す URL を伝えるほうが適切です。
-+
-+9) カーネルバージョンの明記
-+
-+パッチが対象とするカーネルのバージョンをパッチの概要か電子メールの
-+サブジェクトに付けることが重要です。
-+
-+パッチが最新バージョンのカーネルに正しく適用できなければ、Linus は
-+そのパッチを採用しないでしょう。
-+
-+10) がっかりせず再投稿
-+
-+パッチを投稿した後は、辛抱強く待っていてください。Linus があなたのパッ
-+チを気に入って採用すれば、Linus がリリースする次のバージョンのカーネル
-+の中で姿を見せるでしょう。
-+
-+しかし、パッチが次のバージョンのカーネルに入っていないなら、いくつもの
-+理由があるのでしょう。その原因を絞り込み、間違っているものを正し、更新
-+したパッチを投稿するのはあなたの仕事です。
-+
-+Linus があなたのパッチに対して何のコメントもなく不採用にすることは極め
-+て普通のことです。それは自然な姿です。もし、Linus があなたのパッチを受
-+け取っていないのであれば、以下の理由が考えられます。
-+* パッチが最新バージョンの Linux カーネルにきちんと適用できなかった
-+* パッチが LKML で十分に議論されていなかった
-+* スタイルの問題(セクション2を参照)
-+* 電子メールフォーマットの問題(このセクションを参照)
-+* パッチに対する技術的な問題
-+* Linus はたくさんの電子メールを受け取っているので、どさくさに紛れて見
-+  失った
-+* 不愉快にさせている
-+
-+判断できない場合は、LKML にコメントを頼んでください。
-+
-+11) サブジェクトに「 PATCH 」
-+
-+Linus や LKML への大量の電子メールのために、サブジェクトのプレフィックスに
-+「 [PATCH] 」を付けることが慣習となっています。これによって Linus や他の
-+カーネル開発者がパッチであるのか、又は、他の議論に関する電子メールであるの
-+かをより簡単に識別できます。
-+
-+12) パッチへの署名
-+
-+誰が何をしたのかを追いかけやすくするために (特に、パッチが何人かの
-+メンテナを経て最終的に Linux カーネルに取り込まれる場合のために)、電子
-+メールでやり取りされるパッチに対して「 sign-off 」という手続きを導入し
-+ました。
-+
-+「 sign-off 」とは、パッチがあなたの書いたものであるか、あるいは、
-+あなたがそのパッチをオープンソースとして提供する権利を保持している、
-+という証明をパッチの説明の末尾に一行記載するというものです。
-+ルールはとても単純です。以下の項目を確認して下さい。
-+
-+        原作者の証明書( DCO ) 1.1
-+
-+        このプロジェクトに寄与するものとして、以下のことを証明する。
-+
-+        (a) 本寄与は私が全体又は一部作成したものであり、私がそのファイ
-+            ル中に明示されたオープンソースライセンスの下で公開する権利
-+            を持っている。もしくは、
-+
-+        (b) 本寄与は、私が知る限り、適切なオープンソースライセンスでカバ
-+            ーされている既存の作品を元にしている。同時に、私はそのライセ
-+            ンスの下で、私が全体又は一部作成した修正物を、ファイル中で示
-+            される同一のオープンソースライセンスで(異なるライセンスの下で
-+            投稿することが許可されている場合を除いて)投稿する権利を持って
-+            いる。もしくは、
-+
-+        (c) 本寄与は(a)、(b)、(c)を証明する第3者から私へ直接提供された
-+            ものであり、私はそれに変更を加えていない。
-+
-+	(d) 私はこのプロジェクトと本寄与が公のものであることに理解及び同意す
-+            る。同時に、関与した記録(投稿の際の全ての個人情報と sign-off を
-+            含む)が無期限に保全されることと、当該プロジェクト又は関連する
-+            オープンソースライセンスに沿った形で再配布されることに理解及び
-+            同意する。
-+
-+もしこれに同意できるなら、以下のような1行を追加してください。
-+
-+	Signed-off-by: Random J Developer <random@developer.example.org>
-+
-+実名を使ってください。(残念ですが、偽名や匿名による寄与はできません。)
-+
-+人によっては sign-off の近くに追加のタグを付加しています。それらは今のところ
-+無視されますが、あなたはそのタグを社内の手続きに利用したり、sign-off に特別
-+な情報を示したりすることができます。
-+
-+13) いつ Acked-by: を使うのか
-+
-+「 Signed-off-by: 」タグはその署名者がパッチの開発に関わっていたことやパッチ
-+の伝播パスにいたことを示しています。
-+
-+ある人が直接パッチの準備や作成に関わっていないけれど、その人のパッチに対す
-+る承認を記録し、示したいとします。その場合、その人を示すのに Acked-by: が使
-+えます。Acked-by: はパッチのチェンジログにも追加されます。
-+
-+パッチの影響を受けるコードのメンテナがパッチに関わっていなかったり、パッチ
-+の伝播パスにいなかった時にも、メンテナは Acked-by: をしばしば利用します。
-+
-+Acked-by: は Signed-off-by: のように公式なタグではありません。それはメンテナが
-+少なくともパッチをレビューし、同意を示しているという記録です。そのような
-+ことからパッチの統合者がメンテナの「うん、良いと思うよ」という発言を
-+Acked-by: へ置き換えることがあります。
-+
-+Acked-by: が必ずしもパッチ全体の承認を示しているわけではありません。例えば、
-+あるパッチが複数のサブシステムへ影響を与えており、その中の1つのサブシステム
-+のメンテナからの Acked-by: を持っているとします。その場合、Acked-by: は通常
-+そのメンテナのコードに影響を与える一部分だけに対する承認を示しています。
-+この点は、ご自分で判断してください。(その Acked-by: が)疑わしい場合は、
-+メーリングリストアーカイブの中の大元の議論を参照すべきです。
-+
-+14) 標準的なパッチのフォーマット
-+
-+標準的なパッチのサブジェクトは以下のとおりです。
-+
-+    Subject: [PATCH 001/123] subsystem: summary phrase
-+
-+標準的なパッチの、電子メールのボディは以下の項目を含んでいます。
-+
-+  - パッチの作成者を明記する「 from 」行
-+
-+  - 空行
-+
-+  - 説明本体。これはこのパッチを説明するために無期限のチェンジログ
-+    (変更履歴)にコピーされます。
-+
-+  - 上述した「 Signed-off-by: 」行。これも説明本体と同じくチェン
-+    ジログ内にコピーされます。
-+
-+  - マーカー行は単純に「 --- 」です。
-+
-+  - 余計なコメントは、チェンジログには不適切です。
-+
-+  - 実際のパッチ(差分出力)
-+
-+サブジェクト行のフォーマットは、アルファベット順で電子メールをとても
-+ソートしやすいものになっています。(ほとんどの電子メールクライアント
-+はソートをサポートしています)パッチのサブジェクトの連番は0詰めであ
-+るため、数字でのソートとアルファベットでのソートは同じ結果になります。
-+
-+電子メールのサブジェクト内のサブシステム表記は、パッチが適用される
-+分野またはサブシステムを識別できるようにすべきです。
-+
-+電子メールのサブジェクトの「概要の言い回し」はそのパッチの概要を正確
-+に表現しなければなりません。「概要の言い回し」をファイル名にしてはい
-+けません。一連のパッチ中でそれぞれのパッチは同じ「概要の言い回し」を
-+使ってはいけません(「一連のパッチ」とは順序付けられた関連のある複数の
-+パッチ群です)。
-+
-+あなたの電子メールの「概要の言い回し」がそのパッチにとって世界で唯
-+一の識別子になるように心がけてください。「概要の言い回し」は git の
-+チェンジログの中へずっと伝播していきます。「概要の言い回し」は、開
-+発者が後でパッチを参照するために議論の中で利用するかもしれません。
-+人々はそのパッチに関連した議論を読むために「概要の言い回し」を使って
-+google で検索したがるでしょう。
-+
-+サブジェクトの例を二つ
-+
-+    Subject: [patch 2/5] ext2: improve scalability of bitmap searching
-+    Subject: [PATCHv2 001/207] x86: fix eflags tracking
-+
-+「 from 」行は電子メールのボディの一番最初の行でなければなりません。
-+その形式は以下のとおりです。
-+
-+        From: Original Author <author@example.com>
-+
-+「 from 」行はチェンジログの中で、そのパッチの作成者としてクレジットされ
-+ている人を特定するものです。「 from 」行がかけていると、電子メールのヘッ
-+ダーの「 From: 」が、チェンジログの中でパッチの作成者を決定するために使わ
-+れるでしょう。
-+
-+説明本体は無期限のソースのチェンジログにコミットされます。なので、説明
-+本体はそのパッチに至った議論の詳細を忘れているある程度の技量を持っている人
-+がその詳細を思い出すことができるものでなければなりません。
-+
-+「 --- 」マーカー行はパッチ処理ツールに対して、チェンジログメッセージの終端
-+部分を認識させるという重要な役目を果たします。
-+
-+「 --- 」マーカー行の後の追加コメントの良い使用方法の1つに diffstat コマンド
-+があります。diffstat コマンドとは何のファイルが変更され、1ファイル当たり何行
-+追加され何行消されたかを示すものです。diffstat コマンドは特に大きなパッチに
-+おいて役立ちます。その時点でだけ又はメンテナにとってのみ関係のあるコメント
-+は無期限に保存されるチェンジログにとって適切ではありません。そのため、この
-+ようなコメントもマーカー行の後に書かれるべきです。ファイル名はカーネルソー
-+スツリーのトップディレクトリからの表記でリストされるため、横方向のスペース
-+をとり過ぎないように、diffstat コマンドにオプション「  -p 1 -w 70 」を指定し
-+てください(インデントを含めてちょうど80列に合うでしょう)。
-+
-+適切なパッチのフォーマットの詳細についてはセクション3の参考文献を参照して
-+ください。
-+
-+------------------------------------
-+セクション2 - ヒントとTIPSと小技
-+------------------------------------
-+
-+このセクションは Linux カーネルに変更を適用することに関係のある一般的な
-+「お約束」の多くを載せています。物事には例外というものがあります。しか
-+し例外を適用するには、本当に妥当な理由が不可欠です。あなたは恐らくこの
-+セクションを Linus のコンピュータ・サイエンス101と呼ぶでしょう。
-+
-+1) Documentation/CodingStyleを参照
-+
-+言うまでもなく、あなたのコードがこのコーディングスタイルからあまりに
-+も逸脱していると、レビューやコメントなしに受け取ってもらえないかもし
-+れません。
-+
-+唯一の特筆すべき例外は、コードをあるファイルから別のファイルに移動
-+するときです。この場合、コードを移動するパッチでは、移動されるコード
-+に関して移動以外の変更を一切加えるべきではありません。これにより、
-+コードの移動とあなたが行ったコードの修正を明確に区別できるようにな
-+ります。これは実際に何が変更されたかをレビューする際の大きな助けに
-+なるとともに、ツールにコードの履歴を追跡させることも容易になります。
-+
-+投稿するより前にパッチのスタイルチェッカー( scripts/checkpatch.pl )で
-+あなたのパッチをチェックしてください。このスタイルチェッカーは最終結
-+論としてではなく、指標としてみるべきです。もし、あなたのコードが違反
-+はしているが修正するより良く見えるのであれば、おそらくそのままにする
-+のがベストです。
-+
-+スタイルチェッカーによる3段階のレポート:
-+ - エラー: 間違っている可能性が高い
-+ - 警告：注意してレビューする必要がある
-+ - チェック：考慮する必要がある
-+
-+あなたはパッチに残っている全ての違反について、それがなぜ必要なのか正当な
-+理由を示せるようにしておく必要があります。
-+
-+2) #ifdefは見苦しい
-+
-+ifdef が散乱したコードは、読むのもメンテナンスするのも面倒です。コードの中
-+で ifdef を使わないでください。代わりに、ヘッダファイルの中に ifdef を入れて、
-+条件付きで、コードの中で使われる関数を「 static inline 」関数かマクロで定義し
-+てください。後はコンパイラが、何もしない箇所を最適化して取り去ってくれるで
-+しょう。
-+
-+まずいコードの簡単な例
-+
-+	dev = alloc_etherdev (sizeof(struct funky_private));
-+	if (!dev)
-+		return -ENODEV;
-+	#ifdef CONFIG_NET_FUNKINESS
-+	init_funky_net(dev);
-+	#endif
-+
-+クリーンアップしたコードの例
-+
-+(in header)
-+	#ifndef CONFIG_NET_FUNKINESS
-+	static inline void init_funky_net (struct net_device *d) {}
-+	#endif
-+
-+(in the code itself)
-+	dev = alloc_etherdev (sizeof(struct funky_private));
-+	if (!dev)
-+		return -ENODEV;
-+	init_funky_net(dev);
-+
-+3) マクロより「 static inline 」を推奨
-+
-+「 static inline 」関数はマクロよりもずっと推奨されています。それらは、
-+型安全性があり、長さにも制限が無く、フォーマットの制限もありません。
-+gcc においては、マクロと同じくらい軽いです。
-+
-+マクロは「 static inline 」が明らかに不適切であると分かる場所(高速化パスの
-+いくつかの特定のケース)や「 static inline 」関数を使うことができないような
-+場所(マクロの引数の文字列連結のような)にだけ使われるべきです。
-+
-+「 static inline 」は「 static __inline__ 」や「 extern inline 」や
-+「 extern __inline__ 」よりも適切です。
-+
-+4) 設計に凝りすぎるな
-+
-+それが有用になるかどうか分からないような不明瞭な将来を見越した設計
-+をしないでください。「できる限り簡単に、そして、それ以上簡単になら
-+ないような設計をしてください。」
-+
-+----------------------
-+セクション3 参考文献
-+----------------------
-+
-+Andrew Morton, "The perfect patch" (tpp).
-+  <http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt>
-+
-+Jeff Garzik, "Linux kernel patch submission format".
-+  <http://linux.yyz.us/patch-format.html>
-+
-+Greg Kroah-Hartman, "How to piss off a kernel subsystem maintainer".
-+  <http://www.kroah.com/log/2005/03/31/>
-+  <http://www.kroah.com/log/2005/07/08/>
-+  <http://www.kroah.com/log/2005/10/19/>
-+  <http://www.kroah.com/log/2006/01/11/>
-+
-+NO!!!! No more huge patch bombs to linux-kernel@vger.kernel.org people!
-+  <http://marc.theaimsgroup.com/?l=linux-kernel&m=112112749912944&w=2>
-+
-+Kernel Documentation/CodingStyle:
-+  <http://users.sosdg.org/~qiyong/lxr/source/Documentation/CodingStyle>
-+
-+Linus Torvalds's mail on the canonical patch format:
-+  <http://lkml.org/lkml/2005/4/7/183>
-+--
--- 
-1.5.3.4
+--Multipart=_Tue__30_Oct_2007_22_15_08_-0700_Obv_8/9QB4Q.CmE.
+Content-Type: application/octet-stream;
+ name="config-bttv-nonet"
+Content-Disposition: attachment;
+ filename="config-bttv-nonet"
+Content-Transfer-Encoding: base64
 
+IwojIEF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVkIG1ha2UgY29uZmlnOiBkb24ndCBlZGl0CiMgTGlu
+dXgga2VybmVsIHZlcnNpb246IDIuNi4yNC1yYzEtZ2l0NwojIFR1ZSBPY3QgMzAgMjI6MDY6NDcg
+MjAwNwojCkNPTkZJR19YODZfNjQ9eQpDT05GSUdfNjRCSVQ9eQpDT05GSUdfWDg2PXkKQ09ORklH
+X0dFTkVSSUNfVElNRT15CkNPTkZJR19HRU5FUklDX1RJTUVfVlNZU0NBTEw9eQpDT05GSUdfR0VO
+RVJJQ19DTU9TX1VQREFURT15CkNPTkZJR19DTE9DS1NPVVJDRV9XQVRDSERPRz15CkNPTkZJR19H
+RU5FUklDX0NMT0NLRVZFTlRTPXkKQ09ORklHX0dFTkVSSUNfQ0xPQ0tFVkVOVFNfQlJPQURDQVNU
+PXkKQ09ORklHX1pPTkVfRE1BMzI9eQpDT05GSUdfTE9DS0RFUF9TVVBQT1JUPXkKQ09ORklHX1NU
+QUNLVFJBQ0VfU1VQUE9SVD15CkNPTkZJR19TRU1BUEhPUkVfU0xFRVBFUlM9eQpDT05GSUdfTU1V
+PXkKQ09ORklHX1pPTkVfRE1BPXkKQ09ORklHX1JXU0VNX0dFTkVSSUNfU1BJTkxPQ0s9eQpDT05G
+SUdfR0VORVJJQ19IV0VJR0hUPXkKQ09ORklHX0dFTkVSSUNfQ0FMSUJSQVRFX0RFTEFZPXkKQ09O
+RklHX1g4Nl9DTVBYQ0hHPXkKQ09ORklHX0dFTkVSSUNfSVNBX0RNQT15CkNPTkZJR19HRU5FUklD
+X0lPTUFQPXkKQ09ORklHX0FSQ0hfTUFZX0hBVkVfUENfRkRDPXkKQ09ORklHX0FSQ0hfUE9QVUxB
+VEVTX05PREVfTUFQPXkKQ09ORklHX0RNST15CkNPTkZJR19BVURJVF9BUkNIPXkKQ09ORklHX0dF
+TkVSSUNfQlVHPXkKIyBDT05GSUdfQVJDSF9IQVNfSUxPRzJfVTMyIGlzIG5vdCBzZXQKIyBDT05G
+SUdfQVJDSF9IQVNfSUxPRzJfVTY0IGlzIG5vdCBzZXQKQ09ORklHX0RFRkNPTkZJR19MSVNUPSIv
+bGliL21vZHVsZXMvJFVOQU1FX1JFTEVBU0UvLmNvbmZpZyIKCiMKIyBHZW5lcmFsIHNldHVwCiMK
+Q09ORklHX0VYUEVSSU1FTlRBTD15CkNPTkZJR19CUk9LRU5fT05fU01QPXkKQ09ORklHX0xPQ0tf
+S0VSTkVMPXkKQ09ORklHX0lOSVRfRU5WX0FSR19MSU1JVD0zMgpDT05GSUdfTE9DQUxWRVJTSU9O
+PSIiCkNPTkZJR19MT0NBTFZFUlNJT05fQVVUTz15CiMgQ09ORklHX1NZU1ZJUEMgaXMgbm90IHNl
+dApDT05GSUdfQlNEX1BST0NFU1NfQUNDVD15CkNPTkZJR19CU0RfUFJPQ0VTU19BQ0NUX1YzPXkK
+IyBDT05GSUdfVVNFUl9OUyBpcyBub3Qgc2V0CkNPTkZJR19JS0NPTkZJRz15CkNPTkZJR19JS0NP
+TkZJR19QUk9DPXkKQ09ORklHX0xPR19CVUZfU0hJRlQ9MTQKIyBDT05GSUdfQ0dST1VQUyBpcyBu
+b3Qgc2V0CkNPTkZJR19GQUlSX0dST1VQX1NDSEVEPXkKQ09ORklHX0ZBSVJfVVNFUl9TQ0hFRD15
+CiMgQ09ORklHX0ZBSVJfQ0dST1VQX1NDSEVEIGlzIG5vdCBzZXQKQ09ORklHX1NZU0ZTX0RFUFJF
+Q0FURUQ9eQpDT05GSUdfUkVMQVk9eQojIENPTkZJR19CTEtfREVWX0lOSVRSRCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0NDX09QVElNSVpFX0ZPUl9TSVpFIGlzIG5vdCBzZXQKQ09ORklHX0VNQkVEREVE
+PXkKQ09ORklHX1VJRDE2PXkKIyBDT05GSUdfU1lTQ1RMX1NZU0NBTEwgaXMgbm90IHNldApDT05G
+SUdfS0FMTFNZTVM9eQpDT05GSUdfS0FMTFNZTVNfQUxMPXkKIyBDT05GSUdfS0FMTFNZTVNfRVhU
+UkFfUEFTUyBpcyBub3Qgc2V0CkNPTkZJR19IT1RQTFVHPXkKQ09ORklHX1BSSU5USz15CkNPTkZJ
+R19CVUc9eQojIENPTkZJR19FTEZfQ09SRSBpcyBub3Qgc2V0CkNPTkZJR19CQVNFX0ZVTEw9eQoj
+IENPTkZJR19GVVRFWCBpcyBub3Qgc2V0CkNPTkZJR19BTk9OX0lOT0RFUz15CkNPTkZJR19FUE9M
+TD15CkNPTkZJR19TSUdOQUxGRD15CiMgQ09ORklHX0VWRU5URkQgaXMgbm90IHNldApDT05GSUdf
+U0hNRU09eQpDT05GSUdfVk1fRVZFTlRfQ09VTlRFUlM9eQojIENPTkZJR19TTFVCX0RFQlVHIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU0xBQiBpcyBub3Qgc2V0CkNPTkZJR19TTFVCPXkKIyBDT05GSUdf
+U0xPQiBpcyBub3Qgc2V0CiMgQ09ORklHX1RJTllfU0hNRU0gaXMgbm90IHNldApDT05GSUdfQkFT
+RV9TTUFMTD0wCkNPTkZJR19NT0RVTEVTPXkKQ09ORklHX01PRFVMRV9VTkxPQUQ9eQojIENPTkZJ
+R19NT0RVTEVfRk9SQ0VfVU5MT0FEIGlzIG5vdCBzZXQKIyBDT05GSUdfTU9EVkVSU0lPTlMgaXMg
+bm90IHNldAojIENPTkZJR19NT0RVTEVfU1JDVkVSU0lPTl9BTEwgaXMgbm90IHNldAojIENPTkZJ
+R19LTU9EIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxPQ0sgaXMgbm90IHNldAoKIwojIFByb2Nlc3Nv
+ciB0eXBlIGFuZCBmZWF0dXJlcwojCkNPTkZJR19USUNLX09ORVNIT1Q9eQojIENPTkZJR19OT19I
+WiBpcyBub3Qgc2V0CkNPTkZJR19ISUdIX1JFU19USU1FUlM9eQpDT05GSUdfR0VORVJJQ19DTE9D
+S0VWRU5UU19CVUlMRD15CkNPTkZJR19YODZfUEM9eQojIENPTkZJR19YODZfVlNNUCBpcyBub3Qg
+c2V0CiMgQ09ORklHX01LOCBpcyBub3Qgc2V0CiMgQ09ORklHX01QU0MgaXMgbm90IHNldApDT05G
+SUdfTUNPUkUyPXkKIyBDT05GSUdfR0VORVJJQ19DUFUgaXMgbm90IHNldApDT05GSUdfWDg2X0wx
+X0NBQ0hFX0JZVEVTPTY0CkNPTkZJR19YODZfTDFfQ0FDSEVfU0hJRlQ9NgpDT05GSUdfWDg2X0lO
+VEVSTk9ERV9DQUNIRV9CWVRFUz02NApDT05GSUdfWDg2X1RTQz15CkNPTkZJR19YODZfR09PRF9B
+UElDPXkKQ09ORklHX01JQ1JPQ09ERT15CkNPTkZJR19NSUNST0NPREVfT0xEX0lOVEVSRkFDRT15
+CkNPTkZJR19YODZfTVNSPW0KQ09ORklHX1g4Nl9DUFVJRD15CkNPTkZJR19YODZfSU9fQVBJQz15
+CkNPTkZJR19YODZfTE9DQUxfQVBJQz15CkNPTkZJR19NVFJSPXkKIyBDT05GSUdfU01QIGlzIG5v
+dCBzZXQKIyBDT05GSUdfUFJFRU1QVF9OT05FIGlzIG5vdCBzZXQKIyBDT05GSUdfUFJFRU1QVF9W
+T0xVTlRBUlkgaXMgbm90IHNldApDT05GSUdfUFJFRU1QVD15CkNPTkZJR19QUkVFTVBUX0JLTD15
+CkNPTkZJR19BUkNIX1NQQVJTRU1FTV9FTkFCTEU9eQpDT05GSUdfQVJDSF9GTEFUTUVNX0VOQUJM
+RT15CkNPTkZJR19TRUxFQ1RfTUVNT1JZX01PREVMPXkKIyBDT05GSUdfRkxBVE1FTV9NQU5VQUwg
+aXMgbm90IHNldAojIENPTkZJR19ESVNDT05USUdNRU1fTUFOVUFMIGlzIG5vdCBzZXQKQ09ORklH
+X1NQQVJTRU1FTV9NQU5VQUw9eQpDT05GSUdfU1BBUlNFTUVNPXkKQ09ORklHX0hBVkVfTUVNT1JZ
+X1BSRVNFTlQ9eQojIENPTkZJR19TUEFSU0VNRU1fU1RBVElDIGlzIG5vdCBzZXQKQ09ORklHX1NQ
+QVJTRU1FTV9FWFRSRU1FPXkKQ09ORklHX1NQQVJTRU1FTV9WTUVNTUFQX0VOQUJMRT15CkNPTkZJ
+R19TUEFSU0VNRU1fVk1FTU1BUD15CiMgQ09ORklHX01FTU9SWV9IT1RQTFVHIGlzIG5vdCBzZXQK
+Q09ORklHX1NQTElUX1BUTE9DS19DUFVTPTQKQ09ORklHX1JFU09VUkNFU182NEJJVD15CkNPTkZJ
+R19aT05FX0RNQV9GTEFHPTEKQ09ORklHX1ZJUlRfVE9fQlVTPXkKQ09ORklHX1BIWVNJQ0FMX0FM
+SUdOPTB4MjAwMDAwCkNPTkZJR19BUkNIX0VOQUJMRV9NRU1PUllfSE9UUExVRz15CkNPTkZJR19I
+UEVUX1RJTUVSPXkKIyBDT05GSUdfR0FSVF9JT01NVSBpcyBub3Qgc2V0CiMgQ09ORklHX0NBTEdB
+UllfSU9NTVUgaXMgbm90IHNldApDT05GSUdfWDg2X01DRT15CkNPTkZJR19YODZfTUNFX0lOVEVM
+PXkKIyBDT05GSUdfWDg2X01DRV9BTUQgaXMgbm90IHNldAojIENPTkZJR19LRVhFQyBpcyBub3Qg
+c2V0CiMgQ09ORklHX0NSQVNIX0RVTVAgaXMgbm90IHNldAojIENPTkZJR19SRUxPQ0FUQUJMRSBp
+cyBub3Qgc2V0CkNPTkZJR19QSFlTSUNBTF9TVEFSVD0weDIwMDAwMApDT05GSUdfU0VDQ09NUD15
+CiMgQ09ORklHX0NDX1NUQUNLUFJPVEVDVE9SIGlzIG5vdCBzZXQKIyBDT05GSUdfSFpfMTAwIGlz
+IG5vdCBzZXQKQ09ORklHX0haXzI1MD15CiMgQ09ORklHX0haXzMwMCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0haXzEwMDAgaXMgbm90IHNldApDT05GSUdfSFo9MjUwCkNPTkZJR19HRU5FUklDX0hBUkRJ
+UlFTPXkKQ09ORklHX0dFTkVSSUNfSVJRX1BST0JFPXkKQ09ORklHX0lTQV9ETUFfQVBJPXkKCiMK
+IyBQb3dlciBtYW5hZ2VtZW50IG9wdGlvbnMKIwojIENPTkZJR19QTSBpcyBub3Qgc2V0CkNPTkZJ
+R19TVVNQRU5EX1VQX1BPU1NJQkxFPXkKQ09ORklHX0hJQkVSTkFUSU9OX1VQX1BPU1NJQkxFPXkK
+CiMKIyBDUFUgRnJlcXVlbmN5IHNjYWxpbmcKIwpDT05GSUdfQ1BVX0ZSRVE9eQpDT05GSUdfQ1BV
+X0ZSRVFfVEFCTEU9eQpDT05GSUdfQ1BVX0ZSRVFfREVCVUc9eQpDT05GSUdfQ1BVX0ZSRVFfU1RB
+VD15CiMgQ09ORklHX0NQVV9GUkVRX1NUQVRfREVUQUlMUyBpcyBub3Qgc2V0CiMgQ09ORklHX0NQ
+VV9GUkVRX0RFRkFVTFRfR09WX1BFUkZPUk1BTkNFIGlzIG5vdCBzZXQKQ09ORklHX0NQVV9GUkVR
+X0RFRkFVTFRfR09WX1VTRVJTUEFDRT15CiMgQ09ORklHX0NQVV9GUkVRX0RFRkFVTFRfR09WX09O
+REVNQU5EIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1BVX0ZSRVFfREVGQVVMVF9HT1ZfQ09OU0VSVkFU
+SVZFIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1BVX0ZSRVFfR09WX1BFUkZPUk1BTkNFIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQ1BVX0ZSRVFfR09WX1BPV0VSU0FWRSBpcyBub3Qgc2V0CkNPTkZJR19DUFVf
+RlJFUV9HT1ZfVVNFUlNQQUNFPXkKIyBDT05GSUdfQ1BVX0ZSRVFfR09WX09OREVNQU5EIGlzIG5v
+dCBzZXQKIyBDT05GSUdfQ1BVX0ZSRVFfR09WX0NPTlNFUlZBVElWRSBpcyBub3Qgc2V0CgojCiMg
+Q1BVRnJlcSBwcm9jZXNzb3IgZHJpdmVycwojCkNPTkZJR19YODZfUE9XRVJOT1dfSzg9eQoKIwoj
+IHNoYXJlZCBvcHRpb25zCiMKIyBDT05GSUdfWDg2X1A0X0NMT0NLTU9EIGlzIG5vdCBzZXQKIyBD
+T05GSUdfWDg2X1NQRUVEU1RFUF9MSUIgaXMgbm90IHNldAojIENPTkZJR19DUFVfSURMRSBpcyBu
+b3Qgc2V0CgojCiMgQnVzIG9wdGlvbnMgKFBDSSBldGMuKQojCkNPTkZJR19QQ0k9eQpDT05GSUdf
+UENJX0RJUkVDVD15CkNPTkZJR19QQ0lfRE9NQUlOUz15CiMgQ09ORklHX1BDSUVQT1JUQlVTIGlz
+IG5vdCBzZXQKQ09ORklHX0FSQ0hfU1VQUE9SVFNfTVNJPXkKQ09ORklHX1BDSV9NU0k9eQpDT05G
+SUdfUENJX0RFQlVHPXkKQ09ORklHX0hUX0lSUT15CiMgQ09ORklHX1BDQ0FSRCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0hPVFBMVUdfUENJIGlzIG5vdCBzZXQKCiMKIyBFeGVjdXRhYmxlIGZpbGUgZm9y
+bWF0cyAvIEVtdWxhdGlvbnMKIwojIENPTkZJR19CSU5GTVRfRUxGIGlzIG5vdCBzZXQKIyBDT05G
+SUdfQklORk1UX01JU0MgaXMgbm90IHNldApDT05GSUdfSUEzMl9FTVVMQVRJT049eQojIENPTkZJ
+R19JQTMyX0FPVVQgaXMgbm90IHNldApDT05GSUdfQ09NUEFUPXkKQ09ORklHX0NPTVBBVF9GT1Jf
+VTY0X0FMSUdOTUVOVD15CgojCiMgTmV0d29ya2luZwojCiMgQ09ORklHX05FVCBpcyBub3Qgc2V0
+CgojCiMgRGV2aWNlIERyaXZlcnMKIwoKIwojIEdlbmVyaWMgRHJpdmVyIE9wdGlvbnMKIwpDT05G
+SUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIgojIENPTkZJR19TVEFOREFMT05F
+IGlzIG5vdCBzZXQKIyBDT05GSUdfUFJFVkVOVF9GSVJNV0FSRV9CVUlMRCBpcyBub3Qgc2V0CkNP
+TkZJR19GV19MT0FERVI9eQojIENPTkZJR19ERUJVR19EUklWRVIgaXMgbm90IHNldAojIENPTkZJ
+R19ERUJVR19ERVZSRVMgaXMgbm90IHNldAojIENPTkZJR19TWVNfSFlQRVJWSVNPUiBpcyBub3Qg
+c2V0CiMgQ09ORklHX01URCBpcyBub3Qgc2V0CiMgQ09ORklHX1BBUlBPUlQgaXMgbm90IHNldAoj
+IENPTkZJR19NSVNDX0RFVklDRVMgaXMgbm90IHNldAoKIwojIFNDU0kgZGV2aWNlIHN1cHBvcnQK
+IwojIENPTkZJR19TQ1NJX0RNQSBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfTkVUTElOSyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0ZVU0lPTiBpcyBub3Qgc2V0CgojCiMgSUVFRSAxMzk0IChGaXJlV2ly
+ZSkgc3VwcG9ydAojCkNPTkZJR19GSVJFV0lSRT15CkNPTkZJR19GSVJFV0lSRV9PSENJPW0KIyBD
+T05GSUdfSUVFRTEzOTQgaXMgbm90IHNldAojIENPTkZJR19JMk8gaXMgbm90IHNldAojIENPTkZJ
+R19NQUNJTlRPU0hfRFJJVkVSUyBpcyBub3Qgc2V0CkNPTkZJR19NTFg0X0NPUkU9bQojIENPTkZJ
+R19QSE9ORSBpcyBub3Qgc2V0CgojCiMgSW5wdXQgZGV2aWNlIHN1cHBvcnQKIwpDT05GSUdfSU5Q
+VVQ9bQpDT05GSUdfSU5QVVRfRkZfTUVNTEVTUz1tCkNPTkZJR19JTlBVVF9QT0xMREVWPW0KCiMK
+IyBVc2VybGFuZCBpbnRlcmZhY2VzCiMKQ09ORklHX0lOUFVUX01PVVNFREVWPW0KIyBDT05GSUdf
+SU5QVVRfTU9VU0VERVZfUFNBVVggaXMgbm90IHNldApDT05GSUdfSU5QVVRfTU9VU0VERVZfU0NS
+RUVOX1g9MTAyNApDT05GSUdfSU5QVVRfTU9VU0VERVZfU0NSRUVOX1k9NzY4CkNPTkZJR19JTlBV
+VF9KT1lERVY9bQojIENPTkZJR19JTlBVVF9FVkRFViBpcyBub3Qgc2V0CiMgQ09ORklHX0lOUFVU
+X0VWQlVHIGlzIG5vdCBzZXQKCiMKIyBJbnB1dCBEZXZpY2UgRHJpdmVycwojCkNPTkZJR19JTlBV
+VF9LRVlCT0FSRD15CkNPTkZJR19LRVlCT0FSRF9BVEtCRD1tCkNPTkZJR19LRVlCT0FSRF9TVU5L
+QkQ9bQpDT05GSUdfS0VZQk9BUkRfTEtLQkQ9bQpDT05GSUdfS0VZQk9BUkRfWFRLQkQ9bQpDT05G
+SUdfS0VZQk9BUkRfTkVXVE9OPW0KIyBDT05GSUdfS0VZQk9BUkRfU1RPV0FXQVkgaXMgbm90IHNl
+dAojIENPTkZJR19JTlBVVF9NT1VTRSBpcyBub3Qgc2V0CkNPTkZJR19JTlBVVF9KT1lTVElDSz15
+CkNPTkZJR19KT1lTVElDS19BTkFMT0c9bQojIENPTkZJR19KT1lTVElDS19BM0QgaXMgbm90IHNl
+dAojIENPTkZJR19KT1lTVElDS19BREkgaXMgbm90IHNldAojIENPTkZJR19KT1lTVElDS19DT0JS
+QSBpcyBub3Qgc2V0CkNPTkZJR19KT1lTVElDS19HRjJLPW0KQ09ORklHX0pPWVNUSUNLX0dSSVA9
+bQpDT05GSUdfSk9ZU1RJQ0tfR1JJUF9NUD1tCkNPTkZJR19KT1lTVElDS19HVUlMTEVNT1Q9bQpD
+T05GSUdfSk9ZU1RJQ0tfSU5URVJBQ1Q9bQojIENPTkZJR19KT1lTVElDS19TSURFV0lOREVSIGlz
+IG5vdCBzZXQKIyBDT05GSUdfSk9ZU1RJQ0tfVE1EQyBpcyBub3Qgc2V0CkNPTkZJR19KT1lTVElD
+S19JRk9SQ0U9bQpDT05GSUdfSk9ZU1RJQ0tfSUZPUkNFXzIzMj15CkNPTkZJR19KT1lTVElDS19X
+QVJSSU9SPW0KIyBDT05GSUdfSk9ZU1RJQ0tfTUFHRUxMQU4gaXMgbm90IHNldAojIENPTkZJR19K
+T1lTVElDS19TUEFDRU9SQiBpcyBub3Qgc2V0CkNPTkZJR19KT1lTVElDS19TUEFDRUJBTEw9bQpD
+T05GSUdfSk9ZU1RJQ0tfU1RJTkdFUj1tCkNPTkZJR19KT1lTVElDS19UV0lESk9ZPW0KQ09ORklH
+X0pPWVNUSUNLX0pPWURVTVA9bQpDT05GSUdfSU5QVVRfVEFCTEVUPXkKQ09ORklHX0lOUFVUX1RP
+VUNIU0NSRUVOPXkKQ09ORklHX1RPVUNIU0NSRUVOX0ZVSklUU1U9bQpDT05GSUdfVE9VQ0hTQ1JF
+RU5fR1VOWkU9bQpDT05GSUdfVE9VQ0hTQ1JFRU5fRUxPPW0KQ09ORklHX1RPVUNIU0NSRUVOX01U
+T1VDSD1tCkNPTkZJR19UT1VDSFNDUkVFTl9NSzcxMj1tCiMgQ09ORklHX1RPVUNIU0NSRUVOX1BF
+Tk1PVU5UIGlzIG5vdCBzZXQKQ09ORklHX1RPVUNIU0NSRUVOX1RPVUNIUklHSFQ9bQpDT05GSUdf
+VE9VQ0hTQ1JFRU5fVE9VQ0hXSU49bQpDT05GSUdfVE9VQ0hTQ1JFRU5fVUNCMTQwMD1tCkNPTkZJ
+R19JTlBVVF9NSVNDPXkKIyBDT05GSUdfSU5QVVRfUENTUEtSIGlzIG5vdCBzZXQKQ09ORklHX0lO
+UFVUX1VJTlBVVD1tCgojCiMgSGFyZHdhcmUgSS9PIHBvcnRzCiMKQ09ORklHX1NFUklPPW0KQ09O
+RklHX1NFUklPX0k4MDQyPW0KQ09ORklHX1NFUklPX1NFUlBPUlQ9bQpDT05GSUdfU0VSSU9fQ1Q4
+MkM3MTA9bQpDT05GSUdfU0VSSU9fUENJUFMyPW0KQ09ORklHX1NFUklPX0xJQlBTMj1tCkNPTkZJ
+R19TRVJJT19SQVc9bQpDT05GSUdfR0FNRVBPUlQ9eQojIENPTkZJR19HQU1FUE9SVF9OUzU1OCBp
+cyBub3Qgc2V0CkNPTkZJR19HQU1FUE9SVF9MND15CiMgQ09ORklHX0dBTUVQT1JUX0VNVTEwSzEg
+aXMgbm90IHNldApDT05GSUdfR0FNRVBPUlRfRk04MDE9eQoKIwojIENoYXJhY3RlciBkZXZpY2Vz
+CiMKIyBDT05GSUdfVlQgaXMgbm90IHNldApDT05GSUdfU0VSSUFMX05PTlNUQU5EQVJEPXkKQ09O
+RklHX0NPTVBVVE9ORT15CkNPTkZJR19ST0NLRVRQT1JUPW0KIyBDT05GSUdfQ1lDTEFERVMgaXMg
+bm90IHNldApDT05GSUdfRElHSUVQQ0E9eQojIENPTkZJR19NT1hBX0lOVEVMTElPIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfTU9YQV9TTUFSVElPIGlzIG5vdCBzZXQKQ09ORklHX01PWEFfU01BUlRJT19O
+RVc9eQojIENPTkZJR19JU0kgaXMgbm90IHNldAojIENPTkZJR19TWU5DTElOSyBpcyBub3Qgc2V0
+CkNPTkZJR19TWU5DTElOS01QPXkKIyBDT05GSUdfU1lOQ0xJTktfR1QgaXMgbm90IHNldApDT05G
+SUdfTl9IRExDPW0KIyBDT05GSUdfUklTQ09NOCBpcyBub3Qgc2V0CiMgQ09ORklHX1NQRUNJQUxJ
+WCBpcyBub3Qgc2V0CkNPTkZJR19TWD1tCiMgQ09ORklHX1JJTyBpcyBub3Qgc2V0CiMgQ09ORklH
+X1NUQUxEUlYgaXMgbm90IHNldAoKIwojIFNlcmlhbCBkcml2ZXJzCiMKQ09ORklHX1NFUklBTF84
+MjUwPW0KQ09ORklHX0ZJWF9FQVJMWUNPTl9NRU09eQojIENPTkZJR19TRVJJQUxfODI1MF9QQ0kg
+aXMgbm90IHNldApDT05GSUdfU0VSSUFMXzgyNTBfTlJfVUFSVFM9NApDT05GSUdfU0VSSUFMXzgy
+NTBfUlVOVElNRV9VQVJUUz00CiMgQ09ORklHX1NFUklBTF84MjUwX0VYVEVOREVEIGlzIG5vdCBz
+ZXQKCiMKIyBOb24tODI1MCBzZXJpYWwgcG9ydCBzdXBwb3J0CiMKQ09ORklHX1NFUklBTF9DT1JF
+PW0KQ09ORklHX1NFUklBTF9KU009bQpDT05GSUdfVU5JWDk4X1BUWVM9eQojIENPTkZJR19MRUdB
+Q1lfUFRZUyBpcyBub3Qgc2V0CiMgQ09ORklHX0lQTUlfSEFORExFUiBpcyBub3Qgc2V0CiMgQ09O
+RklHX0hXX1JBTkRPTSBpcyBub3Qgc2V0CkNPTkZJR19OVlJBTT15CkNPTkZJR19SVEM9bQpDT05G
+SUdfR0VOX1JUQz1tCiMgQ09ORklHX0dFTl9SVENfWCBpcyBub3Qgc2V0CiMgQ09ORklHX1IzOTY0
+IGlzIG5vdCBzZXQKQ09ORklHX0FQUExJQ09NPXkKQ09ORklHX01XQVZFPW0KQ09ORklHX1BDODcz
+NnhfR1BJTz1tCkNPTkZJR19OU0NfR1BJTz1tCiMgQ09ORklHX0hBTkdDSEVDS19USU1FUiBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1RDR19UUE0gaXMgbm90IHNldAojIENPTkZJR19URUxDTE9DSyBpcyBu
+b3Qgc2V0CkNPTkZJR19ERVZQT1JUPXkKQ09ORklHX0kyQz15CkNPTkZJR19JMkNfQk9BUkRJTkZP
+PXkKQ09ORklHX0kyQ19DSEFSREVWPW0KCiMKIyBJMkMgQWxnb3JpdGhtcwojCkNPTkZJR19JMkNf
+QUxHT0JJVD15CkNPTkZJR19JMkNfQUxHT1BDRj15CiMgQ09ORklHX0kyQ19BTEdPUENBIGlzIG5v
+dCBzZXQKCiMKIyBJMkMgSGFyZHdhcmUgQnVzIHN1cHBvcnQKIwpDT05GSUdfSTJDX0FMSTE1MzU9
+bQpDT05GSUdfSTJDX0FMSTE1NjM9eQojIENPTkZJR19JMkNfQUxJMTVYMyBpcyBub3Qgc2V0CkNP
+TkZJR19JMkNfQU1ENzU2PW0KQ09ORklHX0kyQ19BTUQ3NTZfUzQ4ODI9bQpDT05GSUdfSTJDX0FN
+RDgxMTE9eQpDT05GSUdfSTJDX0k4MDE9eQpDT05GSUdfSTJDX0k4MTA9bQojIENPTkZJR19JMkNf
+UElJWDQgaXMgbm90IHNldApDT05GSUdfSTJDX05GT1JDRTI9eQpDT05GSUdfSTJDX09DT1JFUz15
+CiMgQ09ORklHX0kyQ19QQVJQT1JUX0xJR0hUIGlzIG5vdCBzZXQKIyBDT05GSUdfSTJDX1BST1NB
+VkFHRSBpcyBub3Qgc2V0CiMgQ09ORklHX0kyQ19TQVZBR0U0IGlzIG5vdCBzZXQKQ09ORklHX0ky
+Q19TSU1URUM9eQpDT05GSUdfSTJDX1NJUzU1OTU9eQpDT05GSUdfSTJDX1NJUzYzMD1tCiMgQ09O
+RklHX0kyQ19TSVM5NlggaXMgbm90IHNldApDT05GSUdfSTJDX1RBT1NfRVZNPW0KIyBDT05GSUdf
+STJDX1NUVUIgaXMgbm90IHNldApDT05GSUdfSTJDX1ZJQT1tCkNPTkZJR19JMkNfVklBUFJPPXkK
+Q09ORklHX0kyQ19WT09ET08zPW0KCiMKIyBNaXNjZWxsYW5lb3VzIEkyQyBDaGlwIHN1cHBvcnQK
+IwpDT05GSUdfU0VOU09SU19EUzEzMzc9eQpDT05GSUdfU0VOU09SU19EUzEzNzQ9eQpDT05GSUdf
+RFMxNjgyPXkKQ09ORklHX1NFTlNPUlNfRUVQUk9NPXkKQ09ORklHX1NFTlNPUlNfUENGODU3ND15
+CkNPTkZJR19TRU5TT1JTX1BDQTk1Mzk9bQpDT05GSUdfU0VOU09SU19QQ0Y4NTkxPXkKQ09ORklH
+X1NFTlNPUlNfTUFYNjg3NT15CiMgQ09ORklHX1NFTlNPUlNfVFNMMjU1MCBpcyBub3Qgc2V0CkNP
+TkZJR19JMkNfREVCVUdfQ09SRT15CkNPTkZJR19JMkNfREVCVUdfQUxHTz15CiMgQ09ORklHX0ky
+Q19ERUJVR19CVVMgaXMgbm90IHNldApDT05GSUdfSTJDX0RFQlVHX0NISVA9eQoKIwojIFNQSSBz
+dXBwb3J0CiMKIyBDT05GSUdfU1BJIGlzIG5vdCBzZXQKIyBDT05GSUdfU1BJX01BU1RFUiBpcyBu
+b3Qgc2V0CkNPTkZJR19XMT1tCgojCiMgMS13aXJlIEJ1cyBNYXN0ZXJzCiMKIyBDT05GSUdfVzFf
+TUFTVEVSX01BVFJPWCBpcyBub3Qgc2V0CkNPTkZJR19XMV9NQVNURVJfRFMyNDgyPW0KCiMKIyAx
+LXdpcmUgU2xhdmVzCiMKIyBDT05GSUdfVzFfU0xBVkVfVEhFUk0gaXMgbm90IHNldApDT05GSUdf
+VzFfU0xBVkVfU01FTT1tCkNPTkZJR19XMV9TTEFWRV9EUzI0MzM9bQpDT05GSUdfVzFfU0xBVkVf
+RFMyNDMzX0NSQz15CkNPTkZJR19XMV9TTEFWRV9EUzI3NjA9bQojIENPTkZJR19QT1dFUl9TVVBQ
+TFkgaXMgbm90IHNldApDT05GSUdfSFdNT049bQojIENPTkZJR19IV01PTl9WSUQgaXMgbm90IHNl
+dAojIENPTkZJR19TRU5TT1JTX0FCSVRVR1VSVSBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNf
+QUJJVFVHVVJVMyBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfQUQ3NDE4IGlzIG5vdCBzZXQK
+IyBDT05GSUdfU0VOU09SU19BRE0xMDIxIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19BRE0x
+MDI1IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19BRE0xMDI2IGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VOU09SU19BRE0xMDI5IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19BRE0xMDMxIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19BRE05MjQwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VO
+U09SU19BRFQ3NDcwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19LOFRFTVAgaXMgbm90IHNl
+dAojIENPTkZJR19TRU5TT1JTX0FTQjEwMCBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfQVRY
+UDEgaXMgbm90IHNldAojIENPTkZJR19TRU5TT1JTX0RTMTYyMSBpcyBub3Qgc2V0CiMgQ09ORklH
+X1NFTlNPUlNfRjcxODA1RiBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfRjcxODgyRkcgaXMg
+bm90IHNldAojIENPTkZJR19TRU5TT1JTX0Y3NTM3NVMgaXMgbm90IHNldAojIENPTkZJR19TRU5T
+T1JTX0ZTQ0hFUiBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfRlNDUE9TIGlzIG5vdCBzZXQK
+IyBDT05GSUdfU0VOU09SU19GU0NITUQgaXMgbm90IHNldAojIENPTkZJR19TRU5TT1JTX0dMNTE4
+U00gaXMgbm90IHNldAojIENPTkZJR19TRU5TT1JTX0dMNTIwU00gaXMgbm90IHNldAojIENPTkZJ
+R19TRU5TT1JTX0NPUkVURU1QIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19JVDg3IGlzIG5v
+dCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTYzIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19M
+TTc1IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTc3IGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0VOU09SU19MTTc4IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTgwIGlzIG5vdCBzZXQK
+IyBDT05GSUdfU0VOU09SU19MTTgzIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTg1IGlz
+IG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTg3IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09S
+U19MTTkwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19MTTkyIGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VOU09SU19MTTkzIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19NQVgxNjE5IGlzIG5v
+dCBzZXQKIyBDT05GSUdfU0VOU09SU19NQVg2NjUwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09S
+U19QQzg3MzYwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19QQzg3NDI3IGlzIG5vdCBzZXQK
+IyBDT05GSUdfU0VOU09SU19TSVM1NTk1IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19ETUUx
+NzM3IGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19TTVNDNDdNMSBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NFTlNPUlNfU01TQzQ3TTE5MiBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfU01TQzQ3
+QjM5NyBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfVEhNQzUwIGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VOU09SU19WSUE2ODZBIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19WVDEyMTEgaXMg
+bm90IHNldAojIENPTkZJR19TRU5TT1JTX1ZUODIzMSBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNP
+UlNfVzgzNzgxRCBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfVzgzNzkxRCBpcyBub3Qgc2V0
+CiMgQ09ORklHX1NFTlNPUlNfVzgzNzkyRCBpcyBub3Qgc2V0CiMgQ09ORklHX1NFTlNPUlNfVzgz
+NzkzIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19XODNMNzg1VFMgaXMgbm90IHNldAojIENP
+TkZJR19TRU5TT1JTX1c4MzYyN0hGIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VOU09SU19XODM2MjdF
+SEYgaXMgbm90IHNldAojIENPTkZJR19TRU5TT1JTX0hEQVBTIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0VOU09SU19BUFBMRVNNQyBpcyBub3Qgc2V0CiMgQ09ORklHX0hXTU9OX0RFQlVHX0NISVAgaXMg
+bm90IHNldAojIENPTkZJR19XQVRDSERPRyBpcyBub3Qgc2V0CgojCiMgU29uaWNzIFNpbGljb24g
+QmFja3BsYW5lCiMKQ09ORklHX1NTQl9QT1NTSUJMRT15CkNPTkZJR19TU0I9eQpDT05GSUdfU1NC
+X1BDSUhPU1RfUE9TU0lCTEU9eQojIENPTkZJR19TU0JfUENJSE9TVCBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NTQl9TSUxFTlQgaXMgbm90IHNldApDT05GSUdfU1NCX0RFQlVHPXkKCiMKIyBNdWx0aWZ1
+bmN0aW9uIGRldmljZSBkcml2ZXJzCiMKIyBDT05GSUdfTUZEX1NNNTAxIGlzIG5vdCBzZXQKCiMK
+IyBNdWx0aW1lZGlhIGRldmljZXMKIwpDT05GSUdfVklERU9fREVWPW0KQ09ORklHX1ZJREVPX1Y0
+TDE9eQpDT05GSUdfVklERU9fVjRMMV9DT01QQVQ9eQpDT05GSUdfVklERU9fVjRMMj15CkNPTkZJ
+R19WSURFT19DQVBUVVJFX0RSSVZFUlM9eQpDT05GSUdfVklERU9fQURWX0RFQlVHPXkKQ09ORklH
+X1ZJREVPX0hFTFBFUl9DSElQU19BVVRPPXkKQ09ORklHX1ZJREVPX1RWQVVESU89bQpDT05GSUdf
+VklERU9fVERBNzQzMj1tCkNPTkZJR19WSURFT19UREE5ODc1PW0KQ09ORklHX1ZJREVPX01TUDM0
+MDA9bQpDT05GSUdfVklERU9fQlQ4NTY9bQpDT05GSUdfVklERU9fS1MwMTI3PW0KQ09ORklHX1ZJ
+REVPX1NBQTcxMTE9bQpDT05GSUdfVklERU9fVlBYMzIyMD1tCkNPTkZJR19WSURFT19TQUE3MTg1
+PW0KQ09ORklHX1ZJREVPX0FEVjcxNzU9bQojIENPTkZJR19WSURFT19WSVZJIGlzIG5vdCBzZXQK
+Q09ORklHX1ZJREVPX0JUODQ4PW0KQ09ORklHX1ZJREVPX1NBQTY1ODg9bQojIENPTkZJR19WSURF
+T19DUElBIGlzIG5vdCBzZXQKIyBDT05GSUdfVklERU9fU0FBNTI0NkEgaXMgbm90IHNldApDT05G
+SUdfVklERU9fU0FBNTI0OT1tCiMgQ09ORklHX1RVTkVSXzMwMzYgaXMgbm90IHNldAojIENPTkZJ
+R19WSURFT19TVFJBRElTIGlzIG5vdCBzZXQKQ09ORklHX1ZJREVPX1pPUkFOX1pSMzYwNjA9bQpD
+T05GSUdfVklERU9fWk9SQU49bQpDT05GSUdfVklERU9fWk9SQU5fQlVaPW0KIyBDT05GSUdfVklE
+RU9fWk9SQU5fREMxMCBpcyBub3Qgc2V0CkNPTkZJR19WSURFT19aT1JBTl9EQzMwPW0KIyBDT05G
+SUdfVklERU9fWk9SQU5fTE1MMzMgaXMgbm90IHNldAojIENPTkZJR19WSURFT19aT1JBTl9MTUwz
+M1IxMCBpcyBub3Qgc2V0CkNPTkZJR19WSURFT19aT1JBTl9BVlM2RVlFUz1tCkNPTkZJR19WSURF
+T19TQUE3MTM0PW0KIyBDT05GSUdfVklERU9fU0FBNzEzNF9PU1MgaXMgbm90IHNldAojIENPTkZJ
+R19WSURFT19NWEIgaXMgbm90IHNldApDT05GSUdfVklERU9fRFBDPW0KIyBDT05GSUdfVklERU9f
+SEVYSVVNX09SSU9OIGlzIG5vdCBzZXQKIyBDT05GSUdfVklERU9fSEVYSVVNX0dFTUlOSSBpcyBu
+b3Qgc2V0CkNPTkZJR19WSURFT19DWDg4PW0KIyBDT05GSUdfVklERU9fQ1g4OF9CTEFDS0JJUkQg
+aXMgbm90IHNldAojIENPTkZJR19WSURFT19JVlRWIGlzIG5vdCBzZXQKIyBDT05GSUdfVklERU9f
+Q0FGRV9DQ0lDIGlzIG5vdCBzZXQKQ09ORklHX1JBRElPX0FEQVBURVJTPXkKQ09ORklHX1JBRElP
+X0dFTVRFS19QQ0k9bQojIENPTkZJR19SQURJT19NQVhJUkFESU8gaXMgbm90IHNldApDT05GSUdf
+UkFESU9fTUFFU1RSTz1tCkNPTkZJR19WSURFT19TQUE3MTQ2PW0KQ09ORklHX1ZJREVPX1NBQTcx
+NDZfVlY9bQpDT05GSUdfVklERU9fVFVORVI9bQojIENPTkZJR19WSURFT19UVU5FUl9DVVNUT01J
+WkUgaXMgbm90IHNldApDT05GSUdfVFVORVJfTVQyMFhYPW0KQ09ORklHX1RVTkVSX1REQTgyOTA9
+bQpDT05GSUdfVFVORVJfVEVBNTc2MT1tCkNPTkZJR19UVU5FUl9URUE1NzY3PW0KQ09ORklHX1RV
+TkVSX1NJTVBMRT1tCkNPTkZJR19WSURFT0JVRl9HRU49bQpDT05GSUdfVklERU9CVUZfRE1BX1NH
+PW0KQ09ORklHX1ZJREVPX0JUQ1g9bQpDT05GSUdfVklERU9fSVJfSTJDPW0KQ09ORklHX1ZJREVP
+X0lSPW0KQ09ORklHX1ZJREVPX1RWRUVQUk9NPW0KQ09ORklHX0RBQj15CgojCiMgR3JhcGhpY3Mg
+c3VwcG9ydAojCkNPTkZJR19BR1A9bQojIENPTkZJR19BR1BfQU1ENjQgaXMgbm90IHNldApDT05G
+SUdfQUdQX0lOVEVMPW0KQ09ORklHX0FHUF9TSVM9bQpDT05GSUdfQUdQX1ZJQT1tCkNPTkZJR19E
+Uk09bQpDT05GSUdfRFJNX1RERlg9bQpDT05GSUdfRFJNX1IxMjg9bQpDT05GSUdfRFJNX1JBREVP
+Tj1tCkNPTkZJR19EUk1fSTgxMD1tCiMgQ09ORklHX0RSTV9JODMwIGlzIG5vdCBzZXQKQ09ORklH
+X0RSTV9JOTE1PW0KQ09ORklHX0RSTV9NR0E9bQpDT05GSUdfRFJNX1NJUz1tCiMgQ09ORklHX0RS
+TV9WSUEgaXMgbm90IHNldApDT05GSUdfRFJNX1NBVkFHRT1tCkNPTkZJR19WR0FTVEFURT15CiMg
+Q09ORklHX1ZJREVPX09VVFBVVF9DT05UUk9MIGlzIG5vdCBzZXQKQ09ORklHX0ZCPXkKQ09ORklH
+X0ZJUk1XQVJFX0VESUQ9eQpDT05GSUdfRkJfRERDPXkKQ09ORklHX0ZCX0NGQl9GSUxMUkVDVD15
+CkNPTkZJR19GQl9DRkJfQ09QWUFSRUE9eQpDT05GSUdfRkJfQ0ZCX0lNQUdFQkxJVD15CiMgQ09O
+RklHX0ZCX0NGQl9SRVZfUElYRUxTX0lOX0JZVEUgaXMgbm90IHNldApDT05GSUdfRkJfU1lTX0ZJ
+TExSRUNUPXkKQ09ORklHX0ZCX1NZU19DT1BZQVJFQT15CkNPTkZJR19GQl9TWVNfSU1BR0VCTElU
+PXkKQ09ORklHX0ZCX1NZU19GT1BTPXkKQ09ORklHX0ZCX0RFRkVSUkVEX0lPPXkKQ09ORklHX0ZC
+X1NWR0FMSUI9eQojIENPTkZJR19GQl9NQUNNT0RFUyBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX0JB
+Q0tMSUdIVCBpcyBub3Qgc2V0CkNPTkZJR19GQl9NT0RFX0hFTFBFUlM9eQpDT05GSUdfRkJfVElM
+RUJMSVRUSU5HPXkKCiMKIyBGcmFtZSBidWZmZXIgaGFyZHdhcmUgZHJpdmVycwojCkNPTkZJR19G
+Ql9DSVJSVVM9eQojIENPTkZJR19GQl9QTTIgaXMgbm90IHNldApDT05GSUdfRkJfQ1lCRVIyMDAw
+PW0KIyBDT05GSUdfRkJfQVJDIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVNJTElBTlQgaXMgbm90
+IHNldAojIENPTkZJR19GQl9JTVNUVCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1ZHQTE2IGlzIG5v
+dCBzZXQKIyBDT05GSUdfRkJfVkVTQSBpcyBub3Qgc2V0CkNPTkZJR19GQl9IRUNVQkE9bQpDT05G
+SUdfRkJfSEdBPXkKQ09ORklHX0ZCX0hHQV9BQ0NFTD15CkNPTkZJR19GQl9TMUQxM1hYWD1tCkNP
+TkZJR19GQl9OVklESUE9bQojIENPTkZJR19GQl9OVklESUFfSTJDIGlzIG5vdCBzZXQKQ09ORklH
+X0ZCX05WSURJQV9ERUJVRz15CiMgQ09ORklHX0ZCX05WSURJQV9CQUNLTElHSFQgaXMgbm90IHNl
+dAojIENPTkZJR19GQl9SSVZBIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0xFODA1Nzg9bQojIENPTkZJ
+R19GQl9DQVJJTExPX1JBTkNIIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0lOVEVMPW0KIyBDT05GSUdf
+RkJfSU5URUxfREVCVUcgaXMgbm90IHNldApDT05GSUdfRkJfSU5URUxfSTJDPXkKQ09ORklHX0ZC
+X01BVFJPWD15CiMgQ09ORklHX0ZCX01BVFJPWF9NSUxMRU5JVU0gaXMgbm90IHNldApDT05GSUdf
+RkJfTUFUUk9YX01ZU1RJUVVFPXkKIyBDT05GSUdfRkJfTUFUUk9YX0cgaXMgbm90IHNldApDT05G
+SUdfRkJfTUFUUk9YX0kyQz15CiMgQ09ORklHX0ZCX01BVFJPWF9NVUxUSUhFQUQgaXMgbm90IHNl
+dAojIENPTkZJR19GQl9SQURFT04gaXMgbm90IHNldAojIENPTkZJR19GQl9BVFkxMjggaXMgbm90
+IHNldApDT05GSUdfRkJfQVRZPW0KIyBDT05GSUdfRkJfQVRZX0NUIGlzIG5vdCBzZXQKIyBDT05G
+SUdfRkJfQVRZX0dYIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVRZX0JBQ0tMSUdIVCBpcyBub3Qg
+c2V0CkNPTkZJR19GQl9TMz15CiMgQ09ORklHX0ZCX1NBVkFHRSBpcyBub3Qgc2V0CkNPTkZJR19G
+Ql9TSVM9eQojIENPTkZJR19GQl9TSVNfMzAwIGlzIG5vdCBzZXQKQ09ORklHX0ZCX1NJU18zMTU9
+eQpDT05GSUdfRkJfTkVPTUFHSUM9eQpDT05GSUdfRkJfS1lSTz15CkNPTkZJR19GQl8zREZYPXkK
+IyBDT05GSUdfRkJfM0RGWF9BQ0NFTCBpcyBub3Qgc2V0CkNPTkZJR19GQl9WT09ET08xPW0KIyBD
+T05GSUdfRkJfVlQ4NjIzIGlzIG5vdCBzZXQKQ09ORklHX0ZCX1RSSURFTlQ9eQojIENPTkZJR19G
+Ql9UUklERU5UX0FDQ0VMIGlzIG5vdCBzZXQKQ09ORklHX0ZCX0FSSz15CkNPTkZJR19GQl9QTTM9
+eQpDT05GSUdfRkJfR0VPREU9eQpDT05GSUdfRkJfR0VPREVfTFg9bQojIENPTkZJR19GQl9HRU9E
+RV9HWCBpcyBub3Qgc2V0CkNPTkZJR19GQl9HRU9ERV9HWDE9bQpDT05GSUdfRkJfVklSVFVBTD15
+CkNPTkZJR19CQUNLTElHSFRfTENEX1NVUFBPUlQ9eQpDT05GSUdfTENEX0NMQVNTX0RFVklDRT1t
+CkNPTkZJR19CQUNLTElHSFRfQ0xBU1NfREVWSUNFPW0KIyBDT05GSUdfQkFDS0xJR0hUX0NPUkdJ
+IGlzIG5vdCBzZXQKIyBDT05GSUdfQkFDS0xJR0hUX1BST0dFQVIgaXMgbm90IHNldAojIENPTkZJ
+R19CQUNLTElHSFRfQ0FSSUxMT19SQU5DSCBpcyBub3Qgc2V0CgojCiMgRGlzcGxheSBkZXZpY2Ug
+c3VwcG9ydAojCkNPTkZJR19ESVNQTEFZX1NVUFBPUlQ9bQoKIwojIERpc3BsYXkgaGFyZHdhcmUg
+ZHJpdmVycwojCiMgQ09ORklHX0xPR08gaXMgbm90IHNldAoKIwojIFNvdW5kCiMKQ09ORklHX1NP
+VU5EPW0KCiMKIyBBZHZhbmNlZCBMaW51eCBTb3VuZCBBcmNoaXRlY3R1cmUKIwojIENPTkZJR19T
+TkQgaXMgbm90IHNldAoKIwojIE9wZW4gU291bmQgU3lzdGVtCiMKQ09ORklHX1NPVU5EX1BSSU1F
+PW0KQ09ORklHX1NPVU5EX1RSSURFTlQ9bQojIENPTkZJR19TT1VORF9NU05EQ0xBUyBpcyBub3Qg
+c2V0CkNPTkZJR19TT1VORF9NU05EUElOPW0KQ09ORklHX01TTkRQSU5fSU5JVF9GSUxFPSIvZXRj
+L3NvdW5kL3BuZHNwaW5pLmJpbiIKQ09ORklHX01TTkRQSU5fUEVSTV9GSUxFPSIvZXRjL3NvdW5k
+L3BuZHNwZXJtLmJpbiIKIyBDT05GSUdfU09VTkRfT1NTIGlzIG5vdCBzZXQKQ09ORklHX0FDOTdf
+QlVTPW0KIyBDT05GSUdfSElEX1NVUFBPUlQgaXMgbm90IHNldAojIENPTkZJR19VU0JfU1VQUE9S
+VCBpcyBub3Qgc2V0CiMgQ09ORklHX01NQyBpcyBub3Qgc2V0CkNPTkZJR19ORVdfTEVEUz15CiMg
+Q09ORklHX0xFRFNfQ0xBU1MgaXMgbm90IHNldAoKIwojIExFRCBkcml2ZXJzCiMKCiMKIyBMRUQg
+VHJpZ2dlcnMKIwojIENPTkZJR19MRURTX1RSSUdHRVJTIGlzIG5vdCBzZXQKQ09ORklHX0lORklO
+SUJBTkQ9bQpDT05GSUdfSU5GSU5JQkFORF9VU0VSX01BRD1tCkNPTkZJR19JTkZJTklCQU5EX1VT
+RVJfQUNDRVNTPW0KQ09ORklHX0lORklOSUJBTkRfVVNFUl9NRU09eQpDT05GSUdfSU5GSU5JQkFO
+RF9NVEhDQT1tCiMgQ09ORklHX0lORklOSUJBTkRfTVRIQ0FfREVCVUcgaXMgbm90IHNldApDT05G
+SUdfTUxYNF9JTkZJTklCQU5EPW0KIyBDT05GSUdfRURBQyBpcyBub3Qgc2V0CiMgQ09ORklHX1JU
+Q19DTEFTUyBpcyBub3Qgc2V0CiMgQ09ORklHX0RNQURFVklDRVMgaXMgbm90IHNldAojIENPTkZJ
+R19WSVJUVUFMSVpBVElPTiBpcyBub3Qgc2V0CgojCiMgVXNlcnNwYWNlIEkvTwojCiMgQ09ORklH
+X1VJTyBpcyBub3Qgc2V0CgojCiMgRmlybXdhcmUgRHJpdmVycwojCiMgQ09ORklHX0VERCBpcyBu
+b3Qgc2V0CkNPTkZJR19ERUxMX1JCVT1tCkNPTkZJR19EQ0RCQVM9bQpDT05GSUdfRE1JSUQ9eQoK
+IwojIEZpbGUgc3lzdGVtcwojCkNPTkZJR19JTk9USUZZPXkKIyBDT05GSUdfSU5PVElGWV9VU0VS
+IGlzIG5vdCBzZXQKIyBDT05GSUdfUVVPVEEgaXMgbm90IHNldAojIENPTkZJR19ETk9USUZZIGlz
+IG5vdCBzZXQKQ09ORklHX0FVVE9GU19GUz15CkNPTkZJR19BVVRPRlM0X0ZTPXkKIyBDT05GSUdf
+RlVTRV9GUyBpcyBub3Qgc2V0CgojCiMgUHNldWRvIGZpbGVzeXN0ZW1zCiMKQ09ORklHX1BST0Nf
+RlM9eQpDT05GSUdfUFJPQ19LQ09SRT15CiMgQ09ORklHX1BST0NfU1lTQ1RMIGlzIG5vdCBzZXQK
+Q09ORklHX1NZU0ZTPXkKQ09ORklHX1RNUEZTPXkKIyBDT05GSUdfVE1QRlNfUE9TSVhfQUNMIGlz
+IG5vdCBzZXQKQ09ORklHX0hVR0VUTEJGUz15CkNPTkZJR19IVUdFVExCX1BBR0U9eQpDT05GSUdf
+Q09ORklHRlNfRlM9eQoKIwojIE1pc2NlbGxhbmVvdXMgZmlsZXN5c3RlbXMKIwpDT05GSUdfTkxT
+PXkKQ09ORklHX05MU19ERUZBVUxUPSJpc284ODU5LTEiCkNPTkZJR19OTFNfQ09ERVBBR0VfNDM3
+PXkKQ09ORklHX05MU19DT0RFUEFHRV83Mzc9bQpDT05GSUdfTkxTX0NPREVQQUdFXzc3NT1tCkNP
+TkZJR19OTFNfQ09ERVBBR0VfODUwPW0KQ09ORklHX05MU19DT0RFUEFHRV84NTI9eQpDT05GSUdf
+TkxTX0NPREVQQUdFXzg1NT1tCkNPTkZJR19OTFNfQ09ERVBBR0VfODU3PXkKIyBDT05GSUdfTkxT
+X0NPREVQQUdFXzg2MCBpcyBub3Qgc2V0CkNPTkZJR19OTFNfQ09ERVBBR0VfODYxPXkKIyBDT05G
+SUdfTkxTX0NPREVQQUdFXzg2MiBpcyBub3Qgc2V0CkNPTkZJR19OTFNfQ09ERVBBR0VfODYzPW0K
+Q09ORklHX05MU19DT0RFUEFHRV84NjQ9eQpDT05GSUdfTkxTX0NPREVQQUdFXzg2NT1tCiMgQ09O
+RklHX05MU19DT0RFUEFHRV84NjYgaXMgbm90IHNldAojIENPTkZJR19OTFNfQ09ERVBBR0VfODY5
+IGlzIG5vdCBzZXQKIyBDT05GSUdfTkxTX0NPREVQQUdFXzkzNiBpcyBub3Qgc2V0CiMgQ09ORklH
+X05MU19DT0RFUEFHRV85NTAgaXMgbm90IHNldAojIENPTkZJR19OTFNfQ09ERVBBR0VfOTMyIGlz
+IG5vdCBzZXQKIyBDT05GSUdfTkxTX0NPREVQQUdFXzk0OSBpcyBub3Qgc2V0CiMgQ09ORklHX05M
+U19DT0RFUEFHRV84NzQgaXMgbm90IHNldApDT05GSUdfTkxTX0lTTzg4NTlfOD1tCkNPTkZJR19O
+TFNfQ09ERVBBR0VfMTI1MD15CkNPTkZJR19OTFNfQ09ERVBBR0VfMTI1MT15CkNPTkZJR19OTFNf
+QVNDSUk9bQpDT05GSUdfTkxTX0lTTzg4NTlfMT1tCiMgQ09ORklHX05MU19JU084ODU5XzIgaXMg
+bm90IHNldApDT05GSUdfTkxTX0lTTzg4NTlfMz15CiMgQ09ORklHX05MU19JU084ODU5XzQgaXMg
+bm90IHNldApDT05GSUdfTkxTX0lTTzg4NTlfNT15CkNPTkZJR19OTFNfSVNPODg1OV82PW0KQ09O
+RklHX05MU19JU084ODU5Xzc9bQpDT05GSUdfTkxTX0lTTzg4NTlfOT1tCkNPTkZJR19OTFNfSVNP
+ODg1OV8xMz15CkNPTkZJR19OTFNfSVNPODg1OV8xND15CkNPTkZJR19OTFNfSVNPODg1OV8xNT15
+CkNPTkZJR19OTFNfS09JOF9SPW0KQ09ORklHX05MU19LT0k4X1U9eQojIENPTkZJR19OTFNfVVRG
+OCBpcyBub3Qgc2V0CiMgQ09ORklHX0lOU1RSVU1FTlRBVElPTiBpcyBub3Qgc2V0CgojCiMgS2Vy
+bmVsIGhhY2tpbmcKIwpDT05GSUdfVFJBQ0VfSVJRRkxBR1NfU1VQUE9SVD15CkNPTkZJR19QUklO
+VEtfVElNRT15CkNPTkZJR19FTkFCTEVfV0FSTl9ERVBSRUNBVEVEPXkKIyBDT05GSUdfRU5BQkxF
+X01VU1RfQ0hFQ0sgaXMgbm90IHNldApDT05GSUdfTUFHSUNfU1lTUlE9eQpDT05GSUdfVU5VU0VE
+X1NZTUJPTFM9eQojIENPTkZJR19ERUJVR19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0hFQURFUlNf
+Q0hFQ0sgaXMgbm90IHNldApDT05GSUdfREVCVUdfS0VSTkVMPXkKIyBDT05GSUdfREVCVUdfU0hJ
+UlEgaXMgbm90IHNldApDT05GSUdfREVURUNUX1NPRlRMT0NLVVA9eQpDT05GSUdfU0NIRURfREVC
+VUc9eQojIENPTkZJR19TQ0hFRFNUQVRTIGlzIG5vdCBzZXQKQ09ORklHX1RJTUVSX1NUQVRTPXkK
+Q09ORklHX0RFQlVHX1BSRUVNUFQ9eQpDT05GSUdfREVCVUdfU1BJTkxPQ0s9eQpDT05GSUdfREVC
+VUdfTVVURVhFUz15CkNPTkZJR19ERUJVR19MT0NLX0FMTE9DPXkKQ09ORklHX1BST1ZFX0xPQ0tJ
+Tkc9eQpDT05GSUdfTE9DS0RFUD15CiMgQ09ORklHX0xPQ0tfU1RBVCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0RFQlVHX0xPQ0tERVAgaXMgbm90IHNldApDT05GSUdfVFJBQ0VfSVJRRkxBR1M9eQpDT05G
+SUdfREVCVUdfU1BJTkxPQ0tfU0xFRVA9eQpDT05GSUdfREVCVUdfTE9DS0lOR19BUElfU0VMRlRF
+U1RTPXkKQ09ORklHX1NUQUNLVFJBQ0U9eQpDT05GSUdfREVCVUdfS09CSkVDVD15CiMgQ09ORklH
+X0RFQlVHX0JVR1ZFUkJPU0UgaXMgbm90IHNldApDT05GSUdfREVCVUdfSU5GTz15CkNPTkZJR19E
+RUJVR19WTT15CkNPTkZJR19ERUJVR19MSVNUPXkKIyBDT05GSUdfREVCVUdfU0cgaXMgbm90IHNl
+dApDT05GSUdfRlJBTUVfUE9JTlRFUj15CkNPTkZJR19GT1JDRURfSU5MSU5JTkc9eQpDT05GSUdf
+Qk9PVF9QUklOVEtfREVMQVk9eQpDT05GSUdfUkNVX1RPUlRVUkVfVEVTVD1tCiMgQ09ORklHX0ZB
+VUxUX0lOSkVDVElPTiBpcyBub3Qgc2V0CiMgQ09ORklHX1NBTVBMRVMgaXMgbm90IHNldApDT05G
+SUdfRUFSTFlfUFJJTlRLPXkKIyBDT05GSUdfREVCVUdfU1RBQ0tPVkVSRkxPVyBpcyBub3Qgc2V0
+CkNPTkZJR19ERUJVR19TVEFDS19VU0FHRT15CiMgQ09ORklHX0RFQlVHX1JPREFUQSBpcyBub3Qg
+c2V0CgojCiMgU2VjdXJpdHkgb3B0aW9ucwojCkNPTkZJR19LRVlTPXkKIyBDT05GSUdfS0VZU19E
+RUJVR19QUk9DX0tFWVMgaXMgbm90IHNldApDT05GSUdfU0VDVVJJVFk9eQpDT05GSUdfU0VDVVJJ
+VFlfTkVUV09SSz15CkNPTkZJR19TRUNVUklUWV9DQVBBQklMSVRJRVM9eQpDT05GSUdfU0VDVVJJ
+VFlfRklMRV9DQVBBQklMSVRJRVM9eQojIENPTkZJR19DUllQVE8gaXMgbm90IHNldAoKIwojIExp
+YnJhcnkgcm91dGluZXMKIwpDT05GSUdfQklUUkVWRVJTRT15CkNPTkZJR19DUkNfQ0NJVFQ9eQpD
+T05GSUdfQ1JDMTY9bQpDT05GSUdfQ1JDX0lUVV9UPXkKQ09ORklHX0NSQzMyPXkKIyBDT05GSUdf
+Q1JDNyBpcyBub3Qgc2V0CkNPTkZJR19MSUJDUkMzMkM9eQpDT05GSUdfSEFTX0lPTUVNPXkKQ09O
+RklHX0hBU19JT1BPUlQ9eQpDT05GSUdfSEFTX0RNQT15Cg==
+
+--Multipart=_Tue__30_Oct_2007_22_15_08_-0700_Obv_8/9QB4Q.CmE.--
