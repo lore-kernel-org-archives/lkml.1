@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXJaFNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbXJaFNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbXJaFNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 01:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbXJaFMb
+	id S1756660AbXJaFNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 01:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbXJaFMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 01:12:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34766 "EHLO mx2.suse.de"
+	Wed, 31 Oct 2007 01:12:36 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34775 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756223AbXJaFM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 01:12:29 -0400
+	id S1756425AbXJaFMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 01:12:35 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 4/6] Driver Core: fix bug in device_rename() for SYSFS_DEPRECATED=y
-Date: Tue, 30 Oct 2007 22:11:43 -0700
-Message-Id: <1193807505-3821-4-git-send-email-gregkh@suse.de>
+Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>, Andy Whitcroft <apw@shadowen.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 5/6] fix typo in SubmittingPatches
+Date: Tue, 30 Oct 2007 22:11:44 -0700
+Message-Id: <1193807505-3821-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1193807505-3821-3-git-send-email-gregkh@suse.de>
+In-Reply-To: <1193807505-3821-4-git-send-email-gregkh@suse.de>
 References: <20071031050954.GA3791@kroah.com>
  <1193807505-3821-1-git-send-email-gregkh@suse.de>
  <1193807505-3821-2-git-send-email-gregkh@suse.de>
  <1193807505-3821-3-git-send-email-gregkh@suse.de>
+ <1193807505-3821-4-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Keiichi Kii <k-keiichi@bx.jp.nec.com>
 
-This should fix the sysfs warnings that renaming network devices is
-causing to show up with CONFIG_SYSFS_DEPRECATED=y
+Fix typo.
 
-The code just shouldn't run if class devices are real directories, it's
-an update for the symlink in the class directory. Nobody noticed that as
-long as the creation of sysfs files silently failed, and we both missed
-it before the merge, because we don't run SYSFS_DEPRECATED=y.
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: David Miller <davem@davemloft.net>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Tejun Heo <htejun@gmail.com>
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Andy Whitcroft <apw@shadowen.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ Documentation/SubmittingPatches |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index c134341..3f4d6aa 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1228,18 +1228,18 @@ int device_rename(struct device *dev, char *new_name)
- 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
- 		}
- 	}
--#endif
--
-+#else
- 	if (dev->class) {
- 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
- 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
- 					  dev->bus_id);
- 		if (error) {
--			/* Uh... how to unravel this if restoring can fail? */
- 			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
- 				__FUNCTION__, error);
- 		}
- 	}
-+#endif
-+
- out:
- 	put_device(dev);
+diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
+index a30dd44..681e2b3 100644
+--- a/Documentation/SubmittingPatches
++++ b/Documentation/SubmittingPatches
+@@ -464,8 +464,8 @@ section Linus Computer Science 101.
+ Nuff said.  If your code deviates too much from this, it is likely
+ to be rejected without further review, and without comment.
  
+-Once significant exception is when moving code from one file to
+-another in this case you should not modify the moved code at all in
++One significant exception is when moving code from one file to
++another -- in this case you should not modify the moved code at all in
+ the same patch which moves it.  This clearly delineates the act of
+ moving the code and your changes.  This greatly aids review of the
+ actual differences and allows tools to better track the history of
 -- 
 1.5.3.4
 
