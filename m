@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbXJaGmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXJaGpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbXJaGmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 02:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXJaGmZ
+	id S1755221AbXJaGpc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 02:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXJaGpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 02:42:25 -0400
-Received: from mail8.dotsterhost.com ([66.11.233.1]:60203 "HELO
-	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753028AbXJaGmX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 02:42:23 -0400
-Message-ID: <472823FA.80303@crispincowan.com>
-Date: Tue, 30 Oct 2007 23:43:06 -0700
-From: Crispin Cowan <crispin@crispincowan.com>
-Organization: Crispin's Labs
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Peter Dolding <oiaohm@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: Linux Security *Module* Framework (Was: LSM conversion to static
- interface)
-References: <10965.80.126.27.205.1193684677.squirrel@webmail.xs4all.nl>	 <4726377A.4080807@crispincowan.com>	 <e7d8f83e0710292213h4cf9cddw6e373d60fbab41f9@mail.gmail.com>	 <Pine.LNX.4.64.0710301136560.31325@fbirervta.pbzchgretzou.qr>	 <4727C06A.4060005@gmail.com>	 <Pine.LNX.4.64.0710301713260.8703@asgard.lang.hm> <e7d8f83e0710301921m3460f8dfkce72c4fc549ded4a@mail.gmail.com>
-In-Reply-To: <e7d8f83e0710301921m3460f8dfkce72c4fc549ded4a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 31 Oct 2007 02:45:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59673 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752921AbXJaGpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 02:45:24 -0400
+Date: Tue, 30 Oct 2007 23:45:39 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Norbert Preining <preining@logic.at>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       zaitcev@redhat.com
+Subject: Re: Huawei E220 and usb storage
+Message-Id: <20071030234539.aecca9e8.zaitcev@redhat.com>
+In-Reply-To: <20071031062356.GI11722@gamma.logic.tuwien.ac.at>
+References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at>
+	<20071030211729.6a80a93a.Kristoffer.ericson@gmail.com>
+	<20071030204720.GI8479@gamma.logic.tuwien.ac.at>
+	<47279EF7.3040406@redhat.com>
+	<20071030212213.GA13410@gamma.logic.tuwien.ac.at>
+	<20071030152816.f2e8dd7c.zaitcev@redhat.com>
+	<20071031061552.GH11722@gamma.logic.tuwien.ac.at>
+	<20071031062356.GI11722@gamma.logic.tuwien.ac.at>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Dolding wrote:
-> Lets end the bitrot.  Start having bits go into the main OS security
-> features where they should be.
->   
-Linus categorically rejected this idea, several times, very clearly.
+On Wed, 31 Oct 2007 07:23:56 +0100, Norbert Preining <preining@logic.at> wrote:
 
-He did so because the security community cannot agree on a
-one-true-standard for what that OS security feature set should be. From
-looking at this thread and many others, he is correct; there is no
-consensus on what the feature set should be.
+> Hmm, in addition I added a
+> 	printk(KERN_ERR "ENTERING usb_stor_huawei_e220_init!\n");
+> at the beginning of the function but it never showed up in my log files.
+> So it seems that the UNUSUAL_DEV entry does not match.
 
-So you can wish for the "main OS security features" all you want, but it
-is not going to happen without a miraculous degree of consensus abruptly
-arising.
+This doesn't seem to be possible, considering the /proc/bus/usb/devices
+that you posted. I would rather suspect that you forgot to perform
+some step in your kernel installation, and end using a stale
+usb-storage module.
 
-On the contrary, security, done well, is a tight fitting suit. It must
-be tight, or it allows too much slack and attackers can exploit that. To
-make it tight, it must be tailored to the situation at hand. That means
-that there may *never* be a consensus on the "one true way", because it
-could be that there is no "one true way". It could be that SMACK is best
-in some cases, AppArmor in others, SELinux in others yet again, MLS in
-others, etc. etc.
-
-I agree with Casey; LSM may not be perfect, but it is a great deal more
-consensus than I have seen anywhere else in the security community. Your
-desire that AppArmor and SELinux should share code has already happened:
-LSM *is* the sharable code base between AppArmor, SELinux, and SMACK and
-TOMOYO, and MultiADM, etc.
-
-It certainly can be improved, but it is not in need of wholesale
-replacement, and especially not without a clear design that addresses
-clearly stated problems that lots of people are having.
-
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin
-CEO, Mercenary Linux		   http://mercenarylinux.com/
-	       Itanium. Vista. GPLv3. Complexity at work
-
+-- Pete
