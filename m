@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbXJaNmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbXJaNon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbXJaNmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 09:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbXJaNmL
+	id S1758724AbXJaNon (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 09:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbXJaNod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 09:42:11 -0400
-Received: from namei.org ([69.55.235.186]:55871 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754782AbXJaNmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 09:42:10 -0400
-Date: Thu, 1 Nov 2007 00:41:08 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Serge Hallyn <sergeh@us.ibm.com>,
-       Venkat Yekkirala <vyekkirala@TrustedCS.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCHv2] selinux: suppress a warning for 64k pages.
-In-Reply-To: <20071031164719.77f48d75.sfr@canb.auug.org.au>
-Message-ID: <Xine.LNX.4.64.0711010040290.19784@us.intercode.com.au>
-References: <20071031145744.6dd02cc7.sfr@canb.auug.org.au>
- <20071031164719.77f48d75.sfr@canb.auug.org.au>
+	Wed, 31 Oct 2007 09:44:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:37659 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756717AbXJaNob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 09:44:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=Nw1U7d553sanhaXr+MuS1dHHiCUiSYjkjgsWn7dHxEig39DvdEKm3XOthhJX9UsY8J/xv+ijQjDM74B6SQ8uRCRr/AyD3kbqoiWxzpWv8m89aNX0Ujugfp5m3PoBpWeeZ13xMDUOCnllWkWoDTHyBwtYBuaUqeAE+hU32G7LsLs=
+Message-ID: <472886B2.1060207@gmail.com>
+Date: Wed, 31 Oct 2007 09:44:18 -0400
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jeff Garzik <jeff@garzik.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 00/33] Swap over NFS -v14
+References: <20071030160401.296770000@chello.nl>	 <200710311426.33223.nickpiggin@yahoo.com.au>	 <1193830033.27652.159.camel@twins>  <47287220.8050804@garzik.org> <1193835413.27652.205.camel@twins>
+In-Reply-To: <1193835413.27652.205.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Oct 2007, Stephen Rothwell wrote:
+Peter Zijlstra wrote:
 
-> On PowerPC allmodconfig build we get this:
 > 
-> security/selinux/xfrm.c:214: warning: comparison is always false due to limited range of data type
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  security/selinux/xfrm.c |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> This version suppresses the warning without ugly ifdefs.
+> But please, people who want this (I'm sure some of you are reading) do
+> speak up. I'm just the motivated corporate drone implementing the
+> feature :-)
 
+FWIW, I could have used a "swap to network technology X" like system at
+my last job.  We were building a large networking switch with blades,
+and the IO cards didn't have anywhere near the resources that the
+control modules had (no persistent storage, small ram, etc).  We were
+already doing userspace coredumps over NFS to the control cards.  It
+would have been nice to swap as well.
 
-Thanks, Stephen.
-
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-linus
-
-
--- 
-James Morris
-<jmorris@namei.org>
