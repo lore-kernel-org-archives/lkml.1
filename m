@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751165AbXJaEAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXJaEAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751165AbXJaEAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 00:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbXJaD7x
+	id S1754080AbXJaEAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 00:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbXJaEAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 23:59:53 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57621 "EHLO smtps.tip.net.au"
+	Wed, 31 Oct 2007 00:00:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46611 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbXJaD7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 23:59:53 -0400
-Date: Wed, 31 Oct 2007 14:59:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: netdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] af_key: suppress a warning for 64k pages.
-Message-Id: <20071031145954.fe106f73.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751096AbXJaEAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 00:00:06 -0400
+Message-ID: <4727FDC3.8010407@garzik.org>
+Date: Wed, 31 Oct 2007 00:00:03 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Shawn Jin <shawnxjin@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Multiple MSI messages support
+References: <c3d0340b0710301413r2607ee08x8b27c5bffa43f1c4@mail.gmail.com>	<4727AED2.6010908@garzik.org> <adaejfci5cz.fsf@cisco.com>
+In-Reply-To: <adaejfci5cz.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On PowerPC allmodconfig build we get this:
+Roland Dreier wrote:
+> Multiple interrupt messages are supported by Linux via MSI-X (which
 
-net/key/af_key.c:400: warning: comparison is always false due to limited range of data type
+Absolutely, but the poster seemed to be talking about MSI, not MSI-X.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- net/key/af_key.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+	Jeff
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/net/key/af_key.c b/net/key/af_key.c
-index 7969f8a..7da6c1a 100644
---- a/net/key/af_key.c
-+++ b/net/key/af_key.c
-@@ -397,8 +397,11 @@ static inline int verify_sec_ctx_len(void *p)
- 	struct sadb_x_sec_ctx *sec_ctx = (struct sadb_x_sec_ctx *)p;
- 	int len;
- 
-+	/* sadb_x_ctx_len is uint16_t */
-+#if PAGE_SIZE < (1 << 16)
- 	if (sec_ctx->sadb_x_ctx_len > PAGE_SIZE)
- 		return -EINVAL;
-+#endif
- 
- 	len = pfkey_sec_ctx_len(sec_ctx);
- 
--- 
-1.5.3.4
 
