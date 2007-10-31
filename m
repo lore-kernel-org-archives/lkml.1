@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbXJaDvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXJaDwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbXJaDvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 23:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXJaDvE
+	id S1754127AbXJaDwD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 23:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbXJaDvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 23:51:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33368 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbXJaDvB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 23:51:01 -0400
-Date: Tue, 30 Oct 2007 20:55:06 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: add filter function to groups
-Message-ID: <20071031035506.GH14910@kroah.com>
-References: <1193671019.3383.13.camel@localhost.localdomain> <1193676852.2655.21.camel@lov.site> <1193677071.3383.56.camel@localhost.localdomain> <47261F50.3050901@s5r6.in-berlin.de> <1193768743.3321.91.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193768743.3321.91.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 30 Oct 2007 23:51:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37665 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbXJaDvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 23:51:54 -0400
+Date: Wed, 31 Oct 2007 14:51:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-input@atrey.karlin.mff.cuni.cz,
+       linux-usb-devel@lists.sourceforge.net
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hiddev: compat_ptr() returns a void *
+Message-Id: <20071031145153.30f9d3dd.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 30, 2007 at 01:25:43PM -0500, James Bottomley wrote:
-> On Mon, 2007-10-29 at 18:58 +0100, Stefan Richter wrote:
-> > James Bottomley wrote:
-> > >> >  struct attribute_group {
-> > >> >  	const char		*name;
-> > >> > +	int			(*filter_show)(struct kobject *, int);
-> > 
-> > > Actually, it returns a true/false value indicating whether the given
-> > > attribute should be displayed.
-> > 
-> > How about this:
-> > 
-> > 	int (*is_visible)(...);
-> 
-> OK, so is this latest revision acceptable to everyone?
-> 
-> James
-> 
-> Index: BUILD-2.6/fs/sysfs/group.c
-> ===================================================================
-> --- BUILD-2.6.orig/fs/sysfs/group.c	2007-10-28 17:27:04.000000000 -0500
-> +++ BUILD-2.6/fs/sysfs/group.c	2007-10-30 12:35:47.000000000 -0500
-> @@ -16,25 +16,31 @@
->  #include "sysfs.h"
->  
->  
-> -static void remove_files(struct sysfs_dirent *dir_sd,
-> +static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
->  			 const struct attribute_group *grp)
->  {
->  	struct attribute *const* attr;
-> +	int i;
->  
-> -	for (attr = grp->attrs; *attr; attr++)
-> -		sysfs_hash_and_remove(dir_sd, (*attr)->name);
-> +	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
-> +		if (grp->is_visible &&
-> +		    grp->is_visible(kobj, *attr, i))
-> +			sysfs_hash_and_remove(dir_sd, (*attr)->name);
+so cast it to unsigned long before passing it to hiddev_ioctl.
 
-Hm, doesn't this break for the zillions of attribute groups that do not
-have the is_visible function set?
+This gets rid of:
 
-> -static int create_files(struct sysfs_dirent *dir_sd,
-> +static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
->  			const struct attribute_group *grp)
->  {
->  	struct attribute *const* attr;
-> -	int error = 0;
-> +	int error = 0, i;
->  
-> -	for (attr = grp->attrs; *attr && !error; attr++)
-> -		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-> +	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
-> +		if (grp->is_visible &&
-> +		    grp->is_visible(kobj, *attr, i))
-> +			error |=
-> +				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
+drivers/hid/usbhid/hiddev.c: In function 'hiddev_compat_ioctl':
+drivers/hid/usbhid/hiddev.c:746: warning: passing argument 4 of 'hiddev_ioctl' makes integer from pointer without a cast
 
-Same problem here, if grp->is_visible is not set, sysfs_add_file() would
-never be called, right?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/hid/usbhid/hiddev.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Other than the logic problem (I think), I have no issue with this idea
-at all.  Care to redo this so it works?
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-thanks,
+diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
+index 9837adc..5fc4019 100644
+--- a/drivers/hid/usbhid/hiddev.c
++++ b/drivers/hid/usbhid/hiddev.c
+@@ -743,7 +743,7 @@ inval:
+ static long hiddev_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+-	return hiddev_ioctl(inode, file, cmd, compat_ptr(arg));
++	return hiddev_ioctl(inode, file, cmd, (unsigned long)compat_ptr(arg));
+ }
+ #endif
+ 
+-- 
+1.5.3.4
 
-greg k-h
