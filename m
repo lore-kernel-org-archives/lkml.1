@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbXJaL4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbXJaL6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757971AbXJaL4U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXJaL4J
+	id S1758124AbXJaL6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXJaL6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:56:09 -0400
-Received: from mail.softservecom.com ([195.160.232.17]:60565 "EHLO
-	mail.softservecom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754298AbXJaL4H (ORCPT
+	Wed, 31 Oct 2007 07:58:00 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:36149 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752980AbXJaL56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:56:07 -0400
-Subject: Re: USB: FIx locks and urb->status in adutux
-From: Vitaliy Ivanov <vitalivanov@gmail.com>
-Reply-To: vitalivanov@gmail.com
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org, netwiz@crc.id.au
-In-Reply-To: <20071030145421.f1f0aa53.zaitcev@redhat.com>
-References: <20071022203447.db6d7950.zaitcev@redhat.com>
-	 <200710231138.38266.oliver@neukum.org>
-	 <20071023185302.5ce9d187.zaitcev@redhat.com>
-	 <1193234987.13750.21.camel@dell1.softservecom.com>
-	 <20071024202555.4f1cd215.zaitcev@redhat.com>
-	 <1193681097.20985.31.camel@dell1.softservecom.com>
-	 <20071029212433.c9837c4b.zaitcev@redhat.com>
-	 <1193749794.27085.15.camel@dell1.softservecom.com>
-	 <20071030145421.f1f0aa53.zaitcev@redhat.com>
-Content-Type: text/plain
-Message-Id: <1193831694.2226.35.camel@dell1.softservecom.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.5 (1.4.5-1) 
-Date: Wed, 31 Oct 2007 13:54:54 +0200
+	Wed, 31 Oct 2007 07:57:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=YsGf5CDjBeM92SynazoLyHWfQuOfi9Bl26ca2GMe01pshOU8ZiWQIKYxFgGPhC6J25VyTjhCCp+ZbLsWrFaMqq2he4yo6vlufgNof6upAA7RUWqiyfjtDsBKcbvHcQuyhgpSSqHr2HA5rhi5cWJe0OqkqkPVF5RfSX6qv1igTuE=  ;
+X-YMail-OSG: R6BnujoVM1nJBNkPQvUrt1htb9BD4ZeDFmdMX3uuE_VIHfkLHQNeXXLUWTBCkKHYU9XhcaIKaw--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
+Date: Wed, 31 Oct 2007 21:46:02 +1100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+References: <20071030160401.296770000@chello.nl> <200710311437.28630.nickpiggin@yahoo.com.au> <1193827358.27652.126.camel@twins>
+In-Reply-To: <1193827358.27652.126.camel@twins>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200710312146.03351.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Oct 2007 11:54:54.0182 (UTC) FILETIME=[D9C70060:01C81BB4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-10-30 at 23:54, Pete Zaitcev wrote:
+On Wednesday 31 October 2007 21:42, Peter Zijlstra wrote:
+> On Wed, 2007-10-31 at 14:37 +1100, Nick Piggin wrote:
+> > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
+> > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> > > contexts that are entitled to it.
+> > >
+> > > Care is taken to only touch the SLUB slow path.
+> > >
+> > > This is done to ensure reserve pages don't leak out and get consumed.
+> >
+> > I think this is generally a good idea (to prevent slab allocators
+> > from stealing reserve). However I naively think the implementation
+> > is a bit overengineered and thus has a few holes.
+> >
+> > Humour me, what was the problem with failing the slab allocation
+> > (actually, not fail but just call into the page allocator to do
+> > correct waiting  / reclaim) in the slowpath if the process fails the
+> > watermark checks?
+>
+> Ah, we actually need slabs below the watermarks.
 
-> One other small thing. I see you dropped the dev->mtx bracket that
-> I added around the initialization and submission. Notice that the
-> dev->udev is zeroed under dev->mtx, not the static lock. This is because
-> it has to be seen in read and write paths. If you don't like taking
-> across the submission, how about testing for it ahead of time?
+Right, I'd still allow those guys to allocate slabs. Provided they
+have the right allocation context, right?
 
-I thought it can be managed under static lock.
-But if you sure we can leave device lock too, I'm not familiar with all this on such deep level... at least for now;).
 
-I'm not sure what kind of testing do you mean by "ahead of time". I just tried the latest patch and all seems to be good.
+> Its just that once I 
+> allocated those slabs using __GFP_MEMALLOC/PF_MEMALLOC I don't want
+> allocation contexts that do not have rights to those pages to walk off
+> with objects.
 
-BTW, slab corruption issue that I saw on the original driver we started fixing on is not an issue any more.
+And I'd prevent these ones from doing so.
 
-Vitaliy
-
+Without keeping track of "reserve" pages, which doesn't feel
+too clean.
