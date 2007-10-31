@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbXJaL6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXJaMAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758124AbXJaL6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXJaL6A
+	id S1758489AbXJaMAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 08:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbXJaMAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:58:00 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:36149 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752980AbXJaL56 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:57:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=YsGf5CDjBeM92SynazoLyHWfQuOfi9Bl26ca2GMe01pshOU8ZiWQIKYxFgGPhC6J25VyTjhCCp+ZbLsWrFaMqq2he4yo6vlufgNof6upAA7RUWqiyfjtDsBKcbvHcQuyhgpSSqHr2HA5rhi5cWJe0OqkqkPVF5RfSX6qv1igTuE=  ;
-X-YMail-OSG: R6BnujoVM1nJBNkPQvUrt1htb9BD4ZeDFmdMX3uuE_VIHfkLHQNeXXLUWTBCkKHYU9XhcaIKaw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 03/33] mm: slub: add knowledge of reserve pages
-Date: Wed, 31 Oct 2007 21:46:02 +1100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-References: <20071030160401.296770000@chello.nl> <200710311437.28630.nickpiggin@yahoo.com.au> <1193827358.27652.126.camel@twins>
-In-Reply-To: <1193827358.27652.126.camel@twins>
+	Wed, 31 Oct 2007 08:00:37 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22507 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755014AbXJaMAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 08:00:36 -0400
+Date: Wed, 31 Oct 2007 12:57:54 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Daniel Drake <dsd@gentoo.org>, linux list <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
+Message-ID: <20071031115754.GK5059@kernel.dk>
+References: <47274A5F.6070409@gentoo.org> <20071030153417.59b9182c@the-village.bc.nu> <47276DCA.1000808@gentoo.org> <20071030190153.373c9347@the-village.bc.nu> <47278439.4030801@gentoo.org> <20071031114958.210bd7cc@the-village.bc.nu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710312146.03351.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071031114958.210bd7cc@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 21:42, Peter Zijlstra wrote:
-> On Wed, 2007-10-31 at 14:37 +1100, Nick Piggin wrote:
-> > On Wednesday 31 October 2007 03:04, Peter Zijlstra wrote:
-> > > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
-> > > contexts that are entitled to it.
-> > >
-> > > Care is taken to only touch the SLUB slow path.
-> > >
-> > > This is done to ensure reserve pages don't leak out and get consumed.
-> >
-> > I think this is generally a good idea (to prevent slab allocators
-> > from stealing reserve). However I naively think the implementation
-> > is a bit overengineered and thus has a few holes.
-> >
-> > Humour me, what was the problem with failing the slab allocation
-> > (actually, not fail but just call into the page allocator to do
-> > correct waiting  / reclaim) in the slowpath if the process fails the
-> > watermark checks?
->
-> Ah, we actually need slabs below the watermarks.
+On Wed, Oct 31 2007, Alan Cox wrote:
+> On Tue, 30 Oct 2007 19:21:29 +0000
+> Daniel Drake <dsd@gentoo.org> wrote:
+> 
+> > Alan Cox wrote:
+> > > I would guess Brasero is issuing a command with the length of data
+> > > wrongly set. In the old code that might well just produce errors of the
+> > > "Umm wtf is this data left over for ?", with the new code the drive is
+> > > likely to change state as it knows the transfer size and that will
+> > > *correctly* cause an HSM error and what follows.
+> > > 
+> > > Now the question is who gets the length wrong - Brasero or the ata
+> > > translation code in libata
+> > 
+> > Brasero does exactly the same as my test app which I attached to my last 
+> > mail. Is my test app wrong?
+> 
+> Would need to double check the SCSI specificatons to be sure but I think
+> you are asking for less data than the drive wishes to provide. You
+> aren't allowed to do that with ATA.
 
-Right, I'd still allow those guys to allocate slabs. Provided they
-have the right allocation context, right?
+ide-cd handles this by throwing the excess away, which I think is the
+sane way to do this.
 
+-- 
+Jens Axboe
 
-> Its just that once I 
-> allocated those slabs using __GFP_MEMALLOC/PF_MEMALLOC I don't want
-> allocation contexts that do not have rights to those pages to walk off
-> with objects.
-
-And I'd prevent these ones from doing so.
-
-Without keeping track of "reserve" pages, which doesn't feel
-too clean.
