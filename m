@@ -1,29 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbXJaBEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbXJaBEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbXJaBEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 21:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXJaBE3
+	id S1756745AbXJaBEy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 21:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbXJaBE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Oct 2007 21:04:29 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:59386 "EHLO smtp.polymtl.ca"
+Received: from cantor2.suse.de ([195.135.220.15]:48000 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbXJaBE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752222AbXJaBE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Oct 2007 21:04:28 -0400
-Message-Id: <20071031010345.301342580@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 21:03:45 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Subject: [patch 0/4] Add ARCH_SUPPORTS_KPROBES (take 2)
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 01:04:26 +0000
+Message-ID: <4727D564.3080205@suse.com>
+Date: Tue, 30 Oct 2007 21:07:48 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mmap: restore -ENODEV on missing f_op->mmap
+References: <4727AE44.10902@suse.com> <alpine.LFD.0.999.0710301541050.30120@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710301541050.30120@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-take 2, using def_bool this time.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Mathieu
+Linus Torvalds wrote:
+> 
+> On Tue, 30 Oct 2007, Jeff Mahoney wrote:
+>>  Personally, I think this is probably a case of LTP codifying existing
+>>  behavior rather than testing the for the specification. If that's the case
+>>  and nobody really cares about the change in behavior, I'm fine letting this
+>>  drop.
+> 
+> Hmm.. I think it's kind of stupid adding that special case early on, just 
+> to get one particular error case return when there are multiple possible 
+> ones. 
+> 
+> I don't care deeply, but this does smell like a test issue rather than a 
+> code issue.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Ok, I'll drop it and send the LTP fix upstream there.
+
+- -Jeff
+
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFHJ9VkLPWxlyuTD7IRAviiAKCcOhYu2joLm8tPWZDgMa/5uvtqGQCgiz0Y
+z3fHhkTg1Vfqsw9WDadHOak=
+=bItr
+-----END PGP SIGNATURE-----
