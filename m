@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbXJaRLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbXJaRMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759336AbXJaRLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 13:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbXJaRKx
+	id S1759534AbXJaRMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 13:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbXJaRMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 13:10:53 -0400
-Received: from flatline.sindominio.net ([82.144.4.26]:37617 "EHLO
-	flatline.sindominio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbXJaRKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 13:10:52 -0400
-Date: Wed, 31 Oct 2007 18:10:51 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Ram <vshrirama@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: kernel processes - are they really needed?
-Message-ID: <20071031171051.GG6092@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Jan Kara <jack@suse.cz>, Ram <vshrirama@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <8bf247760710240637w686f1a2fxdf63a649787eca25@mail.gmail.com> <20071031160142.GC28809@atrey.karlin.mff.cuni.cz>
+	Wed, 31 Oct 2007 13:12:30 -0400
+Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:21547 "HELO
+	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756592AbXJaRM2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 13:12:28 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 13:12:28 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=0KCc1XPegyQB6ZzNNo4p3MbNn/pWbIhUR3guIJzJKp5ZNnDp7h8By5FzXlazYkWSulpVG93N/irTfGPsV6pWKG5mA6CdKm1XaqHD3Y49aqV12zChFRGj8uoh4vG95/qLYepCmFBpGac2ilN7/ueHRW9kUxmLhwlmzyIvUOAWcyE=;
+X-YMail-OSG: LuQgM6UVM1nzkXWBlat60CoPr1frGs36WHwQYfUsQfYlwxfMUzzC3WmKtOJ1bbyfW6k.y7q4OTas672L.3Vwu8OBxvScTsSonaI66KzfGRB6Ny8RrFk-
+X-Mailer: YahooMailRC/814.06 YahooMailWebService/0.7.134.12
+Date: Wed, 31 Oct 2007 10:05:46 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [PATCH] telephony: phonedev panics if unregistering device not registered [Bug 9266]
+To: linux-kernel@vger.kernel.org
+Cc: bugme-daemon@kernel-bugs.osdl.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071031160142.GC28809@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <224028.52554.qm@web52009.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, Oct 31, 2007 at 05:01:42PM +0100 Jan Kara ha dit:
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+
+Remove panic from phonedev.
+
+Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+---
+
+--- a/drivers/telephony/phonedev.c	2007-10-31 17:52:55.784817000 +0200
++++ linux-2.6.24/drivers/telephony/phonedev.c	2007-10-31 17:55:48.144879000 +0200
+@@ -120,9 +120,8 @@ int phone_register_device(struct phone_d
+ void phone_unregister_device(struct phone_device *pfd)
+ {
+ 	mutex_lock(&phone_lock);
+-	if (phone_device[pfd->minor] != pfd)
+-		panic("phone: bad unregister");
+-	phone_device[pfd->minor] = NULL;
++	if (likely(phone_device[pfd->minor] == pfd))
++		phone_device[pfd->minor] = NULL;
+ 	mutex_unlock(&phone_lock);
+ }
  
-> >     When i do ps -l. i see the following processes which are obviously
-> > started by kernel.
-> > 
-> >    Could any one tell me what each of these processes do and can
-> > anyone of them can be removed.?
->   I'll write what I know :)
 
-i'll also put my 0.5 cents :)
 
-> > PID  Uid     VmSize Stat Command
-> >     1 root        584 S   init
-> >     2 root            SWN [ksoftirqd/0]
 
-executes (on CPU 0) the deferred parts of interrupt routines (bottom
-halves), i.e. softirqs and tasklets. bad candidate for removal imo
 
-> >     3 root            SW  [watchdog/0]
-> >     4 root            SW< [events/0]
-
-this one is in charge of executing deferred functions placed in the
-default work queue. also a bad candidate for removal
-
-> >     5 root            SW< [khelper]
-> >     6 root            SW< [kthread]
-> >    23 root            SW< [kblockd/0]
->   This one has something to do with block layer - like unplugging
-> request queue after a certain timeout etc.
-> 
-> >    38 root            SW  [pdflush]
-> >    39 root            SW  [pdflush]
->   Doing writeback of dirty data.
-> 
-> >    40 root            SW< [kswapd0]
->   Swapping pages in and out.
-> 
-> >    41 root            SW< [aio/0]
->   Kernel thread handling asynchronous IO.
-> 
-> >    85 root            SW  [mtdblockd]
-> >   116 root            SWN [jffs2_gcd_mtd9]
->   jffs2 specific - ask a maintainer :) (and mtdblockd has something to
-> do with MTD devices so he may know that one as well).
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-                If you don't know where you are going,
-               you will probably end up somewhere else
-                         (Laurence J. Peter)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+      Heute schon einen Blick in die Zukunft von E-Mails wagen? Versuchen Sie´s mit dem neuen Yahoo! Mail. www.yahoo.de/mail
