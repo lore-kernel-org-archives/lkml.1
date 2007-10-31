@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbXJaQha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbXJaQiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbXJaQha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 12:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXJaQhO
+	id S1760719AbXJaQiB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 12:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXJaQhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 12:37:14 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43384 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757777AbXJaQhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 12:37:12 -0400
-Date: Wed, 31 Oct 2007 19:31:42 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, nickpiggin@yahoo.com.au,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-Message-ID: <20071031163141.GA24400@2ka.mipt.ru>
-References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au> <20071030.213753.126064697.davem@davemloft.net> <20071031085041.GA4362@infradead.org> <1193828206.27652.145.camel@twins> <170fa0d20710310754h55d768bdgb67f30b54174e680@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20710310754h55d768bdgb67f30b54174e680@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 31 Oct 2007 12:37:52 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55953 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753883AbXJaQhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 12:37:51 -0400
+Date: Wed, 31 Oct 2007 17:23:01 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] HID fixes for 2.6.24-rc1
+Message-ID: <Pine.LNX.4.64.0710311430540.12935@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Linus,
 
-On Wed, Oct 31, 2007 at 10:54:02AM -0400, Mike Snitzer (snitzer@gmail.com) wrote:
-> > Trouble with that part is that we don't have any sane network block
-> > devices atm, NBD is utter crap, and iSCSI is too complex to be called
-> > sane.
-> >
-> > Maybe Evgeniy's Distributed storage thingy would work, will have a look
-> > at that.
-> 
-> Andrew recently asked Evgeniy if his DST was ready for merging; to
-> which Evgeniy basically said yes:
-> http://lkml.org/lkml/2007/10/27/54
-> 
-> It would be great if DST could be merged; whereby addressing the fact
-> that NBD is lacking for net-vm.  If DST were scrutinized in the
-> context of net-vm it should help it get the review that is needed for
-> merging.
+could you please pull from 'for-linus' branch of
 
-By popular request I'm working on adding strong checksumming of the data
-transferred, so I can not say that Andrew will want to merge this during
-development phase. I expect to complete it quite soon (it is in testing
-stage right now) though with new release scheduled this week. It will
-also include some small features for userspace (hapiness).
+        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
-Memory management is not changed.
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
--- 
-	Evgeniy Polyakov
+to receive fixes for HID code.
+
+ drivers/hid/hid-input.c         |   22 ++++++++++++++++------
+ drivers/hid/usbhid/hid-quirks.c |    8 ++++++++
+ drivers/hid/usbhid/hiddev.c     |    2 +-
+ 3 files changed, 25 insertions(+), 7 deletions(-)
+
+Dirk Hohndel (1):
+      HID: fix hidinput_connect ignoring retval from input_register_device
+
+Dmitry Torokhov (1):
+      HID: Don't access input_dev->private directly
+
+Jerrold Jones (1):
+      HID: Add GoTop tablets to blacklist
+
+Jiri Kosina (1):
+      HID: hiddev - fix compiler warning
+
