@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbXJaBFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbXJaBGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbXJaBFq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 21:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXJaBEf
+	id S1755153AbXJaBGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 21:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXJaBEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 21:04:35 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:59414 "EHLO smtp.polymtl.ca"
+	Tue, 30 Oct 2007 21:04:36 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:59420 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbXJaBEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 21:04:33 -0400
-Message-Id: <20071031010426.883869430@polymtl.ca>
+	id S1754792AbXJaBEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 21:04:35 -0400
+Message-Id: <20071031010427.191206858@polymtl.ca>
 References: <20071031010345.301342580@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 30 Oct 2007 21:03:47 -0400
+Date: Tue, 30 Oct 2007 21:03:48 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 2/4] Add ARCH_SUPPORTS_OPROFILE
-Content-Disposition: inline; filename=add-arch-supports-oprofile.patch
+Subject: [patch 3/4] Add ARCH_SUPPORTS_KPROBES
+Content-Disposition: inline; filename=add-arch-supports-kprobes.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 01:04:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus:
+
 On the per-architecture side, I do think it would be better to *not* have
 internal architecture knowledge in a generic file, and as such a line like
 
@@ -64,132 +65,54 @@ Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/alpha/Kconfig             |    4 ++++
- arch/arm/Kconfig               |    4 ++++
- arch/blackfin/Kconfig          |    4 ++++
- arch/ia64/Kconfig              |    4 ++++
- arch/m32r/Kconfig              |    4 ++++
- arch/mips/Kconfig              |    4 ++++
- arch/parisc/Kconfig            |    4 ++++
- arch/powerpc/Kconfig           |    4 ++++
- arch/ppc/Kconfig               |    4 ++++
- arch/s390/Kconfig              |    4 ++++
- arch/sh/Kconfig                |    4 ++++
- arch/sh64/Kconfig              |    4 ++++
- arch/sparc/Kconfig             |    4 ++++
- arch/sparc64/Kconfig           |    4 ++++
- arch/x86/Kconfig.i386          |    4 ++++
- arch/x86/Kconfig.x86_64        |    4 ++++
+ arch/avr32/Kconfig             |    3 +++
+ arch/ia64/Kconfig              |    3 +++
+ arch/powerpc/Kconfig           |    3 +++
+ arch/ppc/Kconfig               |    3 +++
+ arch/s390/Kconfig              |    3 +++
+ arch/sparc64/Kconfig           |    3 +++
+ arch/x86/Kconfig.i386          |    3 +++
+ arch/x86/Kconfig.x86_64        |    3 +++
  kernel/Kconfig.instrumentation |    2 +-
- 17 files changed, 65 insertions(+), 1 deletion(-)
+ 9 files changed, 25 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng.stable/arch/alpha/Kconfig
+Index: linux-2.6-lttng.stable/arch/avr32/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/alpha/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/alpha/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -66,6 +66,9 @@ config AUTO_IRQ_AFFINITY
- 	depends on SMP
+--- linux-2.6-lttng.stable.orig/arch/avr32/Kconfig	2007-10-30 20:56:33.000000000 -0400
++++ linux-2.6-lttng.stable/arch/avr32/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -70,6 +70,9 @@ config GENERIC_BUG
  	default y
+ 	depends on BUG
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
  
- 
-Index: linux-2.6-lttng.stable/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/arm/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/arm/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -114,6 +114,9 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- config ARCH_MAY_HAVE_PC_FDC
- 	bool
- 
-Index: linux-2.6-lttng.stable/arch/blackfin/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/blackfin/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/blackfin/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -69,6 +69,9 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- config IRQCHIP_DEMUX_GPIO
- 	bool
- 	depends on (BF52x || BF53x || BF561 || BF54x)
+ menu "System Type and features"
 Index: linux-2.6-lttng.stable/arch/ia64/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/ia64/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/ia64/Kconfig	2007-10-30 20:18:38.000000000 -0400
-@@ -99,6 +99,9 @@ config AUDIT_ARCH
- 	bool
- 	default y
+--- linux-2.6-lttng.stable.orig/arch/ia64/Kconfig	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/ia64/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -102,6 +102,9 @@ config AUDIT_ARCH
+ config ARCH_SUPPORTS_OPROFILE
+ 	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  choice
  	prompt "System type"
  	default IA64_GENERIC
-Index: linux-2.6-lttng.stable/arch/m32r/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/m32r/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/m32r/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -34,6 +34,9 @@ config NO_IOPORT
- config NO_DMA
- 	def_bool y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- source "init/Kconfig"
- 
- 
-Index: linux-2.6-lttng.stable/arch/mips/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/mips/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/mips/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -721,6 +721,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
- 	bool
- 	default n
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- #
- # Select some configuration options automatically based on user selections.
- #
-Index: linux-2.6-lttng.stable/arch/parisc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/parisc/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/parisc/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -69,6 +69,9 @@ config IRQ_PER_CPU
- 	bool
- 	default y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- # unless you want to implement ACPI on PA-RISC ... ;-)
- config PM
- 	bool
 Index: linux-2.6-lttng.stable/arch/powerpc/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/powerpc/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/powerpc/Kconfig	2007-10-30 20:18:38.000000000 -0400
-@@ -163,6 +163,9 @@ config PPC_OF_PLATFORM_PCI
- 	depends on PPC64 # not supported on 32 bits yet
- 	default n
+--- linux-2.6-lttng.stable.orig/arch/powerpc/Kconfig	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/powerpc/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -166,6 +166,9 @@ config PPC_OF_PLATFORM_PCI
+ config ARCH_SUPPORTS_OPROFILE
+ 	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
@@ -197,13 +120,13 @@ Index: linux-2.6-lttng.stable/arch/powerpc/Kconfig
  source "arch/powerpc/platforms/Kconfig"
 Index: linux-2.6-lttng.stable/arch/ppc/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/ppc/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/ppc/Kconfig	2007-10-30 20:18:38.000000000 -0400
-@@ -69,6 +69,9 @@ config GENERIC_BUG
- 	default y
- 	depends on BUG
+--- linux-2.6-lttng.stable.orig/arch/ppc/Kconfig	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/ppc/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -72,6 +72,9 @@ config GENERIC_BUG
+ config ARCH_SUPPORTS_OPROFILE
+ 	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
@@ -211,69 +134,27 @@ Index: linux-2.6-lttng.stable/arch/ppc/Kconfig
  menu "Processor"
 Index: linux-2.6-lttng.stable/arch/s390/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/s390/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/s390/Kconfig	2007-10-30 20:18:38.000000000 -0400
-@@ -52,6 +52,9 @@ mainmenu "Linux Kernel Configuration"
- config S390
+--- linux-2.6-lttng.stable.orig/arch/s390/Kconfig	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/s390/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -55,6 +55,9 @@ config S390
+ config ARCH_SUPPORTS_OPROFILE
  	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
  
  menu "Base setup"
-Index: linux-2.6-lttng.stable/arch/sh/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sh/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sh/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -93,6 +93,9 @@ config ARCH_HAS_ILOG2_U64
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- source "init/Kconfig"
- 
- menu "System type"
-Index: linux-2.6-lttng.stable/arch/sh64/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sh64/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sh64/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -58,6 +58,9 @@ config ARCH_HAS_ILOG2_U64
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- source init/Kconfig
- 
- menu "System type"
-Index: linux-2.6-lttng.stable/arch/sparc/Kconfig
-===================================================================
---- linux-2.6-lttng.stable.orig/arch/sparc/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sparc/Kconfig	2007-10-30 20:18:36.000000000 -0400
-@@ -27,6 +27,9 @@ config ARCH_NO_VIRT_TO_BUS
- config OF
- 	def_bool y
- 
-+config ARCH_SUPPORTS_OPROFILE
-+	def_bool y
-+
- source "init/Kconfig"
- 
- menu "General machine setup"
 Index: linux-2.6-lttng.stable/arch/sparc64/Kconfig
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/sparc64/Kconfig	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/sparc64/Kconfig	2007-10-30 20:18:38.000000000 -0400
-@@ -76,6 +76,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
- 	bool
+--- linux-2.6-lttng.stable.orig/arch/sparc64/Kconfig	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/sparc64/Kconfig	2007-10-30 21:02:03.000000000 -0400
+@@ -79,6 +79,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ config ARCH_SUPPORTS_OPROFILE
  	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  choice
@@ -281,13 +162,13 @@ Index: linux-2.6-lttng.stable/arch/sparc64/Kconfig
  	default SPARC64_PAGE_SIZE_8KB
 Index: linux-2.6-lttng.stable/arch/x86/Kconfig.i386
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/x86/Kconfig.i386	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/x86/Kconfig.i386	2007-10-30 20:18:38.000000000 -0400
-@@ -91,6 +91,9 @@ config DMI
- 	bool
- 	default y
+--- linux-2.6-lttng.stable.orig/arch/x86/Kconfig.i386	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/x86/Kconfig.i386	2007-10-30 21:02:03.000000000 -0400
+@@ -94,6 +94,9 @@ config DMI
+ config ARCH_SUPPORTS_OPROFILE
+ 	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
@@ -295,13 +176,13 @@ Index: linux-2.6-lttng.stable/arch/x86/Kconfig.i386
  menu "Processor type and features"
 Index: linux-2.6-lttng.stable/arch/x86/Kconfig.x86_64
 ===================================================================
---- linux-2.6-lttng.stable.orig/arch/x86/Kconfig.x86_64	2007-10-30 20:17:18.000000000 -0400
-+++ linux-2.6-lttng.stable/arch/x86/Kconfig.x86_64	2007-10-30 20:18:38.000000000 -0400
-@@ -133,6 +133,9 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default n
+--- linux-2.6-lttng.stable.orig/arch/x86/Kconfig.x86_64	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/arch/x86/Kconfig.x86_64	2007-10-30 21:02:03.000000000 -0400
+@@ -136,6 +136,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_SUPPORTS_OPROFILE
+ 	def_bool y
  
-+config ARCH_SUPPORTS_OPROFILE
++config ARCH_SUPPORTS_KPROBES
 +	def_bool y
 +
  source "init/Kconfig"
@@ -309,17 +190,17 @@ Index: linux-2.6-lttng.stable/arch/x86/Kconfig.x86_64
  
 Index: linux-2.6-lttng.stable/kernel/Kconfig.instrumentation
 ===================================================================
---- linux-2.6-lttng.stable.orig/kernel/Kconfig.instrumentation	2007-10-30 20:18:54.000000000 -0400
-+++ linux-2.6-lttng.stable/kernel/Kconfig.instrumentation	2007-10-30 20:19:05.000000000 -0400
-@@ -21,7 +21,7 @@ config PROFILING
- config OPROFILE
- 	tristate "OProfile system profiling (EXPERIMENTAL)"
- 	depends on PROFILING
--	depends on ALPHA || ARM || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
-+	depends on ARCH_SUPPORTS_OPROFILE
+--- linux-2.6-lttng.stable.orig/kernel/Kconfig.instrumentation	2007-10-30 21:02:03.000000000 -0400
++++ linux-2.6-lttng.stable/kernel/Kconfig.instrumentation	2007-10-30 21:02:03.000000000 -0400
+@@ -32,7 +32,7 @@ config OPROFILE
+ config KPROBES
+ 	bool "Kprobes"
+ 	depends on KALLSYMS && MODULES
+-	depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
++	depends on ARCH_SUPPORTS_KPROBES
  	help
- 	  OProfile is a profiling system capable of profiling the
- 	  whole system, include the kernel, kernel modules, libraries,
+ 	  Kprobes allows you to trap at almost any kernel address and
+ 	  execute a callback function.  register_kprobe() establishes
 
 -- 
 Mathieu Desnoyers
