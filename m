@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbXJaKYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbXJaK0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758937AbXJaKYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 06:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbXJaKYr
+	id S1758717AbXJaK0e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 06:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbXJaK01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 06:24:47 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35882 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755680AbXJaKYq (ORCPT
+	Wed, 31 Oct 2007 06:26:27 -0400
+Received: from static.206.158.47.78.clients.your-server.de ([78.47.158.206]:38312
+	"EHLO mega2000.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbXJaK00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 06:24:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wWQAuwwFU3+ChMX0QtixUsgt/y6z6clxHNO9hMbjMzQ+VWRNfI6rENgkVVNNV/FcaGHMprCaYBfgXvlpuYXpKoE4i/DxKShQ+hNqdVFYLoSoS1L/FfLt+FfCK+0TprOokAtP/0woJrBY0oZvXyNODiBWUN7NcOEmnN1OxumKHxE=  ;
-X-YMail-OSG: OWyHNnUVM1kvBMmPpf0mZVj5chDclHow4idmVsSLBxrw75VHjxrRNDxOcpw_RQCzkzP8w2ejrw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Swap delay accounting, include lock_page() delays
-Date: Wed, 31 Oct 2007 20:10:33 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20071031075243.22225.53636.sendpatchset@balbir-laptop> <200710311841.53671.nickpiggin@yahoo.com.au>
-In-Reply-To: <200710311841.53671.nickpiggin@yahoo.com.au>
+	Wed, 31 Oct 2007 06:26:26 -0400
+X-Greylist: delayed 1592 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Oct 2007 06:26:26 EDT
+Date: Wed, 31 Oct 2007 11:00:25 +0100
+To: linux-kernel@vger.kernel.org
+Subject: Need information on elevator_dispatch_fn
+Message-ID: <20071031100025.GC16598@mega2000.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200710312010.33833.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: philipp.gruber@flupps.net (Philipp Gruber)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 18:41, Nick Piggin wrote:
-> On Wednesday 31 October 2007 18:52, Balbir Singh wrote:
-> > Reported-by: Nick Piggin <nickpiggin@yahoo.com.au>
-> >
-> > The delay incurred in lock_page() should also be accounted in swap delay
-> > accounting
-> >
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->
-> Ah right, I forgot to resend this one, sorry. Thanks for remembering.
+Hello everyone,
 
-Although, I think I had a bit more detail in the changelog which
-I think should be kept.
+I'm just working on an I/O-scheduler that implements some QoS
+functionality.
 
-Basically, swap delay accounting seems quite broken as of now,
-because what it is counting is the time required to allocate a new
-page and submit the IO, but not actually the time to perform the IO
-at all (which I'd expect will be significant, although possibly in
-some workloads the actual page allocation will dominate).
+Now I get some weird problems and need to know what triggers my
+elevator_dispatch_fn, and how the return value of it is handled.
+For now, I found that the dispatch function is called as long as there
+are requests in my queue, so probably as long as it returns 1. On the
+other hand, only every second dispatch call returns 1, the others 0, but
+still it's working. I couldn't find any documentation about that (but
+would like to write some, if I understood it). Could someone please
+explain me when and why exactly elevator_dispatch_fn is triggered?
 
->
-> > ---
-> >
-> >  mm/memory.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff -puN mm/swapfile.c~fix-delay-accounting-swap-accounting
-> > mm/swapfile.c diff -puN mm/memory.c~fix-delay-accounting-swap-accounting
-> > mm/memory.c ---
-> > linux-2.6-latest/mm/memory.c~fix-delay-accounting-swap-accounting	2007-10
-> >-3 1 12:58:05.000000000 +0530 +++
-> > linux-2.6-latest-balbir/mm/memory.c	2007-10-31 13:02:50.000000000 +0530
-> > @@ -2084,9 +2084,9 @@ static int do_swap_page(struct mm_struct
-> >  		count_vm_event(PGMAJFAULT);
-> >  	}
-> >
-> > -	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> >  	mark_page_accessed(page);
-> >  	lock_page(page);
-> > +	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> >
-> >  	/*
-> >  	 * Back out if somebody else already faulted in this pte.
-> > _
+A little background:
+Now that I'm implementing my QoS, I have one queue for each process, and
+prioritized processes get a timeslice, where they can access the device
+exclusively.
+A timeslice might be 400ms, but if a process is finished after 200ms
+and has no more requests, dispatch will return 0 and then it won't be
+triggered anymore. So, when the next process has his timeslice, even if
+it has requests, dispatch_fn is not triggered, so the process will
+starve and hang forever.
+So I need to 'reactivate' the whole dispatching process again. The only
+way to to this is probably a timer, but I couldn't get this working
+since I don't understand what calls dispatch_fn.
 
+thanks in advance,
+Philipp
