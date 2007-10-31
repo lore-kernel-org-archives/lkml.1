@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbXJaFLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbXJaFM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbXJaFLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 01:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXJaFLI
+	id S1756062AbXJaFM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 01:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXJaFMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 01:11:08 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:21973 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753427AbXJaFLG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 01:11:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oOmxqoQwpiDQJoouUVRVa9PveYB3mEO10xeI5sFj2IiykPiz807uC39Sbxn3pGD6JPPmjKJxKSU0Yg/a9yDh6+6zwZVWmId3/DzPJtqqZjRyohKOyQAmXlQMQ3ej1/nX753OfPq3oAe2acd9zc0v71ZlVGYMvbzqf/yoZHMuPY4=  ;
-X-YMail-OSG: 6mJV7kYVM1n69213OtVKVp6SmxQpdyUOIJOWQC8m23r6v1tl30bFPuAGSLdQRYUJuavYMdDEGw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 00/33] Swap over NFS -v14
-Date: Wed, 31 Oct 2007 15:04:23 +1100
-User-Agent: KMail/1.9.5
-Cc: a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-References: <20071030160401.296770000@chello.nl> <200710311426.33223.nickpiggin@yahoo.com.au> <20071030.213753.126064697.davem@davemloft.net>
-In-Reply-To: <20071030.213753.126064697.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200710311504.24016.nickpiggin@yahoo.com.au>
+	Wed, 31 Oct 2007 01:12:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34751 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753429AbXJaFMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 01:12:17 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/6] Driver core: remove class_device_*_bin_file
+Date: Tue, 30 Oct 2007 22:11:40 -0700
+Message-Id: <1193807505-3821-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <20071031050954.GA3791@kroah.com>
+References: <20071031050954.GA3791@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 31 October 2007 15:37, David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Wed, 31 Oct 2007 14:26:32 +1100
->
-> > Is it really worth all the added complexity of making swap
-> > over NFS files work, given that you could use a network block
-> > device instead?
->
-> Don't be misled.  Swapping over NFS is just a scarecrow for the
-> seemingly real impetus behind these changes which is network storage
-> stuff like iSCSI.
+These functions are not used by anyone, so remove them from the tree.
 
-Oh, I'm OK with the network reserves stuff (not the actual patch,
-which I'm not really qualified to review, but at least the idea
-of it...).
+The class_device code will be removed soon anyway, so no future users
+will ever be possible.
 
-And also I'm not as such against the idea of swap over network.
 
-However, specifically the change to make swapfiles work through
-the filesystem layer (ATM it goes straight to the block layer,
-modulo some initialisation stuff which uses block filesystem-
-specific calls).
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/class.c   |   18 ------------------
+ include/linux/device.h |    4 ----
+ 2 files changed, 0 insertions(+), 22 deletions(-)
 
-I mean, I assume that anybody trying to swap over network *today*
-has to be using a network block device anyway, so the idea of
-just being able to transparently improve that case seems better
-than adding new complexities for seemingly not much gain.
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index a863bb0..f6ebe6a 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -257,22 +257,6 @@ void class_device_remove_file(struct class_device * class_dev,
+ 		sysfs_remove_file(&class_dev->kobj, &attr->attr);
+ }
+ 
+-int class_device_create_bin_file(struct class_device *class_dev,
+-				 struct bin_attribute *attr)
+-{
+-	int error = -EINVAL;
+-	if (class_dev)
+-		error = sysfs_create_bin_file(&class_dev->kobj, attr);
+-	return error;
+-}
+-
+-void class_device_remove_bin_file(struct class_device *class_dev,
+-				  struct bin_attribute *attr)
+-{
+-	if (class_dev)
+-		sysfs_remove_bin_file(&class_dev->kobj, attr);
+-}
+-
+ static ssize_t
+ class_device_attr_show(struct kobject * kobj, struct attribute * attr,
+ 		       char * buf)
+@@ -885,8 +869,6 @@ EXPORT_SYMBOL_GPL(class_device_create);
+ EXPORT_SYMBOL_GPL(class_device_destroy);
+ EXPORT_SYMBOL_GPL(class_device_create_file);
+ EXPORT_SYMBOL_GPL(class_device_remove_file);
+-EXPORT_SYMBOL_GPL(class_device_create_bin_file);
+-EXPORT_SYMBOL_GPL(class_device_remove_bin_file);
+ 
+ EXPORT_SYMBOL_GPL(class_interface_register);
+ EXPORT_SYMBOL_GPL(class_interface_unregister);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 2e15822..2c5e49d 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -291,10 +291,6 @@ extern void class_device_put(struct class_device *);
+ 
+ extern void class_device_remove_file(struct class_device *, 
+ 				     const struct class_device_attribute *);
+-extern int __must_check class_device_create_bin_file(struct class_device *,
+-					struct bin_attribute *);
+-extern void class_device_remove_bin_file(struct class_device *,
+-					 struct bin_attribute *);
+ 
+ struct class_interface {
+ 	struct list_head	node;
+-- 
+1.5.3.4
+
