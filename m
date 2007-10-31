@@ -1,62 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbXJaBEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbXJaBFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbXJaBEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Oct 2007 21:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbXJaBE3
+	id S1755954AbXJaBFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Oct 2007 21:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXJaBEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Oct 2007 21:04:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48000 "EHLO mx2.suse.de"
+	Tue, 30 Oct 2007 21:04:34 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:59412 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752222AbXJaBE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Oct 2007 21:04:28 -0400
-Message-ID: <4727D564.3080205@suse.com>
-Date: Tue, 30 Oct 2007 21:07:48 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mmap: restore -ENODEV on missing f_op->mmap
-References: <4727AE44.10902@suse.com> <alpine.LFD.0.999.0710301541050.30120@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710301541050.30120@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1754391AbXJaBEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Oct 2007 21:04:33 -0400
+Message-Id: <20071031010426.586744694@polymtl.ca>
+References: <20071031010345.301342580@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 30 Oct 2007 21:03:46 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [patch 1/4] Create arch/Kconfig
+Content-Disposition: inline; filename=add-kconfig-to-arch.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 31 Oct 2007 01:04:26 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Puts the content of arch/Kconfig in the "General setup" menu.
 
-Linus Torvalds wrote:
-> 
-> On Tue, 30 Oct 2007, Jeff Mahoney wrote:
->>  Personally, I think this is probably a case of LTP codifying existing
->>  behavior rather than testing the for the specification. If that's the case
->>  and nobody really cares about the change in behavior, I'm fine letting this
->>  drop.
-> 
-> Hmm.. I think it's kind of stupid adding that special case early on, just 
-> to get one particular error case return when there are multiple possible 
-> ones. 
-> 
-> I don't care deeply, but this does smell like a test issue rather than a 
-> code issue.
+Linus:
 
-Ok, I'll drop it and send the LTP fix upstream there.
+> Should it come with a re-duplication of it's content into each
+> architecture, which was the case previously ? The oprofile and kprobes
+> menu entries were litteraly cut and pasted from one architecture to
+> another. Should we put its content in init/Kconfig then ?
 
-- -Jeff
+I don't think it's a good idea to go back to making it per-architecture,
+although that extensive "depends on <list-of-archiectures-here>" might
+indicate that there certainly is room for cleanup there.
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+And I don't think it's wrong keeping it in kernel/Kconfig.xyz per se, I
+just think it's wrong to (a) lump the code together when it really doesn't
+necessarily need to and (b) show it to users as some kind of choice that
+is tied together (whether it then has common code or not).
 
-iD8DBQFHJ9VkLPWxlyuTD7IRAviiAKCcOhYu2joLm8tPWZDgMa/5uvtqGQCgiz0Y
-z3fHhkTg1Vfqsw9WDadHOak=
-=bItr
------END PGP SIGNATURE-----
+On the per-architecture side, I do think it would be better to *not* have
+internal architecture knowledge in a generic file, and as such a line like
+
+        depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
+
+really shouldn't exist in a file like kernel/Kconfig.instrumentation.
+
+It would be much better to do
+
+        depends on ARCH_SUPPORTS_KPROBES
+
+in that generic file, and then architectures that do support it would just
+have a
+
+        bool ARCH_SUPPORTS_KPROBES
+                default y
+
+in *their* architecture files. That would seem to be much more logical,
+and is readable both for arch maintainers *and* for people who have no
+clue - and don't care - about which architecture is supposed to support
+which interface...
+                   
+
+Sam Ravnborg:
+
+Stuff it into a new file: arch/Kconfig
+We can then extend this file to include all the 'trailing'
+Kconfig things that are anyway equal for all ARCHs.
+
+But it should be kept clean - so if we introduce such a file
+then we should use ARCH_HAS_whatever in the arch specific Kconfig
+files to enable stuff that is not shared.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/Kconfig |    3 +++
+ init/Kconfig |    2 ++
+ 2 files changed, 5 insertions(+)
+
+Index: linux-2.6-lttng.stable/init/Kconfig
+===================================================================
+--- linux-2.6-lttng.stable.orig/init/Kconfig	2007-10-30 20:20:28.000000000 -0400
++++ linux-2.6-lttng.stable/init/Kconfig	2007-10-30 20:21:04.000000000 -0400
+@@ -644,6 +644,8 @@ config SLOB
+ 
+ endchoice
+ 
++source "arch/Kconfig"
++
+ endmenu		# General setup
+ 
+ config RT_MUTEXES
+Index: linux-2.6-lttng.stable/arch/Kconfig
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.stable/arch/Kconfig	2007-10-30 20:20:32.000000000 -0400
+@@ -0,0 +1,3 @@
++#
++# General architecture dependent options
++#
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
