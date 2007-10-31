@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbXJaHod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbXJaHu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbXJaHod (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 03:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXJaHo0
+	id S1755251AbXJaHu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 03:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbXJaHuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 03:44:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49408
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753042AbXJaHoZ (ORCPT
+	Wed, 31 Oct 2007 03:50:17 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:49206 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753115AbXJaHuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 03:44:25 -0400
-Date: Wed, 31 Oct 2007 00:44:25 -0700 (PDT)
-Message-Id: <20071031.004425.12962203.davem@davemloft.net>
-To: npiggin@suse.de
-Cc: duaneg@dghda.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb
- causes unkillable spinning
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071031074106.GE12189@wotan.suse.de>
-References: <20071031064221.GC12189@wotan.suse.de>
-	<20071030.235600.254712083.davem@davemloft.net>
-	<20071031074106.GE12189@wotan.suse.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Oct 2007 03:50:16 -0400
+Date: Wed, 31 Oct 2007 08:50:13 +0100
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: Huawei E220 and usb storage
+Message-ID: <20071031075013.GB18971@gamma.logic.tuwien.ac.at>
+References: <20071030190945.GC32153@gamma.logic.tuwien.ac.at> <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com> <20071031061552.GH11722@gamma.logic.tuwien.ac.at> <20071031062356.GI11722@gamma.logic.tuwien.ac.at> <20071030234539.aecca9e8.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071030234539.aecca9e8.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <npiggin@suse.de>
-Date: Wed, 31 Oct 2007 08:41:06 +0100
-
-> On Tue, Oct 30, 2007 at 11:56:00PM -0700, David Miller wrote:
-> > From: Nick Piggin <npiggin@suse.de>
-> > Date: Wed, 31 Oct 2007 07:42:21 +0100
-> > 
-> > Anyways, my core suggestion is to add a hook here so platforms can
-> > do the remote register fetch if they want.
+On Di, 30 Okt 2007, Pete Zaitcev wrote:
+> > 	printk(KERN_ERR "ENTERING usb_stor_huawei_e220_init!\n");
+> > at the beginning of the function but it never showed up in my log files.
+> > So it seems that the UNUSUAL_DEV entry does not match.
 > 
-> You could possibly even do a generic "best effort" kind of thing with
-> regular IPIs, that will timeout and continue if some CPUs don't handle
-> them, and should be pretty easy to get working with existing smp_call_
-> function stuff. Not exactly clean, but it would be better than nothing.
+> This doesn't seem to be possible, considering the /proc/bus/usb/devices
+> that you posted. I would rather suspect that you forgot to perform
 
-Without a doubt.
+Compiling both -- usb-storage and option/usb-serial -- as modules did
+work.
+
+Ok, thanks a lot.
+
+I assume that is because the built-in usb-serial/option did grab the
+device so the init function wasn't executed. Putting both into modules
+allowed that usb-storage grabbed the device first.
+
+Anyway, my interpretation without any knowledge.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+SCONSER (n.)
+A person who looks around then when talking to you, to see if there's
+anyone more interesting about.
+			--- Douglas Adams, The Meaning of Liff
