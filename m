@@ -1,73 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXJaXtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXJaXxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbXJaXtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 19:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbXJaXtr
+	id S1756067AbXJaXxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 19:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXJaXxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 19:49:47 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54817 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbXJaXtq (ORCPT
+	Wed, 31 Oct 2007 19:53:32 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51814 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbXJaXxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 19:49:46 -0400
-Date: Wed, 31 Oct 2007 18:49:45 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: [PATCH] file capabilities: allow sigcont within session (v2)
-Message-ID: <20071031234945.GA16455@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 31 Oct 2007 19:53:31 -0400
+Date: Wed, 31 Oct 2007 19:53:06 -0400
+Message-Id: <200710312353.l9VNr67n013016@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ryan Finnie <ryan@finnie.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, cjwatson@ubuntu.com, linux-mm@kvack.org
+Subject: Re: msync(2) bug(?), returns AOP_WRITEPAGE_ACTIVATE to userland 
+In-reply-to: Your message of "Mon, 29 Oct 2007 20:33:45 -0000."
+             <Pine.LNX.4.64.0710292027310.21528@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 5bff8967f45a35f858b96ca673d9bf98eac53d49 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Wed, 31 Oct 2007 11:22:04 -0500
-Subject: [PATCH 1/1] file capabilities: allow sigcont within session (v2)
 
-(This is a proposed fix to http://bugzilla.kernel.org/show_bug.cgi?id=9247)
+Hi Hugh, I've addressed all of your concerns and am happy to report that the
+newly revised unionfs_writepage works even better, including under my
+memory-pressure conditions.  To summarize my changes since the last time:
 
-Allow sigcont to be sent to a process with greater capabilities
-if it is in the same session.  Otherwise, a shell from which
-I've started a root shell and done 'suspend' can't be restarted
-by the parent shell.
+- I'm only masking __GFP_FS, not __GFP_IO
+- using find_or_create_page to avoid locking issues around mapping mask
+- handle for_reclaim case more efficiently
+- using copy_highpage so we handle KM_USER*
+- un/locking upper/lower page as/when needed
+- updated comments to clarify what/why
+- unionfs_sync_page: gone (yes, vfs.txt did confuse me, plus ecryptfs used
+  to have it)
 
-Also don't do file-capabilities signaling checks when uids for
-the processes don't match, since the standard check_kill_permission
-will have done those checks.
+Below is the newest version of unionfs_writepage.  Let me know what you
+think.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/commoncap.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+I have to say that with these changes, unionfs appears visibly faster under
+memory pressure.  I suspect the for_reclaim handling is probably the largest
+contributor to this speedup.
 
-diff --git a/security/commoncap.c b/security/commoncap.c
-index bf67871..4de6857 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -526,6 +526,15 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
- 		return 0;
- 
-+	/* if tasks have same uid, then check_kill_permission did check */
-+	if (current->uid == p->uid || current->euid == p->uid ||
-+		current->uid == p->suid || current->euid == p->suid)
-+		return 0;
-+
-+	/* sigcont is permitted within same session */
-+	if (sig == SIGCONT && (task_session_nr(current)==task_session_nr(p)))
-+		return 0;
-+
- 	if (secid)
- 		/*
- 		 * Signal sent as a particular user.
--- 
-1.5.1.1.GIT
+Many thanks,
+Erez.
 
+//////////////////////////////////////////////////////////////////////////////
+
+static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
+{
+	int err = -EIO;
+	struct inode *inode;
+	struct inode *lower_inode;
+	struct page *lower_page;
+	struct address_space *lower_mapping; /* lower inode mapping */
+	gfp_t mask;
+
+	inode = page->mapping->host;
+	lower_inode = unionfs_lower_inode(inode);
+	lower_mapping = lower_inode->i_mapping;
+
+	/*
+	 * find lower page (returns a locked page)
+	 *
+	 * We turn off __GFP_FS while we look for or create a new lower
+	 * page.  This prevents a recursion into the file system code, which
+	 * under memory pressure conditions could lead to a deadlock.  This
+	 * is similar to how the loop driver behaves (see loop_set_fd in
+	 * drivers/block/loop.c).  If we can't find the lower page, we
+	 * redirty our page and return "success" so that the VM will call us
+	 * again in the (hopefully near) future.
+	 */
+	mask = mapping_gfp_mask(lower_mapping) & ~(__GFP_FS);
+	lower_page = find_or_create_page(lower_mapping, page->index, mask);
+	if (!lower_page) {
+		err = 0;
+		set_page_dirty(page);
+		goto out;
+	}
+
+	/* copy page data from our upper page to the lower page */
+	copy_highpage(lower_page, page);
+
+	/*
+	 * Call lower writepage (expects locked page).  However, if we are
+	 * called with wbc->for_reclaim, then the VFS/VM just wants to
+	 * reclaim our page.  Therefore, we don't need to call the lower
+	 * ->writepage: just copy our data to the lower page (already done
+	 * above), then mark the lower page dirty and unlock it, and return
+	 * success.
+	 */
+	if (wbc->for_reclaim) {
+		set_page_dirty(lower_page);
+		unlock_page(lower_page);
+		goto out_release;
+	}
+	BUG_ON(!lower_mapping->a_ops->writepage);
+	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
+	err = lower_mapping->a_ops->writepage(lower_page, wbc);
+	if (err < 0) {
+		ClearPageUptodate(page);
+		goto out_release;
+	}
+
+	/*
+	 * Lower file systems such as ramfs and tmpfs, may return
+	 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to (pointlessly)
+	 * write the page again for a while.  But those lower file systems
+	 * also set the page dirty bit back again.  Since we successfully
+	 * copied our page data to the lower page, then the VM will come
+	 * back to the lower page (directly) and try to flush it.  So we can
+	 * save the VM the hassle of coming back to our page and trying to
+	 * flush too.  Therefore, we don't re-dirty our own page, and we
+	 * never return AOP_WRITEPAGE_ACTIVATE back to the VM (we consider
+	 * this a success).
+	 *
+	 * We also unlock the lower page if the lower ->writepage returned
+	 * AOP_WRITEPAGE_ACTIVATE.  (This "anomalous" behaviour may be
+	 * addressed in future shmem/VM code.)
+	 */
+	if (err == AOP_WRITEPAGE_ACTIVATE) {
+		err = 0;
+		unlock_page(lower_page);
+	}
+
+	/* all is well */
+	SetPageUptodate(page);
+	/* lower mtimes have changed: update ours */
+	unionfs_copy_attr_times(inode);
+
+out_release:
+	/* b/c find_or_create_page increased refcnt */
+	page_cache_release(lower_page);
+out:
+	/*
+	 * We unlock our page unconditionally, because we never return
+	 * AOP_WRITEPAGE_ACTIVATE.
+	 */
+	unlock_page(page);
+	return err;
+}
+
+//////////////////////////////////////////////////////////////////////////////
