@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbXJaLHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbXJaLOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbXJaLHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 07:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbXJaLHE
+	id S1757898AbXJaLOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 07:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXJaLOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 07:07:04 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37453 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756745AbXJaLHB (ORCPT
+	Wed, 31 Oct 2007 07:14:10 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:10941 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754755AbXJaLOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 07:07:01 -0400
-Date: Wed, 31 Oct 2007 12:06:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Rosenstand <mark@borkware.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Slightly OT: Unable to wake-up after suspend
-Message-ID: <20071031110653.GB2381@elf.ucw.cz>
-References: <1189519845.27446.40.camel@abfahrt.borkware.net>
+	Wed, 31 Oct 2007 07:14:09 -0400
+Message-ID: <47286371.70703@panasas.com>
+Date: Wed, 31 Oct 2007 13:13:53 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189519845.27446.40.camel@abfahrt.borkware.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jeff Garzik <jeff@garzik.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] "killing" sg_last(), and discussion
+References: <20071031084920.GA25202@havoc.gtf.org> <4728569D.9080502@panasas.com> <47285921.9070105@garzik.org>
+In-Reply-To: <47285921.9070105@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Oct 2007 11:13:14.0411 (UTC) FILETIME=[07CC37B0:01C81BAF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-09-11 16:10:45, Mark Rosenstand wrote:
-> I just gave the CentOS 5.0 live CD a spin and wanted to see if suspend
-> worked. The system did suspend but I'm unable to make it wake-up again,
-> at all.
+On Wed, Oct 31 2007 at 12:29 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+> Boaz Harrosh wrote:
+>> On Wed, Oct 31 2007 at 10:49 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+>>> I looked into killing sg_last(), but really, this is the best its gonna
+>>> get (moving sg_last to libata-core.c).
+>>>
+>>> You could maybe kill one use with caching, but in the other sg_last()
+>>> callsites there isn't another s/g loop we can stick a "last_sg = sg;"
+>>> into.
+>>>
+>>> libata is stuck because we undertake the highly unusual operation of
+>>> fiddling with the final S/G element, to enforce 32-bit alignment.
+>>>
+>>> Of course we could eliminate all that nasty fiddling/padding
+>>> completely, including sg_last(), if other areas of the kernel would
+>>> guarantee ahead of time that buffer lengths are always a multiple
+>>> of 4........
+>>>
+>>> 	Jeff
+>>>
+>> OK Now I'm confused. I thought that ULD's can give you SG's 
+>> that are actually longer than bufflen and that, at the end, the 
+>> bufflen should govern the transfer length.
+>>
+>> Now FS_PC commands are sector aligned so you do not have
+>> problems with that.
+>>
+>> The BLOCK_PC commands have 2 main sources that I know of
+>> one is sg && bsg from user mode that can easily enforce
+>> 4 bytes alignment. The second is kernel services which 80%
+>> of these are done by scsi_execute(). All These can be found
+>> and fixed. Starting with scsi_execute(). Another place can be
+>> blk_rq_map_sg(), since all IO's are bio based. It can enforce 
+>> alignment too.
+>>
+>> I would start by sticking a WARN_ON(qc->pad_len) and
+>> see if it triggers, what are the sources of that.
 > 
-> I've tried unplugging the power cord, resetting CMOS, removing the BIOS
-> battery and all RAM. The system shows no sign of life except the
-> motherboard LED, unless I power it on with the CLRTC jumper activated in
-> which case the CPU FAN and harddisk starts, but still no monitor signal.
+> The whole qc->pad_len etc. machinery was added because it solved 
+> problems in the field with ATAPI devices.  So sr or some userland 
+> application is sending lengths that are not padded to 32-bit boundary, 
+> probably because plenty of trivial commands can send or return odd 
+> amounts of data.
 > 
-> This is a Asus K8V-X motherboard[1] with ECC RAM and the system has been
-> rock solid for almost 3 years despite daily abuse (build machine).
+> This used to be irrelevant, but now with SATA, even PIO data xfer 
+> (normally what is used for non-READ/WRITE CDBs) must be 32-bit aligned 
+> because both SATA DMA and SATA PIO are converted into dword-based SATA 
+> FIS's on the wire.
 > 
-> Any advice would be greatly appreciated.
+> 	Jeff
+> 
+> 
+> 
+2 things
 
-Did this get resolved somehow? "Suspend killed machine" sounds scary.
+1. Than why not fix blk_rq_map_sg() to enforce the alignment. Also I bet
+that these "problems in the field" are from pre 2.6.18 kernels, and this
+is no longer the case. Why not put that WARN_ON(qc->pad_len) and prove me
+wrong.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2. Just checking bufflen is enough. Since you are already assuming that
+first SG's offset is aligned, than if last SG's length is odd than so is
+bufflen. (You are already assuming that SG's total length matches bufflen)
+
+Boaz
