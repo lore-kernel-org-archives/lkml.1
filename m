@@ -1,55 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXKAQiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbXKAQqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbXKAQiu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 12:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXKAQil
+	id S1753711AbXKAQqI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 12:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbXKAQp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 12:38:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35689 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752271AbXKAQil (ORCPT
+	Thu, 1 Nov 2007 12:45:57 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:33721 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750785AbXKAQp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 12:38:41 -0400
-Date: Thu, 1 Nov 2007 09:38:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Gregory Haskins <gregory.haskins.ml@gmail.com>
-cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/4] x86: FIFO ticket spinlocks
-In-Reply-To: <4729E567.1050402@gmail.com>
-Message-ID: <alpine.LFD.0.999.0711010935060.3342@woody.linux-foundation.org>
-References: <20071101140146.GA26879@wotan.suse.de> <20071101140320.GC26879@wotan.suse.de>
- <4729E567.1050402@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 1 Nov 2007 12:45:56 -0400
+To: a.p.zijlstra@chello.nl
+CC: jdike@addtoit.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: per-bdi-throttling: synchronous writepage doesn't work correctly
+Message-Id: <E1IndEw-00046x-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 01 Nov 2007 17:49:54 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+It looks like bdi_thresh will always be zero if filesystem does
+synchronous writepage, resulting in very poor write performance.
 
-On Thu, 1 Nov 2007, Gregory Haskins wrote:
-> 
-> I had observed this phenomenon on some 8-ways here as well, but I didn't
-> have the bandwidth to code something up.  Thumbs up!
+Hostfs (UML) is one such example, but there might be others.
 
-Can you test under interesting loads?
+The only solution I can think of is to add a set_page_writeback();
+end_page_writeback() pair (or some reduced variant, that only does
+the proportions magic).  But that means auditing quite a few
+filesystems...
 
-We're interested in:
- - is the unfairness fix really noticeable (or does it just move the 
-   problem somewhere else, and there is no real change in behaviour)
- - what is the performance impact?
-
-In particular, unfair spinlocks have the potential to perform much better. 
-Not so much because the spinlock itself acts all that differently, but 
-because being unfair also fundmanetally tends to keep the data structures 
-that are *protected* by the spinlock on just one CPU.
-
-So "unfair" is obviously always bad. Except when it isn't. I'd personally 
-like to merge the ticket spinlocks, but I'd really like to have people who 
-have real loads where they matter actually also do some performance 
-testing. Because I do think it will potentially be a performance downer. 
-
-(I obviously hope it won't be, but..)
-
-		Linus
+Miklos
