@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXKAIkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbXKAIop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbXKAIkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 04:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbXKAIkI
+	id S1758083AbXKAIop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 04:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXKAIoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 04:40:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35052 "EHLO mx2.mail.elte.hu"
+	Thu, 1 Nov 2007 04:44:37 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:12313 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753198AbXKAIkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 04:40:07 -0400
-Date: Thu, 1 Nov 2007 09:39:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] scheduler fix
-Message-ID: <20071101083953.GA10188@elte.hu>
-References: <20071029203923.GA9314@elte.hu> <20071029233417.GA14143@elte.hu> <3d8471ca0710300315l62ae1845o782be670e9181f61@mail.gmail.com>
+	id S1753347AbXKAIof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 04:44:35 -0400
+Date: Thu, 1 Nov 2007 09:41:46 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: jeff@garzik.org, kristen.c.accardi@intel.com, linux-ide@vger.kernel.org
+Subject: Re: Suspend to ram regression (2.6.24-rc1-git)
+Message-ID: <20071101084145.GA5037@kernel.dk>
+References: <20071031201308.GK11514@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3d8471ca0710300315l62ae1845o782be670e9181f61@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0283]
+In-Reply-To: <20071031201308.GK11514@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
-
-> 2007/10/30, Ingo Molnar <mingo@elte.hu>:
-> >  fs/proc/array.c       |    3 ++-
-> >  include/linux/sched.h |    2 +-
-> >  kernel/fork.c         |    1 +
-> >  3 files changed, 4 insertions(+), 2 deletions(-)
+On Wed, Oct 31 2007, Jens Axboe wrote:
+> Hi,
 > 
-> Hello Ingo,
+> My x60 stopped suspending about two days ago. It just freezes after
+> printing
 > 
-> do you think it would be possible to include the patch in your git 
-> pull request emails? Especially when the patch is small like this one.
+> Suspending console(s)
+> 
+> where it would normally turn everything off and the 'moon' light would
+> go on. Posting this message in case somebody else knows what is up, if
+> not I'll do a bisect on it tomorrow.
 
-yeah, will do that in the future.
+Did the bisect, it points to this commit:
 
-	Ingo
+1556594f913fa81d008cecfe46d7211c919a853 is first bad commit
+commit 31556594f913fa81d008cecfe46d7211c919a853
+Author: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Date:   Thu Oct 25 01:33:26 2007 -0400
+
+    [libata] AHCI: add hw link power management support
+
+Booting any kernel after this commit fails suspending to ram, it just
+sits there forever.
+
+-- 
+Jens Axboe
+
