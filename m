@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761786AbXKAPHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbXKAPPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761786AbXKAPHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbXKAPHX
+	id S1759063AbXKAPPw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXKAPPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:07:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:23338 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759436AbXKAPHV (ORCPT
+	Thu, 1 Nov 2007 11:15:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43978 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753419AbXKAPPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=o4OtWRROGCqCk4uyayTppyWx15GWQgoIlen/psKyuK7GEx6q/sq5zusFk0S/MgCgrdkm1oCafL7v4cr6ljFWVWwyrVFXkvHohRSJslmH+9FgP6/F/++7d8x3+5v+Kv29Rv9C78/D70Ru5UzOurM39OXCA0iLvmOLS5M+DOKYvow=
-Message-ID: <4729EBA5.3080907@gmail.com>
-Date: Thu, 01 Nov 2007 16:07:17 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 1 Nov 2007 11:15:43 -0400
+Date: Thu, 1 Nov 2007 08:14:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Duane Griffin <duaneg@dghda.com>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: 2.6.23 regression: accessing invalid mmap'ed memory from gdb
+ causes unkillable spinning
+In-Reply-To: <20071101023758.GA30613@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0711010809171.3342@woody.linux-foundation.org>
+References: <e9e943910710301745u429b14fj6c5a66fcbf6b0efa@mail.gmail.com>
+ <20071031041932.GA12189@wotan.suse.de> <alpine.LFD.0.999.0710310756220.30120@woody.linux-foundation.org>
+ <20071031151934.GA19211@wotan.suse.de> <alpine.LFD.0.999.0710310854560.3340@woody.linux-foundation.org>
+ <20071031225541.GA28552@wotan.suse.de> <alpine.LFD.0.999.0710311602170.3342@woody.linux-foundation.org>
+ <20071101023758.GA30613@wotan.suse.de>
 MIME-Version: 1.0
-To: Paul Fulghum <paulkf@microgate.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Char: tty, add tty_schedule_wakeup
-References: <15530290543226725036.slaby@karneval.cz> <4729E3F3.2090602@microgate.com>
-In-Reply-To: <4729E3F3.2090602@microgate.com>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Fulghum napsal(a):
-> Jiri Slaby wrote:
->> + *    Functionally the same as tty_wakeup, but it can be used in hot
->> + *    paths. since the wakeup is scheduled and done in the future.
->>
+
+
+On Thu, 1 Nov 2007, Nick Piggin wrote:
+
+> On Wed, Oct 31, 2007 at 04:08:21PM -0700, Linus Torvalds wrote:
+> > 
+> > We made much bigger changes to ptrace support when we disallowed writing 
+> > to read-only shared memory areas (we used to do the magic per-page COW 
+> > thing).
 > 
-> I'm not familiar with the terminology 'hot paths',
-> what do you mean by that?
+> Really? No, we still do that magic COW thing which creates anonymous
+> pages in MAP_SHARED vmas, don't we?
 
-Ah, thank you for the feedback, I should change this, since it seems to be
-not so much descriptive.
+No, we don't. I'm pretty sure. It didn't work with the VM cleanups, since 
+the MAP_SHARED vma's won't be on the anonymous list any more, and cannot 
+be swapped out.
 
-Functionally the same as tty_wakeup, but it can be used in code, which is
-expected to be fast and short (e.g. interrupt handler), since the wakeup is
-scheduled and done in the future.
+So now, if you try to write to a read-only shared page through ptrace, 
+you'll get "Unable to access".
 
-> Do you have an example of where you intend to
-> use this new facility? The patch does not include
-> such an example so it is difficult for me to see
-> why you are adding this function.
+Of course, I didn't really look closely, so maybe I just don't remember 
+things right..
 
-I want to use it in all char drivers, which schedules a work only for
-tty_wakeup() calling, because they don't want to include more code in
-interrupt handlers for example (if I understand the code correctly, e.g.
-n_tty discipline may invoke whole fasync machinery on tty_wakeup call).
+> > access_vm_pages() (things like core-dumping comes to mind - although I 
+> > think we don't dump pure file mappings at all, do we?) it would certainly 
+> > be good to run any such tests on the current -git tree...
+> 
+> We do for MAP_SHARED|MAP_ANONYMOUS, by the looks.
 
-If somebody thinks it's not needed (or it's overkill), the other approach
-comes -- change all wakeup schedules with simple tty_wakeup().
+Well, as we should. There's no way for a debugger to get those pages back. 
+So that all looks sane.
 
-thanks.
+> -			vm_flags |= VM_SHARED | VM_MAYSHARE;
+> -			if (!(file->f_mode & FMODE_WRITE))
+> -				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+> +			vm_flags |= VM_MAYSHARE;
+> +			if (file->f_mode & FMODE_WRITE)
+> +				vm_flags |= VM_SHARED;
+> +			if (!(vm_flags & VM_WRITE))
+> +				vm_flags &= ~VM_MAYWRITE;
+
+This looks totally bogus. What was the intent of this patch?
+
+The VM_MAYWRITE flag is *not* supposed to track the VM_WRITE flag: that 
+would defeat the whole purpose of it! The whole point of that flag is to 
+say whether mprotect() could turn it into a VM_WRITE mapping, and it 
+depends on the file mode, not VM_WRITE!
+
+>  			vm_flags |= VM_SHARED | VM_MAYSHARE;
+> +			if (!(vm_flags & VM_WRITE))
+> +				vm_flags &= ~VM_MAYWRITE;
+
+More apparent bogosities.
+
+		Linus
