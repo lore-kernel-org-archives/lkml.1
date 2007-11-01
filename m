@@ -1,100 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbXKASVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXKAScr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757752AbXKASVF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 14:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbXKASUz
+	id S1755521AbXKAScr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 14:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXKAScj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 14:20:55 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:3788 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbXKASUy (ORCPT
+	Thu, 1 Nov 2007 14:32:39 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:3519 "EHLO
+	outbound5-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752461AbXKASci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 14:20:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S1+pDyOWKUu/8NFHPcQ58bv95BJuMynAG5y87NDq20247y4WumT1kxIu0pEMVNPWHiD/vWmazCK8rjGN676mPxZ6Ul1DZ6wWYMd+QmVUxKKEM8MclpAqQ5A7en9yAw84e0WZzv2S3pI+E7BOiXfsfK2JlDePrQkglHTfpVpnEMs=
-Message-ID: <64bb37e0711011120i63cdfe3ci18995d57b6649a8@mail.gmail.com>
-Date: Thu, 1 Nov 2007 19:20:51 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
-Subject: Re: 100% iowait on one of cpus in current -git
-Cc: "Maxim Levitsky" <maximlevitsky@gmail.com>,
-       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <393903856.06449@ustc.edu.cn>
+	Thu, 1 Nov 2007 14:32:38 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 1 Nov 2007 19:32:17 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+cc: akpm@linux-foundation.org, gcosta@redhat.com, travis@sgi.com
+Subject: [PATCH v2] x86: show cpuinfo only for online CPUs
+Message-ID: <20071101183217.GC5568@alberich.amd.com>
+References: <20071101170206.GA7820@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071101170206.GA7820@alberich.amd.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 01 Nov 2007 18:32:17.0644 (UTC)
+ FILETIME=[880052C0:01C81CB5]
+X-WSS-ID: 6B34C43E24S1094745-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-References: <200710220822.52370.maximlevitsky@gmail.com>
-	 <200710221421.21439.maximlevitsky@gmail.com>
-	 <393056632.00561@ustc.edu.cn>
-	 <200710221505.35397.maximlevitsky@gmail.com>
-	 <20071022131045.GA5357@mail.ustc.edu.cn> <393060478.03650@ustc.edu.cn>
-	 <64bb37e0710310822r5ca6b793p8fd97db2f72a8655@mail.gmail.com>
-	 <393903856.06449@ustc.edu.cn>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/1/07, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> On Wed, Oct 31, 2007 at 04:22:10PM +0100, Torsten Kaiser wrote:
-> > Since 2.6.23-mm1 I also experience strange hangs during heavy writeouts.
-> > Each time I noticed this I was using emerge (package util from the
-> > gentoo distribution) to install/upgrade a package. The last step,
-> > where this hang occurred, is moving the prepared files from a tmpfs
-> > partion to the main xfs filesystem.
-> > The hangs where not fatal, after a few second everything resumed
-> > normal, so I was not able to capture a good image of what was
-> > happening.
->
-> Thank you for the detailed report.
->
-> How severe was the hangs? Only writeouts stalled, all apps stalled, or
-> cannot type and run new commands?
+New version of the fix.
+Now it works also in the non-SMP case.
+Tested on x86_64.
 
-Only writeout stalled. The emerge that was moving the files hung, but
-everything else worked normaly.
-I was able to run new commands, like coping the /proc/meminfo.
+Regards,
 
-[snip]
-> > After this SysRq+W writeback resumed again. Possible that writing
-> > above into the syslog triggered that.
->
-> Maybe. Are the log files on another disk/partition?
+Andreas
+--
 
-No, everything was going to /
+[PATCH] x86: show cpuinfo only for online CPUs
 
-What might be interesting is, that doing cat /proc/meminfo
->~/stall/meminfo did not resume the writeback. So there might some
-threshold that only was broken with the additional write from
-syslog-ng. Or syslog-ng does some flushing, I dont now. (I'm using the
-syslog-ng package from gentoo:
-http://www.balabit.com/products/syslog_ng/ , version 2.0.5)
+Fix regressions introduced with 92cb7612aee39642d109b8d935ad265e602c0563.
 
-> > The source tmpfs is mounted with any special parameters, but the
-> > target xfs filesystem resides on a dm-crypt device that is on top a 3
-> > disk RAID5 md.
-> > During the hang all CPUs where idle.
->
-> No iowaits? ;-)
+It can happen that cpuinfo is displayed for CPUs that are not online or
+even worse for CPUs not present at all. As an example, following was
+shown for a "second" CPU of a single core K8 variant:
 
-No, I have a KSysGuard in my taskbar that showed no activity at all.
+    processor       : 0
+    vendor_id       : unknown
+    cpu family      : 0
+    model           : 0
+    model name      : unknown
+    stepping        : 0
+    cache size      : 0 KB
+    fpu             : yes
+    fpu_exception   : yes
+    cpuid level     : 0
+    wp              : yes
+    flags           :
+    bogomips        : 0.00
+    clflush size    : 0
+    cache_alignment : 0
+    address sizes   : 0 bits physical, 0 bits virtual
+    power management:
 
-OK, the subject does not match for my case, but there was also a tmpfs
-involved. And I found no thread with stalls on xfs. :-)
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/proc.c |    8 +++-----
+ arch/x86/kernel/setup_64.c |    8 +++-----
+ 2 files changed, 6 insertions(+), 10 deletions(-)
 
-> > The system is x86_64 with CONFIG_NO_HZ=y, but was still receiving ~330
-> > interrupts per second because of the bttv driver. (But I was not using
-> > that device at this time.)
-> >
-> > I'm willing to test patches or more provide more information, but lack
-> > a good testcase to trigger this on demand.
->
-> Thank you. Maybe we can start by the applied debug patch :-)
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 066f8c6..3900e46 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -89,8 +89,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	int fpu_exception;
+ 
+ #ifdef CONFIG_SMP
+-	if (!cpu_online(n))
+-		return 0;
+ 	n = c->cpu_index;
+ #endif
+ 	seq_printf(m, "processor\t: %d\n"
+@@ -177,14 +175,14 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+ 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
+-		*pos = first_cpu(cpu_possible_map);
+-	if ((*pos) < NR_CPUS && cpu_possible(*pos))
++		*pos = first_cpu(cpu_online_map);
++	if ((*pos) < NR_CPUS && cpu_online(*pos))
+ 		return &cpu_data(*pos);
+ 	return NULL;
+ }
+ static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	*pos = next_cpu(*pos, cpu_possible_map);
++	*pos = next_cpu(*pos, cpu_online_map);
+ 	return c_start(m, pos);
+ }
+ static void c_stop(struct seq_file *m, void *v)
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index ec59fcb..30d94d1 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -1077,8 +1077,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 
+ 
+ #ifdef CONFIG_SMP
+-	if (!cpu_online(c->cpu_index))
+-		return 0;
+ 	cpu = c->cpu_index;
+ #endif
+ 
+@@ -1170,15 +1168,15 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+ 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
+-		*pos = first_cpu(cpu_possible_map);
+-	if ((*pos) < NR_CPUS && cpu_possible(*pos))
++		*pos = first_cpu(cpu_online_map);
++	if ((*pos) < NR_CPUS && cpu_online(*pos))
+ 		return &cpu_data(*pos);
+ 	return NULL;
+ }
+ 
+ static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	*pos = next_cpu(*pos, cpu_possible_map);
++	*pos = next_cpu(*pos, cpu_online_map);
+ 	return c_start(m, pos);
+ }
+ 
+-- 
+1.5.3.4
 
-Will applied it and try to recreate this.
 
-Thanks for looking into it.
 
-Torsten
+
