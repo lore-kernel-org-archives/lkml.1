@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbXKARox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXKARvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbXKARox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXKARop
+	id S1755269AbXKARvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXKARvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:44:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48518 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752461AbXKARoo (ORCPT
+	Thu, 1 Nov 2007 13:51:46 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:48282 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752750AbXKARvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:44:44 -0400
-Date: Thu, 1 Nov 2007 10:44:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: rientjes@google.com, Lee.Schermerhorn@hp.com, linux-kernel@vger.kernel.org,
-       ak@suse.de
-Subject: Re: [RFC] cpuset relative memory policies - second choice
-In-Reply-To: <20071101102616.826d45a1.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0711011040030.29895@schroedinger.engr.sgi.com>
-References: <20071031061729.18174.60384.sendpatchset@jackhammer.engr.sgi.com>
- <Pine.LNX.4.64.0710311157310.21799@schroedinger.engr.sgi.com>
- <20071031131949.b91bf383.pj@sgi.com> <Pine.LNX.4.64.0710311402300.22599@schroedinger.engr.sgi.com>
- <20071031214719.81f8293a.pj@sgi.com> <Pine.LNX.4.64.0710312221140.26444@schroedinger.engr.sgi.com>
- <20071031233352.959c32d0.pj@sgi.com> <Pine.LNX.4.64.0711010604210.27666@schroedinger.engr.sgi.com>
- <20071101090612.e0c86ddb.pj@sgi.com> <Pine.LNX.4.64.0711011006070.29468@schroedinger.engr.sgi.com>
- <20071101102616.826d45a1.pj@sgi.com>
+	Thu, 1 Nov 2007 13:51:46 -0400
+Date: Thu, 1 Nov 2007 18:51:26 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Issue building kernel driver
+Message-ID: <20071101175126.GA7227@stusta.de>
+References: <1193938746.7555.7.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1193938746.7555.7.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Nov 2007, Paul Jackson wrote:
-
-> Christoph wrote:
-> > The library interface can set flags to modify behavior.
+On Thu, Nov 01, 2007 at 12:39:06PM -0500, Chris Holvenstot wrote:
 > 
-> A library such as libnuma can set them, yes, but not everyone uses
-> libnuma.  Basically everyone uses the standard C library, glibc, which
-> has the system call wrappers, but these wrappers should not be setting
-> optional flags.
+> Although it may not be popular with the crowd here, I do have a valid
+> reason to run Windows - and I accomidate this using the VirtualBox
+> product.  
 > 
-> We're going around in circles here, Christoph.
+> Since I try to be slightly useful and build as many of the "test" kernel
+> images I can I end up rebuilding the VirtualBox kernel driver (open
+> source) on an almost daily basis.
+>...
+> I am not sure if this should be reported to the kernel folks or the
+> VirtualBox folks - but the kernel code is what changed.  However I will
+> post this on the VirtualBox forum too.
 
-Yes and you keep missing the point focusing on stuff that is not relevant.
-Where did you get the rule that libraries should not be setting flags? 
-libraries do all sort of conversion before calling the kernel API.
+We had a (different) bug report involving exactly this external driver 
+at some older post 2.6.23 kernel where it turned out it was a problem in 
+this driver - and this one also looks really like a problem in their 
+driver.
 
-Look the libraries are a strong argument against the method of setting 
-task flags. If you are using multiple libraries some of which have been 
-updated and some of those which have not then setting a task flag can 
-have bad consequences. You want clean syscall behavior.
+Generally, problems with external drivers should be reported to the 
+vendors of these drivers and not here (unless it's clear it's a bug in 
+the kernel and not in the driver).
+
+> Thanks
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
