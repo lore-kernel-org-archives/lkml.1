@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXKAXTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbXKAX0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbXKAXTD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 19:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbXKAXSQ
+	id S1759907AbXKAX0W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 19:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXKAX0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 19:18:16 -0400
-Received: from mailgw2.3essentials.com ([66.179.153.59]:3674 "EHLO
-	mailgw2.3essentials.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762332AbXKAXSO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 19:18:14 -0400
-Message-ID: <472A5EBC.7030907@antonello.org>
-Date: Fri, 02 Nov 2007 00:18:20 +0100
-From: jack@antonello.org
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 1 Nov 2007 19:26:06 -0400
+Received: from palrel11.hp.com ([156.153.255.246]:45554 "EHLO palrel11.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754620AbXKAX0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 19:26:05 -0400
+Message-ID: <472A6089.7020104@hp.com>
+Date: Thu, 01 Nov 2007 16:26:01 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH] backlight dimmer
-References: <4724B48D.6090405@antonello.org> <20071030144838.GD7742@ucw.cz>
-In-Reply-To: <20071030144838.GD7742@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Miller <davem@davemloft.net>
+Cc: djohnson+linux-kernel@sw.starentnetworks.com, greearb@candelatech.com,
+       shemminger@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bguo@sw.starentnetworks.com
+Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
+References: <472A49BD.6000802@hp.com>	<20071101.145956.63020380.davem@davemloft.net>	<472A4D5C.2070301@hp.com> <20071101.150723.30590053.davem@davemloft.net>
+In-Reply-To: <20071101.150723.30590053.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sun 2007-10-28 17:10:53, jack@antonello.org wrote:
->> Hello,
->> this patch implements a macbook like backlight dimmer on 
->> top of backlight.c.
->>
->> The dimmer is entirely in kernelspace and is suitable 
->> for an embedded context in order to avoid the overhead 
->> of a daemon controlling the backlight. Implementing this 
->> functionality in userspace has other advantages and is a 
->> perfectly reasonable alternative, so this patch is
->> not the definitive solution.
->>
->> activate dimmer:
->> echo 1 > /sys/devices/virtual/backlight/*/dimmer_control
->>
->> other attributes (britness levels & timeout):
->> /sys/devices/virtual/backlight/*/dimmer_high_level
->> /sys/devices/virtual/backlight/*/dimmer_low_level
->> /sys/devices/virtual/backlight/*/dimmer_timeout
+David Miller wrote:
+> From: Rick Jones <rick.jones2@hp.com>
+>>I'll try to go pester folks in tcpdump-workers then.
 > 
-> I'd say that userspace makes sense here. I'd want backlight to go down
-> slowly, for example.
 > 
-> But... maybe undimming should be done in kernel, so it keeps
-> low,latency?
+> The thing to check is "TP_STATUS_CSUMNOTREADY".
 > 
-> Hmm, maybe existing screen blanking infrastructure can be reused?
-> 
->> --- linux-2.6.23.1/include/linux/backlight.h 2007-10-12 
->> 18:43:44.000000000 +0200
->> +++ b/include/linux/backlight.h	2007-10-28 
->> 13:45:21.000000000 +0100
->> @@ -11,6 +11,7 @@
->> #include <linux/device.h>
->> #include <linux/mutex.h>
->> #include <linux/notifier.h>
->> +#include <linux/timeout.h>
->>
->> /* Notes on locking:
-> 
-> Your mail client damages patches?
-> 
+> When using mmap(), it will be provided in the descriptor.  When using
+> recvmsg() it will be provided via a PACKET_AUXDATA control message
+> when enabled via the PACKET_AUXDATA socket option.
 
-Hi,
-incremental dimming can be easily implemented on top of this patch. 
-It's just about posting the timeout repeatedly. I will post something 
-in the near future :).
+Figures... the "dailies" and "weeklies" for tar files of tcpdump and libpcap 
+source are fubar... again.  I've email in to tcpdump-workers on that one.  If 
+that isn't resolved quickly I'll learn how to access their CVS (pick an SCM, any 
+SCM...)
 
-I believe the userspace vs kernelspace argument is very arbitrary.
+I did an apt-get of debian lenny's tcpdump and sources:
 
-As i said, the dimmer can be completely coded in userspace. There are 
-good reasons for that. Userspace apps can work out better than the 
-kernel what the user is doing. If the user is watching a movie for 
-instance, the dimmer should be stopped.
+hpcpc103:~# tcpdump -V
+tcpdump version 3.9.8
+libpcap version 0.9.8
 
-However, the patch is just a light addition to backlight.c. If the 
-dimmer is stopped/unused, just a few pointers and some code are wasted.
+and that seems to show the false checksum failure and not use the 
+TP_STATUS_CSUMNOTREADY - at least that didn't appear in a grepping of the 
+sources.  At first I thought it might be, but then I realized that my snaplen 
+was too short to get the whole TSO'ed frame so tcpdump wasn't even trying to 
+verify.  After disabling TSO on the NIC, leaving CKO on, and making my snaplen > 
+1500 I could see it was doing undesirable stuff.
 
-Userspace apps can start, stop and change the timeout value for the 
-dimmer on the fly, as if they were doing the dimming themselves. In 
-this case, userspace only notifies the kernel to stop the dimmer 
-whenever such action is deemed right. Instead when the dimmer is on, 
-which is most of the time, no kernespace/userspace switch is necessary.
+I'll see what top of trunk has at some point and what the folks there think of 
+adding-in a change.
 
-Changing the brightness might occur every 10 seconds or so. IMHO this 
-is more of a realtime (and thus kernelspace) requirement rather than 
-userspace. This also saves us from having a whole (heavyweight) 
-dedicated process managing such a basic functionality.
-
-Finally, implementing the dimmer in kernelspace delivers this 
-functionality everywhere provided Linux is used. No additional 
-software is necessary. This latter would usually have to be tailored 
-to different audiences such as desktop, embedded, whatever.
-
-I don't think thunderbird is breaking the patch, since i was able to 
-apply it from my previous posts. However here is a web location for 
-it, just in case: http://www.antonello.org/dimmer/. Please let me know 
-if you can't test it!
-
-jacopo
-
+rick jones
