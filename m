@@ -1,134 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbXKARjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbXKARjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757034AbXKARjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbXKARjA
+	id S1758628AbXKARjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXKARjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:39:00 -0400
-Received: from rwcrmhc11.comcast.net ([216.148.227.151]:61482 "EHLO
-	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755508AbXKARi7 (ORCPT
+	Thu, 1 Nov 2007 13:39:08 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:32918 "EHLO
+	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756445AbXKARjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:38:59 -0400
-Subject: Issue building kernel driver
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 01 Nov 2007 12:39:06 -0500
-Message-Id: <1193938746.7555.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
+	Thu, 1 Nov 2007 13:39:06 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Thu, 1 Nov 2007 18:35:43 +0100
+From: "Andreas Herrmann3" <andreas.herrmann3@amd.com>
+To: "Glauber de Oliveira Costa" <gcosta@redhat.com>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, travis@sgi.com
+Subject: Re: [PATCH] x86: show cpuinfo only for online CPUs
+Message-ID: <20071101173543.GB5568@alberich.amd.com>
+References: <20071101170206.GA7820@alberich.amd.com>
+ <472A08F9.8060605@redhat.com>
+MIME-Version: 1.0
+In-Reply-To: <472A08F9.8060605@redhat.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 01 Nov 2007 17:35:43.0701 (UTC)
+ FILETIME=[A10DB850:01C81CAD]
+X-WSS-ID: 6B34D1F807S1105732-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 01, 2007 at 03:12:25PM -0200, Glauber de Oliveira Costa wrote:
+> did you test it in a kernel without SMP compiled in ?
+> 
+> I'm a little afraid about what can happen here:
 
-Although it may not be popular with the crowd here, I do have a valid
-reason to run Windows - and I accomidate this using the VirtualBox
-product.  
+No I didn't, but should have done so - cpu_index exists only
+in the SMP case ...
 
-Since I try to be slightly useful and build as many of the "test" kernel
-images I can I end up rebuilding the VirtualBox kernel driver (open
-source) on an almost daily basis.
+I'll come up with a corrected fix (adding some ifdefs).
 
-I attempted to rebuild the driver today and got the following error
-messages running 2.6.24-rc1-git9
+> The attribuition of cpu_index only happens in a code that seems to be
+> called for all cpus but the boot one.
 
-<snip>
+Yes, just in identify_cpu and not in its "early_" variant.
 
-make -f scripts/Makefile.build obj=/tmp/vbox.0
-  gcc -m32 -Wp,-MD,/tmp/vbox.0/linux/.SUPDrv-linux.o.d  -nostdinc
--isystem /usr/lib/gcc/i486-linux-gnu/4.1.3/include -D__KERNEL__
--Iinclude  -include include/linux/autoconf.h  -Wall -Wundef
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
--Werror-implicit-function-declaration -O2 -pipe -msoft-float -mregparm=3
--freg-struct-return -mpreferred-stack-boundary=2  -march=k8
--mtune=generic -ffreestanding -maccumulate-outgoing-args  make -f
-scripts/Makefile.build obj=/tmp/vbox.0
-  gcc -m32 -Wp,-MD,/tmp/vbox.0/linux/.SUPDrv-linux.o.d  -nostdinc
--isystem /usr/lib/gcc/i486-linux-gnu/4.1.3/include -D__KERNEL__
--Iinclude  -include include/linux/autoconf.h  -Wall -Wundef
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
--Werror-implicit-function-declaration -O2 -pipe -msoft-float -mregparm=3
--freg-struct-return -mpreferred-stack-boundary=2  -march=k8
--mtune=generic -ffreestanding -maccumulate-outgoing-args
--Iinclude/asm-x86/mach-default -fomit-frame-pointer -g
--fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign
--I/lib/modules/2.6.24-rc1-git9/build/include  -I/tmp/vbox.0/
--I/tmp/vbox.0/include -I/tmp/vbox.0/r0drv/linux -D__KERNEL__ -DMODULE
--DRT_OS_LINUX -DIN_RING0 -DIN_RT_R0 -DIN_SUP_R0 -DCONFIG_VBOXDRV_AS_MISC
--DRT_ARCH_X86 -DVBOX_WITHOUT_IDT_PATCHING -DUSE_NEW_OS_INTERFACE_FOR_MM
--DMODULE -D"KBUILD_STR(s)=#s"
--D"KBUILD_BASENAME=KBUILD_STR(SUPDrv_linux)"
--D"KBUILD_MODNAME=KBUILD_STR(vboxdrv)" -c
--o /tmp/vbox.0/linux/.tmp_SUPDrv-linux.o /tmp/vbox.0/linux/SUPDrv-linux.c
-In file included from /tmp/vbox.0/include/iprt/types.h:72,
-                 from /tmp/vbox.0/include/VBox/types.h:21,
-                 from /tmp/vbox.0/SUPDRV.h:26,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-include/linux/types.h:40: error: redefinition of typedef ‘uintptr_t’
-/tmp/vbox.0/include/iprt/stdint.h:118: error: previous declaration of
-‘uintptr_t’ was here
-In file included from include/linux/thread_info.h:20,
-                 from include/linux/preempt.h:9,
-                 from include/linux/spinlock.h:49,
-                 from /tmp/vbox.0/SUPDRV.h:87,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-include/linux/bitops.h:6:1: warning: "BIT" redefined
-In file included from /tmp/vbox.0/include/VBox/cdefs.h:20,
-                 from /tmp/vbox.0/SUPDRV.h:25,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-/tmp/vbox.0/include/iprt/cdefs.h:1042:1: warning: this is the location
-of the previous definition
-make[2]: *** [/tmp/vbox.0/linux/SUPDrv-linux.o] Error 1
-make[1]: *** [_module_/tmp/vbox.0] Error 2
-make[1]: Leaving directory `/build/linux-2.6.24-rc1-git9'
-make: *** [vboxdrv] Error 2
- -Iinclude/asm-x86/mach-default -fomit-frame-pointer -g
--fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign
--I/lib/modules/2.6.24-rc1-git9/build/include  -I/tmp/vbox.0/
--I/tmp/vbox.0/include -I/tmp/vbox.0/r0drv/linux -D__KERNEL__ -DMODULE
--DRT_OS_LINUX -DIN_RING0 -DIN_RT_R0 -DIN_SUP_R0 -DCONFIG_VBOXDRV_AS_MISC
--DRT_ARCH_X86 -DVBOX_WITHOUT_IDT_PATCHING -DUSE_NEW_OS_INTERFACE_FOR_MM
--DMODULE -D"KBUILD_STR(s)=#s"
--D"KBUILD_BASENAME=KBUILD_STR(SUPDrv_linux)"
--D"KBUILD_MODNAME=KBUILD_STR(vboxdrv)" -c
--o /tmp/vbox.0/linux/.tmp_SUPDrv-linux.o /tmp/vbox.0/linux/SUPDrv-linux.c
-In file included from /tmp/vbox.0/include/iprt/types.h:72,
-                 from /tmp/vbox.0/include/VBox/types.h:21,
-                 from /tmp/vbox.0/SUPDRV.h:26,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-include/linux/types.h:40: error: redefinition of typedef ‘uintptr_t’
-/tmp/vbox.0/include/iprt/stdint.h:118: error: previous declaration of
-‘uintptr_t’ was here
-In file included from include/linux/thread_info.h:20,
-                 from include/linux/preempt.h:9,
-                 from include/linux/spinlock.h:49,
-                 from /tmp/vbox.0/SUPDRV.h:87,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-include/linux/bitops.h:6:1: warning: "BIT" redefined
-In file included from /tmp/vbox.0/include/VBox/cdefs.h:20,
-                 from /tmp/vbox.0/SUPDRV.h:25,
-                 from /tmp/vbox.0/linux/SUPDrv-linux.c:22:
-/tmp/vbox.0/include/iprt/cdefs.h:1042:1: warning: this is the location
-of the previous definition
-make[2]: *** [/tmp/vbox.0/linux/SUPDrv-linux.o] Error 1
-make[1]: *** [_module_/tmp/vbox.0] Error 2
-make[1]: Leaving directory `/build/linux-2.6.24-rc1-git9'
-make: *** [vboxdrv] Error 2
+> So it could even work, but as accident. Unless I'm wrong about it, I'd
+> prefer to see an explicit attribution of cpu_index = 0 somewhere for the
+> boot cpu.
 
-</snip>
+Hmm, will look at this as well.
 
-I got the same error with 2.6.24-rc1-git10.  Building this driver works
-under 2.6.24-rc1-git4 (unfortunately due to some issues with my SATA
-drives I did not get the chance to build git5-git8)
+> Other than that, good catch! I didn't notice it, because all my present
+> cpus were online in my box
 
-I am not sure if this should be reported to the kernel folks or the
-VirtualBox folks - but the kernel code is what changed.  However I will
-post this on the VirtualBox forum too.
+You might be able to trigger it by using additional_cpus=<n> in your kernel
+command line.
+A second test is offlining a CPU: Then cpuinfo was still shown for the
+offlined CPU.
 
-Thanks
 
+Regards,
+
+Andreas
+
+-- 
+Operating | AMD Saxony Limited Liability Company & Co. KG,
+  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ Research | Register Court Dresden: HRA 4896, General Partner authorized
+  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
+  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
 
 
