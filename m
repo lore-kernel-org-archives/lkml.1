@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbXKAPC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXKAPE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbXKAPC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXKAPCV
+	id S1760984AbXKAPE4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXKAPEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:02:21 -0400
-Received: from sacred.ru ([62.205.161.221]:33249 "EHLO sacred.ru"
+	Thu, 1 Nov 2007 11:04:46 -0400
+Received: from ns2.lanforge.com ([66.165.47.211]:43999 "EHLO ns2.lanforge.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754636AbXKAPCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:02:20 -0400
-Message-ID: <4729EA74.8090602@openvz.org>
-Date: Thu, 01 Nov 2007 18:02:12 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1752486AbXKAPEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:04:45 -0400
+Message-ID: <4729EAFF.9050606@candelatech.com>
+Date: Thu, 01 Nov 2007 08:04:31 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch] PID namespace design bug, workaround
-References: <20071101144307.GA29566@elte.hu>
-In-Reply-To: <20071101144307.GA29566@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: shemminger@linux-foundation.org,
+       djohnson+linux-kernel@sw.starentnetworks.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       bguo@sw.starentnetworks.com
+Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
+References: <20071031123359.3954befc@freepuppy.rosehill>	<4729269A.6090606@candelatech.com>	<47292A99.5070805@linux-foundation.org> <20071031.215025.195350296.davem@davemloft.net>
+In-Reply-To: <20071031.215025.195350296.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 01 Nov 2007 18:02:09 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> while checking recent commits to the kernel core i took a look at the 
-> PID namespaces implementation, and it has a fatal flaw: it breaks 
-> futexes and various libraries (and other stuff) that use PIDs as the 
-> means of identifying tasks, by not providing any means of global 
-> identification that works across PID namespaces. (PIDs _are_ a very 
-
-You're not 100% correct here. The task_pid_nr() does return you a
-unique pid, so you do have the way to identify the task.
-
-Another thing - you should *not* allow tasks to communicate across
-pid namespaces using any pids - this just breaks the pid namespaces
-idea.
-
-As far as the futexes are concerned - I do not allow threads live 
-in different pid namespaces (more correct fix would be not to allow 
-tasks share the mm_struct across pid namespaces, but this is a one
-line fix), so the situation when you have two threads in different 
-namespaces is impossible.
+David Miller wrote:
+> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date: Wed, 31 Oct 2007 18:23:37 -0700
+>
+>   
+>> The code in AF_PACKET should fix the skb before passing to user
+>> space so that there is no difference between accel and non-accel
+>> hardware.  Internal choices shouldn't leak to user space.  Ditto,
+>> the receive checksum offload should be fixed up as well.
+>>     
+>
+> The hardware has stripped the VLAN header completely and has not
+> provided it to us at all.
+>   
+Do the NICs not save the QoS bits in the VLAN header anywhere that we could
+use to reconstitute the header?
 
 Thanks,
-Pavel
+Ben
 
-> convenient and global way of identifying contexts.)
-> 
-> i asked Ulrich about this and it turns out he has warned about this 
-> early on:
-> 
->   http://www.nabble.com/Re%3A-question%3A-pid-space-semantics.-p3409990.html
-> 
-> but this problem is still present in the code, and it has been recently 
-> committed into mainline via:
-> 
->   commit 30e49c263e36341b60b735cbef5ca37912549264
->   Author: Pavel Emelyanov <xemul@openvz.org>
->   Date:   Thu Oct 18 23:40:10 2007 -0700
-> 
->       pid namespaces: allow cloning of new namespace
-> 
-> without these problems having been resolved. A full-scale revert is 
-> probably too intrusive, but at minimum we need to turn off user-space 
-> access to this feature via this simple patch. Until this issue is 
-> resolved properly the new PID namespace code needs to be turned off. 
-> Letting this into 2.6.24 would be a disaster.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/fork.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> Index: v/kernel/fork.c
-> ===================================================================
-> --- v.orig/kernel/fork.c
-> +++ v/kernel/fork.c
-> @@ -1420,6 +1420,14 @@ long do_fork(unsigned long clone_flags,
->  	int trace = 0;
->  	long nr;
->  
-> +	/*
-> +	 * PID namespaces are broken at the moment: they do not allow
-> +	 * certain PID based syscalls (such as futexes) to be used
-> +	 * across namespaces. This is broken and must not be allowed,
-> +	 * so we keep this feature turned off until it's properly fixed.
-> +	 */
-> +	clone_flags &= ~CLONE_NEWPID;
-> +
->  	if (unlikely(current->ptrace)) {
->  		trace = fork_traceflag (clone_flags);
->  		if (trace)
-> 
+-- 
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
 
