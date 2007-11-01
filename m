@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbXKAUK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbXKAURN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbXKAUK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 16:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXKAUKt
+	id S1756785AbXKAURN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 16:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXKAUQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 16:10:49 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53556 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752636AbXKAUKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 16:10:48 -0400
-Date: Thu, 1 Nov 2007 13:10:40 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] x86: check boundary in count/setup_resource called by get_current_resources
-Message-ID: <20071101201040.GA22247@us.ibm.com>
-References: <200711010120.30410.yinghai.lu@sun.com> <20071101013239.992840bd.akpm@linux-foundation.org> <472A159A.6080106@sun.com>
-Mime-Version: 1.0
+	Thu, 1 Nov 2007 16:16:56 -0400
+Received: from THUNK.ORG ([69.25.196.29]:54968 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753273AbXKAUQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 16:16:54 -0400
+Date: Thu, 1 Nov 2007 16:12:35 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Stephen Smalley <sds@epoch.ncsc.mil>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: [PATCH] file capabilities: allow sigcont within session (v2)
+Message-ID: <20071101201235.GF2387@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Serge E. Hallyn" <serue@us.ibm.com>,
+	Stephen Smalley <sds@epoch.ncsc.mil>,
+	lkml <linux-kernel@vger.kernel.org>,
+	linux-security-module@vger.kernel.org,
+	Andrew Morton <akpm@osdl.org>, Andrew Morgan <morgan@kernel.org>,
+	Chris Wright <chrisw@sous-sol.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Natalie Protasevich <protasnb@gmail.com>
+References: <20071031234945.GA16455@sergelap.austin.ibm.com> <1193918844.12018.6.camel@moss-spartans.epoch.ncsc.mil> <20071101134701.GA21131@sergelap.austin.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <472A159A.6080106@sun.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20071101134701.GA21131@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 01, 2007 at 11:06:18AM -0700, Yinghai Lu wrote:
-> Andrew Morton wrote:
-> >On Thu, 01 Nov 2007 01:20:29 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> >
-> >>[PATCH] x86: check boundary in count/setup_resource called by 
-> >>get_current_resources
-> >>
-> >>need to check info->res_num less than PCI_BUS_NUM_RESOURCES, so
-> >>info->bus->resource[info->res_num] = res will not beyond of bus resource 
-> >>array
-> >>when acpi resutrn too many resource entries.
-> >>
-> >
-> >Isn't this a bit of a problem?  It sounds like PCI_BUS_NUM_RESOURCES is to
-> >small for that system?  If so, some sort of dynamic allocation might be
-> >needed.
+On Thu, Nov 01, 2007 at 08:47:01AM -0500, Serge E. Hallyn wrote:
+> Egads.  I knew I should've just kept that part out of it for the first
+> patch...
 > 
-> sound reasonable...
-> i have one local patch for amd64 that will get resources from pci conf. and 
-> it will use all 8 slots for bus 0.
-> and transparent bus under it only can copy 5 of them.
+> New patch on top of previous one is appended.
 
-Yea, with the current fixed size pci_bus resource array
-I believe you would need to increase PCI_BUS_NUM_RESOURCES
-from 8 to 11 for the transparent bridge child bus to get
-all 8 _CRS returned resources.
+I assume you'll just collapse the two patches together before you
+submit them?  I've been distracted dealing with the ALPM suspend2ram
+regression, which Jeff Garzik beat me to in bisecting, but I'll try
+out your newer patch now...
 
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+						- Ted
