@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbXKAPui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761952AbXKAPuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbXKAPui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbXKAPuX
+	id S1761952AbXKAPuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbXKAPuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:50:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:37518 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100AbXKAPuV (ORCPT
+	Thu, 1 Nov 2007 11:50:37 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:46446 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760961AbXKAPug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:50:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=DvnP3rhVcgCfmG/+CjYONplhUNH26zwCQBprQIxmNelae9/PF7mwEQBj5Ra9MHrr7f0Pnk5CfgywH35Z9FKQngQW/p6re+TxhlWksuBhQEJHWTHnKL69dNg05axNpG8HjpVoqDyPf2yfpRaXWXjqgMzhrMdXSWkmN9yFObNvvpo=
-Message-ID: <4729F5B9.70401@gmail.com>
-Date: Thu, 01 Nov 2007 16:50:17 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 1 Nov 2007 11:50:36 -0400
+Date: Thu, 1 Nov 2007 08:50:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       tony@bakeyournoodle.com, paulus@samba.org, dino@in.ibm.com,
+       tytso@us.ibm.com, antonb@us.ibm.com, rostedt@goodmis.org
+Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
+Message-ID: <20071101155028.GB14231@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071029185044.GA23413@linux.vnet.ibm.com> <1193688468.9928.30.camel@pasglop> <1193864075.9767.20.camel@Aeon> <1193865328.9928.141.camel@pasglop>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Char: tty, add tty_schedule_wakeup
-References: <14457172322573118772.slaby@karneval.cz>	<15530290543226725036.slaby@karneval.cz> <20071101154847.570d8e96@the-village.bc.nu>
-In-Reply-To: <20071101154847.570d8e96@the-village.bc.nu>
-X-Enigmail-Version: 0.95.4
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1193865328.9928.141.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox napsal(a):
-> I think just using tty_wakeup for this ought to be sufficient unless they
-> are using the work queue for some kind of serialization of events
+On Thu, Nov 01, 2007 at 08:15:28AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> > So as Paul mentioned, spin_lock is now a mutex.  There is a new
+> > raw_spinlock however (simply change the way it is declared, calling
+> > conventions are the same) which is used in a very few areas where a
+> > traditional spin_lock is truly necessary.  This may or may not be one of
+> > those times, but I wanted to point it out.
+> 
+> Yeah, I figured that. My main worry has more to do with some fishy
+> assumptions the powerpc VM code does regarding what can and cannot
+> happen in those locked sections, among other things. I'll have to sit
+> and think about it for a little while to convince myself we are ok ...
+> or not. Plus we do keep track of various MM related things in per-CPU
+> data structures but it looks like Paul already spotted that.
 
-Actually this is what I wanted to hear. Going to change those which does it.
+My concern would be that I failed to spot all of them.  ;-)
 
-thanks,
---js
+							Thanx, Paul
