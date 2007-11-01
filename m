@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbXKABtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbXKABu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbXKABtt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 21:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbXKABtm
+	id S1759092AbXKABu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 21:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXKABuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 21:49:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58781 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbXKABtl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Oct 2007 21:49:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 1 Nov 2007 02:49:26 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-core: enforce write order when updating
- fw_device.generation
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-Message-ID: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>
+	Wed, 31 Oct 2007 21:50:13 -0400
+Received: from ns2.lanforge.com ([66.165.47.211]:42997 "EHLO ns2.lanforge.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752153AbXKABuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Oct 2007 21:50:12 -0400
+Message-ID: <4729269A.6090606@candelatech.com>
+Date: Wed, 31 Oct 2007 18:06:34 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Bin Guo <bguo@sw.starentnetworks.com>
+Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
+References: <18216.52455.698606.497464@zeus.sw.starentnetworks.com> <20071031123359.3954befc@freepuppy.rosehill>
+In-Reply-To: <20071031123359.3954befc@freepuppy.rosehill>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fw_device.node_id and fw_device.generation are accessed without mutexes.
-We have to ensure that all readers will get to see node_id updates
-before generation updates.
+Stephen Hemminger wrote:
+> On Wed, 31 Oct 2007 14:43:51 -0400
+> Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com> wrote:
+>
+>   
+>> Depending on the network driver, I'm seeing different behavior if
+>> a .1q packet is received to an PF_PACKET, SOCK_RAW, ETH_P_ALL socket.
+>>
+>>
+>> On devices what do not use NETIF_F_HW_VLAN_RX, the packet socket gets
+>> the complete packet with vlan tag included as the driver simply calls
+>> netif_receive_skb() or equivilant.  packet_rcv() then gets the whole
+>> thing vlan tag included and sends this through the socket.
+>>
+>> vlan_skb_recv() also gets these all and will drop them because there
+>> are no vlans configured.
+>>
+>>     
+>
+> The VLAN acceleration grabs and hides the tag. It is a design flaw
+> that should be fixed, feel free to post a patch.
+>   
+There may be several ways to 'fix' this.  Perhaps it would be worth 
+discussing what
+we want the end result to be at least?
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-device.c   |    6 ++++++
- drivers/firewire/fw-topology.c |    1 +
- 2 files changed, 7 insertions(+)
+Should we always pass the vlan header up to raw sockets as part of the
+data payload?
 
-Index: linux/drivers/firewire/fw-device.c
-===================================================================
---- linux.orig/drivers/firewire/fw-device.c
-+++ linux/drivers/firewire/fw-device.c
-@@ -808,6 +813,7 @@ void fw_node_event(struct fw_card *card,
- 
- 		device = node->data;
- 		device->node_id = node->node_id;
-+		wmb();
- 		device->generation = card->generation;
- 		if (atomic_read(&device->state) == FW_DEVICE_RUNNING) {
- 			PREPARE_DELAYED_WORK(&device->work, fw_device_update);
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -518,6 +518,7 @@ fw_core_handle_bus_reset(struct fw_card 
- 		card->bm_retries = 0;
- 
- 	card->node_id = node_id;
-+	wmb();
- 	card->generation = generation;
- 	card->reset_jiffies = jiffies;
- 	schedule_delayed_work(&card->work, 0);
+Or, maybe pass it in an auxiliary message such as how timestamps may be 
+passed?
+
+The first option seems cleaner, but maybe there are performance problems 
+with this
+approach?
+
+We should also define what a NIC should do with VLANs it doesn't 
+explicitly know
+about.   I think it should pass them up the stack with VLAN tag intact, 
+but again, perhaps
+there are reasons not to do that?
+
+DaveM did the HW Accel for VLANs if I remember correctly...perhaps he 
+has some input?
+
+Thanks,
+Ben
 
 -- 
-Stefan Richter
--=====-=-=== =-== ----=
-http://arcgraph.de/sr/
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
 
