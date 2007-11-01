@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbXKARSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757693AbXKARUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbXKARSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 13:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbXKARSA
+	id S1757693AbXKARUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 13:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXKARU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 13:18:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:54229 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757526AbXKARR7 convert rfc822-to-8bit (ORCPT
+	Thu, 1 Nov 2007 13:20:28 -0400
+Received: from helios.cs.csubak.edu ([136.168.201.112]:41952 "EHLO
+	helios.cs.csubak.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbXKARU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 13:17:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Pi0YlQMKbwxJJmc1O/lM3dHTW/M6AwzgHXKQXLOvCQmti1Kqidsy+MAZhZlI3lpzE2Kfe3/vdHVZf/rJ5dh5L4LpC0gpU12TCGDqM2p078k/8kZVdZxWqdUgQ3B4FlnHB7ufISRy5ANOAYqaSZqu/G31d3l0znc8dOHWtzAeCPg=
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: remove duplicated #include entry
-Date: Thu, 1 Nov 2007 18:17:47 +0100
-User-Agent: KMail/1.9.7
-Cc: tglx@linutronix.de
+	Thu, 1 Nov 2007 13:20:27 -0400
+Date: Thu, 1 Nov 2007 10:20:24 -0700 (PDT)
+From: David Griffith <dgriffi@cs.csubak.edu>
+To: Vitaliy Ivanov <vitalivanov@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: fixing usb-midi device support
+In-Reply-To: <35fbaa3e0711010346y5963d929w5054fabad1569d66@mail.gmail.com>
+Message-ID: <Pine.GSO.4.55.0711011018360.13024@helios.cs.csubak.edu>
+References: <Pine.GSO.4.55.0710311423530.10148@helios.cs.csubak.edu>
+ <35fbaa3e0711010346y5963d929w5054fabad1569d66@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200711011817.47895.mboton.lkml@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -0.1 (/)
+X-Spam-Report: ---- Start Spam Filter Report
+	Filter Analysis score is (-0.1/5.0)
+	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
+	-0.1 AWL                    AWL: From: address is in the auto white-list
+	---- End Spam Filter results
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"#include <linux/kprobes.h>" is duplicated in "arch/x86/mm/fault_32.c".
-We just remove one of the entries.
+On Thu, 1 Nov 2007, Vitaliy Ivanov wrote:
 
-Signed-off-by: Miguel Botón <mboton@gmail.com>
+> David,
+>
+> On 10/31/07, David Griffith <dgriffi@cs.csubak.edu> wrote:
+> >
+> > I have a MOTU Fastlane and an Emu Xmidi 2x2 USB midi interfaces.  The Emu
+> > unit works fine with current kernels.  The MOTU unit won't work with
+> > kernels newer than 2.6.17.  I stumbled over a patch that had something to
+> > do with a MOTU Fastlane, but I haven't been able to find it again.  Could
+> > I get some advice on fixing MOTU Fastlane support?
+>
+> I can see that you already had a discussion on this issue:
+> http://lkml.org/lkml/2007/8/10/102
+>
+> Any results? Do you still can see the oops?
 
-
-Index: linux-2.6.24-rc1/arch/x86/mm/fault_32.c
-===================================================================
---- linux-2.6.24-rc1.orig/arch/x86/mm/fault_32.c
-+++ linux-2.6.24-rc1/arch/x86/mm/fault_32.c
-@@ -22,7 +22,6 @@
- #include <linux/bootmem.h>		/* for max_low_pfn */
- #include <linux/vmalloc.h>
- #include <linux/module.h>
--#include <linux/kprobes.h>
- #include <linux/uaccess.h>
- #include <linux/kdebug.h>
- #include <linux/kprobes.h>
+The oops is still present.  I was hoping that the patch I found and lost
+would help me understand what was going on.
 
 -- 
-	Miguel Botón
+David Griffith
+dgriffi@cs.csubak.edu
