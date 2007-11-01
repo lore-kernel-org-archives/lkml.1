@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXKAPE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXKAPFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbXKAPE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 11:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXKAPEq
+	id S1761481AbXKAPFy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 11:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXKAPFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 11:04:46 -0400
-Received: from ns2.lanforge.com ([66.165.47.211]:43999 "EHLO ns2.lanforge.com"
+	Thu, 1 Nov 2007 11:05:46 -0400
+Received: from sacred.ru ([62.205.161.221]:50472 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbXKAPEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 11:04:45 -0400
-Message-ID: <4729EAFF.9050606@candelatech.com>
-Date: Thu, 01 Nov 2007 08:04:31 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	id S1753757AbXKAPFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 11:05:45 -0400
+Message-ID: <4729EB3C.9050102@openvz.org>
+Date: Thu, 01 Nov 2007 18:05:32 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: shemminger@linux-foundation.org,
-       djohnson+linux-kernel@sw.starentnetworks.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       bguo@sw.starentnetworks.com
-Subject: Re: expected behavior of PF_PACKET on NETIF_F_HW_VLAN_RX device?
-References: <20071031123359.3954befc@freepuppy.rosehill>	<4729269A.6090606@candelatech.com>	<47292A99.5070805@linux-foundation.org> <20071031.215025.195350296.davem@davemloft.net>
-In-Reply-To: <20071031.215025.195350296.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] PID namespace design bug, workaround
+References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org> <4729E936.4040400@redhat.com>
+In-Reply-To: <4729E936.4040400@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 01 Nov 2007 18:05:30 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Stephen Hemminger <shemminger@linux-foundation.org>
-> Date: Wed, 31 Oct 2007 18:23:37 -0700
->
->   
->> The code in AF_PACKET should fix the skb before passing to user
->> space so that there is no difference between accel and non-accel
->> hardware.  Internal choices shouldn't leak to user space.  Ditto,
->> the receive checksum offload should be fixed up as well.
->>     
->
-> The hardware has stripped the VLAN header completely and has not
-> provided it to us at all.
->   
-Do the NICs not save the QoS bits in the VLAN header anywhere that we could
-use to reconstitute the header?
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Pavel Emelyanov wrote:
+>> With this set we'll be able to mark pid namespaces as EXPERIMENTAL
+>> or even BROKEN, so nobody will be able to crate them. So can we, please, 
+>> keep things as they are for now - the appropriate fix will be ready 
+>> soon.
+> 
+> You sound far too optimistic for my taste.  I probably haven't seen the
+> proposal you have in mind but everything else I have seen simply doesn't
+> work without breaking something.
+
+The "fix" I mention is just returning -EINVAL in case user orders 
+CLONE_NEWPIDS and compiling out all the namespace cloning code. This 
+is just a more elegant way to get rid of pid namespaces rather than 
+Ingo proposed.
+
+Here's the root of the set:
+http://lkml.org/lkml/2007/10/31/118
 
 Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
-
+Pavel
