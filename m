@@ -1,63 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbXKALJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXKALTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759166AbXKALJv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 07:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbXKALJm
+	id S1758638AbXKALTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 07:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXKALTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 07:09:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41275 "EHLO mail.dvmed.net"
+	Thu, 1 Nov 2007 07:19:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58713 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755543AbXKALJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 07:09:41 -0400
-Message-ID: <4729B3EA.6040707@garzik.org>
-Date: Thu, 01 Nov 2007 07:09:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jens Axboe <jens.axboe@oracle.com>, Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Albert Lee <albertcc@tw.ibm.com>
-Subject: Re: "Fix ATAPI transfer lengths" causes CD writing regression
-References: <47274A5F.6070409@gentoo.org>	<20071030153417.59b9182c@the-village.bc.nu>	<47276DCA.1000808@gentoo.org>	<20071030190153.373c9347@the-village.bc.nu>	<47278439.4030801@gentoo.org>	<20071031114958.210bd7cc@the-village.bc.nu>	<20071031115754.GK5059@kernel.dk>	<4729A0DF.20800@garzik.org> <20071101105335.1f20bab3@the-village.bc.nu>
-In-Reply-To: <20071101105335.1f20bab3@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1756306AbXKALTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 07:19:03 -0400
+Date: Thu, 1 Nov 2007 17:01:38 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH 2/6] sched: make sched_slice() group scheduling savvy
+Message-ID: <20071101113138.GA20788@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20071031211030.310581000@chello.nl> <20071031211248.796653000@chello.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071031211248.796653000@chello.nl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> demonstrated by (a) Alan's patch did not change DMA lbam/lbah 
->> programming and (b) Daniel's report of the message "ata2.00: 66 bytes 
+On Wed, Oct 31, 2007 at 10:10:32PM +0100, Peter Zijlstra wrote:
+> Currently the ideal slice length does not take group scheduling into account.
+> Change it so that it properly takes all the runnable tasks on this cpu into
+> account and caluclate the weight according to the grouping hierarchy.
 > 
-> (a) did. Well the original did, dunno about your version.
-
-We are both half-right.  I reverted my version of that completely, 
-applied your version verbatim, and pushed it upstream.  The result: 
-atapi_xlat _did_ start programming lbam/lbah for DMA (another behavior 
-change), but request-sense DMA path was not changed to program lba[mh] 
-for DMA.
-
-
->> I am not drawing any conclusions yet, but I'm thinking that blimit=8k 
->> may be a better choice for SATA ATAPI.
+> Also fixes a bug in vslice which missed a factor NICE_0_LOAD.
 > 
-> Only if your transfer is actually 8K or more.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> ---
+>  kernel/sched_fair.c |   42 +++++++++++++++++++++++++++++++-----------
+>  1 file changed, 31 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched_fair.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_fair.c
+> +++ linux-2.6/kernel/sched_fair.c
+> @@ -331,10 +331,15 @@ static u64 __sched_period(unsigned long 
+>   */
+>  static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  {
+> -	u64 slice = __sched_period(cfs_rq->nr_running);
+> +	unsigned long nr_running = rq_of(cfs_rq)->nr_running;
+> +	u64 slice = __sched_period(nr_running);
+> 
+> -	slice *= se->load.weight;
+> -	do_div(slice, cfs_rq->load.weight);
+> +	for_each_sched_entity(se) {
+> +		cfs_rq = cfs_rq_of(se);
+> +
+> +		slice *= se->load.weight;
+> +		do_div(slice, cfs_rq->load.weight);
+> +	}
+> 
+>  	return slice;
 
-No, that's precisely the problem cause for what Daniel is reporting.  We 
-are setting blimit=xfer_len(==10), when the device wants to return more 
-than 10 bytes.  When set to the old limit (8k), the problem didn't occur.
 
-Prior to this change, __atapi_pio_bytes() happily discarded trailing 
-data, so the software already knows how to eat trailing data left to us 
-by the ATAPI device.  The printk (and lack of problem) indicated that 
-this code was active and working fine.
+Lets say we have two groups A and B on CPU0, of equal weight (1024).
 
-	Jeff
+Further,
 
+A has 1 task (A0)
+B has 1000 tasks (B0 .. B999) 
 
+Agreed its a extreme case, but illustrates the problem I have in mind
+for this patch.
 
+All tasks of same weight=1024.
 
+Before this patch
+=================
+
+	sched_slice(grp A) = 20ms * 1/2 = 10ms
+	sched_slice(A0) = 20ms
+
+	sched_slice(grp B) = 20ms * 1/2 = 10ms
+	sched_slice(B0) = (20ms * 1000/20) * 1 / 1000 = 1ms
+	sched_slice(B1) = ... = sched_slice(B99) = 1 ms
+
+Fairness between groups and tasks would be obtained as below:
+
+    A0       B0-B9     A0    B10-B19     A0     B20-B29
+ |--------|--------|--------|--------|--------|--------|-----//--| 
+ 0       10ms	   20ms	   30ms     40ms     50ms     60ms
+
+After this patch
+================
+
+	sched_slice(grp A) = (20ms * 1001/20) * 1/2 ~= 500ms
+	sched_slice(A0) = 500ms
+
+	sched_slice(grp B) = 500ms
+	sched_slice(B0) = 0.5ms 
+
+Fairness between groups and tasks would be obtained as below:
+
+	    A0		          B0 - B99  	            A0
+ |-----------------------|-----------------------|-----------------------|
+ 0		        500ms			1000ms 			1500ms
+
+Did I get it right? If so, I don't like the fact that group A is allowed to run 
+for a long time (500ms) before giving chance to group B.
+
+Can I know what real problem is being addressed by this change to
+sched_slice()?
+
+-- 
+Regards,
+vatsa
