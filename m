@@ -1,300 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761116AbXKAAER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbXKAAEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761116AbXKAAER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Oct 2007 20:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbXKAADS
+	id S1760759AbXKAAEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Oct 2007 20:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbXKAADU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Oct 2007 20:03:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40555 "EHLO
+	Wed, 31 Oct 2007 20:03:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40570 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754373AbXKAADL (ORCPT
+	with ESMTP id S1754502AbXKAADL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 31 Oct 2007 20:03:11 -0400
-Message-Id: <20071101000309.984890202@sgi.com>
+Message-Id: <20071101000310.674476000@sgi.com>
 References: <20071101000211.970501947@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 31 Oct 2007 17:02:13 -0700
+Date: Wed, 31 Oct 2007 17:02:16 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [patch 2/7] allocpercpu: Remove functions that are rarely used.
-Content-Disposition: inline; filename=rm_old_function
+Subject: [patch 5/7] SLUB: Use allocpercpu to allocate per cpu data instead of running our own per cpu allocator
+Content-Disposition: inline; filename=slub_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Population and depopulation is no longer needed since newly created
-per cpu areas will have all the fields needed. Teardown of per cpu
-areas will remove objects no longer needed.
+Using allocpercpu removes the needs for the per cpu arrays in the kmem_cache struct.
+These could get quite big if we have to support system of up to thousands of cpus.
+The use of alloc_percpu means that:
 
-This basically reverts the API to the way it was before the population and
-depopulation went in. There is only a single user in the kernel that uses these
-functions in net/iucv/iucv.c which is S/390 specific.
+1. The size of kmem_cache for SMP configuration shrinks since we will only
+need 1 pointer instead of NR_CPUS. The same pointer can be used by all
+processors. Reduces cache footprint of the allocator.
 
-Remove the useless population and depopulation functions there. In that driver
-we have the single occurrence of a per cpu allocations that uses GFP flags.
-The allocation from the DMA zone is required in order to have memory below 2G. But
-it seems that the per cpu areas are also under 2G so we are fine there.
+2. We can dynamically size kmem_cache according to the actual nodes in the
+system meaning less memory overhead for configurations that may potentially
+support up to 1k NUMA nodes.
+
+3. We can remove the diddle widdle with allocating and releasing kmem_cache_cpu
+   structures when bringing up and shuttting down cpus. The allocpercpu
+   logic will do it all for us.
+
+4. Fastpath performance increases by another 20% vs. the earlier improvements.
+   Instead of having fastpath with 40-50 cycles we are now in the 30-40 range.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/percpu.h |   42 +------------------
- mm/allocpercpu.c       |  104 +++++--------------------------------------------
- net/iucv/iucv.c        |   31 +++-----------
- 3 files changed, 21 insertions(+), 156 deletions(-)
+ include/linux/slub_def.h |   11 ++--
+ mm/slub.c                |  125 ++++-------------------------------------------
+ 2 files changed, 18 insertions(+), 118 deletions(-)
 
-Index: linux-2.6/include/linux/percpu.h
+Index: linux-2.6/include/linux/slub_def.h
 ===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2007-10-31 16:40:04.831371052 -0700
-+++ linux-2.6/include/linux/percpu.h	2007-10-31 16:40:14.892121256 -0700
-@@ -47,41 +47,16 @@
-     	(__typeof__(ptr))(p + q);			\
- })
- 
--extern void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu);
--extern void percpu_depopulate(void *__pdata, int cpu);
--extern int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
--				  cpumask_t *mask);
--extern void __percpu_depopulate_mask(void *__pdata, cpumask_t *mask);
--extern void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask);
-+extern void *__alloc_percpu(size_t size);
- extern void percpu_free(void *__pdata);
- 
- #else /* CONFIG_SMP */
- 
- #define percpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
- 
--static inline void percpu_depopulate(void *__pdata, int cpu)
-+static __always_inline void *__alloc_percpu(size_t size)
- {
--}
--
--static inline void __percpu_depopulate_mask(void *__pdata, cpumask_t *mask)
--{
--}
--
--static inline void *percpu_populate(void *__pdata, size_t size, gfp_t gfp,
--				    int cpu)
--{
--	return percpu_ptr(__pdata, cpu);
--}
--
--static inline int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
--					 cpumask_t *mask)
--{
--	return 0;
--}
--
--static __always_inline void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
--{
--	return kzalloc(size, gfp);
-+	return kzalloc(size, GFP_KERNEL);
- }
- 
- static inline void percpu_free(void *__pdata)
-@@ -91,19 +66,8 @@ static inline void percpu_free(void *__p
- 
- #endif /* CONFIG_SMP */
- 
--#define percpu_populate_mask(__pdata, size, gfp, mask) \
--	__percpu_populate_mask((__pdata), (size), (gfp), &(mask))
--#define percpu_depopulate_mask(__pdata, mask) \
--	__percpu_depopulate_mask((__pdata), &(mask))
--#define percpu_alloc_mask(size, gfp, mask) \
--	__percpu_alloc_mask((size), (gfp), &(mask))
--
--#define percpu_alloc(size, gfp) percpu_alloc_mask((size), (gfp), cpu_online_map)
--
- /* (legacy) interface for use without CPU hotplug handling */
- 
--#define __alloc_percpu(size)	percpu_alloc_mask((size), GFP_KERNEL, \
--						  cpu_possible_map)
- #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type))
- #define free_percpu(ptr)	percpu_free((ptr))
- #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
-Index: linux-2.6/mm/allocpercpu.c
-===================================================================
---- linux-2.6.orig/mm/allocpercpu.c	2007-10-31 16:39:15.924121250 -0700
-+++ linux-2.6/mm/allocpercpu.c	2007-10-31 16:40:14.892121256 -0700
-@@ -136,111 +136,29 @@ static inline void cpu_free(void *pcpu)
- 	spin_unlock(&cpu_alloc_map_lock);
- }
- 
--/**
-- * percpu_depopulate - depopulate per-cpu data for given cpu
-- * @__pdata: per-cpu data to depopulate
-- * @cpu: depopulate per-cpu data for this cpu
-- *
-- * Depopulating per-cpu data for a cpu going offline would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- */
--void percpu_depopulate(void *__pdata, int cpu)
--{
--	/*
--	 * Nothing to do here. Removal can only be effected for all
--	 * per cpu areas of a cpu at once.
--	 */
--}
--EXPORT_SYMBOL_GPL(percpu_depopulate);
--
--/**
-- * percpu_depopulate_mask - depopulate per-cpu data for some cpu's
-- * @__pdata: per-cpu data to depopulate
-- * @mask: depopulate per-cpu data for cpu's selected through mask bits
-- */
--void __percpu_depopulate_mask(void *__pdata, cpumask_t *mask)
--{
--	/*
--	 * Nothing to do
--	 */
--}
--EXPORT_SYMBOL_GPL(__percpu_depopulate_mask);
--
--/**
-- * percpu_populate - populate per-cpu data for given cpu
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @cpu: populate per-data for this cpu
-- *
-- * Populating per-cpu data for a cpu coming online would be a typical
-- * use case. You need to register a cpu hotplug handler for that purpose.
-- * Per-cpu object is populated with zeroed buffer.
-+/*
-+ * Allocate a per cpu array and zero all the per cpu objects.
-+ * This is the externally visible function.
+--- linux-2.6.orig/include/linux/slub_def.h	2007-10-30 16:34:41.000000000 -0700
++++ linux-2.6/include/linux/slub_def.h	2007-10-31 09:23:26.000000000 -0700
+@@ -34,6 +34,12 @@ struct kmem_cache_node {
+  * Slab cache management.
   */
--void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
--{
--	int pdata = (unsigned long)__percpu_disguise(__pdata);
--	void *p = (void *)per_cpu_offset(cpu) + pdata;
--
--	memset(p, 0, size);
--	return p;
--}
--EXPORT_SYMBOL_GPL(percpu_populate);
--
--/**
-- * percpu_populate_mask - populate per-cpu data for more cpu's
-- * @__pdata: per-cpu data to populate further
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @mask: populate per-cpu data for cpu's selected through mask bits
+ struct kmem_cache {
++#ifdef CONFIG_SMP
++	/* Per cpu pointer usable for any cpu */
++	struct kmem_cache_cpu *cpu_slab;
++#else
++	struct kmem_cache_cpu cpu_slab;
++#endif
+ 	/* Used for retriving partial slabs etc */
+ 	unsigned long flags;
+ 	int size;		/* The size of an object including meta data */
+@@ -63,11 +69,6 @@ struct kmem_cache {
+ 	int defrag_ratio;
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
+ #endif
+-#ifdef CONFIG_SMP
+-	struct kmem_cache_cpu *cpu_slab[NR_CPUS];
+-#else
+-	struct kmem_cache_cpu cpu_slab;
+-#endif
+ };
+ 
+ /*
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-10-30 22:52:24.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-10-31 09:45:59.000000000 -0700
+@@ -242,7 +242,7 @@ static inline struct kmem_cache_node *ge
+ static inline struct kmem_cache_cpu *get_cpu_slab(struct kmem_cache *s, int cpu)
+ {
+ #ifdef CONFIG_SMP
+-	return s->cpu_slab[cpu];
++	return percpu_ptr(s->cpu_slab, cpu);
+ #else
+ 	return &s->cpu_slab;
+ #endif
+@@ -2032,119 +2032,25 @@ static void init_kmem_cache_node(struct 
+ }
+ 
+ #ifdef CONFIG_SMP
+-/*
+- * Per cpu array for per cpu structures.
 - *
-- * Per-cpu objects are populated with zeroed buffers.
+- * The per cpu array places all kmem_cache_cpu structures from one processor
+- * close together meaning that it becomes possible that multiple per cpu
+- * structures are contained in one cacheline. This may be particularly
+- * beneficial for the kmalloc caches.
+- *
+- * A desktop system typically has around 60-80 slabs. With 100 here we are
+- * likely able to get per cpu structures for all caches from the array defined
+- * here. We must be able to cover all kmalloc caches during bootstrap.
+- *
+- * If the per cpu array is exhausted then fall back to kmalloc
+- * of individual cachelines. No sharing is possible then.
 - */
--int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
--			   cpumask_t *mask)
+-#define NR_KMEM_CACHE_CPU 100
+-
+-static DEFINE_PER_CPU(struct kmem_cache_cpu,
+-				kmem_cache_cpu)[NR_KMEM_CACHE_CPU];
+-
+-static DEFINE_PER_CPU(struct kmem_cache_cpu *, kmem_cache_cpu_free);
+-static cpumask_t kmem_cach_cpu_free_init_once = CPU_MASK_NONE;
+-
+-static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+-							int cpu, gfp_t flags)
 -{
--	cpumask_t populated = CPU_MASK_NONE;
+-	struct kmem_cache_cpu *c = per_cpu(kmem_cache_cpu_free, cpu);
+-
+-	if (c)
+-		per_cpu(kmem_cache_cpu_free, cpu) =
+-				(void *)c->freelist;
+-	else {
+-		/* Table overflow: So allocate ourselves */
+-		c = kmalloc_node(
+-			ALIGN(sizeof(struct kmem_cache_cpu), cache_line_size()),
+-			flags, cpu_to_node(cpu));
+-		if (!c)
+-			return NULL;
+-	}
+-
+-	init_kmem_cache_cpu(s, c);
+-	return c;
+-}
+-
+-static void free_kmem_cache_cpu(struct kmem_cache_cpu *c, int cpu)
+-{
+-	if (c < per_cpu(kmem_cache_cpu, cpu) ||
+-			c > per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
+-		kfree(c);
+-		return;
+-	}
+-	c->freelist = (void *)per_cpu(kmem_cache_cpu_free, cpu);
+-	per_cpu(kmem_cache_cpu_free, cpu) = c;
+-}
+-
+ static void free_kmem_cache_cpus(struct kmem_cache *s)
+ {
 -	int cpu;
 -
--	for_each_cpu_mask(cpu, *mask)
--		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
--			__percpu_depopulate_mask(__pdata, &populated);
--			return -ENOMEM;
--		} else
--			cpu_set(cpu, populated);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(__percpu_populate_mask);
+-	for_each_online_cpu(cpu) {
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
 -
--/**
-- * percpu_alloc_mask - initial setup of per-cpu data
-- * @size: size of per-cpu object
-- * @gfp: may sleep or not etc.
-- * @mask: populate per-data for cpu's selected through mask bits
-- *
-- * Populating per-cpu data for all online cpu's would be a typical use case,
-- * which is simplified by the percpu_alloc() wrapper.
-- * Per-cpu objects are populated with zeroed buffers.
-- */
--void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
-+void *__alloc_percpu(size_t size)
- {
- 	void *pdata = cpu_alloc(size);
- 	void *__pdata = __percpu_disguise(pdata);
-+	int cpu;
- 
- 	if (unlikely(!pdata))
- 		return NULL;
--	if (likely(!__percpu_populate_mask(__pdata, size, gfp, mask)))
--		return __pdata;
--	return NULL;
-+
-+	for_each_possible_cpu(cpu)
-+		memset(per_cpu_ptr(__pdata, cpu) , 0, size);
-+
-+	return __pdata;
- }
--EXPORT_SYMBOL_GPL(__percpu_alloc_mask);
-+EXPORT_SYMBOL_GPL(__alloc_percpu);
- 
- /**
-  * percpu_free - final cleanup of per-cpu data
-  * @__pdata: object to clean up
-- *
-- * We simply clean up any per-cpu object left. No need for the client to
-- * track and specify through a bis mask which per-cpu objects are to free.
-  */
- void percpu_free(void *__pdata)
- {
-Index: linux-2.6/net/iucv/iucv.c
-===================================================================
---- linux-2.6.orig/net/iucv/iucv.c	2007-10-31 16:39:13.001121287 -0700
-+++ linux-2.6/net/iucv/iucv.c	2007-10-31 16:40:14.892121256 -0700
-@@ -556,25 +556,6 @@ static int __cpuinit iucv_cpu_notify(str
- 	long cpu = (long) hcpu;
- 
- 	switch (action) {
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
--		if (!percpu_populate(iucv_irq_data,
--				     sizeof(struct iucv_irq_data),
--				     GFP_KERNEL|GFP_DMA, cpu))
--			return NOTIFY_BAD;
--		if (!percpu_populate(iucv_param, sizeof(union iucv_param),
--				     GFP_KERNEL|GFP_DMA, cpu)) {
--			percpu_depopulate(iucv_irq_data, cpu);
--			return NOTIFY_BAD;
+-		if (c) {
+-			s->cpu_slab[cpu] = NULL;
+-			free_kmem_cache_cpu(c, cpu);
 -		}
--		break;
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
--		percpu_depopulate(iucv_param, cpu);
--		percpu_depopulate(iucv_irq_data, cpu);
--		break;
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
- 	case CPU_DOWN_FAILED:
-@@ -1617,16 +1598,18 @@ static int __init iucv_init(void)
- 		rc = PTR_ERR(iucv_root);
- 		goto out_bus;
- 	}
--	/* Note: GFP_DMA used to get memory below 2G */
--	iucv_irq_data = percpu_alloc(sizeof(struct iucv_irq_data),
--				     GFP_KERNEL|GFP_DMA);
-+	/*
-+	 * Note: GFP_DMA used to get memory below 2G.
-+	 *
-+	 * The percpu data is below 2G right ? So this should work too -cl?
-+	 */
-+	iucv_irq_data = percpu_alloc(struct iucv_irq_data);
- 	if (!iucv_irq_data) {
- 		rc = -ENOMEM;
- 		goto out_root;
- 	}
- 	/* Allocate parameter blocks. */
--	iucv_param = percpu_alloc(sizeof(union iucv_param),
--				  GFP_KERNEL|GFP_DMA);
-+	iucv_param = percpu_alloc(union iucv_param);
- 	if (!iucv_param) {
- 		rc = -ENOMEM;
- 		goto out_extint;
+-	}
++	percpu_free(s->cpu_slab);
+ }
+ 
+ static int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+ {
+ 	int cpu;
+ 
+-	for_each_online_cpu(cpu) {
+-		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
++	s->cpu_slab = alloc_percpu(struct kmem_cache_cpu);
+ 
+-		if (c)
+-			continue;
++	if (!s->cpu_slab)
++		return 0;
+ 
+-		c = alloc_kmem_cache_cpu(s, cpu, flags);
+-		if (!c) {
+-			free_kmem_cache_cpus(s);
+-			return 0;
+-		}
+-		s->cpu_slab[cpu] = c;
+-	}
++	for_each_online_cpu(cpu)
++		init_kmem_cache_cpu(s, get_cpu_slab(s, cpu));
+ 	return 1;
+ }
+ 
+-/*
+- * Initialize the per cpu array.
+- */
+-static void init_alloc_cpu_cpu(int cpu)
+-{
+-	int i;
+-
+-	if (cpu_isset(cpu, kmem_cach_cpu_free_init_once))
+-		return;
+-
+-	for (i = NR_KMEM_CACHE_CPU - 1; i >= 0; i--)
+-		free_kmem_cache_cpu(&per_cpu(kmem_cache_cpu, cpu)[i], cpu);
+-
+-	cpu_set(cpu, kmem_cach_cpu_free_init_once);
+-}
+-
+-static void __init init_alloc_cpu(void)
+-{
+-	int cpu;
+-
+-	for_each_online_cpu(cpu)
+-		init_alloc_cpu_cpu(cpu);
+-  }
+-
+ #else
+ static inline void free_kmem_cache_cpus(struct kmem_cache *s) {}
+ static inline void init_alloc_cpu(void) {}
+@@ -2974,8 +2880,6 @@ void __init kmem_cache_init(void)
+ 	int i;
+ 	int caches = 0;
+ 
+-	init_alloc_cpu();
+-
+ #ifdef CONFIG_NUMA
+ 	/*
+ 	 * Must first have the slab cache available for the allocations of the
+@@ -3035,11 +2939,12 @@ void __init kmem_cache_init(void)
+ 	for (i = KMALLOC_SHIFT_LOW; i < PAGE_SHIFT; i++)
+ 		kmalloc_caches[i]. name =
+ 			kasprintf(GFP_KERNEL, "kmalloc-%d", 1 << i);
+-
+ #ifdef CONFIG_SMP
+ 	register_cpu_notifier(&slab_notifier);
+-	kmem_size = offsetof(struct kmem_cache, cpu_slab) +
+-				nr_cpu_ids * sizeof(struct kmem_cache_cpu *);
++#endif
++#ifdef CONFIG_NUMA
++	kmem_size = offsetof(struct kmem_cache, node) +
++				nr_node_ids * sizeof(struct kmem_cache_node *);
+ #else
+ 	kmem_size = sizeof(struct kmem_cache);
+ #endif
+@@ -3181,11 +3086,9 @@ static int __cpuinit slab_cpuup_callback
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		init_alloc_cpu_cpu(cpu);
+ 		down_read(&slub_lock);
+ 		list_for_each_entry(s, &slab_caches, list)
+-			s->cpu_slab[cpu] = alloc_kmem_cache_cpu(s, cpu,
+-							GFP_KERNEL);
++			init_kmem_cache_cpu(s, get_cpu_slab(s, cpu));
+ 		up_read(&slub_lock);
+ 		break;
+ 
+@@ -3195,13 +3098,9 @@ static int __cpuinit slab_cpuup_callback
+ 	case CPU_DEAD_FROZEN:
+ 		down_read(&slub_lock);
+ 		list_for_each_entry(s, &slab_caches, list) {
+-			struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
+-
+ 			local_irq_save(flags);
+ 			__flush_cpu_slab(s, cpu);
+ 			local_irq_restore(flags);
+-			free_kmem_cache_cpu(c, cpu);
+-			s->cpu_slab[cpu] = NULL;
+ 		}
+ 		up_read(&slub_lock);
+ 		break;
 
 -- 
