@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbXKAQMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbXKAQOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbXKAQMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Nov 2007 12:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXKAQMm
+	id S1755991AbXKAQOA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Nov 2007 12:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXKAQNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Nov 2007 12:12:42 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:34457 "EHLO e3.ny.us.ibm.com"
+	Thu, 1 Nov 2007 12:13:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52143 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbXKAQMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Nov 2007 12:12:42 -0400
-Subject: Re: [patch] PID namespace design bug, workaround
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <4729E936.4040400@redhat.com>
-References: <20071101144307.GA29566@elte.hu> <4729E7E4.8070208@openvz.org>
-	 <4729E936.4040400@redhat.com>
-Content-Type: text/plain
-Date: Thu, 01 Nov 2007 09:12:28 -0700
-Message-Id: <1193933548.6271.78.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1752451AbXKAQNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Nov 2007 12:13:52 -0400
+Message-ID: <4729FB43.1010904@redhat.com>
+Date: Thu, 01 Nov 2007 14:13:55 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070811)
+MIME-Version: 1.0
+To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, lguest@ozlabs.org,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       ak@suse.de, chrisw@sous-sol.org, tglx@linutronix.de,
+       anthony@codemonkey.ws, akpm@linux-foundation.org,
+       virtualization@lists.linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 3/16] read/write_crX, clts and wbinvd for 64-bit paravirt
+References: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
+In-Reply-To: <C34FAA4C.17CA9%Keir.Fraser@cl.cam.ac.uk>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-11-01 at 07:56 -0700, Ulrich Drepper wrote:
-> Pavel Emelyanov wrote:
-> > With this set we'll be able to mark pid namespaces as EXPERIMENTAL
-> > or even BROKEN, so nobody will be able to crate them. So can we, please, 
-> > keep things as they are for now - the appropriate fix will be ready 
-> > soon.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Keir Fraser escreveu:
+> On 1/11/07 15:30, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
 > 
-> You sound far too optimistic for my taste.  I probably haven't seen the
-> proposal you have in mind but everything else I have seen simply doesn't
-> work without breaking something.
+>> Glauber de Oliveira Costa wrote:
+>>> I in fact have seen bugs with mixed reads and writes to the same cr,
+>>> (cr4), but adding the volatile
+>>> flag to the read function seemed to fix it.
+>> Well, volatile will make a read be repeated rather than caching the
+>> previous value, but it has no effect on ordering.
+> 
+> volatile prevents the asm from being 'moved significantly', according to the
+> gcc manual. I take that to mean that reordering is not allowed.
+> 
+According to a gcc developer to whom I asked this question, volatile
+prevents the code
+to be removed, but does not prevent it to be moved (pun indented). In
+practice, it should force
+a re-read, but not influence the ordering decisions from the compiler.
+Besides , 'significantly'
+sounds like a significantly unprecise word, whose specific meaning may
+be implementation dependant.
 
-Yeah, we definitely realize that this inhibits things that were
-perfectly fine before.  
+So I agree that adding a memory location reference is probably the best
+alternative.
 
-As Eric mentioned in his reply to your message last year, the primary
-goal here is isolation.  We'd eventually like to be able to pick a
-container up and move it to another system.  That's going to be awfully
-hard if the container is sharing a resource with a part of the system
-which is not moving.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-Pid namespaces (along with the others) give us the isolation to keep
-these interactions from happening except in a controlled manner,
-breaking the ties that might bind it to one particular system.
-
-Think of how many user-visible apis deal with files and filenames.
-However, there can certainly be files that are unavailable to certain
-processes based on their membership in a particular filesystem
-namespaces.  In fact, we use chroot() to try and _make_ certain files
-unavailable.
-
--- Dave
-
+iD8DBQFHKftDjYI8LaFUWXMRAiLTAKDqf/M8umNYw6u7r9ONozTEUVy8SwCgygma
+jWNKQmxmLpyPxr00KbQy9Vg=
+=JM4K
+-----END PGP SIGNATURE-----
